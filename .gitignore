@@ -5,3 +5,7 @@
 .pub/
 
 build/
+.gradle
+.idea/
+**/.metadata
+**/pubspec.lock
