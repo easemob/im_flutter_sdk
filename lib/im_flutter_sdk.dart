@@ -1,13 +1,8 @@
-import 'dart:async';
+library im_flutter_sdk;
 
-import 'package:flutter/services.dart';
+export 'src/em_client.dart';
+export 'src/em_contact_manager.dart';
+export 'src/em_chat_manager.dart';
 
-class ImFlutterSdk {
-  static const MethodChannel _channel =
-      const MethodChannel('im_flutter_sdk');
-
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-}
+//Easemob IM domain terms
+export 'src/em_domain_terms.dart';

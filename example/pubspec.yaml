@@ -1,5 +1,5 @@
 name: im_flutter_sdk_example
-description: Demonstrates how to use the im_flutter_sdk plugin.
+description: Demonstrates how to use the Easemob im_flutter_sdk plugin.
 publish_to: 'none'
 
 environment:
