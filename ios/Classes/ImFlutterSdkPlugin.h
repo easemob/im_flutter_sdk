@@ -2,3 +2,11 @@
 
 @interface ImFlutterSdkPlugin : NSObject<FlutterPlugin>
 @end
+
+
+@interface ImChatManagerPlugin : NSObject<FlutterPlugin>
+@end
+
+
+@interface ImContactManagerPlugin : NSObject<FlutterPlugin>
+@end

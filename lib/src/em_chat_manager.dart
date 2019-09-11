@@ -4,14 +4,12 @@ import 'package:im_flutter_sdk/src/em_sdk_method.dart';
 import 'em_domain_terms.dart';
 
 class EMChatManager {
-  static const MethodChannel _channel =
-  const MethodChannel('im_flutter_sdk');
+  static const MethodChannel _chatManagerChannel =
+    const MethodChannel('em_chat_manager');
 
 
-
-  static void sendMessage(EMMessage message) {
-    _channel.invokeMethod(EMSDKMethod.SendMessage);
+  void sendMessage(EMMessage message) {
+    // todo flutter message to string.
+    _chatManagerChannel.invokeMethod(EMSDKMethod.SendMessage);
   }
-
-
 }
