@@ -9,3 +9,5 @@ build/
 .idea/
 **/.metadata
 **/pubspec.lock
+**/Runner.xcworkspace/
+**/Podfile.lock
