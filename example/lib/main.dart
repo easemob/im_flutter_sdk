@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,6 +14,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    EMOptions emOptions = new EMOptions(appKey: "easemob-demo#chatdemoui");
+    EMClient.getInstance().init(emOptions);
   }
 
   @override
