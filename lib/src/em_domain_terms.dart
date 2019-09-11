@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 
 /// EMOptions - options to initialize SDK context
 class EMOptions {
-  const EMOptions(
-      {@required this.appKey,
-      @required this.imServer,
-      this.imPort = 8080,
-      this.autoLogin = false});
+  EMOptions(
+    {@required this.appKey,
+    this.imServer,
+    this.imPort = 8080,
+    this.autoLogin = false});
 
   final String appKey;
   final String imServer;
