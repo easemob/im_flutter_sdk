@@ -2,32 +2,45 @@
 
 @implementation ImFlutterSdkPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    // em_client
-    FlutterMethodChannel* clientChannel = [FlutterMethodChannel
+    [self registerClientChannel:registrar];
+    [self registerChatManagerChannel:registrar];
+    [self registerContactManagerChannel:registrar];
+}
+
+// em_client
++ (void)registerClientChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
+    FlutterMethodChannel* channel = [FlutterMethodChannel
                                         methodChannelWithName:@"em_client"
                                                binaryMessenger:[registrar messenger]];
-    ImFlutterSdkPlugin* instance = [[ImFlutterSdkPlugin alloc] init];
-    [registrar addMethodCallDelegate:instance channel:clientChannel];
+    ImClientPlugin* instance = [[ImClientPlugin alloc] init];
+    [registrar addMethodCallDelegate:instance channel:channel];
+}
 
-
-    // em_chatManager
-    FlutterMethodChannel* chatManagerChannel = [FlutterMethodChannel
+// em_chatmanager
++ (void)registerChatManagerChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
+    FlutterMethodChannel* channel = [FlutterMethodChannel
                                         methodChannelWithName:@"em_chat_manager"
-                                           binaryMessenger:[registrar messenger]];
-    ImChatManagerPlugin* chatManagerInstance = [[ImChatManagerPlugin alloc] init];
-    [registrar addMethodCallDelegate:chatManagerInstance channel:chatManagerChannel];
+                                               binaryMessenger:[registrar messenger]];
+    ImChatManagerPlugin* instance = [[ImChatManagerPlugin alloc] init];
+    [registrar addMethodCallDelegate:instance channel:channel];
+}
 
-    // em_chatManager
-    FlutterMethodChannel* contactManagerChannel = [FlutterMethodChannel
+// em_contactmanager
++ (void)registerContactManagerChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
+    FlutterMethodChannel* channel = [FlutterMethodChannel
                                         methodChannelWithName:@"em_contact_manager"
                                             binaryMessenger:[registrar messenger]];
-    ImContactManagerPlugin* contactManagerInstance = [[ImContactManagerPlugin alloc] init];
-    [registrar addMethodCallDelegate:chatManagerInstance channel:contactManagerChannel];
+    ImContactManagerPlugin* instance = [[ImContactManagerPlugin alloc] init];
+    [registrar addMethodCallDelegate:instance channel:channel];
 }
+
+@end
+
+@implementation ImClientPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     // ??
-    if ([@"" isEqualToString:call.method]) {
+    if ([@"EMClient.getInstance().init()" isEqualToString:call.method]) {
         result(@"");
     } else {
         result(FlutterMethodNotImplemented);
