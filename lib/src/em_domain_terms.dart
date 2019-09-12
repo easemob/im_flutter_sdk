@@ -16,7 +16,7 @@ class EMOptions {
 
 /// EMMessage - various types of message
 class EMMessage {
-  const EMMessage({
+  EMMessage({
     @required this.msgId,
     @required this.from,
     @required this.to,
