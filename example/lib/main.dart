@@ -16,6 +16,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     EMOptions emOptions = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMClient.getInstance().init(emOptions);
+
+//    EMClient.getInstance().chatManager().sendMessage(message);
+
   }
 
   @override
