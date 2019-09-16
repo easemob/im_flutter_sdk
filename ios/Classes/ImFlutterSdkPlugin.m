@@ -16,7 +16,7 @@
     [registrar addMethodCallDelegate:instance channel:channel];
 }
 
-// em_chatmanager
+// em_chat_manager
 + (void)registerChatManagerChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                         methodChannelWithName:@"em_chat_manager"
