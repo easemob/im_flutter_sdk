@@ -42,7 +42,7 @@ class EMCmdMessageBody extends EMMessageBody {
 
 /// EMFileMessageBody - file message body.
 class EMFileMessageBody extends EMMessageBody {
-  EMFileMessageBody([String localUrl, EMFileMessageBody body])
+  EMFileMessageBody(String localUrl)
       : this.displayName = '',
         this.localUrl = localUrl;
   EMFileMessageBody.of(EMFileMessageBody body)
@@ -88,9 +88,11 @@ class EMLocationMessageBody extends EMMessageBody {
 
 /// Subclasses of EMFileMessageBody.
 class EMImageMessageBody extends EMFileMessageBody {
-  EMImageMessageBody(File imageFile, [File thumbnailFile])
+  EMImageMessageBody(File imageFile, [File thumbnailFile, bool sendOriginalImage])
       : this._imageFile = imageFile,
-        this._thumbnailFile = thumbnailFile;
+        this._thumbnailFile = thumbnailFile,
+        this.sendOriginalImage = sendOriginalImage,
+        super(imageFile.path);
   EMImageMessageBody.of(EMImageMessageBody body)
       : this._imageFile = body._imageFile,
         this._thumbnailFile = body._thumbnailFile,
@@ -128,7 +130,7 @@ class EMImageMessageBody extends EMFileMessageBody {
 }
 
 class EMNormalFileMessageBody extends EMFileMessageBody {
-  EMNormalFileMessageBody(File file) : this._file = file;
+  EMNormalFileMessageBody(File file) : this._file = file,super(file.path);
   final File _file;
   int _fileSize;
   Future<int> get fileSize async {
@@ -146,7 +148,8 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
 class EMVoiceMessageBody extends EMFileMessageBody {
   EMVoiceMessageBody(File voiceFile, int duration)
       : this._file = voiceFile,
-        this._length = duration;
+        this._length = duration,
+        super(voiceFile.path);
   EMVoiceMessageBody.of(EMVoiceMessageBody body)
       : this._file = body._file,
         this._length = body._length,
@@ -164,4 +167,4 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   String toString() => '[EMVoiceMessageBody], {length: $length}';
 }
 
-class EMVideoMessageBody extends EMFileMessageBody {}
+/// TODO: class EMVideoMessageBody extends EMFileMessageBody {}

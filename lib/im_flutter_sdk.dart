@@ -6,5 +6,6 @@ export 'src/em_chat_manager.dart';
 
 //Easemob IM domain terms
 export 'src/em_domain_terms.dart';
+export 'src/em_message_body.dart';
 
 export 'src/em_sdk_plugin.dart';
