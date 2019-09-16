@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/em_sdk_method.dart';
 
 import 'em_chat_manager.dart';
+import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
+import 'em_sdk_method.dart';
 
 class EMClient {
 

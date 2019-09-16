@@ -1,6 +1,10 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+
+import '../im_flutter_sdk.dart';
+import 'em_message_body.dart';
 
 /// EMOptions - options to initialize SDK context.
 class EMOptions {
@@ -88,21 +92,21 @@ class EMMessage {
   EMMessage.createReceiveMessage(Type type)
       : this(type: type, direction: Direction.RECEIVE);
   EMMessage.createTxtSendMessage(String content, String userName)
-      : this(direction: Direction.SEND);
+      : this(direction: Direction.SEND, to: userName, type: Type.TXT, body: EMTextMessageBody(content) );
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
       : this(direction: Direction.SEND);
   EMMessage.createImageSendMessage(
       String filePath, bool sendOriginalImage, String userName)
-      : this(direction: Direction.SEND);
+      : this(direction: Direction.SEND, type: Type.IMAGE, body: EMImageMessageBody(File(filePath), null, sendOriginalImage), to: userName);
   EMMessage.createVideoSendMessage(String videoFilePath, String imageThumbPath,
       int timeLength, String userName)
       : this(direction: Direction.SEND);
   EMMessage.createLocationSendMessage(double latitude, double longitude,
       String locationAddress, String userName)
-      : this(direction: Direction.SEND);
+      : this(direction: Direction.SEND, type: Type.LOCATION, body: EMLocationMessageBody(locationAddress, latitude, longitude), to: userName);
   EMMessage.createFileSendMessage(String filePath, String userName)
-      : this(direction: Direction.SEND);
+      : this(direction: Direction.SEND, type: Type.FILE, body: EMFileMessageBody(filePath), to: userName);
 
   bool _deliverAcked;
   set deliverAcked(bool acked) {
@@ -141,6 +145,8 @@ class EMMessage {
   dynamic getAttribute(String attr) {
     return _attributes[attr];
   }
+
+  /// TODO: setMessageStatusCallback (EMCallBack callback)
 
   Map<String, dynamic> ext() {
     return null;
