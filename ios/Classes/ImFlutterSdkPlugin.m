@@ -10,7 +10,7 @@
 // em_client
 + (void)registerClientChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
-                                        methodChannelWithName:@"em_client"
+                                        methodChannelWithName:@"com.easemob.im/em_client"
                                                binaryMessenger:[registrar messenger]];
     ImClientPlugin* instance = [[ImClientPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
@@ -19,7 +19,7 @@
 // em_chat_manager
 + (void)registerChatManagerChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
-                                        methodChannelWithName:@"em_chat_manager"
+                                        methodChannelWithName:@"com.easemob.im/em_chat_manager"
                                                binaryMessenger:[registrar messenger]];
     ImChatManagerPlugin* instance = [[ImChatManagerPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
@@ -28,7 +28,7 @@
 // em_contactmanager
 + (void)registerContactManagerChannel:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
-                                        methodChannelWithName:@"em_contact_manager"
+                                        methodChannelWithName:@"com.easemob.im/em_contact_manager"
                                             binaryMessenger:[registrar messenger]];
     ImContactManagerPlugin* instance = [[ImContactManagerPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
