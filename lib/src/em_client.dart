@@ -38,13 +38,13 @@ class EMClient {
       EventChannel('$_channelPrefix/login_callback');
 
   /// login - login server with username/password.
-  void login(
-      final String id, final String password, {onSuccess: Success, onError: Error, onProgress: Progress}) {
+  void login(final String id, final String password,
+      {onSuccess: Success, onError: Error, onProgress: Progress}) {
     // only 1 login callback at once
     _loginSuccessCallbacks.add(onSuccess);
     _loginErrorCallbacks.add(onError);
     _loginProgressCallbacks.add(onProgress);
-   
+
     _emClientChannel
         .invokeMethod(EMSDKMethod.Login, {id: id, password: password});
   }
@@ -101,7 +101,7 @@ class EMClient {
   }
 
   final _migrate2xCallbacks = List<Migrate2x>();
-  final _clientEventChannel = EventChannel('$_channelPrefix/client');
+  final _clientEventChannel = EventChannel('$_channelPrefix/client_event');
 
   /// onMigrate2x - SDK EMClient.addClientListener().
   void onMigrate2x(final Migrate2x callback) {
@@ -110,7 +110,8 @@ class EMClient {
 
   final _connectionConnectedCallbacks = List<Connected>();
   final _connectionDisconnectedCallbacks = List<Disconnected>();
-  final _connectionEventChannel = EventChannel('$_channelPrefix/connection');
+  final _connectionEventChannel =
+      EventChannel('$_channelPrefix/connection_event');
 }
 
 /// Migrate2x - SDK EMClientListener.onMigrate2x() function.
@@ -118,12 +119,15 @@ typedef void Migrate2x(bool success);
 
 /// Connected - SDK EMConnectionListener.onConnected() to react upon connection connected.
 typedef void Connected();
+
 /// Disconnected - SDK EMConnectionListener.onDisconnected() to react upon conection disconnected.
 typedef void Disconnected(int errorCode);
 
 /// Success - SDK EMCallback.onSuccess() callback.
 typedef void Success();
+
 /// Error - SDK EMCallback.onError() callback.
 typedef void Error(int code, String error);
+
 /// Progress - SDK EMCallback.onProgress() callback.
 typedef void Progress(int progress, String status);
