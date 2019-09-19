@@ -12,4 +12,6 @@ class EMChatManager {
     // todo flutter message to string.
     _chatManagerChannel.invokeMethod(EMSDKMethod.SendMessage);
   }
+
+//  static Function(Message msg, int left) onMessageReceived;
 }
