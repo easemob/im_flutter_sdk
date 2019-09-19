@@ -27,8 +27,9 @@ class EMClient {
     return _instance ?? EMClient._internal();
   }
 
-  void init(EMOptions options) {
-    _emClientChannel.invokeMethod(EMSDKMethod.Init, {"appkey": options.appKey});
+  Future<void> init(EMOptions options) {
+    return _emClientChannel
+        .invokeMethod<void>(EMSDKMethod.init, {"appkey": options.appKey});
   }
 
   final _loginSuccessCallbacks = List<Success>();
@@ -38,15 +39,56 @@ class EMClient {
       EventChannel('$_channelPrefix/login_callback');
 
   /// login - login server with username/password.
-  void login(final String id, final String password,
+  Future<void> login(final String id, final String password,
       {onSuccess: Success, onError: Error, onProgress: Progress}) {
     // only 1 login callback at once
     _loginSuccessCallbacks.add(onSuccess);
     _loginErrorCallbacks.add(onError);
     _loginProgressCallbacks.add(onProgress);
 
-    _emClientChannel
-        .invokeMethod(EMSDKMethod.Login, {id: id, password: password});
+    return _emClientChannel
+        .invokeMethod<void>(EMSDKMethod.login, {id: id, password: password});
+  }
+
+  Future<void> loginWithToken(String userName, String token,
+      {onSuccess: Success, onError: Error, onProgress: Progress}) {
+    //TODO: set callback accordingly
+    return _emClientChannel.invokeMethod<void>(
+        EMSDKMethod.loginWithToken, {userName: userName, token: token});
+  }
+
+  Future<void> logout(bool unbindToken,
+      {onSuccess: Success, onError: Error, onProgress: Progress}) {
+    //TODO: set callback accordingly
+    return _emClientChannel
+        .invokeMethod<void>(EMSDKMethod.logout, {unbindToken: unbindToken});
+  }
+
+  Future<void> changeAppkey(String appKey) {
+    return _emClientChannel
+        .invokeMethod<void>(EMSDKMethod.changeAppKey, {appKey: appKey});
+  }
+
+  Future<String> getCurrentUser() {
+    return _emClientChannel.invokeMethod<String>(EMSDKMethod.getCurrentUser);
+  }
+
+  Future<void> getUserTokenFromServer(
+      final String userName, final String password,
+      {onSuccess: Success, onError: Error, onProgress: Progress}) {
+    return _emClientChannel.invokeMethod<void>(
+        EMSDKMethod.getUserTokenFromServer,
+        {userName: userName, password: password});
+  }
+
+  Future<void> setDebugMode(bool debugMode) {
+    return _emClientChannel
+        .invokeMethod<void>(EMSDKMethod.setDebugMode, {debugMode: debugMode});
+  }
+
+  Future<bool> updateCurrentUserNick(String nickName) {
+    return _emClientChannel.invokeMethod<bool>(
+        EMSDKMethod.updateCurrentUserNick, {nickName: nickName});
   }
 
   void _onLoginEvent(event) {
