@@ -49,23 +49,21 @@ class EMClient {
         .invokeMethod(EMSDKMethod.Login, {id: id, password: password});
   }
 
-  void _onLoginEvent(Object event) {
-    if (event == 'success') {
+  void _onLoginEvent(event) {
+    if (event.type == 'success') {
       for (var callback in _loginSuccessCallbacks) {
         callback();
       }
-    } else if (event == 'progress') {
-      // TODO: get progess/status from event object.
+    } else if (event.type == 'progress') {
       for (var callback in _loginProgressCallbacks) {
-        callback(25, '%25');
+        callback(event.progress, event.status);
       }
     }
   }
 
-  void _onLoginError(Object error) {
-    // TODO： get code/status from error object.
+  void _onLoginError(error) {
     for (var callback in _loginErrorCallbacks) {
-      callback(1, 'error');
+      callback(error.code, error.error);
     }
   }
 
@@ -78,24 +76,22 @@ class EMClient {
   }
 
   /// Event handler methods.
-  void _onMigrate2x(Object event) {
-    if (event == 'migrate2x') {
-      //TODO: onMigrate2X's variable from event
+  void _onMigrate2x(event) {
+    if (event.type == 'migrate2x') {
       for (var callback in _migrate2xCallbacks) {
-        callback(true);
+        callback(event.status);
       }
     }
   }
 
-  void _onConnectionEvent(Object event) {
-    if (event == 'connected') {
+  void _onConnectionEvent(event) {
+    if (event.type == 'connected') {
       for (var callback in _connectionConnectedCallbacks) {
         callback();
       }
-    } else if (event == 'disconnected') {
-      // TODO: get error code variable from event
+    } else if (event.type == 'disconnected') {
       for (var callback in _connectionDisconnectedCallbacks) {
-        callback(1);
+        callback(event.errorCode);
       }
     }
   }
