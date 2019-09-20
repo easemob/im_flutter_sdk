@@ -13,4 +13,6 @@ static const String setDebugMode                = 'setDebugMode';
 static const String updateCurrentUserNick       = 'updateCurrentUserNick';
 
 static const String sendMessage                 = 'sendMessage';
+
+static const String onConnectionDidChanged      = 'onConnectionDidChanged';
 }
