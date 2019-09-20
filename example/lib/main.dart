@@ -8,7 +8,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> implements EMConnectionListener {
 
 
   @override
@@ -22,6 +22,9 @@ class _MyAppState extends State<MyApp> {
     }, onError: (code, desc){
       print("login error");
     });
+
+    EMClient.getInstance().addConnectionListener(this);
+
     super.initState();
   }
 
@@ -40,5 +43,18 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  /// EMConnectionListener
+  @override
+  void onConnected() {
+    // TODO: implement onConnected
+    print("网络连接成功");
+  }
+
+  @override
+  void onDisconnected() {
+    // TODO: implement onDisconnected
+    print("网络连接断开");
   }
 }

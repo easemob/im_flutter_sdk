@@ -16,8 +16,7 @@
 
 static NSString *EMMethodKeyInit = @"init";
 static NSString *EMMethodKeyLogin = @"login";
-static NSString *EMMethodKeyConnect = @"connect";
-static NSString *EMMethodKeyDisconnect = @"disconnect";
+static NSString *EMMethodKeyConnectionDidChanged = @"onConnectionDidChanged";
 
 
 static NSString *EMMethodKeyDebugLog = @"debugLog";

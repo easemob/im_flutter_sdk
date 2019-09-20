@@ -73,7 +73,17 @@
 }
 @end
 
+@interface ImClientPlugin() <EMClientDelegate>
+@end
+
 @implementation ImClientPlugin
+
+- (instancetype)initWithChannel:(FlutterMethodChannel *)aChannel {
+    if(self = [super initWithChannel:aChannel]) {
+
+    }
+    return self;
+}
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([EMMethodKeyInit isEqualToString:call.method]) {
@@ -92,6 +102,7 @@
         if (appKey) {
             EMOptions *options = [EMOptions optionsWithAppkey:appKey];
             [EMClient.sharedClient initializeSDKWithOptions:options];
+            [EMClient.sharedClient addDelegate:self delegateQueue:nil];
         }else {
             
         }
@@ -124,6 +135,13 @@
             result(aError ? [self emError2FlutterError:aError] : @"");
         }];
     }
+}
+
+#pragma - mark EMClientDelegate
+- (void)connectionStateDidChange:(EMConnectionState)connectionState {
+    BOOL isConnected = connectionState == EMConnectionConnected;
+    [self.channel invokeMethod:EMMethodKeyConnectionDidChanged
+                     arguments:@{@"isConnected" : [NSNumber numberWithBool:isConnected]}];
 }
 
 @end
