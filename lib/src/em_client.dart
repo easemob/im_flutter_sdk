@@ -38,20 +38,19 @@ class EMClient {
   }
 
   void init(EMOptions options) {
-    _emClientChannel.invokeMethod(EMSDKMethod.Init, {"appkey": options.appKey});
+    _emClientChannel.invokeMethod(EMSDKMethod.init, {"appkey": options.appKey});
     _addNativeMethodCallHandler();
   }
 
   static void _addNativeMethodCallHandler() {
     _emClientChannel.setMethodCallHandler((MethodCall call){
-
         return;
     });
   }
 
   /// login - login server with username/password.
   void login({@required String username, @required String password, onSuccess(), onError(int errorCode, String desc)}) {
-    Future<String> result = _emClientChannel.invokeMethod(EMSDKMethod.Login,
+    Future<String> result = _emClientChannel.invokeMethod(EMSDKMethod.login,
         {'username': username, 'password': password});
     result.then((response){
       if(response == '') {
@@ -69,15 +68,3 @@ class EMClient {
   EMContactManager contactManager() {
     return _contactManager;
   }
-}
-
-/// Migrate2x - SDK EMClientListener.onMigrate2x() function.
-typedef void Migrate2x(bool success);
-
-/// Connected - SDK EMConnectionListener.onConnected() to react upon connection connected.
-typedef void Connected();
-/// Disconnected - SDK EMConnectionListener.onDisconnected() to react upon connection disconnected.
-typedef void Disconnected(int errorCode);
-
-/// Progress - SDK EMCallback.onProgress() callback.
-typedef void Progress(int progress, String status);
