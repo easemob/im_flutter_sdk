@@ -7,32 +7,18 @@
 
 #import <Foundation/Foundation.h>
 
+#ifdef DEBUG
+#define EMLog(...) NSLog(__VA_ARGS__);
+#define LOG_METHOD EMLog(@"%s", __func__);
+#else
+#define EMLog(...); #define LOG_METHOD;
+#endif
+
 static NSString *EMMethodKeyInit = @"init";
+static NSString *EMMethodKeyLogin = @"login";
 static NSString *EMMethodKeyConnect = @"connect";
 static NSString *EMMethodKeyDisconnect = @"disconnect";
-static NSString *RCMethodKeyConfig = @"config";
-static NSString *RCMethodKeySendMessage = @"sendMessage";
-static NSString *RCMethodKeyRefreshUserInfo = @"refreshUserInfo";
-static NSString *RCMethodKeyJoinChatRoom = @"joinChatRoom";
-static NSString *RCMethodKeyQuitChatRoom = @"quitChatRoom";
-static NSString *RCMethodKeyGetHistoryMessage = @"getHistoryMessage";
-static NSString *RCMethodKeyGetMessage = @"GetMessage";
-static NSString *RCMethodKeyGetConversationList = @"getConversationList";
-static NSString *RCMethodKeyGetChatRoomInfo = @"getChatRoomInfo";
-static NSString *RCMethodKeyClearMessagesUnreadStatus = @"clearMessagesUnreadStatus";
-static NSString *RCMethodKeySetServerInfo = @"setServerInfo";
-static NSString *RCMethodKeySetCurrentUserInfo = @"setCurrentUserInfo";
-static NSString *RCMethodKeyInsertIncomingMessage = @"insertIncomingMessage";
-static NSString *RCMethodKeyInsertOutgoingMessage = @"insertOutgoingMessage";
-static NSString *RCMethodKeyGetTotalUnreadCount = @"getTotalUnreadCount";
-static NSString *RCMethodKeyGetUnreadCountTargetId = @"getUnreadCountTargetId";
-static NSString *RCMethodKeyGetUnreadCountConversationTypeList = @"getUnreadCountConversationTypeList";
-static NSString *RCMethodKeySetConversationNotificationStatus = @"setConversationNotificationStatus";
-static NSString *RCMethodKeyGetConversationNotificationStatus = @"getConversationNotificationStatus";
-static NSString *RCMethodKeyRemoveConversation = @"RemoveConversation";
-static NSString *RCMethodKeyDeleteMessages = @"DeleteMessages";
-static NSString *RCMethodKeyDeleteMessageByIds = @"DeleteMessageByIds";
-static NSString *RCMethodKeyAddToBlackList = @"AddToBlackList";
-static NSString *RCMethodKeyRemoveFromBlackList = @"RemoveFromBlackList";
-static NSString *RCMethodKeyGetBlackListStatus = @"GetBlackListStatus";
-static NSString *RCMethodKeyGetBlackList = @"GetBlackList";
+
+
+static NSString *EMMethodKeyDebugLog = @"debugLog";
+static NSString *EMMethodKeyErrorLog = @"errorLog";

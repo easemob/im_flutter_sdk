@@ -1,17 +1,23 @@
-import 'package:flutter/services.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 
-void main() {
-  const MethodChannel channel = MethodChannel('im_flutter_sdk');
+import '../lib/im_flutter_sdk.dart';
 
+void main() {
+  // setup EMClient
+    EMOptions options = EMOptions(appKey: 'easemob#im_demo');
+    EMClient client = EMClient.getInstance();
+  
   setUp(() {
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      return '42';
-    });
+    client.init(options);
+  });
+
+  test('client listeners get called once migrate to 2x',
+  () {
+    
   });
 
   tearDown(() {
-    channel.setMockMethodCallHandler(null);
+   
   });
-
 }

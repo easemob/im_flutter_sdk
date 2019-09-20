@@ -11,3 +11,4 @@ build/
 **/pubspec.lock
 **/Runner.xcworkspace/
 **/Podfile.lock
+example/ios/Flutter/flutter_export_environment.sh

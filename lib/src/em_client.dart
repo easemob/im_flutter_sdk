@@ -1,61 +1,65 @@
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/em_sdk_method.dart';
+import 'package:meta/meta.dart';
 
 import 'dart:async';
 
 import 'em_chat_manager.dart';
+import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
+import 'em_log.dart';
+import 'em_sdk_method.dart';
+
 
 class EMClient {
 
-//  Future<dynamic> platformCallHandler(MethodCall methodCall) {
-//
-//    return Future.value(true);
-//  }
-//
-//  static const MethodChannel _emClientChannel = const MethodChannel('em_client')
-//  .setMethodCallHandler(platformCallHandler);
+  static const _channelPrefix = 'com.easemob.im';
+  static const MethodChannel _emClientChannel =
+  const MethodChannel('$_channelPrefix/em_client');
 
-  static const MethodChannel _emClientChannel = const MethodChannel('em_client');
 
-  EMChatManager _chatManager = new EMChatManager();
-  EMContactManager _contactManager = new EMContactManager();
+  static final EMLog _log = EMLog();
+  final EMChatManager _chatManager = EMChatManager(log: _log);
+  final EMContactManager _contactManager = EMContactManager(log: _log);
 
+  static EMClient get instance => getInstance();
   static EMClient _instance;
+
+  factory EMClient() => getInstance();
+
   EMClient._internal() {
-    // 日志?
+    // 初始化
   }
+
   static EMClient getInstance() {
-    if (_instance == null) {
+  if (_instance == null) {
       _instance = new EMClient._internal();
-    }
+  }
     return _instance;
   }
 
-
-  static void _addNativeMethodCallHandler() {
-    _emClientChannel.setMethodCallHandler((MethodCall call) {
-      // todo
-      return;
-    });
-  }
-
-//  static Function() onOtherDeviceLogined;
-  
   void init(EMOptions options) {
     _emClientChannel.invokeMethod(EMSDKMethod.Init, {"appkey": options.appKey});
     _addNativeMethodCallHandler();
   }
 
-//  Future<bool> createAccount(String username, String password) async {
-//    _emClientChannel.invokeMethod(EMSDKMethod.Register,
-//        {"username": username, "password": password});
-//      return await false;
-//  }
+  static void _addNativeMethodCallHandler() {
+    _emClientChannel.setMethodCallHandler((MethodCall call){
 
-  static void login() {
-    _emClientChannel.invokeMethod(EMSDKMethod.Login);
+        return;
+    });
+  }
+
+  /// login - login server with username/password.
+  void login({@required String username, @required String password, onSuccess(), onError(int errorCode, String desc)}) {
+    Future<String> result = _emClientChannel.invokeMethod(EMSDKMethod.Login,
+        {'username': username, 'password': password});
+    result.then((response){
+      if(response == '') {
+        if (onSuccess != null) onSuccess();
+      }else {
+        if (onError != null) onError(int.parse(response), "error");
+      }
+    });
   }
 
   EMChatManager chatManager() {
@@ -66,3 +70,14 @@ class EMClient {
     return _contactManager;
   }
 }
+
+/// Migrate2x - SDK EMClientListener.onMigrate2x() function.
+typedef void Migrate2x(bool success);
+
+/// Connected - SDK EMConnectionListener.onConnected() to react upon connection connected.
+typedef void Connected();
+/// Disconnected - SDK EMConnectionListener.onDisconnected() to react upon connection disconnected.
+typedef void Disconnected(int errorCode);
+
+/// Progress - SDK EMCallback.onProgress() callback.
+typedef void Progress(int progress, String status);
