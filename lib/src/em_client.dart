@@ -31,9 +31,9 @@ class EMClient {
   }
 
   static EMClient getInstance() {
-  if (_instance == null) {
+    if (_instance == null) {
       _instance = new EMClient._internal();
-  }
+    }
     return _instance;
   }
 
@@ -43,19 +43,21 @@ class EMClient {
   }
 
   static void _addNativeMethodCallHandler() {
-    _emClientChannel.setMethodCallHandler((MethodCall call){
-        return;
+    _emClientChannel.setMethodCallHandler((MethodCall call) {
+      return;
     });
   }
 
   /// login - login server with username/password.
-  void login({@required String username, @required String password, onSuccess(), onError(int errorCode, String desc)}) {
+  void login(
+      {@required String username, @required String password, onSuccess(), onError(
+          int errorCode, String desc)}) {
     Future<String> result = _emClientChannel.invokeMethod(EMSDKMethod.login,
         {'username': username, 'password': password});
-    result.then((response){
-      if(response == '') {
+    result.then((response) {
+      if (response == '') {
         if (onSuccess != null) onSuccess();
-      }else {
+      } else {
         if (onError != null) onError(int.parse(response), "error");
       }
     });
@@ -68,3 +70,4 @@ class EMClient {
   EMContactManager contactManager() {
     return _contactManager;
   }
+}
