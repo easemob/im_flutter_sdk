@@ -112,7 +112,7 @@
 - (void)createAccount:(id)arg result:(FlutterResult)result {
     if([arg isKindOfClass:[NSDictionary class]]) {
         NSDictionary *param = (NSDictionary *)arg;
-        NSString *username = param[@"username"];
+        NSString *username = param[@"userName"];
         NSString *password = param[@"password"];
         [EMClient.sharedClient registerWithUsername:username
                                              password:password
@@ -126,7 +126,7 @@
 - (void)login:(id)arg result:(FlutterResult)result {
     if([arg isKindOfClass:[NSDictionary class]]) {
         NSDictionary *param = (NSDictionary *)arg;
-        NSString *username = param[@"username"];
+        NSString *username = param[@"userName"];
         NSString *password = param[@"password"];
         [EMClient.sharedClient loginWithUsername:username
                                         password:password

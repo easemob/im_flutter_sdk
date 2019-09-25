@@ -4,6 +4,7 @@
 .packages
 .pub/
 
+.vscode/
 build/
 .gradle
 .idea/
