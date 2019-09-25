@@ -26,6 +26,7 @@ class EMClient {
   String _currentUser;
   bool _loggedIn = false;
   bool _connected = false;
+  EMOptions _options;
 
   factory EMClient.getInstance() {
     return _instance = _instance ?? EMClient._internal();
@@ -48,6 +49,7 @@ class EMClient {
 
   /// init - init Easemob SDK client with specified [options] instance.
   void init(EMOptions options) {
+    _options = options;
     _emClientChannel.invokeMethod(EMSDKMethod.init, {"appkey": options.appKey});
   }
 
@@ -59,9 +61,9 @@ class EMClient {
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.createAccount, {userName: userName, password: password});
-    result.then((error) {
-      if (error != null) {
-        if (onError != null) onError(error['code'], error['desc']);
+    result.then((response) {
+      if (!response['success']) {
+        if (onError != null) onError(response['code'], response['desc']);
       }
     });
   }
@@ -75,8 +77,8 @@ class EMClient {
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.login, {userName: userName, password: password});
-    result.then((error) {
-      if (error == null) {
+    result.then((response) {
+      if (response['success']) {
         _loggedIn = true;
         if (onSuccess != null) {
           // set current user name
@@ -84,7 +86,7 @@ class EMClient {
           onSuccess();
         }
       } else {
-        if (onError != null) onError(error['code'], error['desc']);
+        if (onError != null) onError(response['code'], response['desc']);
       }
     });
   }
@@ -98,12 +100,12 @@ class EMClient {
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.login, {userName: userName, token: token});
-    result.then((error) {
-      if (error == null) {
+    result.then((response) {
+      if (response['success']) {
         _loggedIn = true;
         if (onSuccess != null) onSuccess();
       } else {
-        if (onError != null) onError(error['code'], error['desc']);
+        if (onError != null) onError(response['code'], response['desc']);
       }
     });
   }
@@ -118,11 +120,11 @@ class EMClient {
       {bool unbindToken = false, onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.logout, {unbindToken: unbindToken});
-    result.then((error) {
-      if (error == null) {
+    result.then((response) {
+      if (response['success']) {
         _loggedIn = false;
       } else {
-        if (onError != null) onError(error['code'], error['desc']);
+        if (onError != null) onError(response['code'], response['desc']);
       }
     });
   }
@@ -132,11 +134,86 @@ class EMClient {
   void changeAppkey({@required String appKey, onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.changeAppKey, {appKey: appKey});
-    result.then((error) {
-      if (error != null) {
-        if (onError != null) onError(error['code'], error['desc']);
+    result.then((response) {
+      if (!response['success']) {
+        if (onError != null) onError(response['code'], response['desc']);
       }
     });
+  }
+
+  /// setDebugMode - set to run in debug mode.
+  void setDebugMode(bool debugMode) {
+    _emClientChannel
+        .invokeMethod(EMSDKMethod.setDebugMode, {debugMode: debugMode});
+  }
+
+  /// updateCurrentUserNick - update user nick with [nickName].
+  Future<bool> updateCurrentUserNick(String nickName) async {
+    Map<String, dynamic> result = await _emClientChannel
+        .invokeMethod(EMSDKMethod.updateCurrentUserNick, {nickName: nickName});
+    if (result['success']) {
+      return result['status'] as bool;
+    } else {
+      return false;
+    }
+  }
+
+  void uploadLog({onSuccess(), onError(int code, String desc)}) {
+    Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.uploadLog);
+    result.then((response) {
+      if (response['success']) {
+        if (onSuccess != null) {
+          onSuccess();
+        } else {
+          if (onError != null) {
+            onError(response['code'], response['desc']);
+          }
+        }
+      }
+    });
+  }
+
+  /// getOptions - return [EMOptions] inited.
+  EMOptions getOptions() {
+    return _options;
+  }
+
+  Future<String> compressLogs(onError(int code, String desc)) async {
+    Map<String, dynamic> result =
+        await _emClientChannel.invokeMethod(EMSDKMethod.compressLogs);
+    if (result['success']) {
+      return result['logs'] as String;
+    } else {
+      if (onError != null) onError(result['code'], result['desc']);
+      return '';
+    }
+  }
+
+  /// getLoggedInDevicesFromServer - return all logged in devices.
+  /// Access controlled by [userName]/[password] and if error occured,
+  /// [onError] is called.
+  Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
+      {@required String userName,
+      @required String password,
+      onError(int code, String desc)}) async {
+    Map<String, dynamic> result = await _emClientChannel.invokeMethod(
+        EMSDKMethod.getLoggedInDevicesFromServer,
+        {userName: userName, password: password});
+    if (result['success']) {
+      return _convertDeviceList(result['devices']);
+    } else {
+      if (onError != null) onError(result['code'], result['desc']);
+      return null;
+    }
+  }
+
+  List<EMDeviceInfo> _convertDeviceList(List deviceList) {
+    var result = List<EMDeviceInfo>();
+    for (var device in deviceList) {
+      result.add(
+          EMDeviceInfo(device['resource'], device['UUID'], device['name']));
+    }
+    return result;
   }
 
   /// getCurrentUser - get current user name.
@@ -155,7 +232,7 @@ class EMClient {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.login, {userName: userName, password: password});
     result.then((response) {
-      if (!response['error']) {
+      if (!response['success']) {
         if (onSuccess != null) onSuccess(response['token']);
       } else {
         if (onError != null) onError(response['code'], response['desc']);

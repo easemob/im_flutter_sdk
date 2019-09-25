@@ -11,6 +11,10 @@ class EMSDKMethod {
   static const String getUserTokenFromServer = 'getUserTokenFromServer';
   static const String setDebugMode = 'setDebugMode';
   static const String updateCurrentUserNick = 'updateCurrentUserNick';
+  static const String uploadLog = 'uploadLog';
+  static const String compressLogs = 'compressLogs';
+  static const String getLoggedInDevicesFromServer =
+      'getLoggedInDevicesFromServer';
 
   static const String sendMessage = 'sendMessage';
 
