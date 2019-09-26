@@ -19,7 +19,9 @@ class EMClient {
   final EMChatManager _chatManager = EMChatManager(log: _log);
   final EMContactManager _contactManager = EMContactManager(log: _log);
 
-  final _connectionListenerList = List<EMConnectionListener>();
+  final _connectionListeners = List<EMConnectionListener>();
+  final _multiDeviceListeners = List<EMMultiDeviceListener>();
+  Function _clientListenerFunc;
   static EMClient _instance;
 
   /// instance fields
@@ -27,6 +29,7 @@ class EMClient {
   bool _loggedIn = false;
   bool _connected = false;
   EMOptions _options;
+  String _accessToken;
 
   factory EMClient.getInstance() {
     return _instance = _instance ?? EMClient._internal();
@@ -42,6 +45,11 @@ class EMClient {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onConnectionDidChanged) {
         _onConnectionChanged(argMap);
+      } else if (call.method == EMSDKMethod.onClientMigrate2x) {
+        // client listener onMigrate2x
+        _clientListenerFunc(argMap["status"]);
+      } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
+        _onMultiDeviceEvent(argMap);
       }
       return;
     });
@@ -60,7 +68,8 @@ class EMClient {
       @required String password,
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.createAccount, {userName: userName, password: password});
+        EMSDKMethod.createAccount,
+        {"userName": userName, "password": password});
     result.then((response) {
       if (!response['success']) {
         if (onError != null) onError(response['code'], response['desc']);
@@ -76,7 +85,7 @@ class EMClient {
       onSuccess(),
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.login, {userName: userName, password: password});
+        EMSDKMethod.login, {"userName": userName, "password": password});
     result.then((response) {
       if (response['success']) {
         _loggedIn = true;
@@ -98,8 +107,8 @@ class EMClient {
       @required String token,
       onSuccess(),
       onError(int errorCode, String desc)}) {
-    Future<Map> result = _emClientChannel
-        .invokeMethod(EMSDKMethod.login, {userName: userName, token: token});
+    Future<Map> result = _emClientChannel.invokeMethod(
+        EMSDKMethod.login, {"userName": userName, "token": token});
     result.then((response) {
       if (response['success']) {
         _loggedIn = true;
@@ -119,7 +128,7 @@ class EMClient {
   void logout(
       {bool unbindToken = false, onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
-        .invokeMethod(EMSDKMethod.logout, {unbindToken: unbindToken});
+        .invokeMethod(EMSDKMethod.logout, {"unbindToken": unbindToken});
     result.then((response) {
       if (response['success']) {
         _loggedIn = false;
@@ -131,9 +140,9 @@ class EMClient {
 
   /// changeAppKey - change app key with new [appKey].
   /// Call [onError] if something wrong.
-  void changeAppkey({@required String appKey, onError(int code, String desc)}) {
+  void changeAppKey({@required String appKey, onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
-        .invokeMethod(EMSDKMethod.changeAppKey, {appKey: appKey});
+        .invokeMethod(EMSDKMethod.changeAppKey, {"appKey": appKey});
     result.then((response) {
       if (!response['success']) {
         if (onError != null) onError(response['code'], response['desc']);
@@ -144,13 +153,13 @@ class EMClient {
   /// setDebugMode - set to run in debug mode.
   void setDebugMode(bool debugMode) {
     _emClientChannel
-        .invokeMethod(EMSDKMethod.setDebugMode, {debugMode: debugMode});
+        .invokeMethod(EMSDKMethod.setDebugMode, {"debugMode": debugMode});
   }
 
   /// updateCurrentUserNick - update user nick with [nickName].
   Future<bool> updateCurrentUserNick(String nickName) async {
-    Map<String, dynamic> result = await _emClientChannel
-        .invokeMethod(EMSDKMethod.updateCurrentUserNick, {nickName: nickName});
+    Map<String, dynamic> result = await _emClientChannel.invokeMethod(
+        EMSDKMethod.updateCurrentUserNick, {"nickName": nickName});
     if (result['success']) {
       return result['status'] as bool;
     } else {
@@ -198,7 +207,7 @@ class EMClient {
       onError(int code, String desc)}) async {
     Map<String, dynamic> result = await _emClientChannel.invokeMethod(
         EMSDKMethod.getLoggedInDevicesFromServer,
-        {userName: userName, password: password});
+        {"userName": userName, "password": password});
     if (result['success']) {
       return _convertDeviceList(result['devices']);
     } else {
@@ -216,6 +225,91 @@ class EMClient {
     return result;
   }
 
+  /// kickDevice - kick device out.
+  /// Access control by [userName]/[password] pair, device identified by [resource].
+  /// If anything wrong, [onError] will be called.
+  void kickDevice(
+      {@required String userName,
+      @required String password,
+      @required String resource,
+      onError(int code, String desc)}) {
+    Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.kickDevice,
+        {"userName": userName, "password": password, "resource": resource});
+    result.then((response) {
+      if (!response['success']) {
+        if (onError != null) onError(response['code'], response['desc']);
+        return null;
+      }
+    });
+  }
+
+  /// kickAllDevices - kick out all devices by force.
+  /// Access control by [userName]/[password] pair. If anything wrong, [onError] will be called.
+  void kickAllDevices(
+      {@required String userName,
+      @required String password,
+      onError(int code, String desc)}) {
+    Future<Map> result = _emClientChannel.invokeMethod(
+        EMSDKMethod.kickAllDevices,
+        {"userName": userName, "password": password});
+    result.then((response) {
+      if (!response['success']) {
+        if (onError != null) onError(response['code'], response['desc']);
+        return null;
+      }
+    });
+  }
+
+  /// sendFCMTokenToServer - send FCM token [fcmToken] to server.
+  void sendFCMTokenToServer({@required String fcmToken}) {
+    _emClientChannel
+        .invokeMethod(EMSDKMethod.sendFCMTokenToServer, {"token": fcmToken});
+  }
+
+  /// sendHMSPushTokenToServer - send HMS push token [token] of app [appId] to server.
+  void sendHMSPushTokenToServer({String appId, @required String token}) {
+    _emClientChannel.invokeMethod(EMSDKMethod.sendHMSPushTokenToServer,
+        {"appId": appId ?? null, "token": token});
+  }
+
+  /// isFCMAvailable - fcm available?
+  bool isFCMAvailable() {
+    return _options.useFcm;
+  }
+
+  /// getAccessToken - Returns local cached access token.
+  String getAccessToken() {
+    return _accessToken;
+  }
+
+  /// getDeviceInfo - Returns device info.
+  Future<Map<String, dynamic>> getDeviceInfo() async {
+    Map<String, dynamic> result =
+        await _emClientChannel.invokeMethod(EMSDKMethod.getDeviceInfo);
+    if (result['success']) {
+      return (result['deviceInfo']);
+    } else {
+      return null;
+    }
+  }
+
+  /// check - Validates current [userName]/[password] login.
+  /// Check result returns in callback [onResult].
+  void check(
+      {@required String userName,
+      @required String password,
+      onResult(EMCheckType type, int result, String desc)}) {
+    Future<Map> result = _emClientChannel.invokeMethod(
+        EMSDKMethod.check, {"userName": userName, "password": password});
+    result.then((response) {
+      if (response['success']) {
+        if (onResult != null)
+          onResult(response['type'], response['result'], response['desc']);
+        return null;
+      }
+    });
+  }
+
   /// getCurrentUser - get current user name.
   /// Return null if not successfully login IM server yet.
   String getCurrentUser() {
@@ -230,9 +324,10 @@ class EMClient {
       onSuccess(String token),
       onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.login, {userName: userName, password: password});
+        EMSDKMethod.login, {"userName": userName, "password": password});
     result.then((response) {
-      if (!response['success']) {
+      if (response['success']) {
+        _accessToken = response['token'];
         if (onSuccess != null) onSuccess(response['token']);
       } else {
         if (onError != null) onError(response['code'], response['desc']);
@@ -250,22 +345,68 @@ class EMClient {
     return _connected;
   }
 
+  /// getRobotsFromServer - return list of robots from server.
+  Future<List<EMContact>> getRobotsFromServer(
+      {onError(int code, String desc)}) async {
+    Map<String, dynamic> result =
+        await _emClientChannel.invokeMethod(EMSDKMethod.getRobotsFromServer);
+    if (result['success']) {
+      return _convertContactList(result['contacts']);
+    } else {
+      if (onError != null) onError(result['code'], result['desc']);
+      return null;
+    }
+  }
+
+  List<EMContact> _convertContactList(contactList) {
+    var result = List<EMContact>();
+    for (var contact in contactList) {
+      var c = EMContact(userName: contact["userName"]);
+      c.nickName = contact["nickName"];
+      result.add(c);
+    }
+    return result;
+  }
+
+  /// getChatConfigPrivate - TODO: implement later
+  /// EMChatConfigPrivate getChatConfigPrivate() {}
+
+  /* Listeners*/
+
+  /// addMultiDeviceListener - add multiple device [listener].
+  void addMultiDeviceListener(EMMultiDeviceListener listener) {
+    assert(listener != null);
+    _multiDeviceListeners.add(listener);
+  }
+
+  /// removeMultiDeviceListener - remove multiple device [listener].
+  void removeMultiDeviceListener(EMMultiDeviceListener listener) {
+    assert(listener != null);
+    _multiDeviceListeners.remove(listener);
+  }
+
   /// addConnectionListener - set listeners for connected/disconnected events.
   void addConnectionListener(EMConnectionListener listener) {
     assert(listener != null);
-    _connectionListenerList.add(listener);
+    _connectionListeners.add(listener);
   }
 
   /// removeConnectionListener - get rid of listener from receiving connection events.
   void removeConnectionListener(EMConnectionListener listener) {
     assert(listener != null);
-    _connectionListenerList.remove(listener);
+    _connectionListeners.remove(listener);
+  }
+
+  /// onMigrate2x - set client listener.
+  /// Upon receiving client migration event, this function [onMigrate2x] would be called.
+  void onMigrate2x(onMigrate2x(bool success)) {
+    _clientListenerFunc = onMigrate2x;
   }
 
   /// once connection changed, listeners to be informed.
   void _onConnectionChanged(Map map) {
     bool isConnected = map["isConnected"];
-    for (var listener in _connectionListenerList) {
+    for (var listener in _connectionListeners) {
       // TODO: to inform listners asynchronously
       if (isConnected) {
         _connected = true;
@@ -273,6 +414,18 @@ class EMClient {
       } else {
         _connected = false;
         listener.onDisconnected();
+      }
+    }
+  }
+
+  /// on multi device event emitted, call listeners func.
+  void _onMultiDeviceEvent(Map map) {
+    var event = map["event"];
+    for (var listener in _multiDeviceListeners) {
+      if (event >= EMContactGroupEvent.GROUP_ADD_ADMIN) {
+        listener.onGroupEvent(event, map['target'], map['userName']);
+      } else {
+        listener.onContactEvent(event, map['target'], map['ext']);
       }
     }
   }

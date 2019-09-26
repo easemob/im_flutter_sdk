@@ -169,6 +169,13 @@ class EMMessage {
   }
 }
 
+class EMContact {
+  final String userName;
+  String nickName;
+
+  EMContact({@required String userName}) : userName = userName;
+}
+
 // EMMessageBody - body of message.
 abstract class EMMessageBody {}
 
@@ -210,4 +217,14 @@ class EMDeviceInfo {
       : resource = resource,
         deviceUUID = deviceUUID,
         deviceName = deviceName;
+}
+
+/// EMCheckType - check type enumeration.
+enum EMCheckType {
+  ACCOUNT_VALIDATION,
+  GET_DNS_LIST_FROM_SERVER,
+  GET_TOKEN_FROM_SERVER,
+  DO_LOGIN,
+  DO_MSG_SEND,
+  DO_LOGOUT,
 }
