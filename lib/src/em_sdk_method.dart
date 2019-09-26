@@ -19,6 +19,7 @@ class EMSDKMethod {
   static const String sendHMSPushTokenToServer = 'sendHMSPushTokenToServer';
   static const String getDeviceInfo = 'getDeviceInfo';
   static const String getRobotsFromServer = 'getRobotsFromServer';
+  static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
   static const String check = 'check';
   static const String onClientMigrate2x = 'onClientMigrate2x';
   static const String getLoggedInDevicesFromServer =
