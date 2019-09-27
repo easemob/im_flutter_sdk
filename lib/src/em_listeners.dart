@@ -36,3 +36,19 @@ enum EMContactGroupEvent {
   GROUP_ADD_MUTE,
   GROUP_REMOVE_MUTE
 }
+
+abstract class EMContactEventListener {
+  void onContactAdded(String userName);
+  void onContactDeleted(String userName);
+  void onContactInvited(String userName, String reason);
+  void onFriendRequestAccepted(String userName);
+  void onFriendRequestDeclined(String userName);
+}
+
+enum EMContactChangeEvent {
+  CONTACT_ADD,
+  CONTACT_DELETE,
+  INVITED,
+  INVITATION_ACCEPTED,
+  INVITATION_DECLINED,
+}
