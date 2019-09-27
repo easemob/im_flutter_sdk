@@ -1,7 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
-
-import 'dart:async';
 
 import 'em_chat_manager.dart';
 import 'em_contact_manager.dart';
@@ -17,7 +17,8 @@ class EMClient {
 
   static final EMLog _log = EMLog();
   final EMChatManager _chatManager = EMChatManager(log: _log);
-  final EMContactManager _contactManager = EMContactManager(log: _log);
+  final EMContactManager _contactManager =
+      EMContactManager.getInstance(log: _log);
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
@@ -44,14 +45,14 @@ class EMClient {
     _emClientChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onConnectionDidChanged) {
-        _onConnectionChanged(argMap);
+        return _onConnectionChanged(argMap);
       } else if (call.method == EMSDKMethod.onClientMigrate2x) {
         // client listener onMigrate2x
         _clientListenerFunc(argMap["status"]);
       } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
-        _onMultiDeviceEvent(argMap);
+        return _onMultiDeviceEvent(argMap);
       }
-      return;
+      return null;
     });
   }
 
@@ -404,7 +405,7 @@ class EMClient {
   }
 
   /// once connection changed, listeners to be informed.
-  void _onConnectionChanged(Map map) {
+  Future<void> _onConnectionChanged(Map map) async {
     bool isConnected = map["isConnected"];
     for (var listener in _connectionListeners) {
       // TODO: to inform listners asynchronously
@@ -419,7 +420,7 @@ class EMClient {
   }
 
   /// on multi device event emitted, call listeners func.
-  void _onMultiDeviceEvent(Map map) {
+  Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
       if (event >= EMContactGroupEvent.GROUP_ADD_ADMIN) {

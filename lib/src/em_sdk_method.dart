@@ -1,4 +1,5 @@
 class EMSDKMethod {
+  /// EMClient methods
   static const String init = 'init';
   static const String createAccount = 'createAccount';
   static const String login = 'login';
@@ -22,10 +23,23 @@ class EMSDKMethod {
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
   static const String check = 'check';
   static const String onClientMigrate2x = 'onClientMigrate2x';
+  static const String onConnectionDidChanged = 'onConnectionDidChanged';
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
 
-  static const String sendMessage = 'sendMessage';
+  /// EMContactManager methods
+  static const String addContact = 'addContact';
+  static const String deleteContact = 'deleteContact';
+  static const String getAllContactsFromServer = 'getAllContactsFromServer';
+  static const String addUserToBlackList = 'addUserToBlackList';
+  static const String removeUserFromBlackList = 'removeUserFromBlackList';
+  static const String getBlackListFromServer = 'getBlackListFromServer';
+  static const String saveBlackList = 'saveBlackList';
+  static const String acceptInvitation = 'acceptInvitation';
+  static const String declineInvitation = 'declineInvitation';
+  static const String getSelfIdsOnOtherPlatform = 'getSelfIdsOnOtherPlatform';
+  static const String onContactChanged = 'onContactChanged';
 
-  static const String onConnectionDidChanged = 'onConnectionDidChanged';
+  /// EMChatManager methods
+  static const String sendMessage = 'sendMessage';
 }
