@@ -1,3 +1,5 @@
+import "em_domain_terms.dart";
+
 abstract class EMConnectionListener {
   void onConnected();
   void onDisconnected();
@@ -51,4 +53,13 @@ enum EMContactChangeEvent {
   INVITED,
   INVITATION_ACCEPTED,
   INVITATION_DECLINED,
+}
+
+abstract class EMMessageListener {
+  void onMessageReceived(List<EMMessage> messages);
+  void onCmdMessageReceived(List<EMMessage> messages);
+  void onMessageRead(List<EMMessage> messages);
+  void onMessageDelivered(List<EMMessage> messages);
+  void onMessageRecalled(List<EMMessage> messages);
+  void onMessageChanged(EMMessage message, Object change);
 }

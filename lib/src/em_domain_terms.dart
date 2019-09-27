@@ -78,7 +78,7 @@ class EMMessage {
     this.progress = 0,
     this.status = Status.CREATE,
     this.to = '',
-    Type type,
+    EMMessageType type,
     this.unread = true,
   })  : _attributes = HashMap<String, dynamic>(),
         _conversationId = '',
@@ -87,15 +87,15 @@ class EMMessage {
         _userName = '';
 
   /// Constructors to create various of messages.
-  EMMessage.createSendMessage(Type type)
+  EMMessage.createSendMessage(EMMessageType type)
       : this(type: type, direction: Direction.SEND);
-  EMMessage.createReceiveMessage(Type type)
+  EMMessage.createReceiveMessage(EMMessageType type)
       : this(type: type, direction: Direction.RECEIVE);
   EMMessage.createTxtSendMessage(String content, String userName)
       : this(
             direction: Direction.SEND,
             to: userName,
-            type: Type.TXT,
+            type: EMMessageType.TXT,
             body: EMTextMessageBody(content));
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
@@ -104,7 +104,7 @@ class EMMessage {
       String filePath, bool sendOriginalImage, String userName)
       : this(
             direction: Direction.SEND,
-            type: Type.IMAGE,
+            type: EMMessageType.IMAGE,
             body: EMImageMessageBody(File(filePath), null, sendOriginalImage),
             to: userName);
   EMMessage.createVideoSendMessage(String videoFilePath, String imageThumbPath,
@@ -114,13 +114,13 @@ class EMMessage {
       String locationAddress, String userName)
       : this(
             direction: Direction.SEND,
-            type: Type.LOCATION,
+            type: EMMessageType.LOCATION,
             body: EMLocationMessageBody(locationAddress, latitude, longitude),
             to: userName);
   EMMessage.createFileSendMessage(String filePath, String userName)
       : this(
             direction: Direction.SEND,
-            type: Type.FILE,
+            type: EMMessageType.FILE,
             body: EMFileMessageBody(filePath),
             to: userName);
 
@@ -131,8 +131,8 @@ class EMMessage {
 
   final String _conversationId;
   String get conversationId => _conversationId;
-  final Type _type;
-  Type get type => _type;
+  final EMMessageType _type;
+  EMMessageType get type => _type;
   final String _userName;
   String get userName => _userName;
 
@@ -167,6 +167,50 @@ class EMMessage {
   Map<String, dynamic> ext() {
     return null;
   }
+
+  Map<String, dynamic> toDataMap() {
+    var result = Map<String, dynamic>();
+    result["acked"] = this.acked;
+    result['attributes'] = _attributes;
+    result['body'] = body.toDataMap();
+    result['chatType'] = this.chatType;
+    result['conversationId'] = _conversationId;
+    result['deliverAcked'] = _deliverAcked;
+    result['delivered'] = delivered;
+    result['direction'] = direction;
+    result['from'] = from;
+    result['listened'] = listened;
+    result['localTime'] = localTime;
+    result['msgId'] = msgId;
+    result['msgTime'] = msgTime;
+    result['progress'] = progress;
+    result['status'] = status;
+    result['to'] = to;
+    result['type'] = _type;
+    result['unread'] = unread;
+    result['userName'] = _userName;
+    return result;
+  }
+
+  EMMessage.from(Map<String, dynamic> data)
+      : _attributes = data['attributes'],
+        _conversationId = data['conversationId'],
+        _type = data['type'],
+        _userName = data['userName'],
+        acked = data['acked'],
+        body = EMMessageBody.from(data['body']),
+        chatType = data['chatType'],
+        delivered = data['delivered'],
+        direction = data['direction'],
+        from = data['from'],
+        listened = data['listened'],
+        localTime = data['localTime'],
+        msgId = data['msgId'],
+        msgTime = data['msgTime'],
+        progress = data['progress'],
+        status = data['status'],
+        to = data['to'],
+        unread = data['unread'];
 }
 
 class EMContact {
@@ -177,10 +221,33 @@ class EMContact {
 }
 
 // EMMessageBody - body of message.
-abstract class EMMessageBody {}
+abstract class EMMessageBody {
+  Map<String, dynamic> toDataMap();
+  static EMMessageBody from(Map<String, dynamic> data) {
+    var type = data['type'];
+    switch (type) {
+      case EMMessageType.TXT:
+        return EMTextMessageBody.fromData(data);
+      case EMMessageType.CMD:
+        return EMCmdMessageBody.fromData(data);
+      case EMMessageType.IMAGE:
+        return EMImageMessageBody.fromData(data);
+      case EMMessageType.FILE:
+        return EMFileMessageBody.fromData(data);
+      case EMMessageType.LOCATION:
+        return EMLocationMessageBody.fromData(data);
+      case EMMessageType.VOICE:
+        return EMVoiceMessageBody.fromData(data);
+      //case Type.VIDEO:
+      //return EMVideoMessageBody.fromData(data);
+      default:
+        return null;
+    }
+  }
+}
 
 /// Type - EMMessage type enumeration.
-enum Type {
+enum EMMessageType {
   TXT,
   IMAGE,
   VIDEO,
@@ -227,4 +294,23 @@ enum EMCheckType {
   DO_LOGIN,
   DO_MSG_SEND,
   DO_LOGOUT,
+}
+
+class EMConversation {}
+
+/// EMConversationType - Type of conversation enumeration.
+enum EMConversationType {
+  Chat,
+  GroupChat,
+  ChatRoom,
+  DiscussionGroup,
+  HelpDesk,
+}
+
+/// EMSearchDirection - Search direction.
+enum EMSearchDirection { Up, Down }
+
+/// EMCursorResult - Cursor result for iteration.
+abstract class EMCursorResult<T> {
+  T getCursor();
 }

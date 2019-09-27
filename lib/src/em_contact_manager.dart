@@ -13,6 +13,7 @@ class EMContactManager {
       const MethodChannel('$_channelPrefix/em_contact_manager');
   static EMContactManager _instance;
 
+  final EMLog log;
   final List<EMContactEventListener> _contactChangeEventListeners =
       List<EMContactEventListener>();
   List<String> _blackList;
@@ -24,8 +25,6 @@ class EMContactManager {
   factory EMContactManager.getInstance({@required EMLog log}) {
     return _instance = _instance ?? EMContactManager._internal(log);
   }
-
-  final EMLog log;
 
   void _addNativeMethodCallHandler() {
     _emContactManagerChannel.setMethodCallHandler((MethodCall call) {
