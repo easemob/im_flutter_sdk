@@ -16,7 +16,7 @@ class EMClient {
       const MethodChannel('$_channelPrefix/em_client');
 
   static final EMLog _log = EMLog();
-  final EMChatManager _chatManager = EMChatManager(log: _log);
+  final EMChatManager _chatManager = EMChatManager.getInstance(log: _log);
   final EMContactManager _contactManager =
       EMContactManager.getInstance(log: _log);
 
