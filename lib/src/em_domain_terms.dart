@@ -296,17 +296,6 @@ enum EMCheckType {
   DO_LOGOUT,
 }
 
-class EMConversation {}
-
-/// EMConversationType - Type of conversation enumeration.
-enum EMConversationType {
-  Chat,
-  GroupChat,
-  ChatRoom,
-  DiscussionGroup,
-  HelpDesk,
-}
-
 /// EMSearchDirection - Search direction.
 enum EMSearchDirection { Up, Down }
 

@@ -45,4 +45,22 @@ class EMSDKMethod {
   static const String ackMessageRead = 'ackMessageRead';
   static const String recallMessage = 'recallMessage';
   static const String getMessage = 'getMessage';
+
+  /// EMConversation
+  static const String getUnreadMsgCount = 'getUnreadMsgCount';
+  static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
+  static const String getAllMsgCount = 'getAllMsgCount';
+  static const String loadMoreMsgFromDB = 'loadMoreMsgFromDB';
+  static const String searchMsgFromDB = 'searchMsgFromDB';
+  static const String getAllMessage = 'getAllMessage';
+  static const String markMessageAsRead = 'markMessageAsRead';
+  static const String removeMessage = 'removeMessage';
+  static const String getLastMessage = 'getLastMessage';
+  static const String getLatestMessageFromOthers = 'getLatestMessageFromOthers';
+  static const String clear = 'clear';
+  static const String clearAllMessages = 'clearAllMessages';
+  static const String insertMessage = 'insertMessage';
+  static const String appendMessage = 'appendMessage';
+  static const String updateMessage = 'updateMessage';
+  static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
 }
