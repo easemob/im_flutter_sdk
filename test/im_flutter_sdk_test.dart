@@ -14,12 +14,18 @@ void main() {
   test('client listeners get called once migrate to 2x', () {});
 
   test('client login with callback invoked correctly', () {
-    client.login('user1', 'passw0rd', onSuccess: () {
-      print('login success');
-    });
-    client.login('user2', 'passw0rd', onError: (int code, String status) {
-      print('login error with code: $code, status: $status');
-    });
+    client.login(
+        userName: 'user1',
+        password: 'passw0rd',
+        onSuccess: () {
+          print('login success');
+        });
+    client.login(
+        userName: 'user2',
+        password: 'passw0rd',
+        onError: (int code, String status) {
+          print('login error with code: $code, status: $status');
+        });
   });
 
   tearDown(() {});

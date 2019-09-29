@@ -33,11 +33,11 @@ main() {
 
   test('EMMessage.createSendMessage() populates a default EMMessage object',
       () {
-    EMMessage message = EMMessage.createSendMessage(Type.TXT);
+    EMMessage message = EMMessage.createSendMessage(EMMessageType.TXT);
     message.to = 'user1';
     EMTextMessageBody body = EMTextMessageBody('hello from easemob IM SDK');
     message.body = body;
-    expect(message.type, Type.TXT);
+    expect(message.type, EMMessageType.TXT);
     expect(message.to, 'user1');
     expect(message.body, body);
   });
@@ -45,7 +45,7 @@ main() {
   test('EMMessage.createTxtSendMessage() returns a text message', () {
     EMMessage message =
         EMMessage.createTxtSendMessage('this is a text message', 'user1');
-    expect(message.type, Type.TXT);
+    expect(message.type, EMMessageType.TXT);
     expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
     var body = message.body;
@@ -55,7 +55,7 @@ main() {
   test('EMMessage.createLocationSendMessage() creates a location message', () {
     EMMessage message =
         EMMessage.createLocationSendMessage(39.12, 103.25, 'beijing', 'user1');
-    expect(message.type, Type.LOCATION);
+    expect(message.type, EMMessageType.LOCATION);
     expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
     var body = message.body;
@@ -68,7 +68,7 @@ main() {
 
   test('EMMessage.createFileSendMessage() creates a file message', () {
     EMMessage message = EMMessage.createFileSendMessage('C:\test.c', 'user1');
-    expect(message.type, Type.FILE);
+    expect(message.type, EMMessageType.FILE);
     expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
     var body = message.body;
@@ -80,7 +80,7 @@ main() {
   test('EMMessage.createImageSendMessage() creates an image message', () {
     EMMessage message =
         EMMessage.createImageSendMessage('c:\image1.png', true, 'user1');
-    expect(message.type, Type.IMAGE);
+    expect(message.type, EMMessageType.IMAGE);
     expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
     var body = message.body;
