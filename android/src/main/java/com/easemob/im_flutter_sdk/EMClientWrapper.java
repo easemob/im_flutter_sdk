@@ -12,8 +12,9 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.EMCallBack;
+import com.hyphenate.exceptions.HyphenateException;
 
-public class EMClientWrapper implements MethodCallHandler{
+public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     EMClientWrapper(Context context) {
         this.context = context;
     }
@@ -26,7 +27,8 @@ public class EMClientWrapper implements MethodCallHandler{
             init(call.arguments, result);
         } else if(EMSDKMethod.login.equals(call.method)){
             login(call.arguments, result);
-
+        } else if(EMSDKMethod.createAccount.equals(call.method)) {
+            createAccount(call.arguments, result);
         }
     }
 
@@ -46,18 +48,22 @@ public class EMClientWrapper implements MethodCallHandler{
         EMClient.getInstance().login(userName, password, new EMCallBack(){
             @Override
             public void onSuccess() {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("success", Boolean.TRUE);
-                result.success(data);
+                post((Void)-> {
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.TRUE);
+                        result.success(data);
+                    });
             }
 
             @Override
             public void onError(int code, String error) {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("success", Boolean.FALSE);
-                data.put("code", code );
-                data.put("desc", error);
-                result.success(data);
+                post((Void)->{
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("success", Boolean.FALSE);
+                    data.put("code", code);
+                    data.put("desc", error);
+                    result.success(data);
+                });
             }
 
             @Override
@@ -65,9 +71,19 @@ public class EMClientWrapper implements MethodCallHandler{
                 // not needed
             }
         });
-        /*Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        result.success(data);*/
+    }
+
+    private void createAccount(Object args, Result result) {
+        assert(args instanceof Map);
+        Map<String, Object> argMap = (Map<String, Object>)args;
+        String userName = (String)argMap.get("userName");
+        String password = (String)argMap.get("password");
+        try{
+            EMClient.getInstance().createAccount(userName, password);
+            onSuccess(result);
+        }catch(HyphenateException e) {
+            onError(result, e);
+        }
     }
 }
 
