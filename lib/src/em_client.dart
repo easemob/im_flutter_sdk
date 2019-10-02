@@ -59,7 +59,7 @@ class EMClient {
   /// init - init Easemob SDK client with specified [options] instance.
   void init(EMOptions options) {
     _options = options;
-    _emClientChannel.invokeMethod(EMSDKMethod.init, {"appkey": options.appKey});
+    _emClientChannel.invokeMethod(EMSDKMethod.init, {"appKey": options.appKey});
   }
 
   /// createAccount - create an account with [userName]/[password].
