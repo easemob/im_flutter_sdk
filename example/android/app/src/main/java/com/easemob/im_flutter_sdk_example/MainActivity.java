@@ -1,4 +1,4 @@
-package com.example.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;
