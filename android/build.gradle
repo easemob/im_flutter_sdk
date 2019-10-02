@@ -38,6 +38,9 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+
+    //use legacy for android > 6.0
+    useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
