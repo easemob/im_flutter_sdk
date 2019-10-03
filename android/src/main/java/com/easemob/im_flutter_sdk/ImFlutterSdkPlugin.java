@@ -3,6 +3,7 @@ package com.easemob.im_flutter_sdk;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.hyphenate.EMCallBack;
 import com.hyphenate.exceptions.HyphenateException;
 
 import io.flutter.plugin.common.MethodChannel;
@@ -71,5 +72,47 @@ interface EMWrapper {
     data.put("code", e.getErrorCode());
     data.put("desc", e.getDescription());
     result.success(data);
+  }
+}
+
+class EMWrapperCallBack implements EMCallBack{
+  EMWrapperCallBack(Result result) {
+    this.result = result;
+  }
+
+  private Result result;
+
+  void post(Consumer<Void> func) {
+    ImFlutterSdkPlugin.handler.post(new Runnable() {
+      @Override
+      public void run() {
+        func.accept(null);
+      }
+    });
+  }
+
+  @Override
+  public void onSuccess() {
+    post((Void)->{
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put("success", Boolean.TRUE);
+      result.success(data);
+    });
+  }
+
+  @Override
+  public void onError(int code, String desc) {
+    post((Void)->{
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put("success", Boolean.FALSE);
+      data.put("code", code);
+      data.put("desc", desc);
+      result.success(data);
+    });
+  }
+
+  @Override
+  public void onProgress(int progress, String status) {
+    // no need
   }
 }
