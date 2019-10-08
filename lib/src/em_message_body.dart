@@ -67,8 +67,8 @@ class EMCmdMessageBody extends EMMessageBody {
   }
 }
 
-/// EMFileMessageBody - file message body.
-class EMFileMessageBody extends EMMessageBody {
+/// EMNormalFileMessageBody - file message body.
+abstract class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody(String localUrl)
       : this.displayName = '',
         this.localUrl = localUrl;
@@ -119,17 +119,6 @@ class EMFileMessageBody extends EMMessageBody {
     result['secret'] = secret;
     result['status'] = downloadStatus;
     return result;
-  }
-
-  static EMMessageBody fromData(Map<String, dynamic> data) {
-    var message = EMFileMessageBody(data['localUrl']);
-    message
-      ..displayName = data['displayName']
-      ..downloadStatus = data['downloadStatus']
-      ..fileName = data['fileName']
-      ..remoteUrl = data['remoteUrl']
-      ..secret = data['secret'];
-    return message;
   }
 }
 

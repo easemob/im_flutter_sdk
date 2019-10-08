@@ -300,5 +300,5 @@ enum EMSearchDirection { Up, Down }
 
 /// EMCursorResult - Cursor result for iteration.
 abstract class EMCursorResult<T> {
-  T getCursor();
+  Future<T> getCursor();
 }
