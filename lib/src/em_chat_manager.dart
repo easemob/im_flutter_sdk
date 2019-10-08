@@ -1,4 +1,5 @@
 import "dart:async";
+import 'dart:collection';
 
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
@@ -23,9 +24,10 @@ class EMChatManager {
     return _instance = _instance ?? EMChatManager._internal(log);
   }
 
-  /// sendMessage - Sends message [msg].
-  void sendMessage(final EMMessage msg) {
-    _emChatManagerChannel.invokeMethod(EMSDKMethod.sendMessage, msg);
+  /// sendMessage - Sends message [message].
+  void sendMessage(final EMMessage message) {
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.sendMessage, message.toDataMap());
   }
 
   ///  ackMessageRead - Acknowledgs [to] user that message [messageId] has been read.
@@ -62,7 +64,7 @@ class EMChatManager {
   /// getMessage - Gets message identified by [messageId].
   Future<EMMessage> getMessage(String messageId) async {
     Map<String, dynamic> result = await _emChatManagerChannel
-        .invokeMethod(EMSDKMethod.getMessage, {"messageId": messageId});
+        .invokeMethod(EMSDKMethod.getMessage, {"id": messageId});
     if (result['success']) {
       return EMMessage.from(result['message']);
     } else {
@@ -70,43 +72,85 @@ class EMChatManager {
     }
   }
 
-  /// getConverstion - Gets conversation form [id].
+  /// getConversation - Gets conversation form [id].
   Future<EMConversation> getConversation(
       {@required String id,
       EMConversationType type,
       bool createIfNotExists}) async {
-    return null;
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.markAllChatMsgAsRead,
+        {"id": id, "type": type, "createIfNotExists": createIfNotExists});
+    if (result['success']) {
+      return EMConversation.from(result['conversation']);
+    } else {
+      return null;
+    }
   }
 
   /// markAllConversationAsRead - Marks all conversation as read.
-  void markAllConversationsAsRead() {}
+  void markAllConversationsAsRead() {
+    _emChatManagerChannel.invokeMethod(EMSDKMethod.markAllChatMsgAsRead);
+  }
 
   /// getUnreadMessageCount - Gets count number of messages unread.
-  int getUnreadMessageCount() {
-    return 0;
+  Future<int> getUnreadMessageCount() async {
+    Map<String, dynamic> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.getUnreadMessageCount);
+    if (result['success']) {
+      return result['count'];
+    } else {
+      return 0;
+    }
   }
 
   /// saveMessage - Saves [message].
-  void saveMessage(EMMessage message) {}
+  void saveMessage(EMMessage message) {
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.saveMessage, {"message": message.toDataMap()});
+  }
 
   /// updateMessage - Updates [message].
   Future<bool> updateMessage(EMMessage message) async {
-    return false;
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.updateChatMessage,
+        {"message": message.toDataMap()}); //TODO: only message id needed?
+    if (result['success']) {
+      return result['status'];
+    } else {
+      return false;
+    }
   }
 
   /// downloadAttachment - Downloads attachment of [message].
-  void downloadAttachment(final EMMessage message) {}
+  void downloadAttachment(final EMMessage message) {
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.downloadAttachment, {"message": message.toDataMap()});
+  }
 
   /// downloadThumbnail - Downloads thumbnail of [message].
-  void downloadThumbnail(final EMMessage message) {}
+  void downloadThumbnail(final EMMessage message) {
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.downloadThumbnail, {"message": message.toDataMap()});
+  }
 
   ///  importMessages - Imports list of [messages].
-  void importMessages(List<EMMessage> messages) {}
+  void importMessages(List<EMMessage> messages) {
+    _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
+        {"messages": messages.map((message) => message.toDataMap())});
+  }
 
   /// getConversationsByType - Gets all conversations of [type].
   Future<List<EMConversation>> getConversationsByType(
       EMConversationType type) async {
-    return null;
+    Map<String, dynamic> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.getConversationsByType, {"type": type});
+    if (result["success"]) {
+      var conversations = result['conversations'] as List<Map<String, Object>>;
+      return conversations
+          .map((conversation) => EMConversation.from(conversation));
+    } else {
+      return null;
+    }
   }
 
   /// downloadFile - Downloads file, specified by [remoteUrl], to store locally at [localFilePath].
@@ -115,20 +159,54 @@ class EMChatManager {
       @required final String localFilePath,
       final Map<String, String> headers,
       onSuccess(),
-      onError(int code, String desc)}) {}
+      onError(int code, String desc)}) {
+    Future<Map> result = _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.downloadFile, {
+      "remoteUrl": remoteUrl,
+      "localFilePath": localFilePath,
+      "headers": headers
+    });
+    result.then((response) {
+      if (response['success']) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
 
   /// getAllConversations - Gets all conversations.
   Future<Map<String, EMConversation>> getAllConversations() async {
-    return null;
+    Map<String, dynamic> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.getAllConversations);
+    if (result['success']) {
+      var data = HashMap<String, EMConversation>();
+      var conversations = result['conversations'] as List<Map<String, dynamic>>;
+      for (var conversation in conversations) {
+        data[conversation['id']] = EMConversation.from(conversation);
+      }
+      return data;
+    } else {
+      return null;
+    }
   }
 
   /// loadAllConversations - Loads all conversations.
-  void loadAllConversations() {}
+  void loadAllConversations() {
+    _emChatManagerChannel.invokeMethod(EMSDKMethod.loadAllConversations);
+  }
 
   /// deleteConversation - Deletes conversations with [userName], deletes also messages if [deleteMessages] set to true.
   Future<bool> deleteConversation(
       {@required final String userName, @required bool deleteMessages}) async {
-    return null;
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.deleteConversation,
+        {"userName": userName, "deleteMessages": deleteMessages});
+    if (result['success']) {
+      return result['status'];
+    } else {
+      return false;
+    }
   }
 
   /// addMessageListener - Adds [listener] to be aware of message change events.
@@ -141,18 +219,30 @@ class EMChatManager {
   void onConversationUpdate(onConversationUpdate()) {}
 
   /// setMessageListened - Sets [message] as listened.
-  void setMessageListened(EMMessage message) {}
+  void setMessageListened(EMMessage message) {
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.setMessageListened, {"message": message.toDataMap()});
+  }
 
   /// setVoiceMessageListened - Sets voice [message] as listened.
-  void setVoiceMessageListened(EMMessage message) {}
+  void setVoiceMessageListened(EMMessage message) {
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.setVoiceMessageListened, {"message": message.toDataMap()});
+  }
 
   /// updateParticipant - Updates participant from [from] to [changeTo].
   Future<bool> updateParticipant(String from, String changeTo) async {
-    return null;
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.updateParticipant, {"from": from, "changeTo": changeTo});
+    if (result['success']) {
+      return result['status'];
+    } else {
+      return false;
+    }
   }
 
   /// fetchHistoryMessages - Fetches history messages in conversation [conversationId], filtered by [type].
-  /// Result painated by [pageSize] per page, started from [startMsgId].
+  /// Result paginated by [pageSize] per page, started from [startMsgId].
   Future<EMCursorResult<EMMessage>> fetchHistoryMessages(
       {@required final String conversationId,
       @required final EMConversationType type,
@@ -160,18 +250,59 @@ class EMChatManager {
       String startMsgId,
       onSuccess(),
       onError(int code, String desc)}) async {
-    return null;
+    Map<String, dynamic> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.fetchHistoryMessages, {
+      "id": conversationId,
+      "type": type,
+      "pageSize": pageSize,
+      "startMsgId": startMsgId
+    });
+    if (result['success']) {
+      return _EMCursorResult(result['message']);
+    } else {
+      return null;
+    }
   }
 
   /// searchMsgFromDB - Searches messages with [keywords] as keyword, of [type], timestamp set at [timeStamp], from user [from], in [direction].
   /// Result paginated to return maximize [maxCount] records per call.
-  List<EMMessage> searchMsgFromDB(
+  Future<List<EMMessage>> searchMsgFromDB(
       {String keywords,
       EMMessageType type,
       int timeStamp,
       int maxCount,
       String from,
-      EMSearchDirection direction}) {
-    return null;
+      EMSearchDirection direction}) async {
+    Map<String, dynamic> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.searchChatMsgFromDB, {
+      "keywords": keywords,
+      "type": type,
+      "timeStamp": timeStamp,
+      "maxCount": maxCount,
+      "from": from,
+      "direction": direction
+    });
+    if (result['success']) {
+      var messages = result['messages'] as List<Map<String, dynamic>>;
+      var data = List<EMMessage>();
+      for (var message in messages) {
+        data.add(EMMessage.from(message));
+      }
+      return data;
+    } else {
+      return null;
+    }
+  }
+}
+
+// TODO: EMCursorResult implementation
+class _EMCursorResult<EMMessage> extends EMCursorResult<EMMessage> {
+  _EMCursorResult(EMMessage message) : this._message = message;
+
+  EMMessage _message;
+
+  @override
+  EMMessage getCursor() {
+    return _message;
   }
 }

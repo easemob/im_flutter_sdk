@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 
-import '../im_flutter_sdk.dart';
 import 'em_message_body.dart';
 
 /// EMOptions - options to initialize SDK context.

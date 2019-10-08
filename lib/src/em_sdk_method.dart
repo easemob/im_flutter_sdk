@@ -45,14 +45,36 @@ class EMSDKMethod {
   static const String ackMessageRead = 'ackMessageRead';
   static const String recallMessage = 'recallMessage';
   static const String getMessage = 'getMessage';
+  static const String getConversation = "getConversation";
+  static const String markAllChatMsgAsRead = "markAllChatMsgAsRead";
+  static const String getUnreadMessageCount = "getUnreadMessageCount";
+  static const String saveMessage = "saveMessage";
+  static const String updateChatMessage = "updateChatMessage";
+  static const String downloadAttachment = "downloadAttachment";
+  static const String downloadThumbnail = "downloadThumbnail";
+  static const String importMessages = "importMessages";
+  static const String getConversationsByType = "getConversationsByType";
+  static const String downloadFile = "downloadFile";
+  static const String getAllConversations = "getAllConversations";
+  static const String loadAllConversations = "loadAllConversations";
+  static const String deleteConversation = "deleteConversation";
+  static const String setMessageListened = "setMessageListened";
+  static const String setVoiceMessageListened = "setVoiceMessageListened";
+  static const String updateParticipant = "updateParticipant";
+  static const String fetchHistoryMessages = "fetchHistoryMessages";
+  static const String searchChatMsgFromDB = "searchChatMsgFromDB";
 
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
   static const String getAllMsgCount = 'getAllMsgCount';
   static const String loadMoreMsgFromDB = 'loadMoreMsgFromDB';
-  static const String searchMsgFromDB = 'searchMsgFromDB';
-  static const String getAllMessage = 'getAllMessage';
+  static const String searchConversationMsgFromDB =
+      'searchConversationMsgFromDB';
+  static const String searchConversationMsgFromDBByType =
+      'searchConversationMsgFromDB';
+  static const String getAllMessages = 'getAllMessages';
+  static const String loadMessages = 'loadMessages';
   static const String markMessageAsRead = 'markMessageAsRead';
   static const String removeMessage = 'removeMessage';
   static const String getLastMessage = 'getLastMessage';
@@ -61,6 +83,6 @@ class EMSDKMethod {
   static const String clearAllMessages = 'clearAllMessages';
   static const String insertMessage = 'insertMessage';
   static const String appendMessage = 'appendMessage';
-  static const String updateMessage = 'updateMessage';
+  static const String updateConversationMessage = 'updateConversationMessage';
   static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
 }

@@ -47,14 +47,34 @@ public class EMSDKMethod {
     static final String ackMessageRead = "ackMessageRead";
     static final String recallMessage = "recallMessage";
     static final String getMessage = "getMessage";
+    static final String getConversation = "getConversation";
+    static final String markAllChatMsgAsRead = "markAllChatMsgAsRead";
+    static final String getUnreadMessageCount = "getUnreadMessageCount";
+    static final String saveMessage = "saveMessage";
+    static final String updateChatMessage = "updateChatMessage";
+    static final String downloadAttachment = "downloadAttachment";
+    static final String downloadThumbnail = "downloadThumbnail";
+    static final String importMessages = "importMessages";
+    static final String getConversationsByType = "getConversationsByType";
+    static final String downloadFile = "downloadFile";
+    static final String getAllConversations = "getAllConversations";
+    static final String loadAllConversations = "loadAllConversations";
+    static final String deleteConversation = "deleteConversation";
+    static final String setMessageListened = "setMessageListened";
+    static final String setVoiceMessageListened = "setVoiceMessageListened";
+    static final String updateParticipant = "updateParticipant";
+    static final String fetchHistoryMessages = "fetchHistoryMessages";
+    static final String searchChatMsgFromDB = "searchChatMsgFromDB";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
     static final String getAllMsgCount = "getAllMsgCount";
     static final String loadMoreMsgFromDB = "loadMoreMsgFromDB";
-    static final String searchMsgFromDB = "searchMsgFromDB";
-    static final String getAllMessage = "getAllMessage";
+    static final String searchConversationMsgFromDB = "searchConversationMsgFromDB";
+    static final String searchConversationMsgFromDBByType = "searchConversationMsgFromDBByType";
+    static final String getAllMessages = "getAllMessages";
+    static final String loadMessages = "loadMessages";
     static final String markMessageAsRead = "markMessageAsRead";
     static final String removeMessage = "removeMessage";
     static final String getLastMessage = "getLastMessage";
@@ -63,6 +83,6 @@ public class EMSDKMethod {
     static final String clearAllMessages = "clearAllMessages";
     static final String insertMessage = "insertMessage";
     static final String appendMessage = "appendMessage";
-    static final String updateMessage = "updateMessage";
+    static final String updateConversationMessage = "updateConversationMessage";
     static final String getMessageAttachmentPath = "getMessageAttachmentPath";
 }

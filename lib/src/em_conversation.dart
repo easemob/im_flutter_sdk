@@ -20,6 +20,11 @@ class EMConversation {
   EMConversation({@required String conversationId})
       : _conversationId = conversationId;
 
+  EMConversation.from(Map<String, dynamic> data)
+      : _conversationId = data['id'],
+        _type = data['type'],
+        extField = data['ext'];
+
   /// getUnreadMsgCount - Gets count of unread messages.
   Future<int> getUnreadMsgCount() async {
     Map<String, dynamic> result = await _emConversationChannel
@@ -73,11 +78,37 @@ class EMConversation {
       @required final int timeStamp,
       final int maxCount = 10,
       final EMSearchDirection direction}) async {
-    Map<String, dynamic> result =
-        await _emConversationChannel.invokeMethod(EMSDKMethod.searchMsgFromDB, {
+    Map<String, dynamic> result = await _emConversationChannel
+        .invokeMethod(EMSDKMethod.searchConversationMsgFromDB, {
       "id": _conversationId,
       "type": type,
       "keywords": keywords,
+      "timeStamp": timeStamp,
+      "maxCount": maxCount,
+      "direction": direction
+    });
+    if (result['success']) {
+      var messages = List<EMMessage>();
+      var _messages = result['messages'];
+      for (var message in _messages) {
+        messages.add(EMMessage.from(message));
+      }
+      return messages;
+    }
+    return null;
+  }
+
+  /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
+  Future<List<EMMessage>> searchMsgFromDBByType(
+      {final EMMessageType type,
+      final String keywords,
+      @required final int timeStamp,
+      final int maxCount = 10,
+      final EMSearchDirection direction}) async {
+    Map<String, dynamic> result = await _emConversationChannel
+        .invokeMethod(EMSDKMethod.searchConversationMsgFromDBByType, {
+      "id": _conversationId,
+      "type": type,
       "timeStamp": timeStamp,
       "maxCount": maxCount,
       "direction": direction
@@ -109,9 +140,9 @@ class EMConversation {
   }
 
   // getAllMessage - Gets all messages.
-  Future<List<EMMessage>> getAllMessage() async {
+  Future<List<EMMessage>> getAllMessages() async {
     Map<String, dynamic> result = await _emConversationChannel
-        .invokeMethod(EMSDKMethod.getAllMessage, {"id": _conversationId});
+        .invokeMethod(EMSDKMethod.getAllMessages, {"id": _conversationId});
     if (result['success']) {
       var messages = List<EMMessage>();
       var _messages = result['messages'];
@@ -127,7 +158,7 @@ class EMConversation {
   Future<List<EMMessage>> loadMessages(
       {@required final List<String> msgIds}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-        EMSDKMethod.getAllMessage, {"id": _conversationId, "msgIds": msgIds});
+        EMSDKMethod.loadMessages, {"id": _conversationId, "msgIds": msgIds});
     if (result['success']) {
       var messages = List<EMMessage>();
       var _messages = result['messages'];
@@ -203,7 +234,7 @@ class EMConversation {
   /// updateMessage - Updates message with new content set.
   Future<bool> updateMessage(EMMessage msg) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-        EMSDKMethod.updateMessage,
+        EMSDKMethod.updateConversationMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
     if (result['success']) {
       return true;
