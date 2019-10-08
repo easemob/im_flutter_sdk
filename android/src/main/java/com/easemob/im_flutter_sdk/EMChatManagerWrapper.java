@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -19,6 +20,8 @@ import io.flutter.plugin.common.MethodChannel.Result;
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     // delegates all methods call to this manager
     private EMChatManager manager;
+    // cursor result map for call back getCursor()
+    private Map<String, EMCursorResult<EMMessage>> cursorResultList = new HashMap<String, EMCursorResult<EMMessage>>();
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
@@ -70,6 +73,8 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             fetchHistoryMessages(call.arguments, result);
         }else if(EMSDKMethod.searchChatMsgFromDB.equals(call.method)) {
             searchMsgFromDB(call.arguments, result);
+        }else if(EMSDKMethod.getCursor.equals(call.method)) {
+            getCursor(call.arguments, result);
         }
 
     }
@@ -274,11 +279,19 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, type, pageSize.intValue(), startMsgId);
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
-            data.put("message", cursorResult.getCursor()); //TODO: cursorResult to be iterable
+            String cursorId = UUID.randomUUID().toString();
+            cursorResultList.put(cursorId, cursorResult);
+            data.put("cursorId", cursorId);
             result.success(data);
         }catch (HyphenateException e) {
             onError(result, e);
         }
+    }
+
+    private void getCursor(Object args, Result result) {
+        assert(args instanceof Map);
+        Map<String, Object> argMap = (Map<String, Object>)args;
+
     }
 
     private void searchMsgFromDB(Object args, Result result) {

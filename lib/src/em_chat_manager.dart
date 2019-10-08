@@ -258,7 +258,7 @@ class EMChatManager {
       "startMsgId": startMsgId
     });
     if (result['success']) {
-      return _EMCursorResult(result['message']);
+      return _EMCursorResult<EMMessage>(result['cursorId']);
     } else {
       return null;
     }
@@ -295,14 +295,24 @@ class EMChatManager {
   }
 }
 
-// TODO: EMCursorResult implementation
-class _EMCursorResult<EMMessage> extends EMCursorResult<EMMessage> {
-  _EMCursorResult(EMMessage message) : this._message = message;
+// _EMCursorResult - internal EMCursorResult implementation.
+class _EMCursorResult<T> extends EMCursorResult<T> {
+  static const _channelPrefix = 'com.easemob.im';
+  static const MethodChannel _emChatManagerChannel =
+      MethodChannel('$_channelPrefix/em_chat_manager');
+  _EMCursorResult(String cursorId) : this._cursorId = cursorId;
 
-  EMMessage _message;
+  final String _cursorId;
 
   @override
-  EMMessage getCursor() {
-    return _message;
+  Future<T> getCursor() async {
+    Map<String, Object> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.getCursor, {"id": _cursorId});
+    if (result['success']) {
+      EMMessage message = EMMessage.from(result['message']);
+      return message as T;
+    } else {
+      return null;
+    }
   }
 }

@@ -65,6 +65,7 @@ public class EMSDKMethod {
     static final String updateParticipant = "updateParticipant";
     static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
+    static final String getCursor = "getCursor";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";

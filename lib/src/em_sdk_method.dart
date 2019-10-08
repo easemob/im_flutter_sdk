@@ -63,6 +63,7 @@ class EMSDKMethod {
   static const String updateParticipant = "updateParticipant";
   static const String fetchHistoryMessages = "fetchHistoryMessages";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
+  static const String getCursor = "getCursor";
 
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
