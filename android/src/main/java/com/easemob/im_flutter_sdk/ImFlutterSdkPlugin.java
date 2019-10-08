@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.chat.EMClient;
 
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;

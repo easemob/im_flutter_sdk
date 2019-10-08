@@ -94,7 +94,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void login(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String userName = (String)argMap.get("userName");
         String password = (String)argMap.get("password");
         EMClient.getInstance().login(userName, password, new EMWrapperCallBack(result));
@@ -110,14 +110,14 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void logout(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         Boolean unbindToken = (Boolean)argMap.get("unbindToken");
         EMClient.getInstance().logout(unbindToken, new EMWrapperCallBack(result));
     }
 
     private void changeAppKey(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String appKey = (String)argMap.get("appKey");
         try{
             EMClient.getInstance().changeAppkey(appKey);
@@ -129,14 +129,14 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void setDebugMode(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         Boolean debugMode = (Boolean)argMap.get("debugMode");
         EMClient.getInstance().setDebugMode(debugMode);
     }
 
     private void updateCurrentUserNick(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String nickName = (String)argMap.get("nickName");
         boolean status = EMClient.getInstance().updateCurrentUserNick(nickName);
         Map<String, Object> data = new HashMap<String, Object>();
@@ -147,13 +147,11 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void uploadLog(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
         EMClient.getInstance().uploadLog(new EMWrapperCallBack(result));
     }
 
     private void compressLogs(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
         try{
             EMClient.getInstance().compressLogs();
             onSuccess(result);
@@ -164,7 +162,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void getLoggedInDevicesFromServer(Object args, Result result) {
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String userName = (String)argMap.get("userName");
         String password = (String)argMap.get("password");
         try{
@@ -191,7 +189,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void kickDevice(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String userName = (String)argMap.get("userName");
         String password = (String)argMap.get("password");
         String resource = (String)argMap.get("resource");
@@ -205,7 +203,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void kickAllDevices(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String userName = (String)argMap.get("userName");
         String password = (String)argMap.get("password");
         try{
@@ -218,14 +216,14 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void sendFCMTokenToServer(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String token = (String)argMap.get("token");
         EMClient.getInstance().sendFCMTokenToServer(token);
     }
 
     private void sendHMSPushTokenToServer(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String appId = (String)argMap.get("appId");
         String token = (String)argMap.get("token");
         EMClient.getInstance().sendHMSPushTokenToServer(appId,token);
@@ -233,7 +231,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void getDeviceInfo(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
         JSONObject device = EMClient.getInstance().getDeviceInfo();
         Map<String, Object> info = convertDeviceInfoToStringMap(device);
         Map<String, Object> data = new HashMap<String, Object>();
@@ -253,7 +250,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void check(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String userName = (String)argMap.get("userName");
         String password = (String)argMap.get("password");
         EMClient.getInstance().check(userName, password, new EMClient.CheckResultListener() {
@@ -273,7 +270,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void getUserTokenFromServer(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
+        Map<String, Object> argMap = (Map<String, Object>)args;
         String userName = (String)argMap.get("userName");
         String password = (String)argMap.get("password");
         EMClient.getInstance().getUserTokenFromServer(userName, password, new EMValueCallBack<String>() {
@@ -302,7 +299,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void getRobotsFromServer(Object args, Result result){
         assert(args instanceof Map);
-        Map argMap = (Map<String, Object>)args;
         try{
             List<EMContact> contacts = EMClient.getInstance().getRobotsFromServer();
             List<Map<String, Object>> contactsMap = new LinkedList<Map<String, Object>>();
