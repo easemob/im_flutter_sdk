@@ -29,8 +29,10 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     private Map<String, EMCursorResult<EMMessage>> cursorResultList = new HashMap<String, EMCursorResult<EMMessage>>();
 
     EMChatManagerWrapper(MethodChannel channel) {
-        manager = EMClient.getInstance().chatManager();
         this.channel = channel;
+    }
+
+    private void init() {
         //setup message listener
         manager.addMessageListener(new EMMessageListener() {
             @Override
@@ -41,7 +43,9 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
+                });
             }
 
             @Override
@@ -52,7 +56,9 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                channel.invokeMethod(EMSDKMethod.onCmdMessageReceived, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onCmdMessageReceived, data);
+                });
             }
 
             @Override
@@ -63,7 +69,9 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                channel.invokeMethod(EMSDKMethod.onMessageRead, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageRead, data);
+                });
             }
 
             @Override
@@ -74,7 +82,9 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                channel.invokeMethod(EMSDKMethod.onMessageDelivered, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageDelivered, data);
+                });
             }
 
             @Override
@@ -85,7 +95,9 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                channel.invokeMethod(EMSDKMethod.onMessageRecalled, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageRecalled, data);
+                });
             }
 
             @Override
@@ -93,18 +105,27 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("message", EMHelper.convertEMMessageToStringMap(message));
                 data.put("change", change);
-                channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
+                });
+
             }
         });
         //setup conversation listener
         manager.addConversationListener(() -> {
             Map<String, Object> data = new HashMap<String, Object>();
-            channel.invokeMethod(EMSDKMethod.onConversationUpdate,data);
+            post((Void)->{
+                channel.invokeMethod(EMSDKMethod.onConversationUpdate,data);
+            });
         });
     }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
+        if(manager == null) {
+            manager = EMClient.getInstance().chatManager();
+            init();
+        }
         if (EMSDKMethod.sendMessage.equals(call.method)) {
             sendMessage(call.arguments, result);
         } else if (EMSDKMethod.ackMessageRead.equals(call.method)) {
