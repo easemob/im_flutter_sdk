@@ -234,12 +234,12 @@ class EMContactManager {
     }
   }
 
-  /// setContactListner - Sets listener [contactListner] to be aware of contact modification events.
+  /// setContactListener - Sets listener [contactListener] to be aware of contact modification events.
   void setContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.add(contactListener);
   }
 
-  /// removeContactListner - Removes listener [contactListner] from listner list.
+  /// removeContactListener - Removes listener [contactListener] from listener list.
   void removeContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.remove(contactListener);
   }
