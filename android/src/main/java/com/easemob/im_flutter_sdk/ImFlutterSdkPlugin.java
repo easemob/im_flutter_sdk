@@ -37,7 +37,7 @@ public class ImFlutterSdkPlugin {
 
   public static void registerChatManagerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_manager");
-    channel.setMethodCallHandler(new EMChatManagerWrapper());
+    channel.setMethodCallHandler(new EMChatManagerWrapper(channel));
   }
 
   public static void registerContactManagerWith(Registrar registrar) {
