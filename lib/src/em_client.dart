@@ -408,7 +408,7 @@ class EMClient {
   Future<void> _onConnectionChanged(Map map) async {
     bool isConnected = map["isConnected"];
     for (var listener in _connectionListeners) {
-      // TODO: to inform listners asynchronously
+      // TODO: to inform listeners asynchronously
       if (isConnected) {
         _connected = true;
         listener.onConnected();

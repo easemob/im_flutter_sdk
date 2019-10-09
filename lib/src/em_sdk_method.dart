@@ -64,6 +64,13 @@ class EMSDKMethod {
   static const String fetchHistoryMessages = "fetchHistoryMessages";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
   static const String getCursor = "getCursor";
+  static const String onMessageReceived = "onMessageReceived";
+  static const String onCmdMessageReceived = "onCmdMessageReceived";
+  static const String onMessageRead = "onMessageRead";
+  static const String onMessageDelivered = "onMessageDelivered";
+  static const String onMessageRecalled = "onMessageRecalled";
+  static const String onMessageChanged = "onMessageChanged";
+  static const String onConversationUpdate = "onConversationUpdate";
 
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
