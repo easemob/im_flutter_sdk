@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMChatManager;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
@@ -7,6 +8,7 @@ import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.exceptions.HyphenateException;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,20 +17,94 @@ import java.util.UUID;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     // delegates all methods call to this manager
     private EMChatManager manager;
+    // method channel for event broadcast back to flutter
+    private MethodChannel channel;
     // cursor result map for call back getCursor()
     private Map<String, EMCursorResult<EMMessage>> cursorResultList = new HashMap<String, EMCursorResult<EMMessage>>();
 
+    EMChatManagerWrapper(MethodChannel channel) {
+        manager = EMClient.getInstance().chatManager();
+        this.channel = channel;
+        //setup message listener
+        manager.addMessageListener(new EMMessageListener() {
+            @Override
+            public void onMessageReceived(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
+            }
+
+            @Override
+            public void onCmdMessageReceived(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                channel.invokeMethod(EMSDKMethod.onCmdMessageReceived, data);
+            }
+
+            @Override
+            public void onMessageRead(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                channel.invokeMethod(EMSDKMethod.onMessageRead, data);
+            }
+
+            @Override
+            public void onMessageDelivered(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                channel.invokeMethod(EMSDKMethod.onMessageDelivered, data);
+            }
+
+            @Override
+            public void onMessageRecalled(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                channel.invokeMethod(EMSDKMethod.onMessageRecalled, data);
+            }
+
+            @Override
+            public void onMessageChanged(EMMessage message, Object change) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("message", EMHelper.convertEMMessageToStringMap(message));
+                data.put("change", change);
+                channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
+            }
+        });
+        //setup conversation listener
+        manager.addConversationListener(() -> {
+            Map<String, Object> data = new HashMap<String, Object>();
+            channel.invokeMethod(EMSDKMethod.onConversationUpdate,data);
+        });
+    }
+
     @Override
     public void onMethodCall(MethodCall call, Result result) {
-        // init manager
-        if(manager == null) {
-            manager = EMClient.getInstance().chatManager();
-        }
         if (EMSDKMethod.sendMessage.equals(call.method)) {
             sendMessage(call.arguments, result);
         } else if (EMSDKMethod.ackMessageRead.equals(call.method)) {

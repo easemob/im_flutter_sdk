@@ -46,9 +46,9 @@ class EMChatManager {
         return _onMessageRead(argMap);
       } else if (call.method == EMSDKMethod.onMessageDelivered) {
         return _onMessageDelivered(argMap);
-      }  else if (call.method == EMSDKMethod.onMessageRecalled) {
+      } else if (call.method == EMSDKMethod.onMessageRecalled) {
         return _onMessageRecalled(argMap);
-      }  else if (call.method == EMSDKMethod.onMessageChanged) {
+      } else if (call.method == EMSDKMethod.onMessageChanged) {
         return _onMessageChanged(argMap);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
         return _conversationUpdateFunc();
@@ -333,10 +333,10 @@ class EMChatManager {
   Future<void> _onMessageReceived(Map map) async {
     List<Map<String, Object>> list = map['messages'];
     var messages = List<EMMessage>();
-    for(var message in list) {
+    for (var message in list) {
       messages.add(EMMessage.from(message));
     }
-    for(var listener in _messageListeners) {
+    for (var listener in _messageListeners) {
       listener.onMessageReceived(messages);
     }
   }
@@ -344,10 +344,10 @@ class EMChatManager {
   Future<void> _onCmdMessageReceived(Map map) async {
     List<Map<String, Object>> list = map['messages'];
     var messages = List<EMMessage>();
-    for(var message in list) {
+    for (var message in list) {
       messages.add(EMMessage.from(message));
     }
-    for(var listener in _messageListeners) {
+    for (var listener in _messageListeners) {
       listener.onCmdMessageReceived(messages);
     }
   }
@@ -355,10 +355,10 @@ class EMChatManager {
   Future<void> _onMessageRead(Map map) async {
     List<Map<String, Object>> list = map['messages'];
     var messages = List<EMMessage>();
-    for(var message in list) {
+    for (var message in list) {
       messages.add(EMMessage.from(message));
     }
-    for(var listener in _messageListeners) {
+    for (var listener in _messageListeners) {
       listener.onMessageRead(messages);
     }
   }
@@ -366,10 +366,10 @@ class EMChatManager {
   Future<void> _onMessageDelivered(Map map) async {
     List<Map<String, Object>> list = map['messages'];
     var messages = List<EMMessage>();
-    for(var message in list) {
+    for (var message in list) {
       messages.add(EMMessage.from(message));
     }
-    for(var listener in _messageListeners) {
+    for (var listener in _messageListeners) {
       listener.onMessageDelivered(messages);
     }
   }
@@ -377,10 +377,10 @@ class EMChatManager {
   Future<void> _onMessageRecalled(Map map) async {
     List<Map<String, Object>> list = map['messages'];
     var messages = List<EMMessage>();
-    for(var message in list) {
+    for (var message in list) {
       messages.add(EMMessage.from(message));
     }
-    for(var listener in _messageListeners) {
+    for (var listener in _messageListeners) {
       listener.onMessageRecalled(messages);
     }
   }
@@ -388,7 +388,7 @@ class EMChatManager {
   Future<void> _onMessageChanged(Map map) async {
     EMMessage message = EMMessage.from(map['message']);
     Object change = map['change'];
-    for(var listener in _messageListeners) {
+    for (var listener in _messageListeners) {
       listener.onMessageChanged(message, change);
     }
   }

@@ -423,8 +423,8 @@ class EMClient {
   Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
-      if (event >= EMContactGroupEvent.GROUP_ADD_ADMIN) {
-        listener.onGroupEvent(event, map['target'], map['userName']);
+      if (event >= EMContactGroupEvent.GROUP_CREATE) {
+        listener.onGroupEvent(event, map['target'], map['userNames']);
       } else {
         listener.onContactEvent(event, map['target'], map['ext']);
       }
