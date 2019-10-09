@@ -120,7 +120,7 @@ class EMMessage {
       : this(
             direction: Direction.SEND,
             type: EMMessageType.FILE,
-            body: EMFileMessageBody(filePath),
+            body: EMNormalFileMessageBody(File(filePath)),
             to: userName);
 
   bool _deliverAcked;
@@ -232,7 +232,7 @@ abstract class EMMessageBody {
       case EMMessageType.IMAGE:
         return EMImageMessageBody.fromData(data);
       case EMMessageType.FILE:
-        return EMFileMessageBody.fromData(data);
+        return EMNormalFileMessageBody.fromData(data);
       case EMMessageType.LOCATION:
         return EMLocationMessageBody.fromData(data);
       case EMMessageType.VOICE:
