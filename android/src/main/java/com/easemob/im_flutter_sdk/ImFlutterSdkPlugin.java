@@ -32,7 +32,7 @@ public class ImFlutterSdkPlugin {
 
   public static void registerClientWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_client");
-    channel.setMethodCallHandler(new EMClientWrapper(registrar.context()));
+    channel.setMethodCallHandler(new EMClientWrapper(registrar.context(), channel));
   }
 
   public static void registerChatManagerWith(Registrar registrar) {
@@ -42,7 +42,7 @@ public class ImFlutterSdkPlugin {
 
   public static void registerContactManagerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_contact_manager");
-    channel.setMethodCallHandler(new EMContactManagerWrapper());
+    channel.setMethodCallHandler(new EMContactManagerWrapper(channel));
   }
 
   public static void registerConversationWith(Registrar registrar) {

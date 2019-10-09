@@ -66,6 +66,13 @@ public class EMSDKMethod {
     static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getCursor = "getCursor";
+    static final String onMessageReceived = "onMessageReceived";
+    static final String onCmdMessageReceived = "onCmdMessageReceived";
+    static final String onMessageRead = "onMessageRead";
+    static final String onMessageDelivered = "onMessageDelivered";
+    static final String onMessageRecalled = "onMessageRecalled";
+    static final String onMessageChanged = "onMessageChanged";
+    static final String onConversationUpdate = "onConversationUpdate";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
