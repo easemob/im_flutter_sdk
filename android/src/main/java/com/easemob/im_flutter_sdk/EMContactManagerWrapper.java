@@ -25,8 +25,10 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     private static final int INVITATION_DECLINED = 4;
 
     EMContactManagerWrapper(MethodChannel channel) {
-        manager = EMClient.getInstance().contactManager();
         this.channel = channel;
+    }
+
+    private void init() {
         //setup contact listener
         manager.setContactListener(new EMContactListener() {
             @Override
@@ -34,7 +36,9 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", Integer.valueOf(CONTACT_ADD));
                 data.put("userName", userName);
-                channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
             }
 
             @Override
@@ -42,7 +46,9 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", Integer.valueOf(CONTACT_DELETE));
                 data.put("userName", userName);
-                channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
             }
 
             @Override
@@ -51,7 +57,9 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 data.put("type", Integer.valueOf(INVITED));
                 data.put("userName", userName);
                 data.put("reason", reason);
-                channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
             }
 
             @Override
@@ -59,7 +67,9 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", Integer.valueOf(INVITATION_ACCEPTED));
                 data.put("userName", userName);
-                channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
             }
 
             @Override
@@ -67,14 +77,19 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", Integer.valueOf(INVITATION_DECLINED));
                 data.put("userName", userName);
-                channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
             }
         });
-
     }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
+        if(manager == null) {
+            manager = EMClient.getInstance().contactManager();
+            init();
+        }
         if (EMSDKMethod.addContact.equals(call.method)) {
             addContact(call.arguments, result);
         }else if(EMSDKMethod.deleteContact.equals(call.method)) {

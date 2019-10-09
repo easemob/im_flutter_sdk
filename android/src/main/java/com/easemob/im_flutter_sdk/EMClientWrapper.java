@@ -89,7 +89,9 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
         client.addClientListener((boolean success) -> {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("status", Boolean.valueOf(success));
-                channel.invokeMethod(EMSDKMethod.onClientMigrate2x,data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onClientMigrate2x,data);
+                });
         });
         //setup connection listener
         client.addConnectionListener(new EMConnectionListener(){
@@ -97,14 +99,18 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             public void onConnected() {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("isConnected", Boolean.TRUE);
-                channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
+                });
             }
 
             @Override
             public void onDisconnected(int errorCode) {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("isConnected", Boolean.FALSE);
-                channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
+                });
             }
         });
         //setup multiple device event listener
@@ -115,7 +121,9 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
                 data.put("event", Integer.valueOf(event));
                 data.put("target", target);
                 data.put("ext", ext);
-                channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
+                });
             }
 
             @Override
@@ -124,7 +132,9 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
                 data.put("event", Integer.valueOf(event));
                 data.put("target", target);
                 data.put("userNames", userNames);
-                channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
+                });
             }
         });
     }
