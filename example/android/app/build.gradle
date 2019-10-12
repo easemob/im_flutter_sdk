@@ -32,7 +32,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.easemob.im_flutter_sdk_example"
         minSdkVersion 24
         targetSdkVersion 28

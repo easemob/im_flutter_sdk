@@ -408,7 +408,7 @@ class EMClient {
   Future<void> _onConnectionChanged(Map map) async {
     bool isConnected = map["isConnected"];
     for (var listener in _connectionListeners) {
-      // TODO: to inform listners asynchronously
+      // TODO: to inform listeners asynchronously
       if (isConnected) {
         _connected = true;
         listener.onConnected();
@@ -423,8 +423,8 @@ class EMClient {
   Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
-      if (event >= EMContactGroupEvent.GROUP_ADD_ADMIN) {
-        listener.onGroupEvent(event, map['target'], map['userName']);
+      if (event >= EMContactGroupEvent.GROUP_CREATE) {
+        listener.onGroupEvent(event, map['target'], map['userNames']);
       } else {
         listener.onContactEvent(event, map['target'], map['ext']);
       }
