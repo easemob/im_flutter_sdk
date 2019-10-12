@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMChatManager;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
@@ -7,24 +8,123 @@ import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.exceptions.HyphenateException;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     // delegates all methods call to this manager
     private EMChatManager manager;
+    // method channel for event broadcast back to flutter
+    private MethodChannel channel;
+    // cursor result map for call back getCursor()
+    private Map<String, EMCursorResult<EMMessage>> cursorResultList = new HashMap<String, EMCursorResult<EMMessage>>();
+
+    EMChatManagerWrapper(MethodChannel channel) {
+        this.channel = channel;
+    }
+
+    private void init() {
+        //setup message listener
+        manager.addMessageListener(new EMMessageListener() {
+            @Override
+            public void onMessageReceived(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
+                });
+            }
+
+            @Override
+            public void onCmdMessageReceived(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onCmdMessageReceived, data);
+                });
+            }
+
+            @Override
+            public void onMessageRead(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageRead, data);
+                });
+            }
+
+            @Override
+            public void onMessageDelivered(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageDelivered, data);
+                });
+            }
+
+            @Override
+            public void onMessageRecalled(List<EMMessage> messages) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                for(EMMessage message : messages) {
+                    msgs.add(EMHelper.convertEMMessageToStringMap(message));
+                }
+                data.put("messages", msgs);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageRecalled, data);
+                });
+            }
+
+            @Override
+            public void onMessageChanged(EMMessage message, Object change) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("message", EMHelper.convertEMMessageToStringMap(message));
+                data.put("change", change);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
+                });
+
+            }
+        });
+        //setup conversation listener
+        manager.addConversationListener(() -> {
+            Map<String, Object> data = new HashMap<String, Object>();
+            post((Void)->{
+                channel.invokeMethod(EMSDKMethod.onConversationUpdate,data);
+            });
+        });
+    }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
-        // init manager
         if(manager == null) {
             manager = EMClient.getInstance().chatManager();
+            init();
         }
         if (EMSDKMethod.sendMessage.equals(call.method)) {
             sendMessage(call.arguments, result);
@@ -70,6 +170,8 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             fetchHistoryMessages(call.arguments, result);
         }else if(EMSDKMethod.searchChatMsgFromDB.equals(call.method)) {
             searchMsgFromDB(call.arguments, result);
+        }else if(EMSDKMethod.getCursor.equals(call.method)) {
+            getCursor(call.arguments, result);
         }
 
     }
@@ -274,11 +376,19 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, type, pageSize.intValue(), startMsgId);
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
-            data.put("message", cursorResult.getCursor()); //TODO: cursorResult to be iterable
+            String cursorId = UUID.randomUUID().toString();
+            cursorResultList.put(cursorId, cursorResult);
+            data.put("cursorId", cursorId);
             result.success(data);
         }catch (HyphenateException e) {
             onError(result, e);
         }
+    }
+
+    private void getCursor(Object args, Result result) {
+        assert(args instanceof Map);
+        Map<String, Object> argMap = (Map<String, Object>)args;
+
     }
 
     private void searchMsgFromDB(Object args, Result result) {

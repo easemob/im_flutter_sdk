@@ -8,9 +8,13 @@ import java.util.List;
 import android.content.Context;
 
 import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+import com.hyphenate.EMClientListener;
+import com.hyphenate.EMConnectionListener;
+import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMOptions;
@@ -22,11 +26,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EMClientWrapper implements MethodCallHandler, EMWrapper{
-    EMClientWrapper(Context context) {
+
+    EMClientWrapper(Context context, MethodChannel channel) {
         this.context = context;
+        this.channel = channel;
     }
 
     private Context context;
+    private MethodChannel channel;
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
@@ -76,7 +83,60 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
         assert(args instanceof Map);
         Map<String, Object> argMap = (Map<String, Object>)args;
         options.setAppKey((String)argMap.get("appKey"));
-        EMClient.getInstance().init(context, options);
+        EMClient client = EMClient.getInstance();
+        client.getInstance().init(context, options);
+        //setup client listener
+        client.addClientListener((boolean success) -> {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("status", Boolean.valueOf(success));
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onClientMigrate2x,data);
+                });
+        });
+        //setup connection listener
+        client.addConnectionListener(new EMConnectionListener(){
+            @Override
+            public void onConnected() {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("isConnected", Boolean.TRUE);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
+                });
+            }
+
+            @Override
+            public void onDisconnected(int errorCode) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("isConnected", Boolean.FALSE);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
+                });
+            }
+        });
+        //setup multiple device event listener
+        client.addMultiDeviceListener(new EMMultiDeviceListener() {
+            @Override
+            public void onContactEvent(int event, String target, String ext) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("ext", ext);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
+                });
+            }
+
+            @Override
+            public void onGroupEvent(int event, String target, List<String> userNames) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("userNames", userNames);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
+                });
+            }
+        });
     }
 
     private void createAccount(Object args, Result result) {

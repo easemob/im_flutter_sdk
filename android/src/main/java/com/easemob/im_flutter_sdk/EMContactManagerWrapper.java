@@ -4,22 +4,91 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hyphenate.EMContactListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMContactManager;
 import com.hyphenate.exceptions.HyphenateException;
 
 import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     private EMContactManager manager;
+    private MethodChannel channel;
+
+    private static final int CONTACT_ADD = 0;
+    private static final int CONTACT_DELETE = 1;
+    private static final int INVITED = 2;
+    private static final int INVITATION_ACCEPTED = 3;
+    private static final int INVITATION_DECLINED = 4;
+
+    EMContactManagerWrapper(MethodChannel channel) {
+        this.channel = channel;
+    }
+
+    private void init() {
+        //setup contact listener
+        manager.setContactListener(new EMContactListener() {
+            @Override
+            public void onContactAdded(String userName) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", Integer.valueOf(CONTACT_ADD));
+                data.put("userName", userName);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
+            }
+
+            @Override
+            public void onContactDeleted(String userName) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", Integer.valueOf(CONTACT_DELETE));
+                data.put("userName", userName);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
+            }
+
+            @Override
+            public void onContactInvited(String userName, String reason) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", Integer.valueOf(INVITED));
+                data.put("userName", userName);
+                data.put("reason", reason);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
+            }
+
+            @Override
+            public void onFriendRequestAccepted(String userName) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", Integer.valueOf(INVITATION_ACCEPTED));
+                data.put("userName", userName);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
+            }
+
+            @Override
+            public void onFriendRequestDeclined(String userName) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", Integer.valueOf(INVITATION_DECLINED));
+                data.put("userName", userName);
+                post((Void)->{
+                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                });
+            }
+        });
+    }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
-        // init manager
         if(manager == null) {
             manager = EMClient.getInstance().contactManager();
+            init();
         }
         if (EMSDKMethod.addContact.equals(call.method)) {
             addContact(call.arguments, result);

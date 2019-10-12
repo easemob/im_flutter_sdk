@@ -18,7 +18,12 @@ class EMChatManager {
 
   final EMLog log;
 
-  EMChatManager._internal(EMLog log) : log = log;
+  final _messageListeners = List<EMMessageListener>();
+  Function _conversationUpdateFunc;
+
+  EMChatManager._internal(EMLog log) : log = log {
+    _addNativeMethodCallHandler();
+  }
 
   factory EMChatManager.getInstance({@required EMLog log}) {
     return _instance = _instance ?? EMChatManager._internal(log);
@@ -30,7 +35,29 @@ class EMChatManager {
         EMSDKMethod.sendMessage, message.toDataMap());
   }
 
-  ///  ackMessageRead - Acknowledgs [to] user that message [messageId] has been read.
+  void _addNativeMethodCallHandler() {
+    _emChatManagerChannel.setMethodCallHandler((MethodCall call) {
+      Map argMap = call.arguments;
+      if (call.method == EMSDKMethod.onMessageReceived) {
+        return _onMessageReceived(argMap);
+      } else if (call.method == EMSDKMethod.onCmdMessageReceived) {
+        return _onCmdMessageReceived(argMap);
+      } else if (call.method == EMSDKMethod.onMessageRead) {
+        return _onMessageRead(argMap);
+      } else if (call.method == EMSDKMethod.onMessageDelivered) {
+        return _onMessageDelivered(argMap);
+      } else if (call.method == EMSDKMethod.onMessageRecalled) {
+        return _onMessageRecalled(argMap);
+      } else if (call.method == EMSDKMethod.onMessageChanged) {
+        return _onMessageChanged(argMap);
+      } else if (call.method == EMSDKMethod.onConversationUpdate) {
+        return _conversationUpdateFunc();
+      }
+      return null;
+    });
+  }
+
+  ///  ackMessageRead - Acknowledges [to] user that message [messageId] has been read.
   void ackMessageRead(
       {@required String to,
       @required String messageId,
@@ -210,13 +237,21 @@ class EMChatManager {
   }
 
   /// addMessageListener - Adds [listener] to be aware of message change events.
-  void addMessageListener(EMMessageListener listener) {}
+  void addMessageListener(EMMessageListener listener) {
+    assert(listener != null);
+    _messageListeners.add(listener);
+  }
 
   /// removeMessageListener - Remove [listener] from the listener list.
-  void removeMessageListener(EMMessageListener listener) {}
+  void removeMessageListener(EMMessageListener listener) {
+    assert(listener != null);
+    _messageListeners.remove(listener);
+  }
 
   ///  onConversationUpdate - Sets conversation update callback function [onConversationUpdate].
-  void onConversationUpdate(onConversationUpdate()) {}
+  void onConversationUpdate(onConversationUpdate()) {
+    _conversationUpdateFunc = onConversationUpdate;
+  }
 
   /// setMessageListened - Sets [message] as listened.
   void setMessageListened(EMMessage message) {
@@ -258,7 +293,7 @@ class EMChatManager {
       "startMsgId": startMsgId
     });
     if (result['success']) {
-      return _EMCursorResult(result['message']);
+      return _EMCursorResult<EMMessage>(result['cursorId']);
     } else {
       return null;
     }
@@ -293,16 +328,90 @@ class EMChatManager {
       return null;
     }
   }
+
+  /// Listeners interface
+  Future<void> _onMessageReceived(Map map) async {
+    List<Map<String, Object>> list = map['messages'];
+    var messages = List<EMMessage>();
+    for (var message in list) {
+      messages.add(EMMessage.from(message));
+    }
+    for (var listener in _messageListeners) {
+      listener.onMessageReceived(messages);
+    }
+  }
+
+  Future<void> _onCmdMessageReceived(Map map) async {
+    List<Map<String, Object>> list = map['messages'];
+    var messages = List<EMMessage>();
+    for (var message in list) {
+      messages.add(EMMessage.from(message));
+    }
+    for (var listener in _messageListeners) {
+      listener.onCmdMessageReceived(messages);
+    }
+  }
+
+  Future<void> _onMessageRead(Map map) async {
+    List<Map<String, Object>> list = map['messages'];
+    var messages = List<EMMessage>();
+    for (var message in list) {
+      messages.add(EMMessage.from(message));
+    }
+    for (var listener in _messageListeners) {
+      listener.onMessageRead(messages);
+    }
+  }
+
+  Future<void> _onMessageDelivered(Map map) async {
+    List<Map<String, Object>> list = map['messages'];
+    var messages = List<EMMessage>();
+    for (var message in list) {
+      messages.add(EMMessage.from(message));
+    }
+    for (var listener in _messageListeners) {
+      listener.onMessageDelivered(messages);
+    }
+  }
+
+  Future<void> _onMessageRecalled(Map map) async {
+    List<Map<String, Object>> list = map['messages'];
+    var messages = List<EMMessage>();
+    for (var message in list) {
+      messages.add(EMMessage.from(message));
+    }
+    for (var listener in _messageListeners) {
+      listener.onMessageRecalled(messages);
+    }
+  }
+
+  Future<void> _onMessageChanged(Map map) async {
+    EMMessage message = EMMessage.from(map['message']);
+    Object change = map['change'];
+    for (var listener in _messageListeners) {
+      listener.onMessageChanged(message, change);
+    }
+  }
 }
 
-// TODO: EMCursorResult implementation
-class _EMCursorResult<EMMessage> extends EMCursorResult<EMMessage> {
-  _EMCursorResult(EMMessage message) : this._message = message;
+// _EMCursorResult - internal EMCursorResult implementation.
+class _EMCursorResult<T> extends EMCursorResult<T> {
+  static const _channelPrefix = 'com.easemob.im';
+  static const MethodChannel _emChatManagerChannel =
+      MethodChannel('$_channelPrefix/em_chat_manager');
+  _EMCursorResult(String cursorId) : this._cursorId = cursorId;
 
-  EMMessage _message;
+  final String _cursorId;
 
   @override
-  EMMessage getCursor() {
-    return _message;
+  Future<T> getCursor() async {
+    Map<String, Object> result = await _emChatManagerChannel
+        .invokeMethod(EMSDKMethod.getCursor, {"id": _cursorId});
+    if (result['success']) {
+      EMMessage message = EMMessage.from(result['message']);
+      return message as T;
+    } else {
+      return null;
+    }
   }
 }
