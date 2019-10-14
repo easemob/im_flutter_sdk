@@ -7,7 +7,8 @@
 
 #import "EMClientWrapper.h"
 #import <Hyphenate/Hyphenate.h>
-#import "ImFlutterSDKDefine.h"
+#import "EMSDKMethod.h"
+#import "EMLogWrapper.h"
 
 @interface EMClientWrapper () <EMClientDelegate>
 
