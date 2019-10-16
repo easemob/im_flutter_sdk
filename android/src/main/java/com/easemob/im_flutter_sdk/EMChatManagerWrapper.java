@@ -20,6 +20,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+@SuppressWarnings("unchecked")
+
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     // delegates all methods call to this manager
     private EMChatManager manager;

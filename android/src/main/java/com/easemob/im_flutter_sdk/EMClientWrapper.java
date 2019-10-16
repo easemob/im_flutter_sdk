@@ -25,6 +25,7 @@ import com.hyphenate.chat.EMContact;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@SuppressWarnings("unchecked")
 public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     EMClientWrapper(Context context, MethodChannel channel) {
