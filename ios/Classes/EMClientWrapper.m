@@ -78,7 +78,7 @@
 #pragma - mark EMClientDelegate
 - (void)connectionStateDidChange:(EMConnectionState)connectionState {
     BOOL isConnected = connectionState == EMConnectionConnected;
-    [self.channel invokeMethod:EMMethodKeyConnectionDidChanged
+    [self.channel invokeMethod:EMMethodKeyOnConnectionDidChanged
                      arguments:@{@"isConnected" : [NSNumber numberWithBool:isConnected]}];
 }
 
