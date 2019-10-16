@@ -24,7 +24,7 @@ public class EMSDKMethod {
     static final String getRobotsFromServer = "getRobotsFromServer";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String check = "check";
-    static final String onClientMigrate2x = "onClientMigrate2x";
+    static final String onClientMigrate2x = "onClientMigrate2x"; // 3.x sdk应该用不上
     static final String onConnectionDidChanged = "onConnectionDidChanged";
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
