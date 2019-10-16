@@ -14,6 +14,7 @@ import com.hyphenate.chat.EMVoiceMessageBody;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 class EMHelper {
     static EMMessage convertDataMapToMessage(Map<String, Object> args) {
         return null;
