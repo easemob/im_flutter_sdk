@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /** ImFlutterSdkPlugin */
+@SuppressWarnings("unchecked")
 public class ImFlutterSdkPlugin {
   private static final String CHANNEL_PREFIX = "com.easemob.im";
   static final Handler handler = new Handler(Looper.getMainLooper());
@@ -76,6 +77,7 @@ interface EMWrapper {
   }
 }
 
+@SuppressWarnings("unchecked")
 class EMWrapperCallBack implements EMCallBack{
   EMWrapperCallBack(Result result) {
     this.result = result;
