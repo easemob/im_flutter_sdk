@@ -14,6 +14,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+@SuppressWarnings("unchecked")
 public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     private EMContactManager manager;
     private MethodChannel channel;
