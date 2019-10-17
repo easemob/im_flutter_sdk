@@ -10,7 +10,7 @@ import 'em_sdk_method.dart';
 class EMContactManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emContactManagerChannel =
-      const MethodChannel('$_channelPrefix/em_contact_manager');
+      const MethodChannel('$_channelPrefix/em_contact_manager', JSONMethodCodec());
   static EMContactManager _instance;
 
   final EMLog log;
