@@ -7,8 +7,10 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.util.EMLog;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +24,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     // delegates all methods call to this manager
-    private EMChatManager manager;
+    private EMChatManager manager = null;
     // method channel for event broadcast back to flutter
     private MethodChannel channel;
     // cursor result map for call back getCursor()
@@ -38,11 +40,12 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onMessageReceived(List<EMMessage> messages) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                ArrayList<Map<String, Object>> msgs = new ArrayList<>();
                 for(EMMessage message : messages) {
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
+                EMLog.e("onMessageReceived->>",data.toString());
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
                 });

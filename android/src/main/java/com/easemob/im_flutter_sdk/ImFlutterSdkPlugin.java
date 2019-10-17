@@ -28,6 +28,7 @@ public class ImFlutterSdkPlugin {
     registerChatManagerWith(registrar);
     registerContactManagerWith(registrar);
     registerConversationWith(registrar);
+    registerEMLogWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -48,6 +49,11 @@ public class ImFlutterSdkPlugin {
   public static void registerConversationWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_conversation");
     channel.setMethodCallHandler(new EMConversationWrapper());
+  }
+
+  public static void registerEMLogWith(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_log");
+    channel.setMethodCallHandler(new EMLogWrapper(channel));
   }
 }
 

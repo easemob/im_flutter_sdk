@@ -2,6 +2,7 @@ import "dart:async";
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:meta/meta.dart';
 
 import "em_conversation.dart";
@@ -238,6 +239,7 @@ class EMChatManager {
 
   /// addMessageListener - Adds [listener] to be aware of message change events.
   void addMessageListener(EMMessageListener listener) {
+    _emChatManagerChannel.invokeMethod("initListener");
     assert(listener != null);
     _messageListeners.add(listener);
   }
@@ -331,13 +333,17 @@ class EMChatManager {
 
   /// Listeners interface
   Future<void> _onMessageReceived(Map map) async {
-    List<Map<String, Object>> list = map['messages'];
-    var messages = List<EMMessage>();
+    EMALog.errorLog("_onMessageReceived_", map['messages'].toString());
+    var list = map['messages'];
+    var messageList = List<EMMessage>();
     for (var message in list) {
-      messages.add(EMMessage.from(message));
+      EMALog.debugLog("_onMessageReceived_to", message.toString());
+//        messageList.add( EMMessage.from(message) );
+//      messages.add(EMMessage.from(message));
     }
+    EMALog.debugLog("_onMessageReceived_from", messageList.toString());
     for (var listener in _messageListeners) {
-      listener.onMessageReceived(messages);
+      listener.onMessageReceived(messageList);
     }
   }
 
