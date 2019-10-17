@@ -108,6 +108,12 @@ static NSString * const EMMethodKeyAppendMessage = @"appendMessage";
 static NSString * const EMMethodKeyUpdateConversationMessage = @"updateConversationMessage";
 static NSString * const EMMethodKeyGetMessageAttachmentPath = @"getMessageAttachmentPath";
 
+#pragma mark - EMGroupManagerWrapper
+
+static NSString * const EMMethodKeyGetJoinedGroups = @"getJoinedGroups";
+
+static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
+
 
 
 
