@@ -9,7 +9,7 @@ import "em_sdk_method.dart";
 class EMConversation {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emConversationChannel =
-      const MethodChannel('$_channelPrefix/em_conversation');
+      const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
   final String _conversationId;
   String get conversationId => _conversationId;
   EMConversationType _type;
