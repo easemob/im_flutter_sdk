@@ -142,7 +142,7 @@ typedef enum : NSUInteger {
 - (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *groups = [[EMClient.sharedClient.groupManager getJoinedGroups];
     [self wrapperCallBack:result
-                            error:[NSNull null]
+                            error:NULL
                          userInfo:@{@"groups":groups}];
 }
 
@@ -150,15 +150,15 @@ typedef enum : NSUInteger {
     EMError *aError;
     NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
     [self wrapperCallBack:result
-                            error:[NSNull null]
+                            error:NULL
                          userInfo:@{@"groups":groups}];
 }
 
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
      NSInteger page = param[@"page"];
      NSInteger pageSize = param[@"pageSize"];
-    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:page
-                                                                 pageSize:pageSize
+     [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:page
+                                                                  pageSize:pageSize
                                                                 completion:^(NSArray *aList, EMError *aError)
         {
              [self wrapperCallBack:result
@@ -168,291 +168,486 @@ typedef enum : NSUInteger {
 }
 
 - (void)getPublicGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+     NSString *cursor = param[@"cursor"];
+     NSInteger pageSize = param[@"pageSize"];
+     [EMClient.sharedClient.groupManager getPublicGroupsFromServerWithCursor:cursor
+                                                                    pageSize:pageSize
+                                                                  completion:^(EMCursorResult *aResult, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"result":aResult}];
+        }];
 }
 
 - (void)searchPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+     NSString *groupId = param[@"groupId"];
+     [EMClient.sharedClient.groupManager searchPublicGroupWithId:groupId
+                                                      completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)createGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+     NSString *subject = param[@"subject"];
+     NSString *description = param[@"description"];
+     NSArray *invitees = param[@"invitees"];
+     NSString *message = param[@"message"];
+     EMGroupOptions *options = param[@"options"];
+     [EMClient.sharedClient.groupManager createGroupWithSubject:subject
+                                                    description:description
+                                                       invitees:invitees
+                                                        message:message
+                                                        setting:options
+                                                     completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)getGroupSpecificationFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+     NSString *groupId = param[@"groupId"];
+     [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
+                                                                    completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)getGroupMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+     NSString *groupId = param[@"groupId"];
+     NSString *cursor = param[@"cursor"];
+     NSInteger pageSize = param[@"pageSize"];
+     [EMClient.sharedClient.groupManager getGroupMemberListFromServerWithId:groupId
+                                                                     cursor:cursor
+                                                                   pageSize:pageSize
+                                                                 completion:^(EMCursorResult *aResult, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"result":aResult}];
+        }];
 }
 
 - (void)getGroupBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      NSInteger pageNumber = param[@"pageNumber"];
+      NSInteger pageSize = param[@"pageSize"];
+      [EMClient.sharedClient.groupManager getGroupBlacklistFromServerWithId:groupId
+                                                                 pageNumber:pageNumber
+                                                                   pageSize:pageSize
+                                                                 completion:^(NSArray *aList, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"list":aList}];
+        }];
 }
 
 - (void)getGroupMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      NSInteger pageNumber = param[@"pageNumber"];
+      NSInteger pageSize = param[@"pageSize"];
+      [EMClient.sharedClient.groupManager getGroupMuteListFromServerWithId:groupId
+                                                                pageNumber:pageNumber
+                                                                  pageSize:pageSize
+                                                                completion:^(NSArray *aList, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"list":aList}];
+        }];
 }
 
 - (void)getGroupFileList:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      NSInteger pageNumber = param[@"pageNumber"];
+      NSInteger pageSize = param[@"pageSize"];
+      [EMClient.sharedClient.groupManager getGroupFileListWithId:groupId
+                                                      pageNumber:pageNumber
+                                                        pageSize:pageSize
+                                                      completion:^(NSArray *aList, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"list":aList}];
+        }];
 }
 
 - (void)getGroupAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager getGroupAnnouncementWithId:groupId
+                                                          completion:^(NSString *aAnnouncement, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"announcement":aAnnouncement}];
+        }];
 }
 
 - (void)addMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+ {
+      NSArray *members = param[@"members"];
+      NSString *groupId = param[@"groupId"];
+      NSString *message = param[@"message"];
+      [EMClient.sharedClient.groupManager addMembers:members
+                                             toGroup:groupId
+                                             message:message
+                                          completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)removeMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSArray *members = param[@"members"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager removeMembers:members
+                                              fromGroup:groupId
+                                             completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)blockMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSArray *members = param[@"members"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager blockMembers:members
+                                             fromGroup:groupId
+                                            completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)unblockMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSArray *members = param[@"members"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager unblockMembers:members
+                                               fromGroup:groupId
+                                              completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)updateGroupSubject:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *subject = param[@"subject"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager updateGroupSubject:members
+                                                    forGroup:groupId
+                                                  completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)updateDescription:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *description = param[@"description"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager updateDescription:members
+                                                   forGroup:groupId
+                                                 completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)leaveGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager leaveGroup:groupId
+                                          completion:^(EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:NULL];
+        }];
 }
 
 - (void)destroyGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager destroyGroup:groupId
+                                      finishCompletion:^(EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:NULL];
+        }];
 }
 
 - (void)blockGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager blockGroup:groupId
+                                          completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)unblockGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager unblockGroup:groupId
+                                            completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)updateGroupOwner:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *groupId = param[@"groupId"];
+      NSString *newOwner = param[@"newOwner"];
+      [EMClient.sharedClient.groupManager updateGroupOwner:groupId
+                                                  newOwner:newOwner
+                                                completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)addAdmin:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *admin = param[@"admin"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager addAdmin:admin
+                                           toGroup:groupId
+                                        completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)removeAdmin:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSString *admin = param[@"admin"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager removeAdmin:admin
+                                            fromGroup:groupId
+                                           completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)muteMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSArray *members = param[@"members"];
+      NSInteger muteMilliseconds = param[@"muteMilliseconds"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager muteMembers:members
+                                     muteMilliseconds:muteMilliseconds
+                                            fromGroup:groupId
+                                           completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)unmuteMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+      NSArray *members = param[@"members"];
+      NSString *groupId = param[@"groupId"];
+      [EMClient.sharedClient.groupManager unmuteMembers:members
+                                              fromGroup:groupId
+                                             completion:^(EMGroup *aGroup, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+        }];
 }
 
 - (void)uploadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *filePath = param[@"filePath"];
+    [EMClient.sharedClient.groupManager uploadGroupSharedFileWithId:groupId
+                                                           filePath:filePath
+                                                           progress:^(int progress)
+       {
+
+       } completion:^(EMGroupSharedFile *aSharedFile, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"sharedFile":aSharedFile}];
+       }];
 }
 
 - (void)downloadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *filePath = param[@"filePath"];
+    NSString *sharedFileId = param[@"sharedFileId"];
+    [EMClient.sharedClient.groupManager downloadGroupSharedFileWithId:groupId
+                                                             filePath:filePath
+                                                         sharedFileId:sharedFileId
+                                                             progress:^(int progress)
+       {
+
+       } completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)updateGroupAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *announcement = param[@"announcement"];
+    [EMClient.sharedClient.groupManager updateGroupAnnouncementWithId:groupId
+                                                         announcement:announcement
+                                                           completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)updateGroupExt:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *ext = param[@"ext"];
+    [EMClient.sharedClient.groupManager updateGroupExtWithId:groupId
+                                                         ext:ext
+                                                  completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)joinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    [EMClient.sharedClient.groupManager joinPublicGroup:groupId
+                                             completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)requestToJoinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *message = param[@"message"];
+    [EMClient.sharedClient.groupManager requestToJoinPublicGroup:groupId
+                                                         message:message
+                                                      completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)approveJoinGroupRequest:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *username = param[@"username"];
+    [EMClient.sharedClient.groupManager approveJoinGroupRequest:groupId
+                                                         sender:username
+                                                     completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)declineJoinGroupRequest:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *username = param[@"username"];
+    NSString *reason = param[@"reason"];
+    [EMClient.sharedClient.groupManager declineJoinGroupRequest:groupId
+                                                         sender:username
+                                                         reason:reason
+                                                     completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)acceptInvitationFromGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *username = param[@"username"];
+    [EMClient.sharedClient.groupManager acceptInvitationFromGroup:groupId
+                                                          inviter:username
+                                                       completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)declineGroupInvitation:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    NSString *inviter = param[@"inviter"];
+    NSString *reason = param[@"reason"];
+    [EMClient.sharedClient.groupManager declineGroupInvitation:groupId
+                                                       inviter:inviter
+                                                        reason:reason
+                                                    completion:^(EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:NULL];
+       }];
 }
 
 - (void)updatePushServiceForGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    BOOL isEnable = param[@"isEnable"];
+    [EMClient.sharedClient.groupManager updatePushServiceForGroup:groupId
+                                                         isPushEnabled:isEnable
+                                                      completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 - (void)updatePushServiceForGroups:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    NSString *groupId = param[@"groupId"];
+    BOOL isEnable = param[@"isEnable"];
+    [EMClient.sharedClient.groupManager updatePushServiceForGroups:groupId
+                                                         isPushEnabled:isEnable
+                                                      completion:^(EMGroup *aGroup, EMError *aError)
+       {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"group":aGroup}];
+       }];
 }
 
 
