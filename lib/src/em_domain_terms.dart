@@ -77,12 +77,12 @@ class EMMessage {
     this.progress = 0,
     this.status ,
     this.to = '',
-    int type,
+    this.type,
     this.unread = true,
   })  : _attributes = HashMap<String, dynamic>(),
         _conversationId = '',
         _deliverAcked = false,
-        _type = type,
+        _typex = type,
         _userName = '';
 
   /// Constructors to create various of messages.
@@ -130,8 +130,9 @@ class EMMessage {
 
   final String _conversationId;
   String get conversationId => _conversationId;
-  final int _type;
-  int get type => _type;
+  final int _typex;
+  int get typex => _typex;
+
   final String _userName;
   String get userName => _userName;
 
@@ -149,6 +150,7 @@ class EMMessage {
   int status;
   String to;
   bool unread;
+  int type;
 
   /// attributes holding arbitrary key/value pair
   final Map<String, dynamic> _attributes;
@@ -185,7 +187,7 @@ class EMMessage {
     result['progress'] = progress;
     result['status'] = status;
     result['to'] = to;
-    result['type'] = _type;
+    result['type'] = type;
     result['unread'] = unread;
     result['userName'] = _userName;
     return result;
@@ -194,22 +196,22 @@ class EMMessage {
   EMMessage.from(Map<String, dynamic> data)
       :
         _attributes = data['attributes'],
+        localTime = data['localTime'],
+        chatType = fromChatType(data),
+        msgId = data['msgId'],
+        progress = data['progress'],
+        body = EMMessageBody.from(data['body']),
+        delivered = data['delivered'],
+        from = data['from'],
+        direction = fromDirect(data),
+        listened = data['listened'],
         _conversationId = data['conversationId'],
-        _type = fromType(data),
+        status = fromEMMessageStatus(data),
+        msgTime = data['msgTime'],
+        to = data['to'],
         _userName = data['userName'],
         acked = data['acked'],
-        body = EMMessageBody.from(data['body']),
-        chatType = fromChatType(data),
-        delivered = data['delivered'],
-        direction = fromDirect(data),
-        from = data['from'],
-        listened = data['listened'],
-        localTime = data['localTime'],
-        msgId = data['msgId'],
-        msgTime = data['msgTime'],
-        progress = data['progress'],
-        status = fromEMMessageStatus(data),
-        to = data['to'],
+        _typex = fromType(data),
         unread = data['unread'];
 }
   fromType(Map<String, dynamic> data){
@@ -317,8 +319,10 @@ class EMContact {
 abstract class EMMessageBody {
   Map<String, dynamic> toDataMap();
   static EMMessageBody from(Map<String, dynamic> data) {
+    print("EMMessageBody-->"+fromType(data));
     switch (fromType(data)) {
       case EMMessageType.TXT:
+        print( EMTextMessageBody.fromData(data));
         return EMTextMessageBody.fromData(data);
       case EMMessageType.CMD:
         return EMCmdMessageBody.fromData(data);
@@ -330,8 +334,6 @@ abstract class EMMessageBody {
         return EMLocationMessageBody.fromData(data);
       case EMMessageType.VOICE:
         return EMVoiceMessageBody.fromData(data);
-      //case Type.VIDEO:
-      //return EMVideoMessageBody.fromData(data);
       default:
         return null;
     }
