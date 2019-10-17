@@ -8,9 +8,8 @@
 #import "EMClientWrapper.h"
 #import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
-#import "EMLogWrapper.h"
 
-@interface EMClientWrapper () <EMClientDelegate>
+@interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
 
 @end
 
@@ -19,6 +18,8 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
+        [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+        [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     }
     return self;
 }
@@ -26,55 +27,51 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"wrong type");
+        return;
+    }
     if ([EMMethodKeyInit isEqualToString:call.method]) {
-        [self initSDKWithArg:call.arguments result:result];
+        [self initSDKWithDict:call.arguments result:result];
     } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
         [self login:call.arguments result:result];
     } else {
-        result(FlutterMethodNotImplemented);
+        [super handleMethodCall:call result:result];
     }
 }
 
-- (void)initSDKWithArg:(id)arg result:(FlutterResult)result {
-    if([arg isKindOfClass:[NSDictionary class]]) {
-        NSDictionary *param = (NSDictionary *)arg;
-        NSString *appKey = param[@"appkey"];
-        if (appKey) {
-            EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-            [EMClient.sharedClient initializeSDKWithOptions:options];
-            [EMClient.sharedClient addDelegate:self delegateQueue:nil];
-        }else {
-
-        }
-    }
+- (void)initSDKWithDict:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
 }
 
-- (void)createAccount:(id)arg result:(FlutterResult)result {
-    if([arg isKindOfClass:[NSDictionary class]]) {
-        NSDictionary *param = (NSDictionary *)arg;
-        NSString *username = param[@"userName"];
-        NSString *password = param[@"password"];
-        [EMClient.sharedClient registerWithUsername:username
-                                             password:password
-                                           completion:^(NSString *aUsername, EMError *aError)
-        {
-            // result(aError ? [self emError2FlutterError:aError] : @"");
-        }];
-    }
+- (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *username = param[@"userName"];
+    NSString *password = param[@"password"];
+    [EMClient.sharedClient registerWithUsername:username
+                                         password:password
+                                       completion:^(NSString *aUsername, EMError *aError)
+    {
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:@{@"aUsername":aUsername}];
+    }];
 }
 
-- (void)login:(id)arg result:(FlutterResult)result {
-    if([arg isKindOfClass:[NSDictionary class]]) {
-        NSDictionary *param = (NSDictionary *)arg;
-        NSString *username = param[@"userName"];
-        NSString *password = param[@"password"];
-        [EMClient.sharedClient loginWithUsername:username
-                                        password:password
-                                      completion:^(NSString *aUsername, EMError *aError)
-        {
-            // result(aError ? [self emError2FlutterError:aError] : @"");
-        }];
-    }
+- (void)login:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *username = param[@"userName"];
+    NSString *password = param[@"password"];
+    [EMClient.sharedClient loginWithUsername:username
+                                    password:password
+                                  completion:^(NSString *aUsername, EMError *aError)
+    {
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:@{@"aUsername":aUsername}];
+    }];
 }
 
 #pragma - mark EMClientDelegate
@@ -105,5 +102,18 @@
     
 }
 
+#pragma mark - EMMultiDevicesDelegate
+
+- (void)multiDevicesContactEventDidReceive:(EMMultiDevicesEvent)aEvent
+                                  username:(NSString *)aUsername
+                                       ext:(NSString *)aExt {
+    
+}
+
+- (void)multiDevicesGroupEventDidReceive:(EMMultiDevicesEvent)aEvent
+                                 groupId:(NSString *)aGroupId
+                                     ext:(id)aExt {
+    
+}
 
 @end
