@@ -8,7 +8,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> implements EMConnectionListener {
+class _MyAppState extends State<MyApp> implements EMConnectionListener,EMMessageListener{
   @override
   void initState() {
     //TODO: init sdk;
@@ -16,17 +16,19 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener {
     EMClient.getInstance().init(options);
 
     EMClient.getInstance().login(
-        userName: "du001",
+        userName: "omg2",
         password: "1",
         onSuccess: () {
           print("login succes");
+          EMALog.debugLog("main","login succes");
         },
         onError: (code, desc) {
           print("login error");
+          EMALog.errorLog("main","login onError" + " code: " + code.toString() + "desc: " + desc);
         });
 
     EMClient.getInstance().addConnectionListener(this);
-
+    EMClient.getInstance().chatManager().addMessageListener(this);
     super.initState();
   }
 
@@ -60,5 +62,31 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener {
   void onDisconnected() {
     // TODO: implement onDisconnected
     print("网络连接断开");
+  }
+  @override
+  void onMessageRecalled(List<EMMessage> messages) {
+    // TODO: implement onMessageRecalled
+  }
+  @override
+  void onMessageRead(List<EMMessage> messages) {
+    // TODO: implement onMessageRead
+  }
+  @override
+  void onMessageDelivered(List<EMMessage> messages) {
+    // TODO: implement onMessageDelivered
+  }
+  @override
+  void onMessageChanged(EMMessage message, Object change) {
+    // TODO: implement onMessageChanged
+  }
+  @override
+  void onCmdMessageReceived(List<EMMessage> messages) {
+    // TODO: implement onCmdMessageReceived
+    EMALog.errorLog('onCmdMessageReceived--->', messages.toString());
+  }
+  @override
+  void onMessageReceived(List<EMMessage> messages) {
+    // TODO: implement onMessageReceived
+    EMALog.debugLog('onMessageReceived--->', messages.toString());
   }
 }
