@@ -34,6 +34,7 @@ typedef enum : NSUInteger {
 
 
 #pragma mark - FlutterPlugin
+
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
     result(FlutterMethodNotImplemented);
