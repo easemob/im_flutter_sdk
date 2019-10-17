@@ -108,6 +108,51 @@ static NSString * const EMMethodKeyAppendMessage = @"appendMessage";
 static NSString * const EMMethodKeyUpdateConversationMessage = @"updateConversationMessage";
 static NSString * const EMMethodKeyGetMessageAttachmentPath = @"getMessageAttachmentPath";
 
+#pragma mark - EMGroupManagerWrapper
+
+static NSString * const EMMethodKeyGetJoinedGroups = @"getJoinedGroups";
+static NSString * const EMMethodKeyGetGroupsWithoutPushNotification = @"getGroupsWithoutPushNotification";
+static NSString * const EMMethodKeyGetJoinedGroupsFromServer = @"getJoinedGroupsFromServer";
+static NSString * const EMMethodKeyGetPublicGroupsFromServer = @"getPublicGroupsFromServer";
+static NSString * const EMMethodKeySearchPublicGroup = @"searchPublicGroup";
+static NSString * const EMMethodKeyCreateGroup = @"createGroup";
+static NSString * const EMMethodKeyGetGroupSpecificationFromServer = @"getGroupSpecificationFromServer";
+static NSString * const EMMethodKeyGetGroupMemberListFromServer = @"getGroupMemberListFromServer";
+static NSString * const EMMethodKeyGetGroupBlacklistFromServer = @"getGroupBlacklistFromServer";
+static NSString * const EMMethodKeyGetGroupMuteListFromServer = @"getGroupMuteListFromServer";
+static NSString * const EMMethodKeyGetGroupFileList = @"getGroupFileList";
+static NSString * const EMMethodKeyGetGroupAnnouncement = @"getGroupAnnouncement";
+static NSString * const EMMethodKeyAddMembers = @"addMembers";
+static NSString * const EMMethodKeyRemoveMembers = @"removeMembers";
+static NSString * const EMMethodKeyBlockMembers = @"blockMembers";
+static NSString * const EMMethodKeyUnblockMembers = @"unblockMembers";
+static NSString * const EMMethodKeyUpdateGroupSubject = @"updateGroupSubject";
+static NSString * const EMMethodKeyUpdateDescription = @"updateDescription";
+static NSString * const EMMethodKeyLeaveGroup = @"leaveGroup";
+static NSString * const EMMethodKeyDestroyGroup = @"destroyGroup";
+static NSString * const EMMethodKeyBlockGroup = @"blockGroup";
+static NSString * const EMMethodKeyUnblockGroup = @"unblockGroup";
+static NSString * const EMMethodKeyUpdateGroupOwner = @"updateGroupOwner";
+static NSString * const EMMethodKeyAddAdmin = @"addAdmin";
+static NSString * const EMMethodKeyRemoveAdmin = @"removeAdmin";
+static NSString * const EMMethodKeyMuteMembers = @"muteMembers";
+static NSString * const EMMethodKeyUnmuteMembers = @"unmuteMembers";
+static NSString * const EMMethodKeyUploadGroupSharedFile = @"uploadGroupSharedFile";
+static NSString * const EMMethodKeyDownloadGroupSharedFile = @"downloadGroupSharedFile";
+static NSString * const EMMethodKeyRemoveGroupSharedFile = @"removeGroupSharedFile";
+static NSString * const EMMethodKeyUpdateGroupAnnouncement = @"updateGroupAnnouncement";
+static NSString * const EMMethodKeyUpdateGroupExt = @"updateGroupExt";
+static NSString * const EMMethodKeyJoinPublicGroup = @"joinPublicGroup";
+static NSString * const EMMethodKeyRequestToJoinPublicGroup = @"requestToJoinPublicGroup";
+static NSString * const EMMethodKeyApproveJoinGroupRequest = @"approveJoinGroupRequest";
+static NSString * const EMMethodKeyDeclineJoinGroupRequest = @"declineJoinGroupRequest";
+static NSString * const EMMethodKeyAcceptInvitationFromGroup = @"acceptInvitationFromGroup";
+static NSString * const EMMethodKeyDeclineGroupInvitation = @"declineGroupInvitation";
+static NSString * const EMMethodKeyUpdatePushServiceForGroup = @"updatePushServiceForGroup";
+static NSString * const EMMethodKeyUpdatePushServiceForGroups = @"updatePushServiceForGroups";
+
+static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
+
 
 
 
