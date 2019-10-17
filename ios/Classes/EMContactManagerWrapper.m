@@ -40,6 +40,12 @@ typedef enum : NSUInteger {
     result(FlutterMethodNotImplemented);
 }
 
+
+#pragma mark - Actions
+- (void)addContact:(id)arg result:(FlutterResult)result {
+}
+
+
 #pragma mark - EMContactManagerDelegate
 
 - (void)friendshipDidAddByUser:(NSString *)aUsername {

@@ -83,7 +83,7 @@ class EMClient {
   void login(
       {@required String userName,
       @required String password,
-      onSuccess(),
+      onSuccess(String username),
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.login, {"userName": userName, "password": password});
@@ -93,7 +93,7 @@ class EMClient {
         if (onSuccess != null) {
           // set current user name
           _currentUser = userName;
-          onSuccess();
+          onSuccess(_currentUser);
         }
       } else {
         if (onError != null) onError(response['code'], response['desc']);
