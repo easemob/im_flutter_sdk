@@ -23,6 +23,8 @@
     return self;
 }
 
+#pragma mark - FlutterPlugin
+
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([EMMethodKeyInit isEqualToString:call.method]) {
         [self initSDKWithArg:call.arguments result:result];
@@ -76,10 +78,32 @@
 }
 
 #pragma - mark EMClientDelegate
-- (void)connectionStateDidChange:(EMConnectionState)connectionState {
-    BOOL isConnected = connectionState == EMConnectionConnected;
+
+- (void)connectionStateDidChange:(EMConnectionState)aConnectionState {
+    BOOL isConnected = aConnectionState == EMConnectionConnected;
     [self.channel invokeMethod:EMMethodKeyOnConnectionDidChanged
                      arguments:@{@"isConnected" : [NSNumber numberWithBool:isConnected]}];
 }
+
+- (void)autoLoginDidCompleteWithError:(EMError *)aError {
+    
+}
+
+- (void)userAccountDidLoginFromOtherDevice {
+    
+}
+
+- (void)userAccountDidRemoveFromServer {
+    
+}
+
+- (void)userDidForbidByServer {
+    
+}
+
+- (void)userAccountDidForcedToLogout:(EMError *)aError {
+    
+}
+
 
 @end
