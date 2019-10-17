@@ -14,15 +14,14 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener {
     //TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMClient.getInstance().init(options);
-
     EMClient.getInstance().login(
         userName: "du001",
         password: "1",
-        onSuccess: () {
-          print("login succes");
+        onSuccess: (String username) {
+          print("login succes: " + username);
         },
         onError: (code, desc) {
-          print("login error");
+          print("code :" + code.toString() + " " + "desc :" + desc);
         });
 
     EMClient.getInstance().addConnectionListener(this);
