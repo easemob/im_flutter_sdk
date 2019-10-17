@@ -51,9 +51,410 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    
-    result(FlutterMethodNotImplemented);
+    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"wrong type");
+            return;
+        }
+        if ([EMMethodKeyGetJoinedGroups isEqualToString:call.method]) {
+            [self getJoinedGroups:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupsWithoutPushNotification isEqualToString:call.method]) {
+            [self getGroupsWithoutPushNotification :call.arguments result:result];
+        } else if ([EMMethodKeyGetJoinedGroupsFromServer isEqualToString:call.method]) {
+            [self getJoinedGroupsFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyGetPublicGroupsFromServer isEqualToString:call.method]) {
+            [self getPublicGroupsFromServer:call.arguments result:result];
+        } else if ([EMMethodKeySearchPublicGroup isEqualToString:call.method]) {
+            [self searchPublicGroup:call.arguments result:result];
+        } else if ([EMMethodKeyCreateGroup isEqualToString:call.method]) {
+            [self createGroup:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupSpecificationFromServer isEqualToString:call.method]) {
+            [self getGroupSpecificationFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupMemberListFromServer isEqualToString:call.method]) {
+            [self getGroupMemberListFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupBlacklistFromServer isEqualToString:call.method]) {
+            [self getGroupBlacklistFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupMuteListFromServer isEqualToString:call.method]) {
+            [self getGroupMuteListFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupFileList isEqualToString:call.method]) {
+            [self getGroupFileList:call.arguments result:result];
+        } else if ([EMMethodKeyGetGroupAnnouncement isEqualToString:call.method]) {
+            [self getGroupAnnouncement:call.arguments result:result];
+        } else if ([EMMethodKeyAddMembers isEqualToString:call.method]) {
+            [self addMembers:call.arguments result:result];
+        } else if ([EMMethodKeyRemoveMembers isEqualToString:call.method]) {
+            [self removeMembers:call.arguments result:result];
+        } else if ([EMMethodKeyBlockMembers isEqualToString:call.method]) {
+            [self blockMembers:call.arguments result:result];
+        } else if ([EMMethodKeyUnblockMembers isEqualToString:call.method]) {
+            [self unblockMembers:call.arguments result:result];
+        } else if ([EMMethodKeyUpdateGroupSubject isEqualToString:call.method]) {
+            [self updateGroupSubject:call.arguments result:result];
+        } else if ([EMMethodKeyUpdateDescription isEqualToString:call.method]) {
+            [self updateDescription:call.arguments result:result];
+        } else if ([EMMethodKeyLeaveGroup isEqualToString:call.method]) {
+            [self leaveGroup:call.arguments result:result];
+        } else if ([EMMethodKeyDestroyGroup isEqualToString:call.method]) {
+            [self destroyGroup:call.arguments result:result];
+        } else if ([EMMethodKeyBlockGroup isEqualToString:call.method]) {
+            [self blockGroup:call.arguments result:result];
+        } else if ([EMMethodKeyUnblockGroup isEqualToString:call.method]) {
+            [self unblockGroup:call.arguments result:result];
+        } else if ([EMMethodKeyUpdateGroupOwner isEqualToString:call.method]) {
+            [self updateGroupOwner:call.arguments result:result];
+        } else if ([EMMethodKeyAddAdmin isEqualToString:call.method]) {
+            [self addAdmin:call.arguments result:result];
+        } else if ([EMMethodKeyRemoveAdmin isEqualToString:call.method]) {
+            [self removeAdmin:call.arguments result:result];
+        } else if ([EMMethodKeyMuteMembers isEqualToString:call.method]) {
+            [self muteMembers:call.arguments result:result];
+        } else if ([EMMethodKeyUnmuteMembers isEqualToString:call.method]) {
+            [self unmuteMembers:call.arguments result:result];
+        } else if ([EMMethodKeyUploadGroupSharedFile isEqualToString:call.method]) {
+            [self uploadGroupSharedFile:call.arguments result:result];
+        } else if ([EMMethodKeyDownloadGroupSharedFile isEqualToString:call.method]) {
+            [self downloadGroupSharedFile:call.arguments result:result];
+        } else if ([EMMethodKeyUpdateGroupAnnouncement isEqualToString:call.method]) {
+            [self updateGroupAnnouncement:call.arguments result:result];
+        } else if ([EMMethodKeyUpdateGroupExt isEqualToString:call.method]) {
+            [self updateGroupExt:call.arguments result:result];
+        } else if ([EMMethodKeyJoinPublicGroup isEqualToString:call.method]) {
+            [self joinPublicGroup:call.arguments result:result];
+        } else if ([EMMethodKeyRequestToJoinPublicGroup isEqualToString:call.method]) {
+            [self requestToJoinPublicGroup:call.arguments result:result];
+        } else if ([EMMethodKeyApproveJoinGroupRequest isEqualToString:call.method]) {
+            [self approveJoinGroupRequest:call.arguments result:result];
+        } else if ([EMMethodKeyDeclineJoinGroupRequest isEqualToString:call.method]) {
+            [self declineJoinGroupRequest:call.arguments result:result];
+        } else if ([EMMethodKeyAcceptInvitationFromGroup isEqualToString:call.method]) {
+            [self acceptInvitationFromGroup:call.arguments result:result];
+        } else if ([EMMethodKeyDeclineGroupInvitation isEqualToString:call.method]) {
+            [self declineGroupInvitation:call.arguments result:result];
+        } else if ([EMMethodKeyUpdatePushServiceForGroup isEqualToString:call.method]) {
+            [self updatePushServiceForGroup:call.arguments result:result];
+        } else if ([EMMethodKeyUpdatePushServiceForGroups isEqualToString:call.method]) {
+            [self updatePushServiceForGroups:call.arguments result:result];
+        } else {
+            [super handleMethodCall:call result:result];
+        }
 }
+
+
+- (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
+    NSArray *groups = [[EMClient.sharedClient.groupManager getJoinedGroups];
+    [self wrapperCallBack:result
+                            error:[NSNull null]
+                         userInfo:@{@"groups":groups}];
+}
+
+- (void)getGroupsWithoutPushNotification:(NSDictionary *)param result:(FlutterResult)result {
+    EMError *aError;
+    NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
+    [self wrapperCallBack:result
+                            error:[NSNull null]
+                         userInfo:@{@"groups":groups}];
+}
+
+- (void)getJoinedGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
+     NSInteger page = param[@"page"];
+     NSInteger pageSize = param[@"pageSize"];
+    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:page
+                                                                 pageSize:pageSize
+                                                                completion:^(NSArray *aList, EMError *aError)
+        {
+             [self wrapperCallBack:result
+                                     error:aError
+                                  userInfo:@{@"list":aList}];
+        }];
+}
+
+- (void)getPublicGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)searchPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)createGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)getGroupSpecificationFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)getGroupMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)getGroupBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)getGroupMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)getGroupFileList:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)getGroupAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)addMembers:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)removeMembers:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)blockMembers:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)unblockMembers:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updateGroupSubject:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updateDescription:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)leaveGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)destroyGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)blockGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)unblockGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updateGroupOwner:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)addAdmin:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)removeAdmin:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)muteMembers:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)unmuteMembers:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)uploadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)downloadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updateGroupAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updateGroupExt:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)joinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)requestToJoinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)approveJoinGroupRequest:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)declineJoinGroupRequest:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)acceptInvitationFromGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)declineGroupInvitation:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updatePushServiceForGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
+- (void)updatePushServiceForGroups:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *appKey = param[@"appKey"];
+    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
+    options.enableConsoleLog = YES;
+    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+}
+
 
 #pragma mark - EMGroupManagerDelegate
 
