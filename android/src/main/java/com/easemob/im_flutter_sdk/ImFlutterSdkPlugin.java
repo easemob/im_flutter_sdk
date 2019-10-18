@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /** ImFlutterSdkPlugin */
+@SuppressWarnings("unchecked")
 public class ImFlutterSdkPlugin {
   private static final String CHANNEL_PREFIX = "com.easemob.im";
   static final Handler handler = new Handler(Looper.getMainLooper());
@@ -30,32 +31,43 @@ public class ImFlutterSdkPlugin {
     registerContactManagerWith(registrar);
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
+    registerGroupManagerWith(registrar);
+//    registerGroupWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_client");
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_client", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMClientWrapper(registrar.context(), channel));
   }
 
   public static void registerChatManagerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_manager");
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMChatManagerWrapper(channel));
   }
 
   public static void registerContactManagerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_contact_manager");
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_contact_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMContactManagerWrapper(channel));
   }
 
   public static void registerConversationWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_conversation");
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_conversation", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMConversationWrapper());
   }
 
   public static void registerEMChatRoomManagerWrapper(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_chat_room_manager",JSONMethodCodec.INSTANCE);
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_chat_room_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
   }
+  public static void registerGroupManagerWith(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group_manager", JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
+  }
+
+//  public static void registerGroupWith(Registrar registrar) {
+//    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group", JSONMethodCodec.INSTANCE);
+//    channel.setMethodCallHandler(new EMGroupWrapper());
+//  }
 }
 
 interface EMWrapper {
@@ -83,7 +95,10 @@ interface EMWrapper {
   }
 }
 
-class EMWrapperCallBack implements EMCallBack {
+
+@SuppressWarnings("unchecked")
+class EMWrapperCallBack implements EMCallBack{
+
   EMWrapperCallBack(Result result) {
     this.result = result;
   }
@@ -105,6 +120,17 @@ class EMWrapperCallBack implements EMCallBack {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
       result.success(data);
+
+        new Thread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+
+            }catch(Exception e){
+              e.printStackTrace();
+            }
+          }
+        }).start();
     });
   }
 
@@ -125,40 +151,41 @@ class EMWrapperCallBack implements EMCallBack {
   }
 }
 
-  class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
-//
-    EMValueWrapperCallBack(MethodChannel.Result result) {
-      this.result = result;
-    }
 
-    private MethodChannel.Result result;
+class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
-    void post(Consumer<Void> func) {
-      ImFlutterSdkPlugin.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          func.accept(null);
-        }
-      });
-    }
+  EMValueWrapperCallBack(MethodChannel.Result result) {
+    this.result = result;
+  }
 
-    @Override
-    public void onSuccess(Object value) {
-      post((Void) -> {
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        result.success(data);
-      });
-    }
+  private MethodChannel.Result result;
 
-    @Override
-    public void onError(int error, String errorMsg) {
-      post((Void) -> {
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.FALSE);
-        data.put("code", error);
-        data.put("desc", errorMsg);
-        result.success(data);
-      });
-    }
+  void post(Consumer<Void> func) {
+    ImFlutterSdkPlugin.handler.post(new Runnable() {
+      @Override
+      public void run() {
+        func.accept(null);
+      }
+    });
+  }
+
+  @Override
+  public void onSuccess(Object value) {
+    post((Void) -> {
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put("success", Boolean.TRUE);
+      result.success(data);
+    });
+  }
+
+  @Override
+  public void onError(int error, String errorMsg) {
+    post((Void) -> {
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put("success", Boolean.FALSE);
+      data.put("code", error);
+      data.put("desc", errorMsg);
+      result.success(data);
+    });
+  }
 }

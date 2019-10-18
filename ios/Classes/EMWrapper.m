@@ -7,6 +7,7 @@
 
 #import "EMWrapper.h"
 
+
 @implementation EMWrapper
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -20,6 +21,33 @@
     return self;
 }
 
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)wrapperCallBack:(FlutterResult)result
+                  error:(EMError *)error
+               userInfo:(NSObject *)userinfo {
+    if (result) {
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        if (!error) {
+            dic[@"success"] = @YES;
+            if (userinfo) {
+                dic[@"arbitrary_value"] = userinfo;
+            }
+        }else {
+            dic[@"success"] = @NO;
+            dic[@"code"] = @(error.code);
+            dic[@"desc"] = error.errorDescription;
+        }
+        
+        result(dic);
+    }
 }
+
+- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    result(FlutterMethodNotImplemented);
+}
+
+
++ (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
+    
+}
+
 @end

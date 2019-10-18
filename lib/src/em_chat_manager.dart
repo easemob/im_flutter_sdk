@@ -14,7 +14,7 @@ import 'em_sdk_method.dart';
 class EMChatManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emChatManagerChannel =
-      const MethodChannel('$_channelPrefix/em_chat_manager');
+      const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
   static EMChatManager _instance;
 
   final EMLog log;
