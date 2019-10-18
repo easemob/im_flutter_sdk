@@ -86,14 +86,13 @@ typedef enum : NSUInteger {
     } else {
         [super handleMethodCall:call result:result];
     }
-    
 }
 
 #pragma mark - Actions
 
 - (void)getChatroomsFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSInteger page = param[@"page"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger page = [param[@"page"] integerValue];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomsFromServerWithPage:page
                                                              pageSize:pageSize
                                                            completion:^(EMPageResult *aResult, EMError *aError)
@@ -110,7 +109,7 @@ typedef enum : NSUInteger {
     NSString *description = param[@"description"];
     NSArray *invitees = param[@"invitees"];
     NSString *message = param[@"message"];
-    NSInteger maxMembersCount = param[@"maxMembersCount"];
+    NSInteger maxMembersCount = [param[@"maxMembersCount"] integerValue];
     [EMClient.sharedClient.roomManager createChatroomWithSubject:subject
                                                      description:description
                                                         invitees:invitees
@@ -142,7 +141,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:NULL];
+                     userInfo:nil];
     }];
 }
 
@@ -160,7 +159,7 @@ typedef enum : NSUInteger {
 - (void)getChatroomMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *chatroomId = param[@"chatroomId"];
     NSString *cursor = param[@"cursor"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomMemberListFromServerWithId:chatroomId
                                                                       cursor:cursor
                                                                     pageSize:pageSize
@@ -174,8 +173,8 @@ typedef enum : NSUInteger {
 
 - (void)getChatroomBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *chatroomId = param[@"chatroomId"];
-    NSInteger pageNumber = param[@"pageNumber"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageNumber = [param[@"pageNumber"] integerValue];;
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomBlacklistFromServerWithId:chatroomId
                                                                  pageNumber:pageNumber
                                                                    pageSize:pageSize
@@ -189,8 +188,8 @@ typedef enum : NSUInteger {
 
 - (void)getChatroomMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *chatroomId = param[@"chatroomId"];
-    NSInteger pageNumber = param[@"pageNumber"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomMuteListFromServerWithId:chatroomId
                                                                 pageNumber:pageNumber
                                                                   pageSize:pageSize
@@ -319,7 +318,7 @@ typedef enum : NSUInteger {
 
 - (void)chatRoomMuteMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *muteMembers = param[@"muteMembers"];
-    NSInteger muteMilliseconds = param[@"muteMilliseconds"];
+    NSInteger muteMilliseconds = [param[@"muteMilliseconds"] integerValue];
     NSString *chatroomId = param[@"chatroomId"];
     [EMClient.sharedClient.roomManager muteMembers:muteMembers
                                   muteMilliseconds:muteMilliseconds

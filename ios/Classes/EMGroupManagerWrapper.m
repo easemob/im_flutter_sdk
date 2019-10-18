@@ -143,7 +143,7 @@ typedef enum : NSUInteger {
 - (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *groups = [EMClient.sharedClient.groupManager getJoinedGroups];
     [self wrapperCallBack:result
-                    error:NULL
+                    error:nil
                  userInfo:@{@"groups":groups}];
 }
 
@@ -151,13 +151,13 @@ typedef enum : NSUInteger {
     EMError *aError;
     NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
     [self wrapperCallBack:result
-                    error:NULL
+                    error:nil
                  userInfo:@{@"groups":groups}];
 }
 
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSInteger page = param[@"page"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger page = [param[@"page"] integerValue];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:page
                                                                  pageSize:pageSize
                                                                completion:^(NSArray *aList, EMError *aError)
@@ -170,7 +170,7 @@ typedef enum : NSUInteger {
 
 - (void)getPublicGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *cursor = param[@"cursor"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getPublicGroupsFromServerWithCursor:cursor
                                                                    pageSize:pageSize
                                                                  completion:^(EMCursorResult *aResult, EMError *aError)
@@ -225,7 +225,7 @@ typedef enum : NSUInteger {
 - (void)getGroupMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
     NSString *cursor = param[@"cursor"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupMemberListFromServerWithId:groupId
                                                                     cursor:cursor
                                                                   pageSize:pageSize
@@ -239,8 +239,8 @@ typedef enum : NSUInteger {
 
 - (void)getGroupBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSInteger pageNumber = param[@"pageNumber"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupBlacklistFromServerWithId:groupId
                                                                pageNumber:pageNumber
                                                                  pageSize:pageSize
@@ -254,8 +254,8 @@ typedef enum : NSUInteger {
 
 - (void)getGroupMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSInteger pageNumber = param[@"pageNumber"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupMuteListFromServerWithId:groupId
                                                               pageNumber:pageNumber
                                                                 pageSize:pageSize
@@ -269,8 +269,8 @@ typedef enum : NSUInteger {
 
 - (void)getGroupFileList:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSInteger pageNumber = param[@"pageNumber"];
-    NSInteger pageSize = param[@"pageSize"];
+    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupFileListWithId:groupId
                                                     pageNumber:pageNumber
                                                       pageSize:pageSize
@@ -380,7 +380,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:NULL];
+                     userInfo:nil];
     }];
 }
 
@@ -391,7 +391,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:NULL];
+                     userInfo:nil];
     }];
 }
 
@@ -458,7 +458,7 @@ typedef enum : NSUInteger {
 
 - (void)muteMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *members = param[@"members"];
-    NSInteger muteMilliseconds = param[@"muteMilliseconds"];
+    NSInteger muteMilliseconds = [param[@"muteMilliseconds"] integerValue];
     NSString *groupId = param[@"groupId"];
     [EMClient.sharedClient.groupManager muteMembers:members
                                    muteMilliseconds:muteMilliseconds
@@ -620,7 +620,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:NULL];
+                     userInfo:nil];
     }];
 }
 
@@ -639,7 +639,7 @@ typedef enum : NSUInteger {
 
 - (void)updatePushServiceForGroups:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *groupIDs = param[@"groupIDs"];
-    BOOL isEnable = param[@"isEnable"];
+    BOOL isEnable = [param[@"isEnable"] boolValue];
     [EMClient.sharedClient.groupManager updatePushServiceForGroups:groupIDs
                                                      isPushEnabled:isEnable
                                                         completion:^(NSArray *groups, EMError *aError)
