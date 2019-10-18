@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,11 @@ import com.hyphenate.EMContactListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMContactManager;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.util.EMLog;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -115,32 +121,37 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void addContact(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String reason = (String)argMap.get("reason");
-        try{
-            manager.addContact(userName, reason);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            String reason = argMap.getString("reason");
+            try {
+                manager.addContact(userName, reason);
+                onSuccess(result);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void deleteContact(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        try{
-            manager.deleteContact(userName);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            try{
+                manager.deleteContact(userName);
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void getAllContactsFromServer(Object args, Result result) {
-        assert(args instanceof Map);
         try{
             List<String> contacts = manager.getAllContactsFromServer();
             Map<String,Object> data = new HashMap<String, Object>();
@@ -152,32 +163,37 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void addUserToBlackList(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        Boolean both = (Boolean)argMap.get("both");
-        try{
-            manager.addUserToBlackList(userName, both.booleanValue());
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            Boolean both = argMap.getBoolean("both");
+            try{
+                manager.addUserToBlackList(userName, both.booleanValue());
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void removeUserToBlackList(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        try{
-            manager.removeUserFromBlackList(userName);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            try{
+                manager.removeUserFromBlackList(userName);
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void getBlackListFromServer(Object args, Result result) {
-        assert(args instanceof Map);
         try{
             List<String> contacts = manager.getBlackListFromServer();
             Map<String,Object> data = new HashMap<String, Object>();
@@ -189,43 +205,55 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void saveBlackList(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        List<String> contacts = (List<String>)argMap.get("blackList");
-        try{
-            manager.saveBlackList(contacts);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            JSONArray json_contacts = argMap.getJSONArray("blackList");
+            List<String> contacts = new ArrayList<>();
+            for(int i = 0; i < json_contacts.length(); i++){
+                contacts.add(json_contacts.getString(i));
+            }
+            try{
+                manager.saveBlackList(contacts);
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void acceptInvitation(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        try{
-            manager.acceptInvitation(userName);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            try{
+                manager.acceptInvitation(userName);
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void declineInvitation(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        try{
-            manager.declineInvitation(userName);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            try{
+                manager.declineInvitation(userName);
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void getSelfIdsOnOtherPlatform(Object args, Result result) {
-        assert(args instanceof Map);
         try{
             List<String> ids = manager.getSelfIdsOnOtherPlatform();
             Map<String,Object> data = new HashMap<String, Object>();
