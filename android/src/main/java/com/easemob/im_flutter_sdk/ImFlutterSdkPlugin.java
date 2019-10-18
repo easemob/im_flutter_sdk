@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
+import com.hyphenate.EMValueCallBack;
 import com.hyphenate.exceptions.HyphenateException;
 
 import io.flutter.plugin.common.JSONMethodCodec;
@@ -82,7 +83,7 @@ interface EMWrapper {
   }
 }
 
-class EMWrapperCallBack implements EMCallBack{
+class EMWrapperCallBack implements EMCallBack {
   EMWrapperCallBack(Result result) {
     this.result = result;
   }
@@ -100,7 +101,7 @@ class EMWrapperCallBack implements EMCallBack{
 
   @Override
   public void onSuccess() {
-    post((Void)->{
+    post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
       result.success(data);
@@ -109,7 +110,7 @@ class EMWrapperCallBack implements EMCallBack{
 
   @Override
   public void onError(int code, String desc) {
-    post((Void)->{
+    post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.FALSE);
       data.put("code", code);
@@ -122,4 +123,42 @@ class EMWrapperCallBack implements EMCallBack{
   public void onProgress(int progress, String status) {
     // no need
   }
+}
+
+  class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
+//
+    EMValueWrapperCallBack(MethodChannel.Result result) {
+      this.result = result;
+    }
+
+    private MethodChannel.Result result;
+
+    void post(Consumer<Void> func) {
+      ImFlutterSdkPlugin.handler.post(new Runnable() {
+        @Override
+        public void run() {
+          func.accept(null);
+        }
+      });
+    }
+
+    @Override
+    public void onSuccess(Object value) {
+      post((Void) -> {
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("success", Boolean.TRUE);
+        result.success(data);
+      });
+    }
+
+    @Override
+    public void onError(int error, String errorMsg) {
+      post((Void) -> {
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("success", Boolean.FALSE);
+        data.put("code", error);
+        data.put("desc", errorMsg);
+        result.success(data);
+      });
+    }
 }

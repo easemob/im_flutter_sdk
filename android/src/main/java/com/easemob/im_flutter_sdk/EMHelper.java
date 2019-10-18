@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMImageMessageBody;
@@ -13,6 +14,7 @@ import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.util.EMLog;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 class EMHelper {
@@ -26,15 +28,15 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("attributes",ss);
         result.put("conversationId", message.conversationId());
-        result.put("type", 0);
+//        result.put("type", 0);
         result.put("type", getType(message));
         result.put("userName", message.getUserName());
         result.put("acked", Boolean.valueOf(message.isAcked()));
         result.put("body", convertEMMessageBodyToStringMap(message.getBody()));
-        result.put("chatType", 0);
+//        result.put("chatType", 0);
         result.put("chatType", getChatType(message));
         result.put("delivered", Boolean.valueOf(message.isDelivered()));
-        result.put("direction", 0);
+//        result.put("direction", 0);
         result.put("direction", getDirect(message));
         result.put("from", message.getFrom());
         result.put("listened", Boolean.valueOf(message.isListened()));
@@ -42,7 +44,7 @@ class EMHelper {
         result.put("msgId", message.getMsgId());
         result.put("msgTime", message.getMsgTime());
         result.put("progress", message.progress());
-        result.put("status", 0);
+//        result.put("status", 0);
         result.put("status", getEMMessageStatus(message));
         result.put("to", message.getTo());
         result.put("unread", Boolean.valueOf(message.isUnread()));
@@ -143,6 +145,14 @@ class EMHelper {
         result.put("ext", conversation.getExtField());
         return result;
     }
+
+    static Map<String, Object> chatRoomToStringMap(EMChatRoom emChatRoom) {
+        Map<String, Object> chatRoomMap = new HashMap<String, Object>();
+        chatRoomMap.put("roomId",emChatRoom.getId());
+        chatRoomMap.put("roomName",emChatRoom.getName());
+        return chatRoomMap;
+    }
+
     /**
      * \~chinese
      * 获取聊天类型
@@ -152,7 +162,7 @@ class EMHelper {
      * get chat type  默认单聊
      *  @return ChatType   0: Chat(单聊)  1: GroupChat(群聊)  2: ChatRoom(聊天室)
      */
-    static Integer getChatType(EMMessage message){
+    static int getChatType(EMMessage message){
         switch (message.getChatType()){
             case GroupChat:
                 return 1;
@@ -170,14 +180,14 @@ class EMHelper {
      * \~english
      * the message direction  0：发送方   1：接收方
      */
-    static Integer getDirect(EMMessage message){
+    static int getDirect(EMMessage message){
         switch (message.direct()){
             case SEND:
                 return 0;
             case RECEIVE:
                 return 1;
             default:
-                return null;
+                return -1;
         }
     }
 
@@ -188,7 +198,7 @@ class EMHelper {
      * \~english
      * message status  0：成功  1：失败  2：发送/接收过程中 3：创建成功待发送
      */
-    static Integer getEMMessageStatus(EMMessage message){
+    static int getEMMessageStatus(EMMessage message){
         switch (message.status()){
             case SUCCESS:
                 return 0;
@@ -196,10 +206,8 @@ class EMHelper {
                 return 1;
             case INPROGRESS:
                 return 2;
-            case CREATE:
-                return 3;
             default:
-                return null;
+                return 3;
         }
     }
 
@@ -212,7 +220,7 @@ class EMHelper {
      * get message chat type
      * @return
      */
-    static Integer getType(EMMessage message){
+    static int getType(EMMessage message){
         switch (message.getType()){
             case TXT:
                 return 0;
@@ -229,7 +237,7 @@ class EMHelper {
             case CMD:
                 return 6;
             default:
-                return null;
+                return -1;
         }
     }
 
