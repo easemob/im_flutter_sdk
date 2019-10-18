@@ -151,8 +151,8 @@ public class EMSDKMethod {
     static final String joinGroup = "joinGroup";
     static final String changeGroupName = "changeGroupName";
     static final String changeGroupDescription = "changeGroupDescription";
-    static final String groupacceptInvitation = "acceptInvitation";
-    static final String groupdeclineInvitation = "declineInvitation";
+    static final String acceptGroupInvitation = "acceptGroupInvitation";
+    static final String declineGroupInvitation = "declineGroupInvitation";
     static final String acceptApplication = "acceptApplication";
     static final String declineApplication = "declineApplication";
     static final String inviteUser = "inviteUser";
@@ -178,26 +178,26 @@ public class EMSDKMethod {
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
     static final String updateGroupExtension = "updateGroupExtension";
     static final String onGroupChange = "onGroupChange";
-    
+
     /// EMGroup
     static final String getGroupId = "getGroupId";
     static final String getGroupName = "getGroupName";
-    static final String getDescription = "getDescription";
+    static final String getGroupDescription = "getGroupDescription";
     static final String isPublic = "isPublic";
     static final String isAllowInvites = "isAllowInvites";
     static final String isMemberAllowToInvite = "isMemberAllowToInvite";
     static final String isMembersOnly = "isMembersOnly";
     static final String getMaxUserCount = "getMaxUserCount";
     static final String isMsgBlocked = "isMsgBlocked";
-    static final String getOwner = "getOwner";
+    static final String getGroupOwner = "getGroupOwner";
     static final String groupSubject = "groupSubject";
     static final String getMembers = "getMembers";
-    static final String getMemberCount = "getMemberCount";
-    static final String getAdminList = "getAdminList";
-    static final String getBlackList = "getBlackList";
-    static final String getMuteList = "getMuteList";
+    static final String getGroupMemberCount = "getGroupMemberCount";
+    static final String getGroupAdminList = "getGroupAdminList";
+    static final String getGroupBlackList = "getGroupBlackList";
+    static final String getGroupMuteList = "getGroupMuteList";
     static final String getExtension = "getExtension";
-    static final String getAnnouncement = "getAnnouncement";
+    static final String getGroupAnnouncement = "getGroupAnnouncement";
     static final String getShareFileList = "getShareFileList";
 
 }

@@ -21,6 +21,7 @@ import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.chat.EMContact;
+import com.hyphenate.util.EMLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,139 +81,161 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void init(Object args, Result result) {
-        EMOptions options = new EMOptions();
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        options.setAppKey((String)argMap.get("appKey"));
-        EMClient client = EMClient.getInstance();
-        client.getInstance().init(context, options);
-        //setup client listener
-        client.addClientListener((boolean success) -> {
+        try {
+            EMOptions options = new EMOptions();
+            JSONObject argMap = (JSONObject) args;
+            options.setAppKey(argMap.getString("appKey"));
+            EMClient client = EMClient.getInstance();
+            client.getInstance().init(context, options);
+            //setup client listener
+            client.addClientListener((boolean success) -> {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("status", Boolean.valueOf(success));
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onClientMigrate2x,data);
+                post((Void) -> {
+                    channel.invokeMethod(EMSDKMethod.onClientMigrate2x, data);
                 });
-        });
-        //setup connection listener
-        client.addConnectionListener(new EMConnectionListener(){
-            @Override
-            public void onConnected() {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("isConnected", Boolean.TRUE);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
-                });
-            }
+            });
+            //setup connection listener
+            client.addConnectionListener(new EMConnectionListener() {
+                @Override
+                public void onConnected() {
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("isConnected", Boolean.TRUE);
+                    post((Void) -> {
+                        channel.invokeMethod(EMSDKMethod.onConnectionDidChanged, data);
+                    });
+                }
 
-            @Override
-            public void onDisconnected(int errorCode) {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("isConnected", Boolean.FALSE);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onConnectionDidChanged,data);
-                });
-            }
-        });
-        //setup multiple device event listener
-        client.addMultiDeviceListener(new EMMultiDeviceListener() {
-            @Override
-            public void onContactEvent(int event, String target, String ext) {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("event", Integer.valueOf(event));
-                data.put("target", target);
-                data.put("ext", ext);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
-                });
-            }
+                @Override
+                public void onDisconnected(int errorCode) {
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("isConnected", Boolean.FALSE);
+                    post((Void) -> {
+                        channel.invokeMethod(EMSDKMethod.onConnectionDidChanged, data);
+                    });
+                }
+            });
+            //setup multiple device event listener
+            client.addMultiDeviceListener(new EMMultiDeviceListener() {
+                @Override
+                public void onContactEvent(int event, String target, String ext) {
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("event", Integer.valueOf(event));
+                    data.put("target", target);
+                    data.put("ext", ext);
+                    post((Void) -> {
+                        channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data);
+                    });
+                }
 
-            @Override
-            public void onGroupEvent(int event, String target, List<String> userNames) {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("event", Integer.valueOf(event));
-                data.put("target", target);
-                data.put("userNames", userNames);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent,data);
-                });
-            }
-        });
+                @Override
+                public void onGroupEvent(int event, String target, List<String> userNames) {
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("event", Integer.valueOf(event));
+                    data.put("target", target);
+                    data.put("userNames", userNames);
+                    post((Void) -> {
+                        channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data);
+                    });
+                }
+            });
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
     }
 
     private void createAccount(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        try{
-            EMClient.getInstance().createAccount(userName, password);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            try {
+                EMClient.getInstance().createAccount(userName, password);
+                onSuccess(result);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void login(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        EMClient.getInstance().login(userName, password, new EMWrapperCallBack(result));
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            EMClient.getInstance().login(userName, password, new EMWrapperCallBack(result));
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void loginWithToken(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String token = (String)argMap.get("token");
-        EMClient.getInstance().loginWithToken(userName, token, new EMWrapperCallBack(result));
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            String token = argMap.getString("token");
+            EMClient.getInstance().loginWithToken(userName, token, new EMWrapperCallBack(result));
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void logout(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        Boolean unbindToken = (Boolean)argMap.get("unbindToken");
-        EMClient.getInstance().logout(unbindToken, new EMWrapperCallBack(result));
+        try {
+            JSONObject argMap = (JSONObject)args;
+            Boolean unbindToken = argMap.getBoolean("unbindToken");
+            EMClient.getInstance().logout(unbindToken, new EMWrapperCallBack(result));
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void changeAppKey(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String appKey = (String)argMap.get("appKey");
-        try{
-            EMClient.getInstance().changeAppkey(appKey);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String appKey = argMap.getString("appKey");
+            try{
+                EMClient.getInstance().changeAppkey(appKey);
+                onSuccess(result);
+            }catch(HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void setDebugMode(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        Boolean debugMode = (Boolean)argMap.get("debugMode");
-        EMClient.getInstance().setDebugMode(debugMode);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            Boolean debugMode = argMap.getBoolean("debugMode");
+            EMClient.getInstance().setDebugMode(debugMode);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void updateCurrentUserNick(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String nickName = (String)argMap.get("nickName");
-        boolean status = EMClient.getInstance().updateCurrentUserNick(nickName);
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("status", new Boolean(status));
-        result.success(data);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String nickName = argMap.getString("nickName");
+            boolean status = EMClient.getInstance().pushManager().updatePushNickname(nickName);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("status", new Boolean(status));
+            result.success(data);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void uploadLog(Object args, Result result) {
-        assert(args instanceof Map);
         EMClient.getInstance().uploadLog(new EMWrapperCallBack(result));
     }
 
     private void compressLogs(Object args, Result result) {
-        assert(args instanceof Map);
         try{
             EMClient.getInstance().compressLogs();
             onSuccess(result);
@@ -222,21 +245,24 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void getLoggedInDevicesFromServer(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        try{
-            List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(userName, password);
-            List<Map<String, Object>> devicesMap = new LinkedList<Map<String, Object>>();
-            for(EMDeviceInfo device : devices) {
-                devicesMap.add(convertDevicesToStringMap(device));
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            try{
+                List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(userName, password);
+                List<Map<String, Object>> devicesMap = new LinkedList<Map<String, Object>>();
+                for(EMDeviceInfo device : devices) {
+                    devicesMap.add(convertDevicesToStringMap(device));
+                }
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("success", Boolean.TRUE);
+                data.put("devices", devicesMap);
+            }catch(HyphenateException e) {
+                onError(result, e);
             }
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            data.put("devices", devicesMap);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
@@ -249,49 +275,59 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void kickDevice(Object args, Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        String resource = (String)argMap.get("resource");
-        try{
-            EMClient.getInstance().kickDevice(userName, password, resource);
-            onSuccess(result);
-        }catch (HyphenateException e) {
-            onError(result,e);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            String resource = argMap.getString("resource");
+            try{
+                EMClient.getInstance().kickDevice(userName, password, resource);
+                onSuccess(result);
+            }catch (HyphenateException e) {
+                onError(result,e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void kickAllDevices(Object args, Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        try{
-            EMClient.getInstance().kickAllDevices(userName, password);
-            onSuccess(result);
-        }catch (HyphenateException e) {
-            onError(result,e);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            try{
+                EMClient.getInstance().kickAllDevices(userName, password);
+                onSuccess(result);
+            }catch (HyphenateException e) {
+                onError(result,e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void sendFCMTokenToServer(Object args, Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String token = (String)argMap.get("token");
-        EMClient.getInstance().sendFCMTokenToServer(token);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String token = argMap.getString("token");
+            EMClient.getInstance().sendFCMTokenToServer(token);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void sendHMSPushTokenToServer(Object args, Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String appId = (String)argMap.get("appId");
-        String token = (String)argMap.get("token");
-        EMClient.getInstance().sendHMSPushTokenToServer(appId,token);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String token = argMap.getString("token");
+            EMClient.getInstance().sendHMSPushTokenToServer(token);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void getDeviceInfo(Object args, Result result){
-        assert(args instanceof Map);
         JSONObject device = EMClient.getInstance().getDeviceInfo();
         Map<String, Object> info = convertDeviceInfoToStringMap(device);
         Map<String, Object> data = new HashMap<String, Object>();
@@ -310,56 +346,61 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void check(Object args, Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        EMClient.getInstance().check(userName, password, new EMClient.CheckResultListener() {
-            @Override
-            public void onResult(int type, int _result, String desc) {
-                post((Void)->{
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.TRUE);
-                    data.put("type", type);
-                    data.put("result", _result);
-                    data.put("desc", desc);
-                    result.success(data);
-                });
-            }
-        });
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            EMClient.getInstance().check(userName, password, new EMClient.CheckResultListener() {
+                @Override
+                public void onResult(int type, int _result, String desc) {
+                    post((Void)->{
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.TRUE);
+                        data.put("type", type);
+                        data.put("result", _result);
+                        data.put("desc", desc);
+                        result.success(data);
+                    });
+                }
+            });
+        }catch(JSONException e) {
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void getUserTokenFromServer(Object args, Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        String password = (String)argMap.get("password");
-        EMClient.getInstance().getUserTokenFromServer(userName, password, new EMValueCallBack<String>() {
-            @Override
-            public void onSuccess(String token) {
-                post((Void)->{
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.TRUE);
-                    data.put("token", token);
-                    result.success(data);
-                });
-            }
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            String password = argMap.getString("password");
+            EMClient.getInstance().getUserTokenFromServer(userName, password, new EMValueCallBack<String>() {
+                @Override
+                public void onSuccess(String token) {
+                    post((Void)->{
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.TRUE);
+                        data.put("token", token);
+                        result.success(data);
+                    });
+                }
 
-            @Override
-            public void onError(int code, String desc) {
-                post((Void)->{
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.FALSE);
-                    data.put("code", code);
-                    data.put("desc", desc);
-                    result.success(data);
-                });
-            }
-        });
+                @Override
+                public void onError(int code, String desc) {
+                    post((Void)->{
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.FALSE);
+                        data.put("code", code);
+                        data.put("desc", desc);
+                        result.success(data);
+                    });
+                }
+            });
+        }catch(JSONException e) {
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void getRobotsFromServer(Object args, Result result){
-        assert(args instanceof Map);
         try{
             List<EMContact> contacts = EMClient.getInstance().getRobotsFromServer();
             List<Map<String, Object>> contactsMap = new LinkedList<Map<String, Object>>();

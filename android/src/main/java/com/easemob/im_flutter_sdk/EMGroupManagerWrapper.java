@@ -304,10 +304,10 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             changeGroupName(call.arguments, result);
         }else if (EMSDKMethod.changeGroupDescription.equals(call.method)){
             changeGroupDescription(call.arguments, result);
-        }else if (EMSDKMethod.groupacceptInvitation.equals(call.method)){
-            groupacceptInvitation(call.arguments, result);
-        }else if (EMSDKMethod.groupdeclineInvitation.equals(call.method)){
-            groupdeclineInvitation(call.arguments, result);
+        }else if (EMSDKMethod.acceptGroupInvitation.equals(call.method)){
+            acceptInvitation(call.arguments, result);
+        }else if (EMSDKMethod.declineGroupInvitation.equals(call.method)){
+            declineInvitation(call.arguments, result);
         }else if (EMSDKMethod.acceptApplication.equals(call.method)){
             acceptApplication(call.arguments, result);
         }else if (EMSDKMethod.declineApplication.equals(call.method)){
@@ -531,7 +531,7 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             e.printStackTrace();
         }
     }
-    private void groupacceptInvitation(Object args, MethodChannel.Result result){
+    private void acceptInvitation(Object args, MethodChannel.Result result){
         try {
             JSONObject argJson = (JSONObject) args;
             String groupId = argJson.getString("groupId");
@@ -542,7 +542,7 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
         }
     }
 
-    private void groupdeclineInvitation(Object args, MethodChannel.Result result){
+    private void declineInvitation(Object args, MethodChannel.Result result){
         try {
             JSONObject argJson = (JSONObject) args;
             String groupId = argJson.getString("groupId");

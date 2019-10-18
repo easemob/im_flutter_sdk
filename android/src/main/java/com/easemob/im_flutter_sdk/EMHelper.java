@@ -3,10 +3,13 @@ package com.easemob.im_flutter_sdk;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMConversation.EMConversationType;
+import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMTextMessageBody;
@@ -21,13 +24,14 @@ import java.util.Map;
 
 @SuppressWarnings("unchecked")
 class EMHelper {
-    static EMMessage convertDataMapToMessage(Map<String, Object> args) {
+    //Incomplete implementation
+    static EMMessage convertDataMapToMessage(JSONObject args) {
         EMMessage message = null;
         try {
             EMLog.d("convertDataMapToMessage", args.toString());
 
-            int data_type = Integer.parseInt((args.get("type")).toString());
-            int data_chatType = Integer.parseInt((args.get("chatType")).toString());
+            int data_type = Integer.parseInt(args.getString("type"));
+            int data_chatType = Integer.parseInt(args.getString("chatType"));
             EMMessage.ChatType emChatType = EMMessage.ChatType.Chat;
             switch (data_chatType){
                 case 0:
@@ -40,12 +44,12 @@ class EMHelper {
                     emChatType = EMMessage.ChatType.ChatRoom;
                     break;
             }
-            String data_to = args.get("to").toString();
-            JSONObject data_body = new JSONObject(args.get("body").toString());
+            String data_to = args.getString("to");
+            JSONObject data_body = args.getJSONObject("body");
             String content = data_body.getString("message");
 
-            JSONObject data_attributes = new JSONObject(args.get("attributes").toString());
-
+//            String data_msgid = args.getString("msgid");
+//            JSONObject data_attributes = args.getJSONObject("attributes");
 //            TXT, IMAGE, VIDEO, LOCATION, VOICE, FILE, CMD
             switch(data_type){
                 case 0:
@@ -300,4 +304,113 @@ class EMHelper {
         return result;
     }
 
+    static EMConversationType getEMConversationType(int type){
+        if(type == 0){
+            return EMConversationType.Chat;
+        }
+        if(type == 1){
+            return EMConversationType.GroupChat;
+        }
+        if(type == 2){
+            return EMConversationType.ChatRoom;
+        }
+        if(type == 3){
+            return EMConversationType.DiscussionGroup;
+        }
+        if(type == 4){
+            return EMConversationType.HelpDesk;
+        }
+        return EMConversationType.Chat;
+    }
+
+    static int toEMConversationType(EMConversationType type){
+        if(type == EMConversationType.Chat){
+            return 0;
+        }
+        if(type == EMConversationType.GroupChat){
+            return 1;
+        }
+        if(type == EMConversationType.ChatRoom){
+            return 2;
+        }
+        if(type == EMConversationType.DiscussionGroup){
+            return 3;
+        }
+        if(type == EMConversationType.HelpDesk){
+            return 4;
+        }
+        return 0;
+    }
+
+
+    static int toEMSearchDirection(EMSearchDirection type){
+        if(type == EMSearchDirection.UP){
+            return 0;
+        }
+        if(type == EMSearchDirection.DOWN){
+            return 1;
+        }
+        return 0;
+    }
+
+    static EMSearchDirection getEMSearchDirection(int type){
+        if(type == 0){
+            return EMSearchDirection.UP;
+        }
+        if(type == 1){
+            return EMSearchDirection.DOWN;
+        }
+        return EMSearchDirection.UP;
+    }
+
+    static int toEMMessageType(Type type){
+        if(type == Type.TXT){
+            return 0;
+        }
+        if(type == Type.IMAGE){
+            return 1;
+        }
+        if(type == Type.VIDEO){
+            return 2;
+        }
+        if(type == Type.LOCATION){
+            return 3;
+        }
+        if(type == Type.VOICE){
+            return 4;
+        }
+        if(type == Type.FILE){
+            return 5;
+        }
+        if(type == Type.CMD){
+            return 6;
+        }
+        return 0;
+    }
+
+    static Type getEMMessageType(int type){
+
+        if(type == 0){
+            return Type.TXT;
+        }
+        if(type == 1){
+            return Type.IMAGE;
+        }
+        if(type == 2){
+            return Type.VIDEO;
+        }
+        if(type == 3){
+            return Type.LOCATION;
+        }
+        if(type == 4){
+            return Type.VOICE;
+        }
+        if(type == 5){
+            return Type.FILE;
+        }
+        if(type == 6){
+            return Type.CMD;
+        }
+        return Type.TXT;
+    }
 }
