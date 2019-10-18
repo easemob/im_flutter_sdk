@@ -24,7 +24,7 @@ public class EMSDKMethod {
     static final String getRobotsFromServer = "getRobotsFromServer";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String check = "check";
-    static final String onClientMigrate2x = "onClientMigrate2x";
+    static final String onClientMigrate2x = "onClientMigrate2x"; // 3.x sdk应该用不上
     static final String onConnectionDidChanged = "onConnectionDidChanged";
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
@@ -126,13 +126,78 @@ public class EMSDKMethod {
     //EMChatRoom
     static final String getId = "getId";
     static final String getName = "getName";
-    static final String getDescription = "getDescription";
-    static final String getOwner = "getOwner";
-    static final String getAdminList = "getAdminList";
-    static final String getMemberCount = "getMemberCount";
+    static final String getChatRoomDescription = "getChatRoomDescription";
+    static final String getChatRoomOwner = "getChatRoomOwner";
+    static final String getChatRoomAdminList = "getChatRoomAdminList";
+    static final String getChatRoomMemberCount = "getChatRoomMemberCount";
     static final String getMaxUsers = "getMaxUsers";
     static final String getMemberList = "getMemberList";
+    static final String getChatRoomBlackList = "getChatRoomBlackList";
+    static final String getChatRoomMuteList = "getChatRoomMuteList";
+    static final String getChatRoomAnnouncement = "getChatRoomAnnouncement";
+
+    /// EMGroupManager
+    static final String getAllGroups = "getAllGroups";
+    static final String getGroup = "getGroup";
+    static final String createGroup = "createGroup";
+    static final String loadAllGroups = "loadAllGroups";
+    static final String destroyGroup = "destroyGroup";
+    static final String addUsersToGroup = "addUsersToGroup";
+    static final String removeUserFromGroup = "removeUserFromGroup";
+    static final String leaveGroup = "leaveGroup";
+    static final String getGroupFromServer = "getGroupFromServer";
+    static final String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
+    static final String getPublicGroupsFromServer = "getPublicGroupsFromServer";
+    static final String joinGroup = "joinGroup";
+    static final String changeGroupName = "changeGroupName";
+    static final String changeGroupDescription = "changeGroupDescription";
+    static final String groupacceptInvitation = "acceptInvitation";
+    static final String groupdeclineInvitation = "declineInvitation";
+    static final String acceptApplication = "acceptApplication";
+    static final String declineApplication = "declineApplication";
+    static final String inviteUser = "inviteUser";
+    static final String applyJoinToGroup = "applyJoinToGroup";
+    static final String blockGroupMessage = "blockGroupMessage";
+    static final String unblockGroupMessage = "unblockGroupMessage";
+    static final String blockUser = "blockUser";
+    static final String unblockUser = "unblockUser";
+    static final String getBlockedUsers = "getBlockedUsers";
+    static final String fetchGroupMembers = "fetchGroupMembers";
+    static final String changeOwner = "changeOwner";
+    static final String addGroupAdmin = "addGroupAdmin";
+    static final String removeGroupAdmin = "removeGroupAdmin";
+    static final String muteGroupMembers = "muteGroupMembers";
+    static final String unMuteGroupMembers = "unMuteGroupMembers";
+    static final String fetchGroupMuteList = "fetchGroupMuteList";
+    static final String fetchGroupBlackList = "fetchGroupBlackList";
+    static final String updateGroupAnnouncement = "updateGroupAnnouncement";
+    static final String fetchGroupAnnouncement = "fetchGroupAnnouncement";
+    static final String uploadGroupSharedFile = "uploadGroupSharedFile";
+    static final String fetchGroupSharedFileList = "fetchGroupSharedFileList";
+    static final String deleteGroupSharedFile = "deleteGroupSharedFile";
+    static final String downloadGroupSharedFile = "downloadGroupSharedFile";
+    static final String updateGroupExtension = "updateGroupExtension";
+    static final String onGroupChange = "onGroupChange";
+    
+    /// EMGroup
+    static final String getGroupId = "getGroupId";
+    static final String getGroupName = "getGroupName";
+    static final String getDescription = "getDescription";
+    static final String isPublic = "isPublic";
+    static final String isAllowInvites = "isAllowInvites";
+    static final String isMemberAllowToInvite = "isMemberAllowToInvite";
+    static final String isMembersOnly = "isMembersOnly";
+    static final String getMaxUserCount = "getMaxUserCount";
+    static final String isMsgBlocked = "isMsgBlocked";
+    static final String getOwner = "getOwner";
+    static final String groupSubject = "groupSubject";
+    static final String getMembers = "getMembers";
+    static final String getMemberCount = "getMemberCount";
+    static final String getAdminList = "getAdminList";
     static final String getBlackList = "getBlackList";
     static final String getMuteList = "getMuteList";
+    static final String getExtension = "getExtension";
     static final String getAnnouncement = "getAnnouncement";
+    static final String getShareFileList = "getShareFileList";
+
 }

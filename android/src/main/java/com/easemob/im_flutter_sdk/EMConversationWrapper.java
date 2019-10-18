@@ -14,6 +14,7 @@ import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 
+@SuppressWarnings("unchecked")
 public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
     private EMChatManager manager;
 

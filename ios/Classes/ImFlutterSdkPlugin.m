@@ -4,7 +4,6 @@
 #import "EMClientWrapper.h"
 #import "EMContactManagerWrapper.h"
 #import "EMConversationWrapper.h"
-#import "EMLogWrapper.h"
 
 #define EMChannelName(name) [NSString stringWithFormat:@"com.easemob.im/%@",name]
 
@@ -14,7 +13,6 @@
     [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_manager") registrar:registrar];
     [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_contact_manager") registrar:registrar];
     [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_conversation") registrar:registrar];
-    [EMLogWrapper registrar:registrar];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {

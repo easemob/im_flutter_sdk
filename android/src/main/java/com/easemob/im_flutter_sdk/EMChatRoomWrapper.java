@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
-public class EMChatRoomWrapper extends EMBase<EMAChatRoom> implements MethodChannel.MethodCallHandler, EMWrapper {
+public class EMChatRoomWrapper extends EMBase<EMAChatRoom> implements MethodChannel.MethodCallHandler {
 
 
     @Override
@@ -23,41 +23,27 @@ public class EMChatRoomWrapper extends EMBase<EMAChatRoom> implements MethodChan
             getId();
         }else if(EMSDKMethod.getName.equals(methodCall.method)){
             getName();
-        }else if(EMSDKMethod.getDescription.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomDescription.equals(methodCall.method)){
             getDescription();
-        }else if(EMSDKMethod.getOwner.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomOwner.equals(methodCall.method)){
             getOwner();
-        }else if(EMSDKMethod.getAdminList.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomAdminList.equals(methodCall.method)){
             getAdminList();
-        }else if(EMSDKMethod.getMemberCount.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomMemberCount.equals(methodCall.method)){
             getMemberCount();
         }else if(EMSDKMethod.getMaxUsers.equals(methodCall.method)){
             getMaxUsers();
         }else if(EMSDKMethod.getMemberList.equals(methodCall.method)){
             getMemberList();
-        }else if(EMSDKMethod.getBlackList.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomBlackList.equals(methodCall.method)){
             getBlackList();
-        }else if(EMSDKMethod.getMuteList.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomMuteList.equals(methodCall.method)){
             getMuteList();
-        }else if(EMSDKMethod.getAnnouncement.equals(methodCall.method)){
+        }else if(EMSDKMethod.getChatRoomAnnouncement.equals(methodCall.method)){
             getAnnouncement();
         }
     }
 
-    @Override
-    public void post(Consumer<Void> func) {
-
-    }
-
-    @Override
-    public void onSuccess(MethodChannel.Result result) {
-
-    }
-
-    @Override
-    public void onError(MethodChannel.Result result, HyphenateException e) {
-
-    }
 
     public EMChatRoomWrapper(){
         emaObject = new EMAChatRoom();

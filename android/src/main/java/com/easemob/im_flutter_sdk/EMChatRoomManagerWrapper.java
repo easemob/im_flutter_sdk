@@ -293,7 +293,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
 
     private void getAllChatRooms(Object args, MethodChannel.Result result){
         List<EMChatRoom> list = emChatRoomManager.getAllChatRooms();
-        List roomlist = new LinkedList();
+        List<Map<String ,Object>> roomlist = new LinkedList();
         for (EMChatRoom emChatRoom : list) {
             roomlist.add(EMHelper.chatRoomToStringMap(emChatRoom));
         }
