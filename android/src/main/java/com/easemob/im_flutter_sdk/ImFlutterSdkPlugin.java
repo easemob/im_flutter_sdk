@@ -5,8 +5,8 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.chat.EMClient;
 
+import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -28,7 +28,7 @@ public class ImFlutterSdkPlugin {
     registerChatManagerWith(registrar);
     registerContactManagerWith(registrar);
     registerConversationWith(registrar);
-    registerEMLogWith(registrar);
+    registerEMChatRoomManagerWrapper(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -51,9 +51,9 @@ public class ImFlutterSdkPlugin {
     channel.setMethodCallHandler(new EMConversationWrapper());
   }
 
-  public static void registerEMLogWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_log");
-    channel.setMethodCallHandler(new EMLogWrapper(channel));
+  public static void registerEMChatRoomManagerWrapper(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_chat_room_manager",JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
   }
 }
 

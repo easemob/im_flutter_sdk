@@ -333,15 +333,11 @@ class EMChatManager {
 
   /// Listeners interface
   Future<void> _onMessageReceived(Map map) async {
-    EMALog.errorLog("_onMessageReceived_", map['messages'].toString());
     var list = map['messages'];
     var messageList = List<EMMessage>();
     for (var message in list) {
-      EMALog.debugLog("_onMessageReceived_to", message.toString());
 //        messageList.add( EMMessage.from(message) );
-//      messages.add(EMMessage.from(message));
     }
-    EMALog.debugLog("_onMessageReceived_from", messageList.toString());
     for (var listener in _messageListeners) {
       listener.onMessageReceived(messageList);
     }
