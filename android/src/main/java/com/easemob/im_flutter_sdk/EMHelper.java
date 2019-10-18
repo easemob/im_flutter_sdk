@@ -2,6 +2,7 @@ package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
@@ -10,6 +11,9 @@ import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.util.EMLog;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +21,56 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 class EMHelper {
     static EMMessage convertDataMapToMessage(Map<String, Object> args) {
-        return null;
+        EMMessage message = null;
+        try {
+            EMLog.d("convertDataMapToMessage", args.toString());
+
+            int data_type = Integer.parseInt((args.get("type")).toString());
+            int data_chatType = Integer.parseInt((args.get("chatType")).toString());
+            EMMessage.ChatType emChatType = EMMessage.ChatType.Chat;
+            switch (data_chatType){
+                case 0:
+                    emChatType = EMMessage.ChatType.Chat;
+                    break;
+                case 1:
+                    emChatType = EMMessage.ChatType.GroupChat;
+                    break;
+                case 2:
+                    emChatType = EMMessage.ChatType.ChatRoom;
+                    break;
+            }
+            String data_to = args.get("to").toString();
+            JSONObject data_body = new JSONObject(args.get("body").toString());
+            String content = data_body.getString("message");
+
+            JSONObject data_attributes = new JSONObject(args.get("attributes").toString());
+
+//            TXT, IMAGE, VIDEO, LOCATION, VOICE, FILE, CMD
+            switch(data_type){
+                case 0:
+                    message = EMMessage.createSendMessage(EMMessage.Type.TXT);
+                    EMTextMessageBody body = new EMTextMessageBody(content);
+                    message.addBody(body);
+                    message.setChatType(emChatType);
+                    message.setTo(data_to);
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    break;
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return message;
     }
 
     static Map<String, Object> convertEMMessageToStringMap(EMMessage message) {
@@ -133,6 +186,13 @@ class EMHelper {
         result.put("id", conversation.conversationId());
         result.put("type", conversation.getType());
         result.put("ext", conversation.getExtField());
+        return result;
+    }
+
+    static Map<String, Object> convertEMGroupToStringMap(EMGroup group){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", group.getGroupId());
+        result.put("groupName", group.getGroupName());
         return result;
     }
 }
