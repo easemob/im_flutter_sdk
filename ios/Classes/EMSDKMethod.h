@@ -153,6 +153,29 @@ static NSString * const EMMethodKeyUpdatePushServiceForGroups = @"updatePushServ
 
 static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
 
+#pragma mark - EMChatroomManagerWrapper
 
+static NSString * const EMMethodKeyGetChatroomsFromServer = @"getChatroomsFromServer";
+static NSString * const EMMethodKeyCreateChatroom = @"createChatroom";
+static NSString * const EMMethodKeyJoinChatroom = @"joinChatroom";
+static NSString * const EMMethodKeyLeaveChatroom = @"leaveChatroom";
+static NSString * const EMMethodKeyDestroyChatroom = @"destroyChatroom";
+static NSString * const EMMethodKeyGetChatroomSpecificationFromServer = @"getChatroomSpecificationFromServer";
+static NSString * const EMMethodKeyGetChatroomMemberListFromServer = @"getChatroomMemberListFromServer";
+static NSString * const EMMethodKeyGetChatroomBlacklistFromServer = @"getChatroomBlacklistFromServer";
+static NSString * const EMMethodKeyGetChatroomMuteListFromServer = @"getChatroomMuteListFromServer";
+static NSString * const EMMethodKeyGetChatroomAnnouncement = @"getChatroomAnnouncement";
+static NSString * const EMMethodKeyuChatRoomUpdateSubject = @"chatRoomUpdateSubject";
+static NSString * const EMMethodKeyChatRoomUpdateDescription = @"chatRoomUpdateDescription";
+static NSString * const EMMethodKeyChatRoomRemoveMembers = @"chatRoomRemoveMembers";
+static NSString * const EMMethodKeyChatRoomBlockMembers = @"chatRoomBlockMembers";
+static NSString * const EMMethodKeyChatRoomUnblockMembers = @"chatRoomUnblockMembers";
+static NSString * const EMMethodKeyChatRoomUpdateChatroomOwner = @"chatRoomUpdateChatroomOwner";
+static NSString * const EMMethodKeyChatRoomAddAdmin = @"chatRoomAddAdmin";
+static NSString * const EMMethodKeyChatRoomRemoveAdmin = @"chatRoomRemoveAdmin";
+static NSString * const EMMethodKeyChatRoomMuteMembers = @"chatRoomMuteMembers";
+static NSString * const EMMethodKeyChatRoomUnmuteMembers = @"chatRoomUnmuteMembers";
+static NSString * const EMMethodKeyUpdateChatroomAnnouncement = @"updateChatroomAnnouncement";
 
+static NSString * const EMMethodKeyChatroomChanged = @"onChatroomChanged";
 
