@@ -1,9 +1,8 @@
 //
 //  EMChatroomManagerWrapper.h
-//  FlutterTest
+//  im_flutter_sdk
 //
-//  Created by 杜洁鹏 on 2019/10/17.
-//  Copyright © 2019 Easemob. All rights reserved.
+//  Created by easemob-DN0164 on 2019/10/18.
 //
 
 #import "EMWrapper.h"
