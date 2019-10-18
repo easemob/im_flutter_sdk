@@ -116,17 +116,6 @@ class EMWrapperCallBack implements EMCallBack{
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
       result.success(data);
-
-        new Thread(new Runnable() {
-          @Override
-          public void run() {
-            try {
-            EMClient.getInstance().groupManager().getJoinedGroupsFromServer();
-            }catch(Exception e){
-              e.printStackTrace();
-            }
-          }
-        }).start();
     });
   }
 
