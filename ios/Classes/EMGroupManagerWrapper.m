@@ -140,7 +140,7 @@ typedef enum : NSUInteger {
 
 
 - (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *groups = [[EMClient.sharedClient.groupManager getJoinedGroups];
+    NSArray *groups = [EMClient.sharedClient.groupManager getJoinedGroups];
     [self wrapperCallBack:result
                             error:NULL
                          userInfo:@{@"groups":groups}];
@@ -293,7 +293,6 @@ typedef enum : NSUInteger {
 }
 
 - (void)addMembers:(NSDictionary *)param result:(FlutterResult)result {
- {
       NSArray *members = param[@"members"];
       NSString *groupId = param[@"groupId"];
       NSString *message = param[@"message"];
@@ -350,7 +349,7 @@ typedef enum : NSUInteger {
 - (void)updateGroupSubject:(NSDictionary *)param result:(FlutterResult)result {
       NSString *subject = param[@"subject"];
       NSString *groupId = param[@"groupId"];
-      [EMClient.sharedClient.groupManager updateGroupSubject:members
+      [EMClient.sharedClient.groupManager updateGroupSubject:subject
                                                     forGroup:groupId
                                                   completion:^(EMGroup *aGroup, EMError *aError)
         {
@@ -363,7 +362,7 @@ typedef enum : NSUInteger {
 - (void)updateDescription:(NSDictionary *)param result:(FlutterResult)result {
       NSString *description = param[@"description"];
       NSString *groupId = param[@"groupId"];
-      [EMClient.sharedClient.groupManager updateDescription:members
+      [EMClient.sharedClient.groupManager updateDescription:description
                                                    forGroup:groupId
                                                  completion:^(EMGroup *aGroup, EMError *aError)
         {
@@ -638,15 +637,15 @@ typedef enum : NSUInteger {
 }
 
 - (void)updatePushServiceForGroups:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *groupId = param[@"groupId"];
+    NSArray *groupIDs = param[@"groupIDs"];
     BOOL isEnable = param[@"isEnable"];
-    [EMClient.sharedClient.groupManager updatePushServiceForGroups:groupId
+    [EMClient.sharedClient.groupManager updatePushServiceForGroups:groupIDs
                                                          isPushEnabled:isEnable
-                                                      completion:^(EMGroup *aGroup, EMError *aError)
+                                                      completion:^(NSArray *groups, EMError *aError)
        {
              [self wrapperCallBack:result
                                      error:aError
-                                  userInfo:@{@"group":aGroup}];
+                                  userInfo:@{@"groups":groups}];
        }];
 }
 
