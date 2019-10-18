@@ -7,8 +7,12 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.util.EMLog;
 
-import java.lang.reflect.Method;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +23,9 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
+
+import static com.easemob.im_flutter_sdk.EMHelper.getEMConversationType;
+import static com.easemob.im_flutter_sdk.EMHelper.getEMSearchDirection;
 
 @SuppressWarnings("unchecked")
 
@@ -179,28 +186,30 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void sendMessage(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
+        message.setMessageStatusCallback(new EMWrapperCallBack(result));
         manager.sendMessage(message);
     }
 
     private void ackMessageRead(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String to = (String)argMap.get("to");
-        String messageId= (String)argMap.get("id");
-        try{
-            manager.ackMessageRead(to, messageId);
-            onSuccess(result);
-        }catch(HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String to = argMap.getString("to");
+            String messageId = argMap.getString("id");
+            try {
+                manager.ackMessageRead(to, messageId);
+                onSuccess(result);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void recallMessage(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         try{
             manager.recallMessage(message);
@@ -211,36 +220,40 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void getMessage(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String messageId = (String)argMap.get("id");
-        EMMessage message = manager.getMessage(messageId);
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("message", EMHelper.convertEMMessageToStringMap(message));
-        result.success(data);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String messageId = argMap.getString("id");
+            EMMessage message = manager.getMessage(messageId);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("message", EMHelper.convertEMMessageToStringMap(message));
+            result.success(data);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void getConversation(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String conversationId = (String)argMap.get("id");
-        EMConversation.EMConversationType type = (EMConversation.EMConversationType) argMap.get("type");
-        Boolean createIfNotExists = (Boolean)argMap.get("createIfNotExists");
-        EMConversation conversation = manager.getConversation(conversationId, type, createIfNotExists);
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("conversation", EMHelper.convertEMConversationToStringMap(conversation));
-        result.success(data);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String conversationId = argMap.getString("id");
+            EMConversation.EMConversationType type = (EMConversation.EMConversationType) argMap.get("type");
+            Boolean createIfNotExists = argMap.getBoolean("createIfNotExists");
+            EMConversation conversation = manager.getConversation(conversationId, type, createIfNotExists);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("conversation", EMHelper.convertEMConversationToStringMap(conversation));
+            result.success(data);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void markAllMessagesAsRead(Object args, Result result) {
-        assert(args instanceof Map);
         manager.markAllConversationsAsRead();
     }
 
     private void getUnreadMessageCount(Object args, Result result) {
-        assert(args instanceof Map);
         int count = manager.getUnreadMessageCount();
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
@@ -249,15 +262,13 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void saveMessage(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         manager.saveMessage(message);
     }
 
     private void updateMessage(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         boolean status = manager.updateMessage(message);
         Map<String, Object> data = new HashMap<String, Object>();
@@ -267,52 +278,62 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void downloadAttachment(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         manager.downloadAttachment(message);
     }
 
     private void downloadThumbnail(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         manager.downloadThumbnail(message);
     }
 
     private void importMessages(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        List<Map<String, Object>> list = (List<Map<String, Object>>)argMap.get("messages");
-        List<EMMessage> messages = new LinkedList<EMMessage>();
-        for(Map<String, Object> message : list) {
-            messages.add(EMHelper.convertDataMapToMessage(message));
+        try {
+            JSONObject argMap = (JSONObject)args;
+            EMLog.e("importMessages", argMap.toString());
+            JSONArray data = argMap.getJSONArray("messages");
+            List<EMMessage> messages = new LinkedList<EMMessage>();
+            for(int i = 0; i < data.length(); i++){
+                messages.add(EMHelper.convertDataMapToMessage(data.getJSONObject(i)));
+            }
+            manager.importMessages(messages);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
-        manager.importMessages(messages);
     }
 
     private void getConversationsByType(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        EMConversation.EMConversationType type = (EMConversation.EMConversationType)argMap.get("type");
-        List<EMConversation> list = manager.getConversationsByType(type);
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        List<Map<String, Object>> conversations = new LinkedList<Map<String, Object>>();
-        for(EMConversation conversation : list) {
-            conversations.add(EMHelper.convertEMConversationToStringMap(conversation));
+        try {
+            JSONObject argMap = (JSONObject)args;
+            int type = argMap.getInt("type");
+            List<EMConversation> list = manager.getConversationsByType(getEMConversationType(type));
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            List<Map<String, Object>> conversations = new LinkedList<Map<String, Object>>();
+            for(EMConversation conversation : list) {
+                conversations.add(EMHelper.convertEMConversationToStringMap(conversation));
+            }
+            data.put("conversations",conversations);
+            result.success(data);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
-        data.put("conversations",conversations);
-        result.success(data);
     }
 
     private void downloadFile(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String remoteUrl = (String)argMap.get("remoteUrl");
-        String localFilePath = (String)argMap.get("localFilePath");
-        Map<String, String> headers = (Map<String, String>)argMap.get("headers");
-        manager.downloadFile(remoteUrl,localFilePath,headers,new EMWrapperCallBack(result));
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String remoteUrl = argMap.getString("remoteUrl");
+            String localFilePath = argMap.getString("localFilePath");
+            JSONObject json_headers = argMap.getJSONObject("headers");
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", json_headers.getString("json_headers"));
+            manager.downloadFile(remoteUrl,localFilePath,headers,new EMWrapperCallBack(result));
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void getAllConversations(Object args, Result result) {
@@ -329,88 +350,102 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void loadAllConversations(Object args, Result result) {
-        assert(args instanceof Map);
         manager.loadAllConversations();
     }
 
     private void deleteConversation(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String userName = (String)argMap.get("userName");
-        Boolean deleteMessages = (Boolean)argMap.get("deleteMessages");
-        boolean status = manager.deleteConversation(userName,deleteMessages.booleanValue());
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("status", status);
-        result.success(data);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String userName = argMap.getString("userName");
+            Boolean deleteMessages = argMap.getBoolean("deleteMessages");
+            boolean status = manager.deleteConversation(userName,deleteMessages.booleanValue());
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("status", status);
+            result.success(data);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void setMessageListened(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         manager.setMessageListened(message);
     }
 
     private void setVoiceMessageListened(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+        JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         manager.setVoiceMessageListened(message);
     }
 
     private void updateParticipant(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String from = (String)argMap.get("from");
-        String changeTo = (String)argMap.get("changeTo");
-        manager.updateParticipant(from, changeTo);
-    }
-
-    private void fetchHistoryMessages(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String conversationId = (String)argMap.get("id");
-        EMConversation.EMConversationType type = (EMConversation.EMConversationType)argMap.get("type");
-        Integer pageSize = (Integer)argMap.get("pageSize");
-        String startMsgId = (String)argMap.get("startMsgId");
-        try{
-            EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, type, pageSize.intValue(), startMsgId);
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            String cursorId = UUID.randomUUID().toString();
-            cursorResultList.put(cursorId, cursorResult);
-            data.put("cursorId", cursorId);
-            result.success(data);
-        }catch (HyphenateException e) {
-            onError(result, e);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String from = argMap.getString("from");
+            String changeTo = argMap.getString("changeTo");
+            manager.updateParticipant(from, changeTo);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
         }
     }
 
-    private void getCursor(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
+    private void fetchHistoryMessages(Object args, Result result) {
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String conversationId = argMap.getString("id");
+            int type = argMap.getInt("type");
+            int pageSize = argMap.getInt("pageSize");
+            String startMsgId = argMap.getString("startMsgId");
+            try{
+                EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, getEMConversationType(type), pageSize, startMsgId);
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("success", Boolean.TRUE);
+                String cursorId = UUID.randomUUID().toString();
+                cursorResultList.put(cursorId, cursorResult);
+                data.put("cursorId", cursorId);
+                result.success(data);
+            }catch (HyphenateException e) {
+                onError(result, e);
+            }
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
+    }
 
+    //Incomplete implementation
+    private void getCursor(Object args, Result result) {
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String id = argMap.getString("id");
+            EMCursorResult<EMMessage> cursor = cursorResultList.get(id);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 
     private void searchMsgFromDB(Object args, Result result) {
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String keywords = (String)argMap.get("keywords");
-        EMConversation.EMConversationType type = (EMConversation.EMConversationType) argMap.get("type");
-        Integer timeStamp = (Integer)argMap.get("timeStamp");
-        Integer maxCount = (Integer)argMap.get("maxCount");
-        String from = (String)argMap.get("from");
-        EMConversation.EMSearchDirection direction = (EMConversation.EMSearchDirection) argMap.get("direction");
-        List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, direction);
-        List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-        list.forEach((message)->{
-            messages.add(EMHelper.convertEMMessageToStringMap(message));
-        });
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("messages", messages);
-        result.success(data);
+        try {
+            JSONObject argMap = (JSONObject)args;
+            String keywords = argMap.getString("keywords");
+            int type = argMap.getInt("type");
+            int timeStamp = argMap.getInt("timeStamp");
+            int maxCount = argMap.getInt("maxCount");
+            String from = argMap.getString("from");
+            int direction = argMap.getInt("direction");
+            List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, getEMSearchDirection(direction));
+            List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
+            list.forEach((message)->{
+                messages.add(EMHelper.convertEMMessageToStringMap(message));
+            });
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("messages", messages);
+            result.success(data);
+        }catch (JSONException e){
+            EMLog.e("JSONException", e.getMessage());
+        }
     }
 }
 
