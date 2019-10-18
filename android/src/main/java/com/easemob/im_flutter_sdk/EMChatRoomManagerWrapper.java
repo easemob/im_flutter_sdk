@@ -13,11 +13,13 @@ import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.EMLog;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +54,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                    Map<String, Object> data = new HashMap<String, Object>();
                    data.put("roomId",roomId);
                    data.put("roomName",roomName);
-                   channel.invokeMethod(EMSDKMethod.onChatRoomDestroyed,data);
+                   data.put("ChatRoomChange","onChatRoomDestroyed");
+                   channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -63,7 +66,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",roomId);
                     data.put("participant",participant);
-                    channel.invokeMethod(EMSDKMethod.onMemberJoined,data);
+                    data.put("ChatRoomChange","onMemberJoined");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -75,7 +79,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("roomId",roomId);
                     data.put("roomName",roomName);
                     data.put("participant",participant);
-                    channel.invokeMethod(EMSDKMethod.onMemberExited,data);
+                    data.put("ChatRoomChange","onMemberExited");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -87,7 +92,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("roomId",roomId);
                     data.put("roomName",roomName);
                     data.put("participant",participant);
-                    channel.invokeMethod(EMSDKMethod.onRemovedFromChatRoom,data);
+                    data.put("ChatRoomChange","onRemovedFromChatRoom");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -98,8 +104,9 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("roomName",mutes);
-                    data.put("participant",expireTime);
-                    channel.invokeMethod(EMSDKMethod.onMuteListAdded,data);
+                    data.put("expireTime",String.valueOf(expireTime));
+                    data.put("ChatRoomChange","onMuteListAdded");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -109,8 +116,9 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                 post((Void)->{
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
-                    data.put("roomName",mutes);
-                    channel.invokeMethod(EMSDKMethod.onMuteListRemoved,data);
+                    data.put("mutes",mutes);
+                    data.put("ChatRoomChange","onMuteListRemoved");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -121,7 +129,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("admin",admin);
-                    channel.invokeMethod(EMSDKMethod.onAdminAdded,data);
+                    data.put("ChatRoomChange","onAdminAdded");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -132,7 +141,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("admin",admin);
-                    channel.invokeMethod(EMSDKMethod.onAdminRemoved,data);
+                    data.put("ChatRoomChange","onAdminRemoved");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -144,7 +154,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("roomId",chatRoomId);
                     data.put("newOwner",newOwner);
                     data.put("oldOwner",oldOwner);
-                    channel.invokeMethod(EMSDKMethod.onOwnerChanged,data);
+                    data.put("ChatRoomChange","onOwnerChanged");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
 
@@ -155,7 +166,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("announcement",announcement);
-                    channel.invokeMethod(EMSDKMethod.onAnnouncementChanged,data);
+                    data.put("ChatRoomChange","onAnnouncementChanged");
+                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
                 });
             }
         });
@@ -220,399 +232,285 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
     private void joinChatRoom(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
-            String chatRoomID = jsonObject.getString("toChatRoomId");
-            EMClient.getInstance().chatroomManager().joinChatRoom(chatRoomID, new EMValueCallBack<EMChatRoom>() {
-                @Override
-                public void onSuccess(EMChatRoom value) {
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.TRUE);
-                    result.success(data);
-                }
-
-                @Override
-                public void onError(int error, String errorMsg) {
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.FALSE);
-                    data.put("code", error);
-                    data.put("errorMsg", errorMsg);
-                    result.success(data);
-                }
-            });
+            String chatRoomId = jsonObject.getString("roomId");
+            emChatRoomManager.joinChatRoom(chatRoomId,new EMValueWrapperCallBack<>(result));
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
     private void leaveChatRoom(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomID = (String) argMap.get("toChatRoomId");
-        EMClient.getInstance().chatroomManager().leaveChatRoom(chatRoomID);
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            emChatRoomManager.leaveChatRoom(chatRoomId);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            result.success(data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void fetchPublicChatRoomsFromServer(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        int pageNum = (int) argMap.get("pageNum");
-        int pageSize = (int) argMap.get("pageSize");
         try {
-            EMPageResult<EMChatRoom> emCursorResult = EMClient.getInstance().chatroomManager().fetchPublicChatRoomsFromServer(pageNum,pageSize);
+            JSONObject jsonObject = (JSONObject) args;
+            int pageNum = jsonObject.getInt("pageNum");
+            int pageSize = jsonObject.getInt("pageSize");
+            EMPageResult<EMChatRoom> emCursorResult = emChatRoomManager.fetchPublicChatRoomsFromServer(pageNum,pageSize);
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("pageCount",emCursorResult.getPageCount());
             result.success(data);
-        } catch (HyphenateException e) {
+        } catch (JSONException | HyphenateException e) {
             e.printStackTrace();
         }
     }
 
     private void asyncFetchChatRoomFromServer(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String roomId = (String) argMap.get("roomid");
-        EMClient.getInstance().chatroomManager().asyncFetchChatRoomFromServer(roomId, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            emChatRoomManager.asyncFetchChatRoomFromServer(chatRoomId,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void getChatRoom(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String roomId = (String) argMap.get("roomid");
-        EMClient.getInstance().chatroomManager().getChatRoom(roomId);
-        ///EMChatRoom 对象传递
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            EMChatRoom chatRoom = emChatRoomManager.getChatRoom(chatRoomId);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("chatRoomInfo", EMHelper.chatRoomToStringMap(chatRoom));
+            result.success(data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void getAllChatRooms(Object args, MethodChannel.Result result){
-        EMClient.getInstance().chatroomManager().getAllChatRooms();
-        ///list<EMChatRoom>传递
+        List<EMChatRoom> list = emChatRoomManager.getAllChatRooms();
+        List roomlist = new LinkedList();
+        for (EMChatRoom emChatRoom : list) {
+            roomlist.add(EMHelper.chatRoomToStringMap(emChatRoom));
+        }
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("success", Boolean.TRUE);
+        data.put("allChatRoom", roomlist);
+        result.success(data);
     }
 
     private void asyncCreateChatRoom(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String subject = (String) argMap.get("subject");
-        String description = (String) argMap.get("description");
-        String welcomeMessage = (String) argMap.get("welcomeMessage");
-        int maxUserCount = (int) argMap.get("maxUserCount");
-        ArrayList<String> memberslist = (ArrayList<String>) argMap.get("members");
-        EMClient.getInstance().chatroomManager().asyncCreateChatRoom(subject, description, welcomeMessage, maxUserCount, memberslist, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String subject = jsonObject.getString("subject");
+            String description = jsonObject.getString("description");
+            String welcomeMessage = jsonObject.getString("welcomeMessage");
+            int maxUserCount = jsonObject.getInt("maxUserCount");
+            JSONArray members = jsonObject.getJSONArray("members");
+            List<String> membersList = new LinkedList<>();
+            for (int i = 0; i < members.length(); i++) {
+                membersList.add((String) members.get(i));
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+            emChatRoomManager.asyncCreateChatRoom(subject,description,welcomeMessage,maxUserCount,membersList,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncDestroyChatRoom(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        EMClient.getInstance().chatroomManager().asyncDestroyChatRoom(chatRoomId, new EMCallBack() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onError(int code, String error) {
-
-            }
-
-            @Override
-            public void onProgress(int progress, String status) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            emChatRoomManager.asyncDestroyChatRoom(chatRoomId,new EMWrapperCallBack(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncChangeChatRoomSubject(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String newSubject = (String) argMap.get("newSubject");
-        EMClient.getInstance().chatroomManager().asyncChangeChatRoomSubject(chatRoomId, newSubject, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            String newSubject = jsonObject.getString("newSubject");
+            emChatRoomManager.asyncChangeChatRoomSubject(chatRoomId,newSubject,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncChangeChatroomDescription(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String newDescription = (String) argMap.get("newDescription");
-        EMClient.getInstance().chatroomManager().asyncChangeChatroomDescription(chatRoomId, newDescription, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            String newDescription = jsonObject.getString("newDescription");
+            emChatRoomManager.asyncChangeChatroomDescription(chatRoomId,newDescription,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncFetchChatRoomMembers(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String cursor = (String) argMap.get("cursor");
-        int pageSize = (int) argMap.get("pageSize");
-        EMClient.getInstance().chatroomManager().asyncFetchChatRoomMembers(chatRoomId, cursor, pageSize, new EMValueCallBack<EMCursorResult<String>>() {
-            @Override
-            public void onSuccess(EMCursorResult<String> value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            String cursor = jsonObject.getString("cursor");
+            int pageSize = jsonObject.getInt("pageSize");
+            emChatRoomManager.asyncFetchChatRoomMembers(chatRoomId,cursor,pageSize,new EMValueWrapperCallBack<EMCursorResult<String>>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncMuteChatRoomMembers(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        ArrayList<String> muteMembersList = (ArrayList<String>) argMap.get("muteMembers");
-        long duration = (long) argMap.get("duration");
-        EMClient.getInstance().chatroomManager().asyncMuteChatRoomMembers(chatRoomId, muteMembersList, duration, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            long duration = jsonObject.getLong("duration");
+            JSONArray muteMembers = jsonObject.getJSONArray("muteMembers");
+            List<String> muteMembersList = new LinkedList<>();
+            for (int i = 0; i < muteMembers.length(); i++) {
+                muteMembersList.add((String) muteMembers.get(i));
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+            emChatRoomManager.asyncMuteChatRoomMembers(chatRoomId,muteMembersList,duration,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncUnMuteChatRoomMembers(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        ArrayList<String> unMuteMembersList = (ArrayList<String>) argMap.get("members");
-        EMClient.getInstance().chatroomManager().asyncUnMuteChatRoomMembers(chatRoomId, unMuteMembersList, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            JSONArray muteMembers = jsonObject.getJSONArray("muteMembers");
+            List<String> unMuteMembersList = new LinkedList<>();
+            for (int i = 0; i < muteMembers.length(); i++) {
+                unMuteMembersList.add((String) muteMembers.get(i));
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+            emChatRoomManager.asyncUnMuteChatRoomMembers(chatRoomId,unMuteMembersList,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncChangeOwner(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String newOwner = (String) argMap.get("newOwner");
         try {
-            EMClient.getInstance().chatroomManager().asyncChangeOwner(chatRoomId, newOwner, new EMValueCallBack<EMChatRoom>() {
-                @Override
-                public void onSuccess(EMChatRoom value) {
-
-                }
-
-                @Override
-                public void onError(int error, String errorMsg) {
-
-                }
-            });
-        } catch (HyphenateException e) {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            String newOwner = jsonObject.getString("newOwner");
+            emChatRoomManager.asyncChangeOwner(chatRoomId,newOwner,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException | HyphenateException e) {
             e.printStackTrace();
         }
     }
 
     private void asyncAddChatRoomAdmin(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String admin = (String) argMap.get("admin");
-        EMClient.getInstance().chatroomManager().asyncAddChatRoomAdmin(chatRoomId, admin, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomID = jsonObject.getString("roomId");
+            String admin = jsonObject.getString("admin");
+            emChatRoomManager.asyncAddChatRoomAdmin(chatRoomID,admin,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncRemoveChatRoomAdmin(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String admin = (String) argMap.get("admin");
-        EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAdmin(chatRoomId, admin, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            String admin = jsonObject.getString("admin");
+            emChatRoomManager.asyncRemoveChatRoomAdmin(chatRoomId,admin,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void asyncFetchChatRoomMuteList(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        int pageNum = (int) argMap.get("pageNum");
-        int pageSize = (int) argMap.get("pageSize");
-        EMClient.getInstance().chatroomManager().asyncFetchChatRoomMuteList(chatRoomId, pageNum, pageSize, new EMValueCallBack<Map<String, Long>>() {
-            @Override
-            public void onSuccess(Map<String, Long> value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            int pageNum = jsonObject.getInt("pageNum");
+            int pageSize = jsonObject.getInt("pageSize");
+            emChatRoomManager.asyncFetchChatRoomMuteList(chatRoomId,pageNum,pageSize,new EMValueWrapperCallBack<Map<String, Long>>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     private void asyncRemoveChatRoomMembers(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        ArrayList<String> membersList = (ArrayList<String>) argMap.get("members");
-        EMClient.getInstance().chatroomManager().asyncRemoveChatRoomMembers(chatRoomId, membersList, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            JSONArray members = jsonObject.getJSONArray("members");
+            List<String> membersList = new LinkedList<>();
+            for (int i = 0; i < members.length(); i++) {
+                membersList.add((String) members.get(i));
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+            emChatRoomManager.asyncRemoveChatRoomMembers(chatRoomId,membersList,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     private void asyncBlockChatroomMembers(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        ArrayList<String> blockMembersList = (ArrayList<String>) argMap.get("members");
-        EMClient.getInstance().chatroomManager().asyncBlockChatroomMembers(chatRoomId, blockMembersList, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            JSONArray blockMembers = jsonObject.getJSONArray("members");
+            List<String> blockMembersList = new LinkedList<>();
+            for (int i = 0; i < blockMembers.length(); i++) {
+                blockMembersList.add((String) blockMembers.get(i));
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+            emChatRoomManager.asyncBlockChatroomMembers(chatRoomId,blockMembersList,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     private void asyncUnBlockChatRoomMembers(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        ArrayList<String> blockMembersList = (ArrayList<String>) argMap.get("members");
-        EMClient.getInstance().chatroomManager().asyncUnBlockChatRoomMembers(chatRoomId, blockMembersList, new EMValueCallBack<EMChatRoom>() {
-            @Override
-            public void onSuccess(EMChatRoom value) {
-
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            JSONArray unBlockMembers = jsonObject.getJSONArray("members");
+            List<String> unBlockMembersList = new LinkedList<>();
+            for (int i = 0; i < unBlockMembers.length(); i++) {
+                unBlockMembersList.add((String) unBlockMembers.get(i));
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+            emChatRoomManager.asyncUnBlockChatRoomMembers(chatRoomId,unBlockMembersList,new EMValueWrapperCallBack<EMChatRoom>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     private void asyncFetchChatRoomBlackList(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        int pageNum = (int) argMap.get("pageNum");
-        int pageSize = (int) argMap.get("pageSize");
-        EMClient.getInstance().chatroomManager().asyncFetchChatRoomBlackList(chatRoomId, pageNum, pageSize, new EMValueCallBack<List<String>>() {
-            @Override
-            public void onSuccess(List<String> value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            int pageNum = jsonObject.getInt("pageNum");
+            int pageSize = jsonObject.getInt("pageSize");
+            emChatRoomManager.asyncFetchChatRoomBlackList(chatRoomId,pageNum,pageSize,new EMValueWrapperCallBack<List<String>>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     private void asyncUpdateChatRoomAnnouncement(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        String announcement = (String) argMap.get("announcement");
-        EMClient.getInstance().chatroomManager().asyncUpdateChatRoomAnnouncement(chatRoomId, announcement, new EMCallBack() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onError(int code, String error) {
-
-            }
-
-            @Override
-            public void onProgress(int progress, String status) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            String announcement = jsonObject.getString("announcement");
+            emChatRoomManager.asyncUpdateChatRoomAnnouncement(chatRoomId,announcement,new EMWrapperCallBack(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     private void asyncFetchChatRoomAnnouncement(Object args, MethodChannel.Result result){
-        assert(args instanceof Map);
-        Map<String, Object> argMap = (Map<String, Object>)args;
-        String chatRoomId = (String) argMap.get("chatRoomId");
-        EMClient.getInstance().chatroomManager().asyncFetchChatRoomAnnouncement(chatRoomId, new EMValueCallBack<String>() {
-            @Override
-            public void onSuccess(String value) {
-
-            }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-
-            }
-        });
+        try {
+            JSONObject jsonObject = (JSONObject) args;
+            String chatRoomId = jsonObject.getString("roomId");
+            emChatRoomManager.asyncFetchChatRoomAnnouncement(chatRoomId,new EMValueWrapperCallBack<String>(result));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 

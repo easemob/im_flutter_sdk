@@ -121,16 +121,7 @@ public class EMSDKMethod {
     static final String asyncFetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
 
     //EMChatRoomManagerListener
-    static final String onChatRoomDestroyed = "onChatRoomDestroyed";
-    static final String onMemberJoined = "onMemberJoined";
-    static final String onMemberExited = "onMemberExited";
-    static final String onRemovedFromChatRoom = "onRemovedFromChatRoom";
-    static final String onMuteListAdded = "onMuteListAdded";
-    static final String onMuteListRemoved = "onMuteListRemoved";
-    static final String onAdminAdded = "onAdminAdded";
-    static final String onAdminRemoved = "onAdminRemoved";
-    static final String onOwnerChanged = "onOwnerChanged";
-    static final String onAnnouncementChanged = "onAnnouncementChanged";
+    static final String ChatRoomChange = "ChatRoomChange";
 
     //EMChatRoom
     static final String getId = "getId";

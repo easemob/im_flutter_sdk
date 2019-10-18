@@ -8,7 +8,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> implements EMConnectionListener,EMMessageListener{
+class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
   void initState() {
     //TODO: init sdk;
