@@ -13,6 +13,8 @@
     [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_manager") registrar:registrar];
     [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_contact_manager") registrar:registrar];
     [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_conversation") registrar:registrar];
+    [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_group_manager") registrar:registrar];
+    [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_chatroom_manager") registrar:registrar];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
