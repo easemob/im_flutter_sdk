@@ -22,19 +22,25 @@
 }
 
 - (void)wrapperCallBack:(FlutterResult)result
-                  error:(EMError *)error
-               userInfo:(NSObject *)userinfo {
+                  error:(EMError *__nullable)error
+               userInfo:(NSObject *__nullable)userinfo {
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        if (!error) {
-            dic[@"success"] = @YES;
+        if (error != nil) {
+             if (!error) {
+                 dic[@"success"] = @YES;
+                 if (userinfo) {
+                     dic[@"arbitrary_value"] = userinfo;
+                 }
+             }else {
+                 dic[@"success"] = @NO;
+                 dic[@"code"] = @(error.code);
+                 dic[@"desc"] = error.errorDescription;
+             }
+        } else {
             if (userinfo) {
                 dic[@"arbitrary_value"] = userinfo;
             }
-        }else {
-            dic[@"success"] = @NO;
-            dic[@"code"] = @(error.code);
-            dic[@"desc"] = error.errorDescription;
         }
         
         result(dic);
