@@ -731,7 +731,7 @@ typedef enum : NSUInteger {
     NSDictionary *map = @{
         @"type":@(GROUP_JOIN_GROUP_REQUEST_RECEIVE),
         @"group":[self dictionaryWithGroup:aGroup],
-        @"user":aUsername,
+        @"username":aUsername,
         @"reason":aReason
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
