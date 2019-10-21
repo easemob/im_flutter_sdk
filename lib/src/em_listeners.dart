@@ -64,3 +64,25 @@ abstract class EMMessageListener {
   void onMessageRecalled(List<EMMessage> messages);
   void onMessageChanged(EMMessage message, Object change);
 }
+
+abstract class EMGroupChangeListener {
+  void onInvitationReceived(String groupId, String groupName, String inviter, String reason);
+  void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason);
+  void onRequestToJoinAccepted(String groupId, String groupName, String accepter);
+  void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason);
+  void onInvitationAccepted(String groupId, String invitee, String reason);
+  void onInvitationDeclined(String groupId, String invitee, String reason);
+  void onUserRemoved(String groupId, String groupName);
+  void onGroupDestroyed(String groupId, String groupName);
+  void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage);
+  void onMuteListAdded(String groupId, List<String> mutes, int muteExpire);
+  void onMuteListRemoved(String groupId, List<String> mutes);
+  void onAdminAdded(String groupId, String administrator);
+  void onAdminRemoved(String groupId, String administrator);
+  void onOwnerChanged(String groupId, String newOwner, String oldOwner);
+  void onMemberJoined(String groupId, String member);
+  void onMemberExited(String groupId,  String member);
+  void onAnnouncementChanged(String groupId, String announcement);
+  void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile);
+  void onSharedFileDeleted(String groupId, String fileId);
+}

@@ -135,11 +135,27 @@ public class EMSDKMethod {
     static final String deleteGroupSharedFile = "deleteGroupSharedFile";
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
     static final String updateGroupExtension = "updateGroupExtension";
-    static final String onGroupChange = "onGroupChange";
+    static final String onInvitationReceived = "onInvitationReceived";
+    static final String onRequestToJoinReceived = "onRequestToJoinReceived";
+    static final String onRequestToJoinAccepted = "onRequestToJoinAccepted";
+    static final String onRequestToJoinDeclined = "onRequestToJoinDeclined";
+    static final String onInvitationAccepted = "onInvitationAccepted";
+    static final String onInvitationDeclined = "onInvitationDeclined";
+    static final String onUserRemoved = "onUserRemoved";
+    static final String onGroupDestroyed = "onGroupDestroyed";
+    static final String onAutoAcceptInvitationFromGroup = "onAutoAcceptInvitationFromGroup";
+    static final String onMuteListAdded = "onMuteListAdded";
+    static final String onMuteListRemoved = "onMuteListRemoved";
+    static final String onAdminAdded = "onAdminAdded";
+    static final String onAdminRemoved = "onAdminRemoved";
+    static final String onOwnerChanged = "onOwnerChanged";
+    static final String onMemberJoined = "onMemberJoined";
+    static final String onMemberExited = "onMemberExited";
+    static final String onAnnouncementChanged = "onAnnouncementChanged";
+    static final String onSharedFileAdded = "onSharedFileAdded";
+    static final String onSharedFileDeleted = "onSharedFileDeleted";
 
     /// EMGroup
-    static final String getGroupId = "getGroupId";
-    static final String getGroupName = "getGroupName";
     static final String getGroupDescription = "getGroupDescription";
     static final String isPublic = "isPublic";
     static final String isAllowInvites = "isAllowInvites";
