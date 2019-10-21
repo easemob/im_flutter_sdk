@@ -278,7 +278,7 @@ class EMChatManager {
 
   /// fetchHistoryMessages - Fetches history messages in conversation [conversationId], filtered by [type].
   /// Result paginated by [pageSize] per page, started from [startMsgId].
-  Future<EMCursorResult<EMMessage>> fetchHistoryMessages(
+  Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
       {@required final String conversationId,
       @required final EMConversationType type,
       int pageSize = 10,
@@ -293,7 +293,7 @@ class EMChatManager {
       "startMsgId": startMsgId
     });
     if (result['success']) {
-      return _EMCursorResult<EMMessage>(result['cursorId']);
+      return _EMCursorResults<EMMessage>(result['cursorId']);
     } else {
       return null;
     }
@@ -395,11 +395,11 @@ class EMChatManager {
 }
 
 // _EMCursorResult - internal EMCursorResult implementation.
-class _EMCursorResult<T> extends EMCursorResult<T> {
+class _EMCursorResults<T> extends EMCursorResults<T> {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emChatManagerChannel =
       MethodChannel('$_channelPrefix/em_chat_manager');
-  _EMCursorResult(String cursorId) : this._cursorId = cursorId;
+  _EMCursorResults(String cursorId) : this._cursorId = cursorId;
 
   final String _cursorId;
 
