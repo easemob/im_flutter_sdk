@@ -20,8 +20,8 @@ main() {
         msgId: '123456',
         from: '123',
         to: '456',
-        chatType: ChatType.Chat,
-        direction: Direction.SEND);
+        chatType: 0,
+        direction: 0);
     expect(message.msgId, '123456');
     expect(message.from, '123');
     expect(message.to, '456');
