@@ -17,11 +17,7 @@ void main() {
     client.login(
         userName: 'user1',
         password: 'passw0rd',
-<<<<<<< HEAD
-        onSuccess: (String username) {
-=======
         onSuccess: (username) {
->>>>>>> upstream/dev
           print('login success');
         });
     client.login(
