@@ -91,6 +91,7 @@ class EMClient {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.login, {"userName": userName, "password": password});
     result.then((response) {
+      print(response);
       if (response['success']) {
         _loggedIn = true;
         if (onSuccess != null) {
