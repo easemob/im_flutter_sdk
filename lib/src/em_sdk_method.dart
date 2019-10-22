@@ -95,48 +95,86 @@ class EMSDKMethod {
   static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
 
   /// EMGroupManager
-  static const String getJoinedGroups = "getJoinedGroups";
-  static const String getGroupsWithoutPushNotification = "getGroupsWithoutPushNotification";
+  static const String getAllGroups = "getAllGroups";
+  static const String getGroup = "getGroup";
+  static const String createGroup = "createGroup";
+  static const String loadAllGroups = "loadAllGroups";
+  static const String destroyGroup = "destroyGroup";
+  static const String addUsersToGroup = "addUsersToGroup";
+  static const String removeUserFromGroup = "removeUserFromGroup";
+  static const String leaveGroup = "leaveGroup";
+  static const String getGroupFromServer = "getGroupFromServer";
   static const String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
   static const String getPublicGroupsFromServer = "getPublicGroupsFromServer";
-  static const String searchPublicGroup = "searchPublicGroup";
-  static const String createGroup = "createGroup";
-  static const String getGroupSpecificationFromServer = "getGroupSpecificationFromServer";
-  static const String getGroupMemberListFromServer = "getGroupMemberListFromServer";
-  static const String getGroupBlacklistFromServer = "getGroupBlacklistFromServer";
-  static const String getGroupMuteListFromServer = "getGroupMuteListFromServer";
-  static const String getGroupFileList = "getGroupFileList";
-  static const String getGroupAnnouncement = "getGroupAnnouncement";
-  static const String addMembers = "addMembers";
-  static const String removeMembers = "removeMembers";
-  static const String blockMembers = "blockMembers";
-  static const String unblockMembers = "unblockMembers";
-  static const String updateGroupSubject = "updateGroupSubject";
-  static const String updateDescription = "updateDescription";
-  static const String leaveGroup = "leaveGroup";
-  static const String destroyGroup = "destroyGroup";
-  static const String blockGroup = "blockGroup";
-  static const String unblockGroup = "unblockGroup";
-  static const String updateGroupOwner = "updateGroupOwner";
-  static const String addAdmin = "addAdmin";
-  static const String removeAdmin = "removeAdmin";
-  static const String muteMembers = "muteMembers";
-  static const String unmuteMembers = "unmuteMembers";
-  static const String uploadGroupSharedFile = "uploadGroupSharedFile";
-  static const String downloadGroupSharedFile = "downloadGroupSharedFile";
-  static const String removeGroupSharedFile = "removeGroupSharedFile";
-  static const String updateGroupAnnouncement = "updateGroupAnnouncement";
-  static const String updateGroupExt = "updateGroupExt";
-  static const String joinPublicGroup = "joinPublicGroup";
-  static const String requestToJoinPublicGroup = "requestToJoinPublicGroup";
-  static const String approveJoinGroupRequest = "approveJoinGroupRequest";
-  static const String declineJoinGroupRequest = "declineJoinGroupRequest";
-  static const String acceptInvitationFromGroup = "acceptInvitationFromGroup";
+  static const String joinGroup = "joinGroup";
+  static const String changeGroupName = "changeGroupName";
+  static const String changeGroupDescription = "changeGroupDescription";
+  static const String acceptGroupInvitation = "acceptGroupInvitation";
   static const String declineGroupInvitation = "declineGroupInvitation";
-  static const String updatePushServiceForGroup = "updatePushServiceForGroup";
-  static const String updatePushServiceForGroups = "updatePushServiceForGroups";
+  static const String acceptApplication = "acceptApplication";
+  static const String declineApplication = "declineApplication";
+  static const String inviteUser = "inviteUser";
+  static const String applyJoinToGroup = "applyJoinToGroup";
+  static const String blockGroupMessage = "blockGroupMessage";
+  static const String unblockGroupMessage = "unblockGroupMessage";
+  static const String blockUser = "blockUser";
+  static const String unblockUser = "unblockUser";
+  static const String getBlockedUsers = "getBlockedUsers";
+  static const String fetchGroupMembers = "fetchGroupMembers";
+  static const String changeOwner = "changeOwner";
+  static const String addGroupAdmin = "addGroupAdmin";
+  static const String removeGroupAdmin = "removeGroupAdmin";
+  static const String muteGroupMembers = "muteGroupMembers";
+  static const String unMuteGroupMembers = "unMuteGroupMembers";
+  static const String fetchGroupMuteList = "fetchGroupMuteList";
+  static const String fetchGroupBlackList = "fetchGroupBlackList";
+  static const String updateGroupAnnouncement = "updateGroupAnnouncement";
+  static const String fetchGroupAnnouncement = "fetchGroupAnnouncement";
+  static const String uploadGroupSharedFile = "uploadGroupSharedFile";
+  static const String fetchGroupSharedFileList = "fetchGroupSharedFileList";
+  static const String deleteGroupSharedFile = "deleteGroupSharedFile";
+  static const String downloadGroupSharedFile = "downloadGroupSharedFile";
+  static const String updateGroupExtension = "updateGroupExtension";
+  static const String onInvitationReceived = "onInvitationReceived";
+  static const String onRequestToJoinReceived = "onRequestToJoinReceived";
+  static const String onRequestToJoinAccepted = "onRequestToJoinAccepted";
+  static const String onRequestToJoinDeclined = "onRequestToJoinDeclined";
+  static const String onInvitationAccepted = "onInvitationAccepted";
+  static const String onInvitationDeclined = "onInvitationDeclined";
+  static const String onUserRemoved = "onUserRemoved";
+  static const String onGroupDestroyed = "onGroupDestroyed";
+  static const String onAutoAcceptInvitationFromGroup = "onAutoAcceptInvitationFromGroup";
+  static const String onMuteListAdded = "onMuteListAdded";
+  static const String onMuteListRemoved = "onMuteListRemoved";
+  static const String onAdminAdded = "onAdminAdded";
+  static const String onAdminRemoved = "onAdminRemoved";
+  static const String onOwnerChanged = "onOwnerChanged";
+  static const String onMemberJoined = "onMemberJoined";
+  static const String onMemberExited = "onMemberExited";
+  static const String onAnnouncementChanged = "onAnnouncementChanged";
+  static const String onSharedFileAdded = "onSharedFileAdded";
+  static const String onSharedFileDeleted = "onSharedFileDeleted";
 
-  static const String onGroupChanged = "onGroupChanged";
+
+
+  /// EMGroup
+  static const String getGroupDescription = "getGroupDescription";
+  static const String isPublic = "isPublic";
+  static const String isAllowInvites = "isAllowInvites";
+  static const String isMemberAllowToInvite = "isMemberAllowToInvite";
+  static const String isMembersOnly = "isMembersOnly";
+  static const String getMaxUserCount = "getMaxUserCount";
+  static const String isMsgBlocked = "isMsgBlocked";
+  static const String getGroupOwner = "getGroupOwner";
+  static const String groupSubject = "groupSubject";
+  static const String getMembers = "getMembers";
+  static const String getGroupMemberCount = "getGroupMemberCount";
+  static const String getGroupAdminList = "getGroupAdminList";
+  static const String getGroupBlackList = "getGroupBlackList";
+  static const String getGroupMuteList = "getGroupMuteList";
+  static const String getExtension = "getExtension";
+  static const String getGroupAnnouncement = "getGroupAnnouncement";
+  static const String getShareFileList = "getShareFileList";
 
   /// EMChatroomManager
   static const String getChatroomsFromServer = "getChatroomsFromServer";
@@ -162,5 +200,4 @@ class EMSDKMethod {
   static const String updateChatroomAnnouncement = "updateChatroomAnnouncement";
 
   static const String onChatroomChanged = "onChatroomChanged";
-
 }
