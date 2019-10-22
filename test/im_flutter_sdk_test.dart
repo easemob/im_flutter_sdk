@@ -17,7 +17,7 @@ void main() {
     client.login(
         userName: 'user1',
         password: 'passw0rd',
-        onSuccess: () {
+        onSuccess: (username) {
           print('login success');
         });
     client.login(
