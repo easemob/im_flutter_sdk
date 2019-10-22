@@ -200,4 +200,5 @@ class EMSDKMethod {
   static const String updateChatroomAnnouncement = "updateChatroomAnnouncement";
 
   static const String onChatroomChanged = "onChatroomChanged";
+
 }

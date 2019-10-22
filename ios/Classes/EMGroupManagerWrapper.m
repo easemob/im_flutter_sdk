@@ -888,32 +888,32 @@ typedef enum : NSUInteger {
 {
     EMGroupOptions *options = group.setting;
     EMGroupStyle style = options.style;
-    NSString *groupStyle;
+    int groupStyle;
     if (style == EMGroupStylePrivateOnlyOwnerInvite) {
-        groupStyle = @"PrivateOnlyOwnerInvite";
+        groupStyle = 0;
     } else if (style == EMGroupStylePrivateMemberCanInvite) {
-        groupStyle = @"PrivateMemberCanInvite";
+        groupStyle = 1;
     } else if (style == EMGroupStylePublicJoinNeedApproval) {
-        groupStyle = @"PublicJoinNeedApproval";
+        groupStyle = 2;
     } else {
-        groupStyle = @"PublicOpenJoin";
+        groupStyle = 3;
     }
-    NSDictionary *groupSettings = @{@"style":groupStyle,
+    NSDictionary *groupSettings = @{@"style":[NSNumber numberWithInt:groupStyle],
                                     @"maxUsersCount":[NSNumber numberWithInteger:options.maxUsersCount],
                                     @"IsInviteNeedConfirm":[NSNumber numberWithBool:options.IsInviteNeedConfirm],
                                     @"ext":options.ext
                                     };
     
     EMGroupPermissionType permissionType = group.permissionType;
-    NSString *type;
+    int type;
     if (permissionType == EMGroupPermissionTypeNone) {
-        type = @"None";
+        type = -1;
     } else if (permissionType == EMGroupPermissionTypeMember) {
-        type = @"Member";
+        type = 0;
     } else if (permissionType == EMGroupPermissionTypeAdmin) {
-        type = @"Admin";
+        type = 1;
     } else {
-        type = @"Owner";
+        type = 2;
     }
     
     NSDictionary *groupDict = @{@"groupId":group.groupId,
@@ -930,7 +930,7 @@ typedef enum : NSUInteger {
                                 @"isPushNotificationEnabled":[NSNumber numberWithBool:group.isPushNotificationEnabled],
                                 @"isPublic":[NSNumber numberWithBool:group.isPublic],
                                 @"isBlocked":[NSNumber numberWithBool:group.isBlocked],
-                                @"permissionType":type,
+                                @"permissionType":[NSNumber numberWithInt:type],
                                 @"occupants":group.occupants,
                                 @"occupantsCount":[NSNumber numberWithInteger:group.occupantsCount]
                                };
