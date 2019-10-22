@@ -476,15 +476,15 @@ typedef enum : NSUInteger {
 - (NSDictionary *)dictionaryWithChatroom:(EMChatroom *)chatroom
 {
     EMChatroomPermissionType permissionType = chatroom.permissionType;
-    NSString *type;
+    int type;
     if (permissionType == EMChatroomPermissionTypeNone) {
-        type = @"None";
+        type = -1;
     } else if (permissionType == EMChatroomPermissionTypeMember) {
-        type = @"Member";
+        type = 0;
     } else if (permissionType == EMChatroomPermissionTypeAdmin) {
-        type = @"Admin";
+        type = 1;
     } else {
-        type = @"Owner";
+        type = 2;
     }
     
     NSDictionary *groupDict = @{@"chatroomId":chatroom.chatroomId,
@@ -496,7 +496,7 @@ typedef enum : NSUInteger {
                                 @"memberList":chatroom.memberList,
                                 @"blacklist":chatroom.blacklist,
                                 @"muteList":chatroom.muteList,
-                                @"permissionType":type,
+                                @"permissionType":[NSNumber numberWithInt:type],
                                 @"maxOccupantsCount":[NSNumber numberWithInteger:chatroom.maxOccupantsCount],
                                 @"occupantsCount":[NSNumber numberWithInteger:chatroom.occupantsCount]
                                };
