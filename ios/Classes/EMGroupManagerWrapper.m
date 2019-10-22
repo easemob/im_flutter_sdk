@@ -141,7 +141,8 @@ typedef enum : NSUInteger {
 #pragma mark - Actions
 
 - (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *groups = [EMClient.sharedClient.groupManager getJoinedGroups];
+    NSArray *joineGroups = [EMClient.sharedClient.groupManager getJoinedGroups];
+    NSArray *groups = [self groupsArrayWithDictionaryArray:joineGroups];
     [self wrapperCallBack:result
                     error:nil
                  userInfo:@{@"groups":groups}];
@@ -149,7 +150,8 @@ typedef enum : NSUInteger {
 
 - (void)getGroupsWithoutPushNotification:(NSDictionary *)param result:(FlutterResult)result {
     EMError *aError;
-    NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
+    NSArray *pushGroups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
+    NSArray *groups = [self groupsArrayWithDictionaryArray:pushGroups];
     [self wrapperCallBack:result
                     error:nil
                  userInfo:@{@"groups":groups}];
@@ -164,7 +166,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":aList}];
+                     userInfo:@{@"list":[self groupsArrayWithDictionaryArray:aList]}];
     }];
 }
 
@@ -177,7 +179,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":aResult}];
+                     userInfo:@{@"result":[self dictionaryWithCursorResult:aResult]}];
     }];
 }
 
@@ -188,7 +190,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -207,7 +209,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -218,7 +220,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -233,7 +235,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":aResult}];
+                     userInfo:@{@"result":[self dictionaryWithCursorResult:aResult]}];
     }];
 }
 
@@ -248,7 +250,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":aList}];
+                     userInfo:@{@"list":[self groupsArrayWithDictionaryArray:aList]}];
     }];
 }
 
@@ -263,7 +265,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":aList}];
+                     userInfo:@{@"list":[self groupsArrayWithDictionaryArray:aList]}];
     }];
 }
 
@@ -276,9 +278,10 @@ typedef enum : NSUInteger {
                                                       pageSize:pageSize
                                                     completion:^(NSArray *aList, EMError *aError)
      {
+        
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":aList}];
+                     userInfo:@{@"list":[self dictionaryListWithGroupFileList:aList]}];
     }];
 }
 
@@ -304,7 +307,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -317,7 +320,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -330,7 +333,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -343,7 +346,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -356,7 +359,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -369,7 +372,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -402,7 +405,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -413,7 +416,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -426,7 +429,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -439,7 +442,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -452,7 +455,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -467,7 +470,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -480,7 +483,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -496,7 +499,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"sharedFile":aSharedFile}];
+                     userInfo:@{@"sharedFile":[self dictionaryWithGroupSharedFile:aSharedFile]}];
     }];
 }
 
@@ -514,7 +517,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -527,7 +530,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -540,7 +543,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -551,7 +554,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -564,7 +567,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -577,7 +580,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -592,7 +595,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -605,7 +608,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -633,7 +636,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":aGroup}];
+                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
     }];
 }
 
@@ -646,13 +649,11 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"groups":groups}];
+                     userInfo:@{@"groups":[self groupsArrayWithDictionaryArray:groups]}];
     }];
 }
 
-
 #pragma mark - EMGroupManagerDelegate
-
 
 - (void)groupInvitationDidReceive:(NSString *)aGroupId
                           inviter:(NSString *)aInviter
@@ -672,7 +673,7 @@ typedef enum : NSUInteger {
                          invitee:(NSString *)aInvitee {
     NSDictionary *map = @{
         @"type":@(GROUP_INVITATION_ACCEPT),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"invitee":aInvitee
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -685,7 +686,7 @@ typedef enum : NSUInteger {
                            reason:(NSString *)aReason {
     NSDictionary *map = @{
         @"type":@(GROUP_INVITATION_DECLINE),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"invitee":aInvitee,
         @"reason":aReason
     };
@@ -698,7 +699,8 @@ typedef enum : NSUInteger {
              message:(NSString *)aMessage {
     NSDictionary *map = @{
         @"type":@(GROUP_AUTOMATIC_AGREE_JOIN),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
+        @"message":aMessage,
         @"inviter":aInviter
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -709,11 +711,11 @@ typedef enum : NSUInteger {
                reason:(EMGroupLeaveReason)aReason {
     NSString *reason;
     if (aReason == EMGroupLeaveReasonBeRemoved) {
-        reason = @"被移除出群组";
+        reason = @"BeRemoved";
     } else if (aReason == EMGroupLeaveReasonUserLeave) {
-        reason = @"自己主动离开群组";
+        reason = @"UserLeave";
     } else {
-        reason = @"群组销毁";
+        reason = @"Destroyed";
     }
     NSDictionary *map = @{
         @"type":@(GROUP_LEAVE),
@@ -728,8 +730,8 @@ typedef enum : NSUInteger {
                             reason:(NSString *)aReason {
     NSDictionary *map = @{
         @"type":@(GROUP_JOIN_GROUP_REQUEST_RECEIVE),
-        @"group":aGroup,
-        @"user":aUsername,
+        @"group":[self dictionaryWithGroup:aGroup],
+        @"username":aUsername,
         @"reason":aReason
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -759,7 +761,7 @@ typedef enum : NSUInteger {
 - (void)groupListDidUpdate:(NSArray *)aGroupList {
     NSDictionary *map = @{
         @"type":@(GROUP_LIST_UPDATE),
-        @"groupList":aGroupList
+        @"groupList":[self groupsArrayWithDictionaryArray:aGroupList]
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -770,7 +772,7 @@ typedef enum : NSUInteger {
                     muteExpire:(NSInteger)aMuteExpire {
     NSDictionary *map = @{
         @"type":@(GROUP_MUTE_LIST_UPDATE_ADDED),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"mutedMembers":aMutedMembers,
         @"muteExpire":[NSNumber numberWithInteger:aMuteExpire]
     };
@@ -782,7 +784,7 @@ typedef enum : NSUInteger {
            removedMutedMembers:(NSArray *)aMutedMembers {
     NSDictionary *map = @{
         @"type":@(GROUP_MUTE_LIST_UPDATE_REMOVED),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"mutedMembers":aMutedMembers
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -793,7 +795,7 @@ typedef enum : NSUInteger {
                      addedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
         @"type":@(GROUP_ADMIN_LIST_UPDATE_ADDED),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -804,7 +806,7 @@ typedef enum : NSUInteger {
                    removedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
         @"type":@(GROUP_ADMIN_LIST_UPDATE_REMOVED),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -816,7 +818,7 @@ typedef enum : NSUInteger {
                    oldOwner:(NSString *)aOldOwner {
     NSDictionary *map = @{
         @"type":@(GROUP_OWNER_UPDATE),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"newOwner":aNewOwner,
         @"oldOwner":aOldOwner
     };
@@ -828,7 +830,7 @@ typedef enum : NSUInteger {
                     user:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@(GROUP_USER_JOIN),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -839,7 +841,7 @@ typedef enum : NSUInteger {
                      user:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@(GROUP_USER_LEAVE),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -850,7 +852,7 @@ typedef enum : NSUInteger {
                       announcement:(NSString *)aAnnouncement {
     NSDictionary *map = @{
         @"type":@(GROUP_ANNOUNCEMENT_UPDATE),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"announcement":aAnnouncement
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -861,8 +863,8 @@ typedef enum : NSUInteger {
                addedSharedFile:(EMGroupSharedFile *)aSharedFile {
     NSDictionary *map = @{
         @"type":@(GROUP_FILE_LIST_UPDATE_ADDED),
-        @"group":aGroup,
-        @"sharedFile":aSharedFile
+        @"group":[self dictionaryWithGroup:aGroup],
+        @"sharedFile":[self dictionaryWithGroupSharedFile:aSharedFile]
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -872,12 +874,110 @@ typedef enum : NSUInteger {
              removedSharedFile:(NSString *)aFileId {
     NSDictionary *map = @{
         @"type":@(GROUP_FILE_LIST_UPDATE_REMOVED),
-        @"group":aGroup,
+        @"group":[self dictionaryWithGroup:aGroup],
         @"file":aFileId
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
 }
 
+#pragma mark - EMGroup Pack Method
+
+// 群组对象转字典
+- (NSDictionary *)dictionaryWithGroup:(EMGroup *)group
+{
+    EMGroupOptions *options = group.setting;
+    EMGroupStyle style = options.style;
+    NSString *groupStyle;
+    if (style == EMGroupStylePrivateOnlyOwnerInvite) {
+        groupStyle = @"PrivateOnlyOwnerInvite";
+    } else if (style == EMGroupStylePrivateMemberCanInvite) {
+        groupStyle = @"PrivateMemberCanInvite";
+    } else if (style == EMGroupStylePublicJoinNeedApproval) {
+        groupStyle = @"PublicJoinNeedApproval";
+    } else {
+        groupStyle = @"PublicOpenJoin";
+    }
+    NSDictionary *groupSettings = @{@"style":groupStyle,
+                                    @"maxUsersCount":[NSNumber numberWithInteger:options.maxUsersCount],
+                                    @"IsInviteNeedConfirm":[NSNumber numberWithBool:options.IsInviteNeedConfirm],
+                                    @"ext":options.ext
+                                    };
+    
+    EMGroupPermissionType permissionType = group.permissionType;
+    NSString *type;
+    if (permissionType == EMGroupPermissionTypeNone) {
+        type = @"None";
+    } else if (permissionType == EMGroupPermissionTypeMember) {
+        type = @"Member";
+    } else if (permissionType == EMGroupPermissionTypeAdmin) {
+        type = @"Admin";
+    } else {
+        type = @"Owner";
+    }
+    
+    NSDictionary *groupDict = @{@"groupId":group.groupId,
+                                @"subject":group.subject,
+                                @"description":group.description,
+                                @"announcement":group.announcement,
+                                @"setting":groupSettings,
+                                @"owner":group.owner,
+                                @"adminList":group.adminList,
+                                @"memberList":group.memberList,
+                                @"blacklist":group.blacklist,
+                                @"muteList":group.muteList,
+                                @"sharedFileList":group.sharedFileList,
+                                @"isPushNotificationEnabled":[NSNumber numberWithBool:group.isPushNotificationEnabled],
+                                @"isPublic":[NSNumber numberWithBool:group.isPublic],
+                                @"isBlocked":[NSNumber numberWithBool:group.isBlocked],
+                                @"permissionType":type,
+                                @"occupants":group.occupants,
+                                @"occupantsCount":[NSNumber numberWithInteger:group.occupantsCount]
+                               };
+    
+    return groupDict;
+}
+
+// 群组对象数组转字典数组
+- (NSArray *)groupsArrayWithDictionaryArray:(NSArray *)groupsArray
+{
+    NSMutableArray *groupsMutableArray = [NSMutableArray array];
+    for (EMGroup *group in groupsArray) {
+        [groupsMutableArray addObject:[self dictionaryWithGroup:group]];
+    }
+    return [NSArray arrayWithArray:groupsMutableArray];
+}
+
+// 群组共享文件对象转字典
+- (NSDictionary *)dictionaryWithGroupSharedFile:(EMGroupSharedFile *)sharedFile
+{
+    NSDictionary *sharedFileDict = @{@"fileId":sharedFile.fileId,
+                                     @"fileName":sharedFile.fileName,
+                                     @"fileOwner":sharedFile.fileOwner,
+                                     @"createTime":[NSNumber numberWithLongLong:sharedFile.createTime],
+                                     @"fileSize":[NSNumber numberWithLongLong:sharedFile.fileSize]
+                                    };
+    return sharedFileDict;
+}
+
+// 群组共享文件数组转字典数组
+- (NSArray *)dictionaryListWithGroupFileList:(NSArray *)groupFileList
+{
+    NSMutableArray *sharedFileMutableArray = [NSMutableArray array];
+    for (EMGroupSharedFile *sharedFile in groupFileList) {
+        [sharedFileMutableArray addObject:[self dictionaryWithGroupSharedFile:sharedFile]];
+    }
+    return [NSArray arrayWithArray:sharedFileMutableArray];
+}
+
+// 群组搜索结果转字典
+- (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
+{
+    
+    NSDictionary *resultDict = @{@"list":[self groupsArrayWithDictionaryArray:cursorResult.list],
+                                 @"cursor":cursorResult.cursor
+                                };
+    return resultDict;
+}
 
 @end
