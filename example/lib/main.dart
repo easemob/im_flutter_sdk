@@ -8,14 +8,14 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> implements EMConnectionListener {
+class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
   void initState() {
     //TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMClient.getInstance().init(options);
     EMClient.getInstance().login(
-        userName: "du001",
+        userName: "omg2",
         password: "1",
         onSuccess: (String username) {
           print("login succes: " + username);
@@ -25,7 +25,6 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener {
         });
 
     EMClient.getInstance().addConnectionListener(this);
-
     super.initState();
   }
 
@@ -60,4 +59,5 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener {
     // TODO: implement onDisconnected
     print("网络连接断开");
   }
+
 }

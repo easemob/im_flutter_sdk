@@ -6,9 +6,7 @@ import android.os.Looper;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.chat.EMClient;
 
-import io.flutter.plugin.common.JSONMessageCodec;
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
@@ -32,8 +30,9 @@ public class ImFlutterSdkPlugin {
     registerChatManagerWith(registrar);
     registerContactManagerWith(registrar);
     registerConversationWith(registrar);
+    registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
-    registerGroupWith(registrar);
+//    registerGroupWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -56,16 +55,19 @@ public class ImFlutterSdkPlugin {
     channel.setMethodCallHandler(new EMConversationWrapper());
   }
 
+  public static void registerEMChatRoomManagerWrapper(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_chat_room_manager", JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
+  }
   public static void registerGroupManagerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
   }
 
-  public static void registerGroupWith(Registrar registrar) {
-
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group", JSONMethodCodec.INSTANCE);
-    channel.setMethodCallHandler(new EMGroupWrapper());
-  }
+//  public static void registerGroupWith(Registrar registrar) {
+//    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group", JSONMethodCodec.INSTANCE);
+//    channel.setMethodCallHandler(new EMGroupWrapper());
+//  }
 }
 
 interface EMWrapper {
@@ -93,8 +95,10 @@ interface EMWrapper {
   }
 }
 
+
 @SuppressWarnings("unchecked")
 class EMWrapperCallBack implements EMCallBack{
+
   EMWrapperCallBack(Result result) {
     this.result = result;
   }
@@ -112,7 +116,7 @@ class EMWrapperCallBack implements EMCallBack{
 
   @Override
   public void onSuccess() {
-    post((Void)->{
+    post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
       result.success(data);
@@ -121,7 +125,7 @@ class EMWrapperCallBack implements EMCallBack{
 
   @Override
   public void onError(int code, String desc) {
-    post((Void)->{
+    post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.FALSE);
       data.put("code", code);
@@ -136,11 +140,13 @@ class EMWrapperCallBack implements EMCallBack{
   }
 }
 
+
 class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
   EMValueWrapperCallBack(MethodChannel.Result result) {
     this.result = result;
   }
+
   private MethodChannel.Result result;
 
   void post(Consumer<Void> func) {
@@ -154,7 +160,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
   @Override
   public void onSuccess(Object value) {
-    post((Void)->{
+    post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
       result.success(data);
@@ -163,7 +169,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
   @Override
   public void onError(int error, String errorMsg) {
-    post((Void)->{
+    post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.FALSE);
       data.put("code", error);
