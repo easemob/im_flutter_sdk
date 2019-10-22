@@ -9,6 +9,7 @@ import 'em_domain_terms.dart';
 import 'em_log.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
+import 'em_group_manager.dart';
 
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
@@ -19,6 +20,8 @@ class EMClient {
   final EMChatManager _chatManager = EMChatManager.getInstance(log: _log);
   final EMContactManager _contactManager =
       EMContactManager.getInstance(log: _log);
+  final EMGroupManager _groupManager =
+  EMGroupManager.getInstance(log: _log);
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
@@ -440,5 +443,10 @@ class EMClient {
   /// contactManager - retrieve [EMContactManager] handle.
   EMContactManager contactManager() {
     return _contactManager;
+  }
+
+  /// groupManager - retrieve [EMGroupManager] handle.
+  EMGroupManager groupManager() {
+    return _groupManager;
   }
 }

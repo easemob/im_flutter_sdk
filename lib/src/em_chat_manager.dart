@@ -2,6 +2,7 @@ import "dart:async";
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:meta/meta.dart';
 
 import "em_conversation.dart";
@@ -238,6 +239,7 @@ class EMChatManager {
 
   /// addMessageListener - Adds [listener] to be aware of message change events.
   void addMessageListener(EMMessageListener listener) {
+    _emChatManagerChannel.invokeMethod("initListener");
     assert(listener != null);
     _messageListeners.add(listener);
   }
@@ -278,7 +280,7 @@ class EMChatManager {
 
   /// fetchHistoryMessages - Fetches history messages in conversation [conversationId], filtered by [type].
   /// Result paginated by [pageSize] per page, started from [startMsgId].
-  Future<EMCursorResult<EMMessage>> fetchHistoryMessages(
+  Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
       {@required final String conversationId,
       @required final EMConversationType type,
       int pageSize = 10,
@@ -293,7 +295,7 @@ class EMChatManager {
       "startMsgId": startMsgId
     });
     if (result['success']) {
-      return _EMCursorResult<EMMessage>(result['cursorId']);
+      return _EMCursorResults<EMMessage>(result['cursorId']);
     } else {
       return null;
     }
@@ -331,13 +333,13 @@ class EMChatManager {
 
   /// Listeners interface
   Future<void> _onMessageReceived(Map map) async {
-    List<Map<String, Object>> list = map['messages'];
-    var messages = List<EMMessage>();
+    var list = map['messages'];
+    var messageList = List<EMMessage>();
     for (var message in list) {
-      messages.add(EMMessage.from(message));
+//        messageList.add( EMMessage.from(message) );
     }
     for (var listener in _messageListeners) {
-      listener.onMessageReceived(messages);
+      listener.onMessageReceived(messageList);
     }
   }
 
@@ -395,11 +397,11 @@ class EMChatManager {
 }
 
 // _EMCursorResult - internal EMCursorResult implementation.
-class _EMCursorResult<T> extends EMCursorResult<T> {
+class _EMCursorResults<T> extends EMCursorResults<T> {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emChatManagerChannel =
       MethodChannel('$_channelPrefix/em_chat_manager');
-  _EMCursorResult(String cursorId) : this._cursorId = cursorId;
+  _EMCursorResults(String cursorId) : this._cursorId = cursorId;
 
   final String _cursorId;
 

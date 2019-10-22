@@ -1,6 +1,5 @@
 package com.easemob.im_flutter_sdk;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -16,14 +15,13 @@ import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.util.EMLog;
-import com.easemob.im_flutter_sdk.EMHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.easemob.im_flutter_sdk.EMHelper.getEMMessageType;
-import static com.easemob.im_flutter_sdk.EMHelper.getEMSearchDirection;
+import static com.easemob.im_flutter_sdk.EMHelper.convertIntToEMMessageType;
+import static com.easemob.im_flutter_sdk.EMHelper.convertIntToEMSearchDirection;
 
 @SuppressWarnings("unchecked")
 public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
@@ -158,7 +156,7 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Integer timeStamp = argMap.getInt("timeStamp");
             Integer maxCount = (Integer)argMap.get("maxCount");
             int direction = argMap.getInt("direction");
-            List<EMMessage> list = getConversation(id).searchMsgFromDB(keywords,timeStamp,maxCount,from,getEMSearchDirection(direction));
+            List<EMMessage> list = getConversation(id).searchMsgFromDB(keywords,timeStamp,maxCount,from,convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
             list.forEach(message->{
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
@@ -181,7 +179,7 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             String timeStamp = argMap.getString("timeStamp");
             int maxCount = argMap.getInt("maxCount");
             int direction = argMap.getInt("direction");
-            List<EMMessage> list = getConversation(id).searchMsgFromDB(getEMMessageType(type), Long.parseLong(timeStamp), maxCount, from, getEMSearchDirection(direction));
+            List<EMMessage> list = getConversation(id).searchMsgFromDB(convertIntToEMMessageType(type), Long.parseLong(timeStamp), maxCount, from, convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
             list.forEach(message->{
                 messages.add(EMHelper.convertEMMessageToStringMap(message));

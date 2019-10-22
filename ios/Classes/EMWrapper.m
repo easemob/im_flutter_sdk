@@ -12,9 +12,6 @@
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super init]) {
-//        FlutterMethodChannel* channel = [FlutterMethodChannel
-//                                methodChannelWithName:aChannelName
-//                                      binaryMessenger:[registrar messenger]];
         FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
         FlutterMethodChannel* channel = [FlutterMethodChannel
                                 methodChannelWithName:aChannelName binaryMessenger:[registrar messenger] codec:codec];

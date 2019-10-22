@@ -65,6 +65,27 @@ abstract class EMMessageListener {
   void onMessageChanged(EMMessage message, Object change);
 }
 
+abstract class EMGroupChangeListener {
+  void onInvitationReceived(String groupId, String groupName, String inviter, String reason);
+  void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason);
+  void onRequestToJoinAccepted(String groupId, String groupName, String accepter);
+  void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason);
+  void onInvitationAccepted(String groupId, String invitee, String reason);
+  void onInvitationDeclined(String groupId, String invitee, String reason);
+  void onUserRemoved(String groupId, String groupName);
+  void onGroupDestroyed(String groupId, String groupName);
+  void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage);
+  void onMuteListAdded(String groupId, List<String> mutes, int muteExpire);
+  void onMuteListRemoved(String groupId, List<String> mutes);
+  void onAdminAdded(String groupId, String administrator);
+  void onAdminRemoved(String groupId, String administrator);
+  void onOwnerChanged(String groupId, String newOwner, String oldOwner);
+  void onMemberJoined(String groupId, String member);
+  void onMemberExited(String groupId,  String member);
+  void onAnnouncementChanged(String groupId, String announcement);
+  void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile);
+  void onSharedFileDeleted(String groupId, String fileId);
+}
 enum EMGroupChangeEvent {
   GROUP_INVITATION_RECEIVE,       // 用户A邀请用户B入群,用户B接收到该回调
   GROUP_INVITATION_ACCEPT,            // 用户B同意用户A的入群邀请后，用户A接收到该回调
@@ -85,26 +106,4 @@ enum EMGroupChangeEvent {
   GROUP_ANNOUNCEMENT_UPDATE,          // 群公告有更新
   GROUP_FILE_LIST_UPDATE_ADDED,       // 有用户上传群共享文件
   GROUP_FILE_LIST_UPDATE_REMOVED,     // 有用户删除群共享文件
-}
-
-abstract class EMGroupEventListener {
-  void groupInvitationDidReceive(String groupId, String inviter, String message);
-  void groupInvitationDidAccept(Map group, String invitee);
-  void groupInvitationDidDecline(Map group, String invitee, String reason);
-  void didJoinGroup(Map group, String inviter, String message);
-  void didLeaveGroup(Map group, String reason);
-  void joinGroupRequestDidReceive(Map group, String username, String reason);
-  void joinGroupRequestDidDecline(String groupId, String reason);
-  void joinGroupRequestDidApprove(Map group);
-  void groupListDidUpdate(List groupList);
-  void groupMuteListDidUpdateWithAdded(Map group, List mutedMembers, int muteExpire);
-  void groupMuteListDidUpdateWithRemoved(Map group, List mutedMembers);
-  void groupAdminListDidUpdateWithAdded(Map group, String admin);
-  void groupAdminListDidUpdateWithRemoved(Map group, String admin);
-  void groupOwnerDidUpdate(Map group, String newOwner, String oldOwner);
-  void userDidJoinGroup(Map group, String username);
-  void userDidLeaveGroup(Map group, String username);
-  void groupAnnouncementDidUpdate(Map group, String announcement);
-  void groupFileListDidUpdateWithAdded(Map group, String groupId, String invitee);
-  void groupFileListDidUpdateWithRemoved(Map group, Map sharedFile);
 }
