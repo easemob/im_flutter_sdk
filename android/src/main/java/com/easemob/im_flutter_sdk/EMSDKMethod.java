@@ -94,6 +94,48 @@ public class EMSDKMethod {
     static final String updateConversationMessage = "updateConversationMessage";
     static final String getMessageAttachmentPath = "getMessageAttachmentPath";
 
+
+    //EMChatRoomManager
+    static final String joinChatRoom = "joinChatRoom";
+    static final String leaveChatRoom = "leaveChatRoom";
+    static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
+    static final String asyncFetchChatRoomFromServer = "asyncFetchChatRoomFromServer";
+    static final String getChatRoom = "getChatRoom";
+    static final String getAllChatRooms = "getAllChatRooms";
+    static final String asyncCreateChatRoom = "asyncCreateChatRoom";
+    static final String asyncDestroyChatRoom = "asyncDestroyChatRoom";
+    static final String asyncChangeChatRoomSubject = "asyncChangeChatRoomSubject";
+    static final String asyncChangeChatroomDescription = "asyncChangeChatroomDescription";
+    static final String asyncFetchChatRoomMembers = "asyncFetchChatRoomMembers";
+    static final String asyncMuteChatRoomMembers = "asyncMuteChatRoomMembers";
+    static final String asyncUnMuteChatRoomMembers = "asyncUnMuteChatRoomMembers";
+    static final String asyncChangeOwner = "asyncChangeOwner";
+    static final String asyncAddChatRoomAdmin = "asyncAddChatRoomAdmin";
+    static final String asyncRemoveChatRoomAdmin = "asyncRemoveChatRoomAdmin";
+    static final String asyncFetchChatRoomMuteList = "asyncFetchChatRoomMuteList";
+    static final String asyncRemoveChatRoomMembers = "asyncRemoveChatRoomMembers";
+    static final String asyncBlockChatroomMembers = "asyncBlockChatroomMembers";
+    static final String asyncUnBlockChatRoomMembers = "asyncUnBlockChatRoomMembers";
+    static final String asyncFetchChatRoomBlackList = "asyncFetchChatRoomBlackList";
+    static final String asyncUpdateChatRoomAnnouncement = "asyncUpdateChatRoomAnnouncement";
+    static final String asyncFetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
+
+    //EMChatRoomManagerListener
+    static final String ChatRoomChange = "ChatRoomChange";
+
+    //EMChatRoom
+    static final String getId = "getId";
+    static final String getName = "getName";
+    static final String getChatRoomDescription = "getChatRoomDescription";
+    static final String getChatRoomOwner = "getChatRoomOwner";
+    static final String getChatRoomAdminList = "getChatRoomAdminList";
+    static final String getChatRoomMemberCount = "getChatRoomMemberCount";
+    static final String getMaxUsers = "getMaxUsers";
+    static final String getMemberList = "getMemberList";
+    static final String getChatRoomBlackList = "getChatRoomBlackList";
+    static final String getChatRoomMuteList = "getChatRoomMuteList";
+    static final String getChatRoomAnnouncement = "getChatRoomAnnouncement";
+
     /// EMGroupManager
     static final String getAllGroups = "getAllGroups";
     static final String getGroup = "getGroup";
@@ -173,4 +215,5 @@ public class EMSDKMethod {
     static final String getExtension = "getExtension";
     static final String getGroupAnnouncement = "getGroupAnnouncement";
     static final String getShareFileList = "getShareFileList";
+
 }

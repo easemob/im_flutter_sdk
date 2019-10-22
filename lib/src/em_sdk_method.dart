@@ -175,4 +175,29 @@ class EMSDKMethod {
   static const String getExtension = "getExtension";
   static const String getGroupAnnouncement = "getGroupAnnouncement";
   static const String getShareFileList = "getShareFileList";
+
+  /// EMChatroomManager
+  static const String getChatroomsFromServer = "getChatroomsFromServer";
+  static const String createChatroom = "createChatroom";
+  static const String joinChatroom = "joinChatroom";
+  static const String leaveChatroom = "leaveChatroom";
+  static const String destroyChatroom = "destroyChatroom";
+  static const String getChatroomSpecificationFromServer = "getChatroomSpecificationFromServer";
+  static const String getChatroomMemberListFromServer = "getChatroomMemberListFromServer";
+  static const String getChatroomBlacklistFromServer = "getChatroomBlacklistFromServer";
+  static const String getChatroomMuteListFromServer = "getChatroomMuteListFromServer";
+  static const String getChatroomAnnouncement = "getChatroomAnnouncement";
+  static const String chatRoomUpdateSubject = "chatRoomUpdateSubject";
+  static const String chatRoomUpdateDescription = "chatRoomUpdateDescription";
+  static const String chatRoomRemoveMembers = "chatRoomRemoveMembers";
+  static const String chatRoomBlockMembers = "chatRoomBlockMembers";
+  static const String chatRoomUnblockMembers = "chatRoomUnblockMembers";
+  static const String chatRoomUpdateChatroomOwner = "chatRoomUpdateChatroomOwner";
+  static const String chatRoomAddAdmin = "chatRoomAddAdmin";
+  static const String chatRoomRemoveAdmin = "chatRoomRemoveAdmin";
+  static const String chatRoomMuteMembers = "chatRoomMuteMembers";
+  static const String chatRoomUnmuteMembers = "chatRoomUnmuteMembers";
+  static const String updateChatroomAnnouncement = "updateChatroomAnnouncement";
+
+  static const String onChatroomChanged = "onChatroomChanged";
 }

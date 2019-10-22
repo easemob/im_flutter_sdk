@@ -99,7 +99,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":aResult}];
+                     userInfo:@{@"result":[self dictionaryWithPageResult:aResult]}];
         
     }];
 }
@@ -119,7 +119,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -130,7 +130,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -152,7 +152,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -167,7 +167,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":aResult}];
+                     userInfo:@{@"result":[self dictionaryWithCursorResult:aResult]}];
     }];
 }
 
@@ -221,7 +221,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -234,7 +234,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -247,7 +247,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -260,7 +260,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -273,7 +273,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -286,7 +286,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -299,7 +299,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroomp}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroomp]}];
     }];
 }
 
@@ -312,7 +312,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -327,7 +327,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -340,7 +340,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -353,7 +353,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":aChatroom}];
+                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
     }];
 }
 
@@ -363,7 +363,7 @@ typedef enum : NSUInteger {
                        user:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@(CHATROOM_USER_JOIN),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -375,7 +375,7 @@ typedef enum : NSUInteger {
                         user:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@(CHATROOM_USER_LEAVE),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -386,15 +386,15 @@ typedef enum : NSUInteger {
                         reason:(EMChatroomBeKickedReason)aReason {
     NSString *reason;
     if (aReason == EMChatroomBeKickedReasonBeRemoved) {
-        reason = @"被管理员移出聊天室";
+        reason = @"BeRemoved";
     } else if (aReason == EMChatroomBeKickedReasonDestroyed) {
-        reason = @"聊天室被销毁";
+        reason = @"Destroyed";
     } else {
-        reason = @"当前账号离线";
+        reason = @"Offline";
     }
     NSDictionary *map = @{
         @"type":@(CHATROOM_FROM_DISMISS),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"reason":reason
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -417,7 +417,7 @@ typedef enum : NSUInteger {
               removedMutedMembers:(NSArray *)aMutes {
     NSDictionary *map = @{
         @"type":@(CHATROOM_MUTE_LIST_UPDATE_REMOVED),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"mutes":aMutes
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -428,7 +428,7 @@ typedef enum : NSUInteger {
                         addedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
         @"type":@(CHATROOM_ADMIN_LIST_UPDATE_ADDED),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -439,7 +439,7 @@ typedef enum : NSUInteger {
                       removedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
         @"type":@(CHATROOM_ADMIN_LIST_UPDATE_REMOVED),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -451,6 +451,7 @@ typedef enum : NSUInteger {
                       oldOwner:(NSString *)aOldOwner {
     NSDictionary *map = @{
         @"type":@(CHATROOM_OWNER_UPDATE),
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"newOwner":aNewOwner,
         @"oldOwner":aOldOwner
     };
@@ -462,11 +463,74 @@ typedef enum : NSUInteger {
                          announcement:(NSString *)aAnnouncement {
     NSDictionary *map = @{
         @"type":@(CHATROOM_ANNOUNCEMENT_UPDATE),
-        @"chatroom":aChatroom,
+        @"chatroom":[self dictionaryWithChatroom:aChatroom],
         @"announcement":aAnnouncement
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
                      arguments:map];
+}
+
+#pragma mark - EMChatroom Pack Method
+
+// 聊天室对象转字典
+- (NSDictionary *)dictionaryWithChatroom:(EMChatroom *)chatroom
+{
+    EMChatroomPermissionType permissionType = chatroom.permissionType;
+    NSString *type;
+    if (permissionType == EMChatroomPermissionTypeNone) {
+        type = @"None";
+    } else if (permissionType == EMChatroomPermissionTypeMember) {
+        type = @"Member";
+    } else if (permissionType == EMChatroomPermissionTypeAdmin) {
+        type = @"Admin";
+    } else {
+        type = @"Owner";
+    }
+    
+    NSDictionary *groupDict = @{@"chatroomId":chatroom.chatroomId,
+                                @"subject":chatroom.subject,
+                                @"description":chatroom.description,
+                                @"owner":chatroom.owner,
+                                @"announcement":chatroom.announcement,
+                                @"adminList":chatroom.adminList,
+                                @"memberList":chatroom.memberList,
+                                @"blacklist":chatroom.blacklist,
+                                @"muteList":chatroom.muteList,
+                                @"permissionType":type,
+                                @"maxOccupantsCount":[NSNumber numberWithInteger:chatroom.maxOccupantsCount],
+                                @"occupantsCount":[NSNumber numberWithInteger:chatroom.occupantsCount]
+                               };
+    
+    return groupDict;
+}
+
+// 聊天室对象数组转字典数组
+- (NSArray *)dictionaryArrayWithChatroomsArray:(NSArray *)chatroomsArray
+{
+    NSMutableArray *chatroomsMutableArray = [NSMutableArray array];
+    for (EMChatroom *chatroom in chatroomsMutableArray) {
+        [chatroomsMutableArray addObject:[self dictionaryWithChatroom:chatroom]];
+    }
+    return [NSArray arrayWithArray:chatroomsMutableArray];
+}
+
+// 聊天室查询结果转字典
+- (NSDictionary *)dictionaryWithPageResult:(EMPageResult *)pageResult
+{
+    NSDictionary *resultDict = @{@"list":[self dictionaryArrayWithChatroomsArray:pageResult.list],
+                                 @"count":[NSNumber numberWithInteger:pageResult.count]
+                                };
+    return resultDict;
+}
+
+// 聊天室成员获取结果转字典
+- (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
+{
+    
+    NSDictionary *resultDict = @{@"list":cursorResult.list,
+                                 @"cursor":cursorResult.cursor
+                                };
+    return resultDict;
 }
 
 @end

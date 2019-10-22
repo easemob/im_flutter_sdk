@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMConversation.EMConversationType;
@@ -81,25 +82,32 @@ class EMHelper {
     }
 
     static Map<String, Object> convertEMMessageToStringMap(EMMessage message) {
+        Map<String, Object> ss = new HashMap<String, Object>();
+        ss.put("dfs","asd");
         Map<String, Object> result = new HashMap<String, Object>();
-        //result.put("attributes", ?);
+        result.put("attributes",ss);
         result.put("conversationId", message.conversationId());
-        result.put("type", message.getType());
+//        result.put("type", 0);
+        result.put("type", getType(message));
         result.put("userName", message.getUserName());
         result.put("acked", Boolean.valueOf(message.isAcked()));
         result.put("body", convertEMMessageBodyToStringMap(message.getBody()));
-        result.put("chatType", message.getChatType());
+//        result.put("chatType", 0);
+        result.put("chatType", getChatType(message));
         result.put("delivered", Boolean.valueOf(message.isDelivered()));
-        result.put("direction", message.direct());
+//        result.put("direction", 0);
+        result.put("direction", getDirect(message));
         result.put("from", message.getFrom());
         result.put("listened", Boolean.valueOf(message.isListened()));
         result.put("localTime", message.localTime());
         result.put("msgId", message.getMsgId());
         result.put("msgTime", message.getMsgTime());
         result.put("progress", message.progress());
-        result.put("status", message.status());
+//        result.put("status", 0);
+        result.put("status", getEMMessageStatus(message));
         result.put("to", message.getTo());
         result.put("unread", Boolean.valueOf(message.isUnread()));
+        EMLog.e("EMHelper",result.toString());
         return result;
     }
 
@@ -109,7 +117,8 @@ class EMHelper {
         // check EMMessageBody type
         if (mb instanceof EMTextMessageBody) {
             EMTextMessageBody txtMessageBody = (EMTextMessageBody) mb;
-            body.put("type", EMMessage.Type.TXT);
+//            body.put("type", EMMessage.Type.TXT);
+            body.put("type", 0);
             body.put("message", txtMessageBody.getMessage());
         } else if (mb instanceof EMCmdMessageBody) {
             EMCmdMessageBody cmdMessageBody = (EMCmdMessageBody) mb;
@@ -194,6 +203,101 @@ class EMHelper {
         result.put("type", conversation.getType());
         result.put("ext", conversation.getExtField());
         return result;
+    }
+
+    static Map<String, Object> chatRoomToStringMap(EMChatRoom emChatRoom) {
+        Map<String, Object> chatRoomMap = new HashMap<String, Object>();
+        chatRoomMap.put("roomId",emChatRoom.getId());
+        chatRoomMap.put("roomName",emChatRoom.getName());
+        return chatRoomMap;
+    }
+
+    /**
+     * \~chinese
+     * 获取聊天类型
+     * @return ChatType
+     *
+     * \~english
+     * get chat type  默认单聊
+     *  @return ChatType   0: Chat(单聊)  1: GroupChat(群聊)  2: ChatRoom(聊天室)
+     */
+    static int getChatType(EMMessage message){
+        switch (message.getChatType()){
+            case GroupChat:
+                return 1;
+            case ChatRoom:
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * \~chinese
+     * 消息方向
+     *
+     * \~english
+     * the message direction  0：发送方   1：接收方
+     */
+    static int getDirect(EMMessage message){
+        switch (message.direct()){
+            case SEND:
+                return 0;
+            case RECEIVE:
+                return 1;
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * \~chinese
+     * 消息的发送/接收状态：成功，失败，发送/接收过程中，创建成功待发送
+     *
+     * \~english
+     * message status  0：成功  1：失败  2：发送/接收过程中 3：创建成功待发送
+     */
+    static int getEMMessageStatus(EMMessage message){
+        switch (message.status()){
+            case SUCCESS:
+                return 0;
+            case FAIL:
+                return 1;
+            case INPROGRESS:
+                return 2;
+            default:
+                return 3;
+        }
+    }
+
+    /**
+     * \chinese
+     * 获取消息类型
+     * @return
+     *
+     * \~english
+     * get message chat type
+     * @return
+     */
+    static int getType(EMMessage message){
+        switch (message.getType()){
+            case TXT:
+                return 0;
+            case IMAGE:
+                return 1;
+            case VIDEO:
+                return 2;
+            case LOCATION:
+                return 3;
+            case VOICE:
+                return 4;
+            case FILE:
+                return 5;
+            case CMD:
+                return 6;
+            default:
+                return -1;
+        }
     }
 
     static Map<String, Object> convertEMGroupToStringMap(EMGroup group){
