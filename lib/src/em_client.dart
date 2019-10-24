@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 
 import 'em_chat_manager.dart';
+import 'em_chatroom_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
 import 'em_log.dart';
@@ -19,6 +20,7 @@ class EMClient {
   final EMChatManager _chatManager = EMChatManager.getInstance(log: _log);
   final EMContactManager _contactManager =
       EMContactManager.getInstance(log: _log);
+  final EMChatRoomManager _chatRoomManager = EMChatRoomManager.getInstance();
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
@@ -439,5 +441,9 @@ class EMClient {
   /// contactManager - retrieve [EMContactManager] handle.
   EMContactManager contactManager() {
     return _contactManager;
+  }
+
+  EMChatRoomManager chatRoomManager(){
+    return _chatRoomManager;
   }
 }

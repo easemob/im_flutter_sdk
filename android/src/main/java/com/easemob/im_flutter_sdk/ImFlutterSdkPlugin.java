@@ -56,7 +56,7 @@ public class ImFlutterSdkPlugin {
   }
 
   public static void registerEMChatRoomManagerWrapper(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_chat_room_manager", JSONMethodCodec.INSTANCE);
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_room_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
   }
   public static void registerGroupManagerWith(Registrar registrar) {
