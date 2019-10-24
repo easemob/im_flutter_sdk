@@ -25,8 +25,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 
-import static com.easemob.im_flutter_sdk.EMHelper.getEMConversationType;
-import static com.easemob.im_flutter_sdk.EMHelper.getEMSearchDirection;
+import static com.easemob.im_flutter_sdk.EMHelper.convertIntToEMConversationType;
+import static com.easemob.im_flutter_sdk.EMHelper.convertIntToEMSearchDirection;
 
 @SuppressWarnings("unchecked")
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
@@ -309,7 +309,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         try {
             JSONObject argMap = (JSONObject)args;
             int type = argMap.getInt("type");
-            List<EMConversation> list = manager.getConversationsByType(getEMConversationType(type));
+            List<EMConversation> list = manager.getConversationsByType(convertIntToEMConversationType(type));
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             List<Map<String, Object>> conversations = new LinkedList<Map<String, Object>>();
@@ -400,7 +400,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             int pageSize = argMap.getInt("pageSize");
             String startMsgId = argMap.getString("startMsgId");
             try{
-                EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, getEMConversationType(type), pageSize, startMsgId);
+                EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, convertIntToEMConversationType(type), pageSize, startMsgId);
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("success", Boolean.TRUE);
                 String cursorId = UUID.randomUUID().toString();
@@ -435,7 +435,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             int maxCount = argMap.getInt("maxCount");
             String from = argMap.getString("from");
             int direction = argMap.getInt("direction");
-            List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, getEMSearchDirection(direction));
+            List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
             list.forEach((message)->{
                 messages.add(EMHelper.convertEMMessageToStringMap(message));

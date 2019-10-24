@@ -279,7 +279,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             EMChatRoom chatRoom = emChatRoomManager.getChatRoom(chatRoomId);
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
-            data.put("chatRoomInfo", EMHelper.chatRoomToStringMap(chatRoom));
+            data.put("value", EMHelper.convertEMChatRoomToStringMap(chatRoom));
             result.success(data);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -288,13 +288,13 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
 
     private void getAllChatRooms(Object args, MethodChannel.Result result){
         List<EMChatRoom> list = emChatRoomManager.getAllChatRooms();
-        List<Map<String ,Object>> roomlist = new LinkedList<>();
+        List<Map<String ,Object>> roomlist = new ArrayList<>();
         for (EMChatRoom emChatRoom : list) {
-            roomlist.add(EMHelper.chatRoomToStringMap(emChatRoom));
+            roomlist.add(EMHelper.convertEMChatRoomToStringMap(emChatRoom));
         }
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
-        data.put("allChatRoom", roomlist);
+        data.put("value", roomlist);
         result.success(data);
     }
 

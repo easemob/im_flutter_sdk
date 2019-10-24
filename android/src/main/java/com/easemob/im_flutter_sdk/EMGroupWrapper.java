@@ -16,18 +16,9 @@ public class EMGroupWrapper implements MethodCallHandler, EMWrapper{
     @Override
     public void onMethodCall(MethodCall call, MethodChannel.Result result) {
         JSONObject argJson = (JSONObject) call.arguments;
-        if (EMSDKMethod.getGroupId.equals(call.method)) {
-            getGroupId(argJson, result);
-        }
-    }
-
-    private void getGroupId(JSONObject argJson, Result result){
 
     }
 
-    private void getGroupName(JSONObject argJson, Result result){
-
-    }
     private void getDescription(JSONObject argJson, Result result){
 
     }

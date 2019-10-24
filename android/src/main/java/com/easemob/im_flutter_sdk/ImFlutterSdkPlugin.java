@@ -5,7 +5,13 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
+import com.hyphenate.chat.EMChatRoom;
+import com.hyphenate.chat.EMCursorResult;
+import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMMucSharedFile;
+import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.util.EMLog;
 
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodChannel;
@@ -13,8 +19,14 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import static com.easemob.im_flutter_sdk.EMHelper.convertEMChatRoomToStringMap;
+import static com.easemob.im_flutter_sdk.EMHelper.convertEMCursorResultToStringMap;
+import static com.easemob.im_flutter_sdk.EMHelper.convertEMPageResultToStringMap;
 
 /** ImFlutterSdkPlugin */
 @SuppressWarnings("unchecked")
@@ -32,7 +44,7 @@ public class ImFlutterSdkPlugin {
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
-//    registerGroupWith(registrar);
+    registerGroupWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -64,10 +76,10 @@ public class ImFlutterSdkPlugin {
     channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
   }
 
-//  public static void registerGroupWith(Registrar registrar) {
-//    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group", JSONMethodCodec.INSTANCE);
-//    channel.setMethodCallHandler(new EMGroupWrapper());
-//  }
+  public static void registerGroupWith(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group", JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMGroupWrapper());
+  }
 }
 
 interface EMWrapper {
@@ -140,8 +152,10 @@ class EMWrapperCallBack implements EMCallBack{
   }
 }
 
+@SuppressWarnings("unchecked")
 
 class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
+
 
   EMValueWrapperCallBack(MethodChannel.Result result) {
     this.result = result;
@@ -160,9 +174,66 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
   @Override
   public void onSuccess(Object value) {
-    post((Void) -> {
+    post((Void)->{
+      EMLog.e("value", value.getClass().getSimpleName());
+
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
+      if(value.getClass().getSimpleName().equals("ArrayList")){
+        if(((List) value).size() > 0) {
+          Object o = ((List) value).get(0);
+          if (o.getClass().getSimpleName().equals("EMGroup")) {
+            List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
+            for (EMGroup emGroup : (List<EMGroup>) value) {
+              list.add(EMHelper.convertEMGroupToStringMap(emGroup));
+            }
+            data.put("value", list);
+        }
+
+          if (o.getClass().getSimpleName().equals("String")) {
+            data.put("value", (List<String>) value);
+          }
+
+          if(o.getClass().getSimpleName().equals("EMMucSharedFile")){
+            List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
+            for (EMMucSharedFile file : (List<EMMucSharedFile>) value) {
+              list.add(EMHelper.convertEMMucSharedFileToStringMap(file));
+            }
+            data.put("value", list);
+          }
+        }
+      }
+
+      if(value.getClass().getSimpleName().equals("EMGroup")){
+        data.put("value", EMHelper.convertEMGroupToStringMap((EMGroup)value));
+      }
+
+      if(value.getClass().getSimpleName().equals("EMCursorResult")){
+        EMCursorResult o = (EMCursorResult) value;
+        if(((List)(o.getData())).get(0).getClass().getSimpleName().equals("String")){
+          data.put("value", convertEMCursorResultToStringMap(o));
+        }
+      }
+
+      if(value.getClass().getSimpleName().equals("EMPageResult")){
+        EMPageResult result = (EMPageResult)value;
+        if (((List)(result.getData())).get(0).getClass().getSimpleName().equals("EMChatRoom")){
+          data.put("value", convertEMPageResultToStringMap(result));
+        }
+      }
+
+      if(value.getClass().getSimpleName().equals("EMChatRoom")){
+        data.put("value", convertEMChatRoomToStringMap((EMChatRoom)value));
+      }
+
+      if(value.getClass().getSimpleName().equals("HashMap")){
+          data.put("value", value);
+      }
+
+      if(value.getClass().getSimpleName().equals("String")){
+          data.put("value", value);
+      }
+
       result.success(data);
     });
   }

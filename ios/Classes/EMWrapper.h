@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (void)wrapperCallBack:(FlutterResult)result
-                    error:(EMError *)error
-                 userInfo:(NSObject *)userinfo;
+                    error:(EMError *__nullable)error
+                 userInfo:(NSObject *__nullable)userinfo;
 
 @end
 
