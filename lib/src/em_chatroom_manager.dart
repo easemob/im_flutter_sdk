@@ -74,13 +74,13 @@ class EMChatRoomManager{
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> mutes = event['mutes'];
+          List mutes = event['mutes'];
           String expireTime = event['expireTime'];
           listener.onMuteListAdded(roomId,mutes,expireTime);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> mutes = event['mutes'];
+          List mutes = event['mutes'];
           listener.onMuteListRemoved(roomId,mutes);
           break;
         case EMChatRoomEvent.ON_ADMIN_ADDED:
@@ -346,7 +346,7 @@ class EMChatRoomManager{
     onSuccess(Map map),
     onError(int code, String desc)}){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
-        EMSDKMethod.changeOwner, {"roomId": roomId ,"newOwner" : newOwner});
+        EMSDKMethod.changeChatRoomOwner, {"roomId": roomId ,"newOwner" : newOwner});
     result.then((response) {
       if (response["success"]) {
         if (onSuccess != null) onSuccess(response['value']);
