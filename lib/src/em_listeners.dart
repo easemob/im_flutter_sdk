@@ -84,8 +84,8 @@ abstract class EMChatRoomEventListener{
   void onMemberJoined(String roomId, String participant);
   void onMemberExited(String roomId, String roomName, String participant);
   void onRemovedFromChatRoom(int reason, String roomId, String roomName, String participant);
-  void onMuteListAdded(String chatRoomId, List<String> mutes, String expireTime);
-  void onMuteListRemoved(String chatRoomId, List<String> mutes);
+  void onMuteListAdded(String chatRoomId, List mutes, String expireTime);
+  void onMuteListRemoved(String chatRoomId, List mutes);
   void onAdminAdded(String chatRoomId, String admin);
   void onAdminRemoved(String chatRoomId, String admin);
   void onOwnerChanged(String chatRoomId, String newOwner, String oldOwner);
