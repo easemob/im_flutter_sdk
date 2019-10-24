@@ -64,3 +64,31 @@ abstract class EMMessageListener {
   void onMessageRecalled(List<EMMessage> messages);
   void onMessageChanged(EMMessage message, Object change);
 }
+
+
+class EMChatRoomEvent{
+  static const String ON_CHAT_ROOM_DESTROYED  = "onChatRoomDestroyed";
+  static const String ON_MEMBER_JOINED  = "onMemberJoined";
+  static const String ON_MEMBER_EXITED  = "onMemberExited";
+  static const String ON_REMOVED_FROM_CHAT_ROOM  = "onRemovedFromChatRoom";
+  static const String ON_MUTE_LIST_ADDED  = "onMuteListAdded";
+  static const String ON_MUTE_LIST_REMOVED  = "onMuteListRemoved";
+  static const String ON_ADMIN_ADDED  = "onAdminAdded";
+  static const String ON_ADMIN_REMOVED  = "onAdminRemoved";
+  static const String ON_OWNER_CHANGED  = "onOwnerChanged";
+  static const String ON_ANNOUNCEMENT_CHANGED  = "onAnnouncementChanged";
+}
+
+abstract class EMChatRoomEventListener{
+  void onChatRoomDestroyed(String roomId, String roomName);
+  void onMemberJoined(String roomId, String participant);
+  void onMemberExited(String roomId, String roomName, String participant);
+  void onRemovedFromChatRoom(int reason, String roomId, String roomName, String participant);
+  void onMuteListAdded(String chatRoomId, List<String> mutes, String expireTime);
+  void onMuteListRemoved(String chatRoomId, List<String> mutes);
+  void onAdminAdded(String chatRoomId, String admin);
+  void onAdminRemoved(String chatRoomId, String admin);
+  void onOwnerChanged(String chatRoomId, String newOwner, String oldOwner);
+  void onAnnouncementChanged(String chatRoomId, String announcement);
+}
+

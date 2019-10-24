@@ -38,9 +38,6 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         this.channel = channel;
     }
 
-    private void init() {
-        registerChatRoomChangeListener();
-    }
 
     /**
      * 注册聊天室监听
@@ -54,8 +51,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                    Map<String, Object> data = new HashMap<String, Object>();
                    data.put("roomId",roomId);
                    data.put("roomName",roomName);
-                   data.put("ChatRoomChange","onChatRoomDestroyed");
-                   channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                   data.put("chatRoomChange","onChatRoomDestroyed");
+                   channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -66,8 +63,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",roomId);
                     data.put("participant",participant);
-                    data.put("ChatRoomChange","onMemberJoined");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onMemberJoined");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -79,8 +76,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("roomId",roomId);
                     data.put("roomName",roomName);
                     data.put("participant",participant);
-                    data.put("ChatRoomChange","onMemberExited");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onMemberExited");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -92,8 +89,9 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("roomId",roomId);
                     data.put("roomName",roomName);
                     data.put("participant",participant);
-                    data.put("ChatRoomChange","onRemovedFromChatRoom");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("reason",reason);
+                    data.put("chatRoomChange","onRemovedFromChatRoom");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -103,10 +101,10 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                 post((Void)->{
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
-                    data.put("roomName",mutes);
+                    data.put("mutes",mutes);
                     data.put("expireTime",String.valueOf(expireTime));
-                    data.put("ChatRoomChange","onMuteListAdded");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onMuteListAdded");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -117,8 +115,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("mutes",mutes);
-                    data.put("ChatRoomChange","onMuteListRemoved");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onMuteListRemoved");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -129,8 +127,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("admin",admin);
-                    data.put("ChatRoomChange","onAdminAdded");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onAdminAdded");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -141,8 +139,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("admin",admin);
-                    data.put("ChatRoomChange","onAdminRemoved");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onAdminRemoved");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -154,8 +152,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("roomId",chatRoomId);
                     data.put("newOwner",newOwner);
                     data.put("oldOwner",oldOwner);
-                    data.put("ChatRoomChange","onOwnerChanged");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onOwnerChanged");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
 
@@ -166,8 +164,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("announcement",announcement);
-                    data.put("ChatRoomChange","onAnnouncementChanged");
-                    channel.invokeMethod(EMSDKMethod.ChatRoomChange,data);
+                    data.put("chatRoomChange","onAnnouncementChanged");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
                 });
             }
         });
@@ -179,7 +177,8 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull MethodChannel.Result result) {
         if(emChatRoomManager == null) {
             emChatRoomManager = EMClient.getInstance().chatroomManager();
-            init();
+            EMLog.d("ChatRoomChange","注册ChatRoomChange监听");
+            registerChatRoomChangeListener();
         }
         if (EMSDKMethod.joinChatRoom.equals(methodCall.method)) {
             joinChatRoom(methodCall.arguments,result);
@@ -188,52 +187,52 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }else if(EMSDKMethod.fetchPublicChatRoomsFromServer.equals(methodCall.method)){
             fetchPublicChatRoomsFromServer(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncFetchChatRoomFromServer.equals(methodCall.method)){
-            asyncFetchChatRoomFromServer(methodCall.arguments,result);
+            fetchChatRoomFromServer(methodCall.arguments,result);
         }else if(EMSDKMethod.getChatRoom.equals(methodCall.method)){
             getChatRoom(methodCall.arguments,result);
         }else if(EMSDKMethod.getAllChatRooms.equals(methodCall.method)){
             getAllChatRooms(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncCreateChatRoom.equals(methodCall.method)){
-            asyncCreateChatRoom(methodCall.arguments,result);
+            createChatRoom(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncDestroyChatRoom.equals(methodCall.method)){
-            asyncDestroyChatRoom(methodCall.arguments,result);
+            destroyChatRoom(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncChangeChatRoomSubject.equals(methodCall.method)){
-            asyncChangeChatRoomSubject(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncChangeChatroomDescription.equals(methodCall.method)){
-            asyncChangeChatroomDescription(methodCall.arguments,result);
+            changeChatRoomSubject(methodCall.arguments,result);
+        }else if(EMSDKMethod.asyncChangeChatRoomDescription.equals(methodCall.method)){
+            changeChatRoomDescription(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncFetchChatRoomMembers.equals(methodCall.method)){
-            asyncFetchChatRoomMembers(methodCall.arguments,result);
+            fetchChatRoomMembers(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncMuteChatRoomMembers.equals(methodCall.method)){
-            asyncMuteChatRoomMembers(methodCall.arguments,result);
+            muteChatRoomMembers(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncUnMuteChatRoomMembers.equals(methodCall.method)){
-            asyncUnMuteChatRoomMembers(methodCall.arguments,result);
+            unMuteChatRoomMembers(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncChangeOwner.equals(methodCall.method)){
-            asyncChangeOwner(methodCall.arguments,result);
+            changeOwner(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncAddChatRoomAdmin.equals(methodCall.method)){
-            asyncAddChatRoomAdmin(methodCall.arguments,result);
+            addChatRoomAdmin(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncRemoveChatRoomAdmin.equals(methodCall.method)){
-            asyncRemoveChatRoomAdmin(methodCall.arguments,result);
+            removeChatRoomAdmin(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncFetchChatRoomMuteList.equals(methodCall.method)){
-            asyncFetchChatRoomMuteList(methodCall.arguments,result);
+            fetchChatRoomMuteList(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncRemoveChatRoomMembers.equals(methodCall.method)){
-            asyncRemoveChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncBlockChatroomMembers.equals(methodCall.method)){
-            asyncBlockChatroomMembers(methodCall.arguments,result);
+            removeChatRoomMembers(methodCall.arguments,result);
+        }else if(EMSDKMethod.asyncBlockChatRoomMembers.equals(methodCall.method)){
+            blockChatRoomMembers(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncUnBlockChatRoomMembers.equals(methodCall.method)){
-            asyncUnBlockChatRoomMembers(methodCall.arguments,result);
+            unBlockChatRoomMembers(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncFetchChatRoomBlackList.equals(methodCall.method)){
-            asyncFetchChatRoomBlackList(methodCall.arguments,result);
+            fetchChatRoomBlackList(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncUpdateChatRoomAnnouncement.equals(methodCall.method)){
-            asyncUpdateChatRoomAnnouncement(methodCall.arguments,result);
+            updateChatRoomAnnouncement(methodCall.arguments,result);
         }else if(EMSDKMethod.asyncFetchChatRoomAnnouncement.equals(methodCall.method)){
-            asyncFetchChatRoomAnnouncement(methodCall.arguments,result);
+            fetchChatRoomAnnouncement(methodCall.arguments,result);
         }
     }
     private void joinChatRoom(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
-            emChatRoomManager.joinChatRoom(chatRoomId,new EMValueWrapperCallBack<>(result));
+            emChatRoomManager.joinChatRoom(chatRoomId,new EMValueWrapperCallBack<EMChatRoom>(result));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -257,17 +256,13 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             JSONObject jsonObject = (JSONObject) args;
             int pageNum = jsonObject.getInt("pageNum");
             int pageSize = jsonObject.getInt("pageSize");
-            EMPageResult<EMChatRoom> emCursorResult = emChatRoomManager.fetchPublicChatRoomsFromServer(pageNum,pageSize);
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            data.put("pageCount",emCursorResult.getPageCount());
-            result.success(data);
-        } catch (JSONException | HyphenateException e) {
+            emChatRoomManager.asyncFetchPublicChatRoomsFromServer(pageNum,pageSize,new EMValueWrapperCallBack<EMPageResult<EMChatRoom>>(result));
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void asyncFetchChatRoomFromServer(Object args, MethodChannel.Result result){
+    private void fetchChatRoomFromServer(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -303,7 +298,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         result.success(data);
     }
 
-    private void asyncCreateChatRoom(Object args, MethodChannel.Result result){
+    private void createChatRoom(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String subject = jsonObject.getString("subject");
@@ -311,7 +306,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             String welcomeMessage = jsonObject.getString("welcomeMessage");
             int maxUserCount = jsonObject.getInt("maxUserCount");
             JSONArray members = jsonObject.getJSONArray("members");
-            List<String> membersList = new LinkedList<>();
+            List<String> membersList = new ArrayList<>();
             for (int i = 0; i < members.length(); i++) {
                 membersList.add((String) members.get(i));
             }
@@ -321,7 +316,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncDestroyChatRoom(Object args, MethodChannel.Result result){
+    private void destroyChatRoom(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -331,7 +326,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncChangeChatRoomSubject(Object args, MethodChannel.Result result){
+    private void changeChatRoomSubject(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -342,7 +337,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncChangeChatroomDescription(Object args, MethodChannel.Result result){
+    private void changeChatRoomDescription(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -353,7 +348,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncFetchChatRoomMembers(Object args, MethodChannel.Result result){
+    private void fetchChatRoomMembers(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -365,13 +360,13 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncMuteChatRoomMembers(Object args, MethodChannel.Result result){
+    private void muteChatRoomMembers(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
-            long duration = jsonObject.getLong("duration");
+            long duration = Long.parseLong(jsonObject.getString("duration"));
             JSONArray muteMembers = jsonObject.getJSONArray("muteMembers");
-            List<String> muteMembersList = new LinkedList<>();
+            List<String> muteMembersList = new ArrayList<>();
             for (int i = 0; i < muteMembers.length(); i++) {
                 muteMembersList.add((String) muteMembers.get(i));
             }
@@ -381,12 +376,12 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncUnMuteChatRoomMembers(Object args, MethodChannel.Result result){
+    private void unMuteChatRoomMembers(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
             JSONArray muteMembers = jsonObject.getJSONArray("muteMembers");
-            List<String> unMuteMembersList = new LinkedList<>();
+            List<String> unMuteMembersList = new ArrayList<>();
             for (int i = 0; i < muteMembers.length(); i++) {
                 unMuteMembersList.add((String) muteMembers.get(i));
             }
@@ -396,7 +391,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncChangeOwner(Object args, MethodChannel.Result result){
+    private void changeOwner(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -407,7 +402,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncAddChatRoomAdmin(Object args, MethodChannel.Result result){
+    private void addChatRoomAdmin(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomID = jsonObject.getString("roomId");
@@ -418,7 +413,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncRemoveChatRoomAdmin(Object args, MethodChannel.Result result){
+    private void removeChatRoomAdmin(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -429,7 +424,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         }
     }
 
-    private void asyncFetchChatRoomMuteList(Object args, MethodChannel.Result result){
+    private void fetchChatRoomMuteList(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -440,12 +435,12 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             e.printStackTrace();
         }
     }
-    private void asyncRemoveChatRoomMembers(Object args, MethodChannel.Result result){
+    private void removeChatRoomMembers(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
             JSONArray members = jsonObject.getJSONArray("members");
-            List<String> membersList = new LinkedList<>();
+            List<String> membersList = new ArrayList<>();
             for (int i = 0; i < members.length(); i++) {
                 membersList.add((String) members.get(i));
             }
@@ -454,12 +449,12 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             e.printStackTrace();
         }
     }
-    private void asyncBlockChatroomMembers(Object args, MethodChannel.Result result){
+    private void blockChatRoomMembers(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
             JSONArray blockMembers = jsonObject.getJSONArray("members");
-            List<String> blockMembersList = new LinkedList<>();
+            List<String> blockMembersList = new ArrayList<>();
             for (int i = 0; i < blockMembers.length(); i++) {
                 blockMembersList.add((String) blockMembers.get(i));
             }
@@ -468,12 +463,12 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             e.printStackTrace();
         }
     }
-    private void asyncUnBlockChatRoomMembers(Object args, MethodChannel.Result result){
+    private void unBlockChatRoomMembers(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
             JSONArray unBlockMembers = jsonObject.getJSONArray("members");
-            List<String> unBlockMembersList = new LinkedList<>();
+            List<String> unBlockMembersList = new ArrayList<>();
             for (int i = 0; i < unBlockMembers.length(); i++) {
                 unBlockMembersList.add((String) unBlockMembers.get(i));
             }
@@ -482,7 +477,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             e.printStackTrace();
         }
     }
-    private void asyncFetchChatRoomBlackList(Object args, MethodChannel.Result result){
+    private void fetchChatRoomBlackList(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -493,7 +488,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             e.printStackTrace();
         }
     }
-    private void asyncUpdateChatRoomAnnouncement(Object args, MethodChannel.Result result){
+    private void updateChatRoomAnnouncement(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
@@ -503,7 +498,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             e.printStackTrace();
         }
     }
-    private void asyncFetchChatRoomAnnouncement(Object args, MethodChannel.Result result){
+    private void fetchChatRoomAnnouncement(Object args, MethodChannel.Result result){
         try {
             JSONObject jsonObject = (JSONObject) args;
             String chatRoomId = jsonObject.getString("roomId");
