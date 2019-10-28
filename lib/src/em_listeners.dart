@@ -75,8 +75,8 @@ abstract class EMGroupChangeListener {
   void onUserRemoved(String groupId, String groupName);
   void onGroupDestroyed(String groupId, String groupName);
   void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage);
-  void onMuteListAdded(String groupId, List<String> mutes, int muteExpire);
-  void onMuteListRemoved(String groupId, List<String> mutes);
+  void onMuteListAdded(String groupId, List mutes, int muteExpire);
+  void onMuteListRemoved(String groupId, List mutes);
   void onAdminAdded(String groupId, String administrator);
   void onAdminRemoved(String groupId, String administrator);
   void onOwnerChanged(String groupId, String newOwner, String oldOwner);
