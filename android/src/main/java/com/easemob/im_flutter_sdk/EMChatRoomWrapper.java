@@ -101,40 +101,4 @@ public class EMChatRoomWrapper extends EMBase<EMAChatRoom> implements MethodChan
     }
 
 
-    enum EMChatRoomStyle{
-        /**
-         *\~chinese
-         * 私有群组，创建完成后，只允许Owner邀请用户加入
-         *
-         * \~english
-         * Private groups, after created, only allowing owner invite users to join
-         */
-        EMChatRoomStylePrivateOnlyOwnerInvite,
-
-        /**
-         * \~chinese
-         * 私有群组，创建完成后，只允许Owner和群成员邀请用户加入
-         *
-         * \~english
-         * Private groups, after created, only allowing owner and members invite users to join
-         */
-        EMChatRoomStylePrivateMemberCanInvite,
-
-        /**
-         * \~chinese
-         * 公开群组，创建完成后，只允许Owner邀请用户加入; 非群成员用户需发送入群申请，Owner同意后才能入组
-         *
-         * *\~english
-         * Public groups, after created, only allowing owner invite users to join; Non-group members into the group must send an application to the owner after the Owner agree
-         */
-        EMChatRoomStylePublicJoinNeedApproval,
-
-        /**
-         * \~chinese
-         * 公开群组，创建完成后，允许非群组成员加入，不需要Owner同意
-         *
-         * \~english Public groups, after created, to allow non-members to join the group, does not require owner agrees
-         */
-        EMChatRoomStylePublicOpenJoin
-    }
 }
