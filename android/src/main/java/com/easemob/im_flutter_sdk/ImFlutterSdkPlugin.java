@@ -5,9 +5,11 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
+import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMucSharedFile;
+import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.EMLog;
 
@@ -22,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static com.easemob.im_flutter_sdk.EMHelper.convertEMChatRoomToStringMap;
 import static com.easemob.im_flutter_sdk.EMHelper.convertEMCursorResultToStringMap;
+import static com.easemob.im_flutter_sdk.EMHelper.convertEMPageResultToStringMap;
 
 /** ImFlutterSdkPlugin */
 @SuppressWarnings("unchecked")
@@ -64,7 +68,7 @@ public class ImFlutterSdkPlugin {
   }
 
   public static void registerEMChatRoomManagerWrapper(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/ema_chat_room_manager", JSONMethodCodec.INSTANCE);
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_room_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
   }
   public static void registerGroupManagerWith(Registrar registrar) {
@@ -209,6 +213,17 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
         if(((List)(o.getData())).get(0).getClass().getSimpleName().equals("String")){
           data.put("value", convertEMCursorResultToStringMap(o));
         }
+      }
+
+      if(value.getClass().getSimpleName().equals("EMPageResult")){
+        EMPageResult result = (EMPageResult)value;
+        if (((List)(result.getData())).get(0).getClass().getSimpleName().equals("EMChatRoom")){
+          data.put("value", convertEMPageResultToStringMap(result));
+        }
+      }
+
+      if(value.getClass().getSimpleName().equals("EMChatRoom")){
+        data.put("value", convertEMChatRoomToStringMap((EMChatRoom)value));
       }
 
       if(value.getClass().getSimpleName().equals("HashMap")){
