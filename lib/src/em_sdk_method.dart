@@ -149,7 +149,7 @@ class EMSDKMethod {
   static const String unblockGroupMessage = "unblockGroupMessage";
   static const String blockUser = "blockUser";
   static const String unblockUser = "unblockUser";
-  static const String getBlockedUsers = "getBlockedUsers";
+  static const String fetchGroupBlackList = "fetchGroupBlackList";
   static const String fetchGroupMembers = "fetchGroupMembers";
   static const String changeOwner = "changeOwner";
   static const String addGroupAdmin = "addGroupAdmin";
@@ -157,7 +157,6 @@ class EMSDKMethod {
   static const String muteGroupMembers = "muteGroupMembers";
   static const String unMuteGroupMembers = "unMuteGroupMembers";
   static const String fetchGroupMuteList = "fetchGroupMuteList";
-  static const String fetchGroupBlackList = "fetchGroupBlackList";
   static const String updateGroupAnnouncement = "updateGroupAnnouncement";
   static const String fetchGroupAnnouncement = "fetchGroupAnnouncement";
   static const String uploadGroupSharedFile = "uploadGroupSharedFile";
@@ -184,27 +183,6 @@ class EMSDKMethod {
   static const String onAnnouncementChanged = "onAnnouncementChanged";
   static const String onSharedFileAdded = "onSharedFileAdded";
   static const String onSharedFileDeleted = "onSharedFileDeleted";
-
-
-
-  /// EMGroup
-  static const String getGroupDescription = "getGroupDescription";
-  static const String isPublic = "isPublic";
-  static const String isAllowInvites = "isAllowInvites";
-  static const String isMemberAllowToInvite = "isMemberAllowToInvite";
-  static const String isMembersOnly = "isMembersOnly";
-  static const String getMaxUserCount = "getMaxUserCount";
-  static const String isMsgBlocked = "isMsgBlocked";
-  static const String getGroupOwner = "getGroupOwner";
-  static const String groupSubject = "groupSubject";
-  static const String getMembers = "getMembers";
-  static const String getGroupMemberCount = "getGroupMemberCount";
-  static const String getGroupAdminList = "getGroupAdminList";
-  static const String getGroupBlackList = "getGroupBlackList";
-  static const String getGroupMuteList = "getGroupMuteList";
-  static const String getExtension = "getExtension";
-  static const String getGroupAnnouncement = "getGroupAnnouncement";
-  static const String getShareFileList = "getShareFileList";
 
   /// EMChatroomManager
   static const String getChatroomsFromServer = "getChatroomsFromServer";

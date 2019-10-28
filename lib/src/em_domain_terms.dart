@@ -398,16 +398,17 @@ abstract class EMCursorResults<T> {
   Future<T> getCursor();
 }
 
-class EMCursorResult<T> {
+class EMCursorResult {
   String _cursor;
 
-  List<T> _data;
+  List _data;
 
   String getCursor(){
     return _cursor;
   }
 
-  List<T> getData(){
+  List
+  getData(){
     return _data;
   }
 
@@ -481,4 +482,51 @@ class EMMucSharedFile{
         _updateTime = data['updateTime'],
         _fileSize = data['fileSize'];
 
+  String toString(){
+    return 'fileId:' + _fileId +"--"
+    +'fileName:' + _fileName +"--"
+    +'fileOwner:' + _fileOwner +"--"
+    +'updateTime:' + _updateTime.toString() +"--"
+    +'fileSize:' + _fileSize.toString();
+  }
+}
+
+class EMGroupInfo{
+  String _groupId;
+  String _groupName;
+
+  String getGroupId(){
+    return _groupId;
+  }
+
+  String getGroupName(){
+    return _groupName;
+  }
+
+  EMGroupInfo.from(Map<String, dynamic> data)
+      : _groupId = data['groupId'],
+        _groupName = data['groupName'];
+}
+
+enum EMGroupPermissionType{
+  EMGroupPermissionTypeNone,
+  EMGroupPermissionTypeMember,
+  EMGroupPermissionTypeAdmin,
+  EMGroupPermissionTypeOwner,
+}
+
+EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
+  if(i == -1){
+    return EMGroupPermissionType.EMGroupPermissionTypeNone;
+  }
+  if(i == 0){
+    return EMGroupPermissionType.EMGroupPermissionTypeMember;
+  }
+  if(i == 1){
+    return EMGroupPermissionType.EMGroupPermissionTypeAdmin;
+  }
+  if(i == 2){
+    return EMGroupPermissionType.EMGroupPermissionTypeOwner;
+  }
+  return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }
