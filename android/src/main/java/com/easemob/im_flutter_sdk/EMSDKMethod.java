@@ -105,7 +105,7 @@ public class EMSDKMethod {
     static final String asyncCreateChatRoom = "asyncCreateChatRoom";
     static final String asyncDestroyChatRoom = "asyncDestroyChatRoom";
     static final String asyncChangeChatRoomSubject = "asyncChangeChatRoomSubject";
-    static final String asyncChangeChatroomDescription = "asyncChangeChatroomDescription";
+    static final String asyncChangeChatRoomDescription = "asyncChangeChatRoomDescription";
     static final String asyncFetchChatRoomMembers = "asyncFetchChatRoomMembers";
     static final String asyncMuteChatRoomMembers = "asyncMuteChatRoomMembers";
     static final String asyncUnMuteChatRoomMembers = "asyncUnMuteChatRoomMembers";
@@ -114,14 +114,14 @@ public class EMSDKMethod {
     static final String asyncRemoveChatRoomAdmin = "asyncRemoveChatRoomAdmin";
     static final String asyncFetchChatRoomMuteList = "asyncFetchChatRoomMuteList";
     static final String asyncRemoveChatRoomMembers = "asyncRemoveChatRoomMembers";
-    static final String asyncBlockChatroomMembers = "asyncBlockChatroomMembers";
+    static final String asyncBlockChatRoomMembers = "asyncBlockChatRoomMembers";
     static final String asyncUnBlockChatRoomMembers = "asyncUnBlockChatRoomMembers";
     static final String asyncFetchChatRoomBlackList = "asyncFetchChatRoomBlackList";
     static final String asyncUpdateChatRoomAnnouncement = "asyncUpdateChatRoomAnnouncement";
     static final String asyncFetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
 
     //EMChatRoomManagerListener
-    static final String ChatRoomChange = "ChatRoomChange";
+    static final String chatRoomChange = "chatRoomChange";
 
     //EMChatRoom
     static final String getId = "getId";
