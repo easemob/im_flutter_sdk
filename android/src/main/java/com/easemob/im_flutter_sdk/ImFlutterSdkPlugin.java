@@ -127,6 +127,7 @@ class EMWrapperCallBack implements EMCallBack{
     post((Void) -> {
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
+      EMLog.e("callback", "onSuccess");
       result.success(data);
     });
   }
@@ -138,6 +139,7 @@ class EMWrapperCallBack implements EMCallBack{
       data.put("success", Boolean.FALSE);
       data.put("code", code);
       data.put("desc", desc);
+      EMLog.e("callback", "onError");
       result.success(data);
     });
   }
@@ -187,7 +189,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
         }
 
           if (o.getClass().getSimpleName().equals("String")) {
-            data.put("value", (List<String>) value);
+            data.put("value",  value);
           }
 
           if(o.getClass().getSimpleName().equals("EMMucSharedFile")){
@@ -205,10 +207,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
       }
 
       if(value.getClass().getSimpleName().equals("EMCursorResult")){
-        EMCursorResult o = (EMCursorResult) value;
-        if(((List)(o.getData())).get(0).getClass().getSimpleName().equals("String")){
-          data.put("value", convertEMCursorResultToStringMap(o));
-        }
+          data.put("value", convertEMCursorResultToStringMap((EMCursorResult)value));
       }
 
       if(value.getClass().getSimpleName().equals("HashMap")){

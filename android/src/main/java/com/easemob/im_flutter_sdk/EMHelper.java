@@ -1,12 +1,14 @@
 package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.chat.EMChatRoom;
+import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMConversation.EMConversationType;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
@@ -17,11 +19,13 @@ import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.chat.adapter.EMAGroup;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -304,6 +308,52 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("groupId", group.getGroupId());
         result.put("groupName", group.getGroupName());
+        result.put("description", group.getDescription());
+        result.put("isPublic", group.isPublic());
+        result.put("memberAllowToInvite", group.isMemberAllowToInvite());
+        result.put("memberOnly", group.isMemberOnly());
+        result.put("maxUserCount", group.getMaxUserCount());
+        result.put("msgBlocked", group.isMsgBlocked());
+        result.put("owner", group.getOwner());
+        result.put("members", group.getMembers());
+        result.put("memberCount", group.getMemberCount());
+        result.put("adminList", group.getAdminList());
+        result.put("blackList", group.getBlackList());
+        result.put("muteList", group.getMuteList());
+        result.put("extension", group.getExtension());
+        result.put("announcement", group.getAnnouncement());
+        List<Map<String, Object>> fileList = new LinkedList<>();
+        for(EMMucSharedFile file : group.getShareFileList()){
+            fileList.add(convertEMMucSharedFileToStringMap(file));
+        }
+        result.put("shareFileList", fileList);
+
+        List occupants = new LinkedList();
+        occupants.add(group.getOwner());
+        occupants.addAll(group.getAdminList());
+        occupants.addAll(group.getMembers());
+        result.put("occupants", occupants);
+
+        int permissionType = -1;
+        if(group.getMembers().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 0;
+        }
+        if(group.getAdminList().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 1;
+        }
+        if(EMClient.getInstance().getCurrentUser().equals(group.getOwner())){
+            permissionType = 2;
+        }
+        result.put("permissionType", permissionType);
+
+        List noPushGroups = EMClient.getInstance().pushManager().getNoPushGroups();
+        boolean isPushNotificationEnabled = false;
+        if (noPushGroups != null) {
+            if(noPushGroups.contains(group.getGroupId())){
+                isPushNotificationEnabled = true;
+            }
+        }
+        result.put("isPushNotificationEnabled", isPushNotificationEnabled);
         return result;
     }
 
@@ -425,6 +475,21 @@ class EMHelper {
         if(className.equals("String")){
             result.put("data", list);
         }
+        if(className.equals("EMGroupInfo")){
+            List<EMGroupInfo> infoList = list;
+            List<Map<String, Object>> data = new LinkedList();
+            for(EMGroupInfo info : infoList){
+                data.add(convertGroupInfoToStringMap(info));
+            }
+            result.put("data", data);
+        }
+        return result;
+    }
+
+    static Map<String, Object> convertGroupInfoToStringMap(EMGroupInfo info){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", info.getGroupId());
+        result.put("groupName", info.getGroupName());
         return result;
     }
 
