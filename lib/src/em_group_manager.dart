@@ -578,7 +578,7 @@ class EMGroupManager{
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.changeOwner, {"groupId" : groupId, "newOwner" : newOwner});
+        .invokeMethod(EMSDKMethod.changeChatRoomOwner, {"groupId" : groupId, "newOwner" : newOwner});
     result.then((response) {
       if (response['success']) {
         if (onSuccess != null) {

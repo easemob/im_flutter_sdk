@@ -16,6 +16,7 @@ import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
+import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -214,6 +215,38 @@ class EMHelper {
         chatRoomMap.put("roomId",emChatRoom.getId());
         chatRoomMap.put("roomName",emChatRoom.getName());
         return chatRoomMap;
+    }
+
+    static Map<String, Object> convertEMChatRoomToStringMap(EMChatRoom emChatRoom) {
+        Map<String, Object> chatRoomMap = new HashMap<String, Object>();
+        chatRoomMap.put("roomId",emChatRoom.getId());
+        chatRoomMap.put("roomName",emChatRoom.getName());
+        chatRoomMap.put("description",emChatRoom.getDescription());
+        chatRoomMap.put("owner",emChatRoom.getOwner());
+        chatRoomMap.put("adminList",emChatRoom.getAdminList());
+        chatRoomMap.put("affiliationsCount",emChatRoom.getMemberCount());
+        chatRoomMap.put("maxUsers",emChatRoom.getMaxUsers());
+        chatRoomMap.put("memberList",emChatRoom.getMemberList());
+        chatRoomMap.put("blackList",emChatRoom.getBlackList());
+        chatRoomMap.put("muteList",emChatRoom.getMuteList());
+        chatRoomMap.put("announcement",emChatRoom.getAnnouncement());
+        return chatRoomMap;
+    }
+
+    static Map<String, Object> convertEMPageResultToStringMap(EMPageResult result) {
+        List list = (List)result.getData();
+        EMLog.e("------->", list.toString());
+        String className = list.get(0).getClass().getSimpleName();
+        Map<String, Object> pageResult = new HashMap<String, Object>();
+        pageResult.put("pageCount", result.getPageCount());
+        if(className.equals("EMChatRoom")){
+            List list1 = new LinkedList();
+            for (Object o : list) {
+                list1.add(convertEMChatRoomToStringMap((EMChatRoom) o));
+            }
+            pageResult.put("data",list1);
+        }
+        return pageResult;
     }
 
     /**
