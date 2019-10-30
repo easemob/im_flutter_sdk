@@ -343,10 +343,10 @@ class EMHelper {
         result.put("groupName", group.getGroupName());
         result.put("description", group.getDescription());
         result.put("isPublic", group.isPublic());
-        result.put("memberAllowToInvite", group.isMemberAllowToInvite());
-        result.put("memberOnly", group.isMemberOnly());
+        result.put("isMemberAllowToInvite", group.isMemberAllowToInvite());
+        result.put("isMemberOnly", group.isMemberOnly());
         result.put("maxUserCount", group.getMaxUserCount());
-        result.put("msgBlocked", group.isMsgBlocked());
+        result.put("isMsgBlocked", group.isMsgBlocked());
         result.put("owner", group.getOwner());
         result.put("members", group.getMembers());
         result.put("memberCount", group.getMemberCount());
@@ -359,7 +359,7 @@ class EMHelper {
         for(EMMucSharedFile file : group.getShareFileList()){
             fileList.add(convertEMMucSharedFileToStringMap(file));
         }
-        result.put("shareFileList", fileList);
+        result.put("sharedFileList", fileList);
 
         List occupants = new LinkedList();
         occupants.add(group.getOwner());

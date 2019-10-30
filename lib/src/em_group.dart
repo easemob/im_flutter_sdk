@@ -15,13 +15,13 @@ class EMGroup{
 
   bool _isPublic;
 
-  bool _memberAllowToInvite;
+  bool _isMemberAllowToInvite;
 
-  bool _memberOnly;
+  bool _isMemberOnly;
 
   int _maxUserCount;
 
-  bool _msgBlocked;
+  bool _isMsgBlocked;
 
   String _owner;
 
@@ -39,7 +39,7 @@ class EMGroup{
 
   String _announcement;
 
-  List<EMMucSharedFile> _shareFileList;
+  List<EMMucSharedFile> _sharedFileList;
 
   List _occupants;
 
@@ -52,10 +52,10 @@ class EMGroup{
     _groupName = data['groupName'];
     _description = data['description'];
     _isPublic = data['isPublic'];
-    _memberAllowToInvite = data['memberAllowToInvite'];
-    _memberOnly = data['memberOnly'];
+    _isMemberAllowToInvite = data['isMemberAllowToInvite'];
+    _isMemberOnly = data['isMemberOnly'];
     _maxUserCount = data['maxUserCount'];
-    _msgBlocked = data['msgBlocked'];
+    _isMsgBlocked = data['isMsgBlocked'];
     _owner = data['owner'];
     _members = data['members'];
     _memberCount = data['memberCount'];
@@ -64,12 +64,12 @@ class EMGroup{
     _muteList = data['muteList'];
     _extension = data['extension'];
     _announcement = data['announcement'];
-    var files = data['shareFileList'] as List;
+    var files = data['sharedFileList'] as List;
     var fileList = List<EMMucSharedFile>();
     for(var file in files){
       fileList.add(EMMucSharedFile.from(file));
     }
-    _shareFileList = fileList;
+    _sharedFileList = fileList;
     _occupants = data['occupants'];
     _permissionType = convertIntToEMGroupPermissionType(data['permissionType']);
     _isPushNotificationEnabled = data['isPushNotificationEnabled'];
@@ -92,11 +92,11 @@ class EMGroup{
   }
 
   bool isMemberAllowToInvite(){
-    return _memberAllowToInvite;
+    return _isMemberAllowToInvite;
   }
 
   bool isMemberOnly(){
-    return _memberOnly;
+    return _isMemberOnly;
   }
 
   int getMaxUserCount(){
@@ -104,7 +104,7 @@ class EMGroup{
   }
 
   bool isMsgBlocked(){
-    return _msgBlocked;
+    return _isMsgBlocked;
   }
 
   String getOwner(){
@@ -144,8 +144,8 @@ class EMGroup{
     return _announcement;
   }
 
-  List<EMMucSharedFile> getShareFileList(){
-    return _shareFileList;
+  List<EMMucSharedFile> getSharedFileList(){
+    return _sharedFileList;
   }
 
   List getOccupants(){
