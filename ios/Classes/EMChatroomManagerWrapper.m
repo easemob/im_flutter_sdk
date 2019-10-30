@@ -9,17 +9,6 @@
 #import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
-typedef enum : NSUInteger {
-    CHATROOM_USER_JOIN = 0,                      // 有用户加入聊天室
-    CHATROOM_USER_LEAVE,                         // 有用户离开聊天室
-    CHATROOM_FROM_DISMISS,                       // 被踢出聊天室
-    CHATROOM_MUTE_LIST_UPDATE_ADDED,             // 有成员被加入禁言列表
-    CHATROOM_MUTE_LIST_UPDATE_REMOVED,           // 有成员被移出禁言列表
-    CHATROOM_ADMIN_LIST_UPDATE_ADDED,            // 有成员被加入管理员列表
-    CHATROOM_ADMIN_LIST_UPDATE_REMOVED,          // 有成员被移出管理员列表
-    CHATROOM_OWNER_UPDATE,                       // 聊天室创建者有更新
-    CHATROOM_ANNOUNCEMENT_UPDATE,                // 聊天室公告有更新
-} EMChatroomEvent;
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>
 
 @end
@@ -39,21 +28,24 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
+
     if ([EMMethodKeyGetChatroomsFromServer isEqualToString:call.method]) {
         [self getChatroomsFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyCreateChatroom isEqualToString:call.method]) {
+    } else if ([EMMethodKeyCreateChatRoom isEqualToString:call.method]) {
         [self createChatroom:call.arguments result:result];
-    } else if ([EMMethodKeyJoinChatroom isEqualToString:call.method]) {
+    } else if ([EMMethodKeyJoinChatRoom isEqualToString:call.method]) {
         [self joinChatroom:call.arguments result:result];
-    } else if ([EMMethodKeyLeaveChatroom isEqualToString:call.method]) {
+    } else if ([EMMethodKeyLeaveChatRoom isEqualToString:call.method]) {
         [self leaveChatroom:call.arguments result:result];
+    } else if ([EMMethodKeyDestroyChatRoom isEqualToString:call.method]) {
+        [self destroyChatRoom:call.arguments result:result];
     } else if ([EMMethodKeyGetChatroomSpecificationFromServer isEqualToString:call.method]) {
         [self getChatroomSpecificationFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
+    } else if ([EMMethodKeyGetChatRoom isEqualToString:call.method]) {
+        [self getChatroom:call.arguments result:result];
+    } else if ([EMMethodKeyGetAllChatRooms isEqualToString:call.method]) {
+        [self getAllChatrooms:call.arguments result:result];
+    }  else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
         [self getChatroomMemberListFromServer:call.arguments result:result];
     } else if ([EMMethodKeyGetChatroomBlacklistFromServer isEqualToString:call.method]) {
         [self getChatroomBlacklistFromServer:call.arguments result:result];
@@ -91,7 +83,7 @@ typedef enum : NSUInteger {
 #pragma mark - Actions
 
 - (void)getChatroomsFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSInteger page = [param[@"page"] integerValue];
+    NSInteger page = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomsFromServerWithPage:page
                                                              pageSize:pageSize
@@ -99,7 +91,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":[self dictionaryWithPageResult:aResult]}];
+                     userInfo:[self dictionaryWithPageResult:aResult]];
         
     }];
 }
@@ -107,9 +99,9 @@ typedef enum : NSUInteger {
 - (void)createChatroom:(NSDictionary *)param result:(FlutterResult)result {
     NSString *subject = param[@"subject"];
     NSString *description = param[@"description"];
-    NSArray *invitees = param[@"invitees"];
-    NSString *message = param[@"message"];
-    NSInteger maxMembersCount = [param[@"maxMembersCount"] integerValue];
+    NSArray *invitees = param[@"members"];
+    NSString *message = param[@"welcomeMessage"];
+    NSInteger maxMembersCount = [param[@"maxUserCount"] integerValue];
     [EMClient.sharedClient.roomManager createChatroomWithSubject:subject
                                                      description:description
                                                         invitees:invitees
@@ -119,23 +111,23 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)joinChatroom:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager joinChatroom:chatroomId
                                          completion:^(EMChatroom *aChatroom, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)leaveChatroom:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager leaveChatroom:chatroomId
                                           completion:^(EMError *aError)
      {
@@ -145,6 +137,16 @@ typedef enum : NSUInteger {
     }];
 }
 
+- (void)destroyChatRoom:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *chatroomId = param[@"roomId"];
+    [EMClient.sharedClient.roomManager destroyChatroom:chatroomId completion:^(EMError *aError) {
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:nil];
+    }];
+}
+
+
 - (void)getChatroomSpecificationFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *chatroomId = param[@"chatroomId"];
     [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId
@@ -152,12 +154,32 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+    }];
+}
+
+- (void)getChatroom:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *chatroomId = param[@"chatroomId"];
+    EMChatroom *chatroom = [EMChatroom chatroomWithId:chatroomId];
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:[self dictionaryWithChatroom:chatroom]];
+}
+
+- (void)getAllChatrooms:(NSDictionary *)param result:(FlutterResult)result {
+    [EMClient.sharedClient.roomManager getChatroomsFromServerWithPage:0
+                                                             pageSize:-1
+                                                           completion:^(EMPageResult *aResult, EMError *aError)
+     {
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:[self dictionaryWithPageResult:aResult]];
+        
     }];
 }
 
 - (void)getChatroomMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     NSString *cursor = param[@"cursor"];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomMemberListFromServerWithId:chatroomId
@@ -167,13 +189,13 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":[self dictionaryWithCursorResult:aResult]}];
+                     userInfo:[self dictionaryWithCursorResult:aResult]];
     }];
 }
 
 - (void)getChatroomBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
-    NSInteger pageNumber = [param[@"pageNumber"] integerValue];;
+    NSString *chatroomId = param[@"roomId"];
+    NSInteger pageNumber = [param[@"pageNum"] integerValue];;
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomBlacklistFromServerWithId:chatroomId
                                                                  pageNumber:pageNumber
@@ -182,13 +204,13 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":aList}];
+                     userInfo:[self dictionaryArrayWithChatroomsArray:aList]];
     }];
 }
 
 - (void)getChatroomMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
-    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSString *chatroomId = param[@"roomId"];
+    NSInteger pageNumber = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.roomManager getChatroomMuteListFromServerWithId:chatroomId
                                                                 pageNumber:pageNumber
@@ -197,88 +219,88 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":aList}];
+                     userInfo:[self dictionaryArrayWithChatroomsArray:aList]];
     }];
 }
 
 - (void)getChatroomAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager getChatroomAnnouncementWithId:chatroomId
                                                           completion:^(NSString *aAnnouncement, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"announcement":aAnnouncement}];
+                     userInfo:aAnnouncement];
     }];
 }
 
 - (void)chatRoomUpdateSubject:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *subject = param[@"subject"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *subject = param[@"newSubject"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager updateSubject:subject
                                          forChatroom:chatroomId
                                           completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomUpdateDescription:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *description = param[@"description"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *description = param[@"newDescription"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager updateDescription:description
                                              forChatroom:chatroomId
                                               completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomRemoveMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *members = param[@"members"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager removeMembers:members
                                         fromChatroom:chatroomId
                                           completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomBlockMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *members = param[@"members"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager blockMembers:members
                                        fromChatroom:chatroomId
                                          completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomUnblockMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *members = param[@"members"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager unblockMembers:members
                                          fromChatroom:chatroomId
                                            completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomUpdateChatroomOwner:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     NSString *newOwner = param[@"newOwner"];
     [EMClient.sharedClient.roomManager updateChatroomOwner:chatroomId
                                                   newOwner:newOwner
@@ -286,40 +308,40 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomAddAdmin:(NSDictionary *)param result:(FlutterResult)result {
     NSString *admin = param[@"admin"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager addAdmin:admin
                                      toChatroom:chatroomId
                                      completion:^(EMChatroom *aChatroomp, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroomp]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroomp]];
     }];
 }
 
 - (void)chatRoomRemoveAdmin:(NSDictionary *)param result:(FlutterResult)result {
     NSString *admin = param[@"admin"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager removeAdmin:admin
                                       fromChatroom:chatroomId
                                         completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomMuteMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *muteMembers = param[@"muteMembers"];
-    NSInteger muteMilliseconds = [param[@"muteMilliseconds"] integerValue];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSInteger muteMilliseconds = [param[@"duration"] integerValue];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager muteMembers:muteMembers
                                   muteMilliseconds:muteMilliseconds
                                       fromChatroom:chatroomId
@@ -327,25 +349,25 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)chatRoomUnmuteMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *muteMembers = param[@"muteMembers"];
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager unmuteMembers:muteMembers
                                         fromChatroom:chatroomId
                                           completion:^(EMChatroom *aChatroom, EMError *aError)
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
 - (void)updateChatroomAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     NSString *announcement = param[@"announcement"];
     [EMClient.sharedClient.roomManager updateChatroomAnnouncementWithId:chatroomId
                                                            announcement:announcement
@@ -353,7 +375,7 @@ typedef enum : NSUInteger {
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"chatroom":[self dictionaryWithChatroom:aChatroom]}];
+                     userInfo:[self dictionaryWithChatroom:aChatroom]];
     }];
 }
 
@@ -362,9 +384,9 @@ typedef enum : NSUInteger {
 - (void)userDidJoinChatroom:(EMChatroom *)aChatroom
                        user:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_USER_JOIN),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
-        @"username":aUsername
+        @"type":@"onMemberJoined",
+        @"roomId":aChatroom.chatroomId,
+        @"participant":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
                      arguments:map];
@@ -374,9 +396,10 @@ typedef enum : NSUInteger {
 - (void)userDidLeaveChatroom:(EMChatroom *)aChatroom
                         user:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_USER_LEAVE),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
-        @"username":aUsername
+        @"type":@"onMemberExited",
+        @"roomId":aChatroom.chatroomId,
+        @"roomName":aChatroom.subject,
+        @"participant":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
                      arguments:map];
@@ -384,19 +407,26 @@ typedef enum : NSUInteger {
 
 - (void)didDismissFromChatroom:(EMChatroom *)aChatroom
                         reason:(EMChatroomBeKickedReason)aReason {
-    NSString *reason;
+    NSString *type;
+    NSDictionary *map;
     if (aReason == EMChatroomBeKickedReasonBeRemoved) {
-        reason = @"BeRemoved";
+        type = @"onChatRoomDestroyed";
+        map = @{
+            @"type":type,
+            @"roomId":aChatroom.chatroomId,
+            @"roomName":aChatroom.subject
+        };
     } else if (aReason == EMChatroomBeKickedReasonDestroyed) {
-        reason = @"Destroyed";
-    } else {
-        reason = @"Offline";
+        type = @"onRemovedFromChatRoom";
+        map = @{
+            @"type":type,
+            @"reason":[NSNumber numberWithInt:0],
+            @"roomId":aChatroom.chatroomId,
+            @"roomName":aChatroom.subject,
+            @"participant":[[EMClient sharedClient] currentUsername]
+        };
     }
-    NSDictionary *map = @{
-        @"type":@(CHATROOM_FROM_DISMISS),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
-        @"reason":reason
-    };
+    
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
                      arguments:map];
 }
@@ -405,9 +435,10 @@ typedef enum : NSUInteger {
                 addedMutedMembers:(NSArray *)aMutes
                        muteExpire:(NSInteger)aMuteExpire {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_MUTE_LIST_UPDATE_ADDED),
+        @"type":@"onMuteListAdded",
+        @"chatRoomId":aChatroom.chatroomId,
         @"mutes":aMutes,
-        @"muteExpire":[NSNumber numberWithInteger:aMuteExpire]
+        @"expireTime":[NSString stringWithFormat:@"%ld", aMuteExpire]
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
                      arguments:map];
@@ -416,8 +447,8 @@ typedef enum : NSUInteger {
 - (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
               removedMutedMembers:(NSArray *)aMutes {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_MUTE_LIST_UPDATE_REMOVED),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
+        @"type":@"onMuteListRemoved",
+        @"chatRoomId":aChatroom.chatroomId,
         @"mutes":aMutes
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -427,8 +458,8 @@ typedef enum : NSUInteger {
 - (void)chatroomAdminListDidUpdate:(EMChatroom *)aChatroom
                         addedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_ADMIN_LIST_UPDATE_ADDED),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
+        @"type":@"onAdminAdded",
+        @"chatRoomId":aChatroom.chatroomId,
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -438,8 +469,8 @@ typedef enum : NSUInteger {
 - (void)chatroomAdminListDidUpdate:(EMChatroom *)aChatroom
                       removedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_ADMIN_LIST_UPDATE_REMOVED),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
+        @"type":@"onAdminRemoved",
+        @"chatRoomId":aChatroom.chatroomId,
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -450,8 +481,8 @@ typedef enum : NSUInteger {
                       newOwner:(NSString *)aNewOwner
                       oldOwner:(NSString *)aOldOwner {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_OWNER_UPDATE),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
+        @"type":@"onOwnerChanged",
+        @"chatRoomId":aChatroom.chatroomId,
         @"newOwner":aNewOwner,
         @"oldOwner":aOldOwner
     };
@@ -462,8 +493,8 @@ typedef enum : NSUInteger {
 - (void)chatroomAnnouncementDidUpdate:(EMChatroom *)aChatroom
                          announcement:(NSString *)aAnnouncement {
     NSDictionary *map = @{
-        @"type":@(CHATROOM_ANNOUNCEMENT_UPDATE),
-        @"chatroom":[self dictionaryWithChatroom:aChatroom],
+        @"type":@"onAnnouncementChanged",
+        @"chatRoomId":aChatroom.chatroomId,
         @"announcement":aAnnouncement
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -487,18 +518,18 @@ typedef enum : NSUInteger {
         type = 2;
     }
     
-    NSDictionary *groupDict = @{@"chatroomId":chatroom.chatroomId,
-                                @"subject":chatroom.subject,
+    // @"permissionType":[NSNumber numberWithInt:type],
+    NSDictionary *groupDict = @{@"roomId":chatroom.chatroomId,
+                                @"roomName":chatroom.subject,
                                 @"description":chatroom.description,
                                 @"owner":chatroom.owner,
                                 @"announcement":chatroom.announcement,
-                                @"adminList":chatroom.adminList,
+                                @"administratorList":chatroom.adminList,
                                 @"memberList":chatroom.memberList,
-                                @"blacklist":chatroom.blacklist,
+                                @"blockList":chatroom.blacklist,
                                 @"muteList":chatroom.muteList,
-                                @"permissionType":[NSNumber numberWithInt:type],
-                                @"maxOccupantsCount":[NSNumber numberWithInteger:chatroom.maxOccupantsCount],
-                                @"occupantsCount":[NSNumber numberWithInteger:chatroom.occupantsCount]
+                                @"maxUserCount":[NSNumber numberWithInteger:chatroom.maxOccupantsCount],
+                                @"affiliationsCount":[NSNumber numberWithInteger:chatroom.occupantsCount]
                                };
     
     return groupDict;
@@ -517,8 +548,8 @@ typedef enum : NSUInteger {
 // 聊天室查询结果转字典
 - (NSDictionary *)dictionaryWithPageResult:(EMPageResult *)pageResult
 {
-    NSDictionary *resultDict = @{@"list":[self dictionaryArrayWithChatroomsArray:pageResult.list],
-                                 @"count":[NSNumber numberWithInteger:pageResult.count]
+    NSDictionary *resultDict = @{@"data":[self dictionaryArrayWithChatroomsArray:pageResult.list],
+                                 @"pageCount":[NSNumber numberWithInteger:pageResult.count]
                                 };
     return resultDict;
 }
@@ -527,7 +558,7 @@ typedef enum : NSUInteger {
 - (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
 {
     
-    NSDictionary *resultDict = @{@"list":cursorResult.list,
+    NSDictionary *resultDict = @{@"data":cursorResult.list,
                                  @"cursor":cursorResult.cursor
                                 };
     return resultDict;

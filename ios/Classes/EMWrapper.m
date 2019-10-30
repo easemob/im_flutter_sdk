@@ -33,7 +33,7 @@
         } else {
             dic[@"success"] = @YES;
             if (userinfo) {
-                dic[@"arbitrary_value"] = userinfo;
+                dic[@"value"] = userinfo;
             }
         }
         result(dic);
