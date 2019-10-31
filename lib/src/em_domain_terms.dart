@@ -394,6 +394,139 @@ enum EMCheckType {
 enum EMSearchDirection { Up, Down }
 
 /// EMCursorResult - Cursor result for iteration.
-abstract class EMCursorResult<T> {
+abstract class EMCursorResults<T> {
   Future<T> getCursor();
+}
+
+class EMCursorResult {
+  String _cursor;
+
+  List _data;
+
+  String getCursor(){
+    return _cursor;
+  }
+
+  List
+  getData(){
+    return _data;
+  }
+
+  EMCursorResult.from(Map<String, dynamic> data)
+      : _cursor = data['cursor'],
+        _data = data['data'];
+}
+
+
+
+class EMGroupOptions {
+  EMGroupOptions({
+    this.maxUsers = 200,
+    this.style = EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite,
+  });
+
+  int maxUsers;
+  EMGroupStyle style;
+}
+
+enum EMGroupStyle{
+  EMGroupStylePrivateOnlyOwnerInvite,
+  EMGroupStylePrivateMemberCanInvite,
+  EMGroupStylePublicJoinNeedApproval,
+  EMGroupStylePublicOpenJoin,
+}
+
+int convertEMGroupStyleToInt(EMGroupStyle style){
+  if(style == EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite){
+    return 0;
+  }
+  if(style == EMGroupStyle.EMGroupStylePrivateMemberCanInvite){
+    return 1;
+  }
+  if(style == EMGroupStyle.EMGroupStylePublicJoinNeedApproval){
+    return 2;
+  }
+  if(style == EMGroupStyle.EMGroupStylePublicOpenJoin){
+    return 3;
+  }
+  return 0;
+}
+
+class EMMucSharedFile{
+  String _fileId;
+  String _fileName;
+  String _fileOwner;
+  int _updateTime;
+  int _fileSize;
+
+  String getFileId(){
+    return _fileId;
+  }
+
+  String getFileName(){
+    return _fileName;
+  }
+  String getFileOwner(){
+    return _fileOwner;
+  }
+  int getFileUpdateTime(){
+    return _updateTime;
+  }
+  int getFileSize(){
+    return _fileSize;
+  }
+  EMMucSharedFile.from(Map<String, dynamic> data)
+      : _fileId = data['fileId'],
+        _fileName = data['fileName'],
+        _fileOwner = data['fileOwner'],
+        _updateTime = data['updateTime'],
+        _fileSize = data['fileSize'];
+
+  String toString(){
+    return 'fileId:' + _fileId +"--"
+    +'fileName:' + _fileName +"--"
+    +'fileOwner:' + _fileOwner +"--"
+    +'updateTime:' + _updateTime.toString() +"--"
+    +'fileSize:' + _fileSize.toString();
+  }
+}
+
+class EMGroupInfo{
+  String _groupId;
+  String _groupName;
+
+  String getGroupId(){
+    return _groupId;
+  }
+
+  String getGroupName(){
+    return _groupName;
+  }
+
+  EMGroupInfo.from(Map<String, dynamic> data)
+      : _groupId = data['groupId'],
+        _groupName = data['groupName'];
+}
+
+enum EMGroupPermissionType{
+  EMGroupPermissionTypeNone,
+  EMGroupPermissionTypeMember,
+  EMGroupPermissionTypeAdmin,
+  EMGroupPermissionTypeOwner,
+}
+
+EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
+  if(i == -1){
+    return EMGroupPermissionType.EMGroupPermissionTypeNone;
+  }
+  if(i == 0){
+    return EMGroupPermissionType.EMGroupPermissionTypeMember;
+  }
+  if(i == 1){
+    return EMGroupPermissionType.EMGroupPermissionTypeAdmin;
+  }
+  if(i == 2){
+    return EMGroupPermissionType.EMGroupPermissionTypeOwner;
+  }
+  return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }

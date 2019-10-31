@@ -83,14 +83,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             options.setAppKey(argMap.getString("appKey"));
             EMClient client = EMClient.getInstance();
             client.getInstance().init(context, options);
-            //setup client listener
-            client.addClientListener((boolean success) -> {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("status", Boolean.valueOf(success));
-                post((Void) -> {
-                    channel.invokeMethod(EMSDKMethod.onClientMigrate2x, data);
-                });
-            });
             //setup connection listener
             client.addConnectionListener(new EMConnectionListener() {
                 @Override
@@ -98,16 +90,16 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("connected", Boolean.TRUE);
                     post((Void) -> {
-                        channel.invokeMethod(EMSDKMethod.onConnectionDidChanged, data);
+                        channel.invokeMethod(EMSDKMethod.onConnected, data);
                     });
                 }
 
                 @Override
                 public void onDisconnected(int errorCode) {
                     Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("errorCode", Boolean.FALSE);
+                    data.put("errorCode", errorCode);
                     post((Void) -> {
-                        channel.invokeMethod(EMSDKMethod.onConnectionDidChanged, data);
+                        channel.invokeMethod(EMSDKMethod.onDisconnected, data);
                     });
                 }
             });

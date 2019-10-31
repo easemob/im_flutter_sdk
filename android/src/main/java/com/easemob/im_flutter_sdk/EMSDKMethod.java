@@ -102,7 +102,7 @@ public class EMSDKMethod {
     static final String asyncCreateChatRoom = "asyncCreateChatRoom";
     static final String asyncDestroyChatRoom = "asyncDestroyChatRoom";
     static final String asyncChangeChatRoomSubject = "asyncChangeChatRoomSubject";
-    static final String asyncChangeChatroomDescription = "asyncChangeChatroomDescription";
+    static final String asyncChangeChatRoomDescription = "asyncChangeChatRoomDescription";
     static final String asyncFetchChatRoomMembers = "asyncFetchChatRoomMembers";
     static final String asyncMuteChatRoomMembers = "asyncMuteChatRoomMembers";
     static final String asyncUnMuteChatRoomMembers = "asyncUnMuteChatRoomMembers";
@@ -111,14 +111,14 @@ public class EMSDKMethod {
     static final String asyncRemoveChatRoomAdmin = "asyncRemoveChatRoomAdmin";
     static final String asyncFetchChatRoomMuteList = "asyncFetchChatRoomMuteList";
     static final String asyncRemoveChatRoomMembers = "asyncRemoveChatRoomMembers";
-    static final String asyncBlockChatroomMembers = "asyncBlockChatroomMembers";
+    static final String asyncBlockChatRoomMembers = "asyncBlockChatRoomMembers";
     static final String asyncUnBlockChatRoomMembers = "asyncUnBlockChatRoomMembers";
     static final String asyncFetchChatRoomBlackList = "asyncFetchChatRoomBlackList";
     static final String asyncUpdateChatRoomAnnouncement = "asyncUpdateChatRoomAnnouncement";
     static final String asyncFetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
 
     //EMChatRoomManagerListener
-    static final String ChatRoomChange = "ChatRoomChange";
+    static final String chatRoomChange = "chatRoomChange";
 
     //EMChatRoom
     static final String getId = "getId";
@@ -158,7 +158,7 @@ public class EMSDKMethod {
     static final String unblockGroupMessage = "unblockGroupMessage";
     static final String blockUser = "blockUser";
     static final String unblockUser = "unblockUser";
-    static final String getBlockedUsers = "getBlockedUsers";
+    static final String fetchGroupBlackList = "fetchGroupBlackList";
     static final String fetchGroupMembers = "fetchGroupMembers";
     static final String changeOwner = "changeOwner";
     static final String addGroupAdmin = "addGroupAdmin";
@@ -166,7 +166,6 @@ public class EMSDKMethod {
     static final String muteGroupMembers = "muteGroupMembers";
     static final String unMuteGroupMembers = "unMuteGroupMembers";
     static final String fetchGroupMuteList = "fetchGroupMuteList";
-    static final String fetchGroupBlackList = "fetchGroupBlackList";
     static final String updateGroupAnnouncement = "updateGroupAnnouncement";
     static final String fetchGroupAnnouncement = "fetchGroupAnnouncement";
     static final String uploadGroupSharedFile = "uploadGroupSharedFile";
@@ -174,27 +173,23 @@ public class EMSDKMethod {
     static final String deleteGroupSharedFile = "deleteGroupSharedFile";
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
     static final String updateGroupExtension = "updateGroupExtension";
-    static final String onGroupChange = "onGroupChange";
-
-    /// EMGroup
-    static final String getGroupId = "getGroupId";
-    static final String getGroupName = "getGroupName";
-    static final String getGroupDescription = "getGroupDescription";
-    static final String isPublic = "isPublic";
-    static final String isAllowInvites = "isAllowInvites";
-    static final String isMemberAllowToInvite = "isMemberAllowToInvite";
-    static final String isMembersOnly = "isMembersOnly";
-    static final String getMaxUserCount = "getMaxUserCount";
-    static final String isMsgBlocked = "isMsgBlocked";
-    static final String getGroupOwner = "getGroupOwner";
-    static final String groupSubject = "groupSubject";
-    static final String getMembers = "getMembers";
-    static final String getGroupMemberCount = "getGroupMemberCount";
-    static final String getGroupAdminList = "getGroupAdminList";
-    static final String getGroupBlackList = "getGroupBlackList";
-    static final String getGroupMuteList = "getGroupMuteList";
-    static final String getExtension = "getExtension";
-    static final String getGroupAnnouncement = "getGroupAnnouncement";
-    static final String getShareFileList = "getShareFileList";
-
+    static final String onInvitationReceived = "onInvitationReceived";
+    static final String onRequestToJoinReceived = "onRequestToJoinReceived";
+    static final String onRequestToJoinAccepted = "onRequestToJoinAccepted";
+    static final String onRequestToJoinDeclined = "onRequestToJoinDeclined";
+    static final String onInvitationAccepted = "onInvitationAccepted";
+    static final String onInvitationDeclined = "onInvitationDeclined";
+    static final String onUserRemoved = "onUserRemoved";
+    static final String onGroupDestroyed = "onGroupDestroyed";
+    static final String onAutoAcceptInvitationFromGroup = "onAutoAcceptInvitationFromGroup";
+    static final String onMuteListAdded = "onMuteListAdded";
+    static final String onMuteListRemoved = "onMuteListRemoved";
+    static final String onAdminAdded = "onAdminAdded";
+    static final String onAdminRemoved = "onAdminRemoved";
+    static final String onOwnerChanged = "onOwnerChanged";
+    static final String onMemberJoined = "onMemberJoined";
+    static final String onMemberExited = "onMemberExited";
+    static final String onAnnouncementChanged = "onAnnouncementChanged";
+    static final String onSharedFileAdded = "onSharedFileAdded";
+    static final String onSharedFileDeleted = "onSharedFileDeleted";
 }

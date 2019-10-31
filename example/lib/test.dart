@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
@@ -15,17 +16,32 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMClient.getInstance().init(options);
     EMClient.getInstance().login(
-        userName: "omg2",
-        password: "1",
+        userName: "fdh3333",
+        password: "123",
         onSuccess: (String username) {
           print("login succes: " + username);
+
+          EMClient.getInstance().groupManager().getJoinedGroupsFromServer(onSuccess: (groups){
+            test();
+            print(groups);
+          });
+
+
+
         },
         onError: (code, desc) {
           print("code :" + code.toString() + " " + "desc :" + desc);
         });
 
-    EMClient.getInstance().addConnectionListener(this);
+
+
+
     super.initState();
+  }
+
+  void test() async{
+    List groups = await EMClient.getInstance().groupManager().getAllGroups();
+//    print(groups);
   }
 
   @override
@@ -55,7 +71,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   }
 
   @override
-  void onDisconnected(int errorCode) {
+  void onDisconnected() {
     // TODO: implement onDisconnected
     print("网络连接断开");
   }
