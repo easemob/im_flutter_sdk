@@ -36,15 +36,155 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    
-    result(FlutterMethodNotImplemented);
+     if (![call.arguments isKindOfClass:[NSDictionary class]]) {
+           NSLog(@"wrong type");
+           return;
+       }
+       if ([EMMethodKeyAddContact isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeySaveBlackList isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
+           
+       }
+       if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
+           
+       } if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
+           
+       } if ([EMMethodKeyOnContactChanged isEqualToString:call.method]) {
+           
+       } else {
+           [super handleMethodCall:call result:result];
+       }
 }
 
 
 #pragma mark - Actions
-- (void)addContact:(id)arg result:(FlutterResult)result {
+- (void)addContact:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *userName = param[@"userName"];
+    NSString *reason = param[@"reason"];
+    [EMClient.sharedClient.contactManager addContact:userName
+                                             message:reason
+                                          completion:^(NSString *aUsername, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                        error:aError
+                     userInfo:aUsername];
+    }];
 }
 
+- (void)deleteContact:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *userName = param[@"userName"];
+    BOOL keepConversation = [param[@"keepConversation"] boolValue];
+    [EMClient.sharedClient.contactManager deleteContact:userName
+                                   isDeleteConversation:keepConversation
+                                             completion:^(NSString *aUsername, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                        error:aError
+                     userInfo:aUsername];
+    }];
+}
+
+- (void)getAllContactsFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                        error:aError
+                     userInfo:aList];
+    }];
+}
+
+- (void)addUserToBlackList:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *userName = param[@"userName"];
+    [EMClient.sharedClient.contactManager addUserToBlackList:userName
+                                                  completion:^(NSString *aUsername, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                        error:aError
+                     userInfo:aUsername];
+    }];
+}
+
+- (void)removeUserFromBlackList:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *userName = param[@"userName"];
+    [EMClient.sharedClient.contactManager removeUserFromBlackList:userName
+                                                       completion:^(NSString *aUsername, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+           error:aError
+        userInfo:aUsername];
+    }];
+                            
+}
+
+//??
+- (void)saveBlackList:(NSDictionary *)param result:(FlutterResult)result {
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:nil];
+}
+
+- (void)acceptInvitation:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *userName = param[@"userName"];
+    [EMClient.sharedClient.contactManager approveFriendRequestFromUser:userName
+                                                            completion:^(NSString *aUsername, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                            error:aError
+        userInfo:userName];
+    }];
+}
+
+- (void)declineInvitation:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *userName = param[@"userName"];
+    [EMClient.sharedClient.contactManager declineFriendRequestFromUser:userName
+                                                            completion:^(NSString *aUsername, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                            error:aError
+                         userInfo:userName];
+    }];
+}
+
+- (void)getSelfIdsOnOtherPlatform:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    [EMClient.sharedClient.contactManager getSelfIdsOnOtherPlatformWithCompletion:^(NSArray *aList, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                            error:aError
+                         userInfo:aList];
+    }];
+}
+
+// ??
+- (void)onContactChanged:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
 
 #pragma mark - EMContactManagerDelegate
 

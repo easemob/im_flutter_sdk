@@ -7,11 +7,9 @@ public class EMSDKMethod {
     static final String login = "login";
     static final String loginWithToken = "loginWithToken";
     static final String logout = "logout";
-    static final String chatManager = "chatManager";
-    static final String register = "register";
+    static final String chatManager = "chatManager"; // ?
     static final String changeAppKey = "changeAppKey";
-    static final String getCurrentUser = "getCurrentUser";
-    static final String getUserTokenFromServer = "getUserTokenFromServer";
+    static final String getCurrentUser = "getCurrentUser"; // ?
     static final String setDebugMode = "setDebugMode";
     static final String updateCurrentUserNick = "updateCurrentUserNick";
     static final String uploadLog = "uploadLog";
@@ -21,11 +19,10 @@ public class EMSDKMethod {
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
     static final String getDeviceInfo = "getDeviceInfo";
-    static final String getRobotsFromServer = "getRobotsFromServer";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String check = "check";
-    static final String onClientMigrate2x = "onClientMigrate2x"; // 3.x sdk应该用不上
-    static final String onConnectionDidChanged = "onConnectionDidChanged";
+    static final String onConnected = "onConnected";
+    static final String onDisconnected = "onDisconnected";
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
 

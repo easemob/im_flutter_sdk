@@ -14,7 +14,8 @@
     if(self = [super init]) {
         FlutterMethodChannel* channel = [FlutterMethodChannel
                                 methodChannelWithName:aChannelName
-                                      binaryMessenger:[registrar messenger]];
+                                      binaryMessenger:[registrar messenger]
+                                                codec:[FlutterJSONMethodCodec sharedInstance]];
         self.channel = channel;
         [registrar addMethodCallDelegate:self channel:channel];
     }
@@ -23,14 +24,15 @@
 
 - (void)wrapperCallBack:(FlutterResult)result
                   error:(EMError *__nullable)error
-               userInfo:(NSObject *__nullable)userinfo {
+               userInfo:(NSObject *__nullable)userInfo {
+    NSLog(@"EMWrapper : error -- %@ ; userInfo -- %@",error, userInfo);
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         if (error != nil) {
              if (!error) {
                  dic[@"success"] = @YES;
-                 if (userinfo) {
-                     dic[@"arbitrary_value"] = userinfo;
+                 if (userInfo) {
+                     dic[@"arbitrary_value"] = userInfo;
                  }
              }else {
                  dic[@"success"] = @NO;
@@ -38,8 +40,9 @@
                  dic[@"desc"] = error.errorDescription;
              }
         } else {
-            if (userinfo) {
-                dic[@"arbitrary_value"] = userinfo;
+            dic[@"success"] = @YES;
+            if (userInfo) {
+                dic[@"arbitrary_value"] = userInfo;
             }
         }
         
