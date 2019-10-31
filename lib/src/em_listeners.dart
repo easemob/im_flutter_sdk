@@ -2,7 +2,7 @@ import "em_domain_terms.dart";
 
 abstract class EMConnectionListener {
   void onConnected();
-  void onDisconnected();
+  void onDisconnected(int errorCode);
 }
 
 abstract class EMMultiDeviceListener {
