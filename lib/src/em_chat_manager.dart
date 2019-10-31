@@ -336,7 +336,7 @@ class EMChatManager {
     var list = map['messages'];
     var messageList = List<EMMessage>();
     for (var message in list) {
-//        messageList.add( EMMessage.from(message) );
+        messageList.add( EMMessage.from(message) );
     }
     for (var listener in _messageListeners) {
       listener.onMessageReceived(messageList);
@@ -344,7 +344,7 @@ class EMChatManager {
   }
 
   Future<void> _onCmdMessageReceived(Map map) async {
-    List<Map<String, Object>> list = map['messages'];
+    var list = map['messages'];
     var messages = List<EMMessage>();
     for (var message in list) {
       messages.add(EMMessage.from(message));
@@ -355,8 +355,8 @@ class EMChatManager {
   }
 
   Future<void> _onMessageRead(Map map) async {
-    List<Map<String, Object>> list = map['messages'];
-    var messages = List<EMMessage>();
+    var list = map['messages'];
+    var messages = [];
     for (var message in list) {
       messages.add(EMMessage.from(message));
     }

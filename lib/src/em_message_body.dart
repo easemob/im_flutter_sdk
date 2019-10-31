@@ -28,40 +28,42 @@ class EMTextMessageBody extends EMMessageBody {
     return result;
   }
 
-  static EMMessageBody fromData(Map<String, dynamic> data) {
+  static EMMessageBody fromData(Map data) {
     return EMTextMessageBody(data['message']);
   }
 }
 
 /// EMCmdMessageBody - cmd message body.
 class EMCmdMessageBody extends EMMessageBody {
-  EMCmdMessageBody(String action, [Map<String, String> params])
+  EMCmdMessageBody(String action)
       : this._action = action,
-        this._params = params,
+//        this._params = params,
         this.deliverOnlineOnly = false;
 
   final String _action;
   String get action => _action;
-  final Map<String, String> _params;
-  Map<String, String> get params => _params;
+//  final Map<String, String> _params;
+//  Map<String, String> get params => _params;
 
   bool deliverOnlineOnly;
 
-  @override
-  String toString() =>
-      '[EMCmdMessageBody], {action: $_action, params: $_params}';
+//  @override
+//  String toString() =>
+//      '[EMCmdMessageBody], {action: $_action, params: $_params}';
 
   @override
   Map<String, dynamic> toDataMap() {
     var result = Map<String, dynamic>();
     result['action'] = _action;
     result['deliverOnlineOnly'] = deliverOnlineOnly;
-    result['params'] = _params;
+//    result['params'] = _params;
     return result;
   }
 
-  static EMMessageBody fromData(Map<String, dynamic> data) {
-    var message = EMCmdMessageBody(data['action'], data['params']);
+  static EMMessageBody fromData(Map data) {
+    print(data['action']);
+    print(data['params'].toString());
+    var message = EMCmdMessageBody(data['action']);
     message.deliverOnlineOnly = data['deliverOnlineOnly'];
     return message;
   }
@@ -293,3 +295,29 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 }
 
 /// TODO: class EMVideoMessageBody extends EMFileMessageBody {}
+class EMVideoMessageBody extends EMFileMessageBody {
+
+  EMVideoMessageBody(File videoFilePath, int duration)
+      : this._file = videoFilePath,
+        this._length = duration,
+        super(videoFilePath.path);
+
+
+  EMVideoMessageBody.of(EMVideoMessageBody body)
+      : this._file = body._file,
+        this._length = body._length,
+        super.of(body);
+
+  EMVideoMessageBody._internal(Map data)
+      : this._file = null,
+        this._length = data['length'],
+        super.ofData(data);
+
+  var _file;
+  var _length;
+
+  static EMMessageBody fromData(Map data) {
+    return EMVideoMessageBody._internal(data);
+  }
+
+}

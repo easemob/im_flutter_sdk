@@ -99,30 +99,30 @@ class EMSDKMethod {
   static final String joinChatRoom = "joinChatRoom";
   static final String leaveChatRoom = "leaveChatRoom";
   static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
-  static final String fetchChatRoomFromServer = "asyncFetchChatRoomFromServer";
+  static final String fetchChatRoomFromServer = "fetchChatRoomFromServer";
   static final String getChatRoom = "getChatRoom";
   static final String getAllChatRooms = "getAllChatRooms";
-  static final String createChatRoom = "asyncCreateChatRoom";
-  static final String destroyChatRoom = "asyncDestroyChatRoom";
-  static final String changeChatRoomSubject = "asyncChangeChatRoomSubject";
-  static final String changeChatRoomDescription = "asyncChangeChatRoomDescription";
-  static final String fetchChatRoomMembers = "asyncFetchChatRoomMembers";
-  static final String muteChatRoomMembers = "asyncMuteChatRoomMembers";
-  static final String unMuteChatRoomMembers = "asyncUnMuteChatRoomMembers";
-  static final String changeChatRoomOwner = "asyncChangeOwner";
-  static final String addChatRoomAdmin = "asyncAddChatRoomAdmin";
-  static final String removeChatRoomAdmin = "asyncRemoveChatRoomAdmin";
-  static final String fetchChatRoomMuteList = "asyncFetchChatRoomMuteList";
-  static final String removeChatRoomMembers = "asyncRemoveChatRoomMembers";
-  static final String blockChatRoomMembers = "asyncBlockChatRoomMembers";
-  static final String unBlockChatRoomMembers = "asyncUnBlockChatRoomMembers";
-  static final String fetchChatRoomBlackList = "asyncFetchChatRoomBlackList";
-  static final String updateChatRoomAnnouncement = "asyncUpdateChatRoomAnnouncement";
-  static final String fetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
+  static final String createChatRoom = "createChatRoom";
+  static final String destroyChatRoom = "destroyChatRoom";
+  static final String changeChatRoomSubject = "changeChatRoomSubject";
+  static final String changeChatRoomDescription = "changeChatRoomDescription";
+  static final String fetchChatRoomMembers = "fetchChatRoomMembers";
+  static final String muteChatRoomMembers = "muteChatRoomMembers";
+  static final String unMuteChatRoomMembers = "unMuteChatRoomMembers";
+  static final String changeChatRoomOwner = "changeChatRoomOwner";
+  static final String addChatRoomAdmin = "addChatRoomAdmin";
+  static final String removeChatRoomAdmin = "removeChatRoomAdmin";
+  static final String fetchChatRoomMuteList = "fetchChatRoomMuteList";
+  static final String removeChatRoomMembers = "removeChatRoomMembers";
+  static final String blockChatRoomMembers = "blockChatRoomMembers";
+  static final String unBlockChatRoomMembers = "unBlockChatRoomMembers";
+  static final String fetchChatRoomBlackList = "fetchChatRoomBlackList";
+  static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
+  static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
 
 
   ///EMChatRoomManagerListener
-  static final String chatRoomChange = "chatRoomChange";
+  static final String chatRoomChange = "onChatRoomChange";
 
   /// EMGroupManager
   static const String getAllGroups = "getAllGroups";
