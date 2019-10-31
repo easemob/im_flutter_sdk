@@ -41,35 +41,35 @@ typedef enum : NSUInteger {
            return;
        }
        if ([EMMethodKeyAddContact isEqualToString:call.method]) {
-           
+           [self addContact:call.arguments result:result];
        }
        if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
-           
+           [self deleteContact:call.arguments result:result];
        }
        if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
-           
+           [self getAllContactsFromServer:call.arguments result:result];
        }
        if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
-           
+           [self addUserToBlackList:call.arguments result:result];
        }
        if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
-           
+           [self removeUserFromBlackList:call.arguments result:result];
        }
        if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
-           
+           [self getBlackListFromServer:call.arguments result:result];
        }
        if ([EMMethodKeySaveBlackList isEqualToString:call.method]) {
-           
+           [self saveBlackList:call.arguments result:result];
        }
        if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
-           
+           [self acceptInvitation:call.arguments result:result];
        }
        if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
-           
+           [self deleteContact:call.arguments result:result];
        } if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
-           
+           [self getSelfIdsOnOtherPlatform:call.arguments result:result];
        } if ([EMMethodKeyOnContactChanged isEqualToString:call.method]) {
-           
+           [self onContactChanged:call.arguments result:result];
        } else {
            [super handleMethodCall:call result:result];
        }
@@ -138,6 +138,16 @@ typedef enum : NSUInteger {
         userInfo:aUsername];
     }];
                             
+}
+
+- (void)getBlackListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                            error:aError
+                         userInfo:aList];
+    }];
 }
 
 //??
