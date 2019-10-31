@@ -10,27 +10,6 @@
 #import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
-typedef enum : NSUInteger {
-    GROUP_INVITATION_RECEIVE = 0,       // 用户A邀请用户B入群,用户B接收到该回调
-    GROUP_INVITATION_ACCEPT,            // 用户B同意用户A的入群邀请后，用户A接收到该回调
-    GROUP_INVITATION_DECLINE,           // 用户B拒绝用户A的入群邀请后，用户A接收到该回调
-    GROUP_AUTOMATIC_AGREE_JOIN,         // SDK自动同意了用户A的加B入群邀请后，用户B接收到该回调，需要设置EMOptions的isAutoAcceptGroupInvitation为YES
-    GROUP_LEAVE,                        // 离开群组回调
-    GROUP_JOIN_GROUP_REQUEST_RECEIVE,   // 群组的群主收到用户的入群申请，群的类型是EMGroupStylePublicJoinNeedApproval
-    GROUP_JOIN_GROUP_REQUEST_DECLINE,   // 群主拒绝用户A的入群申请后，用户A会接收到该回调，群的类型是EMGroupStylePublicJoinNeedApproval
-    GROUP_JOIN_GROUP_REQUEST_APPROVE,   // 群主同意用户A的入群申请后，用户A会接收到该回调，群的类型是EMGroupStylePublicJoinNeedApproval
-    GROUP_LIST_UPDATE,                  // 群组列表发生变化
-    GROUP_MUTE_LIST_UPDATE_ADDED,       // 有成员被加入禁言列表
-    GROUP_MUTE_LIST_UPDATE_REMOVED,     // 有成员被移出禁言列表
-    GROUP_ADMIN_LIST_UPDATE_ADDED,      // 有成员被加入管理员列表
-    GROUP_ADMIN_LIST_UPDATE_REMOVED,    // 有成员被移出管理员列表
-    GROUP_OWNER_UPDATE,                 // 群组创建者有更新
-    GROUP_USER_JOIN,                    // 有用户加入群组
-    GROUP_USER_LEAVE,                   // 有用户离开群组
-    GROUP_ANNOUNCEMENT_UPDATE,          // 群公告有更新
-    GROUP_FILE_LIST_UPDATE_ADDED,       // 有用户上传群共享文件
-    GROUP_FILE_LIST_UPDATE_REMOVED,     // 有用户删除群共享文件
-} EMGroupEvent;
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
 
 @end
@@ -51,20 +30,17 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
+    
     if ([EMMethodKeyGetJoinedGroups isEqualToString:call.method]) {
         [self getJoinedGroups:call.arguments result:result];
     } else if ([EMMethodKeyGetGroupsWithoutPushNotification isEqualToString:call.method]) {
-        [self getGroupsWithoutPushNotification :call.arguments result:result];
+        [self getGroupsWithoutPushNotification:call.arguments result:result];
+    } else if ([EMMethodKeyGetGroup isEqualToString:call.method]) {
+        [self getGroup:call.arguments result:result];
     } else if ([EMMethodKeyGetJoinedGroupsFromServer isEqualToString:call.method]) {
         [self getJoinedGroupsFromServer:call.arguments result:result];
     } else if ([EMMethodKeyGetPublicGroupsFromServer isEqualToString:call.method]) {
         [self getPublicGroupsFromServer:call.arguments result:result];
-    } else if ([EMMethodKeySearchPublicGroup isEqualToString:call.method]) {
-        [self searchPublicGroup:call.arguments result:result];
     } else if ([EMMethodKeyCreateGroup isEqualToString:call.method]) {
         [self createGroup:call.arguments result:result];
     } else if ([EMMethodKeyGetGroupSpecificationFromServer isEqualToString:call.method]) {
@@ -79,6 +55,8 @@ typedef enum : NSUInteger {
         [self getGroupFileList:call.arguments result:result];
     } else if ([EMMethodKeyGetGroupAnnouncement isEqualToString:call.method]) {
         [self getGroupAnnouncement:call.arguments result:result];
+    } else if ([EMMethodKeyAddOccupants isEqualToString:call.method]) {
+        [self addOccupants:call.arguments result:result];
     } else if ([EMMethodKeyAddMembers isEqualToString:call.method]) {
         [self addMembers:call.arguments result:result];
     } else if ([EMMethodKeyRemoveMembers isEqualToString:call.method]) {
@@ -113,6 +91,8 @@ typedef enum : NSUInteger {
         [self uploadGroupSharedFile:call.arguments result:result];
     } else if ([EMMethodKeyDownloadGroupSharedFile isEqualToString:call.method]) {
         [self downloadGroupSharedFile:call.arguments result:result];
+    } else if ([EMMethodKeyRemoveGroupSharedFile isEqualToString:call.method]) {
+        [self removeGroupSharedFile:call.arguments result:result];
     } else if ([EMMethodKeyUpdateGroupAnnouncement isEqualToString:call.method]) {
         [self updateGroupAnnouncement:call.arguments result:result];
     } else if ([EMMethodKeyUpdateGroupExt isEqualToString:call.method]) {
@@ -145,28 +125,35 @@ typedef enum : NSUInteger {
     NSArray *groups = [self groupsArrayWithDictionaryArray:joineGroups];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:@{@"groups":groups}];
+                 userInfo:groups];
 }
-
+// 有疑议
 - (void)getGroupsWithoutPushNotification:(NSDictionary *)param result:(FlutterResult)result {
     EMError *aError;
     NSArray *pushGroups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
     NSArray *groups = [self groupsArrayWithDictionaryArray:pushGroups];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:@{@"groups":groups}];
+                 userInfo:groups];
 }
 
+- (void)getGroup:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *groupId = param[@"groupId"];
+    EMGroup *group = [EMGroup groupWithId:groupId];
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:[self dictionaryWithGroup:group]];
+}
+
+
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSInteger page = [param[@"page"] integerValue];
-    NSInteger pageSize = [param[@"pageSize"] integerValue];
-    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:page
-                                                                 pageSize:pageSize
+    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:0
+                                                                 pageSize:-1
                                                                completion:^(NSArray *aList, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":[self groupsArrayWithDictionaryArray:aList]}];
+                     userInfo:[self groupsArrayWithDictionaryArray:aList]];
     }];
 }
 
@@ -179,27 +166,19 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":[self dictionaryWithCursorResult:aResult]}];
+                     userInfo:[self dictionaryWithCursorResult:aResult]];
     }];
 }
 
-- (void)searchPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *groupId = param[@"groupId"];
-    [EMClient.sharedClient.groupManager searchPublicGroupWithId:groupId
-                                                     completion:^(EMGroup *aGroup, EMError *aError)
-     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
-    }];
-}
 
 - (void)createGroup:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *subject = param[@"subject"];
-    NSString *description = param[@"description"];
-    NSArray *invitees = param[@"invitees"];
-    NSString *message = param[@"message"];
-    EMGroupOptions *options = param[@"options"];
+    NSString *subject = param[@"groupName"];
+    NSString *description = param[@"desc"];
+    NSArray *invitees = param[@"members"];
+    NSString *message = param[@"reason"];
+    EMGroupOptions *options = [[EMGroupOptions alloc] init];
+    options.maxUsersCount = [param[@"maxUsers"] integerValue];
+    options.style = [param[@"groupStyle"] intValue];
     [EMClient.sharedClient.groupManager createGroupWithSubject:subject
                                                    description:description
                                                       invitees:invitees
@@ -209,7 +188,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -220,7 +199,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -235,53 +214,53 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"result":[self dictionaryWithCursorResult:aResult]}];
+                     userInfo:[self dictionaryWithCursorResult:aResult]];
     }];
 }
 
 - (void)getGroupBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageNum = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupBlacklistFromServerWithId:groupId
-                                                               pageNumber:pageNumber
+                                                               pageNumber:pageNum
                                                                  pageSize:pageSize
                                                                completion:^(NSArray *aList, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":[self groupsArrayWithDictionaryArray:aList]}];
+                     userInfo:[self groupsArrayWithDictionaryArray:aList]];
     }];
 }
 
 - (void)getGroupMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageNum = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupMuteListFromServerWithId:groupId
-                                                              pageNumber:pageNumber
+                                                              pageNumber:pageNum
                                                                 pageSize:pageSize
                                                               completion:^(NSArray *aList, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":[self groupsArrayWithDictionaryArray:aList]}];
+                     userInfo:[self groupsArrayWithDictionaryArray:aList]];
     }];
 }
 
 - (void)getGroupFileList:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSInteger pageNumber = [param[@"pageNumber"] integerValue];
+    NSInteger pageNum = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
     [EMClient.sharedClient.groupManager getGroupFileListWithId:groupId
-                                                    pageNumber:pageNumber
+                                                    pageNumber:pageNum
                                                       pageSize:pageSize
                                                     completion:^(NSArray *aList, EMError *aError)
      {
         
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"list":[self dictionaryListWithGroupFileList:aList]}];
+                     userInfo:[self dictionaryListWithGroupFileList:aList]];
     }];
 }
 
@@ -292,66 +271,80 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"announcement":aAnnouncement}];
+                     userInfo:aAnnouncement];
     }];
 }
+
+- (void)addOccupants:(NSDictionary *)param result:(FlutterResult)result {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *groupId = param[@"groupId"];
+        NSArray *members = param[@"members"];
+        NSString *message = param[@"reason"];
+        EMError *aError;
+        EMGroup *group = [EMClient.sharedClient.groupManager addOccupants:members toGroup:groupId welcomeMessage:message error:&aError];
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:[self dictionaryWithGroup:group]];
+    });
+    
+}
+
 
 - (void)addMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *members = param[@"members"];
     NSString *groupId = param[@"groupId"];
-    NSString *message = param[@"message"];
     [EMClient.sharedClient.groupManager addMembers:members
                                            toGroup:groupId
-                                           message:message
+                                           message:@"邀请您加入群组"
                                         completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)removeMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *members = param[@"members"];
+    NSString *userName = param[@"userName"];
     NSString *groupId = param[@"groupId"];
-    [EMClient.sharedClient.groupManager removeMembers:members
+    [EMClient.sharedClient.groupManager removeMembers:@[userName]
                                             fromGroup:groupId
                                            completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)blockMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *members = param[@"members"];
+    NSString *members = param[@"userName"];
     NSString *groupId = param[@"groupId"];
-    [EMClient.sharedClient.groupManager blockMembers:members
+    [EMClient.sharedClient.groupManager blockMembers:@[members]
                                            fromGroup:groupId
                                           completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)unblockMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *members = param[@"members"];
+    NSString *members = param[@"userName"];
     NSString *groupId = param[@"groupId"];
-    [EMClient.sharedClient.groupManager unblockMembers:members
+    [EMClient.sharedClient.groupManager unblockMembers:@[members]
                                              fromGroup:groupId
                                             completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)updateGroupSubject:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *subject = param[@"subject"];
+    NSString *subject = param[@"groupName"];
     NSString *groupId = param[@"groupId"];
     [EMClient.sharedClient.groupManager updateGroupSubject:subject
                                                   forGroup:groupId
@@ -359,12 +352,12 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)updateDescription:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *description = param[@"description"];
+    NSString *description = param[@"desc"];
     NSString *groupId = param[@"groupId"];
     [EMClient.sharedClient.groupManager updateDescription:description
                                                  forGroup:groupId
@@ -372,7 +365,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -405,7 +398,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -416,7 +409,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -429,7 +422,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -442,7 +435,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -455,22 +448,22 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)muteMembers:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *members = param[@"members"];
-    NSInteger muteMilliseconds = [param[@"muteMilliseconds"] integerValue];
+    NSString *muteMilliseconds = param[@"duration"];
     NSString *groupId = param[@"groupId"];
     [EMClient.sharedClient.groupManager muteMembers:members
-                                   muteMilliseconds:muteMilliseconds
+                                   muteMilliseconds:[muteMilliseconds integerValue]
                                           fromGroup:groupId
                                          completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -483,7 +476,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -499,17 +492,17 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"sharedFile":[self dictionaryWithGroupSharedFile:aSharedFile]}];
+                     userInfo:[self dictionaryWithGroupSharedFile:aSharedFile]];
     }];
 }
 
 - (void)downloadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSString *filePath = param[@"filePath"];
-    NSString *sharedFileId = param[@"sharedFileId"];
+    NSString *savePath = param[@"savePath"];
+    NSString *fileId = param[@"fileId"];
     [EMClient.sharedClient.groupManager downloadGroupSharedFileWithId:groupId
-                                                             filePath:filePath
-                                                         sharedFileId:sharedFileId
+                                                             filePath:savePath
+                                                         sharedFileId:fileId
                                                              progress:^(int progress)
      {
         
@@ -517,7 +510,17 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
+    }];
+}
+
+- (void)removeGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
+    NSString *groupId = param[@"groupId"];
+    NSString *fileId = param[@"fileId"];
+    [EMClient.sharedClient.groupManager removeGroupSharedFileWithId:groupId sharedFileId:fileId completion:^(EMGroup *aGroup, EMError *aError) {
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -530,20 +533,20 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)updateGroupExt:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSString *ext = param[@"ext"];
+    NSString *ext = param[@"extension"];
     [EMClient.sharedClient.groupManager updateGroupExtWithId:groupId
                                                          ext:ext
                                                   completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -554,61 +557,61 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)requestToJoinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSString *message = param[@"message"];
+    NSString *message = param[@"reason"];
     [EMClient.sharedClient.groupManager requestToJoinPublicGroup:groupId
                                                          message:message
                                                       completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)approveJoinGroupRequest:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSString *username = param[@"username"];
+    NSString *userName = param[@"userName"];
     [EMClient.sharedClient.groupManager approveJoinGroupRequest:groupId
-                                                         sender:username
+                                                         sender:userName
                                                      completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)declineJoinGroupRequest:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSString *username = param[@"username"];
+    NSString *userName = param[@"userName"];
     NSString *reason = param[@"reason"];
     [EMClient.sharedClient.groupManager declineJoinGroupRequest:groupId
-                                                         sender:username
+                                                         sender:userName
                                                          reason:reason
                                                      completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
 - (void)acceptInvitationFromGroup:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    NSString *username = param[@"username"];
+    NSString *username = param[@"inviter"];
     [EMClient.sharedClient.groupManager acceptInvitationFromGroup:groupId
                                                           inviter:username
                                                        completion:^(EMGroup *aGroup, EMError *aError)
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
 
@@ -626,7 +629,7 @@ typedef enum : NSUInteger {
                      userInfo:nil];
     }];
 }
-
+// 有疑议
 - (void)updatePushServiceForGroup:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
     BOOL isEnable = param[@"isEnable"];
@@ -636,10 +639,10 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"group":[self dictionaryWithGroup:aGroup]}];
+                     userInfo:[self dictionaryWithGroup:aGroup]];
     }];
 }
-
+// 有疑议
 - (void)updatePushServiceForGroups:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *groupIDs = param[@"groupIDs"];
     BOOL isEnable = [param[@"isEnable"] boolValue];
@@ -649,7 +652,7 @@ typedef enum : NSUInteger {
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"groups":[self groupsArrayWithDictionaryArray:groups]}];
+                     userInfo:[self groupsArrayWithDictionaryArray:groups]];
     }];
 }
 
@@ -659,7 +662,7 @@ typedef enum : NSUInteger {
                           inviter:(NSString *)aInviter
                           message:(NSString *)aMessage {
     NSDictionary *map = @{
-        @"type":@(GROUP_INVITATION_RECEIVE),
+        @"type":@"onInvitationReceived",
         @"groupId":aGroupId,
         @"inviter":aInviter,
         @"message":aMessage
@@ -672,8 +675,8 @@ typedef enum : NSUInteger {
 - (void)groupInvitationDidAccept:(EMGroup *)aGroup
                          invitee:(NSString *)aInvitee {
     NSDictionary *map = @{
-        @"type":@(GROUP_INVITATION_ACCEPT),
-        @"group":[self dictionaryWithGroup:aGroup],
+        @"type":@"onInvitationAccepted",
+        @"groupId":aGroup.groupId,
         @"invitee":aInvitee
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -685,8 +688,8 @@ typedef enum : NSUInteger {
                           invitee:(NSString *)aInvitee
                            reason:(NSString *)aReason {
     NSDictionary *map = @{
-        @"type":@(GROUP_INVITATION_DECLINE),
-        @"group":[self dictionaryWithGroup:aGroup],
+        @"type":@"onInvitationDeclined",
+        @"groupId":aGroup.groupId,
         @"invitee":aInvitee,
         @"reason":aReason
     };
@@ -698,8 +701,8 @@ typedef enum : NSUInteger {
              inviter:(NSString *)aInviter
              message:(NSString *)aMessage {
     NSDictionary *map = @{
-        @"type":@(GROUP_AUTOMATIC_AGREE_JOIN),
-        @"group":[self dictionaryWithGroup:aGroup],
+        @"type":@"onAutoAcceptInvitationFromGroup",
+        @"groupId":aGroup.groupId,
         @"message":aMessage,
         @"inviter":aInviter
     };
@@ -709,17 +712,16 @@ typedef enum : NSUInteger {
 
 - (void)didLeaveGroup:(EMGroup *)aGroup
                reason:(EMGroupLeaveReason)aReason {
-    NSString *reason;
+    NSString *type;
     if (aReason == EMGroupLeaveReasonBeRemoved) {
-        reason = @"BeRemoved";
-    } else if (aReason == EMGroupLeaveReasonUserLeave) {
-        reason = @"UserLeave";
-    } else {
-        reason = @"Destroyed";
+        type = @"onUserRemoved";
+    } else if (aReason == EMGroupLeaveReasonDestroyed) {
+        type = @"onGroupDestroyed";
     }
     NSDictionary *map = @{
-        @"type":@(GROUP_LEAVE),
-        @"reason":reason
+        @"type":type,
+        @"groupId":aGroup.groupId,
+        @"groupName":aGroup.subject
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -729,9 +731,9 @@ typedef enum : NSUInteger {
                               user:(NSString *)aUsername
                             reason:(NSString *)aReason {
     NSDictionary *map = @{
-        @"type":@(GROUP_JOIN_GROUP_REQUEST_RECEIVE),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"username":aUsername,
+        @"type":@"onRequestToJoinReceived",
+        @"groupId":aGroup.groupId,
+        @"applicant":aUsername,
         @"reason":aReason
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -741,7 +743,7 @@ typedef enum : NSUInteger {
 - (void)joinGroupRequestDidDecline:(NSString *)aGroupId
                             reason:(NSString *)aReason {
     NSDictionary *map = @{
-        @"type":@(GROUP_JOIN_GROUP_REQUEST_DECLINE),
+        @"type":@"onRequestToJoinDeclined",
         @"groupId":aGroupId,
         @"reason":aReason
     };
@@ -751,13 +753,16 @@ typedef enum : NSUInteger {
 
 - (void)joinGroupRequestDidApprove:(EMGroup *)aGroup {
     NSDictionary *map = @{
-        @"type":@(GROUP_JOIN_GROUP_REQUEST_APPROVE),
-        @"group":aGroup
+        @"type":@"onRequestToJoinAccepted",
+        @"groupId":aGroup.groupId,
+        @"groupName":aGroup.subject,
+        @"accepter":aGroup.owner,
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
 }
 
+/*
 - (void)groupListDidUpdate:(NSArray *)aGroupList {
     NSDictionary *map = @{
         @"type":@(GROUP_LIST_UPDATE),
@@ -766,14 +771,14 @@ typedef enum : NSUInteger {
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
 }
-
+*/
 - (void)groupMuteListDidUpdate:(EMGroup *)aGroup
              addedMutedMembers:(NSArray *)aMutedMembers
                     muteExpire:(NSInteger)aMuteExpire {
     NSDictionary *map = @{
-        @"type":@(GROUP_MUTE_LIST_UPDATE_ADDED),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"mutedMembers":aMutedMembers,
+        @"type":@"onMuteListAdded",
+        @"groupId":aGroup.groupId,
+        @"mutes":aMutedMembers,
         @"muteExpire":[NSNumber numberWithInteger:aMuteExpire]
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -783,9 +788,9 @@ typedef enum : NSUInteger {
 - (void)groupMuteListDidUpdate:(EMGroup *)aGroup
            removedMutedMembers:(NSArray *)aMutedMembers {
     NSDictionary *map = @{
-        @"type":@(GROUP_MUTE_LIST_UPDATE_REMOVED),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"mutedMembers":aMutedMembers
+        @"type":@"onMuteListRemoved",
+        @"groupId":aGroup.groupId,
+        @"mutes":aMutedMembers
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -794,9 +799,9 @@ typedef enum : NSUInteger {
 - (void)groupAdminListDidUpdate:(EMGroup *)aGroup
                      addedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
-        @"type":@(GROUP_ADMIN_LIST_UPDATE_ADDED),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"admin":aAdmin
+        @"type":@"onAdminAdded",
+        @"groupId":aGroup.groupId,
+        @"administrator":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -805,9 +810,9 @@ typedef enum : NSUInteger {
 - (void)groupAdminListDidUpdate:(EMGroup *)aGroup
                    removedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
-        @"type":@(GROUP_ADMIN_LIST_UPDATE_REMOVED),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"admin":aAdmin
+        @"type":@"onAdminRemoved",
+        @"groupId":aGroup.groupId,
+        @"administrator":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -817,8 +822,8 @@ typedef enum : NSUInteger {
                    newOwner:(NSString *)aNewOwner
                    oldOwner:(NSString *)aOldOwner {
     NSDictionary *map = @{
-        @"type":@(GROUP_OWNER_UPDATE),
-        @"group":[self dictionaryWithGroup:aGroup],
+        @"type":@"onOwnerChanged",
+        @"groupId":aGroup.groupId,
         @"newOwner":aNewOwner,
         @"oldOwner":aOldOwner
     };
@@ -829,9 +834,9 @@ typedef enum : NSUInteger {
 - (void)userDidJoinGroup:(EMGroup *)aGroup
                     user:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(GROUP_USER_JOIN),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"username":aUsername
+        @"type":@"onMemberJoined",
+        @"groupId":aGroup.groupId,
+        @"member":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -840,9 +845,9 @@ typedef enum : NSUInteger {
 - (void)userDidLeaveGroup:(EMGroup *)aGroup
                      user:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(GROUP_USER_LEAVE),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"username":aUsername
+        @"type":@"onMemberExited",
+        @"groupId":aGroup.groupId,
+        @"member":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -851,8 +856,8 @@ typedef enum : NSUInteger {
 - (void)groupAnnouncementDidUpdate:(EMGroup *)aGroup
                       announcement:(NSString *)aAnnouncement {
     NSDictionary *map = @{
-        @"type":@(GROUP_ANNOUNCEMENT_UPDATE),
-        @"group":[self dictionaryWithGroup:aGroup],
+        @"type":@"onAnnouncementChanged",
+        @"groupId":aGroup.groupId,
         @"announcement":aAnnouncement
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -862,8 +867,8 @@ typedef enum : NSUInteger {
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
                addedSharedFile:(EMGroupSharedFile *)aSharedFile {
     NSDictionary *map = @{
-        @"type":@(GROUP_FILE_LIST_UPDATE_ADDED),
-        @"group":[self dictionaryWithGroup:aGroup],
+        @"type":@"onSharedFileAdded",
+        @"groupId":aGroup.groupId,
         @"sharedFile":[self dictionaryWithGroupSharedFile:aSharedFile]
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
@@ -873,9 +878,9 @@ typedef enum : NSUInteger {
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
              removedSharedFile:(NSString *)aFileId {
     NSDictionary *map = @{
-        @"type":@(GROUP_FILE_LIST_UPDATE_REMOVED),
-        @"group":[self dictionaryWithGroup:aGroup],
-        @"file":aFileId
+        @"type":@"onSharedFileDeleted",
+        @"groupId":aGroup.groupId,
+        @"fileId":aFileId
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -888,55 +893,59 @@ typedef enum : NSUInteger {
 {
     EMGroupOptions *options = group.setting;
     EMGroupStyle style = options.style;
-    NSString *groupStyle;
+    BOOL isMemberAllowToInvite;
+    BOOL isMemberOnly;
     if (style == EMGroupStylePrivateOnlyOwnerInvite) {
-        groupStyle = @"PrivateOnlyOwnerInvite";
+        isMemberAllowToInvite = NO;
+        isMemberOnly = NO;
     } else if (style == EMGroupStylePrivateMemberCanInvite) {
-        groupStyle = @"PrivateMemberCanInvite";
+        isMemberAllowToInvite = YES;
+        isMemberOnly = NO;
     } else if (style == EMGroupStylePublicJoinNeedApproval) {
-        groupStyle = @"PublicJoinNeedApproval";
+        isMemberAllowToInvite = NO;
+        isMemberOnly = YES;
     } else {
-        groupStyle = @"PublicOpenJoin";
+        isMemberAllowToInvite = NO;
+        isMemberOnly = NO;
     }
-    NSDictionary *groupSettings = @{@"style":groupStyle,
-                                    @"maxUsersCount":[NSNumber numberWithInteger:options.maxUsersCount],
-                                    @"IsInviteNeedConfirm":[NSNumber numberWithBool:options.IsInviteNeedConfirm],
-                                    @"ext":options.ext
-                                    };
-    
+
     EMGroupPermissionType permissionType = group.permissionType;
-    NSString *type;
+    int type;
     if (permissionType == EMGroupPermissionTypeNone) {
-        type = @"None";
+        type = -1;
     } else if (permissionType == EMGroupPermissionTypeMember) {
-        type = @"Member";
+        type = 0;
     } else if (permissionType == EMGroupPermissionTypeAdmin) {
-        type = @"Admin";
+        type = 1;
     } else {
-        type = @"Owner";
+        type = 2;
     }
     
     NSDictionary *groupDict = @{@"groupId":group.groupId,
-                                @"subject":group.subject,
+                                @"groupName":group.subject,
                                 @"description":group.description,
                                 @"announcement":group.announcement,
-                                @"setting":groupSettings,
+                                @"isMemberAllowToInvite":[NSNumber numberWithBool:isMemberAllowToInvite],
+                                @"isMemberOnly":[NSNumber numberWithBool:isMemberOnly],
+                                @"maxUserCount":[NSNumber numberWithInteger:options.maxUsersCount],
                                 @"owner":group.owner,
                                 @"adminList":group.adminList,
-                                @"memberList":group.memberList,
-                                @"blacklist":group.blacklist,
+                                @"members":group.memberList,
+                                @"blackList":group.blacklist,
                                 @"muteList":group.muteList,
-                                @"sharedFileList":group.sharedFileList,
+                                @"extension":options.ext,
+                                @"sharedFileList":[self dictionaryListWithGroupFileList:group.sharedFileList],
                                 @"isPushNotificationEnabled":[NSNumber numberWithBool:group.isPushNotificationEnabled],
                                 @"isPublic":[NSNumber numberWithBool:group.isPublic],
-                                @"isBlocked":[NSNumber numberWithBool:group.isBlocked],
-                                @"permissionType":type,
+                                @"isMsgBlocked":[NSNumber numberWithBool:group.isBlocked],
+                                @"permissionType":[NSNumber numberWithInt:type],
                                 @"occupants":group.occupants,
-                                @"occupantsCount":[NSNumber numberWithInteger:group.occupantsCount]
+                                @"memberCount":[NSNumber numberWithInteger:group.occupantsCount]
                                };
     
     return groupDict;
 }
+
 
 // 群组对象数组转字典数组
 - (NSArray *)groupsArrayWithDictionaryArray:(NSArray *)groupsArray

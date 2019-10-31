@@ -12,10 +12,10 @@
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super init]) {
-        FlutterMethodChannel* channel = [FlutterMethodChannel
-                                methodChannelWithName:aChannelName
-                                      binaryMessenger:[registrar messenger]
-                                                codec:[FlutterJSONMethodCodec sharedInstance]];
+        FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
+        FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:aChannelName
+                                                                    binaryMessenger:[registrar messenger]
+                                                                              codec:codec];
         self.channel = channel;
         [registrar addMethodCallDelegate:self channel:channel];
     }
@@ -28,24 +28,16 @@
     NSLog(@"EMWrapper : error -- %@ ; userInfo -- %@",error, userInfo);
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        if (error != nil) {
-             if (!error) {
-                 dic[@"success"] = @YES;
-                 if (userInfo) {
-                     dic[@"arbitrary_value"] = userInfo;
-                 }
-             }else {
-                 dic[@"success"] = @NO;
-                 dic[@"code"] = @(error.code);
-                 dic[@"desc"] = error.errorDescription;
-             }
-        } else {
+       if (!error) {
             dic[@"success"] = @YES;
             if (userInfo) {
                 dic[@"arbitrary_value"] = userInfo;
             }
+        }else {
+            dic[@"success"] = @NO;
+            dic[@"code"] = @(error.code);
+            dic[@"desc"] = error.errorDescription;
         }
-        
         result(dic);
     }
 }

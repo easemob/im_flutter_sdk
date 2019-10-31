@@ -255,12 +255,6 @@
     }];
 }
 
-- (void)onConnectionDidChanged:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                 userInfo:nil];
-}
-
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *userName = param[@"userName"];

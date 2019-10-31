@@ -1,25 +1,33 @@
 package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.chat.EMChatRoom;
+import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMConversation.EMConversationType;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
+import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
+import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
+import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.chat.adapter.EMAGroup;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
@@ -209,6 +217,38 @@ class EMHelper {
         return chatRoomMap;
     }
 
+    static Map<String, Object> convertEMChatRoomToStringMap(EMChatRoom emChatRoom) {
+        Map<String, Object> chatRoomMap = new HashMap<String, Object>();
+        chatRoomMap.put("roomId",emChatRoom.getId());
+        chatRoomMap.put("roomName",emChatRoom.getName());
+        chatRoomMap.put("description",emChatRoom.getDescription());
+        chatRoomMap.put("owner",emChatRoom.getOwner());
+        chatRoomMap.put("adminList",emChatRoom.getAdminList());
+        chatRoomMap.put("affiliationsCount",emChatRoom.getMemberCount());
+        chatRoomMap.put("maxUsers",emChatRoom.getMaxUsers());
+        chatRoomMap.put("memberList",emChatRoom.getMemberList());
+        chatRoomMap.put("blackList",emChatRoom.getBlackList());
+        chatRoomMap.put("muteList",emChatRoom.getMuteList());
+        chatRoomMap.put("announcement",emChatRoom.getAnnouncement());
+        return chatRoomMap;
+    }
+
+    static Map<String, Object> convertEMPageResultToStringMap(EMPageResult result) {
+        List list = (List)result.getData();
+        EMLog.e("------->", list.toString());
+        String className = list.get(0).getClass().getSimpleName();
+        Map<String, Object> pageResult = new HashMap<String, Object>();
+        pageResult.put("pageCount", result.getPageCount());
+        if(className.equals("EMChatRoom")){
+            List list1 = new LinkedList();
+            for (Object o : list) {
+                list1.add(convertEMChatRoomToStringMap((EMChatRoom) o));
+            }
+            pageResult.put("data",list1);
+        }
+        return pageResult;
+    }
+
     /**
      * \~chinese
      * 获取聊天类型
@@ -301,10 +341,56 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("groupId", group.getGroupId());
         result.put("groupName", group.getGroupName());
+        result.put("description", group.getDescription());
+        result.put("isPublic", group.isPublic());
+        result.put("isMemberAllowToInvite", group.isMemberAllowToInvite());
+        result.put("isMemberOnly", group.isMemberOnly());
+        result.put("maxUserCount", group.getMaxUserCount());
+        result.put("isMsgBlocked", group.isMsgBlocked());
+        result.put("owner", group.getOwner());
+        result.put("members", group.getMembers());
+        result.put("memberCount", group.getMemberCount());
+        result.put("adminList", group.getAdminList());
+        result.put("blackList", group.getBlackList());
+        result.put("muteList", group.getMuteList());
+        result.put("extension", group.getExtension());
+        result.put("announcement", group.getAnnouncement());
+        List<Map<String, Object>> fileList = new LinkedList<>();
+        for(EMMucSharedFile file : group.getShareFileList()){
+            fileList.add(convertEMMucSharedFileToStringMap(file));
+        }
+        result.put("sharedFileList", fileList);
+
+        List occupants = new LinkedList();
+        occupants.add(group.getOwner());
+        occupants.addAll(group.getAdminList());
+        occupants.addAll(group.getMembers());
+        result.put("occupants", occupants);
+
+        int permissionType = -1;
+        if(group.getMembers().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 0;
+        }
+        if(group.getAdminList().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 1;
+        }
+        if(EMClient.getInstance().getCurrentUser().equals(group.getOwner())){
+            permissionType = 2;
+        }
+        result.put("permissionType", permissionType);
+
+        List noPushGroups = EMClient.getInstance().pushManager().getNoPushGroups();
+        boolean isPushNotificationEnabled = false;
+        if (noPushGroups != null) {
+            if(noPushGroups.contains(group.getGroupId())){
+                isPushNotificationEnabled = true;
+            }
+        }
+        result.put("isPushNotificationEnabled", isPushNotificationEnabled);
         return result;
     }
 
-    static EMConversationType getEMConversationType(int type){
+    static EMConversationType convertIntToEMConversationType(int type){
         if(type == 0){
             return EMConversationType.Chat;
         }
@@ -323,7 +409,7 @@ class EMHelper {
         return EMConversationType.Chat;
     }
 
-    static int toEMConversationType(EMConversationType type){
+    static int convertEMConversationTypeToInt(EMConversationType type){
         if(type == EMConversationType.Chat){
             return 0;
         }
@@ -343,7 +429,7 @@ class EMHelper {
     }
 
 
-    static int toEMSearchDirection(EMSearchDirection type){
+    static int convertEMSearchDirectionToInt(EMSearchDirection type){
         if(type == EMSearchDirection.UP){
             return 0;
         }
@@ -353,7 +439,7 @@ class EMHelper {
         return 0;
     }
 
-    static EMSearchDirection getEMSearchDirection(int type){
+    static EMSearchDirection convertIntToEMSearchDirection(int type){
         if(type == 0){
             return EMSearchDirection.UP;
         }
@@ -363,7 +449,7 @@ class EMHelper {
         return EMSearchDirection.UP;
     }
 
-    static int toEMMessageType(Type type){
+    static int convertEMMessageTypeToInt(Type type){
         if(type == Type.TXT){
             return 0;
         }
@@ -388,7 +474,7 @@ class EMHelper {
         return 0;
     }
 
-    static Type getEMMessageType(int type){
+    static Type convertIntToEMMessageType(int type){
 
         if(type == 0){
             return Type.TXT;
@@ -412,5 +498,41 @@ class EMHelper {
             return Type.CMD;
         }
         return Type.TXT;
+    }
+
+    static Map<String, Object> convertEMCursorResultToStringMap(EMCursorResult emCursorResult){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("cursor", emCursorResult.getCursor());
+        List list = (List)emCursorResult.getData();
+        String className = list.get(0).getClass().getSimpleName();
+        if(className.equals("String")){
+            result.put("data", list);
+        }
+        if(className.equals("EMGroupInfo")){
+            List<EMGroupInfo> infoList = list;
+            List<Map<String, Object>> data = new LinkedList();
+            for(EMGroupInfo info : infoList){
+                data.add(convertGroupInfoToStringMap(info));
+            }
+            result.put("data", data);
+        }
+        return result;
+    }
+
+    static Map<String, Object> convertGroupInfoToStringMap(EMGroupInfo info){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", info.getGroupId());
+        result.put("groupName", info.getGroupName());
+        return result;
+    }
+
+    static Map<String, Object> convertEMMucSharedFileToStringMap(EMMucSharedFile file){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("fileId", file.getFileId());
+        result.put("fileName", file.getFileName());
+        result.put("fileOwner", file.getFileOwner());
+        result.put("updateTime", file.getFileUpdateTime());
+        result.put("fileSize", file.getFileSize());
+        return result;
     }
 }
