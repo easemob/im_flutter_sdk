@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)wrapperCallBack:(FlutterResult)result
                     error:(EMError *__nullable)error
-                 userInfo:(NSObject *__nullable)userinfo;
+                 userInfo:(NSObject *__nullable)userInfo;
 
 @end
 
