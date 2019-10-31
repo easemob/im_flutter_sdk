@@ -19,11 +19,10 @@ class EMSDKMethod {
   static const String sendFCMTokenToServer = 'sendFCMTokenToServer';
   static const String sendHMSPushTokenToServer = 'sendHMSPushTokenToServer';
   static const String getDeviceInfo = 'getDeviceInfo';
-  static const String getRobotsFromServer = 'getRobotsFromServer';
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
   static const String check = 'check';
-  static const String onClientMigrate2x = 'onClientMigrate2x';
-  static const String onConnectionDidChanged = 'onConnectionDidChanged';
+  static const String onConnected = 'onConnected';
+  static const String onDisconnected = 'onDisconnected';
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
 
