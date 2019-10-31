@@ -92,6 +92,28 @@ abstract class EMChatRoomEventListener{
   void onAnnouncementChanged(String roomId, String announcement);
 }
 
+class EMGroupChangeEvent {
+  static const String ON_INVITATION_RECEIVED = "onInvitationReceived";
+  static const String ON_INVITATION_ACCEPTED = "onInvitationAccepted";
+  static const String ON_INVITATION_DECLINED = "onInvitationDeclined";
+  static const String ON_AUTO_ACCEPT_INVITATION = "onAutoAcceptInvitationFromGroup";
+  static const String ON_USER_REMOVED = "onUserRemoved";
+  static const String ON_REQUEST_TO_JOIN_RECEIVED = "onRequestToJoinReceived";
+  static const String ON_REQUEST_TO_JOIN_DECLINED = "onRequestToJoinDeclined";
+  static const String ON_REQUEST_TO_JOIN_ACCEPTED = "onRequestToJoinAccepted";
+  static const String ON_GROUP_DESTROYED = "onGroupDestroyed";
+  static const String ON_MUTE_LIST_ADDED = "onMuteListAdded";
+  static const String ON_MUTE_LIST_REMOVED = "onMuteListRemoved";
+  static const String ON_ADMIN_ADDED = "onAdminAdded";
+  static const String ON_ADMIN_REMOVED = "onAdminRemoved";
+  static const String ON_OWNER_CHANGED = "onOwnerChanged";
+  static const String ON_MEMBER_JOINED = "onMemberJoined";
+  static const String ON_MEMBER_EXITED = "onMemberExited";
+  static const String ON_ANNOUNCEMENT_CHANGED = "onAnnouncementChanged";
+  static const String ON_SHARED_FILE_ADDED = "onSharedFileAdded";
+  static const String ON_SHARED_FILE__DELETED = "onSharedFileDeleted";
+}
+
 abstract class EMGroupChangeListener {
   void onInvitationReceived(String groupId, String groupName, String inviter, String reason);
   void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason);
@@ -102,8 +124,8 @@ abstract class EMGroupChangeListener {
   void onUserRemoved(String groupId, String groupName);
   void onGroupDestroyed(String groupId, String groupName);
   void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage);
-  void onMuteListAdded(String groupId, List<String> mutes, int muteExpire);
-  void onMuteListRemoved(String groupId, List<String> mutes);
+  void onMuteListAdded(String groupId, List mutes, int muteExpire);
+  void onMuteListRemoved(String groupId, List mutes);
   void onAdminAdded(String groupId, String administrator);
   void onAdminRemoved(String groupId, String administrator);
   void onOwnerChanged(String groupId, String newOwner, String oldOwner);
@@ -113,24 +135,4 @@ abstract class EMGroupChangeListener {
   void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile);
   void onSharedFileDeleted(String groupId, String fileId);
 }
-enum EMGroupChangeEvent {
-  GROUP_INVITATION_RECEIVE,       // 用户A邀请用户B入群,用户B接收到该回调
-  GROUP_INVITATION_ACCEPT,            // 用户B同意用户A的入群邀请后，用户A接收到该回调
-  GROUP_INVITATION_DECLINE,           // 用户B拒绝用户A的入群邀请后，用户A接收到该回调
-  GROUP_AUTOMATIC_AGREE_JOIN,         // SDK自动同意了用户A的加B入群邀请后，用户B接收到该回调，需要设置EMOptions的isAutoAcceptGroupInvitation为YES
-  GROUP_LEAVE,                        // 离开群组回调
-  GROUP_JOIN_GROUP_REQUEST_RECEIVE,   // 群组的群主收到用户的入群申请，群的类型是EMGroupStylePublicJoinNeedApproval
-  GROUP_JOIN_GROUP_REQUEST_DECLINE,   // 群主拒绝用户A的入群申请后，用户A会接收到该回调，群的类型是EMGroupStylePublicJoinNeedApproval
-  GROUP_JOIN_GROUP_REQUEST_APPROVE,   // 群主同意用户A的入群申请后，用户A会接收到该回调，群的类型是EMGroupStylePublicJoinNeedApproval
-  GROUP_LIST_UPDATE,                  // 群组列表发生变化
-  GROUP_MUTE_LIST_UPDATE_ADDED,       // 有成员被加入禁言列表
-  GROUP_MUTE_LIST_UPDATE_REMOVED,     // 有成员被移出禁言列表
-  GROUP_ADMIN_LIST_UPDATE_ADDED,      // 有成员被加入管理员列表
-  GROUP_ADMIN_LIST_UPDATE_REMOVED,    // 有成员被移出管理员列表
-  GROUP_OWNER_UPDATE,                 // 群组创建者有更新
-  GROUP_USER_JOIN,                    // 有用户加入群组
-  GROUP_USER_LEAVE,                   // 有用户离开群组
-  GROUP_ANNOUNCEMENT_UPDATE,          // 群公告有更新
-  GROUP_FILE_LIST_UPDATE_ADDED,       // 有用户上传群共享文件
-  GROUP_FILE_LIST_UPDATE_REMOVED,     // 有用户删除群共享文件
-}
+
