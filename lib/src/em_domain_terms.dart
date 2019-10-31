@@ -64,25 +64,25 @@ class EMOptions {
 /// EMMessage - various types of message
 class EMMessage {
   EMMessage({
-    this.acked = false,
+    this.acked,
     this.body,
     this.chatType ,
-    this.delivered = false,
+    this.delivered,
     this.direction,
-    this.from = '',
-    this.listened = false,
+    this.from,
+    this.listened ,
     this.localTime,
-    this.msgId = '',
+    this.msgId ,
     this.msgTime,
-    this.progress = 0,
+    this.progress ,
     this.status ,
-    this.to = '',
+    this.to,
     this.type,
-    this.unread = true,
-  })  : _attributes = HashMap<String, dynamic>(),
+    this.unread,
+    this.deliverAcked,
+  })
+      : _attributes = {},
         _conversationId = '',
-        _deliverAcked = false,
-        _typex = type,
         _userName = '';
 
   /// Constructors to create various of messages.
@@ -94,7 +94,7 @@ class EMMessage {
       : this(
             direction: toDirect(Direction.SEND),
             to: userName,
-            type: 0,
+            type: fromType(0),
             body: EMTextMessageBody(content));
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
@@ -123,37 +123,35 @@ class EMMessage {
             body: EMNormalFileMessageBody(File(filePath)),
             to: userName);
 
-  bool _deliverAcked;
-  set deliverAcked(bool acked) {
-    _deliverAcked = acked;
+  set isDeliverAcked(bool acked) {
+    deliverAcked = acked;
   }
 
   final String _conversationId;
   String get conversationId => _conversationId;
-  final int _typex;
-  int get typex => _typex;
 
   final String _userName;
   String get userName => _userName;
 
+  bool deliverAcked;
   bool acked;
   EMMessageBody body;
-  int chatType;
+  ChatType chatType;
   bool delivered;
-  int direction;
+  Direction direction;
   String from;
   bool listened;
   int localTime;
   String msgId;
   int msgTime;
   int progress;
-  int status;
+  Status status;
   String to;
   bool unread;
-  int type;
+  EMMessageType type;
 
   /// attributes holding arbitrary key/value pair
-  final Map<String, dynamic> _attributes;
+  final Map _attributes;
 
   void setAttribute(String attr, dynamic value) {
     _attributes[attr] = value;
@@ -165,18 +163,18 @@ class EMMessage {
 
   /// TODO: setMessageStatusCallback (EMCallBack callback)
 
-  Map<String, dynamic> ext() {
-    return null;
+  Map ext() {
+    return _attributes;
   }
 
-  Map<String, dynamic> toDataMap() {
-    var result = Map<String, dynamic>();
+  Map toDataMap() {
+    var result = {};
     result["acked"] = this.acked;
     result['attributes'] = _attributes;
     result['body'] = body.toDataMap();
     result['chatType'] = this.chatType;
     result['conversationId'] = _conversationId;
-    result['deliverAcked'] = _deliverAcked;
+    result['deliverAcked'] = deliverAcked;
     result['delivered'] = delivered;
     result['direction'] = direction;
     result['from'] = from;
@@ -193,29 +191,36 @@ class EMMessage {
     return result;
   }
 
-  EMMessage.from(Map<String, dynamic> data)
+   EMMessage.from(Map data)
       :
         _attributes = data['attributes'],
         localTime = data['localTime'],
-        chatType = fromChatType(data),
+        chatType = fromChatType(data['chatType']),
         msgId = data['msgId'],
         progress = data['progress'],
         body = EMMessageBody.from(data['body']),
         delivered = data['delivered'],
         from = data['from'],
-        direction = fromDirect(data),
+        direction = fromDirect(data['direction']),
         listened = data['listened'],
         _conversationId = data['conversationId'],
-        status = fromEMMessageStatus(data),
+        status = fromEMMessageStatus(data['status']),
         msgTime = data['msgTime'],
         to = data['to'],
         _userName = data['userName'],
         acked = data['acked'],
-        _typex = fromType(data),
+        type = fromType(data['type']),
         unread = data['unread'];
+
+
+  String toString(){
+    return from;
+  }
+
 }
-  fromType(Map<String, dynamic> data){
-      switch(data['type']){
+
+  fromType(int type){
+      switch(type){
         case 0:
           return EMMessageType.TXT;
         case 1:
@@ -232,6 +237,7 @@ class EMMessage {
           return EMMessageType.CMD;
       }
   }
+
   toType(EMMessageType type){
       if(type == EMMessageType.TXT){
         return 0;
@@ -250,8 +256,8 @@ class EMMessage {
       }
   }
 
-  fromChatType(Map<String, dynamic> data){
-      switch(data['chatType']){
+  fromChatType(int type){
+      switch(type){
         case 0:
           return ChatType.Chat;
         case 1:
@@ -269,14 +275,16 @@ class EMMessage {
         return 2;
       }
   }
-  fromDirect(Map<String, dynamic> data){
-    switch(data['direction']){
+
+  fromDirect(int type){
+    switch(type){
       case 0:
         return Direction.SEND;
       case 1:
         return Direction.RECEIVE;
     }
   }
+
   toDirect(Direction direction){
      if(direction == Direction.SEND){
        return 0;
@@ -284,8 +292,9 @@ class EMMessage {
        return 1;
      }
   }
-  fromEMMessageStatus(Map<String, dynamic> data){
-    switch(data['status']){
+
+  fromEMMessageStatus(int status){
+    switch(status){
       case 0:
         return Status.SUCCESS;
       case 1:
@@ -296,6 +305,7 @@ class EMMessage {
         return Status.CREATE;
     }
   }
+
   toEMMessageStatus(Status status){
      if(status == Status.SUCCESS){
        return 0;
@@ -317,23 +327,23 @@ class EMContact {
 
 // EMMessageBody - body of message.
 abstract class EMMessageBody {
-  Map<String, dynamic> toDataMap();
-  static EMMessageBody from(Map<String, dynamic> data) {
-    print("EMMessageBody-->"+fromType(data));
-    switch (fromType(data)) {
-      case EMMessageType.TXT:
-        print( EMTextMessageBody.fromData(data));
+  Map toDataMap();
+  static EMMessageBody from(Map data) {
+    switch (data['type']) {
+      case 0:
         return EMTextMessageBody.fromData(data);
-      case EMMessageType.CMD:
-        return EMCmdMessageBody.fromData(data);
-      case EMMessageType.IMAGE:
+      case 1:
         return EMImageMessageBody.fromData(data);
-      case EMMessageType.FILE:
-        return EMNormalFileMessageBody.fromData(data);
-      case EMMessageType.LOCATION:
+      case 2:
+        return EMVideoMessageBody.fromData(data);
+      case 3:
         return EMLocationMessageBody.fromData(data);
-      case EMMessageType.VOICE:
+      case 4:
         return EMVoiceMessageBody.fromData(data);
+      case 5:
+        return EMNormalFileMessageBody.fromData(data);
+      case 6:
+        return EMCmdMessageBody.fromData(data);
       default:
         return null;
     }
