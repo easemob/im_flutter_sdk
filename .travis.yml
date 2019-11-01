@@ -1,4 +1,4 @@
--jobs:
+jobs:
   include:
   - stage: test
     os: linux
