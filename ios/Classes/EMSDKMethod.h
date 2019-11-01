@@ -20,10 +20,8 @@ static NSString * const EMMethodKeyLogin = @"login";
 static NSString * const EMMethodKeyLoginWithToken = @"loginWithToken";
 static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChatManager = @"chatManager";
-static NSString * const EMMethodKeyRegister = @"register";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
-static NSString * const EMMethodKeyGetUserTokenFromServer = @"getUserTokenFromServer";
 static NSString * const EMMethodKeySetDebugMode = @"setDebugMode";
 static NSString * const EMMethodKeyUpdateCurrentUserNick = @"updateCurrentUserNick";
 static NSString * const EMMethodKeyUploadLog = @"uploadLog";
@@ -33,11 +31,10 @@ static NSString * const EMMethodKeyKickAllDevices = @"kickAllDevices";
 static NSString * const EMMethodKeySendFCMTokenToServer = @"sendFCMTokenToServer";
 static NSString * const EMMethodKeySendHMSPushTokenToServer = @"sendHMSPushTokenToServer";
 static NSString * const EMMethodKeyGetDeviceInfo = @"getDeviceInfo";
-static NSString * const EMMethodKeyGetRobotsFromServer = @"getRobotsFromServer";
 static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 static NSString * const EMMethodKeyCheck = @"check";
-static NSString * const EMMethodKeyOnClientMigrate2x = @"onClientMigrate2x";
-static NSString * const EMMethodKeyOnConnectionDidChanged = @"onConnectionDidChanged";
+static NSString * const EMMethodKeyOnConnected = @"onConnected";
+static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
 
 #pragma mark - EMContactManagerWrapper
