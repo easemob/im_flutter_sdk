@@ -8,6 +8,7 @@ import com.hyphenate.chat.EMConversation.EMConversationType;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
@@ -19,6 +20,7 @@ import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.chat.adapter.EMAGroup;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONObject;
@@ -269,48 +271,6 @@ class EMHelper {
         return pageResult;
     }
 
-    /**
-     * 将EMGroup 对象解析并包装成 Map
-     * @param group
-     * @return
-     */
-    static Map<String, Object> convertEMGroupToStringMap(EMGroup group){
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put("groupId", group.getGroupId());
-        result.put("groupName", group.getGroupName());
-        return result;
-    }
-
-    /**
-     * 将EMCursorResult 对象解析并包装成 Map
-     * @param emCursorResult
-     * @return
-     */
-    static Map<String, Object> convertEMCursorResultToStringMap(EMCursorResult emCursorResult){
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put("cursor", emCursorResult.getCursor());
-        List list = (List)emCursorResult.getData();
-        String className = list.get(0).getClass().getSimpleName();
-        if(className.equals("String")){
-            result.put("data", list);
-        }
-        return result;
-    }
-
-    /**
-     * 将EMMucSharedFile 对象解析并包装成 Map
-     * @param file
-     * @return
-     */
-    static Map<String, Object> convertEMMucSharedFileToStringMap(EMMucSharedFile file){
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put("fileId", file.getFileId());
-        result.put("fileName", file.getFileName());
-        result.put("fileOwner", file.getFileOwner());
-        result.put("updateTime", file.getFileUpdateTime());
-        result.put("fileSize", file.getFileSize());
-        return result;
-    }
 
     /**
      * \~chinese
@@ -405,8 +365,8 @@ class EMHelper {
      * @param type
      * @return
      */
-    static int enumMessageTypeToInt(EMMessage.Type type){
-        switch (type){
+    static int enumMessageTypeToInt(EMMessage.Type type) {
+        switch (type) {
             case TXT:
                 return 0;
             case IMAGE:
@@ -424,6 +384,63 @@ class EMHelper {
             default:
                 return -1;
         }
+    }
+    /**
+     * 将EMGroup 对象解析并包装成 Map
+     * @param group
+     * @return
+     */
+    static Map<String, Object> convertEMGroupToStringMap(EMGroup group){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", group.getGroupId());
+        result.put("groupName", group.getGroupName());
+        result.put("description", group.getDescription());
+        result.put("isPublic", group.isPublic());
+        result.put("isMemberAllowToInvite", group.isMemberAllowToInvite());
+        result.put("isMemberOnly", group.isMemberOnly());
+        result.put("maxUserCount", group.getMaxUserCount());
+        result.put("isMsgBlocked", group.isMsgBlocked());
+        result.put("owner", group.getOwner());
+        result.put("members", group.getMembers());
+        result.put("memberCount", group.getMemberCount());
+        result.put("adminList", group.getAdminList());
+        result.put("blackList", group.getBlackList());
+        result.put("muteList", group.getMuteList());
+        result.put("extension", group.getExtension());
+        result.put("announcement", group.getAnnouncement());
+        List<Map<String, Object>> fileList = new LinkedList<>();
+        for(EMMucSharedFile file : group.getShareFileList()){
+            fileList.add(convertEMMucSharedFileToStringMap(file));
+        }
+        result.put("sharedFileList", fileList);
+
+        List occupants = new LinkedList();
+        occupants.add(group.getOwner());
+        occupants.addAll(group.getAdminList());
+        occupants.addAll(group.getMembers());
+        result.put("occupants", occupants);
+
+        int permissionType = -1;
+        if(group.getMembers().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 0;
+        }
+        if(group.getAdminList().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 1;
+        }
+        if(EMClient.getInstance().getCurrentUser().equals(group.getOwner())){
+            permissionType = 2;
+        }
+        result.put("permissionType", permissionType);
+
+        List noPushGroups = EMClient.getInstance().pushManager().getNoPushGroups();
+        boolean isPushNotificationEnabled = false;
+        if (noPushGroups != null) {
+            if(noPushGroups.contains(group.getGroupId())){
+                isPushNotificationEnabled = true;
+            }
+        }
+        result.put("isPushNotificationEnabled", isPushNotificationEnabled);
+        return result;
     }
 
     static EMConversationType convertIntToEMConversationType(int type){
@@ -534,6 +551,52 @@ class EMHelper {
             return Type.CMD;
         }
         return Type.TXT;
+    }
+
+    /**
+     * 将EMCursorResult 对象解析并包装成 Map
+     * @param emCursorResult
+     * @return
+     */
+    static Map<String, Object> convertEMCursorResultToStringMap(EMCursorResult emCursorResult){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("cursor", emCursorResult.getCursor());
+        List list = (List)emCursorResult.getData();
+        String className = list.get(0).getClass().getSimpleName();
+        if(className.equals("String")){
+            result.put("data", list);
+        }
+        if(className.equals("EMGroupInfo")){
+            List<EMGroupInfo> infoList = list;
+            List<Map<String, Object>> data = new LinkedList();
+            for(EMGroupInfo info : infoList){
+                data.add(convertGroupInfoToStringMap(info));
+            }
+            result.put("data", data);
+        }
+        return result;
+    }
+
+    static Map<String, Object> convertGroupInfoToStringMap(EMGroupInfo info){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", info.getGroupId());
+        result.put("groupName", info.getGroupName());
+        return result;
+    }
+
+    /**
+     * 将EMMucSharedFile 对象解析并包装成 Map
+     * @param file
+     * @return
+     */
+    static Map<String, Object> convertEMMucSharedFileToStringMap(EMMucSharedFile file){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("fileId", file.getFileId());
+        result.put("fileName", file.getFileName());
+        result.put("fileOwner", file.getFileOwner());
+        result.put("updateTime", file.getFileUpdateTime());
+        result.put("fileSize", file.getFileSize());
+        return result;
     }
 
 }
