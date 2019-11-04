@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hyphenate.EMContactListener;
+import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMContactManager;
 import com.hyphenate.exceptions.HyphenateException;
@@ -25,12 +26,6 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
     private EMContactManager manager;
     private MethodChannel channel;
 
-    private static final int CONTACT_ADD = 0;
-    private static final int CONTACT_DELETE = 1;
-    private static final int INVITED = 2;
-    private static final int INVITATION_ACCEPTED = 3;
-    private static final int INVITATION_DECLINED = 4;
-
     EMContactManagerWrapper(MethodChannel channel) {
         this.channel = channel;
     }
@@ -41,7 +36,7 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onContactAdded(String userName) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                data.put("type", Integer.valueOf(CONTACT_ADD));
+                data.put("type", "onContactAdded");
                 data.put("userName", userName);
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
@@ -51,7 +46,7 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onContactDeleted(String userName) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                data.put("type", Integer.valueOf(CONTACT_DELETE));
+                data.put("type", "onContactDeleted");
                 data.put("userName", userName);
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
@@ -61,7 +56,7 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onContactInvited(String userName, String reason) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                data.put("type", Integer.valueOf(INVITED));
+                data.put("type", "onContactInvited");
                 data.put("userName", userName);
                 data.put("reason", reason);
                 post((Void)->{
@@ -72,7 +67,7 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onFriendRequestAccepted(String userName) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                data.put("type", Integer.valueOf(INVITATION_ACCEPTED));
+                data.put("type", "onFriendRequestAccepted");
                 data.put("userName", userName);
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
@@ -82,7 +77,7 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onFriendRequestDeclined(String userName) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                data.put("type", Integer.valueOf(INVITATION_DECLINED));
+                data.put("type", "onFriendRequestDeclined");
                 data.put("userName", userName);
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
@@ -106,11 +101,9 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
         }else if(EMSDKMethod.addUserToBlackList.equals(call.method)) {
             addUserToBlackList(call.arguments, result);
         }else if(EMSDKMethod.removeUserFromBlackList.equals(call.method)) {
-            removeUserToBlackList(call.arguments, result);
+            removeUserFromBlackList(call.arguments, result);
         }else if(EMSDKMethod.getBlackListFromServer.equals(call.method)) {
             getBlackListFromServer(call.arguments,result);
-        }else if(EMSDKMethod.saveBlackList.equals(call.method)) {
-            saveBlackList(call.arguments, result);
         }else if(EMSDKMethod.acceptInvitation.equals(call.method)) {
             acceptInvitation(call.arguments, result);
         }else if(EMSDKMethod.declineInvitation.equals(call.method)) {
@@ -125,41 +118,35 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
             String reason = argMap.getString("reason");
-            try {
-                manager.addContact(userName, reason);
-                onSuccess(result);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
+            manager.aysncAddContact(userName, reason, new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void deleteContact(Object args, Result result) {
-        try {
-            JSONObject argMap = (JSONObject) args;
-            String userName = argMap.getString("userName");
-            try{
-                manager.deleteContact(userName);
-                onSuccess(result);
-            }catch(HyphenateException e) {
-                onError(result, e);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    try {
+                        JSONObject argMap = (JSONObject) args;
+                        String userName = argMap.getString("userName");
+                        boolean keepConversation = argMap.getBoolean("keepConversation");
+                        manager.deleteContact(userName, keepConversation);
+                        onSuccess(result);
+                    }catch (HyphenateException e){
+                        onError(result, e);
+                    }
+                }catch (JSONException e){
+                    EMLog.e("JSONException", e.getMessage());
+                }
             }
-        }catch (JSONException e){
-            EMLog.e("JSONException", e.getMessage());
-        }
+        }).start();
     }
 
     private void getAllContactsFromServer(Object args, Result result) {
-        try{
-            List<String> contacts = manager.getAllContactsFromServer();
-            Map<String,Object> data = new HashMap<String, Object>();
-            data.put("contacts", contacts);
-            result.success(data);
-        }catch(HyphenateException e) {
-            onError(result, e);
-        }
+            manager.aysncGetAllContactsFromServer(new EMValueWrapperCallBack<List<String>>(result));
     }
 
     private void addUserToBlackList(Object args, Result result) {
@@ -167,72 +154,32 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
             Boolean both = argMap.getBoolean("both");
-            try{
-                manager.addUserToBlackList(userName, both.booleanValue());
-                onSuccess(result);
-            }catch(HyphenateException e) {
-                onError(result, e);
-            }
+            manager.aysncAddUserToBlackList(userName, both.booleanValue(), new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
     }
 
-    private void removeUserToBlackList(Object args, Result result) {
+    private void removeUserFromBlackList(Object args, Result result) {
         try {
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
-            try{
-                manager.removeUserFromBlackList(userName);
-                onSuccess(result);
-            }catch(HyphenateException e) {
-                onError(result, e);
-            }
+            manager.aysncRemoveUserFromBlackList(userName, new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void getBlackListFromServer(Object args, Result result) {
-        try{
-            List<String> contacts = manager.getBlackListFromServer();
-            Map<String,Object> data = new HashMap<String, Object>();
-            data.put("black_list", contacts);
-            result.success(data);
-        }catch(HyphenateException e) {
-            onError(result, e);
-        }
-    }
+        manager.aysncGetBlackListFromServer(new EMValueWrapperCallBack<List<String>>(result));
 
-    private void saveBlackList(Object args, Result result) {
-        try {
-            JSONObject argMap = (JSONObject) args;
-            JSONArray json_contacts = argMap.getJSONArray("blackList");
-            List<String> contacts = new ArrayList<>();
-            for(int i = 0; i < json_contacts.length(); i++){
-                contacts.add(json_contacts.getString(i));
-            }
-            try{
-                manager.saveBlackList(contacts);
-                onSuccess(result);
-            }catch(HyphenateException e) {
-                onError(result, e);
-            }
-        }catch (JSONException e){
-            EMLog.e("JSONException", e.getMessage());
-        }
     }
 
     private void acceptInvitation(Object args, Result result) {
         try {
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
-            try{
-                manager.acceptInvitation(userName);
-                onSuccess(result);
-            }catch(HyphenateException e) {
-                onError(result, e);
-            }
+            manager.asyncAcceptInvitation(userName, new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -242,25 +189,13 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
         try {
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
-            try{
-                manager.declineInvitation(userName);
-                onSuccess(result);
-            }catch(HyphenateException e) {
-                onError(result, e);
-            }
+            manager.asyncDeclineInvitation(userName, new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
     }
 
     private void getSelfIdsOnOtherPlatform(Object args, Result result) {
-        try{
-            List<String> ids = manager.getSelfIdsOnOtherPlatform();
-            Map<String,Object> data = new HashMap<String, Object>();
-            data.put("ids", ids);
-            result.success(data);
-        }catch(HyphenateException e) {
-            onError(result, e);
-        }
+        manager.aysncGetSelfIdsOnOtherPlatform(new EMValueWrapperCallBack<List<String>>(result));
     }
 }

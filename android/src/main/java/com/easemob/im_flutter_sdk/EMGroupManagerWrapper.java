@@ -45,12 +45,13 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onInvitationReceived(String groupId, String groupName, String inviter, String reason) {
                 EMLog.e("_emGroupManagerWrapper", "onInvitationReceived");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onInvitationReceived");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 data.put("inviter", inviter);
                 data.put("reason", reason);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onInvitationReceived,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -58,12 +59,13 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason) {
                 EMLog.e("_emGroupManagerWrapper", "onRequestToJoinReceived");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onRequestToJoinReceived");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 data.put("applicant", applicant);
                 data.put("reason", reason);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onRequestToJoinReceived,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -71,11 +73,12 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onRequestToJoinAccepted(String groupId, String groupName, String accepter) {
                 EMLog.e("_emGroupManagerWrapper", "onRequestToJoinAccepted");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onRequestToJoinAccepted");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 data.put("accepter", accepter);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onRequestToJoinAccepted,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -83,12 +86,13 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason) {
                 EMLog.e("_emGroupManagerWrapper", "onRequestToJoinDeclined");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onRequestToJoinDeclined");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 data.put("decliner", decliner);
                 data.put("reason", reason);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onRequestToJoinDeclined,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -96,11 +100,12 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onInvitationAccepted(String groupId, String invitee, String reason) {
                 EMLog.e("_emGroupManagerWrapper", "onInvitationAccepted");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onInvitationAccepted");
                 data.put("groupId", groupId);
                 data.put("invitee", invitee);
                 data.put("reason", reason);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onInvitationAccepted,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -108,11 +113,12 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onInvitationDeclined(String groupId, String invitee, String reason) {
                 EMLog.e("_emGroupManagerWrapper", "onInvitationDeclined");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onInvitationDeclined");
                 data.put("groupId", groupId);
                 data.put("invitee", invitee);
                 data.put("reason", reason);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onInvitationDeclined,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -120,10 +126,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onUserRemoved(String groupId, String groupName) {
                 EMLog.e("_emGroupManagerWrapper", "onUserRemoved");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onUserRemoved");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onUserRemoved,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -131,10 +138,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onGroupDestroyed(String groupId, String groupName) {
                 EMLog.e("_emGroupManagerWrapper", "onGroupDestroyed");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onGroupDestroyed");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onGroupDestroyed,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -142,11 +150,12 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage) {
                 EMLog.e("_emGroupManagerWrapper", "onAutoAcceptInvitationFromGroup");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onAutoAcceptInvitationFromGroup");
                 data.put("groupId", groupId);
                 data.put("inviter", inviter);
                 data.put("inviteMessage", inviteMessage);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onAutoAcceptInvitationFromGroup,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -154,11 +163,12 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onMuteListAdded(String groupId, List<String> mutes, long muteExpire) {
                 EMLog.e("_emGroupManagerWrapper", "onMuteListAdded");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onMuteListAdded");
                 data.put("groupId", groupId);
                 data.put("mutes", mutes);
                 data.put("muteExpire", muteExpire);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMuteListAdded,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -166,11 +176,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onMuteListRemoved(String groupId, List<String> mutes) {
                 EMLog.e("_emGroupManagerWrapper", "onMuteListRemoved");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onMuteListRemoved");
                 data.put("groupId", groupId);
                 data.put("mutes", mutes);
                 post((Void)->{
-                    EMLog.e("onMuteListRemoved", "invokeMethod");
-                    channel.invokeMethod(EMSDKMethod.onMuteListRemoved,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -178,10 +188,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onAdminAdded(String groupId, String administrator) {
                 EMLog.e("_emGroupManagerWrapper", "onAdminAdded");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onAdminAdded");
                 data.put("groupId", groupId);
                 data.put("administrator", administrator);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onAdminAdded,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -189,10 +200,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onAdminRemoved(String groupId, String administrator) {
                 EMLog.e("_emGroupManagerWrapper", "onAdminRemoved");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onAdminRemoved");
                 data.put("groupId", groupId);
                 data.put("administrator", administrator);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onAdminRemoved,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -200,11 +212,12 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onOwnerChanged(String groupId, String newOwner, String oldOwner) {
                 EMLog.e("_emGroupManagerWrapper", "onOwnerChanged");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onOwnerChanged");
                 data.put("groupId", groupId);
                 data.put("newOwner", newOwner);
                 data.put("oldOwner", oldOwner);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onOwnerChanged,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -212,10 +225,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onMemberJoined(String groupId, String member) {
                 EMLog.e("_emGroupManagerWrapper", "onMemberJoined");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onMemberJoined");
                 data.put("groupId", groupId);
                 data.put("member", member);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMemberJoined,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -223,10 +237,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onMemberExited(String groupId, String member) {
                 EMLog.e("_emGroupManagerWrapper", "onMemberExited");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onMemberExited");
                 data.put("groupId", groupId);
                 data.put("member", member);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMemberExited,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -234,10 +249,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onAnnouncementChanged(String groupId, String announcement) {
                 EMLog.e("_emGroupManagerWrapper", "onAnnouncementChanged");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onAnnouncementChanged");
                 data.put("groupId", groupId);
                 data.put("announcement", announcement);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onAnnouncementChanged,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -245,10 +261,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile) {
                 EMLog.e("_emGroupManagerWrapper", "onSharedFileAdded");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onSharedFileAdded");
                 data.put("groupId", groupId);
                 data.put("sharedFile", EMHelper.convertEMMucSharedFileToStringMap(sharedFile));
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onSharedFileAdded,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
 
@@ -256,10 +273,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             public void onSharedFileDeleted(String groupId, String fileId) {
                 EMLog.e("_emGroupManagerWrapper", "onSharedFileDeleted");
                 Map<String, Object> data = new HashMap<String, Object>();
+                data.put("type", "onSharedFileDeleted");
                 data.put("groupId", groupId);
                 data.put("fileId", fileId);
                 post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onSharedFileDeleted,data);
+                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
                 });
             }
         });
