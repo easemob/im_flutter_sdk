@@ -177,8 +177,6 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
   @Override
   public void onSuccess(Object value) {
     post((Void)->{
-      EMLog.e("value", value.getClass().getSimpleName());
-
       Map<String, Object> data = new HashMap<String, Object>();
       data.put("success", Boolean.TRUE);
       if(value.getClass().getSimpleName().equals("ArrayList")){

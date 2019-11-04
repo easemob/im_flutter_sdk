@@ -34,7 +34,6 @@ class EMClient {
 
   /// instance fields
   String _currentUser;
-  bool _loggedIn = false;
   bool _connected = false;
   EMOptions _options;
   String _accessToken;
@@ -66,20 +65,25 @@ class EMClient {
   /// init - init Easemob SDK client with specified [options] instance.
   void init(EMOptions options) {
     _options = options;
-    _emClientChannel.invokeMethod(EMSDKMethod.init, {"appKey": options.appKey});
+    _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
   }
 
   /// createAccount - create an account with [userName]/[password].
   /// Callback [onError] once account creation failed.
   void createAccount(
-      {@required String userName,
-      @required String password,
-      onError(int errorCode, String desc)}) {
+      { @required String userName,
+        @required String password,
+        onSuccess(),
+        onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.createAccount,
         {"userName": userName, "password": password});
     result.then((response) {
-      if (!response['success']) {
+      if (response['success']) {
+        if (onSuccess != null) {
+          onSuccess();
+        }
+      } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
     });
@@ -97,7 +101,6 @@ class EMClient {
     result.then((response) {
       print(response);
       if (response['success']) {
-        _loggedIn = true;
         if (onSuccess != null) {
           // set current user name
           _currentUser = userName;
@@ -120,7 +123,6 @@ class EMClient {
         EMSDKMethod.login, {"userName": userName, "token": token});
     result.then((response) {
       if (response['success']) {
-        _loggedIn = true;
         if (onSuccess != null) onSuccess();
       } else {
         if (onError != null) onError(response['code'], response['desc']);
@@ -140,7 +142,7 @@ class EMClient {
         .invokeMethod(EMSDKMethod.logout, {"unbindToken": unbindToken});
     result.then((response) {
       if (response['success']) {
-        _loggedIn = false;
+        if (onSuccess != null) onSuccess();
       } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
@@ -149,11 +151,13 @@ class EMClient {
 
   /// changeAppKey - change app key with new [appKey].
   /// Call [onError] if something wrong.
-  void changeAppKey({@required String appKey, onError(int code, String desc)}) {
+  void changeAppKey({@required String appKey, onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.changeAppKey, {"appKey": appKey});
     result.then((response) {
-      if (!response['success']) {
+      if (response['success']) {
+        if (onSuccess != null) onSuccess();
+      } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
     });
@@ -276,47 +280,19 @@ class EMClient {
   }
 
   /// sendHMSPushTokenToServer - send HMS push token [token] of app [appId] to server.
-  void sendHMSPushTokenToServer({String appId, @required String token}) {
+  void sendHMSPushTokenToServer({@required String token}) {
     _emClientChannel.invokeMethod(EMSDKMethod.sendHMSPushTokenToServer,
-        {"appId": appId ?? null, "token": token});
+        {"token": token});
   }
 
   /// isFCMAvailable - fcm available?
   bool isFCMAvailable() {
-    return _options.useFcm;
+    return _options.isUseFCM();
   }
 
   /// getAccessToken - Returns local cached access token.
   String getAccessToken() {
     return _accessToken;
-  }
-
-  /// getDeviceInfo - Returns device info.
-  Future<Map<String, dynamic>> getDeviceInfo() async {
-    Map<String, dynamic> result =
-        await _emClientChannel.invokeMethod(EMSDKMethod.getDeviceInfo);
-    if (result['success']) {
-      return (result['deviceInfo']);
-    } else {
-      return null;
-    }
-  }
-
-  /// check - Validates current [userName]/[password] login.
-  /// Check result returns in callback [onResult].
-  void check(
-      {@required String userName,
-      @required String password,
-      onResult(EMCheckType type, int result, String desc)}) {
-    Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.check, {"userName": userName, "password": password});
-    result.then((response) {
-      if (response['success']) {
-        if (onResult != null)
-          onResult(response['type'], response['result'], response['desc']);
-        return null;
-      }
-    });
   }
 
   /// getCurrentUser - get current user name.
@@ -325,28 +301,14 @@ class EMClient {
     return _currentUser;
   }
 
-  /// getUserTokenFromServer - get token from server with specified [userName]/[password].
-  /// Returned token set in [onSuccess] callback and [onError] called once error occured.
-  void getUserTokenFromServer(
-      {@required final String userName,
-      @required final String password,
-      onSuccess(String token),
-      onError(int code, String desc)}) {
-    Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.login, {"userName": userName, "password": password});
-    result.then((response) {
-      if (response['success']) {
-        _accessToken = response['token'];
-        if (onSuccess != null) onSuccess(response['token']);
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
   /// isLoggedInBefore - whether successful login invoked before.
-  bool isLoggedInBefore() {
-    return _loggedIn;
+  Future<bool> isLoggedInBefore() async{
+    Map<String, dynamic> result =
+    await _emClientChannel.invokeMethod(EMSDKMethod.isLoggedInBefore);
+    if(result['success']){
+      return result['isLogged'];
+    }
+    return false;
   }
 
   /// isConnected - whether connection connected now.
@@ -422,7 +384,8 @@ class EMClient {
         listener.onConnected();
       } else {
         _connected = false;
-        listener.onDisconnected();
+        int errorCode = map["errorCode"];
+        listener.onDisconnected(errorCode);
       }
     }
   }

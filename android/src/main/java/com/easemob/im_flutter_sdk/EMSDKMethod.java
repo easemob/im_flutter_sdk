@@ -7,11 +7,8 @@ public class EMSDKMethod {
     static final String login = "login";
     static final String loginWithToken = "loginWithToken";
     static final String logout = "logout";
-    static final String chatManager = "chatManager";
-    static final String register = "register";
     static final String changeAppKey = "changeAppKey";
-    static final String getCurrentUser = "getCurrentUser";
-    static final String getUserTokenFromServer = "getUserTokenFromServer";
+    static final String isLoggedInBefore = "isLoggedInBefore";
     static final String setDebugMode = "setDebugMode";
     static final String updateCurrentUserNick = "updateCurrentUserNick";
     static final String uploadLog = "uploadLog";
@@ -20,10 +17,8 @@ public class EMSDKMethod {
     static final String kickAllDevices = "kickAllDevices";
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
-    static final String getDeviceInfo = "getDeviceInfo";
     static final String getRobotsFromServer = "getRobotsFromServer";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
-    static final String check = "check";
     static final String onClientMigrate2x = "onClientMigrate2x"; // 3.x sdk应该用不上
     static final String onConnectionDidChanged = "onConnectionDidChanged";
     static final String getLoggedInDevicesFromServer =
@@ -36,7 +31,6 @@ public class EMSDKMethod {
     static final String addUserToBlackList = "addUserToBlackList";
     static final String removeUserFromBlackList = "removeUserFromBlackList";
     static final String getBlackListFromServer = "getBlackListFromServer";
-    static final String saveBlackList = "saveBlackList";
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
@@ -176,23 +170,5 @@ public class EMSDKMethod {
     static final String deleteGroupSharedFile = "deleteGroupSharedFile";
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
     static final String updateGroupExtension = "updateGroupExtension";
-    static final String onInvitationReceived = "onInvitationReceived";
-    static final String onRequestToJoinReceived = "onRequestToJoinReceived";
-    static final String onRequestToJoinAccepted = "onRequestToJoinAccepted";
-    static final String onRequestToJoinDeclined = "onRequestToJoinDeclined";
-    static final String onInvitationAccepted = "onInvitationAccepted";
-    static final String onInvitationDeclined = "onInvitationDeclined";
-    static final String onUserRemoved = "onUserRemoved";
-    static final String onGroupDestroyed = "onGroupDestroyed";
-    static final String onAutoAcceptInvitationFromGroup = "onAutoAcceptInvitationFromGroup";
-    static final String onMuteListAdded = "onMuteListAdded";
-    static final String onMuteListRemoved = "onMuteListRemoved";
-    static final String onAdminAdded = "onAdminAdded";
-    static final String onAdminRemoved = "onAdminRemoved";
-    static final String onOwnerChanged = "onOwnerChanged";
-    static final String onMemberJoined = "onMemberJoined";
-    static final String onMemberExited = "onMemberExited";
-    static final String onAnnouncementChanged = "onAnnouncementChanged";
-    static final String onSharedFileAdded = "onSharedFileAdded";
-    static final String onSharedFileDeleted = "onSharedFileDeleted";
+    static final String onGroupChanged = "onGroupChanged";
 }

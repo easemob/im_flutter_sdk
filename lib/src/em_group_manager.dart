@@ -30,47 +30,15 @@ class EMGroupManager{
   void _addNativeMethodCallHandler() {
     _emGroupManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onInvitationReceived) {
-        return _onInvitationReceived(argMap);
-      } else if (call.method == EMSDKMethod.onRequestToJoinReceived) {
-        return _onRequestToJoinReceived(argMap);
-      }else if (call.method == EMSDKMethod.onRequestToJoinAccepted) {
-        return _onRequestToJoinAccepted(argMap);
-      }else if (call.method == EMSDKMethod.onRequestToJoinDeclined) {
-        return _onRequestToJoinDeclined(argMap);
-      }else if (call.method == EMSDKMethod.onInvitationAccepted) {
-        return _onInvitationAccepted(argMap);
-      }else if (call.method == EMSDKMethod.onInvitationDeclined) {
-        return _onInvitationDeclined(argMap);
-      }else if (call.method == EMSDKMethod.onUserRemoved) {
-        return _onUserRemoved(argMap);
-      }else if (call.method == EMSDKMethod.onGroupDestroyed) {
-        return _onGroupDestroyed(argMap);
-      }else if (call.method == EMSDKMethod.onAutoAcceptInvitationFromGroup) {
-        return _onAutoAcceptInvitationFromGroup(argMap);
-      }else if (call.method == EMSDKMethod.onMuteListAdded) {
-        return _onMuteListAdded(argMap);
-      }else if (call.method == EMSDKMethod.onMuteListRemoved) {
-        return _onMuteListRemoved(argMap);
-      }else if (call.method == EMSDKMethod.onAdminAdded) {
-        return _onAdminAdded(argMap);
-      }else if (call.method == EMSDKMethod.onAdminRemoved) {
-        return _onAdminRemoved(argMap);
-      }else if (call.method == EMSDKMethod.onOwnerChanged) {
-        return _onOwnerChanged(argMap);
-      }else if (call.method == EMSDKMethod.onMemberJoined) {
-        return _onMemberJoined(argMap);
-      }else if (call.method == EMSDKMethod.onMemberExited) {
-        return _onMemberExited(argMap);
-      }else if (call.method == EMSDKMethod.onAnnouncementChanged) {
-        return _onAnnouncementChanged(argMap);
-      }else if (call.method == EMSDKMethod.onSharedFileAdded) {
-        return _onSharedFileAdded(argMap);
-      }else if (call.method == EMSDKMethod.onSharedFileDeleted) {
-        return _onSharedFileDeleted(argMap);
+      print('[EMGroupChange:]'+ argMap.toString());
+      if (call.method == EMSDKMethod.onGroupChanged) {
+        return _onGroupChanged(argMap);
       }
+      return null;
     });
   }
+
+
 
   ///获取当前(内存)用户的所有群组
   Future<List<EMGroup>> getAllGroups() async{
@@ -578,7 +546,7 @@ class EMGroupManager{
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.changeChatRoomOwner, {"groupId" : groupId, "newOwner" : newOwner});
+        .invokeMethod(EMSDKMethod.changeOwner, {"groupId" : groupId, "newOwner" : newOwner});
     result.then((response) {
       if (response['success']) {
         if (onSuccess != null) {
@@ -906,209 +874,120 @@ class EMGroupManager{
     _groupChangeListeners.remove(listener);
   }
 
-  /// Listeners interface
-  ///当前用户收到加入群组邀请事件
-  Future<void> _onInvitationReceived(Map map) async {
-    String groupId = map['groupId'];
-    String groupName = map['groupName'];
-    String inviter = map['inviter'];
-    String reason = map['reason'];
+  Future<void> _onGroupChanged(Map map) async {
+    for(var listener in _groupChangeListeners){
+      print('[EMGroupChange:]_onGroupChanged');
+      var type = map['type'];
+      switch(type){
+        case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
+          String groupId = map['groupId'];
+          String groupName = map['groupName'];
+          String inviter = map['inviter'];
+          String reason = map['reason'];
+          listener.onInvitationReceived(groupId, groupName, inviter, reason);
+          break;
+        case EMGroupChangeEvent.ON_INVITATION_ACCEPTED:
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
+          String reason = map['reason'];
+          listener.onInvitationAccepted(groupId, invitee, reason);
+          break;
+        case EMGroupChangeEvent.ON_INVITATION_DECLINED:
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
+          String reason = map['reason'];
+          listener.onInvitationDeclined(groupId, invitee, reason);
+          break;
+        case EMGroupChangeEvent.ON_AUTO_ACCEPT_INVITATION:
+          String groupId = map['groupId'];
+          String inviter = map['inviter'];
+          String inviteMessage = map['inviteMessage'];
+          listener.onAutoAcceptInvitationFromGroup(groupId, inviter, inviteMessage);
+          break;
+        case EMGroupChangeEvent.ON_USER_REMOVED:
+          String groupId = map['groupId'];
+          String groupName = map['groupName'];
+          listener.onUserRemoved(groupId, groupName);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED:
+          String groupId = map['groupId'];
+          String groupName = map['groupName'];
+          String applicant = map['applicant'];
+          String reason = map['reason'];
+          listener.onRequestToJoinReceived(groupId, groupName, applicant, reason);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
+          String groupId = map['groupId'];
+          String groupName = map['groupName'];
+          String decliner = map['decliner'];
+          String reason = map['reason'];
+          listener.onRequestToJoinDeclined(groupId, groupName, decliner, reason);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
+          String groupId = map['groupId'];
+          String groupName = map['groupName'];
+          String accepter = map['accepter'];
+          listener.onRequestToJoinAccepted(groupId, groupName, accepter);
+          break;
+        case EMGroupChangeEvent.ON_GROUP_DESTROYED:
+          String groupId = map['groupId'];
+          String groupName = map['groupName'];
+          listener.onGroupDestroyed(groupId, groupName);
+          break;
+        case EMGroupChangeEvent.ON_MUTE_LIST_ADDED:
+          String groupId = map['groupId'];
+          List mutes = map['mutes'];
+          int muteExpire = map['muteExpire'];
+          listener.onMuteListAdded(groupId, mutes, muteExpire);
+          break;
+        case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
+          String groupId = map['groupId'];
+          List mutes = map['mutes'];
+          listener.onMuteListRemoved(groupId, mutes);
+          break;
+        case EMGroupChangeEvent.ON_ADMIN_ADDED:
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
+          listener.onAdminAdded(groupId, administrator);
+          break;
+        case EMGroupChangeEvent.ON_ADMIN_REMOVED:
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
+          listener.onAdminRemoved(groupId, administrator);
+          break;
+        case EMGroupChangeEvent.ON_OWNER_CHANGED:
+          String groupId = map['groupId'];
+          String newOwner = map['newOwner'];
+          String oldOwner = map['oldOwner'];
+          listener.onOwnerChanged(groupId, newOwner, oldOwner);
+          break;
+        case EMGroupChangeEvent.ON_MEMBER_JOINED:
+          String groupId = map['groupId'];
+          String member = map['member'];
+          listener.onMemberJoined(groupId, member);
+          break;
+        case EMGroupChangeEvent.ON_MEMBER_EXITED:
+          String groupId = map['groupId'];
+          String member = map['member'];
+          listener.onMemberExited(groupId, member);
+          break;
+        case EMGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
+          String groupId = map['groupId'];
+          String announcement = map['announcement'];
+          listener.onAnnouncementChanged(groupId, announcement);
+          break;
+        case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
+          String groupId = map['groupId'];
+          EMMucSharedFile sharedFile = EMMucSharedFile.from(map['sharedFile']);
+          listener.onSharedFileAdded(groupId, sharedFile);
+          break;
+        case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:
+          String groupId = map['groupId'];
+          String fileId = map['fileId'];
+          listener.onSharedFileDeleted(groupId, fileId);
+          break;
 
-    for (var listener in _groupChangeListeners) {
-      listener.onInvitationReceived(groupId, groupName, inviter, reason);
-    }
-  }
-
-  ///用户申请加入群事件
-  Future<void> _onRequestToJoinReceived(Map map) async {
-    String groupId = map['groupId'];
-    String groupName = map['groupName'];
-    String applicant = map['applicant'];
-    String reason = map['reason'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onRequestToJoinReceived(groupId, groupName, applicant, reason);
-    }
-  }
-
-  ///加群申请被同意事件
-  Future<void> _onRequestToJoinAccepted(Map map) async {
-    String groupId = map['groupId'];
-    String groupName = map['groupName'];
-    String accepter = map['accepter'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onRequestToJoinAccepted(groupId, groupName, accepter);
-    }
-  }
-
-  ///加群申请被拒绝事件
-  Future<void> _onRequestToJoinDeclined(Map map) async {
-    String groupId = map['groupId'];
-    String groupName = map['groupName'];
-    String decliner = map['decliner'];
-    String reason = map['reason'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onRequestToJoinDeclined(groupId, groupName, decliner, reason);
-    }
-  }
-
-  ///群组邀请被接受事件
-  Future<void> _onInvitationAccepted(Map map) async {
-    String groupId = map['groupId'];
-    String invitee = map['invitee'];
-    String reason = map['reason'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onInvitationAccepted(groupId, invitee, reason);
-    }
-  }
-
-  ///群组邀请被拒绝事件
-  Future<void> _onInvitationDeclined(Map map) async {
-    String groupId = map['groupId'];
-    String invitee = map['invitee'];
-    String reason = map['reason'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onInvitationDeclined(groupId, invitee, reason);
-    }
-  }
-
-  ///当前登录用户被管理员移除出群组事件
-  Future<void> _onUserRemoved(Map map) async {
-    String groupId = map['groupId'];
-    String groupName = map['groupName'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onUserRemoved(groupId, groupName);
-    }
-  }
-
-  ///群组被解散事件
-  Future<void> _onGroupDestroyed(Map map) async {
-    String groupId = map['groupId'];
-    String groupName = map['groupName'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onGroupDestroyed(groupId, groupName);
-    }
-  }
-
-  ///自动同意加入群组事件
-  Future<void> _onAutoAcceptInvitationFromGroup(Map map) async {
-    String groupId = map['groupId'];
-    String inviter = map['inviter'];
-    String inviteMessage = map['inviteMessage'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onAutoAcceptInvitationFromGroup(groupId, inviter, inviteMessage);
-    }
-  }
-
-  ///成员被禁言事件
-  Future<void> _onMuteListAdded(Map map) async {
-
-    String groupId = map['groupId'];
-    List mutes = map['mutes'];
-    int muteExpire = map['muteExpire'];
-
-    for (var listener in _groupChangeListeners) {
-      print('[EMGroupChange:]_onMuteListAdded');
-      listener.onMuteListAdded(groupId, mutes, muteExpire);
-    }
-  }
-
-  ///成员从禁言列表中移除事件
-  Future<void> _onMuteListRemoved(Map map) async {
-    String groupId = map['groupId'];
-    List mutes = map['mutes'];
-
-    for (var listener in _groupChangeListeners) {
-      print('[EMGroupChange:]_onMuteListRemoved');
-      listener.onMuteListRemoved(groupId, mutes);
-    }
-  }
-
-  ///添加成员管理员权限事件
-  Future<void> _onAdminAdded(Map map) async {
-    String groupId = map['groupId'];
-    String administrator = map['administrator'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onAdminAdded(groupId, administrator);
-    }
-  }
-
-  ///取消某管理员权限事件
-  Future<void> _onAdminRemoved(Map map) async {
-    String groupId = map['groupId'];
-    String administrator = map['administrator'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onAdminRemoved(groupId, administrator);
-    }
-  }
-
-  ///转移群组所有者权限事件
-  Future<void> _onOwnerChanged(Map map) async {
-    String groupId = map['groupId'];
-    String newOwner = map['newOwner'];
-    String oldOwner = map['oldOwner'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onOwnerChanged(groupId, newOwner, oldOwner);
-    }
-  }
-
-  ///群组加入新成员事件
-  Future<void> _onMemberJoined(Map map) async {
-    String groupId = map['groupId'];
-    String member = map['member'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onMemberJoined(groupId, member);
-    }
-  }
-
-  ///群组成员主动退出事件
-  Future<void> _onMemberExited(Map map) async {
-    String groupId = map['groupId'];
-    String member = map['member'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onMemberExited(groupId, member);
-    }
-  }
-
-  ///群公告更改事件
-  Future<void> _onAnnouncementChanged(Map map) async {
-    String groupId = map['groupId'];
-    String announcement = map['announcement'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onAnnouncementChanged(groupId, announcement);
-    }
-  }
-
-  ///群组增加共享文件事件
-  Future<void> _onSharedFileAdded(Map map) async {
-    String groupId = map['groupId'];
-    EMMucSharedFile sharedFile = EMMucSharedFile.from(map['sharedFile']);
-
-    for (var listener in _groupChangeListeners) {
-      listener.onSharedFileAdded(groupId, sharedFile);
-    }
-  }
-
-  ///群组删除共享文件事件
-  Future<void> _onSharedFileDeleted(Map map) async {
-    String groupId = map['groupId'];
-    String fileId = map['fileId'];
-
-    for (var listener in _groupChangeListeners) {
-      listener.onSharedFileDeleted(groupId, fileId);
+      }
     }
   }
 }
