@@ -6,38 +6,37 @@ abstract class EMConnectionListener {
 }
 
 abstract class EMMultiDeviceListener {
-  void onContactEvent(EMContactGroupEvent event, String target, String ext);
+  void onContactEvent(int event, String target, String ext);
   void onGroupEvent(
-      EMContactGroupEvent event, String target, List<String> usernames);
+      int event, String target, List<String> usernames);
 }
 
-enum EMContactGroupEvent {
-  //TODO: confirm enumeration value sorted correctly
-  CONTACT_REMOV,
-  CONTACT_ACCEP,
-  CONTACT_DECLIN,
-  CONTACT_BA,
-  CONTACT_ALLO,
-  GROUP_CREATE,
-  GROUP_DESTROY,
-  GROUP_JOIN,
-  GROUP_LEAVE,
-  GROUP_APPLY,
-  GROUP_APPLY_ACCEPT,
-  GROUP_APPLY_DECLINE,
-  GROUP_INVITE,
-  GROUP_INVITE_ACCEPT,
-  GROUP_INVITE_DECLINE,
-  GROUP_KICK,
-  GROUP_BAN,
-  GROUP_ALLOW,
-  GROUP_BLOCK,
-  GROUP_UNBLOCK,
-  GROUP_ASSIGN_OWNER,
-  GROUP_ADD_ADMIN,
-  GROUP_REMOVE_ADMIN,
-  GROUP_ADD_MUTE,
-  GROUP_REMOVE_MUTE
+class EMContactGroupEvent {
+  static const int  CONTACT_REMOVE = 2;
+  static const int	CONTACT_ACCEPT = 3;
+  static const int 	CONTACT_DECLINE = 4;
+  static const int 	CONTACT_BAN = 5;
+  static const int 	CONTACT_ALLOW = 6;
+  static const int 	GROUP_CREATE = 10;
+  static const int 	GROUP_DESTROY = 11;
+  static const int 	GROUP_JOIN = 12;
+  static const int 	GROUP_LEAVE = 13;
+  static const int 	GROUP_APPLY = 14;
+  static const int 	GROUP_APPLY_ACCEPT = 15;
+  static const int 	GROUP_APPLY_DECLINE = 16;
+  static const int 	GROUP_INVITE = 17;
+  static const int 	GROUP_INVITE_ACCEPT = 18;
+  static const int 	GROUP_INVITE_DECLINE = 19;
+  static const int 	GROUP_KICK = 20;
+  static const int 	GROUP_BAN = 21;
+  static const int 	GROUP_ALLOW = 22;
+  static const int 	GROUP_BLOCK = 23;
+  static const int 	GROUP_UNBLOCK = 24;
+  static const int 	GROUP_ASSIGN_OWNER = 25;
+  static const int 	GROUP_ADD_ADMIN = 26;
+  static const int 	GROUP_REMOVE_ADMIN = 27;
+  static const int 	GROUP_ADD_MUTE = 28;
+  static const int 	GROUP_REMOVE_MUTE = 29;
 }
 
 abstract class EMContactEventListener {

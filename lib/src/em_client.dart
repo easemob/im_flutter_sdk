@@ -29,7 +29,6 @@ class EMClient {
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
-  Function _clientListenerFunc;
   static EMClient _instance;
 
   /// instance fields
@@ -50,11 +49,10 @@ class EMClient {
   void _addNativeMethodCallHandler() {
     _emClientChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onConnectionDidChanged) {
-        return _onConnectionChanged(argMap);
-      } else if (call.method == EMSDKMethod.onClientMigrate2x) {
-        // client listener onMigrate2x
-        _clientListenerFunc(argMap["status"]);
+      if (call.method == EMSDKMethod.onConnected) {
+        return _onConnected();
+      } else if (call.method == EMSDKMethod.onDisconnected) {
+        return _onDisconnected(argMap);
       } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
         return _onMultiDeviceEvent(argMap);
       }
@@ -316,19 +314,6 @@ class EMClient {
     return _connected;
   }
 
-  /// getRobotsFromServer - return list of robots from server.
-  Future<List<EMContact>> getRobotsFromServer(
-      {onError(int code, String desc)}) async {
-    Map<String, dynamic> result =
-        await _emClientChannel.invokeMethod(EMSDKMethod.getRobotsFromServer);
-    if (result['success']) {
-      return _convertContactList(result['contacts']);
-    } else {
-      if (onError != null) onError(result['code'], result['desc']);
-      return null;
-    }
-  }
-
   List<EMContact> _convertContactList(contactList) {
     var result = List<EMContact>();
     for (var contact in contactList) {
@@ -368,31 +353,23 @@ class EMClient {
     _connectionListeners.remove(listener);
   }
 
-  /// onMigrate2x - set client listener.
-  /// Upon receiving client migration event, this function [onMigrate2x] would be called.
-  void onMigrate2x(onMigrate2x(bool success)) {
-    _clientListenerFunc = onMigrate2x;
+  /// once connection changed, listeners to be informed.
+  Future<void> _onConnected() async {
+    for (var listener in _connectionListeners) {
+      listener.onConnected();
+    }
   }
 
-  /// once connection changed, listeners to be informed.
-  Future<void> _onConnectionChanged(Map map) async {
-    bool isConnected = map["isConnected"];
+  Future<void> _onDisconnected(Map map) async {
     for (var listener in _connectionListeners) {
-      // TODO: to inform listeners asynchronously
-      if (isConnected) {
-        _connected = true;
-        listener.onConnected();
-      } else {
-        _connected = false;
-        int errorCode = map["errorCode"];
-        listener.onDisconnected(errorCode);
-      }
+      int errorCode = map["errorCode"];
+      listener.onDisconnected(errorCode);
     }
   }
 
   /// on multi device event emitted, call listeners func.
   Future<void> _onMultiDeviceEvent(Map map) async {
-    var event = map["event"];
+    var event = map["event"] as int;
     for (var listener in _multiDeviceListeners) {
       if (event >= EMContactGroupEvent.GROUP_CREATE) {
         listener.onGroupEvent(event, map['target'], map['userNames']);

@@ -10,18 +10,16 @@ class EMSDKMethod {
   static const String setDebugMode = 'setDebugMode';
   static const String updateCurrentUserNick = 'updateCurrentUserNick';
   static const String uploadLog = 'uploadLog';
-  static const String getRobotsFromServer = 'getRobotsFromServer';
   static const String compressLogs = 'compressLogs';
-  static const String getLoggedInDevicesFromServer =
-      'getLoggedInDevicesFromServer';
   static const String kickDevice = 'kickDevice';
   static const String kickAllDevices = 'kickAllDevices';
   static const String sendFCMTokenToServer = 'sendFCMTokenToServer';
   static const String sendHMSPushTokenToServer = 'sendHMSPushTokenToServer';
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
-  static const String onClientMigrate2x = 'onClientMigrate2x';
-  static const String onConnectionDidChanged = 'onConnectionDidChanged';
-
+  static const String onConnected = "onConnected";
+  static const String onDisconnected = "onDisconnected";
+  static const String getLoggedInDevicesFromServer =
+      'getLoggedInDevicesFromServer';
 
   /// EMContactManager methods
   static const String addContact = 'addContact';
@@ -30,6 +28,7 @@ class EMSDKMethod {
   static const String addUserToBlackList = 'addUserToBlackList';
   static const String removeUserFromBlackList = 'removeUserFromBlackList';
   static const String getBlackListFromServer = 'getBlackListFromServer';
+  static const String saveBlackList = 'saveBlackList';
   static const String acceptInvitation = 'acceptInvitation';
   static const String declineInvitation = 'declineInvitation';
   static const String getSelfIdsOnOtherPlatform = 'getSelfIdsOnOtherPlatform';
@@ -94,30 +93,30 @@ class EMSDKMethod {
   static final String joinChatRoom = "joinChatRoom";
   static final String leaveChatRoom = "leaveChatRoom";
   static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
-  static final String fetchChatRoomFromServer = "asyncFetchChatRoomFromServer";
+  static final String fetchChatRoomFromServer = "fetchChatRoomFromServer";
   static final String getChatRoom = "getChatRoom";
   static final String getAllChatRooms = "getAllChatRooms";
-  static final String createChatRoom = "asyncCreateChatRoom";
-  static final String destroyChatRoom = "asyncDestroyChatRoom";
-  static final String changeChatRoomSubject = "asyncChangeChatRoomSubject";
-  static final String changeChatRoomDescription = "asyncChangeChatRoomDescription";
-  static final String fetchChatRoomMembers = "asyncFetchChatRoomMembers";
-  static final String muteChatRoomMembers = "asyncMuteChatRoomMembers";
-  static final String unMuteChatRoomMembers = "asyncUnMuteChatRoomMembers";
-  static final String changeChatRoomOwner = "asyncChangeOwner";
-  static final String addChatRoomAdmin = "asyncAddChatRoomAdmin";
-  static final String removeChatRoomAdmin = "asyncRemoveChatRoomAdmin";
-  static final String fetchChatRoomMuteList = "asyncFetchChatRoomMuteList";
-  static final String removeChatRoomMembers = "asyncRemoveChatRoomMembers";
-  static final String blockChatRoomMembers = "asyncBlockChatRoomMembers";
-  static final String unBlockChatRoomMembers = "asyncUnBlockChatRoomMembers";
-  static final String fetchChatRoomBlackList = "asyncFetchChatRoomBlackList";
-  static final String updateChatRoomAnnouncement = "asyncUpdateChatRoomAnnouncement";
-  static final String fetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
+  static final String createChatRoom = "createChatRoom";
+  static final String destroyChatRoom = "destroyChatRoom";
+  static final String changeChatRoomSubject = "changeChatRoomSubject";
+  static final String changeChatRoomDescription = "changeChatRoomDescription";
+  static final String fetchChatRoomMembers = "fetchChatRoomMembers";
+  static final String muteChatRoomMembers = "muteChatRoomMembers";
+  static final String unMuteChatRoomMembers = "unMuteChatRoomMembers";
+  static final String changeChatRoomOwner = "changeChatRoomOwner";
+  static final String addChatRoomAdmin = "addChatRoomAdmin";
+  static final String removeChatRoomAdmin = "removeChatRoomAdmin";
+  static final String fetchChatRoomMuteList = "fetchChatRoomMuteList";
+  static final String removeChatRoomMembers = "removeChatRoomMembers";
+  static final String blockChatRoomMembers = "blockChatRoomMembers";
+  static final String unBlockChatRoomMembers = "unBlockChatRoomMembers";
+  static final String fetchChatRoomBlackList = "fetchChatRoomBlackList";
+  static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
+  static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
 
 
-  ///EMChatRoomManagerListener
-  static final String chatRoomChange = "chatRoomChange";
+  /// EMChatRoomManagerListener
+  static final String chatRoomChange = "onChatRoomChanged";
 
   /// EMGroupManager
   static const String getAllGroups = "getAllGroups";
@@ -159,50 +158,8 @@ class EMSDKMethod {
   static const String deleteGroupSharedFile = "deleteGroupSharedFile";
   static const String downloadGroupSharedFile = "downloadGroupSharedFile";
   static const String updateGroupExtension = "updateGroupExtension";
-  static const String onInvitationReceived = "onInvitationReceived";
-  static const String onRequestToJoinReceived = "onRequestToJoinReceived";
-  static const String onRequestToJoinAccepted = "onRequestToJoinAccepted";
-  static const String onRequestToJoinDeclined = "onRequestToJoinDeclined";
-  static const String onInvitationAccepted = "onInvitationAccepted";
-  static const String onInvitationDeclined = "onInvitationDeclined";
-  static const String onUserRemoved = "onUserRemoved";
-  static const String onGroupDestroyed = "onGroupDestroyed";
-  static const String onAutoAcceptInvitationFromGroup = "onAutoAcceptInvitationFromGroup";
-  static const String onMuteListAdded = "onMuteListAdded";
-  static const String onMuteListRemoved = "onMuteListRemoved";
-  static const String onAdminAdded = "onAdminAdded";
-  static const String onAdminRemoved = "onAdminRemoved";
-  static const String onOwnerChanged = "onOwnerChanged";
-  static const String onMemberJoined = "onMemberJoined";
-  static const String onMemberExited = "onMemberExited";
-  static const String onAnnouncementChanged = "onAnnouncementChanged";
-  static const String onSharedFileAdded = "onSharedFileAdded";
-  static const String onSharedFileDeleted = "onSharedFileDeleted";
 
+  /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
-
-  /// EMChatroomManager
-  static const String getChatroomsFromServer = "getChatroomsFromServer";
-  static const String createChatroom = "createChatroom";
-  static const String joinChatroom = "joinChatroom";
-  static const String leaveChatroom = "leaveChatroom";
-  static const String destroyChatroom = "destroyChatroom";
-  static const String getChatroomSpecificationFromServer = "getChatroomSpecificationFromServer";
-  static const String getChatroomMemberListFromServer = "getChatroomMemberListFromServer";
-  static const String getChatroomBlacklistFromServer = "getChatroomBlacklistFromServer";
-  static const String getChatroomMuteListFromServer = "getChatroomMuteListFromServer";
-  static const String getChatroomAnnouncement = "getChatroomAnnouncement";
-  static const String chatRoomUpdateSubject = "chatRoomUpdateSubject";
-  static const String chatRoomUpdateDescription = "chatRoomUpdateDescription";
-  static const String chatRoomRemoveMembers = "chatRoomRemoveMembers";
-  static const String chatRoomBlockMembers = "chatRoomBlockMembers";
-  static const String chatRoomUnblockMembers = "chatRoomUnblockMembers";
-  static const String chatRoomUpdateChatroomOwner = "chatRoomUpdateChatroomOwner";
-  static const String chatRoomAddAdmin = "chatRoomAddAdmin";
-  static const String chatRoomRemoveAdmin = "chatRoomRemoveAdmin";
-  static const String chatRoomMuteMembers = "chatRoomMuteMembers";
-  static const String chatRoomUnmuteMembers = "chatRoomUnmuteMembers";
-  static const String updateChatroomAnnouncement = "updateChatroomAnnouncement";
-  static const String onChatroomChanged = "onChatroomChanged";
 
 }
