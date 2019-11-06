@@ -231,8 +231,11 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 
     private void compressLogs(Object args, Result result) {
         try{
-            EMClient.getInstance().compressLogs();
-            onSuccess(result);
+            String path = EMClient.getInstance().compressLogs();
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("logs", path);
+            result.success(data);
         }catch(HyphenateException e) {
             onError(result, e);
         }
