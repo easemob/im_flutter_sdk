@@ -29,7 +29,6 @@ class EMClient {
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
-  Function _clientListenerFunc;
   static EMClient _instance;
 
   /// instance fields
@@ -50,11 +49,10 @@ class EMClient {
   void _addNativeMethodCallHandler() {
     _emClientChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onConnectionDidChanged) {
-        return _onConnectionChanged(argMap);
-      } else if (call.method == EMSDKMethod.onClientMigrate2x) {
-        // client listener onMigrate2x
-        _clientListenerFunc(argMap["status"]);
+      if (call.method == EMSDKMethod.onConnected) {
+        return _onConnected();
+      } else if (call.method == EMSDKMethod.onDisconnected) {
+        return _onDisconnected(argMap);
       } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
         return _onMultiDeviceEvent(argMap);
       }
@@ -316,29 +314,6 @@ class EMClient {
     return _connected;
   }
 
-  /// getRobotsFromServer - return list of robots from server.
-  Future<List<EMContact>> getRobotsFromServer(
-      {onError(int code, String desc)}) async {
-    Map<String, dynamic> result =
-        await _emClientChannel.invokeMethod(EMSDKMethod.getRobotsFromServer);
-    if (result['success']) {
-      return _convertContactList(result['contacts']);
-    } else {
-      if (onError != null) onError(result['code'], result['desc']);
-      return null;
-    }
-  }
-
-  List<EMContact> _convertContactList(contactList) {
-    var result = List<EMContact>();
-    for (var contact in contactList) {
-      var c = EMContact(userName: contact["userName"]);
-      c.nickName = contact["nickName"];
-      result.add(c);
-    }
-    return result;
-  }
-
   /// getChatConfigPrivate - TODO: implement later
   /// EMChatConfigPrivate getChatConfigPrivate() {}
 
@@ -368,25 +343,17 @@ class EMClient {
     _connectionListeners.remove(listener);
   }
 
-  /// onMigrate2x - set client listener.
-  /// Upon receiving client migration event, this function [onMigrate2x] would be called.
-  void onMigrate2x(onMigrate2x(bool success)) {
-    _clientListenerFunc = onMigrate2x;
+  /// once connection changed, listeners to be informed.
+  Future<void> _onConnected() async {
+    for (var listener in _connectionListeners) {
+      listener.onConnected();
+    }
   }
 
-  /// once connection changed, listeners to be informed.
-  Future<void> _onConnectionChanged(Map map) async {
-    bool isConnected = map["isConnected"];
+  Future<void> _onDisconnected(Map map) async {
     for (var listener in _connectionListeners) {
-      // TODO: to inform listeners asynchronously
-      if (isConnected) {
-        _connected = true;
-        listener.onConnected();
-      } else {
-        _connected = false;
-        int errorCode = map["errorCode"];
-        listener.onDisconnected(errorCode);
-      }
+      int errorCode = map["errorCode"];
+      listener.onDisconnected(errorCode);
     }
   }
 
@@ -394,10 +361,10 @@ class EMClient {
   Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
-      if (event >= EMContactGroupEvent.GROUP_CREATE) {
-        listener.onGroupEvent(event, map['target'], map['userNames']);
+      if (event >= 10) {
+        listener.onGroupEvent(convertIntToEMContactGroupEvent(event), map['target'], map['userNames']);
       } else {
-        listener.onContactEvent(event, map['target'], map['ext']);
+        listener.onContactEvent(convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
       }
     }
   }
@@ -419,4 +386,62 @@ class EMClient {
   EMGroupManager groupManager(){
     return _groupManager;
   }
+
+  EMContactGroupEvent convertIntToEMContactGroupEvent(int i){
+    switch(i){
+      case 2:
+        return EMContactGroupEvent.CONTACT_REMOVE;
+      case 3:
+        return EMContactGroupEvent.CONTACT_ACCEPT;
+      case 4:
+        return EMContactGroupEvent.CONTACT_DECLINE;
+      case 5:
+        return EMContactGroupEvent.CONTACT_BAN;
+      case 6:
+        return EMContactGroupEvent.CONTACT_ALLOW;
+      case 10:
+        return EMContactGroupEvent.GROUP_CREATE;
+      case 11:
+        return EMContactGroupEvent.GROUP_DESTROY;
+      case 12:
+        return EMContactGroupEvent.GROUP_JOIN;
+      case 13:
+        return EMContactGroupEvent.GROUP_LEAVE;
+      case 14:
+        return EMContactGroupEvent.GROUP_APPLY;
+      case 15:
+        return EMContactGroupEvent.GROUP_APPLY_ACCEPT;
+      case 16:
+        return EMContactGroupEvent.GROUP_APPLY_DECLINE;
+      case 17:
+        return EMContactGroupEvent.GROUP_INVITE;
+      case 18:
+        return EMContactGroupEvent.GROUP_INVITE_ACCEPT;
+      case 19:
+        return EMContactGroupEvent.GROUP_INVITE_DECLINE;
+      case 20:
+        return EMContactGroupEvent.GROUP_KICK;
+      case 21:
+        return EMContactGroupEvent.GROUP_BAN;
+      case 22:
+        return EMContactGroupEvent.GROUP_ALLOW;
+      case 23:
+        return EMContactGroupEvent.GROUP_BLOCK;
+      case 24:
+        return EMContactGroupEvent.GROUP_UNBLOCK;
+      case 25:
+        return EMContactGroupEvent.GROUP_ASSIGN_OWNER;
+      case 26:
+        return EMContactGroupEvent.GROUP_ADD_ADMIN;
+      case 27:
+        return EMContactGroupEvent.GROUP_REMOVE_ADMIN;
+      case 28:
+        return EMContactGroupEvent.GROUP_ADD_MUTE;
+      case 29:
+        return EMContactGroupEvent.GROUP_REMOVE_MUTE;
+      default:
+        return null;
+    }
+  }
+
 }
