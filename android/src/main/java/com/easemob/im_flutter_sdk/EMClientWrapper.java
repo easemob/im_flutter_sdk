@@ -269,7 +269,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
         }).start();
     }
 
-
     private void kickDevice(Object args, Result result){
         new Thread(new Runnable() {
             @Override
