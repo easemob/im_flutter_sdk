@@ -2,7 +2,6 @@ import "dart:async";
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:meta/meta.dart';
 
 import "em_conversation.dart";

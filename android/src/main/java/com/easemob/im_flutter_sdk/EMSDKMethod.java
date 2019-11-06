@@ -17,10 +17,9 @@ public class EMSDKMethod {
     static final String kickAllDevices = "kickAllDevices";
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
-    static final String getRobotsFromServer = "getRobotsFromServer";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
-    static final String onClientMigrate2x = "onClientMigrate2x"; // 3.x sdk应该用不上
-    static final String onConnectionDidChanged = "onConnectionDidChanged";
+    static final String onConnected = "onConnected";
+    static final String onDisconnected = "onDisconnected";
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
 

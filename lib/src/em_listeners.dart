@@ -13,11 +13,11 @@ abstract class EMMultiDeviceListener {
 
 enum EMContactGroupEvent {
   //TODO: confirm enumeration value sorted correctly
-  CONTACT_REMOV,
-  CONTACT_ACCEP,
-  CONTACT_DECLIN,
-  CONTACT_BA,
-  CONTACT_ALLO,
+  CONTACT_REMOVE,
+  CONTACT_ACCEPT,
+  CONTACT_DECLINE,
+  CONTACT_BAN,
+  CONTACT_ALLOW,
   GROUP_CREATE,
   GROUP_DESTROY,
   GROUP_JOIN,
@@ -37,7 +37,7 @@ enum EMContactGroupEvent {
   GROUP_ADD_ADMIN,
   GROUP_REMOVE_ADMIN,
   GROUP_ADD_MUTE,
-  GROUP_REMOVE_MUTE
+  GROUP_REMOVE_MUTE,
 }
 
 abstract class EMContactEventListener {
