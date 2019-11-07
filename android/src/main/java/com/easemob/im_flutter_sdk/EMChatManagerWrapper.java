@@ -61,7 +61,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onCmdMessageReceived(List<EMMessage> messages) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                ArrayList<Map<String, Object>> msgs = new ArrayList<Map<String, Object>>();
                 for(EMMessage message : messages) {
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
@@ -74,7 +74,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onMessageRead(List<EMMessage> messages) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                ArrayList<Map<String, Object>> msgs = new ArrayList<Map<String, Object>>();
                 for(EMMessage message : messages) {
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
@@ -87,7 +87,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onMessageDelivered(List<EMMessage> messages) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                ArrayList<Map<String, Object>> msgs = new ArrayList<Map<String, Object>>();
                 for(EMMessage message : messages) {
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
@@ -100,7 +100,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             @Override
             public void onMessageRecalled(List<EMMessage> messages) {
                 Map<String, Object> data = new HashMap<String, Object>();
-                List<Map<String, Object>> msgs = new LinkedList<Map<String, Object>>();
+                ArrayList<Map<String, Object>> msgs = new ArrayList<Map<String, Object>>();
                 for(EMMessage message : messages) {
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }

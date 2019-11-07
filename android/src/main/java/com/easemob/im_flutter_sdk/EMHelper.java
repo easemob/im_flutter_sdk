@@ -1,5 +1,8 @@
 package com.easemob.im_flutter_sdk;
 
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
+
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
@@ -8,6 +11,7 @@ import com.hyphenate.chat.EMConversation.EMConversationType;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
@@ -20,16 +24,24 @@ import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.util.EMLog;
+import com.hyphenate.util.PathUtil;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
 class EMHelper {
+
+    private static EMMessage.ChatType emChatType;
+
     //Incomplete implementation
     static EMMessage convertDataMapToMessage(JSONObject args) {
         EMMessage message = null;
@@ -38,50 +50,140 @@ class EMHelper {
 
             int data_type = Integer.parseInt(args.getString("type"));
             int data_chatType = Integer.parseInt(args.getString("chatType"));
-            EMMessage.ChatType emChatType = EMMessage.ChatType.Chat;
-            switch (data_chatType){
-                case 0:
-                    emChatType = EMMessage.ChatType.Chat;
-                    break;
-                case 1:
-                    emChatType = EMMessage.ChatType.GroupChat;
-                    break;
-                case 2:
-                    emChatType = EMMessage.ChatType.ChatRoom;
-                    break;
-            }
+            emChatType = EMMessage.ChatType.Chat;
+            intToChatType(data_chatType);
+
             String data_to = args.getString("to");
             JSONObject data_body = args.getJSONObject("body");
-            String content = data_body.getString("message");
 
-//            String data_msgid = args.getString("msgid");
-//            JSONObject data_attributes = args.getJSONObject("attributes");
-//            TXT, IMAGE, VIDEO, LOCATION, VOICE, FILE, CMD
             switch(data_type){
                 case 0:
                     message = EMMessage.createSendMessage(EMMessage.Type.TXT);
+                    String content = data_body.getString("message");
                     EMTextMessageBody body = new EMTextMessageBody(content);
                     message.addBody(body);
-                    message.setChatType(emChatType);
-                    message.setTo(data_to);
+                    setCurrency(message,emChatType,data_to);
+                    setExt(args,message);
                     break;
                 case 1:
+                    message = EMMessage.createSendMessage(Type.IMAGE);
+                    String localUrl = data_body.getString("localUrl");
+                    File imageFile = new File(localUrl);
+                    if (imageFile.exists()){
+                        EMImageMessageBody imageMessageBody = new EMImageMessageBody(imageFile);
+                        message.addBody(imageMessageBody);
+                        setCurrency(message,emChatType,data_to);
+                    }
+                    setExt(args,message);
                     break;
                 case 2:
+                    message = EMMessage.createSendMessage(Type.VIDEO);
+                    String videoUrl = data_body.getString("localUrl");
+                    int videoDuration = data_body.getInt("videoDuration");
+                    String fileLength = data_body.getString("fileLength");
+                    File videoFile = new File(videoUrl);
+                    if (videoFile.exists()){
+                        EMVideoMessageBody videoMessageBody = new EMVideoMessageBody(videoUrl,getThumbBitmap(videoUrl),videoDuration,Integer.parseInt(fileLength));
+                        message.addBody(videoMessageBody);
+                        setCurrency(message,emChatType,data_to);
+                    }
+                    setExt(args,message);
                     break;
                 case 3:
+                    message = EMMessage.createSendMessage(Type.LOCATION);
+                    String address = data_body.getString("address");
+                    double latitude = data_body.getDouble("latitude");
+                    double longitude = data_body.getDouble("longitude");
+                    EMLocationMessageBody emLocationMessageBody = new EMLocationMessageBody(address, latitude, longitude);
+                    message.addBody(emLocationMessageBody);
+                    setCurrency(message,emChatType,data_to);
+                    setExt(args,message);
                     break;
                 case 4:
+                    message = EMMessage.createSendMessage(Type.VOICE);
+                    String voiceUrl = data_body.getString("localUrl");
+                    int voiceDuration = data_body.getInt("voiceDuration");
+                    File voiceFile = new File(voiceUrl);
+                    if (voiceFile.exists()){
+                        EMVoiceMessageBody videoMessageBody = new EMVoiceMessageBody(voiceFile,voiceDuration);
+                        message.addBody(videoMessageBody);
+                        setCurrency(message,emChatType,data_to);
+                    }
+                    setExt(args,message);
                     break;
                 case 5:
+                    message = EMMessage.createSendMessage(Type.FILE);
+                    String fileUrl = data_body.getString("localUrl");
+                    File file = new File(fileUrl);
+                    if (file.exists()){
+                        EMNormalFileMessageBody fileMessageBody = new EMNormalFileMessageBody(file);
+                        message.addBody(fileMessageBody);
+                        setCurrency(message,emChatType,data_to);
+                    }
+                    setExt(args,message);
                     break;
                 case 6:
+                    message = EMMessage.createSendMessage(Type.CMD);
+                    String action = data_body.getString("action");
+                    EMCmdMessageBody cmdMessageBody = new EMCmdMessageBody(action);
+                    message.addBody(cmdMessageBody);
+                    setCurrency(message,emChatType,data_to);
+                    setExt(args,message);
                     break;
             }
         }catch(Exception e){
             e.printStackTrace();
         }
         return message;
+    }
+
+    private static void setExt(JSONObject args, EMMessage message){
+        try {
+            if (null != args.getJSONObject("attributes")){
+                JSONObject data = args.getJSONObject("attributes");
+                Iterator iterator = data.keys();
+                while (iterator.hasNext()){
+                    String key = data.keys().next();
+                    message.setAttribute(key,data.getString(key));
+                    iterator.next();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void setCurrency(EMMessage message,EMMessage.ChatType type,String to){
+        message.setChatType(type);
+        message.setTo(to);
+    }
+
+    public static void intToChatType(int type){
+        switch (type){
+            case 0:
+                emChatType = EMMessage.ChatType.Chat;
+                break;
+            case 1:
+                emChatType = EMMessage.ChatType.GroupChat;
+                break;
+            case 2:
+                emChatType = EMMessage.ChatType.ChatRoom;
+                break;
+        }
+    }
+
+    private static String getThumbBitmap(String videoPath){
+        File file = new File(PathUtil.getInstance().getImagePath(), "thvideo" + System.currentTimeMillis());
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            Bitmap ThumbBitmap = ThumbnailUtils.createVideoThumbnail(videoPath, 3);
+            ThumbBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.close();
+            return file.getAbsolutePath();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     /**
@@ -102,9 +204,9 @@ class EMHelper {
         result.put("direction", getDirect(message));
         result.put("from", message.getFrom());
         result.put("listened", Boolean.valueOf(message.isListened()));
-        result.put("localTime", message.localTime());
+        result.put("localTime", String.valueOf(message.localTime()));
         result.put("msgId", message.getMsgId());
-        result.put("msgTime", message.getMsgTime());
+        result.put("msgTime", String.valueOf(message.getMsgTime()));
         result.put("progress", message.progress());
         result.put("status", getEMMessageStatus(message));
         result.put("to", message.getTo());
@@ -269,48 +371,6 @@ class EMHelper {
         return pageResult;
     }
 
-    /**
-     * 将EMGroup 对象解析并包装成 Map
-     * @param group
-     * @return
-     */
-    static Map<String, Object> convertEMGroupToStringMap(EMGroup group){
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put("groupId", group.getGroupId());
-        result.put("groupName", group.getGroupName());
-        return result;
-    }
-
-    /**
-     * 将EMCursorResult 对象解析并包装成 Map
-     * @param emCursorResult
-     * @return
-     */
-    static Map<String, Object> convertEMCursorResultToStringMap(EMCursorResult emCursorResult){
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put("cursor", emCursorResult.getCursor());
-        List list = (List)emCursorResult.getData();
-        String className = list.get(0).getClass().getSimpleName();
-        if(className.equals("String")){
-            result.put("data", list);
-        }
-        return result;
-    }
-
-    /**
-     * 将EMMucSharedFile 对象解析并包装成 Map
-     * @param file
-     * @return
-     */
-    static Map<String, Object> convertEMMucSharedFileToStringMap(EMMucSharedFile file){
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put("fileId", file.getFileId());
-        result.put("fileName", file.getFileName());
-        result.put("fileOwner", file.getFileOwner());
-        result.put("updateTime", file.getFileUpdateTime());
-        result.put("fileSize", file.getFileSize());
-        return result;
-    }
 
     /**
      * \~chinese
@@ -405,8 +465,8 @@ class EMHelper {
      * @param type
      * @return
      */
-    static int enumMessageTypeToInt(EMMessage.Type type){
-        switch (type){
+    static int enumMessageTypeToInt(EMMessage.Type type) {
+        switch (type) {
             case TXT:
                 return 0;
             case IMAGE:
@@ -424,6 +484,63 @@ class EMHelper {
             default:
                 return -1;
         }
+    }
+    /**
+     * 将EMGroup 对象解析并包装成 Map
+     * @param group
+     * @return
+     */
+    static Map<String, Object> convertEMGroupToStringMap(EMGroup group){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", group.getGroupId());
+        result.put("groupName", group.getGroupName());
+        result.put("description", group.getDescription());
+        result.put("isPublic", group.isPublic());
+        result.put("isMemberAllowToInvite", group.isMemberAllowToInvite());
+        result.put("isMemberOnly", group.isMemberOnly());
+        result.put("maxUserCount", group.getMaxUserCount());
+        result.put("isMsgBlocked", group.isMsgBlocked());
+        result.put("owner", group.getOwner());
+        result.put("members", group.getMembers());
+        result.put("memberCount", group.getMemberCount());
+        result.put("adminList", group.getAdminList());
+        result.put("blackList", group.getBlackList());
+        result.put("muteList", group.getMuteList());
+        result.put("extension", group.getExtension());
+        result.put("announcement", group.getAnnouncement());
+        List<Map<String, Object>> fileList = new LinkedList<>();
+        for(EMMucSharedFile file : group.getShareFileList()){
+            fileList.add(convertEMMucSharedFileToStringMap(file));
+        }
+        result.put("sharedFileList", fileList);
+
+        List occupants = new LinkedList();
+        occupants.add(group.getOwner());
+        occupants.addAll(group.getAdminList());
+        occupants.addAll(group.getMembers());
+        result.put("occupants", occupants);
+
+        int permissionType = -1;
+        if(group.getMembers().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 0;
+        }
+        if(group.getAdminList().contains(EMClient.getInstance().getCurrentUser())){
+            permissionType = 1;
+        }
+        if(EMClient.getInstance().getCurrentUser().equals(group.getOwner())){
+            permissionType = 2;
+        }
+        result.put("permissionType", permissionType);
+
+        List noPushGroups = EMClient.getInstance().pushManager().getNoPushGroups();
+        boolean isPushNotificationEnabled = false;
+        if (noPushGroups != null) {
+            if(noPushGroups.contains(group.getGroupId())){
+                isPushNotificationEnabled = true;
+            }
+        }
+        result.put("isPushNotificationEnabled", isPushNotificationEnabled);
+        return result;
     }
 
     static EMConversationType convertIntToEMConversationType(int type){
@@ -534,6 +651,52 @@ class EMHelper {
             return Type.CMD;
         }
         return Type.TXT;
+    }
+
+    /**
+     * 将EMCursorResult 对象解析并包装成 Map
+     * @param emCursorResult
+     * @return
+     */
+    static Map<String, Object> convertEMCursorResultToStringMap(EMCursorResult emCursorResult){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("cursor", emCursorResult.getCursor());
+        List list = (List)emCursorResult.getData();
+        String className = list.get(0).getClass().getSimpleName();
+        if(className.equals("String")){
+            result.put("data", list);
+        }
+        if(className.equals("EMGroupInfo")){
+            List<EMGroupInfo> infoList = list;
+            List<Map<String, Object>> data = new LinkedList();
+            for(EMGroupInfo info : infoList){
+                data.add(convertGroupInfoToStringMap(info));
+            }
+            result.put("data", data);
+        }
+        return result;
+    }
+
+    static Map<String, Object> convertGroupInfoToStringMap(EMGroupInfo info){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("groupId", info.getGroupId());
+        result.put("groupName", info.getGroupName());
+        return result;
+    }
+
+    /**
+     * 将EMMucSharedFile 对象解析并包装成 Map
+     * @param file
+     * @return
+     */
+    static Map<String, Object> convertEMMucSharedFileToStringMap(EMMucSharedFile file){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("fileId", file.getFileId());
+        result.put("fileName", file.getFileName());
+        result.put("fileOwner", file.getFileOwner());
+        result.put("updateTime", file.getFileUpdateTime());
+        result.put("fileSize", file.getFileSize());
+        return result;
     }
 
 }
