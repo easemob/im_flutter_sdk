@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
-import "package:meta/meta.dart";
 
-import 'em_sdk_method.dart';
+import 'em_domain_terms.dart';
 
 class EMGroup{
   static const _channelPrefix = 'com.easemob.im';
@@ -12,29 +11,69 @@ class EMGroup{
 
   String _groupName;
 
+  String _description;
 
-  EMGroup.from(Map<String, dynamic> data)
-      : _groupId = data['groupId'],
-        _groupName = data['groupName'];
+  bool _isPublic;
 
-//  static const String getDescription = 'getDescription';
-//  static const String isPublic = 'isPublic';
-//  static const String isAllowInvites = 'isAllowInvites';
-//  static const String isMemberAllowToInvite = 'isMemberAllowToInvite';
-//  static const String isMembersOnly = 'isMembersOnly';
-//  static const String getMaxUserCount = 'getMaxUserCount';
-//  static const String isMsgBlocked = 'isMsgBlocked';
-//  static const String getOwner = 'getOwner';
-//  static const String groupSubject = 'groupSubject';
-//  static const String getMembers = 'getMembers';
-//  static const String getMemberCount = 'getMemberCount';
-//  static const String toString = 'toString';
-//  static const String getAdminList = 'getAdminList';
-//  static const String getBlackList = 'getBlackList';
-//  static const String getMuteList = 'getMuteList';
-//  static const String getExtension = 'getExtension';
-//  static const String getAnnouncement = 'getAnnouncement';
-//  static const String getShareFileList = 'getShareFileList';
+  bool _isMemberAllowToInvite;
+
+  bool _isMemberOnly;
+
+  int _maxUserCount;
+
+  bool _isMsgBlocked;
+
+  String _owner;
+
+  List _members;
+
+  int _memberCount;
+
+  List _adminList;
+
+  List _blackList;
+
+  List _muteList;
+
+  String _extension;
+
+  String _announcement;
+
+  List<EMMucSharedFile> _sharedFileList;
+
+  List _occupants;
+
+  EMGroupPermissionType _permissionType;
+
+  bool _isPushNotificationEnabled;
+
+  EMGroup.from(Map<String, dynamic> data){
+    _groupId = data['groupId'];
+    _groupName = data['groupName'];
+    _description = data['description'];
+    _isPublic = data['isPublic'];
+    _isMemberAllowToInvite = data['isMemberAllowToInvite'];
+    _isMemberOnly = data['isMemberOnly'];
+    _maxUserCount = data['maxUserCount'];
+    _isMsgBlocked = data['isMsgBlocked'];
+    _owner = data['owner'];
+    _members = data['members'];
+    _memberCount = data['memberCount'];
+    _adminList = data['adminList'];
+    _blackList = data['blackList'];
+    _muteList = data['muteList'];
+    _extension = data['extension'];
+    _announcement = data['announcement'];
+    var files = data['sharedFileList'] as List;
+    var fileList = List<EMMucSharedFile>();
+    for(var file in files){
+      fileList.add(EMMucSharedFile.from(file));
+    }
+    _sharedFileList = fileList;
+    _occupants = data['occupants'];
+    _permissionType = convertIntToEMGroupPermissionType(data['permissionType']);
+    _isPushNotificationEnabled = data['isPushNotificationEnabled'];
+  }
 
   String getGroupId() {
     return _groupId;
@@ -44,4 +83,80 @@ class EMGroup{
     return _groupName;
   }
 
+  String getDescription(){
+    return _description;
+  }
+
+  bool isPublic(){
+    return _isPublic;
+  }
+
+  bool isMemberAllowToInvite(){
+    return _isMemberAllowToInvite;
+  }
+
+  bool isMemberOnly(){
+    return _isMemberOnly;
+  }
+
+  int getMaxUserCount(){
+    return _maxUserCount;
+  }
+
+  bool isMsgBlocked(){
+    return _isMsgBlocked;
+  }
+
+  String getOwner(){
+    return _owner;
+  }
+
+  List getMembers(){
+    return _members;
+  }
+
+  int getMemberCount(){
+    return _memberCount;
+  }
+
+  String toString(){
+    String str = getGroupName();
+    return str != null ? str : getGroupId();
+  }
+
+  List getAdminList(){
+    return _adminList;
+  }
+
+  List getBlackList(){
+    return _blackList;
+  }
+
+  List getMuteList(){
+    return _muteList;
+  }
+
+  String getExtension(){
+    return _extension;
+  }
+
+  String getAnnouncement(){
+    return _announcement;
+  }
+
+  List<EMMucSharedFile> getSharedFileList(){
+    return _sharedFileList;
+  }
+
+  List getOccupants(){
+    return _occupants;
+  }
+
+  EMGroupPermissionType getPermissionType(){
+    return _permissionType;
+  }
+
+  bool isPushNotificationEnabled(){
+    return _isPushNotificationEnabled;
+  }
 }

@@ -7,11 +7,9 @@ public class EMSDKMethod {
     static final String login = "login";
     static final String loginWithToken = "loginWithToken";
     static final String logout = "logout";
-    static final String chatManager = "chatManager";
-    static final String register = "register";
+    static final String chatManager = "chatManager"; // ?
     static final String changeAppKey = "changeAppKey";
-    static final String getCurrentUser = "getCurrentUser";
-    static final String getUserTokenFromServer = "getUserTokenFromServer";
+    static final String getCurrentUser = "getCurrentUser"; // ?
     static final String setDebugMode = "setDebugMode";
     static final String updateCurrentUserNick = "updateCurrentUserNick";
     static final String uploadLog = "uploadLog";
@@ -21,11 +19,10 @@ public class EMSDKMethod {
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
     static final String getDeviceInfo = "getDeviceInfo";
-    static final String getRobotsFromServer = "getRobotsFromServer";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String check = "check";
-    static final String onClientMigrate2x = "onClientMigrate2x"; // 3.x sdk应该用不上
-    static final String onConnectionDidChanged = "onConnectionDidChanged";
+    static final String onConnected = "onConnected";
+    static final String onDisconnected = "onDisconnected";
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
 
@@ -161,7 +158,7 @@ public class EMSDKMethod {
     static final String unblockGroupMessage = "unblockGroupMessage";
     static final String blockUser = "blockUser";
     static final String unblockUser = "unblockUser";
-    static final String getBlockedUsers = "getBlockedUsers";
+    static final String fetchGroupBlackList = "fetchGroupBlackList";
     static final String fetchGroupMembers = "fetchGroupMembers";
     static final String changeOwner = "changeOwner";
     static final String addGroupAdmin = "addGroupAdmin";
@@ -169,7 +166,6 @@ public class EMSDKMethod {
     static final String muteGroupMembers = "muteGroupMembers";
     static final String unMuteGroupMembers = "unMuteGroupMembers";
     static final String fetchGroupMuteList = "fetchGroupMuteList";
-    static final String fetchGroupBlackList = "fetchGroupBlackList";
     static final String updateGroupAnnouncement = "updateGroupAnnouncement";
     static final String fetchGroupAnnouncement = "fetchGroupAnnouncement";
     static final String uploadGroupSharedFile = "uploadGroupSharedFile";
@@ -196,24 +192,4 @@ public class EMSDKMethod {
     static final String onAnnouncementChanged = "onAnnouncementChanged";
     static final String onSharedFileAdded = "onSharedFileAdded";
     static final String onSharedFileDeleted = "onSharedFileDeleted";
-
-    /// EMGroup
-    static final String getGroupDescription = "getGroupDescription";
-    static final String isPublic = "isPublic";
-    static final String isAllowInvites = "isAllowInvites";
-    static final String isMemberAllowToInvite = "isMemberAllowToInvite";
-    static final String isMembersOnly = "isMembersOnly";
-    static final String getMaxUserCount = "getMaxUserCount";
-    static final String isMsgBlocked = "isMsgBlocked";
-    static final String getGroupOwner = "getGroupOwner";
-    static final String groupSubject = "groupSubject";
-    static final String getMembers = "getMembers";
-    static final String getGroupMemberCount = "getGroupMemberCount";
-    static final String getGroupAdminList = "getGroupAdminList";
-    static final String getGroupBlackList = "getGroupBlackList";
-    static final String getGroupMuteList = "getGroupMuteList";
-    static final String getExtension = "getExtension";
-    static final String getGroupAnnouncement = "getGroupAnnouncement";
-    static final String getShareFileList = "getShareFileList";
-
 }
