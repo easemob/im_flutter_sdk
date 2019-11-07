@@ -29,12 +29,10 @@ class EMClient {
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
-  Function _clientListenerFunc;
   static EMClient _instance;
 
   /// instance fields
   String _currentUser;
-  bool _loggedIn = false;
   bool _connected = false;
   EMOptions _options;
   String _accessToken;
@@ -65,20 +63,25 @@ class EMClient {
   /// init - init Easemob SDK client with specified [options] instance.
   void init(EMOptions options) {
     _options = options;
-    _emClientChannel.invokeMethod(EMSDKMethod.init, {"appKey": options.appKey});
+    _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
   }
 
   /// createAccount - create an account with [userName]/[password].
   /// Callback [onError] once account creation failed.
   void createAccount(
-      {@required String userName,
-      @required String password,
-      onError(int errorCode, String desc)}) {
+      { @required String userName,
+        @required String password,
+        onSuccess(),
+        onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.createAccount,
         {"userName": userName, "password": password});
     result.then((response) {
-      if (!response['success']) {
+      if (response['success']) {
+        if (onSuccess != null) {
+          onSuccess();
+        }
+      } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
     });
@@ -96,7 +99,6 @@ class EMClient {
     result.then((response) {
       print(response);
       if (response['success']) {
-        _loggedIn = true;
         if (onSuccess != null) {
           // set current user name
           _currentUser = userName;
@@ -119,7 +121,6 @@ class EMClient {
         EMSDKMethod.login, {"userName": userName, "token": token});
     result.then((response) {
       if (response['success']) {
-        _loggedIn = true;
         if (onSuccess != null) onSuccess();
       } else {
         if (onError != null) onError(response['code'], response['desc']);
@@ -139,7 +140,7 @@ class EMClient {
         .invokeMethod(EMSDKMethod.logout, {"unbindToken": unbindToken});
     result.then((response) {
       if (response['success']) {
-        _loggedIn = false;
+        if (onSuccess != null) onSuccess();
       } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
@@ -148,11 +149,13 @@ class EMClient {
 
   /// changeAppKey - change app key with new [appKey].
   /// Call [onError] if something wrong.
-  void changeAppKey({@required String appKey, onError(int code, String desc)}) {
+  void changeAppKey({@required String appKey, onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.changeAppKey, {"appKey": appKey});
     result.then((response) {
-      if (!response['success']) {
+      if (response['success']) {
+        if (onSuccess != null) onSuccess();
+      } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
     });
@@ -275,47 +278,19 @@ class EMClient {
   }
 
   /// sendHMSPushTokenToServer - send HMS push token [token] of app [appId] to server.
-  void sendHMSPushTokenToServer({String appId, @required String token}) {
+  void sendHMSPushTokenToServer({@required String token}) {
     _emClientChannel.invokeMethod(EMSDKMethod.sendHMSPushTokenToServer,
-        {"appId": appId ?? null, "token": token});
+        {"token": token});
   }
 
   /// isFCMAvailable - fcm available?
   bool isFCMAvailable() {
-    return _options.useFcm;
+    return _options.isUseFCM();
   }
 
   /// getAccessToken - Returns local cached access token.
   String getAccessToken() {
     return _accessToken;
-  }
-
-  /// getDeviceInfo - Returns device info.
-  Future<Map<String, dynamic>> getDeviceInfo() async {
-    Map<String, dynamic> result =
-        await _emClientChannel.invokeMethod(EMSDKMethod.getDeviceInfo);
-    if (result['success']) {
-      return (result['deviceInfo']);
-    } else {
-      return null;
-    }
-  }
-
-  /// check - Validates current [userName]/[password] login.
-  /// Check result returns in callback [onResult].
-  void check(
-      {@required String userName,
-      @required String password,
-      onResult(EMCheckType type, int result, String desc)}) {
-    Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.check, {"userName": userName, "password": password});
-    result.then((response) {
-      if (response['success']) {
-        if (onResult != null)
-          onResult(response['type'], response['result'], response['desc']);
-        return null;
-      }
-    });
   }
 
   /// getCurrentUser - get current user name.
@@ -325,23 +300,18 @@ class EMClient {
   }
 
   /// isLoggedInBefore - whether successful login invoked before.
-  bool isLoggedInBefore() {
-    return _loggedIn;
+  Future<bool> isLoggedInBefore() async{
+    Map<String, dynamic> result =
+    await _emClientChannel.invokeMethod(EMSDKMethod.isLoggedInBefore);
+    if(result['success']){
+      return result['isLogged'];
+    }
+    return false;
   }
 
   /// isConnected - whether connection connected now.
   bool isConnected() {
     return _connected;
-  }
-
-  List<EMContact> _convertContactList(contactList) {
-    var result = List<EMContact>();
-    for (var contact in contactList) {
-      var c = EMContact(userName: contact["userName"]);
-      c.nickName = contact["nickName"];
-      result.add(c);
-    }
-    return result;
   }
 
   /// getChatConfigPrivate - TODO: implement later
@@ -373,9 +343,10 @@ class EMClient {
     _connectionListeners.remove(listener);
   }
 
+  /// once connection changed, listeners to be informed.
   Future<void> _onConnected() async {
     for (var listener in _connectionListeners) {
-     listener.onConnected();
+      listener.onConnected();
     }
   }
 
@@ -390,10 +361,10 @@ class EMClient {
   Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
-      if (event >= EMContactGroupEvent.GROUP_CREATE) {
-        listener.onGroupEvent(event, map['target'], map['userNames']);
+      if (event >= 10) {
+        listener.onGroupEvent(convertIntToEMContactGroupEvent(event), map['target'], map['userNames']);
       } else {
-        listener.onContactEvent(event, map['target'], map['ext']);
+        listener.onContactEvent(convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
       }
     }
   }
@@ -415,4 +386,62 @@ class EMClient {
   EMGroupManager groupManager(){
     return _groupManager;
   }
+
+  EMContactGroupEvent convertIntToEMContactGroupEvent(int i){
+    switch(i){
+      case 2:
+        return EMContactGroupEvent.CONTACT_REMOVE;
+      case 3:
+        return EMContactGroupEvent.CONTACT_ACCEPT;
+      case 4:
+        return EMContactGroupEvent.CONTACT_DECLINE;
+      case 5:
+        return EMContactGroupEvent.CONTACT_BAN;
+      case 6:
+        return EMContactGroupEvent.CONTACT_ALLOW;
+      case 10:
+        return EMContactGroupEvent.GROUP_CREATE;
+      case 11:
+        return EMContactGroupEvent.GROUP_DESTROY;
+      case 12:
+        return EMContactGroupEvent.GROUP_JOIN;
+      case 13:
+        return EMContactGroupEvent.GROUP_LEAVE;
+      case 14:
+        return EMContactGroupEvent.GROUP_APPLY;
+      case 15:
+        return EMContactGroupEvent.GROUP_APPLY_ACCEPT;
+      case 16:
+        return EMContactGroupEvent.GROUP_APPLY_DECLINE;
+      case 17:
+        return EMContactGroupEvent.GROUP_INVITE;
+      case 18:
+        return EMContactGroupEvent.GROUP_INVITE_ACCEPT;
+      case 19:
+        return EMContactGroupEvent.GROUP_INVITE_DECLINE;
+      case 20:
+        return EMContactGroupEvent.GROUP_KICK;
+      case 21:
+        return EMContactGroupEvent.GROUP_BAN;
+      case 22:
+        return EMContactGroupEvent.GROUP_ALLOW;
+      case 23:
+        return EMContactGroupEvent.GROUP_BLOCK;
+      case 24:
+        return EMContactGroupEvent.GROUP_UNBLOCK;
+      case 25:
+        return EMContactGroupEvent.GROUP_ASSIGN_OWNER;
+      case 26:
+        return EMContactGroupEvent.GROUP_ADD_ADMIN;
+      case 27:
+        return EMContactGroupEvent.GROUP_REMOVE_ADMIN;
+      case 28:
+        return EMContactGroupEvent.GROUP_ADD_MUTE;
+      case 29:
+        return EMContactGroupEvent.GROUP_REMOVE_MUTE;
+      default:
+        return null;
+    }
+  }
+
 }
