@@ -7,9 +7,8 @@ public class EMSDKMethod {
     static final String login = "login";
     static final String loginWithToken = "loginWithToken";
     static final String logout = "logout";
-    static final String chatManager = "chatManager"; // ?
     static final String changeAppKey = "changeAppKey";
-    static final String getCurrentUser = "getCurrentUser"; // ?
+    static final String isLoggedInBefore = "isLoggedInBefore";
     static final String setDebugMode = "setDebugMode";
     static final String updateCurrentUserNick = "updateCurrentUserNick";
     static final String uploadLog = "uploadLog";
@@ -18,9 +17,7 @@ public class EMSDKMethod {
     static final String kickAllDevices = "kickAllDevices";
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
-    static final String getDeviceInfo = "getDeviceInfo";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
-    static final String check = "check";
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
     static final String getLoggedInDevicesFromServer =
@@ -33,7 +30,6 @@ public class EMSDKMethod {
     static final String addUserToBlackList = "addUserToBlackList";
     static final String removeUserFromBlackList = "removeUserFromBlackList";
     static final String getBlackListFromServer = "getBlackListFromServer";
-    static final String saveBlackList = "saveBlackList";
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
@@ -57,7 +53,6 @@ public class EMSDKMethod {
     static final String getAllConversations = "getAllConversations";
     static final String loadAllConversations = "loadAllConversations";
     static final String deleteConversation = "deleteConversation";
-    static final String setMessageListened = "setMessageListened";
     static final String setVoiceMessageListened = "setVoiceMessageListened";
     static final String updateParticipant = "updateParticipant";
     static final String fetchHistoryMessages = "fetchHistoryMessages";
@@ -96,26 +91,26 @@ public class EMSDKMethod {
     static final String joinChatRoom = "joinChatRoom";
     static final String leaveChatRoom = "leaveChatRoom";
     static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
-    static final String asyncFetchChatRoomFromServer = "fetchChatRoomFromServer";
+    static final String fetchChatRoomFromServer = "fetchChatRoomFromServer";
     static final String getChatRoom = "getChatRoom";
     static final String getAllChatRooms = "getAllChatRooms";
-    static final String asyncCreateChatRoom = "createChatRoom";
-    static final String asyncDestroyChatRoom = "destroyChatRoom";
-    static final String asyncChangeChatRoomSubject = "changeChatRoomSubject";
-    static final String asyncChangeChatRoomDescription = "changeChatRoomDescription";
-    static final String asyncFetchChatRoomMembers = "fetchChatRoomMembers";
-    static final String asyncMuteChatRoomMembers = "muteChatRoomMembers";
-    static final String asyncUnMuteChatRoomMembers = "unMuteChatRoomMembers";
-    static final String asyncChangeOwner = "changeChatRoomOwner";
-    static final String asyncAddChatRoomAdmin = "addChatRoomAdmin";
-    static final String asyncRemoveChatRoomAdmin = "removeChatRoomAdmin";
-    static final String asyncFetchChatRoomMuteList = "fetchChatRoomMuteList";
-    static final String asyncRemoveChatRoomMembers = "removeChatRoomMembers";
-    static final String asyncBlockChatRoomMembers = "blockChatRoomMembers";
-    static final String asyncUnBlockChatRoomMembers = "unBlockChatRoomMembers";
-    static final String asyncFetchChatRoomBlackList = "fetchChatRoomBlackList";
-    static final String asyncUpdateChatRoomAnnouncement = "updateChatRoomAnnouncement";
-    static final String asyncFetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
+    static final String createChatRoom = "createChatRoom";
+    static final String destroyChatRoom = "destroyChatRoom";
+    static final String changeChatRoomSubject = "changeChatRoomSubject";
+    static final String changeChatRoomDescription = "changeChatRoomDescription";
+    static final String fetchChatRoomMembers = "fetchChatRoomMembers";
+    static final String muteChatRoomMembers = "muteChatRoomMembers";
+    static final String unMuteChatRoomMembers = "unMuteChatRoomMembers";
+    static final String changeChatRoomOwner = "changeChatRoomOwner";
+    static final String addChatRoomAdmin = "addChatRoomAdmin";
+    static final String removeChatRoomAdmin = "removeChatRoomAdmin";
+    static final String fetchChatRoomMuteList = "fetchChatRoomMuteList";
+    static final String removeChatRoomMembers = "removeChatRoomMembers";
+    static final String blockChatRoomMembers = "blockChatRoomMembers";
+    static final String unBlockChatRoomMembers = "unBlockChatRoomMembers";
+    static final String fetchChatRoomBlackList = "fetchChatRoomBlackList";
+    static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
+    static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
 
     //EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChange";
@@ -173,23 +168,7 @@ public class EMSDKMethod {
     static final String deleteGroupSharedFile = "deleteGroupSharedFile";
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
     static final String updateGroupExtension = "updateGroupExtension";
-    static final String onInvitationReceived = "onInvitationReceived";
-    static final String onRequestToJoinReceived = "onRequestToJoinReceived";
-    static final String onRequestToJoinAccepted = "onRequestToJoinAccepted";
-    static final String onRequestToJoinDeclined = "onRequestToJoinDeclined";
-    static final String onInvitationAccepted = "onInvitationAccepted";
-    static final String onInvitationDeclined = "onInvitationDeclined";
-    static final String onUserRemoved = "onUserRemoved";
-    static final String onGroupDestroyed = "onGroupDestroyed";
-    static final String onAutoAcceptInvitationFromGroup = "onAutoAcceptInvitationFromGroup";
-    static final String onMuteListAdded = "onMuteListAdded";
-    static final String onMuteListRemoved = "onMuteListRemoved";
-    static final String onAdminAdded = "onAdminAdded";
-    static final String onAdminRemoved = "onAdminRemoved";
-    static final String onOwnerChanged = "onOwnerChanged";
-    static final String onMemberJoined = "onMemberJoined";
-    static final String onMemberExited = "onMemberExited";
-    static final String onAnnouncementChanged = "onAnnouncementChanged";
-    static final String onSharedFileAdded = "onSharedFileAdded";
-    static final String onSharedFileDeleted = "onSharedFileDeleted";
+
+    static final String onGroupChanged = "onGroupChanged";
+
 }

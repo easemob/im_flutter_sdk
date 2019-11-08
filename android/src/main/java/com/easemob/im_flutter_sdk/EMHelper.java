@@ -6,10 +6,12 @@ import android.media.ThumbnailUtils;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
+import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMConversation.EMConversationType;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMCursorResult;
+import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMImageMessageBody;
@@ -19,6 +21,7 @@ import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
+import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
@@ -311,7 +314,7 @@ class EMHelper {
     static Map<String, Object> convertEMConversationToStringMap(EMConversation conversation) {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("id", conversation.conversationId());
-        result.put("type", conversation.getType());
+        result.put("type", convertEMConversationTypeToInt(conversation.getType()));
         result.put("ext", conversation.getExtField());
         return result;
     }
@@ -696,6 +699,56 @@ class EMHelper {
         result.put("fileOwner", file.getFileOwner());
         result.put("updateTime", file.getFileUpdateTime());
         result.put("fileSize", file.getFileSize());
+        return result;
+    }
+
+    static EMOptions convertStringMapToEMOptions(JSONObject json){
+        EMOptions options = new EMOptions();
+        try {
+            options.setAppKey(json.getString("appKey"));
+            options.setAcceptInvitationAlways(json.getBoolean("acceptInvitationAlways"));
+            options.setAutoAcceptGroupInvitation(json.getBoolean("autoAcceptGroupInvitation"));
+            options.setRequireAck(json.getBoolean("requireAck"));
+            options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
+            options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
+            options.allowChatroomOwnerLeave(json.getBoolean("isChatRoomOwnerLeaveAllowed"));
+            options.setAutoLogin(json.getBoolean("autoLogin"));
+            options.setUseFCM(json.getBoolean("useFCM"));
+            options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+            options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
+            if(!json.getString("dnsUrl").isEmpty()){
+                options.setDnsUrl(json.getString("dnsUrl"));
+            }
+            if(!json.getString("restServer").isEmpty()) {
+                options.setRestServer(json.getString("restServer"));
+            }
+            if(!json.getString("imServer").isEmpty()) {
+                options.setIMServer(json.getString("imServer"));
+            }
+            if(!(json.getInt("imPort") == 0)) {
+                options.setImPort(json.getInt("imPort"));
+            }
+            options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
+            options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
+            options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        return options;
+    }
+
+    static Map<String, Object> convertDevicesToStringMap(EMDeviceInfo device){
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("resource", device.getResource());
+        result.put("UUID", device.getDeviceUUID());
+        result.put("name", device.getDeviceName());
+        return result;
+    }
+
+    static Map<String, Object> convertContactToStringMap(EMContact contact) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("userName", contact.getUsername());
+        result.put("nickName", contact.getNickname());
         return result;
     }
 

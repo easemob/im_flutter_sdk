@@ -5,11 +5,8 @@ class EMSDKMethod {
   static const String login = 'login';
   static const String loginWithToken = 'loginWithToken';
   static const String logout = 'logout';
-  static const String chatManager = 'chatManager';
-  static const String register = 'register';
   static const String changeAppKey = 'changeAppKey';
-  static const String getCurrentUser = 'getCurrentUser';
-  static const String getUserTokenFromServer = 'getUserTokenFromServer';
+  static const String isLoggedInBefore = 'isLoggedInBefore';
   static const String setDebugMode = 'setDebugMode';
   static const String updateCurrentUserNick = 'updateCurrentUserNick';
   static const String uploadLog = 'uploadLog';
@@ -18,11 +15,9 @@ class EMSDKMethod {
   static const String kickAllDevices = 'kickAllDevices';
   static const String sendFCMTokenToServer = 'sendFCMTokenToServer';
   static const String sendHMSPushTokenToServer = 'sendHMSPushTokenToServer';
-  static const String getDeviceInfo = 'getDeviceInfo';
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
-  static const String check = 'check';
-  static const String onConnected = 'onConnected';
-  static const String onDisconnected = 'onDisconnected';
+  static const String onConnected = "onConnected";
+  static const String onDisconnected = "onDisconnected";
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
 
@@ -33,7 +28,6 @@ class EMSDKMethod {
   static const String addUserToBlackList = 'addUserToBlackList';
   static const String removeUserFromBlackList = 'removeUserFromBlackList';
   static const String getBlackListFromServer = 'getBlackListFromServer';
-  static const String saveBlackList = 'saveBlackList';
   static const String acceptInvitation = 'acceptInvitation';
   static const String declineInvitation = 'declineInvitation';
   static const String getSelfIdsOnOtherPlatform = 'getSelfIdsOnOtherPlatform';
@@ -57,7 +51,6 @@ class EMSDKMethod {
   static const String getAllConversations = "getAllConversations";
   static const String loadAllConversations = "loadAllConversations";
   static const String deleteConversation = "deleteConversation";
-  static const String setMessageListened = "setMessageListened";
   static const String setVoiceMessageListened = "setVoiceMessageListened";
   static const String updateParticipant = "updateParticipant";
   static const String fetchHistoryMessages = "fetchHistoryMessages";

@@ -2,61 +2,200 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 
+import '../im_flutter_sdk.dart';
 import 'em_message_body.dart';
 
 /// EMOptions - options to initialize SDK context.
 class EMOptions {
   EMOptions({
-    this.acceptInvitationAlways = true,
-    this.allowChatroomOwnerLeave,
     @required this.appKey,
-    this.autoAcceptGroupInvitation,
-    this.autoDownloadThumbnail = true,
-    this.autoLogin,
-    this.autoTransferMessageAttachments = true,
-    this.deleteMessagesAsExitGroup,
-    this.fcmNumber,
-    this.imServer,
-    this.imPort,
-    //this.miPushConfig,
-    //this.pushConfig,
-    this.requireAck = true,
-    this.requireDeliveryAck = false,
-    this.restServer,
-    this.sortMessageByServerTime = false,
-    this.useFcm,
-    this.usingHttpsOnly = false,
   });
+  bool _acceptInvitationAlways = true;
+  bool _autoAcceptGroupInvitation = true;
+  bool _requireAck = true;
+  bool _requireDeliveryAck = false;
+  bool _deleteMessagesAsExitGroup = true;
+  bool _isChatRoomOwnerLeaveAllowed = true;
+  String appKey = '';
+  bool _autoLogin = true;
+  bool _useFCM = true;
+  bool _enableDNSConfig = true;
+  bool _sortMessageByServerTime = true;
+  String _dnsUrl = '';
+  String _restServer = '';
+  String _imServer = '';
+  int _imPort = 0;
+  bool _usingHttpsOnly = false;
+  bool _serverTransfer = true;
+  bool _isAutoDownload = true;
+//  EMPushConfig _pushConfig;
 
-  bool acceptInvitationAlways;
-  String accessToken;
-  bool allowChatroomOwnerLeave;
-  bool autoDownloadThumbnail;
-  bool autoLogin;
-  bool autoTransferMessageAttachments;
-  String appKey;
-  bool autoAcceptGroupInvitation;
-  bool deleteMessagesAsExitGroup;
-  String dnsUrl;
-  bool enableDNSConfig;
-  String fcmNumber;
-  int imPort;
-  String imServer;
-  //EMMipushConfig miPushConfig;
-  //EMPushConfig pushConfig;
-  bool requireAck;
-  bool requireDeliveryAck;
-  String restServer;
-  bool sortMessageByServerTime;
-  bool useFcm;
-  bool usingHttpsOnly;
+  bool getRequireAck(){
+    return _requireAck;
+  }
 
-  bool _useHttps;
-  set useHttps(bool _use) => _useHttps = _use;
+  void setRequireAck(bool requireAck){
+    _requireAck = requireAck;
+  }
 
-  String _version;
-  String get version {
-    return _version;
+  bool getRequireDeliveryAck(){
+    return _requireDeliveryAck;
+  }
+
+  void setRequireDeliveryAck(bool requireDeliveryAck){
+    _requireDeliveryAck = requireDeliveryAck;
+  }
+
+  bool getAcceptInvitationAlways(){
+    return _acceptInvitationAlways;
+  }
+
+  void setAcceptInvitationAlways(bool acceptInvitationAlways){
+    _acceptInvitationAlways = acceptInvitationAlways;
+  }
+
+  bool isDeleteMessagesAsExitGroup(){
+    return _deleteMessagesAsExitGroup;
+  }
+
+  void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup){
+    _deleteMessagesAsExitGroup = deleteMessagesAsExitGroup;
+  }
+
+  bool isAutoAcceptGroupInvitation(){
+    return _autoAcceptGroupInvitation;
+  }
+
+  void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation){
+    _autoAcceptGroupInvitation = autoAcceptGroupInvitation;
+  }
+
+  bool isChatRoomOwnerLeaveAllowed(){
+    return _isChatRoomOwnerLeaveAllowed;
+  }
+
+  void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed){
+    _isChatRoomOwnerLeaveAllowed = isChatRoomOwnerLeaveAllowed;
+  }
+
+  bool isSortMessageByServerTime(){
+    return _sortMessageByServerTime;
+  }
+
+  void setSortMessageByServerTime(bool sortMessageByServerTime){
+    _sortMessageByServerTime = sortMessageByServerTime;
+  }
+
+  String getIMServer(){
+    return _imServer;
+  }
+
+  void setIMServer(String imServer){
+    _imServer = imServer;
+  }
+
+  int getImPort(){
+    return _imPort;
+  }
+
+  void setImPort(int imPort){
+    _imPort = imPort;
+  }
+
+  String getRestServer(){
+    return _restServer;
+  }
+
+  void setRestServer(String restServer){
+    _restServer = restServer;
+  }
+
+  bool getAutoLogin(){
+    return _autoLogin;
+  }
+
+  void setAutoLogin(bool autoLogin){
+    _autoLogin = autoLogin;
+  }
+
+  bool isUseFCM(){
+    return _useFCM;
+  }
+
+  void setUseFCM(bool useFCM){
+    _useFCM = useFCM;
+  }
+
+  bool getEnableDNSConfig(){
+    return _enableDNSConfig;
+  }
+
+  void enableDNSConfig(bool enableDNSConfig){
+    _enableDNSConfig = enableDNSConfig;
+  }
+
+  bool getUsingHttpsOnly(){
+    return _usingHttpsOnly;
+  }
+
+  void setUsingHttpsOnly(bool usingHttpsOnly){
+    _usingHttpsOnly = usingHttpsOnly;
+  }
+
+  bool getAutoTransferMessageAttachments(){
+    return _serverTransfer;
+  }
+
+  void setAutoTransferMessageAttachments(bool serverTransfer){
+    _serverTransfer = serverTransfer;
+  }
+
+  bool getAutoDownloadThumbnail(){
+    return _isAutoDownload;
+  }
+
+  void setAutoDownloadThumbnail(bool isAutoDownload){
+    _isAutoDownload = isAutoDownload;
+  }
+
+  String getDnsUrl(){
+    return _dnsUrl;
+  }
+
+  void setDnsUrl(String dnsUrl){
+    _dnsUrl = dnsUrl;
+  }
+
+//  EMPushConfig getPushConfig(){
+//    return _pushConfig;
+//  }
+//
+//  void setPushConfig(EMPushConfig pushConfig){
+//    _pushConfig = pushConfig;
+//  }
+
+  Map convertToMap(){
+    var map = {};
+    map.putIfAbsent("acceptInvitationAlways", ()=> _acceptInvitationAlways );
+    map.putIfAbsent("autoAcceptGroupInvitation", ()=> _autoAcceptGroupInvitation );
+    map.putIfAbsent("requireAck", ()=> _requireAck );
+    map.putIfAbsent("requireDeliveryAck", ()=> _requireDeliveryAck );
+    map.putIfAbsent("deleteMessagesAsExitGroup", ()=> _deleteMessagesAsExitGroup );
+    map.putIfAbsent("isChatRoomOwnerLeaveAllowed", ()=> _isChatRoomOwnerLeaveAllowed );
+    map.putIfAbsent("appKey", ()=> appKey );
+    map.putIfAbsent("autoLogin", ()=> _autoLogin );
+    map.putIfAbsent("useFCM", ()=> _useFCM );
+    map.putIfAbsent("enableDNSConfig", ()=> _enableDNSConfig );
+    map.putIfAbsent("sortMessageByServerTime", ()=> _sortMessageByServerTime );
+    map.putIfAbsent("dnsUrl", ()=> _dnsUrl );
+    map.putIfAbsent("restServer", ()=> _restServer );
+    map.putIfAbsent("imServer", ()=> _imServer );
+    map.putIfAbsent("imPort", ()=> _imPort );
+    map.putIfAbsent("usingHttpsOnly", ()=> _usingHttpsOnly );
+    map.putIfAbsent("serverTransfer", ()=> _serverTransfer );
+    map.putIfAbsent("isAutoDownload", ()=> _isAutoDownload );
+    print(map);
+    return map;
   }
 }
 
@@ -223,7 +362,7 @@ class EMMessage {
 
 
   String toString(){
-    return from;
+    return body.toString();
   }
 
 }
@@ -574,3 +713,41 @@ EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
   }
   return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }
+
+
+toEMConversationType(EMConversationType type){
+  if(type == EMConversationType.Chat){
+    return 0;
+  }else if(type == EMConversationType.GroupChat){
+    return 1;
+  }else if(type == EMConversationType.ChatRoom){
+    return 2;
+  }else if(type == EMConversationType.DiscussionGroup){
+    return 3;
+  }else if(type == EMConversationType.HelpDesk){
+    return 4;
+  }
+}
+
+fromEMConversationType(int type){
+  if(type == 0){
+    return EMConversationType.Chat;
+  }else if(type == 1){
+    return EMConversationType.GroupChat;
+  }else if(type == 2){
+    return EMConversationType.ChatRoom;
+  }else if(type == 3){
+    return EMConversationType.DiscussionGroup;
+  }else if(type == 4){
+    return EMConversationType.HelpDesk;
+  }
+}
+
+toEMSearchDirection(EMSearchDirection direction){
+  if(direction == EMSearchDirection.Up){
+    return 0;
+  }else if(direction == EMSearchDirection.Down){
+    return 1;
+  }
+}
+
