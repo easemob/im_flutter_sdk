@@ -314,6 +314,16 @@ class EMClient {
     return _connected;
   }
 
+  List<EMContact> _convertContactList(contactList) {
+    var result = List<EMContact>();
+    for (var contact in contactList) {
+      var c = EMContact(userName: contact["userName"]);
+      c.nickName = contact["nickName"];
+      result.add(c);
+    }
+    return result;
+  }
+
   /// getChatConfigPrivate - TODO: implement later
   /// EMChatConfigPrivate getChatConfigPrivate() {}
 
