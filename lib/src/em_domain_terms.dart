@@ -1,8 +1,8 @@
-import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 
+import '../im_flutter_sdk.dart';
 import 'em_message_body.dart';
 
 /// EMOptions - options to initialize SDK context.
@@ -202,96 +202,105 @@ class EMOptions {
 /// EMMessage - various types of message
 class EMMessage {
   EMMessage({
-    this.acked = false,
+    this.acked,
     this.body,
     this.chatType ,
-    this.delivered = false,
+    this.delivered,
     this.direction,
-    this.from = '',
-    this.listened = false,
+    this.from,
+    this.listened ,
     this.localTime,
-    this.msgId = '',
+    this.msgId ,
     this.msgTime,
-    this.progress = 0,
+    this.progress ,
     this.status ,
-    this.to = '',
+    this.to,
     this.type,
-    this.unread = true,
-  })  : _attributes = HashMap<String, dynamic>(),
+    this.unread,
+    this.deliverAcked,
+  })
+      : _attributes = {},
         _conversationId = '',
-        _deliverAcked = false,
-        _typex = type,
         _userName = '';
 
   /// Constructors to create various of messages.
   EMMessage.createSendMessage(EMMessageType type)
-      : this(type: toType(type), direction: toDirect(Direction.SEND));
+      : this(type: type, direction: Direction.SEND);
+
   EMMessage.createReceiveMessage(EMMessageType type)
-      : this(type: toType(type), direction: toDirect(Direction.RECEIVE));
+      : this(type: type, direction: Direction.RECEIVE);
+
   EMMessage.createTxtSendMessage(String content, String userName)
       : this(
-            direction: toDirect(Direction.SEND),
+            direction: Direction.SEND,
             to: userName,
-            type: 0,
+            type: EMMessageType.TXT,
             body: EMTextMessageBody(content));
+
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
-      : this(direction: toDirect(Direction.SEND));
+      : this(direction: Direction.SEND);
+
   EMMessage.createImageSendMessage(
       String filePath, bool sendOriginalImage, String userName)
       : this(
-            direction: toDirect(Direction.SEND),
-            type: toType(EMMessageType.IMAGE),
-            body: EMImageMessageBody(File(filePath), null, sendOriginalImage),
+            direction: Direction.SEND,
+            type: EMMessageType.IMAGE,
+            body: EMImageMessageBody(File(filePath),sendOriginalImage),
             to: userName);
-  EMMessage.createVideoSendMessage(String videoFilePath, String imageThumbPath,
+
+  EMMessage.createVideoSendMessage(String videoFilePath,
       int timeLength, String userName)
-      : this(direction: toDirect(Direction.SEND));
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.VIDEO,
+            body: EMVideoMessageBody(File(videoFilePath),timeLength),
+            to: userName);
+
   EMMessage.createLocationSendMessage(double latitude, double longitude,
       String locationAddress, String userName)
       : this(
-            direction: toDirect(Direction.SEND),
-            type: toType(EMMessageType.LOCATION),
+            direction: Direction.SEND,
+            type: EMMessageType.LOCATION,
             body: EMLocationMessageBody(locationAddress, latitude, longitude),
             to: userName);
+
   EMMessage.createFileSendMessage(String filePath, String userName)
       : this(
-            direction: toDirect(Direction.SEND),
-            type: toType(EMMessageType.FILE),
+            direction: Direction.SEND,
+            type: EMMessageType.FILE,
             body: EMNormalFileMessageBody(File(filePath)),
             to: userName);
 
-  bool _deliverAcked;
-  set deliverAcked(bool acked) {
-    _deliverAcked = acked;
+  set isDeliverAcked(bool acked) {
+    deliverAcked = acked;
   }
 
   final String _conversationId;
   String get conversationId => _conversationId;
-  final int _typex;
-  int get typex => _typex;
 
   final String _userName;
   String get userName => _userName;
 
+  bool deliverAcked;
   bool acked;
   EMMessageBody body;
-  int chatType;
+  ChatType chatType;
   bool delivered;
-  int direction;
+  Direction direction;
   String from;
   bool listened;
-  int localTime;
+  String localTime;
   String msgId;
-  int msgTime;
+  String msgTime;
   int progress;
-  int status;
+  Status status;
   String to;
   bool unread;
-  int type;
+  EMMessageType type;
 
   /// attributes holding arbitrary key/value pair
-  final Map<String, dynamic> _attributes;
+  final Map _attributes;
 
   void setAttribute(String attr, dynamic value) {
     _attributes[attr] = value;
@@ -303,57 +312,63 @@ class EMMessage {
 
   /// TODO: setMessageStatusCallback (EMCallBack callback)
 
-  Map<String, dynamic> ext() {
-    return null;
+  Map ext() {
+    return _attributes;
   }
 
-  Map<String, dynamic> toDataMap() {
-    var result = Map<String, dynamic>();
+  Map toDataMap() {
+    var result = {};
     result["acked"] = this.acked;
     result['attributes'] = _attributes;
     result['body'] = body.toDataMap();
-    result['chatType'] = this.chatType;
+    result['chatType'] = toChatType(chatType);
     result['conversationId'] = _conversationId;
-    result['deliverAcked'] = _deliverAcked;
+    result['deliverAcked'] = deliverAcked;
     result['delivered'] = delivered;
-    result['direction'] = direction;
+    result['direction'] = toDirect(direction);
     result['from'] = from;
     result['listened'] = listened;
     result['localTime'] = localTime;
     result['msgId'] = msgId;
     result['msgTime'] = msgTime;
     result['progress'] = progress;
-    result['status'] = status;
+    result['status'] = toEMMessageStatus(status);
     result['to'] = to;
-    result['type'] = type;
+    result['type'] = toType(type);
     result['unread'] = unread;
     result['userName'] = _userName;
     return result;
   }
 
-  EMMessage.from(Map<String, dynamic> data)
-      :
+   EMMessage.from(Map data):
         _attributes = data['attributes'],
         localTime = data['localTime'],
-        chatType = fromChatType(data),
+        chatType = fromChatType(data['chatType']),
         msgId = data['msgId'],
         progress = data['progress'],
         body = EMMessageBody.from(data['body']),
         delivered = data['delivered'],
         from = data['from'],
-        direction = fromDirect(data),
+        direction = fromDirect(data['direction']),
         listened = data['listened'],
         _conversationId = data['conversationId'],
-        status = fromEMMessageStatus(data),
+        status = fromEMMessageStatus(data['status']),
         msgTime = data['msgTime'],
         to = data['to'],
         _userName = data['userName'],
         acked = data['acked'],
-        _typex = fromType(data),
+        type = fromType(data['type']),
         unread = data['unread'];
+
+
+  String toString(){
+    return body.toString();
+  }
+
 }
-  fromType(Map<String, dynamic> data){
-      switch(data['type']){
+
+  fromType(int type){
+      switch(type){
         case 0:
           return EMMessageType.TXT;
         case 1:
@@ -370,6 +385,7 @@ class EMMessage {
           return EMMessageType.CMD;
       }
   }
+
   toType(EMMessageType type){
       if(type == EMMessageType.TXT){
         return 0;
@@ -388,8 +404,8 @@ class EMMessage {
       }
   }
 
-  fromChatType(Map<String, dynamic> data){
-      switch(data['chatType']){
+  fromChatType(int type){
+      switch(type){
         case 0:
           return ChatType.Chat;
         case 1:
@@ -398,6 +414,7 @@ class EMMessage {
           return ChatType.ChatRoom;
       }
   }
+
   toChatType(ChatType type){
       if(type == ChatType.Chat){
         return 0;
@@ -407,14 +424,16 @@ class EMMessage {
         return 2;
       }
   }
-  fromDirect(Map<String, dynamic> data){
-    switch(data['direction']){
+
+  fromDirect(int type){
+    switch(type){
       case 0:
         return Direction.SEND;
       case 1:
         return Direction.RECEIVE;
     }
   }
+
   toDirect(Direction direction){
      if(direction == Direction.SEND){
        return 0;
@@ -422,8 +441,9 @@ class EMMessage {
        return 1;
      }
   }
-  fromEMMessageStatus(Map<String, dynamic> data){
-    switch(data['status']){
+
+  fromEMMessageStatus(int status){
+    switch(status){
       case 0:
         return Status.SUCCESS;
       case 1:
@@ -434,6 +454,7 @@ class EMMessage {
         return Status.CREATE;
     }
   }
+
   toEMMessageStatus(Status status){
      if(status == Status.SUCCESS){
        return 0;
@@ -446,6 +467,30 @@ class EMMessage {
      }
   }
 
+  toEMDownloadStatus(EMDownloadStatus status){
+    if(status == EMDownloadStatus.DOWNLOADING){
+      return 0;
+    } else if(status == EMDownloadStatus.SUCCESSED){
+      return 1;
+    } else if(status == EMDownloadStatus.FAILED){
+      return 2;
+    } else if(status == EMDownloadStatus.PENDING){
+      return 3;
+    }
+  }
+
+  fromEMDownloadStatus(int status){
+    if(status == 0){
+      return EMDownloadStatus.DOWNLOADING;
+    } else if(status == 1){
+      return EMDownloadStatus.SUCCESSED;
+    } else if(status == 2){
+      return EMDownloadStatus.FAILED;
+    } else if(status == 3){
+      return EMDownloadStatus.PENDING;
+    }
+  }
+
 class EMContact {
   final String userName;
   String nickName;
@@ -455,23 +500,23 @@ class EMContact {
 
 // EMMessageBody - body of message.
 abstract class EMMessageBody {
-  Map<String, dynamic> toDataMap();
-  static EMMessageBody from(Map<String, dynamic> data) {
-    print("EMMessageBody-->"+fromType(data));
-    switch (fromType(data)) {
-      case EMMessageType.TXT:
-        print( EMTextMessageBody.fromData(data));
+  Map toDataMap();
+  static EMMessageBody from(Map data) {
+    switch (data['type']) {
+      case 0:
         return EMTextMessageBody.fromData(data);
-      case EMMessageType.CMD:
-        return EMCmdMessageBody.fromData(data);
-      case EMMessageType.IMAGE:
+      case 1:
         return EMImageMessageBody.fromData(data);
-      case EMMessageType.FILE:
-        return EMNormalFileMessageBody.fromData(data);
-      case EMMessageType.LOCATION:
+      case 2:
+        return EMVideoMessageBody.fromData(data);
+      case 3:
         return EMLocationMessageBody.fromData(data);
-      case EMMessageType.VOICE:
+      case 4:
         return EMVoiceMessageBody.fromData(data);
+      case 5:
+        return EMNormalFileMessageBody.fromData(data);
+      case 6:
+        return EMCmdMessageBody.fromData(data);
       default:
         return null;
     }
@@ -668,3 +713,41 @@ EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
   }
   return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }
+
+
+toEMConversationType(EMConversationType type){
+  if(type == EMConversationType.Chat){
+    return 0;
+  }else if(type == EMConversationType.GroupChat){
+    return 1;
+  }else if(type == EMConversationType.ChatRoom){
+    return 2;
+  }else if(type == EMConversationType.DiscussionGroup){
+    return 3;
+  }else if(type == EMConversationType.HelpDesk){
+    return 4;
+  }
+}
+
+fromEMConversationType(int type){
+  if(type == 0){
+    return EMConversationType.Chat;
+  }else if(type == 1){
+    return EMConversationType.GroupChat;
+  }else if(type == 2){
+    return EMConversationType.ChatRoom;
+  }else if(type == 3){
+    return EMConversationType.DiscussionGroup;
+  }else if(type == 4){
+    return EMConversationType.HelpDesk;
+  }
+}
+
+toEMSearchDirection(EMSearchDirection direction){
+  if(direction == EMSearchDirection.Up){
+    return 0;
+  }else if(direction == EMSearchDirection.Down){
+    return 1;
+  }
+}
+

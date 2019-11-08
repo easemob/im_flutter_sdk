@@ -28,40 +28,32 @@ class EMTextMessageBody extends EMMessageBody {
     return result;
   }
 
-  static EMMessageBody fromData(Map<String, dynamic> data) {
+  static EMMessageBody fromData(Map data) {
     return EMTextMessageBody(data['message']);
   }
 }
 
 /// EMCmdMessageBody - cmd message body.
 class EMCmdMessageBody extends EMMessageBody {
-  EMCmdMessageBody(String action, [Map<String, String> params])
+  EMCmdMessageBody(String action)
       : this._action = action,
-        this._params = params,
         this.deliverOnlineOnly = false;
 
   final String _action;
   String get action => _action;
-  final Map<String, String> _params;
-  Map<String, String> get params => _params;
 
   bool deliverOnlineOnly;
 
   @override
-  String toString() =>
-      '[EMCmdMessageBody], {action: $_action, params: $_params}';
-
-  @override
-  Map<String, dynamic> toDataMap() {
-    var result = Map<String, dynamic>();
+  Map toDataMap() {
+    var result = {};
     result['action'] = _action;
     result['deliverOnlineOnly'] = deliverOnlineOnly;
-    result['params'] = _params;
     return result;
   }
 
-  static EMMessageBody fromData(Map<String, dynamic> data) {
-    var message = EMCmdMessageBody(data['action'], data['params']);
+  static EMMessageBody fromData(Map data) {
+    var message = EMCmdMessageBody(data['action']);
     message.deliverOnlineOnly = data['deliverOnlineOnly'];
     return message;
   }
@@ -71,7 +63,9 @@ class EMCmdMessageBody extends EMMessageBody {
 abstract class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody(String localUrl)
       : this.displayName = '',
-        this.localUrl = localUrl;
+        this.localUrl = localUrl,
+        this._fileLength = getFileLength(localUrl);
+
   EMFileMessageBody.of(EMFileMessageBody body)
       : this.displayName = body.displayName,
         this._fileLength = body._fileLength,
@@ -81,7 +75,8 @@ abstract class EMFileMessageBody extends EMMessageBody {
         this.remoteUrl = body.remoteUrl,
         this.secret = body.secret,
         this._body = body;
-  EMFileMessageBody.ofData(Map<String, dynamic> data)
+
+  EMFileMessageBody.ofData(Map data)
       : this.displayName = data['displayName'],
         this._fileLength = data['fileLength'],
         this.localUrl = data['localUrl'],
@@ -90,7 +85,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
         this.remoteUrl = data['remoteUrl'],
         this.secret = data['secret'];
 
-  int _fileLength;
+  var _fileLength;
   set fileLength(int length) => _fileLength = length;
   EMMessageBody _body;
 
@@ -108,16 +103,20 @@ abstract class EMFileMessageBody extends EMMessageBody {
       'fileLength: $_fileLength,'
       'body: $_body}';
 
+   static Future<String> getFileLength(String fileUrl) async{
+      return  new File(fileUrl).length().toString();
+  }
+
   @override
-  Map<String, dynamic> toDataMap() {
-    var result = Map<String, dynamic>();
+  Map toDataMap() {
+    var result = {};
     result['displayName'] = displayName;
     result['fileLength'] = _fileLength;
     result['fileName'] = fileName;
     result['localUrl'] = localUrl;
     result['remoteUrl'] = remoteUrl;
     result['secret'] = secret;
-    result['status'] = downloadStatus;
+    result['status'] = toEMDownloadStatus(downloadStatus);
     return result;
   }
 }
@@ -130,6 +129,7 @@ class EMLocationMessageBody extends EMMessageBody {
         this.latitude = latitude,
         this.longitude = longitude,
         this._body = body;
+
   EMLocationMessageBody _body;
   final String address;
   final double latitude;
@@ -140,8 +140,8 @@ class EMLocationMessageBody extends EMMessageBody {
       '[EMLocationMessageBody], {address: $address, latitude: $latitude, longitude: $longitude, body: $_body}';
 
   @override
-  Map<String, dynamic> toDataMap() {
-    var result = Map<String, dynamic>();
+  Map toDataMap() {
+    var result = {};
     result['address'] = address;
     result['latitude'] = latitude;
     result['longitude'] = longitude;
@@ -158,11 +158,11 @@ class EMLocationMessageBody extends EMMessageBody {
 /// Subclasses of EMFileMessageBody.
 class EMImageMessageBody extends EMFileMessageBody {
   EMImageMessageBody(File imageFile,
-      [File thumbnailFile, bool sendOriginalImage])
+      [bool sendOriginalImage])
       : this._imageFile = imageFile,
-        this._thumbnailFile = thumbnailFile,
         this.sendOriginalImage = sendOriginalImage,
         super(imageFile.path);
+
   EMImageMessageBody.of(EMImageMessageBody body)
       : this._imageFile = body._imageFile,
         this._thumbnailFile = body._thumbnailFile,
@@ -173,6 +173,7 @@ class EMImageMessageBody extends EMFileMessageBody {
         this.thumbnailUrl = body.thumbnailUrl,
         this.width = body.width,
         super.of(body);
+
   EMImageMessageBody._internal(Map<String, dynamic> data)
       : this.height = data["height"],
         this.sendOriginalImage = data["sendOriginalImage"],
@@ -181,6 +182,7 @@ class EMImageMessageBody extends EMFileMessageBody {
         this.thumbnailUrl = data["thumbnailUrl"],
         this.width = data["width"],
         super.ofData(data);
+
   File _imageFile;
   File _thumbnailFile;
 
@@ -226,12 +228,15 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
   EMNormalFileMessageBody(File file)
       : this._file = file,
         super(file.path);
+
   EMNormalFileMessageBody._internal(Map<String, dynamic> data)
       : this._file = null,
         this._fileSize = data['fileSize'],
         super.ofData(data);
+
   final File _file;
   int _fileSize;
+
   Future<int> get fileSize async {
     //lazy load file size
     if (_fileSize == null) {
@@ -244,7 +249,7 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
   String toString() => '[EMNormalFileMessageBody], {fileSize: $fileSize}';
 
   @override
-  Map<String, dynamic> toDataMap() {
+  Map toDataMap() {
     var result = Map.of(super.toDataMap());
     result["fileSize"] = _fileSize;
     return result;
@@ -260,16 +265,20 @@ class EMVoiceMessageBody extends EMFileMessageBody {
       : this._file = voiceFile,
         this._length = duration,
         super(voiceFile.path);
+
   EMVoiceMessageBody.of(EMVoiceMessageBody body)
       : this._file = body._file,
         this._length = body._length,
         super.of(body);
+
   EMVoiceMessageBody._internal(Map<String, dynamic> data)
       : this._file = null,
         this._length = data['length'],
         super.ofData(data);
+
   final File _file;
   int _length;
+
   Future<int> get length async {
     if (_length == null) {
       _length = await _file.length();
@@ -281,9 +290,9 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   String toString() => '[EMVoiceMessageBody], {length: $length}';
 
   @override
-  Map<String, dynamic> toDataMap() {
+  Map toDataMap() {
     var result = Map.of(super.toDataMap());
-    result["length"] = _length;
+    result["voiceDuration"] = _length;
     return result;
   }
 
@@ -293,3 +302,41 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 }
 
 /// TODO: class EMVideoMessageBody extends EMFileMessageBody {}
+class EMVideoMessageBody extends EMFileMessageBody {
+  EMVideoMessageBody(File videoFilePath, int duration)
+      : this._file = videoFilePath,
+        this._length = duration,
+        super(videoFilePath.path);
+
+  EMVideoMessageBody.of(EMVideoMessageBody body)
+      : this._file = body._file,
+        this._length = body._length,
+        super.of(body);
+
+  EMVideoMessageBody._internal(Map data)
+      : this._file = null,
+        this._length = data['length'],
+        super.ofData(data);
+
+  var _file;
+  var _length;
+
+  Future<int> get length async {
+    if (_length == null) {
+      _length = await _file.length();
+    }
+    return _length;
+  }
+
+  static EMMessageBody fromData(Map data) {
+    return EMVideoMessageBody._internal(data);
+  }
+
+  @override
+  Map toDataMap() {
+    var result = Map.of(super.toDataMap());
+    result["videoDuration"] = _length;
+    return result;
+  }
+
+}

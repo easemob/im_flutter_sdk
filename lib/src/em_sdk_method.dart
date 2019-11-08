@@ -51,7 +51,6 @@ class EMSDKMethod {
   static const String getAllConversations = "getAllConversations";
   static const String loadAllConversations = "loadAllConversations";
   static const String deleteConversation = "deleteConversation";
-  static const String setMessageListened = "setMessageListened";
   static const String setVoiceMessageListened = "setVoiceMessageListened";
   static const String updateParticipant = "updateParticipant";
   static const String fetchHistoryMessages = "fetchHistoryMessages";

@@ -53,7 +53,6 @@ public class EMSDKMethod {
     static final String getAllConversations = "getAllConversations";
     static final String loadAllConversations = "loadAllConversations";
     static final String deleteConversation = "deleteConversation";
-    static final String setMessageListened = "setMessageListened";
     static final String setVoiceMessageListened = "setVoiceMessageListened";
     static final String updateParticipant = "updateParticipant";
     static final String fetchHistoryMessages = "fetchHistoryMessages";
@@ -92,29 +91,29 @@ public class EMSDKMethod {
     static final String joinChatRoom = "joinChatRoom";
     static final String leaveChatRoom = "leaveChatRoom";
     static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
-    static final String asyncFetchChatRoomFromServer = "asyncFetchChatRoomFromServer";
+    static final String fetchChatRoomFromServer = "fetchChatRoomFromServer";
     static final String getChatRoom = "getChatRoom";
     static final String getAllChatRooms = "getAllChatRooms";
-    static final String asyncCreateChatRoom = "asyncCreateChatRoom";
-    static final String asyncDestroyChatRoom = "asyncDestroyChatRoom";
-    static final String asyncChangeChatRoomSubject = "asyncChangeChatRoomSubject";
-    static final String asyncChangeChatRoomDescription = "asyncChangeChatRoomDescription";
-    static final String asyncFetchChatRoomMembers = "asyncFetchChatRoomMembers";
-    static final String asyncMuteChatRoomMembers = "asyncMuteChatRoomMembers";
-    static final String asyncUnMuteChatRoomMembers = "asyncUnMuteChatRoomMembers";
-    static final String asyncChangeOwner = "asyncChangeOwner";
-    static final String asyncAddChatRoomAdmin = "asyncAddChatRoomAdmin";
-    static final String asyncRemoveChatRoomAdmin = "asyncRemoveChatRoomAdmin";
-    static final String asyncFetchChatRoomMuteList = "asyncFetchChatRoomMuteList";
-    static final String asyncRemoveChatRoomMembers = "asyncRemoveChatRoomMembers";
-    static final String asyncBlockChatRoomMembers = "asyncBlockChatRoomMembers";
-    static final String asyncUnBlockChatRoomMembers = "asyncUnBlockChatRoomMembers";
-    static final String asyncFetchChatRoomBlackList = "asyncFetchChatRoomBlackList";
-    static final String asyncUpdateChatRoomAnnouncement = "asyncUpdateChatRoomAnnouncement";
-    static final String asyncFetchChatRoomAnnouncement = "asyncFetchChatRoomAnnouncement";
+    static final String createChatRoom = "createChatRoom";
+    static final String destroyChatRoom = "destroyChatRoom";
+    static final String changeChatRoomSubject = "changeChatRoomSubject";
+    static final String changeChatRoomDescription = "changeChatRoomDescription";
+    static final String fetchChatRoomMembers = "fetchChatRoomMembers";
+    static final String muteChatRoomMembers = "muteChatRoomMembers";
+    static final String unMuteChatRoomMembers = "unMuteChatRoomMembers";
+    static final String changeChatRoomOwner = "changeChatRoomOwner";
+    static final String addChatRoomAdmin = "addChatRoomAdmin";
+    static final String removeChatRoomAdmin = "removeChatRoomAdmin";
+    static final String fetchChatRoomMuteList = "fetchChatRoomMuteList";
+    static final String removeChatRoomMembers = "removeChatRoomMembers";
+    static final String blockChatRoomMembers = "blockChatRoomMembers";
+    static final String unBlockChatRoomMembers = "unBlockChatRoomMembers";
+    static final String fetchChatRoomBlackList = "fetchChatRoomBlackList";
+    static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
+    static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
 
     //EMChatRoomManagerListener
-    static final String chatRoomChange = "chatRoomChange";
+    static final String chatRoomChange = "onChatRoomChange";
 
     //EMChatRoom
     static final String getId = "getId";
@@ -169,5 +168,7 @@ public class EMSDKMethod {
     static final String deleteGroupSharedFile = "deleteGroupSharedFile";
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
     static final String updateGroupExtension = "updateGroupExtension";
+
     static final String onGroupChanged = "onGroupChanged";
+
 }
