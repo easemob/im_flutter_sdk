@@ -20,9 +20,9 @@ class EMConversation {
   EMConversation({@required String conversationId})
       : _conversationId = conversationId;
 
-  EMConversation.from(Map<String, dynamic> data)
+  EMConversation.from(Map data)
       : _conversationId = data['id'],
-        _type = data['type'],
+        _type = fromEMConversationType(data['type']),
         extField = data['ext'];
 
   /// getUnreadMsgCount - Gets count of unread messages.

@@ -37,7 +37,7 @@ class EMContactManager {
   }
 
   Future<void> _onContactChanged(Map event) async {
-    var type = event['type'] as EMContactChangeEvent;
+    var type = event['type'];
     String userName = event['userName'];
     String reason = event['reason'];
     for (var listener in _contactChangeEventListeners) {
@@ -89,7 +89,7 @@ class EMContactManager {
       onError(int code, String desc)}) {
     Future<Map> result = _emContactManagerChannel.invokeMethod(
         EMSDKMethod.deleteContact,
-        {"userName": userName, "keepConversation": keepConversation});
+        {"userName": userName, "keepConversation" : keepConversation});
     result.then((response) {
       if (response["success"]) {
         if (onSuccess != null) onSuccess();
@@ -101,16 +101,27 @@ class EMContactManager {
 
   /// getAllContactsFromServer - get contact list.
   /// If anything wrong, [onError] is called with error [code] and [desc] as args.
-  Future<List<String>> getAllContactsFromServer(
-      {onError(int code, String desc)}) async {
-    Map<String, dynamic> result = await _emContactManagerChannel
+  void getAllContactsFromServer({
+      onSuccess(List<String> contacts),
+      onError(int code, String desc)}){
+    Future<Map<String, dynamic>> result = _emContactManagerChannel
         .invokeMethod(EMSDKMethod.getAllContactsFromServer);
-    if (result['success']) {
-      return result['contacts'];
-    } else {
-      if (onError != null) onError(result['code'], result['desc']);
-      return null;
-    }
+    result.then((response){
+      if (response['success']) {
+        if(onSuccess != null) {
+          var contacts = List<String>();
+          if (response['value'] != null) {
+            for (var contact in response['value']) {
+              contacts.add(contact);
+            }
+          }
+          onSuccess(contacts);
+        }
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+
   }
 
   /// addUserToBlackList - Adds user [userName] into black list.
@@ -156,30 +167,22 @@ class EMContactManager {
 
   /// getBlackListFromServer - Gets black list from server and stores locally for next call to [getBlackListUserNames].
   /// Call [onSuccess] if contact added successfully, [onError] once error occured.
-  Future<List<String>> getBlackListFromServer(
-      {onSuccess(), onError(int code, String desc)}) async {
-    Map<String, dynamic> result = await _emContactManagerChannel
+  void getBlackListFromServer(
+      {onSuccess(List<String> blackList), onError(int code, String desc)}) {
+    Future<Map<String, dynamic>> result = _emContactManagerChannel
         .invokeMethod(EMSDKMethod.getBlackListFromServer);
-    if (result['success']) {
-      _blackList = result['black_list'];
-      return result['black_list'];
-    } else {
-      if (onError != null) onError(result['code'], result['desc']);
-      return null;
-    }
-  }
-
-  /// saveBlackList - Tells server to save black-listed contact in [blackList].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
-  void saveBlackList(
-      {@required List<String> blackList,
-      onSuccess(),
-      onError(int code, String desc)}) {
-    Future<Map> result = _emContactManagerChannel
-        .invokeMethod(EMSDKMethod.saveBlackList, {"blackList": blackList});
-    result.then((response) {
-      if (response["success"]) {
-        if (onSuccess != null) onSuccess();
+    result.then((response){
+      if (response['success']) {
+        if(onSuccess != null){
+        var blackUsers = List<String>();
+        if(response['value'] != null){
+          for (var user in response['value']) {
+            blackUsers.add(user);
+          }
+        }
+        _blackList = blackUsers;
+        onSuccess(blackUsers);
+        }
       } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
@@ -222,16 +225,27 @@ class EMContactManager {
 
   /// getSelfIdsOnOtherPlatform - Gets self ids on other platform.
   /// Call [onError] if error occured, with [code], [desc] set with detail error information.
-  Future<List<String>> getSelfIdsOnOtherPlatform(
-      {onError(int code, String desc)}) async {
-    Map<String, dynamic> result = await _emContactManagerChannel
+  void getSelfIdsOnOtherPlatform(
+      {onSuccess(List<String> devices),
+        onError(int code, String desc)}){
+    Future<Map<String, dynamic>> result = _emContactManagerChannel
         .invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
-    if (result['success']) {
-      return result['ids'];
-    } else {
-      if (onError != null) onError(result['code'], result['desc']);
-      return null;
-    }
+    result.then((response){
+      if (response['success']) {
+        if(onSuccess != null){
+          var devices = List<String>();
+          if(response['value'] != null){
+            for (var device in response['value']) {
+              devices.add(device);
+            }
+          }
+          onSuccess(devices);
+        }
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+
   }
 
   /// setContactListener - Sets listener [contactListener] to be aware of contact modification events.

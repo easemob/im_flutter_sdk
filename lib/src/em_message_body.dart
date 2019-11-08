@@ -64,7 +64,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody(String localUrl)
       : this.displayName = '',
         this.localUrl = localUrl,
-        this._fileLength = 120;
+        this._fileLength = getFileLength(localUrl);
 
   EMFileMessageBody.of(EMFileMessageBody body)
       : this.displayName = body.displayName,
@@ -102,6 +102,10 @@ abstract class EMFileMessageBody extends EMMessageBody {
       'localUrl: $localUrl, remoteUrl: $remoteUrl, secret: $secret,'
       'fileLength: $_fileLength,'
       'body: $_body}';
+
+   static Future<String> getFileLength(String fileUrl) async{
+      return  new File(fileUrl).length().toString();
+  }
 
   @override
   Map toDataMap() {

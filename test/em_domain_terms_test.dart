@@ -6,12 +6,11 @@ main() {
   test('EMOptions created successfully with options set with default values',
       () {
     EMOptions options =
-        EMOptions(appKey: 'test#key', imPort: 8080, imServer: 'im.easemob.com');
+        EMOptions(appKey: 'test#key');
     expect(options.appKey, 'test#key');
-    expect(options.imServer, 'im.easemob.com');
-    expect(options.imPort, 8080);
-    expect(options.acceptInvitationAlways, true);
-    expect(options.accessToken, null);
+    expect(options.getIMServer(), 'im.easemob.com');
+    expect(options.getImPort(), 8080);
+    expect(options.getAcceptInvitationAlways(), true);
   });
 
   test('EMMessage created successfully with fields set with default values',

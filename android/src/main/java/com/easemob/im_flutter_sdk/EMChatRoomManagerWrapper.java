@@ -186,45 +186,45 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             leaveChatRoom(methodCall.arguments,result);
         }else if(EMSDKMethod.fetchPublicChatRoomsFromServer.equals(methodCall.method)){
             fetchPublicChatRoomsFromServer(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncFetchChatRoomFromServer.equals(methodCall.method)){
+        }else if(EMSDKMethod.fetchChatRoomFromServer.equals(methodCall.method)){
             fetchChatRoomFromServer(methodCall.arguments,result);
         }else if(EMSDKMethod.getChatRoom.equals(methodCall.method)){
             getChatRoom(methodCall.arguments,result);
         }else if(EMSDKMethod.getAllChatRooms.equals(methodCall.method)){
             getAllChatRooms(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncCreateChatRoom.equals(methodCall.method)){
+        }else if(EMSDKMethod.createChatRoom.equals(methodCall.method)){
             createChatRoom(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncDestroyChatRoom.equals(methodCall.method)){
+        }else if(EMSDKMethod.destroyChatRoom.equals(methodCall.method)){
             destroyChatRoom(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncChangeChatRoomSubject.equals(methodCall.method)){
+        }else if(EMSDKMethod.changeChatRoomSubject.equals(methodCall.method)){
             changeChatRoomSubject(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncChangeChatRoomDescription.equals(methodCall.method)){
+        }else if(EMSDKMethod.changeChatRoomDescription.equals(methodCall.method)){
             changeChatRoomDescription(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncFetchChatRoomMembers.equals(methodCall.method)){
+        }else if(EMSDKMethod.fetchChatRoomMembers.equals(methodCall.method)){
             fetchChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncMuteChatRoomMembers.equals(methodCall.method)){
+        }else if(EMSDKMethod.muteChatRoomMembers.equals(methodCall.method)){
             muteChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncUnMuteChatRoomMembers.equals(methodCall.method)){
+        }else if(EMSDKMethod.unMuteChatRoomMembers.equals(methodCall.method)){
             unMuteChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncChangeOwner.equals(methodCall.method)){
+        }else if(EMSDKMethod.changeChatRoomOwner.equals(methodCall.method)){
             changeOwner(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncAddChatRoomAdmin.equals(methodCall.method)){
+        }else if(EMSDKMethod.addChatRoomAdmin.equals(methodCall.method)){
             addChatRoomAdmin(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncRemoveChatRoomAdmin.equals(methodCall.method)){
+        }else if(EMSDKMethod.removeChatRoomAdmin.equals(methodCall.method)){
             removeChatRoomAdmin(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncFetchChatRoomMuteList.equals(methodCall.method)){
+        }else if(EMSDKMethod.fetchChatRoomMuteList.equals(methodCall.method)){
             fetchChatRoomMuteList(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncRemoveChatRoomMembers.equals(methodCall.method)){
+        }else if(EMSDKMethod.removeChatRoomMembers.equals(methodCall.method)){
             removeChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncBlockChatRoomMembers.equals(methodCall.method)){
+        }else if(EMSDKMethod.blockChatRoomMembers.equals(methodCall.method)){
             blockChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncUnBlockChatRoomMembers.equals(methodCall.method)){
+        }else if(EMSDKMethod.unBlockChatRoomMembers.equals(methodCall.method)){
             unBlockChatRoomMembers(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncFetchChatRoomBlackList.equals(methodCall.method)){
+        }else if(EMSDKMethod.fetchChatRoomBlackList.equals(methodCall.method)){
             fetchChatRoomBlackList(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncUpdateChatRoomAnnouncement.equals(methodCall.method)){
+        }else if(EMSDKMethod.updateChatRoomAnnouncement.equals(methodCall.method)){
             updateChatRoomAnnouncement(methodCall.arguments,result);
-        }else if(EMSDKMethod.asyncFetchChatRoomAnnouncement.equals(methodCall.method)){
+        }else if(EMSDKMethod.fetchChatRoomAnnouncement.equals(methodCall.method)){
             fetchChatRoomAnnouncement(methodCall.arguments,result);
         }
     }

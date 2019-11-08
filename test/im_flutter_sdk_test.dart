@@ -11,21 +11,16 @@ void main() {
     client.init(options);
   });
 
-  test('client listeners get called once migrate to 2x', () {});
-
-  test('client login with callback invoked correctly', () {
-    client.login(
-        userName: 'user1',
-        password: 'passw0rd',
-        onSuccess: (username) {
-          print('login success');
-        });
-    client.login(
-        userName: 'user2',
-        password: 'passw0rd',
-        onError: (int code, String status) {
-          print('login error with code: $code, status: $status');
-        });
+  test('client login with callback invoked correctly', () async {
+    final dynamic onSuccess = expectAsync1((String userName) {
+      expect(userName == 'user1', 'Wrong user name returned.');
+    });
+    client.login(userName: 'user1', password: 'passw0rd', onSuccess: onSuccess);
+    final dynamic onError = expectAsync2((int code, String reason) {
+      expect(code == 1, "Incorrect error code.");
+      expect(reason == "reason", "Incorrect error reason.");
+    });
+    client.login(userName: 'user2', password: 'passw0rd', onError: onError);
   });
 
   tearDown(() {});

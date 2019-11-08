@@ -2,7 +2,6 @@ import "dart:async";
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:meta/meta.dart';
 
 import "em_conversation.dart";
@@ -106,8 +105,8 @@ class EMChatManager {
       EMConversationType type,
       bool createIfNotExists}) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
-        EMSDKMethod.markAllChatMsgAsRead,
-        {"id": id, "type": type, "createIfNotExists": createIfNotExists});
+        EMSDKMethod.getConversation,
+        {"id": id, "type": toEMConversationType(type), "createIfNotExists": createIfNotExists});
     if (result['success']) {
       return EMConversation.from(result['conversation']);
     } else {
@@ -171,11 +170,15 @@ class EMChatManager {
   Future<List<EMConversation>> getConversationsByType(
       EMConversationType type) async {
     Map<String, dynamic> result = await _emChatManagerChannel
-        .invokeMethod(EMSDKMethod.getConversationsByType, {"type": type});
+        .invokeMethod(EMSDKMethod.getConversationsByType, {"type": toEMConversationType(type)});
     if (result["success"]) {
-      var conversations = result['conversations'] as List<Map<String, Object>>;
-      return conversations
-          .map((conversation) => EMConversation.from(conversation));
+      var conversations = result['conversations'] as List<dynamic>;
+      List<EMConversation> list = new List<EMConversation>();
+      for (var value in conversations) {
+        print(value.toString()+"..xx...");
+        list.add(EMConversation.from(value));
+      }
+      return list;
     } else {
       return null;
     }
@@ -209,7 +212,7 @@ class EMChatManager {
         .invokeMethod(EMSDKMethod.getAllConversations);
     if (result['success']) {
       var data = HashMap<String, EMConversation>();
-      var conversations = result['conversations'] as List<Map<String, dynamic>>;
+      var conversations = result['conversations'] as List<dynamic>;
       for (var conversation in conversations) {
         data[conversation['id']] = EMConversation.from(conversation);
       }
@@ -255,12 +258,6 @@ class EMChatManager {
     _conversationUpdateFunc = onConversationUpdate;
   }
 
-  /// setMessageListened - Sets [message] as listened.
-  void setMessageListened(EMMessage message) {
-    _emChatManagerChannel.invokeMethod(
-        EMSDKMethod.setMessageListened, {"message": message.toDataMap()});
-  }
-
   /// setVoiceMessageListened - Sets voice [message] as listened.
   void setVoiceMessageListened(EMMessage message) {
     _emChatManagerChannel.invokeMethod(
@@ -290,7 +287,7 @@ class EMChatManager {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.fetchHistoryMessages, {
       "id": conversationId,
-      "type": type,
+      "type": toEMConversationType(type),
       "pageSize": pageSize,
       "startMsgId": startMsgId
     });
@@ -306,21 +303,21 @@ class EMChatManager {
   Future<List<EMMessage>> searchMsgFromDB(
       {String keywords,
       EMMessageType type,
-      int timeStamp,
+      String timeStamp,
       int maxCount,
       String from,
       EMSearchDirection direction}) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.searchChatMsgFromDB, {
       "keywords": keywords,
-      "type": type,
+      "type": toType(type),
       "timeStamp": timeStamp,
       "maxCount": maxCount,
       "from": from,
-      "direction": direction
+      "direction": toEMSearchDirection(direction)
     });
     if (result['success']) {
-      var messages = result['messages'] as List<Map<String, dynamic>>;
+      var messages = result['messages'] as List<dynamic>;
       var data = List<EMMessage>();
       for (var message in messages) {
         data.add(EMMessage.from(message));
@@ -410,8 +407,12 @@ class _EMCursorResults<T> extends EMCursorResults<T> {
     Map<String, Object> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.getCursor, {"id": _cursorId});
     if (result['success']) {
-      EMMessage message = EMMessage.from(result['message']);
-      return message as T;
+      var list = [];
+      List messageList = result['message'] as List<dynamic>;
+      for (var value in messageList) {
+        list.add(EMMessage.from(value)) ;
+      }
+      return list as T;
     } else {
       return null;
     }

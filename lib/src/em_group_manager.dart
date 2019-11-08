@@ -39,7 +39,6 @@ class EMGroupManager{
   }
 
 
-
   ///获取当前(内存)用户的所有群组
   Future<List<EMGroup>> getAllGroups() async{
     Map<String, dynamic> result = await _emGroupManagerChannel
@@ -249,13 +248,13 @@ class EMGroupManager{
         .invokeMethod(EMSDKMethod.getPublicGroupsFromServer, {"pageSize" : pageSize, "cursor" : cursor});
     result.then((response){
       if (response['success']) {
-        if (onSuccess != null) {
-          if(response['value'] != null) {
-            var groups = response['value'] as Map<String, dynamic>;
-            onSuccess(EMCursorResult.from(groups));
-          }else{
-            onSuccess(null);
-          }
+          if (onSuccess != null) {
+            if(response['value'] != null) {
+              var groups = response['value'] as Map<String, dynamic>;
+              onSuccess(EMCursorResult.from(groups));
+            }else{
+              onSuccess(null);
+            }
         }
       } else {
         if (onError != null) onError(response['code'], response['desc']);
@@ -403,22 +402,22 @@ class EMGroupManager{
 
   ///群成员邀请用户加入群组 （如果群组设置成开放群成员邀请，群组成员可以邀请其他用户加入）
   void inviteUser({
-    @required String groupId,
-    @required List<String> members,
-    @required String reason,
-    onSuccess(),
-    onError(int errorCode, String desc)}){
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.inviteUser, {"groupId" : groupId, "members" : members, "reason" : reason});
-    result.then((response){
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+     @required String groupId,
+     @required List<String> members,
+     @required String reason,
+     onSuccess(),
+     onError(int errorCode, String desc)}){
+     Future<Map<String, dynamic>> result = _emGroupManagerChannel
+         .invokeMethod(EMSDKMethod.inviteUser, {"groupId" : groupId, "members" : members, "reason" : reason});
+     result.then((response){
+       if (response['success']) {
+         if (onSuccess != null) {
+           onSuccess();
+         }
+       } else {
+         if (onError != null) onError(response['code'], response['desc']);
+       }
+     });
   }
 
   ///申请加入某个群（用于加入需要验证的公开群）
