@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'conversation_list_page.dart';
+import 'package:im_flutter_sdk_example/utils/localizations.dart';
 class HomePage extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
@@ -9,12 +12,12 @@ class HomePage extends StatefulWidget{
   }
 }
 
-class _HomePageState extends State<HomePage>{
+class _HomePageState extends State<HomePage> implements EMMessageListener{
+
   var tabbarList = [
-    new BottomNavigationBarItem(icon: new Icon(Icons.chat,color: Colors.grey),title: new Text("会话"),),
-    new BottomNavigationBarItem(icon: new Icon(Icons.perm_contact_calendar,color: Colors.grey,),title: new Text("通讯录"),),
-    new BottomNavigationBarItem(icon: new Icon(Icons.settings,color: Colors.grey,),title: new Text("设置"),),
+    BottomNavigationBarItem(icon: new Icon(null)),
   ];
+  /// 目前只有会话列表，后续替换
   var vcList = [new EMConversationListPage(), new EMConversationListPage(), new EMConversationListPage()];
 
   int curIndex = 0;
@@ -29,6 +32,11 @@ class _HomePageState extends State<HomePage>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+    tabbarList = [
+      BottomNavigationBarItem(icon: new Icon(Icons.chat,color: Colors.grey),title: new Text(DemoLocalizations.of(context).conversation)),
+      BottomNavigationBarItem(icon: new Icon(Icons.perm_contact_calendar,color: Colors.grey,),title: new Text(DemoLocalizations.of(context).addressBook),),
+      BottomNavigationBarItem(icon: new Icon(Icons.settings,color: Colors.grey,),title: new Text(DemoLocalizations.of(context).setting),),
+    ];
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         items: tabbarList,
@@ -43,4 +51,14 @@ class _HomePageState extends State<HomePage>{
       body: vcList[curIndex],
     );
   }
+
+  void onMessageReceived(List<EMMessage> messages){
+
+  }
+  void onCmdMessageReceived(List<EMMessage> messages){}
+  void onMessageRead(List<EMMessage> messages){}
+  void onMessageDelivered(List<EMMessage> messages){}
+  void onMessageRecalled(List<EMMessage> messages){}
+  void onMessageChanged(EMMessage message, Object change){}
+
 }
