@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'utils/localizations.dart';
+import 'pages/home_page.dart';
+import 'login_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,16 +19,6 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     //TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMClient.getInstance().init(options);
-    EMClient.getInstance().login(
-        userName: "omg2",
-        password: "1",
-        onSuccess: (String username) {
-          print("login succes: " + username);
-        },
-        onError: (code, desc) {
-          print("code :" + code.toString() + " " + "desc :" + desc);
-        });
-
     EMClient.getInstance().addConnectionListener(this);
     super.initState();
   }
@@ -31,19 +26,29 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      /// 配置跳转路由
+      routes: <String, WidgetBuilder>{
+        'home': (BuildContext context) => new HomePage(),
+      },
+
+      /// 配置国际化语言
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        DemoLocalizationsDelegate.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', 'US'), // 美国英语
+        const Locale('zh', 'CN'), // 中文简体
+        // ... other locales the app supports
+      ],
+
+
       title: '环信即时通讯云',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('环信 Flutter'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Text('Running on:'),
-        ),
-      ),
+      home: LoginPage(),
     );
   }
 
