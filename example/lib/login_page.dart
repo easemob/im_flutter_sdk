@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import 'utils/localizations.dart';
 class LoginPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -10,6 +13,22 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _pwdController = TextEditingController();
+ bool isLogged;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isLoggedInBefore();
+  }
+
+  void isLoggedInBefore() async{
+    bool isLoggedInBefore = await EMClient.getInstance().isLoggedInBefore();
+    print(isLoggedInBefore);
+    isLogged = isLoggedInBefore;
+    if(isLoggedInBefore){
+      Navigator.of(context).pushNamed('home');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +87,18 @@ class LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 30.0),
+          child: TextField(
+            controller: _pwdController,
+            maxLines: 1,
+            obscureText: true,
+            decoration: InputDecoration(
+              hintText: "请输入密码",
+              labelText: "密码",
+            ),
+          ),
+        ),
         SizedBox(
           height: 30.0,
         ),
@@ -78,7 +109,7 @@ class LoginPageState extends State<LoginPage> {
             padding: EdgeInsets.all(12.0),
             shape: StadiumBorder(),
             child: Text(
-              "登陆",
+              DemoLocalizations.of(context).login,
               style: TextStyle(color: Colors.white),
             ),
             color: Colors.green,
@@ -106,9 +137,26 @@ class LoginPageState extends State<LoginPage> {
 //    }
   }
 
-  void login(BuildContext context) async {
-//    await saveCurrentUser(_usernameController.text);
-//    onLoginClick(_usernameController.text);
-//    Navigator.of(context).pushReplacementNamed('/contact');
+  void login(BuildContext context){
+    if(isLogged){
+      Navigator.of(context).pushNamed('home');
+    }else {
+      EMClient.getInstance().login(
+          userName: _usernameController.text,
+          password: _pwdController.text,
+          onSuccess: (username) {
+            EMClient.getInstance()
+                .groupManager()
+                .getJoinedGroupsFromServer();
+            print("login succes");
+            Navigator.of(context).pushNamed('home');
+          },
+          onError: (code, desc) {
+            print("login error:" +
+                code.toString() +
+                "//" +
+                desc.toString());
+          });
+    }
   }
 }
