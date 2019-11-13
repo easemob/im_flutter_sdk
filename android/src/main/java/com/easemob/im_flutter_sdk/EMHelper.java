@@ -556,12 +556,6 @@ class EMHelper {
         if(type == 2){
             return EMConversationType.ChatRoom;
         }
-        if(type == 3){
-            return EMConversationType.DiscussionGroup;
-        }
-        if(type == 4){
-            return EMConversationType.HelpDesk;
-        }
         return EMConversationType.Chat;
     }
 
@@ -574,12 +568,6 @@ class EMHelper {
         }
         if(type == EMConversationType.ChatRoom){
             return 2;
-        }
-        if(type == EMConversationType.DiscussionGroup){
-            return 3;
-        }
-        if(type == EMConversationType.HelpDesk){
-            return 4;
         }
         return 0;
     }

@@ -6,7 +6,6 @@
 //
 
 #import "EMChatroomManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>
