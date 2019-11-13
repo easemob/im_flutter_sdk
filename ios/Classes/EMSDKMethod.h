@@ -92,7 +92,6 @@ static NSString * const EMMethodKeyGetAllMsgCount = @"getAllMsgCount";
 static NSString * const EMMethodKeyLoadMoreMsgFromDB = @"loadMoreMsgFromDB";
 static NSString * const EMMethodKeySearchConversationMsgFromDB = @"searchConversationMsgFromDB";
 static NSString * const EMMethodKeySearchConversationMsgFromDBByType = @"searchConversationMsgFromDBByType";
-static NSString * const EMMethodKeyGetAllMessages = @"getAllMessages";
 static NSString * const EMMethodKeyLoadMessages = @"loadMessages";
 static NSString * const EMMethodKeyMarkMessageAsRead = @"markMessageAsRead";
 static NSString * const EMMethodKeyRemoveMessage = @"removeMessage";

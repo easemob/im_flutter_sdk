@@ -115,7 +115,8 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             public void onMessageChanged(EMMessage message, Object change) {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("message", EMHelper.convertEMMessageToStringMap(message));
-                data.put("change", change);
+                // TODO: change 无意义，不需要加
+//                data.put("change", change);
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
                 });
@@ -249,6 +250,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         }
     }
 
+    // TODO: 这个方法不正确？ allMessageAsRead 和 allConversationAsRead不一样
     private void markAllMessagesAsRead(Object args, Result result) {
         manager.markAllConversationsAsRead();
     }
@@ -385,6 +387,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             EMLog.e("JSONException", e.getMessage());
         }
     }
+
 
     private void fetchHistoryMessages(Object args, Result result) {
         try {

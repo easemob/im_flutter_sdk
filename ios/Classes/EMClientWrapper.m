@@ -6,7 +6,6 @@
 //
 
 #import "EMClientWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
