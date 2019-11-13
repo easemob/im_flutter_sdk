@@ -27,7 +27,7 @@
 #pragma mark - Conversation
 
 + (NSDictionary *)conversationToDictionary:(EMConversation *)aConversation {
-    return nil;
+    return [NSMutableDictionary dictionary];
 }
 
 #pragma mark - Group

@@ -7,7 +7,6 @@
 //
 
 #import "EMGroupManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
