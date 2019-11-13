@@ -27,10 +27,7 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
+
     if ([EMMethodKeyInit isEqualToString:call.method]) {
         [self initSDKWithDict:call.arguments result:result];
     } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
@@ -65,6 +62,8 @@
         [self getDeviceInfo:call.arguments result:result];
     } else if ([EMMethodKeyCheck isEqualToString:call.method]) {
         [self check:call.arguments result:result];
+    } else if ([EMMethodKeyGetIsLoggedInBefore isEqualToString:call.method]) {
+        [self isLoggedInBefore:call.arguments result:result];
     }  else {
         [super handleMethodCall:call result:result];
     }
@@ -89,7 +88,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"aUsername":aUsername}];
+                         userInfo:aUsername];
     }];
 }
 
@@ -103,7 +102,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:aUsername];
     }];
 }
 
@@ -117,7 +116,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:aUsername];
     }];
 }
 
@@ -275,6 +274,13 @@
     }];
 }
 
+- (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
+    BOOL isLogged = [EMClient.sharedClient isLoggedIn];
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:[NSNumber numberWithBool:isLogged]];
+    
+}
 
 #pragma - mark EMClientDelegate
 

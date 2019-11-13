@@ -5,6 +5,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'utils/localizations.dart';
 import 'pages/home_page.dart';
 import 'login_page.dart';
+import 'register_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -29,7 +30,10 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
       /// 配置跳转路由
       routes: <String, WidgetBuilder>{
         'home': (BuildContext context) => new HomePage(),
+        "register":(BuildContext context)=>new RegisterPage(),
       },
+
+
 
       /// 配置国际化语言
       localizationsDelegates: [

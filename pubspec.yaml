@@ -24,14 +24,17 @@ flutter:
   # The androidPackage and pluginClass identifiers should not ordinarily
   # be modified. They are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
+
+
   plugin:
     androidPackage: com.easemob.im_flutter_sdk
     pluginClass: ImFlutterSdkPlugin
 
+
   # To add assets to your plugin package, add an assets section, like this:
-  # assets:
-  #  - images/a_dot_burr.jpeg
-  #  - images/a_dot_ham.jpeg
+  #   assets:
+  #    - images/a_dot_burr.jpeg
+  #    - images/a_dot_ham.jpeg
   #
   # For details regarding assets in packages, see
   # https://flutter.dev/assets-and-images/#from-packages

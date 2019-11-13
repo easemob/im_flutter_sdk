@@ -40,6 +40,10 @@ flutter:
   assets:
     - images/ease_default_avatar.png
     - images/ease_group_icon.png
+    - images/star.png
+    - images/head.png
+    - images/icon_120.png
+    - images/back_01.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

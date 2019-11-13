@@ -36,6 +36,8 @@ static NSString * const EMMethodKeyCheck = @"check";
 static NSString * const EMMethodKeyOnConnected = @"onConnected";
 static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
+static NSString * const EMMethodKeyGetIsLoggedInBefore = @"isLoggedInBefore";
+
 
 #pragma mark - EMContactManagerWrapper
 
