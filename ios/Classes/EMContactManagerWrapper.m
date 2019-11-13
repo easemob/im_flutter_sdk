@@ -6,7 +6,6 @@
 //
 
 #import "EMContactManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 typedef enum : NSUInteger {

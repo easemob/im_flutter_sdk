@@ -69,11 +69,9 @@ public class EMSDKMethod {
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
-    static final String getAllMsgCount = "getAllMsgCount";
     static final String loadMoreMsgFromDB = "loadMoreMsgFromDB";
     static final String searchConversationMsgFromDB = "searchConversationMsgFromDB";
     static final String searchConversationMsgFromDBByType = "searchConversationMsgFromDBByType";
-    static final String getAllMessages = "getAllMessages";
     static final String loadMessages = "loadMessages";
     static final String markMessageAsRead = "markMessageAsRead";
     static final String removeMessage = "removeMessage";

@@ -67,13 +67,11 @@ class EMSDKMethod {
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
-  static const String getAllMsgCount = 'getAllMsgCount';
   static const String loadMoreMsgFromDB = 'loadMoreMsgFromDB';
   static const String searchConversationMsgFromDB =
       'searchConversationMsgFromDB';
   static const String searchConversationMsgFromDBByType =
       'searchConversationMsgFromDB';
-  static const String getAllMessages = 'getAllMessages';
   static const String loadMessages = 'loadMessages';
   static const String markMessageAsRead = 'markMessageAsRead';
   static const String removeMessage = 'removeMessage';
