@@ -690,6 +690,11 @@ class EMHelper {
         return result;
     }
 
+    /**
+     * 将JSONObject 解析并封装给EMOptions
+     * @param json
+     * @return
+     */
     static EMOptions convertStringMapToEMOptions(JSONObject json){
         EMOptions options = new EMOptions();
         try {
@@ -725,6 +730,11 @@ class EMHelper {
         return options;
     }
 
+    /**
+     * 将EMDeviceInfo 对象解析并包装成 Map
+     * @param device
+     * @return
+     */
     static Map<String, Object> convertDevicesToStringMap(EMDeviceInfo device){
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("resource", device.getResource());
