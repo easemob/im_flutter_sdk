@@ -7,6 +7,7 @@
 
 #import "EMChatManagerWrapper.h"
 #import <Hyphenate/Hyphenate.h>
+#import "EMSDKMethod.h"
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @end
@@ -19,4 +20,5 @@
     }
     return self;
 }
+
 @end

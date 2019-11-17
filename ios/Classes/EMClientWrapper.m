@@ -276,9 +276,9 @@
 
 - (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
     BOOL isLogged = [EMClient.sharedClient isLoggedIn];
-    [self wrapperCallBack:result
+    [self wrapperCallBack1:result
                     error:nil
-                 userInfo:[NSNumber numberWithBool:isLogged]];
+                 userInfo:@{@"isLogged":[NSNumber numberWithBool:isLogged]}];
     
 }
 
