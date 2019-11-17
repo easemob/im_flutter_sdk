@@ -44,6 +44,20 @@ flutter:
     - images/head.png
     - images/icon_120.png
     - images/back_01.png
+    - images/标签@2x.png
+    - images/公众号@2x.png
+    - images/群聊@2x.png
+    - images/新的好友@2x.png
+    - images/聊天室@2x.png
+    - images/icon-search@2x.png
+    - images/通用@2x.png
+    - images/安全与隐私@2x.png
+    - images/消息设置@2x.png
+    - images/群组设置@2x.png
+    - images/黑名单@2x.png
+    - images/多端多设备管理@2x.png
+    - images/自定义服务器@2x.png
+    - images/清除缓存@2x.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

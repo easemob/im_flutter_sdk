@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'conversation_list_page.dart';
+import 'contacts_list_page.dart';
+import 'settings_page.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 class HomePage extends StatefulWidget{
   @override
@@ -18,7 +20,7 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
     BottomNavigationBarItem(icon: new Icon(null)),
   ];
   /// 目前只有会话列表，后续替换
-  var vcList = [new EMConversationListPage(), new EMConversationListPage(), new EMConversationListPage()];
+  var vcList = [new EMConversationListPage(), new EMContactsListPage(), new EMSettingsPage()];
 
   int curIndex = 0;
 

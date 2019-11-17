@@ -105,7 +105,7 @@ typedef enum : NSUInteger {
 
 - (void)getAllContactsFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
+    [EMClient.sharedClient.contactManager getContactsFromServerWithCompletion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                             error:aError

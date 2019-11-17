@@ -15,16 +15,17 @@ class LoginPageState extends State<LoginPage> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _pwdController = TextEditingController();
   bool isLogged;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-//    isLoggedInBefore();
+    isLoggedInBefore();
   }
 
   void isLoggedInBefore() async{
     bool isLoggedInBefore = await EMClient.getInstance().isLoggedInBefore();
-    print(isLoggedInBefore);
+    print('是否登录$isLoggedInBefore');
     isLogged = isLoggedInBefore;
     if(isLoggedInBefore){
       Navigator.of(context).pushNamed('home');
@@ -37,7 +38,6 @@ class LoginPageState extends State<LoginPage> {
       children: <Widget>[
         Scaffold(
             backgroundColor: Colors.white,
-
             body: Container(
               /// 背景图
               decoration: BoxDecoration(
@@ -190,11 +190,12 @@ class LoginPageState extends State<LoginPage> {
             ),
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
-//              login(context);
-              Navigator.of(context).pushNamed('home');
+
+//              Navigator.of(context).pushNamed('home');
 
               print('用户名${this._usernameController.text}');
               print('密码${this._pwdController.text}');
+              login(context);
             },
           ),
         ),
@@ -218,16 +219,18 @@ class LoginPageState extends State<LoginPage> {
   }
 
   void login(BuildContext context){
-    if(isLogged){
-      Navigator.of(context).pushNamed('home');
-    }else {
+//    if(isLogged){
+//      Navigator.of(context).pushNamed('home');
+//      print('用户名${this._usernameController.text}');
+//      print('密码${this._pwdController.text}');
+//    }else {
       EMClient.getInstance().login(
-          userName: _usernameController.text,
-          password: _pwdController.text,
+//          userName: _usernameController.text,
+//          password: _pwdController.text,
+
+          userName: 'u15',
+          password: '1',
           onSuccess: (username) {
-            EMClient.getInstance()
-                .groupManager()
-                .getJoinedGroupsFromServer();
             print("login succes");
             Navigator.of(context).pushNamed('home');
           },
@@ -237,6 +240,6 @@ class LoginPageState extends State<LoginPage> {
                 "//" +
                 desc.toString());
           });
-    }
+//    }
   }
 }

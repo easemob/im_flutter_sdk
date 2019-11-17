@@ -31,6 +31,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
       routes: <String, WidgetBuilder>{
         'home': (BuildContext context) => new HomePage(),
         "register":(BuildContext context)=>new RegisterPage(),
+        "login":(BuildContext context)=>new LoginPage(),
       },
 
 
