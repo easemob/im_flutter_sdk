@@ -7,6 +7,7 @@
 
 #import "EMConversationWrapper.h"
 #import "EMSDKMethod.h"
+#import "EMHelper.h"
 
 @interface EMConversationWrapper ()
 
@@ -67,76 +68,246 @@
 
 
 #pragma mark - Private
-- (EMConversation *)getConversation {
-    return [EMClient.sharedClient.chatManager getConversation:self.conversationId
-                                                         type:self.type
+- (EMConversation *)getConversationWithId:(NSString *)aConversationId
+                                     type:(EMConversationType)aType{
+    return [EMClient.sharedClient.chatManager getConversation:aConversationId
+                                                         type:aType
                                              createIfNotExist:YES];
 }
 
+- (void)getConversationWithParam:(NSDictionary *)param
+                      completion:(void(^)(EMConversation *conversation))aCompletion {
+    NSString *conversationId = param[@"id"];
+    // TODO: 是否需要类型？
+    EMConversationType type = 0;
+    EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
+                                                                                 type:type
+                                                                     createIfNotExist:YES];
+    if (aCompletion) {
+        aCompletion(conversation);
+    }
+}
+
 #pragma mark - Actions
-- (void)getUnreadMsgCount:(NSDictionary *)param result:(FlutterResult)result {
-    [[self getConversation] unreadMessagesCount];
+- (void)getUnreadMsgCount:(NSDictionary *)param
+                   result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        [self wrapperCallBack:result
+                        error:nil
+                     userInfo:@{@"count":@(conversation.unreadMessagesCount)}];
+    }];
 }
 
-- (void)markAllMessagesAsRead:(NSDictionary *)param result:(FlutterResult)result {
+- (void)markAllMessagesAsRead:(NSDictionary *)param
+                       result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        [conversation markAllMessagesAsRead:nil];
+    }];
+}
+
+- (void)loadMoreMsgFromDB:(NSDictionary *)param
+                   result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                         completion:^(EMConversation *conversation) {
+        NSString *startMsgId = param[@"startMsgId"];
+        int pageSize = [param[@"pageSize"] intValue];
+        [conversation loadMessagesStartFromId:startMsgId
+                                        count:pageSize
+                              searchDirection:EMMessageSearchDirectionUp
+                                   completion:^(NSArray *aMessages, EMError *aError)
+        {
+            [weakSelf wrapperCallBack:result
+                                error:aError
+                             userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+        }];
+    }];
+}
+
+- (void)searchConversationMsgFromDB:(NSDictionary *)param
+                             result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSString *keywords = param[@"keywords"];
+        NSString *from = param[@"from"];
+        long long timeStamp = [param[@"timeStamp"] longLongValue];
+        int maxCount = [param[@"maxCount"] intValue];
+        EMMessageSearchDirection direction = (EMMessageSearchDirection)[param[@"direction"] intValue];
+        [conversation loadMessagesWithKeyword:keywords
+                                    timestamp:timeStamp
+                                        count:maxCount
+                                     fromUser:from
+                              searchDirection:direction
+                                   completion:^(NSArray *aMessages, EMError *aError)
+        {
+            [weakSelf wrapperCallBack:result
+                                error:aError
+                             userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+        }];
+    }];
+}
+
+- (void)searchConversationMsgFromDBByType:(NSDictionary *)param
+                                   result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSString *from = param[@"from"];
+        EMMessageBodyType type = (EMMessageBodyType)[param[@"type"] intValue];
+        long long timeStamp = [param[@"timeStamp"] longLongValue];
+        int maxCount = [param[@"maxCount"] intValue];
+        EMMessageSearchDirection direction = (EMMessageSearchDirection)[param[@"direction"] intValue];
+        [conversation loadMessagesWithType:type
+                                 timestamp:timeStamp
+                                     count:maxCount
+                                  fromUser:from
+                           searchDirection:direction
+                                completion:^(NSArray *aMessages, EMError *aError)
+        {
+            [weakSelf wrapperCallBack:result
+               error:aError
+            userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+        }];
+    }];
+}
+
+- (void)loadMessages:(NSDictionary *)param
+              result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        NSArray *msgIds = param[@"messages"];
+        NSMutableArray *ret = [NSMutableArray array];
+        for (NSString *msgId in msgIds) {
+            EMMessage *msg = [conversation loadMessageWithId:msgId error:nil];
+            if (msg) {
+                [ret addObject:[EMHelper messageToDictionary:msg]];
+            }
+        }
+        [self wrapperCallBack:result
+                        error:nil
+                     userInfo:@{@"messages":ret}];
+    }];
+}
+
+- (void)markMessageAsRead:(NSDictionary *)param
+                   result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSString *msgId = param[@"messageId"];
+        [conversation markMessageAsReadWithId:msgId error:nil];
+    }];
+}
+
+- (void)removeMessage:(NSDictionary *)param
+               result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSString *msgId = param[@"messageId"];
+        [conversation deleteMessageWithId:msgId error:nil];
+    }];
+}
+
+- (void)getLastMessage:(NSDictionary *)param
+                result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        EMMessage *msg = conversation.latestMessage;
+        [self wrapperCallBack:result
+                        error:nil
+                     userInfo:@{@"message":[EMHelper messageToDictionary:msg]}];
+    }];
+}
+
+- (void)getLatestMessageFromOthers:(NSDictionary *)param
+                            result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        EMMessage *msg = conversation.lastReceivedMessage;
+        [self wrapperCallBack:result
+                        error:nil
+                     userInfo:@{@"message":[EMHelper messageToDictionary:msg]}];
+    }];
+}
+
+- (void)clear:(NSDictionary *)param
+       result:(FlutterResult)result
+{
     
 }
 
-- (void)loadMoreMsgFromDB:(NSDictionary *)param result:(FlutterResult)result {
+- (void)clearAllMessages:(NSDictionary *)param
+                  result:(FlutterResult)result
+{
     
 }
 
-- (void)searchConversationMsgFromDB:(NSDictionary *)param result:(FlutterResult)result {
-    
+- (void)insertMessage:(NSDictionary *)param
+               result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSDictionary *msgDict = param[@"msg"];
+        [conversation insertMessage:[EMHelper dictionaryToMessage:msgDict]
+                              error:nil];
+    }];
 }
 
-- (void)searchConversationMsgFromDBByType:(NSDictionary *)param result:(FlutterResult)result {
-    
+- (void)appendMessage:(NSDictionary *)param
+               result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSDictionary *msgDict = param[@"msg"];
+        [conversation appendMessage:[EMHelper dictionaryToMessage:msgDict]
+                              error:nil];
+    }];
 }
 
-- (void)loadMessages:(NSDictionary *)param result:(FlutterResult)result {
-    
+- (void)updateConversationMessage:(NSDictionary *)param
+                           result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSDictionary *msgDict = param[@"msg"];
+        [conversation updateMessageChange:[EMHelper dictionaryToMessage:msgDict]
+                              error:nil];
+    }];
 }
 
-- (void)markMessageAsRead:(NSDictionary *)param result:(FlutterResult)result {
-    
+// TODO: ?
+- (void)getMessageAttachmentPath:(NSDictionary *)param
+                          result:(FlutterResult)result
+{
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+
+    }];
 }
 
-- (void)removeMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)getLastMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)getLatestMessageFromOthers:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)clear:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)clearAllMessages:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)insertMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)appendMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)updateConversationMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)getMessageAttachmentPath:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
 
 
 @end
