@@ -18,6 +18,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSDictionary *)messageToDictionary:(EMMessage *)aMessage;
 
++ (NSArray *)dictionarysToMessages:(NSArray *)dicts;
+
++ (NSArray *)messagesToDictionarys:(NSArray *)messages;
+
 + (NSDictionary *)messagebodyToDictionary:(NSDictionary *)aDictionary;
 
 #pragma mark - Conversation
@@ -28,13 +32,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSDictionary *)groupToDictionary:(EMGroup *)aGroup;
 
++ (NSArray *)groupsToDictionarys:(NSArray *)groups;
+
++ (NSDictionary *)groupSharedFileToDictionary:(EMGroupSharedFile *)sharedFile;
+
++ (NSArray *)groupFileListToDictionaryList:(NSArray *)groupFileList;
+
 #pragma mark - ChatRoom
 
 + (NSDictionary *)chatRoomToDictionary:(EMChatroom *)aChatRoom;
 
++ (NSArray *)chatRoomsToDictionarys:(NSArray *)chatRooms;
+
 #pragma mark - Others
 
-+ (NSDictionary *)pageReslutToDictionary:(NSDictionary *)aDictionary;
++ (NSDictionary *)pageReslutToDictionary:(EMPageResult *)pageResult;
 
 
 
