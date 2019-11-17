@@ -184,13 +184,12 @@
     for (EMConversation *conversation in conversations) {
         [conversationDictList addObject:[EMHelper conversationToDictionary:conversation]];
     }
-    
     [self wrapperCallBack:result error:nil userInfo:@{@"conversations" : conversationDictList}];
 }
 
-// TODO: 确认这个方法的意思，看是否需要添加
+
 - (void)loadAllConversations:(NSDictionary *)param result:(FlutterResult)result {
-    
+    [self getAllConversations:param result:result];
 }
 
 - (void)deleteConversation:(NSDictionary *)param result:(FlutterResult)result {
