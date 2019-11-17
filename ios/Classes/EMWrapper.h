@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-# define NSLog(fmt, ...) NSLog((@"[文件名:%s]\n" "[函数名:%s]\n" "[行号:%d] \n" fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+//# define NSLog(fmt, ...) NSLog((@"[文件名:%s]\n" "[函数名:%s]\n" "[行号:%d] \n" fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 @interface EMWrapper : NSObject <FlutterPlugin>
 @property (strong, nonatomic) FlutterMethodChannel *channel;
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)wrapperCallBack:(FlutterResult)result
                     error:(EMError *__nullable)error
-                 userInfo:(NSObject *__nullable)userInfo;
+                 userInfo:(NSDictionary *__nullable)userInfo;
 
 @end
 
