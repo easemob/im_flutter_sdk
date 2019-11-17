@@ -25,10 +25,7 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
+    
     if ([EMMethodKeyGetUnreadMsgCount isEqualToString:call.method]) {
         [self getUnreadMsgCount:call.arguments result:result];
     } else if ([EMMethodKeyMarkAllMessagesAsRead isEqualToString:call.method]) {

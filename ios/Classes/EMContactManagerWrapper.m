@@ -35,10 +35,7 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-     if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-           NSLog(@"wrong type");
-           return;
-       }
+
        if ([EMMethodKeyAddContact isEqualToString:call.method]) {
            [self addContact:call.arguments result:result];
        }
