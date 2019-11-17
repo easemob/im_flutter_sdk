@@ -26,10 +26,6 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
     if ([EMMethodKeySendMessage isEqualToString:call.method]) {
         [self sendMessage:call.arguments result:result];
     } else if ([EMMethodKeyAckMessageRead isEqualToString:call.method]) {

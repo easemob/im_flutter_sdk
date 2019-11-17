@@ -30,10 +30,6 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
     if ([EMMethodKeyGetJoinedGroups isEqualToString:call.method]) {
         [self getJoinedGroups:call.arguments result:result];
     } else if ([EMMethodKeyGetGroupsWithoutPushNotification isEqualToString:call.method]) {
