@@ -23,6 +23,15 @@ public class EMSDKMethod {
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
 
+    /// EMClient multiDevice listener
+    static final String addMultiDeviceListener = "addMultiDeviceListener";
+    static final String removeMultiDeviceListener = "removeMultiDeviceListener";
+
+    /// EMClient Connection listener
+    static final String addConnectionListener = "addConnectionListener";
+    static final String removeConnectionListener = "removeConnectionListener";
+
+
     /// EMContactManager methods
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
