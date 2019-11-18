@@ -590,8 +590,7 @@ class EMCursorResult {
     return _cursor;
   }
 
-  List
-  getData(){
+  List getData(){
     return _data;
   }
 
@@ -600,7 +599,28 @@ class EMCursorResult {
         _data = data['data'];
 }
 
+class EMPageResult<T>{
+  int _pageCount;
 
+  List<T> _data;
+
+  int getPageCount() {
+    return _pageCount;
+  }
+
+  List<T> getData(){
+    return _data;
+  }
+
+  void setData(List list){
+     _data = list;
+  }
+
+  EMPageResult.from(Map<String, dynamic> data)
+      : _pageCount = data['pageCount'],
+        _data = data['data'];
+
+}
 
 class EMGroupOptions {
   EMGroupOptions({

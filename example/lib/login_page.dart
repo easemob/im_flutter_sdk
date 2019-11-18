@@ -4,6 +4,11 @@ import 'utils/localizations.dart';
 import 'register_page.dart';
 
 
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import 'utils/localizations.dart';
+import 'common/common.dart';
+
 class LoginPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -15,7 +20,6 @@ class LoginPageState extends State<LoginPage> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _pwdController = TextEditingController();
   bool isLogged;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -25,10 +29,10 @@ class LoginPageState extends State<LoginPage> {
 
   void isLoggedInBefore() async{
     bool isLoggedInBefore = await EMClient.getInstance().isLoggedInBefore();
-    print('是否登录$isLoggedInBefore');
+     print('是否登录$isLoggedInBefore');
     isLogged = isLoggedInBefore;
     if(isLoggedInBefore){
-      Navigator.of(context).pushNamed('home');
+      Navigator.of(context).pushNamed(Constant.toHomePage);
     }
   }
 
@@ -170,6 +174,18 @@ class LoginPageState extends State<LoginPage> {
           ),
         ),
 
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 30.0),
+          child: TextField(
+            controller: _pwdController,
+            maxLines: 1,
+            obscureText: true,
+            decoration: InputDecoration(
+              hintText: "请输入密码",
+              labelText: "密码",
+            ),
+          ),
+        ),
         SizedBox(
           height: 10.0,
         ),
@@ -183,10 +199,8 @@ class LoginPageState extends State<LoginPage> {
             padding: EdgeInsets.all(12.0),
             shape: StadiumBorder(),
             child: Text(
-              '登 录',
-//              DemoLocalizations.of(context).login,
+              DemoLocalizations.of(context).login,
               style: TextStyle(color: Colors.white, fontSize: 16.0),
-
             ),
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
@@ -220,20 +234,16 @@ class LoginPageState extends State<LoginPage> {
   }
 
   void login(BuildContext context){
-//    if(isLogged){
-//      Navigator.of(context).pushNamed('home');
-//      print('用户名${this._usernameController.text}');
-//      print('密码${this._pwdController.text}');
-//    }else {
+    if(isLogged){
+      Navigator.of(context).pushNamed('home');
+    }else {
       EMClient.getInstance().login(
-//          userName: _usernameController.text,
-//          password: _pwdController.text,
-
           userName: 'u15',
           password: '1',
           onSuccess: (username) {
             print("login succes");
-            Navigator.of(context).pushNamed('home_page');
+            Navigator.of(context).pushNamed(Constant.toHomePage);
+
           },
           onError: (code, desc) {
             print("login error:" +
@@ -241,6 +251,6 @@ class LoginPageState extends State<LoginPage> {
                 "//" +
                 desc.toString());
           });
-//    }
+    }
   }
 }
