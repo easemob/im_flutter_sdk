@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+import 'chat_page.dart';
 import 'items/conversation_list_item.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
@@ -200,7 +201,10 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   /// 点击事件
   void onTapConversation(EMConversation conversation){
-    Navigator.of(context).pushNamed(Constant.toChatPage);
+//    Navigator.of(context).pushNamed(Constant.toChatPage);
+      Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+  return new ChatPage(arguments: {'conversationType': conversation.type,'toChatUsername':conversation.conversationId});
+  }));
   }
 
   /// 长按事件
