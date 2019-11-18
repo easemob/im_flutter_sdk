@@ -305,7 +305,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     private void isLoggedInBefore(Object args, Result result){
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
-        data.put("isLogged", EMClient.getInstance().isConnected());
+        data.put("isLogged", EMClient.getInstance().isLoggedInBefore());
         result.success(data);
     }
 
