@@ -238,7 +238,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器获取公开群组
+  ///从服务器获取公开群组 ？EMCursorResult加泛型
   void getPublicGroupsFromServer({
     @required int pageSize,
     @required String cursor,

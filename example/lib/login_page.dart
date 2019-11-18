@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'utils/localizations.dart';
+import 'common/common.dart';
+
 class LoginPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -26,7 +28,7 @@ class LoginPageState extends State<LoginPage> {
     print(isLoggedInBefore);
     isLogged = isLoggedInBefore;
     if(isLoggedInBefore){
-      Navigator.of(context).pushNamed('home');
+      Navigator.of(context).pushNamed(Constant.toHomePage);
     }
   }
 
@@ -149,7 +151,7 @@ class LoginPageState extends State<LoginPage> {
                 .groupManager()
                 .getJoinedGroupsFromServer();
             print("login succes");
-            Navigator.of(context).pushNamed('home');
+            Navigator.of(context).pushNamed(Constant.toHomePage);
           },
           onError: (code, desc) {
             print("login error:" +
