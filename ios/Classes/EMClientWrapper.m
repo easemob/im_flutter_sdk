@@ -25,6 +25,7 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+
     if ([EMMethodKeyInit isEqualToString:call.method]) {
         [self initSDKWithDict:call.arguments result:result];
     } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
@@ -86,7 +87,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"aUsername":aUsername}];
+                         userInfo:aUsername];
     }];
 }
 
@@ -100,7 +101,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:aUsername];
     }];
 }
 
@@ -114,7 +115,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:aUsername];
     }];
 }
 
@@ -277,7 +278,6 @@
         }
     }];
 }
-
 
 #pragma - mark EMClientDelegate
 

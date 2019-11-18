@@ -6,8 +6,10 @@
 //
 
 #import "EMChatManagerWrapper.h"
+
 #import "EMSDKMethod.h"
 #import "EMHelper.h"
+
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @end
