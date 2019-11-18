@@ -113,6 +113,7 @@ class EMContactManager {
           if (response['value'] != null) {
             for (var contact in response['value']) {
               contacts.add(contact);
+              print('好友列表---$contacts');
             }
           }
           onSuccess(contacts);
@@ -123,6 +124,8 @@ class EMContactManager {
     });
 
   }
+
+
 
   /// addUserToBlackList - Adds user [userName] into black list.
   /// If [both] set to true, both sides couldn't send message to counterpart. Otherwise, [userName] still can receive messages.
@@ -249,7 +252,7 @@ class EMContactManager {
   }
 
   /// setContactListener - Sets listener [contactListener] to be aware of contact modification events.
-  void setContactListener(EMContactEventListener contactListener) {
+  void addContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.add(contactListener);
   }
 

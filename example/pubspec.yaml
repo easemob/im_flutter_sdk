@@ -14,6 +14,9 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
+  flustars: ^0.2.6+1
+  provider: ^3.1.0+1
+  oktoast: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -38,8 +41,29 @@ flutter:
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
   assets:
+    - images/default_avatar.png
+    - images/group_icon.png
+    - images/chatroom_icon.png
     - images/ease_default_avatar.png
     - images/ease_group_icon.png
+    - images/star.png
+    - images/logo@2x.png
+    - images/back_01.png
+    - images/标签@2x.png
+    - images/公众号@2x.png
+    - images/群聊@2x.png
+    - images/新的好友@2x.png
+    - images/聊天室@2x.png
+    - images/icon-search@2x.png
+    - images/通用@2x.png
+    - images/安全与隐私@2x.png
+    - images/消息设置@2x.png
+    - images/群组设置@2x.png
+    - images/黑名单@2x.png
+    - images/多端多设备管理@2x.png
+    - images/自定义服务器@2x.png
+    - images/清除缓存@2x.png
+    - images/同意条款@2x.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/src/em_domain_terms.dart';
 import 'package:meta/meta.dart';
 
 import 'em_chatroom.dart';
@@ -146,15 +147,21 @@ class EMChatRoomManager{
   /// fetchPublicChatRoomsFromServer - add contact of [pageNum] and [pageSize]
   /// Call [onSuccess] if contact added successfully, [onError] once error occured.
   void fetchPublicChatRoomsFromServer({
-      int pageNum,
-      int pageSize,
-      onSuccess(Map<String,Object> res),
+    @required int pageNum,
+    @required int pageSize,
+      onSuccess(EMPageResult res),
       onError(int code, String desc)}){
       Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchPublicChatRoomsFromServer, {"pageNum": pageNum ,"pageSize": pageSize });
       result.then((response) {
         if (response["success"]) {
-          if (onSuccess != null) onSuccess(response['value']);
+          if (onSuccess != null) {
+              var data = List<EMChatRoom>();
+              EMPageResult emPageResult = EMPageResult.from(response['value']);
+              emPageResult.getData().forEach((page) => data.add(EMChatRoom.from(page)));
+              emPageResult.setData(data);
+              onSuccess(emPageResult);
+          }
         } else {
           if (onError != null) onError(response['code'], response['desc']);
         }

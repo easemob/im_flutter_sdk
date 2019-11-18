@@ -9,7 +9,7 @@ import "em_sdk_method.dart";
 class EMConversation {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emConversationChannel =
-      const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
+  const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
   final String _conversationId;
   String get conversationId => _conversationId;
   EMConversationType _type;
@@ -64,10 +64,10 @@ class EMConversation {
   /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
   Future<List<EMMessage>> searchMsgFromDB(
       {final EMMessageType type,
-      final String keywords,
-      @required final int timeStamp,
-      final int maxCount = 10,
-      final EMSearchDirection direction}) async {
+        final String keywords,
+        @required final int timeStamp,
+        final int maxCount = 10,
+        final EMSearchDirection direction}) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDB, {
       "id": _conversationId,
@@ -91,10 +91,10 @@ class EMConversation {
   /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
   Future<List<EMMessage>> searchMsgFromDBByType(
       {final EMMessageType type,
-      final String keywords,
-      @required final int timeStamp,
-      final int maxCount = 10,
-      final EMSearchDirection direction}) async {
+        final String keywords,
+        @required final int timeStamp,
+        final int maxCount = 10,
+        final EMSearchDirection direction}) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDBByType, {
       "id": _conversationId,
