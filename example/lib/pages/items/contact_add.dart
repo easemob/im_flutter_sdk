@@ -3,6 +3,9 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
+import 'package:im_flutter_sdk_example/utils/localizations.dart';
+
 class EMContactAddPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -25,7 +28,7 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
     return Scaffold(
       appBar: AppBar(
         centerTitle : true,
-        title: Text('添加好友', ),
+        title: Text(DemoLocalizations.of(context).addressBook, style: TextStyle(fontSize: 18, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
         leading: Icon(null),
         backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
       ),

@@ -27,10 +27,23 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     {'imageName':'images/清除缓存@2x.png','name':'清除缓存'}
   ];
 
+  String userName = 'name';
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _getCurrentUser();
+  }
+
+  void _getCurrentUser() async{
+    userName = await EMClient.getInstance().getCurrentUser();
+    _refreshUI();
+  }
+
+  _refreshUI(){
+    setState(() {
+
+    });
   }
 
   @override
@@ -104,8 +117,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             child: ListTile(
               leading: Image.asset('images/logo@2x.png',width: 40.0,height: 40.0),
               title: Text(
-                EMClient.getInstance().getCurrentUser(),
-//                'user1',
+                userName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18.0,
