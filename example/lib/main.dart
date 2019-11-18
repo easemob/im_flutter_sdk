@@ -29,9 +29,9 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     return MaterialApp(
       /// 配置跳转路由
       routes: <String, WidgetBuilder>{
-        'home': (BuildContext context) => new HomePage(),
-        "register":(BuildContext context)=>new RegisterPage(),
-        "login":(BuildContext context)=>new LoginPage(),
+        'home_page': (BuildContext context) => new HomePage(),
+        "register_page":(BuildContext context)=>new RegisterPage(),
+        "login_page":(BuildContext context)=>new LoginPage(),
       },
 
 

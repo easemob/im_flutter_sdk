@@ -26,12 +26,6 @@ class RegisterPageState extends State<RegisterPage> {
       children: <Widget>[
 
         Scaffold(
-            floatingActionButton: FloatingActionButton(
-              child: Text('返回'),
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-            ),
             backgroundColor: Colors.white,
             body: Container(
               /// 背景图
@@ -47,20 +41,22 @@ class RegisterPageState extends State<RegisterPage> {
               ),
             )
         ),
-        
-        /// 返回按钮
-//        Positioned(
-//          top: 50,
-//          left: 24,
-//          child: RaisedButton(
-//            color: Color.fromRGBO(0, 0, 0, 0),
-//            child: Image.asset('back_01.png'),
-//            onPressed: () {
-//              Navigator.of(context).pushNamed('login_page');
-//            },
-//          ),
-//        ),
 
+        /// 返回按钮
+        Positioned(
+          top: 50,
+          left: 24,
+          child: Listener(
+            onPointerDown: (down) {
+              Navigator.of(context).pushNamed('login_page');
+            },
+            child: Container(
+              width: 24.0,
+              height: 24.0,
+              child: Icon(Icons.arrow_back, color: Colors.white, ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -88,6 +84,8 @@ class RegisterPageState extends State<RegisterPage> {
                 ),
                 textAlign: TextAlign.center,
               ),
+
+              SizedBox(height: 10.0),
 
               /// 用户名输入框
               Container(
@@ -143,23 +141,33 @@ class RegisterPageState extends State<RegisterPage> {
                 ),
               ),
 
-              SizedBox(
-                height: 10.0,
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 48.0),
+                child: Row(
+                  children: <Widget>[
+                    Image.asset('images/同意条款@2x.png',width: 24.0, height: 24.0,),
+                    SizedBox(width: 10.0,),
+                    Text(
+                      '同意服务条款与隐私协议',
+                      style: TextStyle(fontSize: 12.0, color: Colors.grey[350]),
+                    ),
+                  ],
+                ),
               ),
+
+              SizedBox(height: 34.0,),
 
               /// 注册按钮
               Container(
                 padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
                 width: double.infinity,
-                height: 50.0,
+                height: 52.0,
                 child: RaisedButton(
                   padding: EdgeInsets.all(12.0),
                   shape: StadiumBorder(),
                   child: Text(
                     '注 册',
-//              DemoLocalizations.of(context).login,
                     style: TextStyle(color: Colors.white, fontSize: 16.0),
-
                   ),
                   color: Color.fromRGBO(0, 0, 0, 0.1),
                   onPressed: () {
@@ -177,23 +185,7 @@ class RegisterPageState extends State<RegisterPage> {
     ),
   );
 
-
-  saveCurrentUser(String currentUser) async {
-//    SharedPreferences prefs = await SharedPreferences.getInstance();
-//    await prefs.setString('currentUser', currentUser);
-//    User.currentUser = currentUser;
-  }
-
-  Future<void> onLoginClick(String currentUser) async {
-//    ImLeancloudPlugin ImleancloudPlugin = ImLeancloudPlugin.getInstance();
-//    // ImleancloudPlugin.onLoginClick(currentUser);
-//    bool islogin = await ImleancloudPlugin.onLoginClick(currentUser);
-//    if (islogin) {
-//      User.isloginLcchat = true;
-//    }
-  }
-
   void register(BuildContext context){
-    Navigator.of(context).pushNamed('login_page');
+    Navigator.of(context).pushNamed('login');
   }
 }

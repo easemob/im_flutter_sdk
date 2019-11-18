@@ -72,7 +72,7 @@ class LoginPageState extends State<LoginPage> {
               textAlign: TextAlign.left,
             ),
             onPressed: (){
-              Navigator.of(context).pushNamed('register');
+              Navigator.of(context).pushNamed('register_page');
             },
 
           ),
@@ -118,9 +118,9 @@ class LoginPageState extends State<LoginPage> {
     width: 76,
     height: 76,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(150),
+//      borderRadius: BorderRadius.circular(150),
       image: DecorationImage(
-        image: AssetImage('images/icon_120.png'),
+        image: AssetImage('images/logo@2x.png'),
         fit: BoxFit.cover,
       ),
     ),
@@ -232,7 +232,7 @@ class LoginPageState extends State<LoginPage> {
           password: '1',
           onSuccess: (username) {
             print("login succes");
-            Navigator.of(context).pushNamed('home');
+            Navigator.of(context).pushNamed('home_page');
           },
           onError: (code, desc) {
             print("login error:" +

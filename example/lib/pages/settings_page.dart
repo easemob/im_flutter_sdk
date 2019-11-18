@@ -58,45 +58,10 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
  Widget _rowStyle(int index) {
 
     if(index == 0) {
-      return Container(
-        height: 171.0,
-        child: Stack(
-          children: <Widget>[
-            Container(
-              height: 107.0,
-              color: Colors.blue,
-            ),
-
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10.0),
-                ),
-              ),
-              height: 71.0,
-              margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 56.0),
-              child: ListTile(
-                leading: ClipOval(
-                  child: Image.asset('images/head.png',width: 40.0,height: 40.0),
-                ),
-                title: Text(
-                  EMClient.getInstance().getCurrentUser(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.0,
-                  ),
-                ),
-                subtitle: Text('头像,昵称,手机号...'),
-              ),
-            ),
-          ],
-        ),
-      );
+      return _header();
     } else if(index == 4) {
       return _isCutoffLineWithRow(index,false);
-
-    } else if(index == 5 || index == 8 || index == 11){
+    } else if(index == 5 || index == 8){
       return Container(
         height: 24.0,
         color: Color.fromRGBO(240, 240, 240, 1.0),
@@ -109,12 +74,49 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
       return _isCutoffLineWithRow(index-2,true);
     } else if(index == 10) {
       return _isCutoffLineWithRow(index-2,false);
+    } else if(index == 11) {
+      return _logoutButton();
     } else {
       return _isCutoffLineWithRow(index,true);
     }
   }
 
+  
+  Widget _header() {
+    return Container(
+      height: 171.0,
+      child: Stack(
+        children: <Widget>[
+          Container(
+            height: 107.0,
+            color: Colors.blue,
+          ),
 
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(
+                Radius.circular(10.0),
+              ),
+            ),
+            height: 71.0,
+            margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 56.0),
+            child: ListTile(
+              leading: Image.asset('images/logo@2x.png',width: 40.0,height: 40.0),
+              title: Text(
+                EMClient.getInstance().getCurrentUser(),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                ),
+              ),
+              subtitle: Text('头像,昵称,手机号...'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Stack _isCutoffLineWithRow(int index, bool isCutoffLine) {
     return Stack(
@@ -152,7 +154,6 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
           right: 30.0,
           top: 15.0,
         )
-
       ],
     );
   }
@@ -176,6 +177,32 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     }
   }
 
+  Widget _logoutButton() {
+    return Container(
+      height: 60.0,
+      color: Color.fromRGBO(240, 240, 240, 1.0),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
+        width: double.infinity,
+        height: 50.0,
+        child: RaisedButton(
+          padding: EdgeInsets.all(12.0),
+          shape: StadiumBorder(),
+          child: Text(
+            '退出登录',
+//              DemoLocalizations.of(context).logout,
+            style: TextStyle(color: Colors.white, fontSize: 16.0),
+
+          ),
+          color: Color.fromRGBO(0, 0, 0, 0.1),
+          onPressed: () {
+            logout(context);
+          },
+        ),
+      ),
+    );
+  }
+
   void logout (BuildContext context){
 
     EMClient.getInstance().logout(
@@ -188,7 +215,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
       },
     );
 
-    Navigator.of(context).pushNamed('login');
+    Navigator.of(context).pushNamed('login_page');
 
   }
 }
