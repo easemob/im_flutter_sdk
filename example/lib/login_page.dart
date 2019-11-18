@@ -76,7 +76,7 @@ class LoginPageState extends State<LoginPage> {
               textAlign: TextAlign.left,
             ),
             onPressed: (){
-              Navigator.of(context).pushNamed('register_page');
+              Navigator.of(context).pushNamed(Constant.toRegisterPage);
             },
 
           ),
@@ -205,12 +205,12 @@ class LoginPageState extends State<LoginPage> {
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
 
-              Navigator.of(context).pushNamed('home_page');
+//              Navigator.of(context).pushNamed(Constant.toHomePage);
 
 
               print('用户名${this._usernameController.text}');
               print('密码${this._pwdController.text}');
-//              login(context);
+              login(context);
             },
           ),
         ),
@@ -235,10 +235,10 @@ class LoginPageState extends State<LoginPage> {
 
   void login(BuildContext context){
     if(isLogged){
-      Navigator.of(context).pushNamed('home');
+      Navigator.of(context).pushNamed(Constant.toHomePage);
     }else {
       EMClient.getInstance().login(
-          userName: 'u15',
+          userName: 'omg2',
           password: '1',
           onSuccess: (username) {
             print("login succes");

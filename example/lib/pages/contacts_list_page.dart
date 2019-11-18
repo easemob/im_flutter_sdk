@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
-import 'items/conversation_list_item.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 
@@ -56,12 +56,12 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
     return Scaffold(
       appBar: AppBar(
         centerTitle : true,
-        title: Text('通讯录', style: TextStyle(color: Color(EMColor.EMConListTitleColor),fontSize: 18), ),
+        title: Text(DemoLocalizations.of(context).addressBook, style: TextStyle(fontSize: EMFont.emAppBarTitleFont, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
         leading: Icon(null),
         elevation: 0, // 隐藏阴影
         backgroundColor: Colors.white,
         actions: <Widget>[
-          Icon(Icons.add, color: Color(EMColor.EMConListTitleColor),),
+          Icon(Icons.add,),
           SizedBox(width: 24,)
         ],
       ),
@@ -80,26 +80,29 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   Widget _rowStyle(int index) {
 
     if(index == 0) {
-      return Container(
-        padding: EdgeInsets.all(16.0),
-        child: Container(
-            height: 36,
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
-            child: TextField(
-              controller: _usernameController,
-              maxLines: 1,
-              decoration: InputDecoration(
-                icon: Icon(Icons.search,),
-                hintText: "搜索",
-                border: InputBorder.none,
-              ),
+      return InkWell(
+        onTap: (){
+          print('search');
+        },
+        child : Stack(children: <Widget>[
+          Container(height: EMLayout.emSearchBarHeight, color: ThemeUtils.isDark(context) ? EMColor.darkBgColor : EMColor.bgColor,),
+          Container(
+            padding: EdgeInsets.only(left: 8.0),
+            margin: EdgeInsets.only(right: 8.0, left: 8.0),
+            height: EMLayout.emSearchBarHeight,
+            decoration:  BoxDecoration(
+              color: ThemeUtils.isDark(context)? EMColor.darkBgSearchBar : EMColor.bgSearchBar,
+              borderRadius: BorderRadius.all(Radius.circular(EMLayout.emSearchBarHeight/2)),
+              border: Border.all(width: 1, color: ThemeUtils.isDark(context) ? EMColor.darkBgSearchBar : EMColor.bgSearchBar),
             ),
-            decoration: BoxDecoration(
-                color: Color(0xffe5e5e5),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(50),
-                ),
+            child:Row(
+              children: <Widget>[
+                Icon(Icons.search),
+                Text(DemoLocalizations.of(context).search, style: TextStyle(color: ThemeUtils.isDark(context)? EMColor.darkText : EMColor.text),),
+              ],
             ),
+          ),
+        ],
         ),
       );
     } else if(index > 0 && index <6) {
@@ -110,7 +113,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
         height: 42,
       );
     } else {
-      this._imageName = 'images/head.png';
+      this._imageName = 'images/default_avatar.png';
       this._name = _getData(index - 7);
     }
 

@@ -8,6 +8,7 @@ import 'package:im_flutter_sdk_example/pages/chatroom_list_page.dart';
 import 'utils/localizations.dart';
 import 'pages/home_page.dart';
 import 'login_page.dart';
+import 'register_page.dart';
 import 'utils/style.dart';
 import 'common/common.dart';
 

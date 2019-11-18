@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 class EMContactAddPage extends StatefulWidget {
   @override
@@ -24,9 +25,9 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
     return Scaffold(
       appBar: AppBar(
         centerTitle : true,
-        title: Text('添加好友', style: TextStyle(color: Color(EMColor.EMConListTitleColor),fontSize: 18), ),
+        title: Text('添加好友', ),
         leading: Icon(null),
-        backgroundColor: Color(EMColor.EMConListItemBgColor),
+        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
       ),
       key: UniqueKey(),
       body: Column(
