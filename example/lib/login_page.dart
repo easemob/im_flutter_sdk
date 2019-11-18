@@ -191,11 +191,12 @@ class LoginPageState extends State<LoginPage> {
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
 
-//              Navigator.of(context).pushNamed('home');
+              Navigator.of(context).pushNamed('home_page');
+
 
               print('用户名${this._usernameController.text}');
               print('密码${this._pwdController.text}');
-              login(context);
+//              login(context);
             },
           ),
         ),

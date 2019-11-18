@@ -81,7 +81,6 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     }
   }
 
-  
   Widget _header() {
     return Container(
       height: 171.0,
@@ -104,7 +103,8 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             child: ListTile(
               leading: Image.asset('images/logo@2x.png',width: 40.0,height: 40.0),
               title: Text(
-                EMClient.getInstance().getCurrentUser(),
+//                EMClient.getInstance().getCurrentUser(),
+                'user1',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18.0,

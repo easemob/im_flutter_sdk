@@ -6,7 +6,6 @@
 //
 
 #import "EMContactManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 typedef enum : NSUInteger {
@@ -36,8 +35,8 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     
+    [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     if ([EMMethodKeyAddContact isEqualToString:call.method]) {
         [self addContact:call.arguments result:result];
     }
@@ -71,6 +70,7 @@ typedef enum : NSUInteger {
     } else {
         [super handleMethodCall:call result:result];
     }
+    
 }
 
 

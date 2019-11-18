@@ -22,41 +22,16 @@
     return self;
 }
 
-//- (void)wrapperCallBack:(FlutterResult)result
-//   error:(EMError *__nullable)error
-//userInfo:(NSObject *__nullable)userInfo isGroupOrChatroom:(BOOL)isGroupOrChatroom
-
 - (void)wrapperCallBack:(FlutterResult)result
                   error:(EMError *__nullable)error
-               userInfo:(NSObject *__nullable)userInfo{
+               userInfo:(NSDictionary *__nullable)userInfo {
     NSLog(@"EMWrapper : error -- %@ ; userInfo -- %@",error, userInfo);
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-       if (!error) {
+        if (!error) {
             dic[@"success"] = @YES;
             if (userInfo) {
-                dic[@"value"] = userInfo;
-            }
-        }else {
-            dic[@"success"] = @NO;
-            dic[@"code"] = @(error.code);
-            dic[@"desc"] = error.errorDescription;
-        }
-        result(dic);
-    }
-}
-
-- (void)wrapperCallBack1:(FlutterResult)result
-                  error:(EMError *__nullable)error
-               userInfo:(NSObject *__nullable)userInfo{
-    NSLog(@"EMWrapper : error -- %@ ; userInfo -- %@",error, userInfo);
-    if (result) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-       if (!error) {
-            dic[@"success"] = @YES;
-            if (userInfo) {
-//                dic[@"value"] = userInfo;
-                [dic addEntriesFromDictionary:(NSDictionary *)userInfo];
+                [dic addEntriesFromDictionary:userInfo];
             }
         }else {
             dic[@"success"] = @NO;
