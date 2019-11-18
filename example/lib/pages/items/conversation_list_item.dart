@@ -5,6 +5,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/time_util.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 class EMConversationListItem extends StatefulWidget{
 
@@ -125,10 +126,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         ),
       );
     }
-    return Container(
-      height: 1,
-      width: 1,
-    );
+    return WidgetUtil.buildEmptyWidget();
 
   }
 
@@ -177,7 +175,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         children: <Widget>[
           Text(
             titleName,
-
             style: TextStyle(fontSize: EMFont.emConListTitleFont,fontWeight:FontWeight.w400),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -185,7 +182,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
           SizedBox(height: 6,),
           Text(
             content,
-
             style: TextStyle(fontSize: EMFont.emConListContentFont,
             color: _isDark ? EMColor.darkTextGray : EMColor.textGray),
             maxLines: 1,
@@ -199,7 +195,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   Widget _buildTime(){
     var time = TimeUtil.convertTime(int.parse(message.msgTime));
     return Container(
-
       width: EMLayout.emConListItemHeight,
       margin: EdgeInsets.only(right:10),
       child: Column(
@@ -242,10 +237,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         ),
       );
     }
-    return Container(
-      height: 1,
-      width: 1,
-    );
+    return WidgetUtil.buildEmptyWidget();
   }
 }
 

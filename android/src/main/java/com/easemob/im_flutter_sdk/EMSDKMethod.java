@@ -16,6 +16,8 @@ public class EMSDKMethod {
     static final String kickDevice = "kickDevice";
     static final String kickAllDevices = "kickAllDevices";
     static final String getLoggedInDevicesFromServer =  "getLoggedInDevicesFromServer";
+    static final String getCurrentUser =  "getCurrentUser";
+
 
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
