@@ -92,19 +92,14 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
                 icon: Icon(Icons.search,),
                 hintText: "搜索",
                 border: InputBorder.none,
-//            border: OutlineInputBorder(
-//              borderRadius: BorderRadius.circular(57),
-//              borderSide: BorderSide.none,
-//            ),
-
               ),
             ),
             decoration: BoxDecoration(
                 color: Color(0xffe5e5e5),
                 borderRadius: BorderRadius.all(
                   Radius.circular(50),
-                )
-            )
+                ),
+            ),
         ),
       );
     } else if(index > 0 && index <6) {
@@ -118,8 +113,6 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
       this._imageName = 'images/head.png';
       this._name = _getData(index - 7);
     }
-
-
 
     return Stack(
       children: <Widget>[
@@ -135,9 +128,6 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
               Text(this._name, style: TextStyle(fontSize: 18.0),)
             ],
           ),
-//          decoration: BoxDecoration(
-//            border: Border(bottom: BorderSide(width: 1, color: Color(0xffe5e5e5))),
-//          ),
         ),
         Container(
           width: MediaQuery.of(context).size.width - 64.0,
