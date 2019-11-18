@@ -25,7 +25,6 @@
     return self;
 }
 
-
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
@@ -121,19 +120,17 @@
 
 - (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *joinedGroups = [EMClient.sharedClient.groupManager getJoinedGroups];
-    NSArray *groups = [EMHelper groupsToDictionarys:joinedGroups];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:groups];
+                 userInfo:@{@"value":[EMHelper groupsToDictionaries:joinedGroups]}];
 }
 // 有疑议
 - (void)getGroupsWithoutPushNotification:(NSDictionary *)param result:(FlutterResult)result {
     EMError *aError;
     NSArray *pushGroups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
-    NSArray *groups = [EMHelper groupsToDictionarys:pushGroups];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:groups];
+                 userInfo:@{@"value":[EMHelper groupsToDictionaries:pushGroups]}];
 }
 
 - (void)getGroup:(NSDictionary *)param result:(FlutterResult)result {
@@ -152,7 +149,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupsToDictionarys:aList]];
+                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
     }];
 }
 
@@ -228,7 +225,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupsToDictionarys:aList]];
+                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
     }];
 }
 
@@ -243,7 +240,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupsToDictionarys:aList]];
+                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
     }];
 }
 
@@ -259,7 +256,7 @@
         
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupFileListToDictionaryList:aList]];
+                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
     }];
 }
 
@@ -270,7 +267,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:aAnnouncement];
+                     userInfo:@{@"value":aAnnouncement}];
     }];
 }
 
@@ -651,7 +648,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupsToDictionarys:groups]];
+                     userInfo:@{@"value":[EMHelper groupsToDictionaries:groups]}];
     }];
 }
 
@@ -889,7 +886,7 @@
 // 群组搜索结果转字典
 - (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
 {
-    NSDictionary *resultDict = @{@"list":[EMHelper groupsToDictionarys:cursorResult.list],
+    NSDictionary *resultDict = @{@"list":[EMHelper groupsToDictionaries:cursorResult.list],
                                  @"cursor":cursorResult.cursor
                                 };
     return resultDict;

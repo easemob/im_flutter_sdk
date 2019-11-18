@@ -65,15 +65,10 @@
 
 
 #pragma mark - Private
-- (EMConversation *)getConversationWithId:(NSString *)aConversationId
-                                     type:(EMConversationType)aType{
-    return [EMClient.sharedClient.chatManager getConversation:aConversationId
-                                                         type:aType
-                                             createIfNotExist:YES];
-}
-
 - (void)getConversationWithParam:(NSDictionary *)param
-                      completion:(void(^)(EMConversation *conversation))aCompletion {
+                  completion:(void(^)(EMConversation *conversation))aCompletion
+{
+    NSLog(@"---- %@",param);
     NSString *conversationId = param[@"id"];
     // TODO: 是否需要类型？
     EMConversationType type = 0;
@@ -121,7 +116,7 @@
         {
             [weakSelf wrapperCallBack:result
                                 error:aError
-                             userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+                             userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
         }];
     }];
 }
@@ -147,7 +142,7 @@
         {
             [weakSelf wrapperCallBack:result
                                 error:aError
-                             userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+                             userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
         }];
     }];
 }
@@ -173,7 +168,7 @@
         {
             [weakSelf wrapperCallBack:result
                error:aError
-            userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+            userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
         }];
     }];
 }

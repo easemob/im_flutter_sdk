@@ -7,12 +7,19 @@
 
 #import "EMClientWrapper.h"
 #import "EMSDKMethod.h"
+#import "EMChatManagerWrapper.h"
+#import "EMContactManagerWrapper.h"
+#import "EMConversationWrapper.h"
+#import "EMGroupManagerWrapper.h"
+#import "EMChatroomManagerWrapper.h"
+#import "EMHelper.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
 @property (nonatomic, strong) NSMutableDictionary *deviceDict;
 @end
 
 @implementation EMClientWrapper
+
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
@@ -25,7 +32,6 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-
     if ([EMMethodKeyInit isEqualToString:call.method]) {
         [self initSDKWithDict:call.arguments result:result];
     } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
@@ -56,10 +62,6 @@
         [self sendFCMTokenToServer:call.arguments result:result];
     } else if ([EMMethodKeySendHMSPushTokenToServer isEqualToString:call.method]) {
         [self sendHMSPushTokenToServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetDeviceInfo isEqualToString:call.method]) {
-        [self getDeviceInfo:call.arguments result:result];
-    } else if ([EMMethodKeyCheck isEqualToString:call.method]) {
-        [self check:call.arguments result:result];
     } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
     } else {
@@ -69,12 +71,33 @@
 
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
+    EMOptions *options = [EMHelper dictionaryToEMOptions:param];
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
+    [self registerManagers];
+}
+
+
+- (void)registerManagers {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+    EMChatManagerWrapper * chatManagerWrapper = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_manager")
+                                                                                        registrar:self.flutterPluginRegister];
+    
+    EMContactManagerWrapper * contactManagerWrapper = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_contact_manager")
+                                                                                                 registrar:self.flutterPluginRegister];
+    
+    EMConversationWrapper *conversationWrapper = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_conversation")
+                                                                                          registrar:self.flutterPluginRegister];
+    
+    EMGroupManagerWrapper * groupManagerWrapper = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_group_manager")
+                                                                                           registrar:self.flutterPluginRegister];
+    
+    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chatroom_manager")
+                                                                                                   registrar:self.flutterPluginRegister];
+#pragma clang diagnostic pop
+
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
@@ -87,7 +110,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:aUsername];
+                         userInfo:@{@"value":aUsername}];
     }];
 }
 
@@ -101,7 +124,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:aUsername];
+                     userInfo:@{@"value":aUsername}];
     }];
 }
 
@@ -115,7 +138,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:aUsername];
+                     userInfo:@{@"value":aUsername}];
     }];
 }
 
@@ -151,7 +174,7 @@
     NSString *username = EMClient.sharedClient.currentUsername;
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:username];
+                 userInfo:@{@"value":username}];
 }
 
 - (void)updateCurrentUserNick:(NSDictionary *)param result:(FlutterResult)result {
@@ -180,7 +203,7 @@
     [EMClient.sharedClient getLogFilesPathWithCompletion:^(NSString *aPath, EMError *aError) {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:aPath];
+                         userInfo:@{@"value":aPath}];
     }];
 }
 
@@ -233,31 +256,10 @@
                  userInfo:@{@"isLogged":@(EMClient.sharedClient.isConnected)}];
 }
 
-- (void)getDeviceInfo:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                userInfo:nil];
-}
-
-
 - (void)onMultiDeviceEvent:(NSDictionary *)param result:(FlutterResult)result {
     
 }
 
-// TODO: 作用？
-- (void)check:(NSDictionary *)param result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient serviceCheckWithUsername:userName
-                                           password:password
-                                         completion:^(EMServerCheckType aType, EMError *aError)
-    {
-        [weakSelf wrapperCallBack:result
-                            error:nil
-                         userInfo:nil];
-    }];
-}
 
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
@@ -269,7 +271,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:[weakSelf deviceConfigsToDictionaryList:aList]];
+                         userInfo:@{@"value":[weakSelf deviceConfigsToDictionaryList:aList]}];
         if (!aError) {
             [self.deviceDict removeAllObjects];
             for (EMDeviceConfig * deviceConfig in aList) {
