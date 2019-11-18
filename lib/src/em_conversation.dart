@@ -9,7 +9,7 @@ import "em_sdk_method.dart";
 class EMConversation {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emConversationChannel =
-      const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
+  const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
   final String _conversationId;
   String get conversationId => _conversationId;
   EMConversationType _type;
@@ -41,6 +41,16 @@ class EMConversation {
         EMSDKMethod.markAllMessagesAsRead, {"id": _conversationId});
   }
 
+  /// getAllMsgCount - Gets count of all messages.
+  Future<int> getAllMsgCount() async {
+    Map<String, dynamic> result = await _emConversationChannel
+        .invokeMethod(EMSDKMethod.getAllMsgCount, {"id": _conversationId});
+    if (result['success']) {
+      return result['count'];
+    }
+    return -1; //-1 means error/unknown
+  }
+
   /// loadMoreMsgFromDB - Loads messages starts from [startMsgId], [pageSize] in total.
   Future<List<EMMessage>> loadMoreMsgFromDB(
       {@required String startMsgId, int pageSize = 10}) async {
@@ -64,10 +74,10 @@ class EMConversation {
   /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
   Future<List<EMMessage>> searchMsgFromDB(
       {final EMMessageType type,
-      final String keywords,
-      @required final int timeStamp,
-      final int maxCount = 10,
-      final EMSearchDirection direction}) async {
+        final String keywords,
+        @required final int timeStamp,
+        final int maxCount = 10,
+        final EMSearchDirection direction}) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDB, {
       "id": _conversationId,
@@ -91,10 +101,10 @@ class EMConversation {
   /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
   Future<List<EMMessage>> searchMsgFromDBByType(
       {final EMMessageType type,
-      final String keywords,
-      @required final int timeStamp,
-      final int maxCount = 10,
-      final EMSearchDirection direction}) async {
+        final String keywords,
+        @required final int timeStamp,
+        final int maxCount = 10,
+        final EMSearchDirection direction}) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDBByType, {
       "id": _conversationId,
@@ -125,6 +135,21 @@ class EMConversation {
     });
     if (result['success']) {
       return EMMessage.from(result['message']);
+    }
+    return null;
+  }
+
+  // getAllMessage - Gets all messages.
+  Future<List<EMMessage>> getAllMessages() async {
+    Map<String, dynamic> result = await _emConversationChannel
+        .invokeMethod(EMSDKMethod.getAllMessages, {"id": _conversationId});
+    if (result['success']) {
+      var messages = List<EMMessage>();
+      var _messages = result['messages'];
+      for (var message in _messages) {
+        messages.add(EMMessage.from(message));
+      }
+      return messages;
     }
     return null;
   }
