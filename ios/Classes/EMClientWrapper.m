@@ -7,12 +7,19 @@
 
 #import "EMClientWrapper.h"
 #import "EMSDKMethod.h"
+#import "EMChatManagerWrapper.h"
+#import "EMContactManagerWrapper.h"
+#import "EMConversationWrapper.h"
+#import "EMGroupManagerWrapper.h"
+#import "EMChatroomManagerWrapper.h"
+#import "EMHelper.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
 @property (nonatomic, strong) NSMutableDictionary *deviceDict;
 @end
 
 @implementation EMClientWrapper
+
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
@@ -55,9 +62,7 @@
         [self sendFCMTokenToServer:call.arguments result:result];
     } else if ([EMMethodKeySendHMSPushTokenToServer isEqualToString:call.method]) {
         [self sendHMSPushTokenToServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetDeviceInfo isEqualToString:call.method]) {
-        [self getDeviceInfo:call.arguments result:result];
-    } else if ([EMMethodKeyCheck isEqualToString:call.method]) {
+    }  else if ([EMMethodKeyCheck isEqualToString:call.method]) {
         [self check:call.arguments result:result];
     } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
@@ -68,12 +73,32 @@
 
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *appKey = param[@"appKey"];
-    EMOptions *options = [EMOptions optionsWithAppkey:appKey];
-    options.enableConsoleLog = YES;
+    EMOptions *options = [EMHelper dictionaryToEMOptions:param];
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
+    [self registerManagers];
+}
+
+
+- (void)registerManagers {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+    EMChatManagerWrapper * chatManagerWrapper = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_manager")
+                                                                                        registrar:self.flutterPluginRegister];
+    
+    EMContactManagerWrapper * contactManagerWrapper = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_contact_manager")
+                                                                                                 registrar:self.flutterPluginRegister];
+    
+    EMConversationWrapper *conversationWrapper = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_conversation")
+                                                                                          registrar:self.flutterPluginRegister];
+    
+    EMGroupManagerWrapper * groupManagerWrapper = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_group_manager")
+                                                                                           registrar:self.flutterPluginRegister];
+    
+    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chatroom_manager")
+                                                                                                   registrar:self.flutterPluginRegister];
+#pragma clang diagnostic pop
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
@@ -150,7 +175,7 @@
     NSString *username = EMClient.sharedClient.currentUsername;
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:username];
+                 userInfo:@{@"value":username}];
 }
 
 - (void)updateCurrentUserNick:(NSDictionary *)param result:(FlutterResult)result {
@@ -231,13 +256,6 @@
                     error:nil
                  userInfo:@{@"isLogged":@(EMClient.sharedClient.isConnected)}];
 }
-
-- (void)getDeviceInfo:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                userInfo:nil];
-}
-
 
 - (void)onMultiDeviceEvent:(NSDictionary *)param result:(FlutterResult)result {
     

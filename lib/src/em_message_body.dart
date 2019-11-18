@@ -211,11 +211,11 @@ class EMImageMessageBody extends EMFileMessageBody {
   Map<String, dynamic> toDataMap() {
     var result = Map<String, dynamic>();
     result["height"] = height;
+    result["width"] = width;
     result["sendOriginalImage"] = sendOriginalImage;
     result["thumbnailLocalPath"] = thumbnailLocalPath;
     result["thumbnailSecret"] = thumbnailSecret;
     result["thumbnailUrl"] = thumbnailUrl;
-    result["width"] = width;
     return result;
   }
 

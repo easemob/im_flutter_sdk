@@ -22,6 +22,7 @@
     return self;
 }
 
+
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -65,18 +66,14 @@
 
 
 #pragma mark - Private
-- (EMConversation *)getConversationWithId:(NSString *)aConversationId
-                                     type:(EMConversationType)aType{
-    return [EMClient.sharedClient.chatManager getConversation:aConversationId
-                                                         type:aType
-                                             createIfNotExist:YES];
-}
 
 - (void)getConversationWithParam:(NSDictionary *)param
                       completion:(void(^)(EMConversation *conversation))aCompletion {
+    NSLog(@"---- %@",param);
     NSString *conversationId = param[@"id"];
     // TODO: 是否需要类型？
     EMConversationType type = 0;
+    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
                                                                      createIfNotExist:YES];
@@ -121,7 +118,7 @@
         {
             [weakSelf wrapperCallBack:result
                                 error:aError
-                             userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+                             userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
         }];
     }];
 }
@@ -147,7 +144,7 @@
         {
             [weakSelf wrapperCallBack:result
                                 error:aError
-                             userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+                             userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
         }];
     }];
 }
@@ -173,7 +170,7 @@
         {
             [weakSelf wrapperCallBack:result
                error:aError
-            userInfo:@{@"messages":[EMHelper messagesToDictionarys:aMessages]}];
+            userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
         }];
     }];
 }

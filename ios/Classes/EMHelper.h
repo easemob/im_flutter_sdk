@@ -12,17 +12,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface EMHelper : NSObject
 
+#pragma mark - EMOptions
++ (EMOptions *)dictionaryToEMOptions:(NSDictionary *)aDictionary;
+
 #pragma mark - Message
 
 + (EMMessage *)dictionaryToMessage:(NSDictionary *)aDictionary;
 
 + (NSDictionary *)messageToDictionary:(EMMessage *)aMessage;
 
-+ (NSArray *)dictionarysToMessages:(NSArray *)dicts;
++ (NSArray *)dictionariesToMessages:(NSArray *)dicts;
 
-+ (NSArray *)messagesToDictionarys:(NSArray *)messages;
++ (NSArray *)messagesToDictionaries:(NSArray *)messages;
 
-+ (NSDictionary *)messagebodyToDictionary:(NSDictionary *)aDictionary;
++ (NSDictionary *)messageBodyToDictionary:(EMMessageBody *)aBody;
 
 #pragma mark - Conversation
 
@@ -32,17 +35,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSDictionary *)groupToDictionary:(EMGroup *)aGroup;
 
-+ (NSArray *)groupsToDictionarys:(NSArray *)groups;
++ (NSArray *)groupsToDictionaries:(NSArray *)groups;
 
 + (NSDictionary *)groupSharedFileToDictionary:(EMGroupSharedFile *)sharedFile;
 
-+ (NSArray *)groupFileListToDictionaryList:(NSArray *)groupFileList;
++ (NSArray *)groupFileListToDictionaries:(NSArray *)groupFileList;
 
 #pragma mark - ChatRoom
 
 + (NSDictionary *)chatRoomToDictionary:(EMChatroom *)aChatRoom;
 
-+ (NSArray *)chatRoomsToDictionarys:(NSArray *)chatRooms;
++ (NSArray *)chatRoomsToDictionaries:(NSArray *)chatRooms;
 
 #pragma mark - Others
 

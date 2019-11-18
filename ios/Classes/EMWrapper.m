@@ -9,9 +9,11 @@
 
 
 @implementation EMWrapper
+
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super init]) {
+        self.flutterPluginRegister = registrar;
         FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
         FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:aChannelName
                                                                     binaryMessenger:[registrar messenger]
