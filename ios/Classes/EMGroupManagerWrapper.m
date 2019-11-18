@@ -7,8 +7,8 @@
 //
 
 #import "EMGroupManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
+#import "EMHelper.h"
 
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
 
@@ -20,7 +20,6 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        
         [EMClient.sharedClient.groupManager addDelegate:self delegateQueue:nil];
     }
     return self;
@@ -29,8 +28,8 @@
 
 #pragma mark - FlutterPlugin
 
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    
+- (void)handleMethodCall:(FlutterMethodCall*)call
+                  result:(FlutterResult)result {
     if ([EMMethodKeyGetJoinedGroups isEqualToString:call.method]) {
         [self getJoinedGroups:call.arguments result:result];
     } else if ([EMMethodKeyGetGroupsWithoutPushNotification isEqualToString:call.method]) {
@@ -121,8 +120,8 @@
 #pragma mark - Actions
 
 - (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *joineGroups = [EMClient.sharedClient.groupManager getJoinedGroups];
-    NSArray *groups = [self groupsArrayWithDictionaryArray:joineGroups];
+    NSArray *joinedGroups = [EMClient.sharedClient.groupManager getJoinedGroups];
+    NSArray *groups = [EMHelper groupsToDictionarys:joinedGroups];
     [self wrapperCallBack:result
                     error:nil
                  userInfo:groups];
@@ -131,7 +130,7 @@
 - (void)getGroupsWithoutPushNotification:(NSDictionary *)param result:(FlutterResult)result {
     EMError *aError;
     NSArray *pushGroups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
-    NSArray *groups = [self groupsArrayWithDictionaryArray:pushGroups];
+    NSArray *groups = [EMHelper groupsToDictionarys:pushGroups];
     [self wrapperCallBack:result
                     error:nil
                  userInfo:groups];
@@ -142,7 +141,7 @@
     EMGroup *group = [EMGroup groupWithId:groupId];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:[self dictionaryWithGroup:group]];
+                 userInfo:[EMHelper groupToDictionary:group]];
 }
 
 
@@ -153,7 +152,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self groupsArrayWithDictionaryArray:aList]];
+                     userInfo:[EMHelper groupsToDictionarys:aList]];
     }];
 }
 
@@ -188,7 +187,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -199,7 +198,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -229,7 +228,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self groupsArrayWithDictionaryArray:aList]];
+                     userInfo:[EMHelper groupsToDictionarys:aList]];
     }];
 }
 
@@ -244,7 +243,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self groupsArrayWithDictionaryArray:aList]];
+                     userInfo:[EMHelper groupsToDictionarys:aList]];
     }];
 }
 
@@ -260,7 +259,7 @@
         
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryListWithGroupFileList:aList]];
+                     userInfo:[EMHelper groupFileListToDictionaryList:aList]];
     }];
 }
 
@@ -284,7 +283,7 @@
         EMGroup *group = [EMClient.sharedClient.groupManager addOccupants:members toGroup:groupId welcomeMessage:message error:&aError];
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:group]];
+                     userInfo:[EMHelper groupToDictionary:group]];
     });
     
 }
@@ -300,7 +299,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -313,7 +312,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -326,7 +325,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -339,7 +338,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -352,7 +351,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -365,7 +364,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -398,7 +397,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -409,7 +408,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -422,7 +421,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -435,7 +434,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -448,7 +447,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -463,7 +462,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -476,7 +475,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -492,7 +491,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroupSharedFile:aSharedFile]];
+                     userInfo:[EMHelper groupSharedFileToDictionary:aSharedFile]];
     }];
 }
 
@@ -510,7 +509,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -520,7 +519,7 @@
     [EMClient.sharedClient.groupManager removeGroupSharedFileWithId:groupId sharedFileId:fileId completion:^(EMGroup *aGroup, EMError *aError) {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -533,7 +532,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -546,7 +545,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -557,7 +556,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -570,7 +569,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -583,7 +582,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -598,7 +597,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -611,7 +610,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 
@@ -639,7 +638,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithGroup:aGroup]];
+                     userInfo:[EMHelper groupToDictionary:aGroup]];
     }];
 }
 // 有疑议
@@ -652,7 +651,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self groupsArrayWithDictionaryArray:groups]];
+                     userInfo:[EMHelper groupsToDictionarys:groups]];
     }];
 }
 
@@ -869,7 +868,7 @@
     NSDictionary *map = @{
         @"type":@"onSharedFileAdded",
         @"groupId":aGroup.groupId,
-        @"sharedFile":[self dictionaryWithGroupSharedFile:aSharedFile]
+        @"sharedFile":[EMHelper groupSharedFileToDictionary:aSharedFile]
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];
@@ -886,104 +885,11 @@
                      arguments:map];
 }
 
-#pragma mark - EMGroup Pack Method
-
-// 群组对象转字典
-- (NSDictionary *)dictionaryWithGroup:(EMGroup *)group
-{
-    EMGroupOptions *options = group.setting;
-    EMGroupStyle style = options.style;
-    BOOL isMemberAllowToInvite;
-    BOOL isMemberOnly;
-    if (style == EMGroupStylePrivateOnlyOwnerInvite) {
-        isMemberAllowToInvite = NO;
-        isMemberOnly = NO;
-    } else if (style == EMGroupStylePrivateMemberCanInvite) {
-        isMemberAllowToInvite = YES;
-        isMemberOnly = NO;
-    } else if (style == EMGroupStylePublicJoinNeedApproval) {
-        isMemberAllowToInvite = NO;
-        isMemberOnly = YES;
-    } else {
-        isMemberAllowToInvite = NO;
-        isMemberOnly = NO;
-    }
-
-    EMGroupPermissionType permissionType = group.permissionType;
-    int type;
-    if (permissionType == EMGroupPermissionTypeNone) {
-        type = -1;
-    } else if (permissionType == EMGroupPermissionTypeMember) {
-        type = 0;
-    } else if (permissionType == EMGroupPermissionTypeAdmin) {
-        type = 1;
-    } else {
-        type = 2;
-    }
-    
-    NSDictionary *groupDict = @{@"groupId":group.groupId,
-                                @"groupName":group.subject,
-                                @"description":group.description,
-                                @"announcement":group.announcement,
-                                @"isMemberAllowToInvite":[NSNumber numberWithBool:isMemberAllowToInvite],
-                                @"isMemberOnly":[NSNumber numberWithBool:isMemberOnly],
-                                @"maxUserCount":[NSNumber numberWithInteger:options.maxUsersCount],
-                                @"owner":group.owner,
-                                @"adminList":group.adminList,
-                                @"members":group.memberList,
-                                @"blackList":group.blacklist,
-                                @"muteList":group.muteList,
-                                @"extension":options.ext,
-                                @"sharedFileList":[self dictionaryListWithGroupFileList:group.sharedFileList],
-                                @"isPushNotificationEnabled":[NSNumber numberWithBool:group.isPushNotificationEnabled],
-                                @"isPublic":[NSNumber numberWithBool:group.isPublic],
-                                @"isMsgBlocked":[NSNumber numberWithBool:group.isBlocked],
-                                @"permissionType":[NSNumber numberWithInt:type],
-                                @"occupants":group.occupants,
-                                @"memberCount":[NSNumber numberWithInteger:group.occupantsCount]
-                               };
-    
-    return groupDict;
-}
-
-
-// 群组对象数组转字典数组
-- (NSArray *)groupsArrayWithDictionaryArray:(NSArray *)groupsArray
-{
-    NSMutableArray *groupsMutableArray = [NSMutableArray array];
-    for (EMGroup *group in groupsArray) {
-        [groupsMutableArray addObject:[self dictionaryWithGroup:group]];
-    }
-    return [NSArray arrayWithArray:groupsMutableArray];
-}
-
-// 群组共享文件对象转字典
-- (NSDictionary *)dictionaryWithGroupSharedFile:(EMGroupSharedFile *)sharedFile
-{
-    NSDictionary *sharedFileDict = @{@"fileId":sharedFile.fileId,
-                                     @"fileName":sharedFile.fileName,
-                                     @"fileOwner":sharedFile.fileOwner,
-                                     @"createTime":[NSNumber numberWithLongLong:sharedFile.createTime],
-                                     @"fileSize":[NSNumber numberWithLongLong:sharedFile.fileSize]
-                                    };
-    return sharedFileDict;
-}
-
-// 群组共享文件数组转字典数组
-- (NSArray *)dictionaryListWithGroupFileList:(NSArray *)groupFileList
-{
-    NSMutableArray *sharedFileMutableArray = [NSMutableArray array];
-    for (EMGroupSharedFile *sharedFile in groupFileList) {
-        [sharedFileMutableArray addObject:[self dictionaryWithGroupSharedFile:sharedFile]];
-    }
-    return [NSArray arrayWithArray:sharedFileMutableArray];
-}
 
 // 群组搜索结果转字典
 - (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
 {
-    
-    NSDictionary *resultDict = @{@"list":[self groupsArrayWithDictionaryArray:cursorResult.list],
+    NSDictionary *resultDict = @{@"list":[EMHelper groupsToDictionarys:cursorResult.list],
                                  @"cursor":cursorResult.cursor
                                 };
     return resultDict;

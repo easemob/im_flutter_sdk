@@ -21,6 +21,7 @@ static NSString * const EMMethodKeyLoginWithToken = @"loginWithToken";
 static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChatManager = @"chatManager";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
+static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
 static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
 static NSString * const EMMethodKeySetDebugMode = @"setDebugMode";
 static NSString * const EMMethodKeyUpdateCurrentUserNick = @"updateCurrentUserNick";
@@ -36,6 +37,8 @@ static NSString * const EMMethodKeyCheck = @"check";
 static NSString * const EMMethodKeyOnConnected = @"onConnected";
 static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
+static NSString * const EMMethodKeyGetIsLoggedInBefore = @"isLoggedInBefore";
+
 
 #pragma mark - EMContactManagerWrapper
 
@@ -92,7 +95,6 @@ static NSString * const EMMethodKeyGetAllMsgCount = @"getAllMsgCount";
 static NSString * const EMMethodKeyLoadMoreMsgFromDB = @"loadMoreMsgFromDB";
 static NSString * const EMMethodKeySearchConversationMsgFromDB = @"searchConversationMsgFromDB";
 static NSString * const EMMethodKeySearchConversationMsgFromDBByType = @"searchConversationMsgFromDBByType";
-static NSString * const EMMethodKeyGetAllMessages = @"getAllMessages";
 static NSString * const EMMethodKeyLoadMessages = @"loadMessages";
 static NSString * const EMMethodKeyMarkMessageAsRead = @"markMessageAsRead";
 static NSString * const EMMethodKeyRemoveMessage = @"removeMessage";
