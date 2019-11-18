@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 import 'conversation_list_page.dart';
+import 'find_page.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
+import 'package:im_flutter_sdk_example/utils/style.dart';
+
 class HomePage extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
@@ -18,7 +22,7 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
     BottomNavigationBarItem(icon: new Icon(null)),
   ];
   /// 目前只有会话列表，后续替换
-  var vcList = [new EMConversationListPage(), new EMConversationListPage(), new EMConversationListPage()];
+  var vcList = [new EMConversationListPage(), new EMConversationListPage(), new FindPage(), new EMConversationListPage()];
 
   int curIndex = 0;
 
@@ -27,28 +31,36 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    EMClient.getInstance().chatManager().addMessageListener(this);
+  }
+
+  void refreshUI(bool visible){
+
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     tabbarList = [
-      BottomNavigationBarItem(icon: new Icon(Icons.chat,color: Colors.grey),title: new Text(DemoLocalizations.of(context).conversation)),
-      BottomNavigationBarItem(icon: new Icon(Icons.perm_contact_calendar,color: Colors.grey,),title: new Text(DemoLocalizations.of(context).addressBook),),
-      BottomNavigationBarItem(icon: new Icon(Icons.settings,color: Colors.grey,),title: new Text(DemoLocalizations.of(context).setting),),
+      BottomNavigationBarItem(icon: new Icon(Icons.chat,),activeIcon: new Icon(Icons.chat,), title: new Text(DemoLocalizations.of(context).conversation)),
+      BottomNavigationBarItem(icon: new Icon(Icons.perm_contact_calendar,),activeIcon: new Icon(Icons.perm_contact_calendar,),title: new Text(DemoLocalizations.of(context).addressBook),),
+      BottomNavigationBarItem(icon: new Icon(Icons.apps,),activeIcon: new Icon(Icons.apps,),title: new Text(DemoLocalizations.of(context).find),),
+      BottomNavigationBarItem(icon: new Icon(Icons.face,),activeIcon: new Icon(Icons.face,),title: new Text(DemoLocalizations.of(context).mine),),
     ];
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        items: tabbarList,
-        type: BottomNavigationBarType.fixed,
-        onTap: (int index) {
-          setState(() {
-            curIndex = index;
-          });
-        },
-        currentIndex: curIndex,
-      ),
-      body: vcList[curIndex],
+          bottomNavigationBar: BottomNavigationBar(
+            backgroundColor: ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
+            items: tabbarList,
+            type: BottomNavigationBarType.fixed,
+            onTap: (int index) {
+              setState(() {
+                curIndex = index;
+              });
+            },
+            currentIndex: curIndex,
+          ),
+          body: vcList[curIndex],
     );
   }
 

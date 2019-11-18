@@ -4,6 +4,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/time_util.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 class EMConversationListItem extends StatefulWidget{
 
@@ -25,6 +26,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   String titleName;
   String content;
   Offset tapPos;
+  bool _isDark;
 
   _EMConversationListItemState(EMConversation con, EMConversationListItemDelegate delegate){
     this.con = con;
@@ -94,14 +96,14 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   }
 
   Widget _buildUserPortrait(){
-    Widget protraitWidget = Image.asset('images/ease_default_avatar.png');
+    Widget protraitWidget = Image.asset('images/default_avatar.png');
     if(con.isGroup()){
-      protraitWidget = Image.asset('images/ease_group_icon.png');
+      protraitWidget = Image.asset('images/group_icon.png');
     }
     return ClipOval(
       child: Container(
-        height: EMLayout.EMConListPortraitSize,
-        width: EMLayout.EMConListPortraitSize,
+        height: EMLayout.emConListPortraitSize,
+        width: EMLayout.emConListPortraitSize,
         child: protraitWidget,
       ),
     );
@@ -113,12 +115,12 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         right: 0.0,
         top: 0.0,
         child: Container(
-          width: EMLayout.EMConListUnreadSize,
-          height: EMLayout.EMConListUnreadSize,
+          width: EMLayout.emConListUnreadSize,
+          height: EMLayout.emConListUnreadSize,
           alignment: Alignment.center,
           decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(EMColor.EMConListUnreadColor)
+              color: _isDark ? EMColor.darkRed : EMColor.red,
           ),
         ),
       );
@@ -150,11 +152,11 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   Widget _buildContent(){
     return Expanded(
       child: Container(
-        height: EMLayout.EMConListItemHeight,
+        height: EMLayout.emConListItemHeight,
         margin: EdgeInsets.only(left:10, right: 10),
         decoration:  BoxDecoration(
             border: Border(
-                bottom: BorderSide(width: 0.5,color: Color(EMColor.EMConListBorderColor),)
+                bottom: BorderSide(width: 0.5, color: _isDark ? EMColor.darkBorderLine : EMColor.borderLine)
             )
         ),
         child: Row(
@@ -175,14 +177,15 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         children: <Widget>[
           Text(
             titleName,
-            style: TextStyle(fontSize: EMFont.EMConListNameFont,color: Color(EMColor.EMConListTitleColor),fontWeight:FontWeight.w400),
+            style: TextStyle(fontSize: EMFont.emConListTitleFont,fontWeight:FontWeight.w400),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           SizedBox(height: 6,),
           Text(
             content,
-            style: TextStyle(fontSize: EMFont.EMConListContentFont,color: Color(EMColor.EMConListContentColor)),
+            style: TextStyle(fontSize: EMFont.emConListContentFont,
+            color: _isDark ? EMColor.darkTextGray : EMColor.textGray),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           )
@@ -194,12 +197,12 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   Widget _buildTime(){
     var time = TimeUtil.convertTime(int.parse(message.msgTime));
     return Container(
-      width: EMLayout.EMConListItemHeight,
+      width: EMLayout.emConListItemHeight,
       margin: EdgeInsets.only(right:10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(time,style:TextStyle(fontSize: EMFont.EMConListTimeFont,color: Color(EMColor.EMConListTimeColor))),
+          Text(time,style:TextStyle(fontSize: EMFont.emConListTimeFont, color: _isDark ? EMColor.darkTextGray : EMColor.textGray)),
           SizedBox(height: 20,)
         ],
       ),
@@ -209,9 +212,10 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+    _isDark = ThemeUtils.isDark(context);
     if(!(message == null)) {
       return Material(
-        color: Color(EMColor.EMConListItemBgColor),
+        color: _isDark? EMColor.darkBgColor : EMColor.bgColor,
         child: InkWell(
           onTapDown: (TapDownDetails details) {
             tapPos = details.globalPosition;
@@ -223,8 +227,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
             _onLongPressed();
           },
           child: Container(
-            height: EMLayout.EMConListItemHeight,
-            color: Color(EMColor.EMConListItemBgColor),
+            height: EMLayout.emConListItemHeight,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[

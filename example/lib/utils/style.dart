@@ -1,27 +1,56 @@
+import 'package:flutter/material.dart';
+
 class EMLayout {
-  //会话列表页面布局
-  static const double EMConListPortraitSize = 45; //会话列表头像大小
-  static const double EMConListItemHeight = 70; //会话列表 item 高度
-  static const double EMConListUnreadSize = 10; //会话列表未读数大小
+  static const double emConListPortraitSize = 45;
+  static const double emConListItemHeight = 74;
+  static const double emConListUnreadSize = 10;
+  static const double emSearchBarHeight = 36;
 
 }
 
 class EMFont{
-  //会话列表相关字体大小
-  static const double EMConListNameFont = 16;
-  static const double EMConListTimeFont = 12;
-  static const double EMConListContentFont = 12;
-
-
+  static const double emAppBarTitleFont = 18;
+  static const double emSearchBarFont = 16;
+  static const double emConListTitleFont = 16;
+  static const double emConListTimeFont = 12;
+  static const double emConListContentFont = 14;
 }
 
 class EMColor{
-  //会话列表相关颜色
-  static const EMConListTitleColor = 0xff000000;
-  static const EMConListContentColor = 0xff6C7B8B;
-  static const EMConListUnreadColor = 0xffCD3333;
-  static const EMConListTimeColor = 0xff6C7B8B;
-  static const EMConListItemBgColor = 0xffffffff;
-  static const EMConListBorderColor = 0xff6C7B8B;
+  static const Color appMain = Color(0xFFFFFFFF);
+  static const Color darkAppMain = Color(0xFF18191A);
+
+  static const Color bgColor = Color(0xFFFFFFFF);
+  static const Color darkBgColor = Color(0xFF18191A);
+
+  static const Color materialBg = Color(0xFFFFFFFF);
+  static const Color darkMaterialBg = Color(0xFF303233);
+
+  static const Color text = Color(0xFF333333);
+  static const Color darkText = Color(0xFFB8B8B8);
+
+  static const Color textGray = Color(0xFF999999);
+  static const Color darkTextGray = Color(0xFF666666);
+
+  static const Color bgGray = Color(0xFFF6F6F6);
+  static const Color darkBgGray = Color(0xFF1F1F1F);
+
+  static const Color borderLine = Color(0xFF333333);
+  static const Color darkBorderLine = Color(0xFF666666);
+
+  static const Color red = Color(0xFFFF4759);
+  static const Color darkRed = Color(0xFFE03E4E);
+
+  static const Color textDisabled = Color(0xFFD4E2FA);
+  static const Color darkTextDisabled = Color(0xFFCEDBF2);
+
+  static const Color buttonDisabled = Color(0xFF64B5F6);
+  static const Color darkButtonDisabled = Color(0xFF1565C0);
+
+  static const Color unselectedItemColor = Color(0xffbfbfbf);
+  static const Color darkUnselectedItemColor = Color(0xFF4D4D4D);
+
+  static const Color bgSearchBar = Color(0xFFE0E0E0);
+  static const Color darkBgSearchBar = Color(0xFF303030);
 
 }
