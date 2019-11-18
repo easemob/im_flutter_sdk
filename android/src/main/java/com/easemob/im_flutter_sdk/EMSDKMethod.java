@@ -23,6 +23,15 @@ public class EMSDKMethod {
     static final String getLoggedInDevicesFromServer =
             "getLoggedInDevicesFromServer";
 
+    /// EMClient multiDevice listener
+    static final String addMultiDeviceListener = "addMultiDeviceListener";
+    static final String removeMultiDeviceListener = "removeMultiDeviceListener";
+
+    /// EMClient Connection listener
+    static final String addConnectionListener = "addConnectionListener";
+    static final String removeConnectionListener = "removeConnectionListener";
+
+
     /// EMContactManager methods
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
@@ -69,11 +78,9 @@ public class EMSDKMethod {
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
-    static final String getAllMsgCount = "getAllMsgCount";
     static final String loadMoreMsgFromDB = "loadMoreMsgFromDB";
     static final String searchConversationMsgFromDB = "searchConversationMsgFromDB";
     static final String searchConversationMsgFromDBByType = "searchConversationMsgFromDBByType";
-    static final String getAllMessages = "getAllMessages";
     static final String loadMessages = "loadMessages";
     static final String markMessageAsRead = "markMessageAsRead";
     static final String removeMessage = "removeMessage";

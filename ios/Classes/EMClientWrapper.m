@@ -6,7 +6,6 @@
 //
 
 #import "EMClientWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
@@ -18,8 +17,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [EMClient.sharedClient addDelegate:self delegateQueue:nil];
-        [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
+        
     }
     return self;
 }
@@ -62,9 +60,9 @@
         [self getDeviceInfo:call.arguments result:result];
     } else if ([EMMethodKeyCheck isEqualToString:call.method]) {
         [self check:call.arguments result:result];
-    } else if ([EMMethodKeyGetIsLoggedInBefore isEqualToString:call.method]) {
+    } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
-    }  else {
+    } else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -76,6 +74,7 @@
     options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
@@ -228,6 +227,12 @@
                 userInfo:nil];
 }
 
+- (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"isLogged":@(EMClient.sharedClient.isConnected)}];
+}
+
 - (void)getDeviceInfo:(NSDictionary *)param result:(FlutterResult)result {
     [self wrapperCallBack:result
                     error:nil
@@ -272,14 +277,6 @@
             }
         }
     }];
-}
-
-- (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
-    BOOL isLogged = [EMClient.sharedClient isLoggedIn];
-    [self wrapperCallBack1:result
-                    error:nil
-                 userInfo:@{@"isLogged":[NSNumber numberWithBool:isLogged]}];
-    
 }
 
 #pragma - mark EMClientDelegate
