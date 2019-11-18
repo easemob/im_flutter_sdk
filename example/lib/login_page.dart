@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'utils/localizations.dart';
-import 'register_page.dart';
 import 'utils/widget_util.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
-
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-
-import 'utils/localizations.dart';
 import 'common/common.dart';
+
 
 class LoginPage extends StatefulWidget {
   @override
@@ -205,10 +200,6 @@ class LoginPageState extends State<LoginPage> {
               setState(() {
                 login(this._usernameController.text,this._pwdController.text);
               });
-
-//              Navigator.of(context).pushNamed(Constant.toHomePage);
-
-
               print('用户名${this._usernameController.text}');
               print('密码${this._pwdController.text}');
 
@@ -250,7 +241,6 @@ class LoginPageState extends State<LoginPage> {
           onSuccess: (username) {
             print("login succes");
             Navigator.of(context).pushNamed(Constant.toHomePage);
-
           },
           onError: (code, desc) {
 

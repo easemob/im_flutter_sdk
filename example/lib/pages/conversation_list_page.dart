@@ -8,6 +8,7 @@ import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 class EMConversationListPage extends StatefulWidget{
 
@@ -71,10 +72,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         itemCount: conList.length + 1,
         itemBuilder: (BuildContext context,int index){
           if(conList.length <= 0){
-            return Container(
-              height: 1,
-              width: 1,
-            );
+            return WidgetUtil.buildEmptyWidget();
           }
           if(index == 0){
             return _buildErrorItem();
@@ -149,7 +147,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         leading: Icon(null),
         actions: <Widget>[
           Icon(Icons.add,),
-          SizedBox(width: 8,)
+          SizedBox(width: 24,)
         ],
       ),
       key: UniqueKey(),
@@ -225,7 +223,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
       Constant.deleteConversationKey:DemoLocalizations.of(context).deleteConversation,
       Constant.clearUnreadKey:DemoLocalizations.of(context).clearUnread,
     };
-    showLongPressMenu(context, tapPos,actionMap,(String key){
+    WidgetUtil.showLongPressMenu(context, tapPos,actionMap,(String key){
       if(key == "DeleteConversationKey") {
         _deleteConversation(conversation);
       }else if(key == "ClearUnreadKey") {
@@ -234,36 +232,4 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     });
   }
 
-    static void showLongPressMenu(BuildContext context,Offset tapPos,Map<String,String> map,Function(String key)onSelected) {
-      final RenderBox overlay =Overlay.of(context).context.findRenderObject();
-      final RelativeRect position = RelativeRect.fromLTRB(
-          tapPos.dx, tapPos.dy,
-          overlay.size.width - tapPos.dx,
-          overlay.size.height - tapPos.dy
-      );
-      List<PopupMenuEntry<String>>  items = new List();
-      map.keys.forEach((String key) {
-        PopupMenuItem<String> p = PopupMenuItem(
-          child: Container(
-            alignment: Alignment.center,
-            child: Text(map[key],textAlign: TextAlign.center,),
-          ),
-          value: key,
-        );
-        items.add(p);
-      });
-      showMenu<String>(
-          context: context,
-          position: position,
-          items: items
-      ).then<String>((String selectedStr) {
-        if(onSelected != null) {
-          if(selectedStr == null) {
-            selectedStr = "UndefinedKey";
-          }
-          onSelected(selectedStr);
-        }
-        return selectedStr;
-      });
-    }
 }

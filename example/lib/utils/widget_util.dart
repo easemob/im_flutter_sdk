@@ -46,7 +46,7 @@ class WidgetUtil {
 
   /// 用户头像
   static Widget buildUserPortrait(String path) {
-    Widget protraitWidget = Image.asset("images/ease_default_avatar.png",fit: BoxFit.fill);
+    Widget protraitWidget = Image.asset("images/default_avatar.png",fit: BoxFit.fill);
     if(path.startsWith("http")) {
       protraitWidget = CachedNetworkImage(
         fit: BoxFit.fill,
@@ -97,35 +97,35 @@ class WidgetUtil {
   /// 长按的 menu，用于处理会话列表页面和会话页面的长按
   static void showLongPressMenu(BuildContext context,Offset tapPos,Map<String,String> map,Function(String key)onSelected) {
     final RenderBox overlay =Overlay.of(context).context.findRenderObject();
-      final RelativeRect position = RelativeRect.fromLTRB(
+    final RelativeRect position = RelativeRect.fromLTRB(
         tapPos.dx, tapPos.dy,
         overlay.size.width - tapPos.dx,
         overlay.size.height - tapPos.dy
+    );
+    List<PopupMenuEntry<String>>  items = new List();
+    map.keys.forEach((String key) {
+      PopupMenuItem<String> p = PopupMenuItem(
+        child: Container(
+          alignment: Alignment.center,
+          child: Text(map[key],textAlign: TextAlign.center,),
+        ),
+        value: key,
       );
-      List<PopupMenuEntry<String>>  items = new List();
-      map.keys.forEach((String key) {
-        PopupMenuItem<String> p = PopupMenuItem(
-          child: Container(
-            alignment: Alignment.center,
-            child: Text(map[key],textAlign: TextAlign.center,),
-          ),
-          value: key,
-        );
-        items.add(p);
-      });
-      showMenu<String>(
+      items.add(p);
+    });
+    showMenu<String>(
         context: context,
         position: position,
         items: items
-      ).then<String>((String selectedStr) {
-        if(onSelected != null) {
-          if(selectedStr == null) {
-//            selectedStr = RCLongPressAction.UndefinedKey;
-          }
-          onSelected(selectedStr);
+    ).then<String>((String selectedStr) {
+      if(onSelected != null) {
+        if(selectedStr == null) {
+          selectedStr = "UndefinedKey";
         }
-        return selectedStr;
-      });
+        onSelected(selectedStr);
+      }
+      return selectedStr;
+    });
   }
 
 
@@ -147,7 +147,6 @@ class WidgetUtil {
         textColor: Colors.white,
         fontSize: 15.0
     );
-    Fluttertoast.cancel();
   }
 
   static hintBoxWithCustom(String msg, PromptBoxLocation location,int timeInSecForIos, Color backgroundColor, Color textColor, double fontSize) {
@@ -168,11 +167,10 @@ class WidgetUtil {
         textColor: textColor,
         fontSize: fontSize
     );
-    Fluttertoast.cancel();
   }
 
   ///判断消息时间间隔
-  static bool isCloseEnough(String time1,String time2){
+  static bool isCloseEnough(String time1,String time2) {
     int lastTime = int.parse(time1);
     int afterTime = int.parse(time2);
     int delta = lastTime - afterTime;
@@ -182,3 +180,4 @@ class WidgetUtil {
     return delta > INTERVAL_IN_MILLISECONDS;
   }
 }
+

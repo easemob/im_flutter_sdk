@@ -3,6 +3,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 import 'package:im_flutter_sdk_example/utils/style.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 
 class EMContactsListPage extends StatefulWidget {
@@ -78,7 +79,6 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   }
 
   Widget _rowStyle(int index) {
-
     if(index == 0) {
       return InkWell(
         onTap: (){
