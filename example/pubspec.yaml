@@ -49,8 +49,6 @@ flutter:
     - images/default_avatar.png
     - images/group_icon.png
     - images/chatroom_icon.png
-    - images/ease_default_avatar.png
-    - images/ease_group_icon.png
     - images/star.png
     - images/logo@2x.png
     - images/back_01.png

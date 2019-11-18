@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-import 'utils/localizations.dart';
-import 'package:im_flutter_sdk_example/common/common.dart';
 import 'utils/widget_util.dart';
-
+import 'common/common.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
