@@ -33,10 +33,11 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     return MaterialApp(
       /// 配置跳转路由
       routes: <String, WidgetBuilder>{
+        Constant.toRegisterPage:(BuildContext context)=>new RegisterPage(),
+        Constant.toLoginPage:(BuildContext context)=>new LoginPage(),
         Constant.toHomePage: (BuildContext context) => new HomePage(),
         Constant.toChatRoomListPage: (BuildContext context) => new EMChatRoomListPage(),
       },
-
       /// 配置国际化语言
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,

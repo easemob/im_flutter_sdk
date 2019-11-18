@@ -185,7 +185,6 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void onMessageDelivered(List<EMMessage> messages){}
   void onMessageRecalled(List<EMMessage> messages){}
   void onMessageChanged(EMMessage message, Object change){}
-
   void _deleteConversation(EMConversation conversation) async{
     bool result = await EMClient.getInstance().chatManager().deleteConversation(userName: conversation.conversationId, deleteMessages: true);
     if(result == false){

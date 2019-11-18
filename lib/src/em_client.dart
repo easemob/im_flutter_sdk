@@ -7,10 +7,11 @@ import 'em_chat_manager.dart';
 import 'em_chatroom_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
+import 'em_group_manager.dart';
 import 'em_log.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
-import 'em_group_manager.dart';
+
 
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';

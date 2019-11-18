@@ -6,8 +6,8 @@
 //
 
 #import "EMChatroomManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
+#import "EMHelper.h"
 
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>
 
@@ -60,7 +60,7 @@
     } else if ([EMMethodKeyChatRoomRemoveMembers isEqualToString:call.method]) {
         [self chatRoomRemoveMembers:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomBlockMembers isEqualToString:call.method]) {
-           [self chatRoomBlockMembers:call.arguments result:result];
+        [self chatRoomBlockMembers:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomUnblockMembers isEqualToString:call.method]) {
         [self chatRoomUnblockMembers:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomUpdateChatroomOwner isEqualToString:call.method]) {
@@ -91,7 +91,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithPageResult:aResult]];
+                     userInfo:[EMHelper pageReslutToDictionary:aResult]];
         
     }];
 }
@@ -111,7 +111,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -122,7 +122,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -154,7 +154,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -163,7 +163,7 @@
     EMChatroom *chatroom = [EMChatroom chatroomWithId:chatroomId];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:[self dictionaryWithChatroom:chatroom]];
+                 userInfo:[EMHelper chatRoomToDictionary:chatroom]];
 }
 
 - (void)getAllChatrooms:(NSDictionary *)param result:(FlutterResult)result {
@@ -173,7 +173,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithPageResult:aResult]];
+                     userInfo:[EMHelper pageReslutToDictionary:aResult]];
         
     }];
 }
@@ -204,7 +204,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryArrayWithChatroomsArray:aList]];
+                     userInfo:[EMHelper chatRoomsToDictionarys:aList]];
     }];
 }
 
@@ -219,7 +219,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryArrayWithChatroomsArray:aList]];
+                     userInfo:[EMHelper chatRoomsToDictionarys:aList]];
     }];
 }
 
@@ -243,7 +243,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -256,7 +256,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -269,7 +269,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -282,7 +282,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -295,7 +295,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -308,7 +308,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -321,7 +321,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroomp]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroomp]];
     }];
 }
 
@@ -334,7 +334,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -349,7 +349,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -362,7 +362,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -375,7 +375,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithChatroom:aChatroom]];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -503,61 +503,9 @@
 
 #pragma mark - EMChatroom Pack Method
 
-// 聊天室对象转字典
-- (NSDictionary *)dictionaryWithChatroom:(EMChatroom *)chatroom
-{
-    EMChatroomPermissionType permissionType = chatroom.permissionType;
-    int type;
-    if (permissionType == EMChatroomPermissionTypeNone) {
-        type = -1;
-    } else if (permissionType == EMChatroomPermissionTypeMember) {
-        type = 0;
-    } else if (permissionType == EMChatroomPermissionTypeAdmin) {
-        type = 1;
-    } else {
-        type = 2;
-    }
-    
-    // @"permissionType":[NSNumber numberWithInt:type],
-    NSDictionary *groupDict = @{@"roomId":chatroom.chatroomId,
-                                @"roomName":chatroom.subject,
-                                @"description":chatroom.description,
-                                @"owner":chatroom.owner,
-                                @"announcement":chatroom.announcement,
-                                @"administratorList":chatroom.adminList,
-                                @"memberList":chatroom.memberList,
-                                @"blockList":chatroom.blacklist,
-                                @"muteList":chatroom.muteList,
-                                @"maxUserCount":[NSNumber numberWithInteger:chatroom.maxOccupantsCount],
-                                @"affiliationsCount":[NSNumber numberWithInteger:chatroom.occupantsCount]
-                               };
-    
-    return groupDict;
-}
-
-// 聊天室对象数组转字典数组
-- (NSArray *)dictionaryArrayWithChatroomsArray:(NSArray *)chatroomsArray
-{
-    NSMutableArray *chatroomsMutableArray = [NSMutableArray array];
-    for (EMChatroom *chatroom in chatroomsMutableArray) {
-        [chatroomsMutableArray addObject:[self dictionaryWithChatroom:chatroom]];
-    }
-    return [NSArray arrayWithArray:chatroomsMutableArray];
-}
-
-// 聊天室查询结果转字典
-- (NSDictionary *)dictionaryWithPageResult:(EMPageResult *)pageResult
-{
-    NSDictionary *resultDict = @{@"data":[self dictionaryArrayWithChatroomsArray:pageResult.list],
-                                 @"pageCount":[NSNumber numberWithInteger:pageResult.count]
-                                };
-    return resultDict;
-}
-
 // 聊天室成员获取结果转字典
 - (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
 {
-    
     NSDictionary *resultDict = @{@"data":cursorResult.list,
                                  @"cursor":cursorResult.cursor
                                 };

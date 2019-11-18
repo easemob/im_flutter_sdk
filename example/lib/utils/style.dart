@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class EMLayout {
@@ -5,7 +6,6 @@ class EMLayout {
   static const double emConListItemHeight = 74;
   static const double emConListUnreadSize = 10;
   static const double emSearchBarHeight = 36;
-
 }
 
 class EMFont{

@@ -177,6 +177,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         children: <Widget>[
           Text(
             titleName,
+
             style: TextStyle(fontSize: EMFont.emConListTitleFont,fontWeight:FontWeight.w400),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -184,6 +185,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
           SizedBox(height: 6,),
           Text(
             content,
+
             style: TextStyle(fontSize: EMFont.emConListContentFont,
             color: _isDark ? EMColor.darkTextGray : EMColor.textGray),
             maxLines: 1,
@@ -197,6 +199,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   Widget _buildTime(){
     var time = TimeUtil.convertTime(int.parse(message.msgTime));
     return Container(
+
       width: EMLayout.emConListItemHeight,
       margin: EdgeInsets.only(right:10),
       child: Column(

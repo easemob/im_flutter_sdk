@@ -6,7 +6,6 @@
 //
 
 #import "EMClientWrapper.h"
-#import <Hyphenate/Hyphenate.h>
 #import "EMSDKMethod.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
@@ -18,8 +17,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [EMClient.sharedClient addDelegate:self delegateQueue:nil];
-        [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
+        
     }
     return self;
 }
@@ -27,10 +25,7 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if (![call.arguments isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"wrong type");
-        return;
-    }
+
     if ([EMMethodKeyInit isEqualToString:call.method]) {
         [self initSDKWithDict:call.arguments result:result];
     } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
@@ -65,7 +60,9 @@
         [self getDeviceInfo:call.arguments result:result];
     } else if ([EMMethodKeyCheck isEqualToString:call.method]) {
         [self check:call.arguments result:result];
-    }  else {
+    } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
+        [self isLoggedInBefore:call.arguments result:result];
+    } else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -77,6 +74,7 @@
     options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
@@ -89,7 +87,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"aUsername":aUsername}];
+                         userInfo:aUsername];
     }];
 }
 
@@ -103,7 +101,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:aUsername];
     }];
 }
 
@@ -117,7 +115,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:aUsername];
     }];
 }
 
@@ -229,6 +227,12 @@
                 userInfo:nil];
 }
 
+- (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"isLogged":@(EMClient.sharedClient.isConnected)}];
+}
+
 - (void)getDeviceInfo:(NSDictionary *)param result:(FlutterResult)result {
     [self wrapperCallBack:result
                     error:nil
@@ -274,7 +278,6 @@
         }
     }];
 }
-
 
 #pragma - mark EMClientDelegate
 
