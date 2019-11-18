@@ -234,7 +234,6 @@ class EMHelper {
             EMCmdMessageBody cmdMessageBody = (EMCmdMessageBody) mb;
             body.put("type", enumMessageTypeToInt(EMMessage.Type.CMD));
             body.put("action", cmdMessageBody.action());
-            body.put("params", cmdMessageBody.getParams());
             body.put("isDeliverOnlineOnly", Boolean.valueOf(cmdMessageBody.isDeliverOnlineOnly()));
         }else if(mb instanceof EMLocationMessageBody) {
             EMLocationMessageBody locationMessageBody = (EMLocationMessageBody) mb;
@@ -247,11 +246,9 @@ class EMHelper {
             body.put("type", enumMessageTypeToInt(EMMessage.Type.FILE));
             // base EMFileMessageBody fields
             body.put("displayName", normalFileMessageBody.displayName());
-            body.put("status", normalFileMessageBody.downloadStatus());
-            body.put("fileName", normalFileMessageBody.getFileName());
+            body.put("downloadStatus", normalFileMessageBody.downloadStatus());
             body.put("localUrl", normalFileMessageBody.getLocalUrl());
             body.put("remoteUrl", normalFileMessageBody.getRemoteUrl());
-            body.put("secret", normalFileMessageBody.getSecret());
             // subclass fields
             body.put("fileSize", normalFileMessageBody.getFileSize());
         }else if(mb instanceof EMImageMessageBody) {
@@ -259,49 +256,42 @@ class EMHelper {
             body.put("type", enumMessageTypeToInt(EMMessage.Type.IMAGE));
             // base EMFileMessageBody fields
             body.put("displayName", imageMessageBody.displayName());
-            body.put("status", imageMessageBody.downloadStatus());
-            body.put("fileName", imageMessageBody.getFileName());
+            body.put("downloadStatus", imageMessageBody.downloadStatus());
             body.put("localUrl", imageMessageBody.getLocalUrl());
             body.put("remoteUrl", imageMessageBody.getRemoteUrl());
-            body.put("secret", imageMessageBody.getSecret());
             // specific subclass fields
             body.put("height", imageMessageBody.getHeight());
             body.put("width", imageMessageBody.getWidth());
             body.put("sendOriginalImage", Boolean.valueOf(imageMessageBody.isSendOriginalImage()));
             body.put("thumbnailLocalPath", imageMessageBody.thumbnailLocalPath());
-            body.put("thumbnailSecret", imageMessageBody.getThumbnailSecret());
             body.put("thumbnailUrl", imageMessageBody.getThumbnailUrl());
         }else if(mb instanceof EMVoiceMessageBody) {
             EMVoiceMessageBody voiceMessageBody = (EMVoiceMessageBody)mb;
             body.put("type", enumMessageTypeToInt(EMMessage.Type.VOICE));
             // base EMFileMessageBody fields
             body.put("displayName", voiceMessageBody.displayName());
-            body.put("status", voiceMessageBody.downloadStatus());
-            body.put("fileName", voiceMessageBody.getFileName());
+            body.put("downloadStatus", voiceMessageBody.downloadStatus());
             body.put("localUrl", voiceMessageBody.getLocalUrl());
             body.put("remoteUrl", voiceMessageBody.getRemoteUrl());
-            body.put("secret", voiceMessageBody.getSecret());
             // subclass fields
             body.put("length", voiceMessageBody.getLength());
+            body.put("voiceDuration", voiceMessageBody.getLength());
         }else if(mb instanceof EMVideoMessageBody) {
             EMVideoMessageBody videoMessageBody = (EMVideoMessageBody)mb;
             body.put("type", enumMessageTypeToInt(EMMessage.Type.VIDEO));
             // base EMFileMessageBody fields
             body.put("displayName", videoMessageBody.displayName());
-            body.put("status", videoMessageBody.downloadStatus());
-            body.put("fileName", videoMessageBody.getFileName());
+            body.put("downloadStatus", videoMessageBody.downloadStatus());
             body.put("localUrl", videoMessageBody.getLocalUrl());
             body.put("remoteUrl", videoMessageBody.getRemoteUrl());
-            body.put("secret", videoMessageBody.getSecret());
             // subclass fields
-            body.put("duration", videoMessageBody.getDuration());
+            body.put("videoDuration", videoMessageBody.getDuration());
             body.put("localThumb", videoMessageBody.getLocalThumb());
             body.put("thumbnailHeight", videoMessageBody.getThumbnailHeight());
             body.put("thumbnailWidth", videoMessageBody.getThumbnailWidth());
-            body.put("thumbnailSecret", videoMessageBody.getThumbnailSecret());
             body.put("thumbnailUrl", videoMessageBody.getThumbnailUrl());
-            body.put("videoFileLength", videoMessageBody.getVideoFileLength());
-            body.put("status", videoMessageBody.thumbnailDownloadStatus());
+            body.put("fileLength", videoMessageBody.getVideoFileLength());
+//            body.put("status", videoMessageBody.thumbnailDownloadStatus());
         }
         return body;
     }
@@ -699,16 +689,36 @@ class EMHelper {
         EMOptions options = new EMOptions();
         try {
             options.setAppKey(json.getString("appKey"));
-            options.setAcceptInvitationAlways(json.getBoolean("acceptInvitationAlways"));
-            options.setAutoAcceptGroupInvitation(json.getBoolean("autoAcceptGroupInvitation"));
-            options.setRequireAck(json.getBoolean("requireAck"));
-            options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
-            options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
-            options.allowChatroomOwnerLeave(json.getBoolean("isChatRoomOwnerLeaveAllowed"));
-            options.setAutoLogin(json.getBoolean("autoLogin"));
-            options.setUseFCM(json.getBoolean("useFCM"));
-            options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
-            options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
+            if(!json.getString("acceptInvitationAlways").isEmpty()){
+                options.setAcceptInvitationAlways(json.getBoolean("acceptInvitationAlways"));
+            }
+            if(!json.getString("autoAcceptGroupInvitation").isEmpty()){
+                options.setAutoAcceptGroupInvitation(json.getBoolean("autoAcceptGroupInvitation"));
+            }
+            if(!json.getString("requireAck").isEmpty()){
+                options.setRequireAck(json.getBoolean("requireAck"));
+            }
+            if(!json.getString("requireDeliveryAck").isEmpty()){
+                options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
+            }
+            if(!json.getString("deleteMessagesAsExitGroup").isEmpty()){
+                options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
+            }
+            if(!json.getString("isChatRoomOwnerLeaveAllowed").isEmpty()){
+                options.allowChatroomOwnerLeave(json.getBoolean("isChatRoomOwnerLeaveAllowed"));
+            }
+            if(!json.getString("autoLogin").isEmpty()){
+                options.setAutoLogin(json.getBoolean("autoLogin"));
+            }
+            if(!json.getString("useFCM").isEmpty()){
+                options.setUseFCM(json.getBoolean("useFCM"));
+            }
+            if(!json.getString("sortMessageByServerTime").isEmpty()){
+                options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
+            }
+            if(!json.getString("enableDNSConfig").isEmpty()){
+                options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+            }
             if(!json.getString("dnsUrl").isEmpty()){
                 options.setDnsUrl(json.getString("dnsUrl"));
             }
@@ -721,9 +731,16 @@ class EMHelper {
             if(!(json.getInt("imPort") == 0)) {
                 options.setImPort(json.getInt("imPort"));
             }
-            options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
-            options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
-            options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
+            if(!(json.getInt("usingHttpsOnly") == 0)) {
+                options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
+            }
+            if(!(json.getInt("serverTransfer") == 0)) {
+                options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
+            }
+            if(!(json.getInt("isAutoDownload") == 0)) {
+                options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
+            }
+
         }catch (JSONException e){
             e.printStackTrace();
         }

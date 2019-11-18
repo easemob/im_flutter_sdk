@@ -19,11 +19,10 @@ static NSString * const EMMethodKeyCreateAccount = @"createAccount";
 static NSString * const EMMethodKeyLogin = @"login";
 static NSString * const EMMethodKeyLoginWithToken = @"loginWithToken";
 static NSString * const EMMethodKeyLogout = @"logout";
-static NSString * const EMMethodKeyChatManager = @"chatManager";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
-static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
 static NSString * const EMMethodKeySetDebugMode = @"setDebugMode";
+static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
 static NSString * const EMMethodKeyUpdateCurrentUserNick = @"updateCurrentUserNick";
 static NSString * const EMMethodKeyUploadLog = @"uploadLog";
 static NSString * const EMMethodKeyCompressLogs = @"compressLogs";
@@ -31,12 +30,12 @@ static NSString * const EMMethodKeyKickDevice = @"kickDevice";
 static NSString * const EMMethodKeyKickAllDevices = @"kickAllDevices";
 static NSString * const EMMethodKeySendFCMTokenToServer = @"sendFCMTokenToServer";
 static NSString * const EMMethodKeySendHMSPushTokenToServer = @"sendHMSPushTokenToServer";
-static NSString * const EMMethodKeyGetDeviceInfo = @"getDeviceInfo";
-static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 static NSString * const EMMethodKeyCheck = @"check";
 static NSString * const EMMethodKeyOnConnected = @"onConnected";
 static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
+
+static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 
 #pragma mark - EMContactManagerWrapper
 
@@ -46,10 +45,10 @@ static NSString * const EMMethodKeyGetAllContactsFromServer = @"getAllContactsFr
 static NSString * const EMMethodKeyAddUserToBlackList = @"addUserToBlackList";
 static NSString * const EMMethodKeyRemoveUserFromBlackList = @"removeUserFromBlackList";
 static NSString * const EMMethodKeyGetBlackListFromServer = @"getBlackListFromServer";
-static NSString * const EMMethodKeySaveBlackList = @"saveBlackList";
 static NSString * const EMMethodKeyAcceptInvitation = @"acceptInvitation";
 static NSString * const EMMethodKeyDeclineInvitation = @"declineInvitation";
 static NSString * const EMMethodKeyGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatform";
+
 static NSString * const EMMethodKeyOnContactChanged = @"onContactChanged";
 
 #pragma mark - EMChatManagerWrapper
@@ -71,12 +70,12 @@ static NSString * const EMMethodKeyDownloadFile = @"downloadFile";
 static NSString * const EMMethodKeyGetAllConversations = @"getAllConversations";
 static NSString * const EMMethodKeyLoadAllConversations = @"loadAllConversations";
 static NSString * const EMMethodKeyDeleteConversation = @"deleteConversation";
-static NSString * const EMMethodKeySetMessageListened = @"setMessageListened";
 static NSString * const EMMethodKeySetVoiceMessageListened = @"setVoiceMessageListened";
 static NSString * const EMMethodKeyUpdateParticipant = @"updateParticipant";
 static NSString * const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString * const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString * const EMMethodKeyGetCursor = @"getCursor";
+
 static NSString * const EMMethodKeyOnMessageReceived = @"onMessageReceived";
 static NSString * const EMMethodKeyOnCmdMessageReceived = @"onCmdMessageReceived";
 static NSString * const EMMethodKeyOnMessageRead = @"onMessageRead";
@@ -89,7 +88,6 @@ static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate
 
 static NSString * const EMMethodKeyGetUnreadMsgCount = @"getUnreadMsgCount";
 static NSString * const EMMethodKeyMarkAllMessagesAsRead = @"markAllMessagesAsRead";
-static NSString * const EMMethodKeyGetAllMsgCount = @"getAllMsgCount";
 static NSString * const EMMethodKeyLoadMoreMsgFromDB = @"loadMoreMsgFromDB";
 static NSString * const EMMethodKeySearchConversationMsgFromDB = @"searchConversationMsgFromDB";
 static NSString * const EMMethodKeySearchConversationMsgFromDBByType = @"searchConversationMsgFromDBByType";
@@ -104,6 +102,34 @@ static NSString * const EMMethodKeyInsertMessage = @"insertMessage";
 static NSString * const EMMethodKeyAppendMessage = @"appendMessage";
 static NSString * const EMMethodKeyUpdateConversationMessage = @"updateConversationMessage";
 static NSString * const EMMethodKeyGetMessageAttachmentPath = @"getMessageAttachmentPath";
+
+#pragma mark - EMChatroomManagerWrapper
+
+static NSString * const EMMethodKeyJoinChatRoom = @"joinChatRoom";
+static NSString * const EMMethodKeyLeaveChatRoom = @"leaveChatRoom";
+static NSString * const EMMethodKeyGetChatroomsFromServer = @"fetchPublicChatRoomsFromServer";
+static NSString * const EMMethodKeyGetChatroomSpecificationFromServer = @"fetchChatRoomFromServer";
+static NSString * const EMMethodKeyGetChatRoom = @"getChatRoom";
+static NSString * const EMMethodKeyGetAllChatRooms = @"getAllChatRooms";
+static NSString * const EMMethodKeyCreateChatRoom = @"createChatRoom";
+static NSString * const EMMethodKeyDestroyChatRoom = @"destroyChatRoom";
+static NSString * const EMMethodKeyuChatRoomUpdateSubject = @"changeChatRoomSubject";
+static NSString * const EMMethodKeyChatRoomUpdateDescription = @"changeChatRoomDescription";
+static NSString * const EMMethodKeyGetChatroomMemberListFromServer = @"fetchChatRoomMembers";
+static NSString * const EMMethodKeyChatRoomMuteMembers = @"muteChatRoomMembers";
+static NSString * const EMMethodKeyChatRoomUnmuteMembers = @"unMuteChatRoomMembers";
+static NSString * const EMMethodKeyChangeChatRoomOwner = @"changeChatRoomOwner";
+static NSString * const EMMethodKeyChatRoomAddAdmin = @"addChatRoomAdmin";
+static NSString * const EMMethodKeyChatRoomRemoveAdmin = @"removeChatRoomAdmin";
+static NSString * const EMMethodKeyGetChatroomMuteListFromServer = @"fetchChatRoomMuteList";
+static NSString * const EMMethodKeyChatRoomRemoveMembers = @"removeChatRoomMembers";
+static NSString * const EMMethodKeyChatRoomBlockMembers = @"blockChatRoomMembers";
+static NSString * const EMMethodKeyChatRoomUnblockMembers = @"unBlockChatRoomMembers";
+static NSString * const EMMethodKeyGetChatroomBlacklistFromServer = @"fetchChatRoomBlackList";
+static NSString * const EMMethodKeyUpdateChatRoomAnnouncement = @"updateChatRoomAnnouncement";
+static NSString * const EMMethodKeyGetChatroomAnnouncement = @"fetchChatRoomAnnouncement";
+
+static NSString * const EMMethodKeyChatroomChanged = @"onChatroomChanged";
 
 #pragma mark - EMGroupManagerWrapper
 
@@ -156,31 +182,5 @@ static NSString * const EMMethodKeyUpdatePushServiceForGroups = @"updatePushServ
 
 static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
 
-#pragma mark - EMChatroomManagerWrapper
 
-static NSString * const EMMethodKeyGetChatroomsFromServer = @"fetchPublicChatRoomsFromServer";
-static NSString * const EMMethodKeyCreateChatRoom = @"createChatRoom";
-static NSString * const EMMethodKeyJoinChatRoom = @"joinChatRoom";
-static NSString * const EMMethodKeyLeaveChatRoom = @"leaveChatRoom";
-static NSString * const EMMethodKeyDestroyChatRoom = @"destroyChatRoom";
-static NSString * const EMMethodKeyGetChatroomSpecificationFromServer = @"fetchChatRoomFromServer";
-static NSString * const EMMethodKeyGetChatRoom = @"getChatRoom";
-static NSString * const EMMethodKeyGetAllChatRooms = @"getAllChatRooms";
-static NSString * const EMMethodKeyGetChatroomMemberListFromServer = @"fetchChatRoomMembers";
-static NSString * const EMMethodKeyGetChatroomBlacklistFromServer = @"fetchChatRoomBlackList";
-static NSString * const EMMethodKeyGetChatroomMuteListFromServer = @"fetchChatRoomMuteList";
-static NSString * const EMMethodKeyGetChatroomAnnouncement = @"fetchChatRoomAnnouncement";
-static NSString * const EMMethodKeyuChatRoomUpdateSubject = @"changeChatRoomSubject";
-static NSString * const EMMethodKeyChatRoomUpdateDescription = @"changeChatRoomDescription";
-static NSString * const EMMethodKeyChatRoomRemoveMembers = @"removeChatRoomMembers";
-static NSString * const EMMethodKeyChatRoomBlockMembers = @"blockChatRoomMembers";
-static NSString * const EMMethodKeyChatRoomUnblockMembers = @"unBlockChatRoomMembers";
-static NSString * const EMMethodKeyChatRoomUpdateChatroomOwner = @"changeChatRoomOwner";
-static NSString * const EMMethodKeyChatRoomAddAdmin = @"addChatRoomAdmin";
-static NSString * const EMMethodKeyChatRoomRemoveAdmin = @"removeChatRoomAdmin";
-static NSString * const EMMethodKeyChatRoomMuteMembers = @"muteChatRoomMembers";
-static NSString * const EMMethodKeyChatRoomUnmuteMembers = @"unMuteChatRoomMembers";
-static NSString * const EMMethodKeyUpdateChatroomAnnouncement = @"updateChatRoomAnnouncement";
-
-static NSString * const EMMethodKeyChatroomChanged = @"onChatroomChanged";
 

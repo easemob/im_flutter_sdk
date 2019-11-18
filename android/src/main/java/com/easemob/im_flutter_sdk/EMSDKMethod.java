@@ -17,20 +17,11 @@ public class EMSDKMethod {
     static final String kickAllDevices = "kickAllDevices";
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
-    static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
-    static final String getLoggedInDevicesFromServer =
-            "getLoggedInDevicesFromServer";
+    static final String getLoggedInDevicesFromServer =  "getLoggedInDevicesFromServer";
 
-    /// EMClient multiDevice listener
-    static final String addMultiDeviceListener = "addMultiDeviceListener";
-    static final String removeMultiDeviceListener = "removeMultiDeviceListener";
-
-    /// EMClient Connection listener
-    static final String addConnectionListener = "addConnectionListener";
-    static final String removeConnectionListener = "removeConnectionListener";
-
+    static final String onMultiDeviceEvent = "onMultiDeviceEvent";
 
     /// EMContactManager methods
     static final String addContact = "addContact";
@@ -42,6 +33,7 @@ public class EMSDKMethod {
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
+
     static final String onContactChanged = "onContactChanged";
 
     /// EMChatManager methods
@@ -67,6 +59,7 @@ public class EMSDKMethod {
     static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getCursor = "getCursor";
+
     static final String onMessageReceived = "onMessageReceived";
     static final String onCmdMessageReceived = "onCmdMessageReceived";
     static final String onMessageRead = "onMessageRead";

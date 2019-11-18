@@ -10,10 +10,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define EMChannelName(name) [NSString stringWithFormat:@"com.easemob.im/%@",name]
+
 //# define NSLog(fmt, ...) NSLog((@"[文件名:%s]\n" "[函数名:%s]\n" "[行号:%d] \n" fmt), __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 @interface EMWrapper : NSObject <FlutterPlugin>
-@property (strong, nonatomic) FlutterMethodChannel *channel;
+@property (nonatomic, strong) FlutterMethodChannel *channel;
+@property (nonatomic, strong) NSObject<FlutterPluginRegistrar> *flutterPluginRegister;
+
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar;
 
