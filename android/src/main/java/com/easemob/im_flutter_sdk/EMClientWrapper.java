@@ -91,6 +91,49 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             EMClient client = EMClient.getInstance();
             client.init(context, options);
             //setup connection listener
+        client.addConnectionListener(new EMConnectionListener() {
+            @Override
+            public void onConnected() {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("connected", Boolean.TRUE);
+                post((Void) -> {
+                    channel.invokeMethod(EMSDKMethod.onConnected, data);
+                });
+            }
+
+            @Override
+            public void onDisconnected(int errorCode) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("errorCode", errorCode);
+                post((Void) -> {
+                    channel.invokeMethod(EMSDKMethod.onDisconnected, data);
+                });
+            }
+        });
+
+        client.addMultiDeviceListener(new EMMultiDeviceListener() {
+            @Override
+            public void onContactEvent(int event, String target, String ext) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("ext", ext);
+                post((Void) -> {
+                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data);
+                });
+            }
+
+            @Override
+            public void onGroupEvent(int event, String target, List<String> userNames) {
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("userNames", userNames);
+                post((Void) -> {
+                    channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data);
+                });
+            }
+        });
     }
 
     private void createAccount(Object args, Result result) {

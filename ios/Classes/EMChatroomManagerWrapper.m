@@ -25,6 +25,7 @@
     return self;
 }
 
+
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -63,7 +64,7 @@
         [self chatRoomBlockMembers:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomUnblockMembers isEqualToString:call.method]) {
         [self chatRoomUnblockMembers:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomUpdateChatroomOwner isEqualToString:call.method]) {
+    } else if ([EMMethodKeyChangeChatRoomOwner isEqualToString:call.method]) {
         [self chatRoomUpdateChatroomOwner:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomAddAdmin isEqualToString:call.method]) {
         [self chatRoomAddAdmin:call.arguments result:result];
@@ -73,7 +74,7 @@
         [self chatRoomMuteMembers:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomUnmuteMembers isEqualToString:call.method]) {
         [self chatRoomUnmuteMembers:call.arguments result:result];
-    } else if ([EMMethodKeyUpdateChatroomAnnouncement isEqualToString:call.method]) {
+    } else if ([EMMethodKeyUpdateChatRoomAnnouncement isEqualToString:call.method]) {
         [self updateChatroomAnnouncement:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
@@ -204,7 +205,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomsToDictionarys:aList]];
+                     userInfo:@{@"value":[EMHelper chatRoomsToDictionaries:aList]}];
     }];
 }
 
@@ -219,7 +220,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomsToDictionarys:aList]];
+                     userInfo:@{@"value":[EMHelper chatRoomsToDictionaries:aList]}];
     }];
 }
 
@@ -230,7 +231,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:aAnnouncement];
+                     userInfo:@{@"value":aAnnouncement}];
     }];
 }
 

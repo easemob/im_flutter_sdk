@@ -37,8 +37,6 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             getUnreadMessageCount(call.arguments, result);
         } else if (EMSDKMethod.markAllMessagesAsRead.equals(call.method)) {
             markAllMessagesAsRead(call.arguments, result);
-        } else if (EMSDKMethod.getAllMsgCount.equals(call.method)) {
-            getAllMsgCount(call.arguments, result);
         } else if (EMSDKMethod.loadMoreMsgFromDB.equals(call.method)) {
             loadMoreMsgFromDB(call.arguments, result);
         } else if (EMSDKMethod.searchConversationMsgFromDB.equals(call.method)) {
@@ -47,8 +45,6 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             searchMsgFromDBByType(call.arguments, result);
         } else if (EMSDKMethod.getMessage.equals(call.method)) {
             getMessage(call.arguments, result);
-        } else if (EMSDKMethod.getAllMessages.equals(call.method)) {
-            getAllMessages(call.arguments, result);
         } else if (EMSDKMethod.loadMessages.equals(call.method)) {
             loadMessages(call.arguments, result);
         } else if (EMSDKMethod.markMessageAsRead.equals((call.method))) {
@@ -108,20 +104,6 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject) args;
             String id = argMap.getString("id");
             getConversation(id).markAllMessagesAsRead();
-        }catch (JSONException e){
-            EMLog.e("JSONException", e.getMessage());
-        }
-    }
-
-    private void getAllMsgCount(Object args, Result result) {
-        try {
-            JSONObject argMap = (JSONObject) args;
-            String id = argMap.getString("id");
-            int count = getConversation(id).getAllMsgCount();
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            data.put("count", Integer.valueOf(count));
-            result.success(data);
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -203,24 +185,6 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("message", EMHelper.convertEMMessageToStringMap(message));
-            result.success(data);
-        }catch (JSONException e){
-            EMLog.e("JSONException", e.getMessage());
-        }
-    }
-
-    private void getAllMessages(Object args, Result result) {
-        try {
-            JSONObject argMap = (JSONObject) args;
-            String id = argMap.getString("id");
-            List<EMMessage> list = getConversation(id).getAllMessages();
-            List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-            list.forEach(message->{
-                messages.add(EMHelper.convertEMMessageToStringMap(message));
-            });
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            data.put("messages", messages);
             result.success(data);
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());

@@ -29,6 +29,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   int msgCount = 0;
   int allMsgCount = 0;
   bool isLoad = false;
+  String msgStartId = '';
 
   List<EMMessage> messageTotalList = new List();//消息数组
   List<EMMessage> messageList = new List();//消息数组
@@ -179,27 +180,31 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     conversation = await EMClient.getInstance().chatManager().
     getConversation(id:toChatUsername,type:conversationType,createIfNotExists:true );
     conversation.markAllMessagesAsRead();
-    var cacheList =  await conversation.getAllMessages();
-    print(cacheList.length.toString() + '...oldList....');
-    allMsgCount = await conversation.getAllMsgCount();
-    print(allMsgCount.toString() + '...getAllMsgCount....');
-    msgCount = cacheList != null ? cacheList.length : 0;
-    print('conversationCount: '+ allMsgCount.toString() + '   msgCount: ' + msgCount.toString());
-    if (msgCount < allMsgCount && msgCount < _pageSize) {
-      var msgid = '';
-      if (cacheList != null && cacheList.length > 0) {
-        msgid = cacheList[0].msgId;
-      }
-      var loadList = await conversation.loadMoreMsgFromDB(startMsgId: msgid,pageSize:_pageSize - msgCount);
-      messageList.clear();
-      if(loadList.length > 0){
-        messageList  =  await conversation.getAllMessages();
-      }
-      print(messageList.length.toString() + '....messageList...');
-    }else{
-      messageList.clear();
-      messageList.addAll(cacheList);
-    }
+//    var cacheList =  await conversation.getAllMessages();
+//    print(cacheList.length.toString() + '...oldList....');
+//    allMsgCount = await conversation.getAllMsgCount();
+//    print(allMsgCount.toString() + '...getAllMsgCount....');
+//    msgCount = cacheList != null ? cacheList.length : 0;
+//    print('conversationCount: '+ allMsgCount.toString() + '   msgCount: ' + msgCount.toString());
+//    if (msgCount < allMsgCount && msgCount < _pageSize) {
+//      var msgid = '';
+//      if (cacheList != null && cacheList.length > 0) {
+//        msgid = cacheList[0].msgId;
+//      }
+//      var loadList = await conversation.loadMoreMsgFromDB(startMsgId: msgid,pageSize:_pageSize - msgCount);
+//      messageList.clear();
+//      if(loadList.length > 0){
+//        messageList  =  await conversation.getAllMessages();
+//      }
+//      print(messageList.length.toString() + '....messageList...');
+//    }else{
+//      messageList.clear();
+//      messageList.addAll(cacheList);
+//    }
+
+    var msgListFromDB = await conversation.loadMoreMsgFromDB(startMsgId: msgStartId, pageSize: 20);
+    msgStartId = msgListFromDB.first.msgId;
+    messageList.addAll(msgListFromDB);
     isLoad = false;
     _refreshUI();
   }
@@ -208,20 +213,20 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void _loadMessage() async {
     //todo 加载历史消息
     print('加载历史消息');
-    var msgid = '';
-    if(messageTotalList != null && messageTotalList.length > 0){
-      msgid = messageTotalList[messageTotalList.length - 1].msgId;
-    }
-    var loadlist = await conversation.loadMoreMsgFromDB(startMsgId: msgid,pageSize:_pageSize);
+//    var msgid = '';
+//    if(messageTotalList != null && messageTotalList.length > 0){
+//      msgid = messageTotalList[messageTotalList.length - 1].msgId;
+//    }
+    var loadlist = await conversation.loadMoreMsgFromDB(startMsgId: msgStartId,pageSize:_pageSize);
     if(loadlist.length > 0){
-      messageList.clear();
-      messageTotalList.clear();
-      messageList  =  await conversation.getAllMessages();
-      print(messageList.length.toString() + 'load list');
-      messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
+//      messageList.clear();
+//      messageTotalList.clear();
+//      messageList  =  await conversation.getAllMessages();
+//      print(messageList.length.toString() + 'load list');
+//      messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
       await Future.delayed(Duration(seconds: 1), () {
         setState(() {
-          messageTotalList.addAll(messageList);
+          messageTotalList.addAll(loadlist);
         });
       });
 
