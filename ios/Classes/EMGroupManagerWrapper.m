@@ -267,7 +267,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:aAnnouncement];
+                     userInfo:@{@"value":aAnnouncement}];
     }];
 }
 

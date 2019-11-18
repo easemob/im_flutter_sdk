@@ -22,7 +22,6 @@ static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
 static NSString * const EMMethodKeySetDebugMode = @"setDebugMode";
-static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
 static NSString * const EMMethodKeyUpdateCurrentUserNick = @"updateCurrentUserNick";
 static NSString * const EMMethodKeyUploadLog = @"uploadLog";
 static NSString * const EMMethodKeyCompressLogs = @"compressLogs";
@@ -30,11 +29,11 @@ static NSString * const EMMethodKeyKickDevice = @"kickDevice";
 static NSString * const EMMethodKeyKickAllDevices = @"kickAllDevices";
 static NSString * const EMMethodKeySendFCMTokenToServer = @"sendFCMTokenToServer";
 static NSString * const EMMethodKeySendHMSPushTokenToServer = @"sendHMSPushTokenToServer";
-static NSString * const EMMethodKeyCheck = @"check";
-static NSString * const EMMethodKeyOnConnected = @"onConnected";
-static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
 
+
+static NSString * const EMMethodKeyOnConnected = @"onConnected";
+static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 
 #pragma mark - EMContactManagerWrapper

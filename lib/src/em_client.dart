@@ -356,12 +356,14 @@ class EMClient {
 
   /// once connection changed, listeners to be informed.
   Future<void> _onConnected() async {
+    _connected = true;
     for (var listener in _connectionListeners) {
       listener.onConnected();
     }
   }
 
   Future<void> _onDisconnected(Map map) async {
+    _connected = false;
     for (var listener in _connectionListeners) {
       int errorCode = map["errorCode"];
       listener.onDisconnected(errorCode);

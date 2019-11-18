@@ -24,8 +24,7 @@ typedef enum : NSUInteger {
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
-                                   registrar:registrar]) {
-
+                           registrar:registrar]) {
         [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     }
     return self;
@@ -35,28 +34,27 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-
-       if ([EMMethodKeyAddContact isEqualToString:call.method]) {
-           [self addContact:call.arguments result:result];
-       } else if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
-           [self deleteContact:call.arguments result:result];
-       } else if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
-           [self getAllContactsFromServer:call.arguments result:result];
-       } else if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
-           [self addUserToBlackList:call.arguments result:result];
-       } else if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
-           [self removeUserFromBlackList:call.arguments result:result];
-       } else if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
-           [self getBlackListFromServer:call.arguments result:result];
-       } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
-           [self acceptInvitation:call.arguments result:result];
-       } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
-           [self deleteContact:call.arguments result:result];
-       } else if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
-           [self getSelfIdsOnOtherPlatform:call.arguments result:result];
-       } else {
-           [super handleMethodCall:call result:result];
-       }
+        if ([EMMethodKeyAddContact isEqualToString:call.method]) {
+            [self addContact:call.arguments result:result];
+        } else if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
+            [self deleteContact:call.arguments result:result];
+        } else if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
+            [self getAllContactsFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
+            [self addUserToBlackList:call.arguments result:result];
+        } else if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
+            [self removeUserFromBlackList:call.arguments result:result];
+        } else if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
+            [self getBlackListFromServer:call.arguments result:result];
+        } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
+            [self acceptInvitation:call.arguments result:result];
+        } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
+            [self deleteContact:call.arguments result:result];
+        } else if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
+            [self getSelfIdsOnOtherPlatform:call.arguments result:result];
+        } else {
+          [super handleMethodCall:call result:result];
+        }
 }
 
 
@@ -68,7 +66,7 @@ typedef enum : NSUInteger {
     [EMClient.sharedClient.contactManager addContact:userName
                                              message:reason
                                           completion:^(NSString *aUsername, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                         error:aError
                          userInfo:@{@"value":aUsername}];
@@ -82,7 +80,7 @@ typedef enum : NSUInteger {
     [EMClient.sharedClient.contactManager deleteContact:userName
                                    isDeleteConversation:keepConversation
                                              completion:^(NSString *aUsername, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                         error:aError
                      userInfo:@{@"value":aUsername}];
@@ -91,8 +89,8 @@ typedef enum : NSUInteger {
 
 - (void)getAllContactsFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
-    {
+    [EMClient.sharedClient.contactManager getContactsFromServerWithCompletion:^(NSArray *aList, EMError *aError)
+     {
         [weakSelf wrapperCallBack:result
                         error:aError
                          userInfo:@{@"value":aList}];
@@ -104,7 +102,7 @@ typedef enum : NSUInteger {
     NSString *userName = param[@"userName"];
     [EMClient.sharedClient.contactManager addUserToBlackList:userName
                                                   completion:^(NSString *aUsername, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                         error:aError
                          userInfo:@{@"value":aUsername}];
@@ -116,18 +114,18 @@ typedef enum : NSUInteger {
     NSString *userName = param[@"userName"];
     [EMClient.sharedClient.contactManager removeUserFromBlackList:userName
                                                        completion:^(NSString *aUsername, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                             error:aError
                          userInfo:@{@"value":aUsername}];
     }];
-                            
+    
 }
 
 - (void)getBlackListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                             error:aError
                          userInfo:@{@"value":aList}];
@@ -139,7 +137,7 @@ typedef enum : NSUInteger {
     NSString *userName = param[@"userName"];
     [EMClient.sharedClient.contactManager approveFriendRequestFromUser:userName
                                                             completion:^(NSString *aUsername, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                             error:aError
                          userInfo:@{@"value":userName}];
@@ -151,7 +149,7 @@ typedef enum : NSUInteger {
     NSString *userName = param[@"userName"];
     [EMClient.sharedClient.contactManager declineFriendRequestFromUser:userName
                                                             completion:^(NSString *aUsername, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                             error:aError
                          userInfo:@{@"value":userName}];
@@ -161,7 +159,7 @@ typedef enum : NSUInteger {
 - (void)getSelfIdsOnOtherPlatform:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient.contactManager getSelfIdsOnOtherPlatformWithCompletion:^(NSArray *aList, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                             error:aError
                          userInfo:@{@"value":aList}];

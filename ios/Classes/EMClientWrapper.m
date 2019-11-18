@@ -62,8 +62,6 @@
         [self sendFCMTokenToServer:call.arguments result:result];
     } else if ([EMMethodKeySendHMSPushTokenToServer isEqualToString:call.method]) {
         [self sendHMSPushTokenToServer:call.arguments result:result];
-    }  else if ([EMMethodKeyCheck isEqualToString:call.method]) {
-        [self check:call.arguments result:result];
     } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
     } else {
@@ -99,6 +97,7 @@
     EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chatroom_manager")
                                                                                                    registrar:self.flutterPluginRegister];
 #pragma clang diagnostic pop
+
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
@@ -111,7 +110,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"aUsername":aUsername}];
+                         userInfo:@{@"value":aUsername}];
     }];
 }
 
@@ -125,7 +124,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:@{@"value":aUsername}];
     }];
 }
 
@@ -139,7 +138,7 @@
     {
         [weakSelf wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"aUsername":aUsername}];
+                     userInfo:@{@"value":aUsername}];
     }];
 }
 
@@ -204,7 +203,7 @@
     [EMClient.sharedClient getLogFilesPathWithCompletion:^(NSString *aPath, EMError *aError) {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:aPath];
+                         userInfo:@{@"value":aPath}];
     }];
 }
 
@@ -261,20 +260,6 @@
     
 }
 
-// TODO: 作用？
-- (void)check:(NSDictionary *)param result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient serviceCheckWithUsername:userName
-                                           password:password
-                                         completion:^(EMServerCheckType aType, EMError *aError)
-    {
-        [weakSelf wrapperCallBack:result
-                            error:nil
-                         userInfo:nil];
-    }];
-}
 
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
@@ -286,7 +271,7 @@
     {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:[weakSelf deviceConfigsToDictionaryList:aList]];
+                         userInfo:@{@"value":[weakSelf deviceConfigsToDictionaryList:aList]}];
         if (!aError) {
             [self.deviceDict removeAllObjects];
             for (EMDeviceConfig * deviceConfig in aList) {
@@ -295,7 +280,6 @@
         }
     }];
 }
-
 
 #pragma - mark EMClientDelegate
 

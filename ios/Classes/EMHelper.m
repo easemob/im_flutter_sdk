@@ -80,7 +80,6 @@
 #pragma mark - Message
 
 + (EMMessage *)dictionaryToMessage:(NSDictionary *)aDictionary {
-    NSLog(@"convertDataMapToMessage -- %@", aDictionary);
     
     EMMessage *ret = nil;
     EMMessageBody *body = nil;
@@ -166,11 +165,12 @@
                                                body:body
                                                 ext:ext];
     ret.chatType = chatType;
-    
-    return nil;
+
+    return ret;
 }
 
 + (NSDictionary *)messageToDictionary:(EMMessage *)aMessage {
+
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"attributes"] = aMessage.ext;
     ret[@"conversationId"] = aMessage.conversationId;
@@ -313,6 +313,7 @@
             break;
     }
     return ret;
+
 }
 
 #pragma mark - Group
@@ -452,6 +453,7 @@
     return resultDict;
 }
 
+
 #pragma mark - Private
 + (int)getMessageType:(EMMessage *)aMessage {
     int ret = 0;
@@ -556,4 +558,5 @@
     }
     return ret;
 }
+
 @end

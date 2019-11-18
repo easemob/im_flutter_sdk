@@ -17,10 +17,10 @@ public class EMSDKMethod {
     static final String kickAllDevices = "kickAllDevices";
     static final String sendFCMTokenToServer = "sendFCMTokenToServer";
     static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
-    static final String onConnected = "onConnected";
-    static final String onDisconnected = "onDisconnected";
     static final String getLoggedInDevicesFromServer =  "getLoggedInDevicesFromServer";
 
+    static final String onConnected = "onConnected";
+    static final String onDisconnected = "onDisconnected";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
 
     /// EMContactManager methods

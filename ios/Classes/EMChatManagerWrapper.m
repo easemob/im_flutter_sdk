@@ -180,7 +180,6 @@
     for (EMConversation *conversation in conversations) {
         [conversationDictList addObject:[EMHelper conversationToDictionary:conversation]];
     }
-
     [self wrapperCallBack:result error:nil userInfo:@{@"conversations" : conversationDictList}];
 }
 
@@ -275,7 +274,6 @@
 }
 
 - (void)messagesDidReceive:(NSArray *)aMessages {
-    
     NSMutableArray *msgList = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
         [msgList addObject:[EMHelper messageToDictionary:msg]];
