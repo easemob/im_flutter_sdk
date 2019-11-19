@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'utils/localizations.dart';
 import 'register_page.dart';
+import 'utils/widget_util.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
@@ -19,6 +21,9 @@ class LoginPage extends StatefulWidget {
 class LoginPageState extends State<LoginPage> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _pwdController = TextEditingController();
+
+
+
   bool isLogged;
   @override
   void initState() {
@@ -38,6 +43,11 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    Map arguments = ModalRoute.of(context).settings.arguments;
+    if(arguments != null) {
+      _usernameController.text = arguments['username'];
+      _pwdController.text = arguments['password'];
+    }
     return Stack(
       children: <Widget>[
         Scaffold(
@@ -174,18 +184,6 @@ class LoginPageState extends State<LoginPage> {
           ),
         ),
 
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 30.0),
-          child: TextField(
-            controller: _pwdController,
-            maxLines: 1,
-            obscureText: true,
-            decoration: InputDecoration(
-              hintText: "请输入密码",
-              labelText: "密码",
-            ),
-          ),
-        ),
         SizedBox(
           height: 10.0,
         ),
@@ -204,13 +202,16 @@ class LoginPageState extends State<LoginPage> {
             ),
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
+              setState(() {
+                login(this._usernameController.text,this._pwdController.text);
+              });
 
 //              Navigator.of(context).pushNamed(Constant.toHomePage);
 
 
               print('用户名${this._usernameController.text}');
               print('密码${this._pwdController.text}');
-              login(context);
+
             },
           ),
         ),
@@ -233,19 +234,53 @@ class LoginPageState extends State<LoginPage> {
 //    }
   }
 
-  void login(BuildContext context){
+  void login(String username , String password){
+
+    if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
+      WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
+      return ;
+    }
+
     if(isLogged){
       Navigator.of(context).pushNamed(Constant.toHomePage);
     }else {
       EMClient.getInstance().login(
-          userName: 'omg2',
-          password: '1',
+          userName: username,
+          password: password,
           onSuccess: (username) {
             print("login succes");
             Navigator.of(context).pushNamed(Constant.toHomePage);
 
           },
           onError: (code, desc) {
+
+            switch(code) {
+              case 2: {
+                WidgetUtil.hintBoxWithDefault('网络未连接!');
+              }
+              break;
+
+              case 202: {
+                WidgetUtil.hintBoxWithDefault('密码错误!');
+              }
+              break;
+
+              case 204: {
+                WidgetUtil.hintBoxWithDefault('用户ID不存在!');
+              }
+              break;
+
+              case 300: {
+                WidgetUtil.hintBoxWithDefault('无法连接服务器!');
+              }
+              break;
+
+              default: {
+                WidgetUtil.hintBoxWithDefault(desc);
+              }
+              break;
+            }
+
             print("login error:" +
                 code.toString() +
                 "//" +
