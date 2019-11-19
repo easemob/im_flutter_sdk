@@ -2,9 +2,11 @@
 import 'dart:io';
 //import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'style.dart';
 
+enum PromptBoxLocation { TOP, BOTTOM, CENTER }
 
 class WidgetUtil {
   /// 会话页面加号扩展栏里面的 widget，上面图片，下面文本
@@ -186,4 +188,39 @@ class WidgetUtil {
       width: 1,
     );
   }
+
+  static hintBoxWithDefault(String msg) {
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+        fontSize: 15.0
+    );
+    Fluttertoast.cancel();
+  }
+
+  static hintBoxWithCustom(String msg, PromptBoxLocation location,int timeInSecForIos, Color backgroundColor, Color textColor, double fontSize) {
+    ToastGravity gravity;
+    if(location == PromptBoxLocation.TOP) {
+      gravity = ToastGravity.TOP;
+    } else if(location == PromptBoxLocation.CENTER){
+      gravity = ToastGravity.CENTER;
+    } else {
+      gravity = ToastGravity.BOTTOM;
+    }
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: gravity,
+        timeInSecForIos: timeInSecForIos,
+        backgroundColor: backgroundColor,
+        textColor: textColor,
+        fontSize: fontSize
+    );
+    Fluttertoast.cancel();
+  }
+
 }
