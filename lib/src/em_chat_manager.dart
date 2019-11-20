@@ -14,6 +14,7 @@ class EMChatManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emChatManagerChannel =
       const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
+
   static EMChatManager _instance;
 
   final EMLog log;
@@ -30,10 +31,16 @@ class EMChatManager {
   }
 
   /// sendMessage - Sends message [message].
-  void sendMessage(final EMMessage message) {
-    _emChatManagerChannel.invokeMethod(
+  void sendMessage(EMMessage message,
+      {onProgress(int progress),
+      onError(int errorCode, String desc)}){
+    Future<Map> result = _emChatManagerChannel.invokeMethod(
         EMSDKMethod.sendMessage, message.toDataMap());
+    result.then((response){
+
+    });
   }
+
 
   void _addNativeMethodCallHandler() {
     _emChatManagerChannel.setMethodCallHandler((MethodCall call) {
@@ -242,7 +249,6 @@ class EMChatManager {
 
   /// addMessageListener - Adds [listener] to be aware of message change events.
   void addMessageListener(EMMessageListener listener) {
-    _emChatManagerChannel.invokeMethod("initListener");
     assert(listener != null);
     _messageListeners.add(listener);
   }

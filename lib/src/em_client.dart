@@ -272,23 +272,6 @@ class EMClient {
     });
   }
 
-  /// sendFCMTokenToServer - send FCM token [fcmToken] to server.
-  void sendFCMTokenToServer({@required String fcmToken}) {
-    _emClientChannel
-        .invokeMethod(EMSDKMethod.sendFCMTokenToServer, {"token": fcmToken});
-  }
-
-  /// sendHMSPushTokenToServer - send HMS push token [token] of app [appId] to server.
-  void sendHMSPushTokenToServer({@required String token}) {
-    _emClientChannel.invokeMethod(EMSDKMethod.sendHMSPushTokenToServer,
-        {"token": token});
-  }
-
-  /// isFCMAvailable - fcm available?
-  bool isFCMAvailable() {
-    return _options.isUseFCM();
-  }
-
   /// getAccessToken - Returns local cached access token.
   String getAccessToken() {
     return _accessToken;
