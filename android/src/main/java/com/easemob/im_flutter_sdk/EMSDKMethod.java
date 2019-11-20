@@ -15,8 +15,6 @@ public class EMSDKMethod {
     static final String compressLogs = "compressLogs";
     static final String kickDevice = "kickDevice";
     static final String kickAllDevices = "kickAllDevices";
-    static final String sendFCMTokenToServer = "sendFCMTokenToServer";
-    static final String sendHMSPushTokenToServer = "sendHMSPushTokenToServer";
     static final String getLoggedInDevicesFromServer =  "getLoggedInDevicesFromServer";
 
     static final String onConnected = "onConnected";
