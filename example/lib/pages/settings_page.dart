@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
+import 'package:im_flutter_sdk_example/common/common.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 class EMSettingsPage extends StatefulWidget {
   @override
@@ -52,7 +54,6 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
           ),
         ),
     );
-
   }
 
  Widget _rowStyle(int index) {
@@ -103,8 +104,8 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             child: ListTile(
               leading: Image.asset('images/logo@2x.png',width: 40.0,height: 40.0),
               title: Text(
-//                EMClient.getInstance().getCurrentUser(),
-                'user1',
+                EMClient.getInstance().getCurrentUser(),
+//                'user1',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18.0,
@@ -180,9 +181,9 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   Widget _logoutButton() {
     return Container(
       height: 60.0,
-      color: Color.fromRGBO(240, 240, 240, 1.0),
+//      color: Color.fromRGBO(240, 240, 240, 1.0),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
+        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
         width: double.infinity,
         height: 50.0,
         child: RaisedButton(
@@ -194,7 +195,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             style: TextStyle(color: Colors.white, fontSize: 16.0),
 
           ),
-          color: Color.fromRGBO(0, 0, 0, 0.1),
+//          color: Color.fromRGBO(0, 0, 0, 0.1),
           onPressed: () {
             logout(context);
           },
@@ -208,14 +209,12 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     EMClient.getInstance().logout(
       unbindToken: false,
       onSuccess: (){
-
+        Navigator.of(context).pushNamed(Constant.toLoginPage);
       },
       onError: (code, desc) {
-
+        WidgetUtil.hintBoxWithDefault(desc);
       },
     );
-
-    Navigator.of(context).pushNamed('login_page');
 
   }
 }
