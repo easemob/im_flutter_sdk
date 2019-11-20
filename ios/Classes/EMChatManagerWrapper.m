@@ -9,7 +9,11 @@
 #import "EMSDKMethod.h"
 #import "EMHelper.h"
 
-@interface EMChatManagerWrapper () <EMChatManagerDelegate>
+@interface EMChatManagerWrapper () <EMChatManagerDelegate> {
+    FlutterEventSink _progressEventSink;
+    FlutterEventSink _resultEventSink;
+}
+
 @end
 
 @implementation EMChatManagerWrapper
@@ -75,16 +79,21 @@
     }
 }
 
++ (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
+    
+}
+
+
 #pragma mark - Actions
 
 - (void)sendMessage:(NSDictionary *)param result:(FlutterResult)result {
     EMMessage *msg = [EMHelper dictionaryToMessage:param];
     [EMClient.sharedClient.chatManager sendMessage:msg
                                           progress:^(int progress)
-    {
+     {
         
     } completion:^(EMMessage *message, EMError *error)
-    {
+     {
         [self wrapperCallBack:result
                         error:error
                      userInfo:@{@"message":[EMHelper messageToDictionary:message]}];
@@ -138,10 +147,10 @@
 - (void)downloadAttachment:(NSDictionary *)param result:(FlutterResult)result {
     [EMClient.sharedClient.chatManager downloadMessageAttachment:[EMHelper dictionaryToMessage:param]
                                                         progress:^(int progress)
-    {
+     {
         
     } completion:^(EMMessage *message, EMError *error)
-    {
+     {
         
     }];
 }
@@ -149,7 +158,7 @@
 - (void)downloadThumbnail:(NSDictionary *)param result:(FlutterResult)result {
     [EMClient.sharedClient.chatManager downloadMessageThumbnail:[EMHelper dictionaryToMessage:param]
                                                        progress:^(int progress)
-    {
+     {
         
     } completion:^(EMMessage *message, EMError *error)
      {
@@ -164,8 +173,8 @@
 
 // TODO: ios需调添加该实现
 - (void)getConversationsByType:(NSDictionary *)param result:(FlutterResult)result {
-//    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
-//    EMClient.sharedClient.chatManager
+    //    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
+    //    EMClient.sharedClient.chatManager
 }
 
 // TODO: ios需调添加该实现
@@ -195,7 +204,7 @@
     [EMClient.sharedClient.chatManager deleteConversation:conversationId
                                          isDeleteMessages:deleteMessages
                                                completion:^(NSString *aConversationId, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                             error:aError
                          userInfo:@{@"status" : [NSNumber numberWithBool:(aError == nil)]}];
@@ -224,7 +233,7 @@
                                                             startMessageId:startMsgId
                                                                   pageSize:pageSize
                                                                 completion:^(EMCursorResult *aResult, EMError *aError)
-    {
+     {
         NSArray *msgAry = aResult.list;
         NSMutableArray *msgList = [NSMutableArray array];
         for (EMMessage *msg in msgAry) {
@@ -249,7 +258,7 @@
                                                          count:maxCount
                                                       fromUser:from
                                                searchDirection:direction completion:^(NSArray *aMessages, EMError *aError)
-    {
+     {
         NSMutableArray *msgList = [NSMutableArray array];
         for (EMMessage *msg in aMessages) {
             [msgList addObject:[EMHelper messageToDictionary:msg]];

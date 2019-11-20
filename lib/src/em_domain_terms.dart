@@ -18,7 +18,6 @@ class EMOptions {
   bool _isChatRoomOwnerLeaveAllowed = true;
   String appKey = '';
   bool _autoLogin = true;
-  bool _useFCM = true;
   bool _enableDNSConfig = true;
   bool _sortMessageByServerTime = true;
   String _dnsUrl = '';
@@ -118,14 +117,6 @@ class EMOptions {
     _autoLogin = autoLogin;
   }
 
-  bool isUseFCM(){
-    return _useFCM;
-  }
-
-  void setUseFCM(bool useFCM){
-    _useFCM = useFCM;
-  }
-
   bool getEnableDNSConfig(){
     return _enableDNSConfig;
   }
@@ -184,7 +175,6 @@ class EMOptions {
     map.putIfAbsent("isChatRoomOwnerLeaveAllowed", ()=> _isChatRoomOwnerLeaveAllowed );
     map.putIfAbsent("appKey", ()=> appKey );
     map.putIfAbsent("autoLogin", ()=> _autoLogin );
-    map.putIfAbsent("useFCM", ()=> _useFCM );
     map.putIfAbsent("enableDNSConfig", ()=> _enableDNSConfig );
     map.putIfAbsent("sortMessageByServerTime", ()=> _sortMessageByServerTime );
     map.putIfAbsent("dnsUrl", ()=> _dnsUrl );
@@ -212,7 +202,6 @@ class EMMessage {
     this.localTime,
     this.msgId ,
     this.msgTime,
-    this.progress ,
     this.status ,
     this.to,
     this.type,
@@ -293,7 +282,6 @@ class EMMessage {
   String localTime;
   String msgId;
   String msgTime;
-  int progress;
   Status status;
   String to;
   bool unread;
@@ -331,7 +319,6 @@ class EMMessage {
     result['localTime'] = localTime;
     result['msgId'] = msgId;
     result['msgTime'] = msgTime;
-    result['progress'] = progress;
     result['status'] = toEMMessageStatus(status);
     result['to'] = to;
     result['type'] = toType(type);
@@ -345,7 +332,6 @@ class EMMessage {
         localTime = data['localTime'],
         chatType = fromChatType(data['chatType']),
         msgId = data['msgId'],
-        progress = data['progress'],
         body = EMMessageBody.from(data['body']),
         delivered = data['delivered'],
         from = data['from'],

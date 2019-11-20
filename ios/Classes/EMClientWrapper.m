@@ -20,6 +20,11 @@
 
 @implementation EMClientWrapper
 
++ (void)setDeivceToken:(NSData *)aDeviceToken {
+    [EMClient.sharedClient registerForRemoteNotificationsWithDeviceToken:aDeviceToken
+                                                              completion:nil];
+}
+
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
@@ -58,10 +63,6 @@
         [self kickDevice:call.arguments result:result];
     } else if ([EMMethodKeyKickAllDevices isEqualToString:call.method]) {
         [self kickAllDevices:call.arguments result:result];
-    } else if ([EMMethodKeySendFCMTokenToServer isEqualToString:call.method]) {
-        [self sendFCMTokenToServer:call.arguments result:result];
-    } else if ([EMMethodKeySendHMSPushTokenToServer isEqualToString:call.method]) {
-        [self sendHMSPushTokenToServer:call.arguments result:result];
     } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
     } else {
@@ -236,18 +237,6 @@
                             error:aError
                          userInfo:nil];
     }];
-}
-
-- (void)sendFCMTokenToServer:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                userInfo:nil];
-}
-
-- (void)sendHMSPushTokenToServer:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                userInfo:nil];
 }
 
 - (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {

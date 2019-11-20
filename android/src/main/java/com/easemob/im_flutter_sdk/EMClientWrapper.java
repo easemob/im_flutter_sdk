@@ -66,22 +66,9 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             kickDevice(call.arguments, result);
         } else if(EMSDKMethod.kickAllDevices.equals(call.method)) {
             kickAllDevices(call.arguments, result);
-        } else if(EMSDKMethod.sendFCMTokenToServer.equals(call.method)) {
-            sendFCMTokenToServer(call.arguments, result);
-        } else if(EMSDKMethod.sendHMSPushTokenToServer.equals(call.method)) {
-            sendHMSPushTokenToServer(call.arguments, result);
         } else if(EMSDKMethod.isLoggedInBefore.equals(call.method)) {
             isLoggedInBefore(call.arguments,result);
         }
-//        else if(EMSDKMethod.addMultiDeviceListener.equals(call.method)){
-//            addMultiDeviceListener(call.arguments,result);
-//        } else if(EMSDKMethod.removeMultiDeviceListener.equals(call.method)){
-//            removeMultiDeviceListener(call.arguments,result);
-//        } else if(EMSDKMethod.addConnectionListener.equals(call.method)){
-//            addMultiDeviceListener(call.arguments,result);
-//        } else if(EMSDKMethod.removeConnectionListener.equals(call.method)){
-//            removeConnectionListener(call.arguments,result);
-//        }
     }
 
     private void init(Object args, Result result) {
@@ -319,31 +306,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
                 }
             }
         }).start();
-    }
-
-    private void sendFCMTokenToServer(Object args, Result result){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject argMap = (JSONObject)args;
-                    String token = argMap.getString("token");
-                    EMClient.getInstance().sendFCMTokenToServer(token);
-                }catch (JSONException e){
-                    EMLog.e("JSONException", e.getMessage());
-                }
-            }
-        }).start();
-    }
-
-    private void sendHMSPushTokenToServer(Object args, Result result){
-        try {
-            JSONObject argMap = (JSONObject)args;
-            String token = argMap.getString("token");
-            EMClient.getInstance().sendHMSPushTokenToServer(token);
-        }catch (JSONException e){
-            EMLog.e("JSONException", e.getMessage());
-        }
     }
 
     private void isLoggedInBefore(Object args, Result result){

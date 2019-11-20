@@ -210,7 +210,6 @@ class EMHelper {
         result.put("localTime", String.valueOf(message.localTime()));
         result.put("msgId", message.getMsgId());
         result.put("msgTime", String.valueOf(message.getMsgTime()));
-        result.put("progress", message.progress());
         result.put("status", getEMMessageStatus(message));
         result.put("to", message.getTo());
         result.put("unread", Boolean.valueOf(message.isUnread()));
@@ -709,9 +708,6 @@ class EMHelper {
             }
             if(!json.getString("autoLogin").isEmpty()){
                 options.setAutoLogin(json.getBoolean("autoLogin"));
-            }
-            if(!json.getString("useFCM").isEmpty()){
-                options.setUseFCM(json.getBoolean("useFCM"));
             }
             if(!json.getString("sortMessageByServerTime").isEmpty()){
                 options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
