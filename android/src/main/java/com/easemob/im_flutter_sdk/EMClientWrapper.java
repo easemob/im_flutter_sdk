@@ -71,15 +71,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
         } else if(EMSDKMethod.getCurrentUser.equals(call.method)){
             getCurrentUser(call.arguments,result);
         }
-//        else if(EMSDKMethod.addMultiDeviceListener.equals(call.method)){
-//            addMultiDeviceListener(call.arguments,result);
-//        } else if(EMSDKMethod.removeMultiDeviceListener.equals(call.method)){
-//            removeMultiDeviceListener(call.arguments,result);
-//        } else if(EMSDKMethod.addConnectionListener.equals(call.method)){
-//            addMultiDeviceListener(call.arguments,result);
-//        } else if(EMSDKMethod.removeConnectionListener.equals(call.method)){
-//            removeConnectionListener(call.arguments,result);
-//        }
     }
 
     private void init(Object args, Result result) {
