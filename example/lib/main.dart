@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
       ],
       supportedLocales: [
         const Locale('en', 'US'), // 美国英语
-        const Locale('zh', 'CN'), // 中文简体
+        const Locale('zh', 'CH'), // 中文简体
         // ... other locales the app supports
       ],
 
