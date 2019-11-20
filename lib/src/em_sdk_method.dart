@@ -13,8 +13,6 @@ class EMSDKMethod {
   static const String compressLogs = 'compressLogs';
   static const String kickDevice = 'kickDevice';
   static const String kickAllDevices = 'kickAllDevices';
-  static const String sendFCMTokenToServer = 'sendFCMTokenToServer';
-  static const String sendHMSPushTokenToServer = 'sendHMSPushTokenToServer';
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
