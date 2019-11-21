@@ -106,7 +106,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
     result['localUrl'] = localUrl;
     result['remoteUrl'] = remoteUrl;
     result['secret'] = secret;
-    result['status'] = toEMDownloadStatus(downloadStatus);
+    result['downloadStatus'] = toEMDownloadStatus(downloadStatus);
     return result;
   }
 }

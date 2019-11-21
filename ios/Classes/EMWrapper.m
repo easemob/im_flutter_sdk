@@ -27,7 +27,6 @@
 - (void)wrapperCallBack:(FlutterResult)result
                   error:(EMError *__nullable)error
                userInfo:(NSDictionary *__nullable)userInfo {
-    NSLog(@"EMWrapper : error -- %@ ; userInfo -- %@",error, userInfo);
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         if (!error) {

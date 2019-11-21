@@ -185,7 +185,6 @@
     NSString *nickName = param[@"nickName"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         EMError *aError = [EMClient.sharedClient setApnsNickname:nickName];
-        // 切换到主线程?
         [weakSelf wrapperCallBack:result
                         error:aError
                      userInfo:nil];
@@ -279,28 +278,32 @@
     if (isConnected) {
         [self onConnected];
     }else {
-        [self onDisconnected:1]; // 需要明确具体的code
+        [self onDisconnected:2]; // 需要明确具体的code
     }
 }
 
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
-    [self onDisconnected:1];  // 需要明确具体的code
+    if (aError) {
+        [self onDisconnected:1];  // 需要明确具体的code
+    }else {
+        [self onConnected];
+    }
 }
 
 - (void)userAccountDidLoginFromOtherDevice {
-    [self onDisconnected:1];  // 需要明确具体的code
+    [self onDisconnected:206];
 }
 
 - (void)userAccountDidRemoveFromServer {
-    [self onDisconnected:1];  // 需要明确具体的code
+    [self onDisconnected:207];
 }
 
 - (void)userDidForbidByServer {
-    [self onDisconnected:1];  // 需要明确具体的code
+    [self onDisconnected:1]; // 需要明确具体的code
 }
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {
-    [self onDisconnected:1];  // 需要明确具体的code
+    [self onDisconnected:1]; // 需要明确具体的code
 }
 
 #pragma mark - EMMultiDevicesDelegate
