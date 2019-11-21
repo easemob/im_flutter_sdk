@@ -85,7 +85,13 @@
     EMMessageBody *body = nil;
     
     int type = [aDictionary[@"type"] intValue];
-    EMChatType chatType = (EMChatType)[aDictionary[@"chatType"] intValue];
+    EMChatType chatType;
+    if ([aDictionary[@"chatType"] isKindOfClass:[NSNull class]]) {
+        chatType = EMChatTypeChat;
+    }else {
+        chatType = (EMChatType)[aDictionary[@"chatType"] intValue];
+    }
+    
     NSString *to = aDictionary[@"to"];
     NSString *from = EMClient.sharedClient.currentUsername;
     NSDictionary *ext = aDictionary[@"attributes"];

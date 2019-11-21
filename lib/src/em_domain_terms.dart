@@ -728,10 +728,6 @@ toEMConversationType(EMConversationType type){
     return 1;
   }else if(type == EMConversationType.ChatRoom){
     return 2;
-  }else if(type == EMConversationType.DiscussionGroup){
-    return 3;
-  }else if(type == EMConversationType.HelpDesk){
-    return 4;
   }
 }
 
