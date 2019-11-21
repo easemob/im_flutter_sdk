@@ -64,7 +64,7 @@ class EMChatManager {
     });
   }
 
-  ///  ackMessageRead - Acknowledges [to] user that message [messageId] has been read.
+  /// @nodoc ackMessageRead - Acknowledges [to] user that message [messageId] has been read.
   void ackMessageRead(
       {@required String to,
       @required String messageId,
@@ -78,8 +78,8 @@ class EMChatManager {
     });
   }
 
-  /// recallMessage - Recalls [message] sent before.
-  /// Calls [onSuccess] if everything runs ok, [onError] if anything wrong, with [code], [desc] set as detail error information.
+  /// @nodoc recallMessage - Recalls [message] sent before.
+  /// @nodoc Calls [onSuccess] if everything runs ok, [onError] if anything wrong, with [code], [desc] set as detail error information.
   void recallMessage(
       {@required EMMessage message,
       onSuccess(),
@@ -121,7 +121,7 @@ class EMChatManager {
     }
   }
 
-  /// markAllConversationAsRead - Marks all conversation as read.
+  /// @nodoc markAllConversationAsRead - Marks all conversation as read.
   void markAllConversationsAsRead() {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.markAllChatMsgAsRead);
   }
@@ -137,13 +137,13 @@ class EMChatManager {
     }
   }
 
-  /// saveMessage - Saves [message].
+  /// @nodoc saveMessage - Saves [message].
   void saveMessage(EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.saveMessage, {"message": message.toDataMap()});
   }
 
-  /// updateMessage - Updates [message].
+  /// @nodoc updateMessage - Updates [message].
   Future<bool> updateMessage(EMMessage message) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateChatMessage,
@@ -155,25 +155,25 @@ class EMChatManager {
     }
   }
 
-  /// downloadAttachment - Downloads attachment of [message].
+  /// @nodoc downloadAttachment - Downloads attachment of [message].
   void downloadAttachment(final EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.downloadAttachment, {"message": message.toDataMap()});
   }
 
-  /// downloadThumbnail - Downloads thumbnail of [message].
+  /// @nodoc downloadThumbnail - Downloads thumbnail of [message].
   void downloadThumbnail(final EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.downloadThumbnail, {"message": message.toDataMap()});
   }
 
-  ///  importMessages - Imports list of [messages].
+  /// @nodoc importMessages - Imports list of [messages].
   void importMessages(List<EMMessage> messages) {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
         {"messages": messages.map((message) => message.toDataMap())});
   }
 
-  /// getConversationsByType - Gets all conversations of [type].
+  /// @nodoc getConversationsByType - Gets all conversations of [type].
   Future<List<EMConversation>> getConversationsByType(
       EMConversationType type) async {
     Map<String, dynamic> result = await _emChatManagerChannel
@@ -191,7 +191,7 @@ class EMChatManager {
     }
   }
 
-  /// downloadFile - Downloads file, specified by [remoteUrl], to store locally at [localFilePath].
+  /// @nodoc downloadFile - Downloads file, specified by [remoteUrl], to store locally at [localFilePath].
   void downloadFile(
       {@required final String remoteUrl,
       @required final String localFilePath,
@@ -264,13 +264,13 @@ class EMChatManager {
     _conversationUpdateFunc = onConversationUpdate;
   }
 
-  /// setVoiceMessageListened - Sets voice [message] as listened.
+  /// @nodoc setVoiceMessageListened - Sets voice [message] as listened.
   void setVoiceMessageListened(EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.setVoiceMessageListened, {"message": message.toDataMap()});
   }
 
-  /// updateParticipant - Updates participant from [from] to [changeTo].
+  /// @nodoc updateParticipant - Updates participant from [from] to [changeTo].
   Future<bool> updateParticipant(String from, String changeTo) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateParticipant, {"from": from, "changeTo": changeTo});
@@ -281,8 +281,8 @@ class EMChatManager {
     }
   }
 
-  /// fetchHistoryMessages - Fetches history messages in conversation [conversationId], filtered by [type].
-  /// Result paginated by [pageSize] per page, started from [startMsgId].
+  /// @nodoc fetchHistoryMessages - Fetches history messages in conversation [conversationId], filtered by [type].
+  /// @nodoc Result paginated by [pageSize] per page, started from [startMsgId].
   Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
       {@required final String conversationId,
       @required final EMConversationType type,
@@ -304,8 +304,8 @@ class EMChatManager {
     }
   }
 
-  /// searchMsgFromDB - Searches messages with [keywords] as keyword, of [type], timestamp set at [timeStamp], from user [from], in [direction].
-  /// Result paginated to return maximize [maxCount] records per call.
+  /// @nodoc searchMsgFromDB - Searches messages with [keywords] as keyword, of [type], timestamp set at [timeStamp], from user [from], in [direction].
+  /// @nodoc Result paginated to return maximize [maxCount] records per call.
   Future<List<EMMessage>> searchMsgFromDB(
       {String keywords,
       EMMessageType type,

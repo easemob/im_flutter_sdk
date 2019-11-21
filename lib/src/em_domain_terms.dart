@@ -216,9 +216,11 @@ class EMMessage {
   EMMessage.createSendMessage(EMMessageType type)
       : this(type: type, direction: Direction.SEND);
 
+  /// Create received messages.
   EMMessage.createReceiveMessage(EMMessageType type)
       : this(type: type, direction: Direction.RECEIVE);
 
+  /// Create send text messages.
   EMMessage.createTxtSendMessage(String content, String userName)
       : this(
             direction: Direction.SEND,
@@ -226,10 +228,12 @@ class EMMessage {
             type: EMMessageType.TXT,
             body: EMTextMessageBody(content));
 
+  /// @nodoc Create send voice messages.
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
       : this(direction: Direction.SEND);
 
+  /// @nodoc Create send image messages.
   EMMessage.createImageSendMessage(
       String filePath, bool sendOriginalImage, String userName)
       : this(
@@ -238,6 +242,7 @@ class EMMessage {
             body: EMImageMessageBody(File(filePath),sendOriginalImage),
             to: userName);
 
+  /// @nodoc Create send video messages.
   EMMessage.createVideoSendMessage(String videoFilePath,
       int timeLength, String userName)
       : this(
@@ -246,6 +251,7 @@ class EMMessage {
             body: EMVideoMessageBody(File(videoFilePath),timeLength),
             to: userName);
 
+  /// @nodoc Create send location messages.
   EMMessage.createLocationSendMessage(double latitude, double longitude,
       String locationAddress, String userName)
       : this(
@@ -254,6 +260,7 @@ class EMMessage {
             body: EMLocationMessageBody(locationAddress, latitude, longitude),
             to: userName);
 
+  /// @nodoc Create send file messages.
   EMMessage.createFileSendMessage(String filePath, String userName)
       : this(
             direction: Direction.SEND,

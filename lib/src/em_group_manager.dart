@@ -39,7 +39,7 @@ class EMGroupManager{
   }
 
 
-  ///获取当前(内存)用户的所有群组
+  /// @nodoc 获取当前(内存)用户的所有群组
   Future<List<EMGroup>> getAllGroups() async{
     Map<String, dynamic> result = await _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.getAllGroups);
@@ -59,7 +59,7 @@ class EMGroupManager{
     }
   }
 
-  ///根据群组ID，获得群组对象
+  /// @nodoc 根据群组ID，获得群组对象
   Future<EMGroup> getGroup(String groupId) async{
     Map<String, dynamic> result = await _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.getGroup, {"groupId" : groupId});
@@ -74,7 +74,7 @@ class EMGroupManager{
     }
   }
 
-  ///在IM服务器创建一个群组
+  /// @nodoc 在IM服务器创建一个群组
   void createGroup({@required String groupName,
     @required String desc,
     @required List<String> members,
@@ -107,12 +107,12 @@ class EMGroupManager{
     });
   }
 
-  ///同步加载所有群组
+  /// @nodoc 同步加载所有群组
   void loadAllGroups(){
     _emGroupManagerChannel.invokeMethod(EMSDKMethod.loadAllGroups);
   }
 
-  ///解散群组
+  /// @nodoc 解散群组
   void destroyGroup({@required String groupId,
     onSuccess(),
     onError(int errorCode, String desc)}) {
@@ -129,7 +129,7 @@ class EMGroupManager{
     });
   }
 
-  ///向群组中添加新的成员
+  /// @nodoc 向群组中添加新的成员
   void addUsersToGroup({
     @required String groupId,
     @required List<String> members,
@@ -149,7 +149,7 @@ class EMGroupManager{
     });
   }
 
-  ///从群组中删除成员
+  /// @nodoc 从群组中删除成员
   void removeUserFromGroup({
     @required String groupId,
     @required String userName,
@@ -169,7 +169,7 @@ class EMGroupManager{
     });
   }
 
-  ///当前登录用户退出群组
+  /// @nodoc 当前登录用户退出群组
   void leaveGroup({
     @required String groupId,
     onSuccess(),
@@ -188,7 +188,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器获取群组的详细信息
+  /// @nodoc 从服务器获取群组的详细信息
   void getGroupFromServer({
     @required String groupId,
     onSuccess(EMGroup group),
@@ -210,7 +210,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器端获取当前用户的所有群组此操作只返回群组列表，并不获取群组的所有成员信息
+  /// @nodoc 从服务器端获取当前用户的所有群组此操作只返回群组列表，并不获取群组的所有成员信息
   void getJoinedGroupsFromServer({
     onSuccess(List<EMGroup> groups),
     onError(int errorCode, String desc)}) {
@@ -238,7 +238,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器获取公开群组 ？EMCursorResult加泛型
+  /// @nodoc 从服务器获取公开群组 ？EMCursorResult加泛型
   void getPublicGroupsFromServer({
     @required int pageSize,
     @required String cursor,
@@ -262,7 +262,7 @@ class EMGroupManager{
     });
   }
 
-  ///当前登录用户加入公开群(如果是自由加入的公开群，直接进入群组)
+  /// @nodoc 当前登录用户加入公开群(如果是自由加入的公开群，直接进入群组)
   void joinGroup({
     @required String groupId,
     onSuccess(),
@@ -280,7 +280,7 @@ class EMGroupManager{
     });
   }
 
-  ///改变群组的名称
+  /// @nodoc 改变群组的名称
   void changeGroupName({
     @required String groupId,
     @required String groupName,
@@ -299,7 +299,7 @@ class EMGroupManager{
     });
   }
 
-  ///修改群描述
+  /// @nodoc 修改群描述
   void changeGroupDescription({
     @required String groupId,
     @required String desc,
@@ -318,7 +318,7 @@ class EMGroupManager{
     });
   }
 
-  ///接受加入群的邀请
+  /// @nodoc 接受加入群的邀请
   void acceptInvitation({
     @required String groupId,
     @required String inviter,
@@ -341,7 +341,7 @@ class EMGroupManager{
     });
   }
 
-  ///拒绝加入群的邀请
+  /// @nodoc 拒绝加入群的邀请
   void declineInvitation({
     @required String groupId,
     @required String inviter,
@@ -361,7 +361,7 @@ class EMGroupManager{
     });
   }
 
-  ///同意加群申请
+  /// @nodoc 同意加群申请
   void acceptApplication({
     @required String userName,
     @required String groupId,
@@ -380,7 +380,7 @@ class EMGroupManager{
     });
   }
 
-  ///拒绝加群申请
+  /// @nodoc 拒绝加群申请
   void declineApplication({
     @required String userName,
     @required String groupId,
@@ -400,7 +400,7 @@ class EMGroupManager{
     });
   }
 
-  ///群成员邀请用户加入群组 （如果群组设置成开放群成员邀请，群组成员可以邀请其他用户加入）
+  /// @nodoc群成员邀请用户加入群组 （如果群组设置成开放群成员邀请，群组成员可以邀请其他用户加入）
   void inviteUser({
      @required String groupId,
      @required List<String> members,
@@ -420,7 +420,7 @@ class EMGroupManager{
      });
   }
 
-  ///申请加入某个群（用于加入需要验证的公开群）
+  /// @nodoc 申请加入某个群（用于加入需要验证的公开群）
   void applyJoinToGroup({
     @required String groupId,
     @required String reason,
@@ -439,7 +439,7 @@ class EMGroupManager{
     });
   }
 
-  ///屏蔽群消息（还是群里面的成员，但不再接收群消息）
+  /// @nodoc 屏蔽群消息（还是群里面的成员，但不再接收群消息）
   void blockGroupMessage({
     @required String groupId,
     onSuccess(),
@@ -457,7 +457,7 @@ class EMGroupManager{
     });
   }
 
-  ///取消屏蔽群消息
+  /// @nodoc 取消屏蔽群消息
   void unblockGroupMessage({
     @required String groupId,
     onSuccess(),
@@ -475,7 +475,7 @@ class EMGroupManager{
     });
   }
 
-  ///将用户加到群组的黑名单，被加入黑名单的用户无法加入群，无法收发此群的消息
+  /// @nodoc 将用户加到群组的黑名单，被加入黑名单的用户无法加入群，无法收发此群的消息
   void blockUser({
     @required String groupId,
     @required String userName,
@@ -494,7 +494,7 @@ class EMGroupManager{
     });
   }
 
-  ///将用户从群组的黑名单移除
+  /// @nodoc 将用户从群组的黑名单移除
   void unblockUser({
     @required String groupId,
     @required String userName,
@@ -513,7 +513,7 @@ class EMGroupManager{
     });
   }
 
-  ///获取群组成员列表
+  /// @nodoc 获取群组成员列表
   void fetchGroupMembers({
     @required String groupId,
     @required String cursor,
@@ -538,7 +538,7 @@ class EMGroupManager{
     });
   }
 
-  ///转让群组，群组所有权给他人
+  /// @nodoc 转让群组，群组所有权给他人
   void changeOwner({
     @required String groupId,
     @required String newOwner,
@@ -561,7 +561,7 @@ class EMGroupManager{
     });
   }
 
-  ///增加群组管理员，需要owner权限，admin无权限
+  /// @nodoc 增加群组管理员，需要owner权限，admin无权限
   void addGroupAdmin ({
     @required String groupId,
     @required String admin,
@@ -584,7 +584,7 @@ class EMGroupManager{
     });
   }
 
-  ///删除群组管理员，需要owner权限
+  /// @nodoc 删除群组管理员，需要owner权限
   void removeGroupAdmin({
     @required String groupId,
     @required String admin,
@@ -607,7 +607,7 @@ class EMGroupManager{
     });
   }
 
-  ///禁止某些群组成员发言
+  /// @nodoc 禁止某些群组成员发言
   void muteGroupMembers({
     @required String groupId,
     @required List<String> members,
@@ -631,7 +631,7 @@ class EMGroupManager{
     });
   }
 
-  ///解除禁言
+  /// @nodoc 解除禁言
   void unMuteGroupMembers({
     @required String groupId,
     @required List<String> members,
@@ -655,7 +655,7 @@ class EMGroupManager{
     });
   }
 
-  ///获取群组的禁言列表
+  /// @nodoc 获取群组的禁言列表
   void fetchGroupMuteList({
     @required String groupId,
     @required int pageNum,
@@ -681,7 +681,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器获分页获取群组黑名单
+  /// @nodoc 从服务器获分页获取群组黑名单
   void fetchGroupBlackList({
     @required String groupId,
     @required int pageNum,
@@ -711,7 +711,7 @@ class EMGroupManager{
     });
   }
 
-  ///更新群公告
+  /// @nodoc 更新群公告
   void updateGroupAnnouncement({
     @required String groupId,
     @required String announcement,
@@ -730,7 +730,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器获取群公告
+  /// @nodoc 从服务器获取群公告
   void fetchGroupAnnouncement({
     @required String groupId,
     onSuccess(String announcement),
@@ -752,7 +752,7 @@ class EMGroupManager{
     });
   }
 
-  ///上传共享文件至群组
+  /// @nodoc 上传共享文件至群组
   void uploadGroupSharedFile({
     @required String groupId,
     @required String filePath,
@@ -771,7 +771,7 @@ class EMGroupManager{
     });
   }
 
-  ///从服务器获取群组的共享文件列表
+  /// @nodoc 从服务器获取群组的共享文件列表
   void fetchGroupSharedFileList({
     @required String groupId,
     @required int pageNum,
@@ -800,7 +800,7 @@ class EMGroupManager{
     });
   }
 
-  ///从群组里删除这个共享文件
+  /// @nodoc 从群组里删除这个共享文件
   void deleteGroupSharedFile({
     @required String groupId,
     @required String fileId,
@@ -819,7 +819,7 @@ class EMGroupManager{
     });
   }
 
-  ///下载群里的某个共享文件
+  /// @nodoc 下载群里的某个共享文件
   void downloadGroupSharedFile({
     @required String groupId,
     @required String fileId,
@@ -839,7 +839,7 @@ class EMGroupManager{
     });
   }
 
-  ///更新群组扩展字段
+  /// @nodoc 更新群组扩展字段
   void updateGroupExtension({
     @required String groupId,
     @required String extension,
@@ -862,12 +862,12 @@ class EMGroupManager{
     });
   }
 
-  /// addGroupChangeListener - Adds [listener] to be aware of group change events.
+  /// @nodoc addGroupChangeListener - Adds [listener] to be aware of group change events.
   void addGroupChangeListener(EMGroupChangeListener listener) {
     _groupChangeListeners.add(listener);
   }
 
-  /// removeGroupChangeListener - Remove [listener] from the listener list.
+  /// @nodoc removeGroupChangeListener - Remove [listener] from the listener list.
   void removeGroupChangeListener(EMGroupChangeListener listener) {
     assert(listener != null);
     _groupChangeListeners.remove(listener);
