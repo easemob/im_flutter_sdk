@@ -16,6 +16,7 @@ public class EMSDKMethod {
     static final String kickDevice = "kickDevice";
     static final String kickAllDevices = "kickAllDevices";
     static final String getLoggedInDevicesFromServer =  "getLoggedInDevicesFromServer";
+    static final String getCurrentUser =  "getCurrentUser";
 
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
@@ -112,19 +113,6 @@ public class EMSDKMethod {
 
     //EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChange";
-
-    //EMChatRoom
-    static final String getId = "getId";
-    static final String getName = "getName";
-    static final String getChatRoomDescription = "getChatRoomDescription";
-    static final String getChatRoomOwner = "getChatRoomOwner";
-    static final String getChatRoomAdminList = "getChatRoomAdminList";
-    static final String getChatRoomMemberCount = "getChatRoomMemberCount";
-    static final String getMaxUsers = "getMaxUsers";
-    static final String getMemberList = "getMemberList";
-    static final String getChatRoomBlackList = "getChatRoomBlackList";
-    static final String getChatRoomMuteList = "getChatRoomMuteList";
-    static final String getChatRoomAnnouncement = "getChatRoomAnnouncement";
 
     /// EMGroupManager
     static final String getAllGroups = "getAllGroups";

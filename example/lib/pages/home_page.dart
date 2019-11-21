@@ -25,7 +25,6 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
   ];
 
   var vcList = [new EMConversationListPage(), new EMContactsListPage(), new FindPage(), new EMSettingsPage()];
-
   int curIndex = 0;
 
 

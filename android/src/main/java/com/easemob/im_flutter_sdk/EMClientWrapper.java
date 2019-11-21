@@ -68,6 +68,8 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             kickAllDevices(call.arguments, result);
         } else if(EMSDKMethod.isLoggedInBefore.equals(call.method)) {
             isLoggedInBefore(call.arguments,result);
+        } else if(EMSDKMethod.getCurrentUser.equals(call.method)){
+            getCurrentUser(call.arguments,result);
         }
     }
 
@@ -315,6 +317,13 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
         result.success(data);
     }
 
+    private void getCurrentUser(Object args, Result result){
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("success", Boolean.TRUE);
+        data.put("userName", EMClient.getInstance().getCurrentUser());
+        result.success(data);
+    }
+
 //    private void addMultiDeviceListener(Object args, Result result){
 //        //setup multiple device event listener
 //        client.addMultiDeviceListener(new EMMultiDeviceListener() {
@@ -341,12 +350,14 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
 //            }
 //        });
 //    }
+
 //
 //    /// TODO: 需要修改为Remove方式
 //    private void removeMultiDeviceListener(Object args, Result result){
 //
 //    }
 //
+
 //    private void addConnectionListener(Object args, Result result){
 //        client.addConnectionListener(new EMConnectionListener() {
 //            @Override
