@@ -20,7 +20,6 @@ class EMSDKMethod {
       'getLoggedInDevicesFromServer';
   static const String getCurrentUser =  "getCurrentUser";
 
-
   /// EMContactManager methods
   static const String addContact = 'addContact';
   static const String deleteContact = 'deleteContact';
