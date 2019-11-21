@@ -1,14 +1,18 @@
 
 import 'dart:io';
-//import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'style.dart';
+import 'time_util.dart';
 
 enum PromptBoxLocation { TOP, BOTTOM, CENTER }
 
 class WidgetUtil {
+
+  static const int INTERVAL_IN_MILLISECONDS = 60 * 1000;
+
   /// 会话页面加号扩展栏里面的 widget，上面图片，下面文本
   static Widget buildExtentionWidget(IconData icon,String text,Function()clicked) {
     return Column(
@@ -44,10 +48,10 @@ class WidgetUtil {
   static Widget buildUserPortrait(String path) {
     Widget protraitWidget = Image.asset("images/ease_default_avatar.png",fit: BoxFit.fill);
     if(path.startsWith("http")) {
-//      protraitWidget = CachedNetworkImage(
-//        fit: BoxFit.fill,
-//        imageUrl: path,
-//      );
+      protraitWidget = CachedNetworkImage(
+        fit: BoxFit.fill,
+        imageUrl: path,
+      );
     }else {
       File file = File(path);
       if(file.existsSync()) {
@@ -77,7 +81,7 @@ class WidgetUtil {
   }
 
   /// 消息 item 上的时间
-  static Widget buildMessageTimeWidget(int sentTime) {
+  static Widget buildMessageTimeWidget(String sentTime) {
     return ClipRRect(
         borderRadius: BorderRadius.circular(5),
         child: Container(
@@ -85,7 +89,7 @@ class WidgetUtil {
           width: 80,
           height: 22,
           color: Color(0xffC8C8C8),
-          child: Text(sentTime.toString(),style: TextStyle(color: Colors.white,fontSize: 12),),
+          child: Text(TimeUtil.convertTime(int.parse(sentTime)),style: TextStyle(color: Colors.white,fontSize: 12),),
         ),
       );
   }
@@ -124,62 +128,6 @@ class WidgetUtil {
       });
   }
 
-  /// onTaped 点击事件，0~n 代表点击了对应下标，-1 代表点击了白透明空白区域，暂无用
-  static Widget buildLongPressDialog(List<String> titles,Function(int index)onTaped){
-    List<Widget> wList = new List();
-    for(int i=0;i<titles.length;i++) {
-      Widget w = Container(
-        alignment: Alignment.center,
-        child: GestureDetector(
-          onTap: () {
-            if(onTaped != null) {
-              onTaped(i);
-            }
-          },
-          child: Container(
-            height: 40,
-            alignment: Alignment.center,
-            child: new Text(
-              titles[i],
-              style: new TextStyle(fontSize: 18.0),
-            ),
-          ),
-        ),
-      );
-      wList.add(w);
-    }
-    Widget bgWidget = Opacity(
-      opacity: 0.3,
-      child: GestureDetector(
-        onTap: () {
-          if(onTaped != null) {
-            onTaped(-1);
-          }
-        },
-        child: Container(
-          padding: EdgeInsets.all(0),
-          color: Colors.black,
-        ),
-      ),
-    );
-    return Stack(
-      children: <Widget>[
-        bgWidget,//半透明 widget
-        new Center( //保证控件居中效果
-          child:Container(
-            width: 120,
-            height: 60.0 * titles.length,
-            color: Colors.white,
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: wList,
-              ) 
-            ),
-        )
-      ],
-    );
-  }
 
   /// 空白 widget ，用于处理非法参数时的占位
   static Widget buildEmptyWidget() {
@@ -223,4 +171,14 @@ class WidgetUtil {
     Fluttertoast.cancel();
   }
 
+  ///判断消息时间间隔
+  static bool isCloseEnough(String time1,String time2){
+    int lastTime = int.parse(time1);
+    int afterTime = int.parse(time2);
+    int delta = lastTime - afterTime;
+    if (delta < 0) {
+      delta = -delta;
+    }
+    return delta > INTERVAL_IN_MILLISECONDS;
+  }
 }

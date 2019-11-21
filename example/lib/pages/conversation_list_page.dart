@@ -201,10 +201,22 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   /// 点击事件
   void onTapConversation(EMConversation conversation){
-//    Navigator.of(context).pushNamed(Constant.toChatPage);
       Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-  return new ChatPage(arguments: {'conversationType': conversation.type,'toChatUsername':conversation.conversationId});
-  }));
+          return new ChatPage(arguments: {'mType': getType(conversation.type),'toChatUsername':conversation.conversationId});
+      }));
+  }
+
+  int getType(EMConversationType type){
+    switch(type){
+      case EMConversationType.Chat:
+        return Constant.chatTypeSingle;
+      case EMConversationType.GroupChat:
+        return Constant.chatTypeGroup;
+      case EMConversationType.ChatRoom:
+        return Constant.chatTypeChatRoom;
+      default:
+        return Constant.chatTypeSingle;
+    }
   }
 
   /// 长按事件
