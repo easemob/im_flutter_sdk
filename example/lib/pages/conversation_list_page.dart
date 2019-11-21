@@ -48,7 +48,11 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void _loadEMConversationList() async{
     int i = 0;
     sortMap.clear();
+    conList.clear();
     Map map = await EMClient.getInstance().chatManager().getAllConversations();
+    if(map.length == 0){
+      _refreshUI();
+    }
     map.forEach((k, v) async{
       var conversation = v as EMConversation;
       EMMessage message = await conversation.getLastMessage();
@@ -125,7 +129,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     if(sortMap.length > 0) {
       conList.clear();
       List sortKeys = sortMap.keys.toList();
-      // key排序
+      /// key排序
       sortKeys.sort((a, b) => b.compareTo(a));
       sortKeys.forEach((k) {
         var v = sortMap.putIfAbsent(k, null);
@@ -186,12 +190,14 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void onMessageDelivered(List<EMMessage> messages){}
   void onMessageRecalled(List<EMMessage> messages){}
   void onMessageChanged(EMMessage message, Object change){}
+
   void _deleteConversation(EMConversation conversation) async{
     bool result = await EMClient.getInstance().chatManager().deleteConversation(userName: conversation.conversationId, deleteMessages: true);
-    if(result == false){
+    if(result){
+      _loadEMConversationList();
+    } else {
       print('deleteConversation failed');
     }
-    _loadEMConversationList();
   }
 
   void _clearConversationUnread(EMConversation conversation){
