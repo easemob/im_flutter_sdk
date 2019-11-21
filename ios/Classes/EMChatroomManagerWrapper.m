@@ -90,9 +90,10 @@
                                                              pageSize:pageSize
                                                            completion:^(EMPageResult *aResult, EMError *aError)
      {
+        NSArray *chatroomList = aResult.list;
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper pageReslutToDictionary:aResult]];
+                     userInfo:@{@"value":[EMHelper pageReslutToDictionary:aResult]}];
         
     }];
 }

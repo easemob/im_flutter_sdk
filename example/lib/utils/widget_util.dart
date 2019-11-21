@@ -137,12 +137,25 @@ class WidgetUtil {
     );
   }
 
+  static bool isChinese(String str) {
+    for(int i = 0; i < str.length;i ++) {
+      int a = str.codeUnitAt(i);
+      if(a > 0x4e00 && a < 0x9fff) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 提示框
   static hintBoxWithDefault(String msg) {
+//    Future.sync((){
+//    });
     Fluttertoast.showToast(
         msg: msg,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.CENTER,
-        timeInSecForIos: 1,
+        timeInSecForIos: 2,
         backgroundColor: Colors.black,
         textColor: Colors.white,
         fontSize: 15.0

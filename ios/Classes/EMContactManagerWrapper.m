@@ -8,14 +8,6 @@
 #import "EMContactManagerWrapper.h"
 #import "EMSDKMethod.h"
 
-typedef enum : NSUInteger {
-    CONTACT_ADD = 0,
-    CONTACT_DELETE,
-    INVITED,
-    INVITATION_ACCEPTED,
-    INVITATION_DECLINED
-} EMContactEvent;
-
 @interface EMContactManagerWrapper () <EMContactManagerDelegate>
 
 @end
@@ -25,7 +17,7 @@ typedef enum : NSUInteger {
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                            registrar:registrar]) {
-        [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
+//        [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     }
     return self;
 }
@@ -34,27 +26,30 @@ typedef enum : NSUInteger {
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-        if ([EMMethodKeyAddContact isEqualToString:call.method]) {
-            [self addContact:call.arguments result:result];
-        } else if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
-            [self deleteContact:call.arguments result:result];
-        } else if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
-            [self getAllContactsFromServer:call.arguments result:result];
-        } else if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
-            [self addUserToBlackList:call.arguments result:result];
-        } else if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
-            [self removeUserFromBlackList:call.arguments result:result];
-        } else if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
-            [self getBlackListFromServer:call.arguments result:result];
-        } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
-            [self acceptInvitation:call.arguments result:result];
-        } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
-            [self deleteContact:call.arguments result:result];
-        } else if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
-            [self getSelfIdsOnOtherPlatform:call.arguments result:result];
-        } else {
-          [super handleMethodCall:call result:result];
-        }
+    
+    [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
+    
+    if ([EMMethodKeyAddContact isEqualToString:call.method]) {
+        [self addContact:call.arguments result:result];
+    } else if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
+        [self deleteContact:call.arguments result:result];
+    } else if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
+        [self getAllContactsFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
+        [self addUserToBlackList:call.arguments result:result];
+    } else if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
+        [self removeUserFromBlackList:call.arguments result:result];
+    } else if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
+        [self getBlackListFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
+        [self acceptInvitation:call.arguments result:result];
+    } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
+        [self deleteContact:call.arguments result:result];
+    } else if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
+        [self getSelfIdsOnOtherPlatform:call.arguments result:result];
+    } else {
+        [super handleMethodCall:call result:result];
+    }
 }
 
 
@@ -171,7 +166,7 @@ typedef enum : NSUInteger {
 
 - (void)friendshipDidAddByUser:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(CONTACT_ADD),
+        @"type":@"onContactAdded",
         @"userName":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
@@ -180,7 +175,7 @@ typedef enum : NSUInteger {
 
 - (void)friendshipDidRemoveByUser:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(CONTACT_DELETE),
+        @"type":@"onContactDeleted",
         @"userName":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
@@ -190,7 +185,7 @@ typedef enum : NSUInteger {
 - (void)friendRequestDidReceiveFromUser:(NSString *)aUsername
                                 message:(NSString *)aMessage {
     NSDictionary *map = @{
-        @"type":@(INVITED),
+        @"type":@"onContactInvited",
         @"userName":aUsername,
         @"reason":aMessage
     };
@@ -200,7 +195,7 @@ typedef enum : NSUInteger {
 
 - (void)friendRequestDidApproveByUser:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(INVITATION_ACCEPTED),
+        @"type":@"onFriendRequestAccepted",
         @"userName":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
@@ -209,7 +204,7 @@ typedef enum : NSUInteger {
 
 - (void)friendRequestDidDeclineByUser:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@(INVITATION_DECLINED),
+        @"type":@"onFriendRequestDeclined",
         @"userName":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged

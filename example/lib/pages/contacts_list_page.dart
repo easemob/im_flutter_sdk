@@ -5,6 +5,10 @@ import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
+import 'package:im_flutter_sdk_example/common/common.dart';
+import 'package:im_flutter_sdk_example/pages/chat_page.dart';
+import 'chatroom_list_page.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 class EMContactsListPage extends StatefulWidget {
   @override
@@ -15,13 +19,12 @@ class EMContactsListPage extends StatefulWidget {
 
 class _EMContactsListPageState extends State<EMContactsListPage> implements EMContactEventListener {
 
-  TextEditingController _usernameController = TextEditingController();
   String _imageName;
   String _name;
 
 
-  List contactsList = ['小明','小红','小刚','小王','小丽','小丽','小丽','小丽','小丽','小丽'];
-//  var contactsList = new List();
+//  List contactsList = ['小明','小红','小刚','小王','小丽','小丽','小丽','小丽','小丽','小丽'];
+  var contactsList = new List();
 
   var mapTest = [
     {'imageName':'images/新的好友@2x.png','name':'新的好友'},
@@ -31,12 +34,14 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
     {'imageName':'images/公众号@2x.png','name':'公众号'}
   ];
 
+  Offset tapPos;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     EMClient.getInstance().contactManager().addContactListener(this);
-//    loadEMContactsList();
+    loadEMContactsList();
   }
 
   @override
@@ -62,8 +67,10 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
         elevation: 0, // 隐藏阴影
         backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
         actions: <Widget>[
-          Icon(Icons.add,),
-          SizedBox(width: 24,)
+          IconButton(icon: Icon(Icons.add,), onPressed: (){
+            Navigator.of(context).pushNamed(Constant.toAddContact);
+          }),
+          SizedBox(width: 24.0),
         ],
       ),
       key: UniqueKey(),
@@ -105,74 +112,132 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
         ],
         ),
       );
-    } else if(index > 0 && index <6) {
-      this._imageName = mapTest[index-1]['imageName'];
-      this._name = mapTest[index-1]['name'];
+    } else if(index > 0 && index < 6) {
+      this._imageName = mapTest[index - 1]['imageName'];
+      this._name = mapTest[index - 1]['name'];
+
     } else if(index == 6) {
       return Container(
-        height: 42,
+        height: 5.0,
       );
     } else {
       this._imageName = 'images/default_avatar.png';
       this._name = _getData(index - 7);
     }
 
-    return Stack(
-      children: <Widget>[
-        Container(
-          padding: EdgeInsets.only(left: 16.0),
-          height: 67,
-          child: Row(
-            children: <Widget>[
-              ClipOval(
-                child: Image.asset(this._imageName, width: 40.0,height: 40.0,),
-              ),
-              Padding(padding: EdgeInsets.all(8.0)),
-              Text(this._name, style: TextStyle(fontSize: 18.0),)
-            ],
-          ),
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width - 64.0,
-          height: 1.0,
-          color: Color(0xffe5e5e5),
-          margin: EdgeInsets.fromLTRB(64.0, 67.0, 0.0, 0.0),
-        ),
-      ],
-    );
+    return InkWell(
+      onTap: (){
+        if(index > 0 && index < 7){
+          if(index == 1){
+//            Navigator.of(context).pushNamed(Constant.toAddContact);
+          } else if (index == 2) {
+            WidgetUtil.hintBoxWithDefault('正在开发中...');
+          } else if (index == 3) {
+            WidgetUtil.hintBoxWithDefault('正在开发中...');
+          } else if (index == 4) {
+            Navigator.of(context).pushNamed(Constant.toChatRoomListPage);
+          } else {
+            WidgetUtil.hintBoxWithDefault('正在开发中...');
+          }
+        } else {
+          Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+            return new ChatPage(arguments: {'conversationType': EMConversationType.Chat,'toChatUsername':_getData(index - 7)});
+          }));
+        }
+      },
 
+      onTapDown: (TapDownDetails details) {
+        tapPos = details.globalPosition;
+      },
+
+      onLongPress: (){
+        if(index >= 7){
+          Map<String,String> actionMap = {
+            Constant.deleteContactKey:DemoLocalizations.of(context).deleteContact,
+          };
+          WidgetUtil.showLongPressMenu(context, tapPos,actionMap,(String key){
+            if(key == "DeleteContactKey") {
+              _deleteContact(index);
+            }
+          });
+        }
+      },
+      child: Stack(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.only(left: 16.0),
+            height: 67,
+            child: Row(
+              children: <Widget>[
+                ClipOval(
+                  child: Image.asset(this._imageName, width: 40.0,height: 40.0,),
+                ),
+                Padding(padding: EdgeInsets.all(8.0)),
+                Text(this._name, style: TextStyle(fontSize: 18.0),)
+              ],
+            ),
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width - 64.0,
+            height: 1.0,
+            color: Color(0xffe5e5e5),
+            margin: EdgeInsets.fromLTRB(64.0, 66.0, 0.0, 0.0),
+          ),
+        ],
+      ),
+    );
   }
 
-//  void loadEMContactsList() {
-//    EMClient.getInstance().contactManager().getAllContactsFromServer(
-//        onSuccess: (contacts){
-//          this.contactsList = contacts.toList();
-//          _refreshUI();
-//        },
-//        onError: (code, desc){
-//
-//        }
-//    );
-//  }
+  void loadEMContactsList() {
+    EMClient.getInstance().contactManager().getAllContactsFromServer(
+        onSuccess: (contacts){
+          this.contactsList = contacts.toList();
+          _refreshUI();
+        },
+        onError: (code, desc){
+          WidgetUtil.hintBoxWithDefault(desc);
+        }
+    );
+  }
 
   void _refreshUI() {
     setState(() {});
   }
 
-  void onContactAdded(String userName){
+  _deleteContact(int index) {
+    EMClient.getInstance().contactManager().deleteContact(userName: _getData(index - 7),
+        onSuccess: (){
+          this.contactsList.removeAt(index - 7);
+          loadEMContactsList();
+        },
+        onError: (code, desc){
 
+        });
+  }
+
+  void onContactAdded(String userName){
+    loadEMContactsList();
   }
   void onContactDeleted(String userName){
-
+    loadEMContactsList();
   }
   void onContactInvited(String userName, String reason){
-
+    EMClient.getInstance().contactManager().acceptInvitation(userName: userName,
+        onSuccess: (){
+          Future.sync((){
+            WidgetUtil.hintBoxWithDefault('自动同意$userName的好友请求!');
+          });
+        },
+        onError: (code, desc){
+          WidgetUtil.hintBoxWithDefault(desc);
+        });
+    loadEMContactsList();
   }
   void onFriendRequestAccepted(String userName){
-
+    loadEMContactsList();
   }
   void onFriendRequestDeclined(String userName){
-
+    loadEMContactsList();
   }
 
 
