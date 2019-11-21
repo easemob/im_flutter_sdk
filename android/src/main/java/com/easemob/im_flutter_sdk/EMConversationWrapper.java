@@ -70,19 +70,8 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
         }
     }
 
-    private Map<String, EMConversation> conversations = new HashMap<String, EMConversation>();
-
-    // getConversation - returns cached conversation of id,
-    // otherwise call EMManager to get from server
     private EMConversation getConversation(String id) {
-        EMConversation cachedConversation =  conversations.get(id);
-        if(cachedConversation == null) {
-            cachedConversation = manager.getConversation(id);
-            if(cachedConversation != null){
-                conversations.put(id, cachedConversation);
-            }
-        }
-        return cachedConversation;
+        return manager.getConversation(id);
     }
 
     private void getUnreadMessageCount(Object args, Result result) {
