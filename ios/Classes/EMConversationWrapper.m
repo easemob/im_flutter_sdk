@@ -68,7 +68,6 @@
 - (void)getConversationWithParam:(NSDictionary *)param
                   completion:(void(^)(EMConversation *conversation))aCompletion
 {
-    NSLog(@"---- %@",param);
     NSString *conversationId = param[@"id"];
     // TODO: 是否需要类型？
     EMConversationType type = 0;
