@@ -326,7 +326,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMClient.getInstance().chatManager().removeMessageListener(this);
     _scrollController.dispose();
     messageTotalList.clear();
-    if(!isJoinRoom){
+    if(isJoinRoom){
       checkOutRoom();
     }
   }
