@@ -34,7 +34,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     super.initState();
     EMClient.getInstance().chatManager().addMessageListener(this);
     EMClient.getInstance().addConnectionListener(this);
-    loadEMConversationList();
+    _loadEMConversationList();
   }
 
   @override
@@ -45,7 +45,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     EMClient.getInstance().removeConnectionListener(this);
   }
 
-  void loadEMConversationList() async{
+  void _loadEMConversationList() async{
     int i = 0;
     sortMap.clear();
     Map map = await EMClient.getInstance().chatManager().getAllConversations();
@@ -121,9 +121,9 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     );
   }
 
-  void sortConversation(){
+  void _sortConversation(){
     if(sortMap.length > 0) {
-
+      conList.clear();
       List sortKeys = sortMap.keys.toList();
       // key排序
       sortKeys.sort((a, b) => b.compareTo(a));
@@ -136,7 +136,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   @override
   Widget build(BuildContext context) {
-    sortConversation();
+    _sortConversation();
     // TODO: implement build
     return new Scaffold(
       appBar: AppBar(
@@ -177,7 +177,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   /// 消息监听
   void onMessageReceived(List<EMMessage> messages){
-    loadEMConversationList();
+    _loadEMConversationList();
   }
   void onCmdMessageReceived(List<EMMessage> messages){}
   void onMessageRead(List<EMMessage> messages){}
@@ -189,12 +189,12 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     if(result == false){
       print('deleteConversation failed');
     }
-    loadEMConversationList();
+    _loadEMConversationList();
   }
 
   void _clearConversationUnread(EMConversation conversation){
     conversation.markAllMessagesAsRead();
-    loadEMConversationList();
+    _loadEMConversationList();
   }
 
   /// 点击事件

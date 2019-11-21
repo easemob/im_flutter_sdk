@@ -133,16 +133,10 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
               color: _isDark ? EMColor.darkRed : EMColor.red,
           ),
             child: Text(count, style:TextStyle(fontSize: EMFont.emConUnreadFont, color: _isDark ? EMColor.darkUnreadCount : EMColor.unreadCount,))
-
-//          BoxDecoration(
-//              shape: BoxShape.circle,
-//              color: _isDark ? EMColor.darkRed : EMColor.red,
-//          ),
         ),
       );
     }
     return WidgetUtil.buildEmptyWidget();
-
   }
 
   Widget _buildPortrait(){

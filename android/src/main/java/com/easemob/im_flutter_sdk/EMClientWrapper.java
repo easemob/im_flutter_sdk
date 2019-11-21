@@ -68,7 +68,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             kickAllDevices(call.arguments, result);
         } else if(EMSDKMethod.isLoggedInBefore.equals(call.method)) {
             isLoggedInBefore(call.arguments,result);
-        }else if(EMSDKMethod.getCurrentUser.equals(call.method)) {
+        } else if(EMSDKMethod.getCurrentUser.equals(call.method)){
             getCurrentUser(call.arguments,result);
         }
 //        else if(EMSDKMethod.addMultiDeviceListener.equals(call.method)){

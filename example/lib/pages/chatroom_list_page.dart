@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
 import 'chat_page.dart';
@@ -61,10 +62,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
         itemCount: roomList.length,
         itemBuilder:(BuildContext context, int index){
           if(roomList.length <= 0){
-            return Container(
-              height: 1,
-              width: 1,
-            );
+            return WidgetUtil.buildEmptyWidget();
           }
           return EMChatRoomListItem(roomList[index], this);
         });
