@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk_example/utils/media_util.dart';
 
 
 class BottomInputBar extends StatefulWidget {
@@ -19,10 +20,6 @@ class _BottomInputBarState extends State<BottomInputBar> {
   String message;
   bool isChanged = false;
   bool isShowVoiceAction = false;
-
-  var tabbarList = [
-//    BottomNavigationBarItem(icon: new Icon(null)),
-  ];
 
 
   final controller = new TextEditingController();
@@ -74,15 +71,6 @@ class _BottomInputBarState extends State<BottomInputBar> {
     this.textField.controller.text = '';
   }
 
-  switchVoice() {
-    print("switchVoice");
-    InputBarStatus status = InputBarStatus.Normal;
-    if(this.inputBarStatus != InputBarStatus.Voice) {
-      status = InputBarStatus.Voice;
-    }
-    _notifyInputStatusChanged(status);
-  }
-
   switchExt() {
     print("switchExtention");
     if(focusNode.hasFocus) {
@@ -117,73 +105,12 @@ class _BottomInputBarState extends State<BottomInputBar> {
 
   _onTapVoiceLongPress() {
     print("_onTapVoiceLongPress");
-//    MediaUtil.instance.startRecordAudio();
-//    if(this.delegate != null) {
-//      this.delegate.willStartRecordVoice();
-//    }else {
-//      print("没有实现 BottomInputBarDelegate");
-//    }
   }
 
   _onTapVoiceLongPressEnd() {
     print("_onTapVoiceLongPressEnd");
-//    MediaUtil.instance.stopRecordAudio((String path,int duration) {
-//      if(this.delegate != null) {
-//        this.delegate.sendVoice(path,duration);
-//      }else {
-//        print("没有实现 BottomInputBarDelegate");
-//      }
-//    });
-//    if(this.delegate != null) {
-//      this.delegate.willStopRecordVoice();
-//    }else {
-//      print("没有实现 BottomInputBarDelegate");
-//    }
   }
 
-  Widget _getInputField(){
-
-  }
-
-  Widget _getMainInputField() {
-    Widget widget ;
-    if(this.inputBarStatus == InputBarStatus.Voice) {
-      widget = Container(
-        alignment: Alignment.center,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          child: Text("按住 说话",textAlign: TextAlign.center),
-          onLongPress: () {
-            _onTapVoiceLongPress();
-          },
-          onLongPressEnd: (LongPressEndDetails details) {
-            _onTapVoiceLongPressEnd();
-          },
-        ),
-      );
-    }else {
-      widget = Container(
-        padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
-      );
-    }
-    return Container(
-      height: 45,
-      child: Stack(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
-            margin: EdgeInsets.fromLTRB(0, 4, 0, 2),
-            decoration: BoxDecoration(
-                color: Color(0x1AFFFFFF),
-                border:  new Border.all(color: Colors.black26, width: 0.3),
-                borderRadius:  BorderRadius.circular(20)
-            ),
-          ),
-          widget
-        ],
-      ),
-    );
-  }
 
   void _notifyInputStatusChanged(InputBarStatus status) {
     this.inputBarStatus = status;
@@ -194,11 +121,45 @@ class _BottomInputBarState extends State<BottomInputBar> {
     }
   }
 
+  ///点击相册 选择图片
+  void  _selectPicture() async{
+    String imgPath = await MediaUtil.instance.pickImage();
+    if(imgPath == null) {
+      return;
+    }
+    this.delegate.onTapItemPicture(imgPath);
+  }
+
+  ///点击相机拍照
+  void  _takePicture() async{
+//    String imgPath = await MediaUtil.instance.takePhoto();
+//    if(imgPath == null) {
+//      return;
+//    }
+//    this.delegate.onTapItemCamera(imgPath);
+  }
+
+  ///点击表情item
+  void  _selectEmojicon() async{
+    print("_selectEmojicon_");
+//    this.delegate.onTapItemEmojicon();
+  }
+
+  ///点击音频item
+  void  _makeVoiceCall() async{
+    print("_makeVoiceCall_");
+//    this.delegate.onTapItemPhone();
+  }
+
+  ///点击视频item
+  void  _makeVideoCall() async{
+    print("_makeVideoCall_");
+//    this.delegate.onTapItemVideo();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    tabbarList = [
-//      BottomNavigationBarItem(),
-    ];
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(15, 6,15, 2),
@@ -249,7 +210,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                       icon: Icon(Icons.phone),
                       iconSize: 26,
                       onPressed:() {
-                        switchVoice();
+                        _makeVoiceCall();
                       } ,
                    ),
                 ),
@@ -258,7 +219,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                     icon: Icon(Icons.videocam),
                     iconSize: 26,
                     onPressed:() {
-                      switchVoice();
+                      _makeVideoCall();
                     } ,
                   ),
                 ),
@@ -267,7 +228,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                     icon: Icon(Icons.photo_camera),
                     iconSize: 26,
                     onPressed:() {
-                      switchVoice();
+                      _takePicture();
                     } ,
                   ),
                 ),
@@ -276,7 +237,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                     icon: Icon(Icons.photo),
                     iconSize: 26,
                     onPressed:() {
-                      switchVoice();
+                      _selectPicture();
                     } ,
                   ),
                 ),
@@ -285,7 +246,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                     icon: Icon(Icons.tag_faces),
                     iconSize: 26,
                     onPressed:() {
-                      switchVoice();
+                      _selectEmojicon();
                     } ,
                   ),
                 ),
@@ -294,7 +255,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                     icon: Icon(Icons.add_circle_outline),
                     iconSize: 26,
                     onPressed:() {
-                      switchVoice();
+                      switchExt();
                     } ,
                   ),
                 ),
@@ -328,6 +289,17 @@ abstract class BottomInputBarDelegate {
   void stopRecordVoice();
   ///点击了加号按钮
   void onTapExtButton();
+  ///点击了相机
+  void onTapItemCamera(String imgPath);
+  ///点击了相册
+  void onTapItemPicture(String imgPath);
+  ///点击了表情
+  void onTapItemEmojicon();
+  ///点击音频
+  void onTapItemPhone();
+  ///点击视频
+  void onTapItemVideo();
+
 }
 
 
