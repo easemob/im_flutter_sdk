@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class EMLayout {
   static const double emConListPortraitSize = 45;
   static const double emConListItemHeight = 74;
-  static const double emConListUnreadSize = 10;
+  static const double emConListUnreadSize = 12;
   static const double emSearchBarHeight = 36;
 }
 
@@ -13,6 +13,7 @@ class EMFont{
   static const double emSearchBarFont = 16;
   static const double emConListTitleFont = 16;
   static const double emConListTimeFont = 12;
+  static const double emConUnreadFont = 12;
   static const double emConListContentFont = 14;
 }
 
@@ -52,5 +53,8 @@ class EMColor{
 
   static const Color bgSearchBar = Color(0xFFE0E0E0);
   static const Color darkBgSearchBar = Color(0xFF303030);
+
+  static const Color unreadCount = Color(0xFFFFFFFF);
+  static const Color darkUnreadCount = Color(0xB3FFFFFF);
 
 }

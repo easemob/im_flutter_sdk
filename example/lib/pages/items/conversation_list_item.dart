@@ -112,17 +112,32 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   Widget _buildUnreadMark(){
     if(underCount > 0){
+      String count = underCount.toString();
+      double width = EMLayout.emConListUnreadSize;
+      if(underCount > 9){
+        width = EMLayout.emConListUnreadSize/2*3;
+      }
+      if(underCount > 99){
+        count = '99+';
+        width = EMLayout.emConListUnreadSize*2;
+      }
       return Positioned(
         right: 0.0,
         top: 0.0,
         child: Container(
-          width: EMLayout.emConListUnreadSize,
+          width: width,
           height: EMLayout.emConListUnreadSize,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(EMLayout.emConListUnreadSize/2.0),
               color: _isDark ? EMColor.darkRed : EMColor.red,
           ),
+            child: Text(count, style:TextStyle(fontSize: EMFont.emConUnreadFont, color: _isDark ? EMColor.darkUnreadCount : EMColor.unreadCount,))
+
+//          BoxDecoration(
+//              shape: BoxShape.circle,
+//              color: _isDark ? EMColor.darkRed : EMColor.red,
+//          ),
         ),
       );
     }
