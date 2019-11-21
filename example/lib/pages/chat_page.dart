@@ -26,7 +26,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   UserInfo user;
   int _pageSize = 10;
   bool isLoad = false;
-  bool isJoinRoom = true;
+  bool isJoinRoom = false;
   String msgStartId = '';
   String afterLoadMessageId = '';
 
@@ -220,7 +220,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   _joinChatRoom(){
     EMClient.getInstance().chatRoomManager().joinChatRoom(roomId: toChatUsername ,
         onSuccess: (){
-
+          isJoinRoom = true;
         },
         onError: (int errorCode,String errorString){
           print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
@@ -230,6 +230,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   _cleanAllMessage(){
      if(null != conversation){
         conversation.clearAllMessages();
+        setState(() {
+          messageList = [];
+          messageTotalList = [];
+        });
      }
   }
 
@@ -322,7 +326,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMClient.getInstance().chatManager().removeMessageListener(this);
     _scrollController.dispose();
     messageTotalList.clear();
-    if(isJoinRoom){
+    if(!isJoinRoom){
       checkOutRoom();
     }
   }
@@ -382,9 +386,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
     imageMessage.chatType = fromChatType(mType);
-    EMClient.getInstance().chatManager().sendMessage(imageMessage);
-
-    _onConversationInit();
+    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess: (){
+       print('-----------success---------->' );
+       _onConversationInit();
+    });
 
   }
 
