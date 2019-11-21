@@ -727,14 +727,14 @@ class EMHelper {
             if(!(json.getInt("imPort") == 0)) {
                 options.setImPort(json.getInt("imPort"));
             }
-            if(!(json.getInt("usingHttpsOnly") == 0)) {
-                options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
+            if(json.getBoolean("usingHttpsOnly")) {
+                options.setUsingHttpsOnly(true);
             }
-            if(!(json.getInt("serverTransfer") == 0)) {
-                options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
+            if(!json.getBoolean("serverTransfer")) {
+                options.setAutoTransferMessageAttachments(false);
             }
-            if(!(json.getInt("isAutoDownload") == 0)) {
-                options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
+            if(!json.getBoolean("isAutoDownload")) {
+                options.setAutoDownloadThumbnail(false);
             }
 
         }catch (JSONException e){
