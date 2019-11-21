@@ -111,8 +111,8 @@ class EMClient {
     });
   }
 
-  /// loginWithToken - login with [userName] and [token].
-  /// Call [onSuccess] once login succeed and [onError] error occured.
+  /// @nodoc loginWithToken - login with [userName] and [token].
+  /// @nodoc Call [onSuccess] once login succeed and [onError] error occured.
   void loginWithToken(
       {@required String userName,
       @required String token,
@@ -148,8 +148,8 @@ class EMClient {
     });
   }
 
-  /// changeAppKey - change app key with new [appKey].
-  /// Call [onError] if something wrong.
+  /// @nodoc changeAppKey - change app key with new [appKey].
+  /// @nodoc Call [onError] if something wrong.
   void changeAppKey({@required String appKey, onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.changeAppKey, {"appKey": appKey});
@@ -162,7 +162,7 @@ class EMClient {
     });
   }
 
-  /// setDebugMode - set to run in debug mode.
+  /// @nodoc setDebugMode - set to run in debug mode.
   void setDebugMode(bool debugMode) {
     _emClientChannel
         .invokeMethod(EMSDKMethod.setDebugMode, {"debugMode": debugMode});
@@ -179,6 +179,7 @@ class EMClient {
     }
   }
 
+  /// @nodoc upload app log to easemob server
   void uploadLog({onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.uploadLog);
     result.then((response) {
@@ -194,11 +195,13 @@ class EMClient {
     });
   }
 
-  /// getOptions - return [EMOptions] inited.
+  /// @nodoc getOptions - return [EMOptions] inited.
   EMOptions getOptions() {
     return _options;
   }
 
+  /// @nodoc compress local logs
+  /// @nodoc Call logs path
   Future<String> compressLogs(onError(int code, String desc)) async {
     Map<String, dynamic> result =
         await _emClientChannel.invokeMethod(EMSDKMethod.compressLogs);
@@ -210,9 +213,9 @@ class EMClient {
     }
   }
 
-  /// getLoggedInDevicesFromServer - return all logged in devices.
-  /// Access controlled by [userName]/[password] and if error occured,
-  /// [onError] is called.
+  /// @nodoc getLoggedInDevicesFromServer - return all logged in devices.
+  /// @nodoc Access controlled by [userName]/[password] and if error occured,
+  /// @nodoc [onError] is called.
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {@required String userName,
       @required String password,
@@ -237,9 +240,9 @@ class EMClient {
     return result;
   }
 
-  /// kickDevice - kick device out.
-  /// Access control by [userName]/[password] pair, device identified by [resource].
-  /// If anything wrong, [onError] will be called.
+  /// @nodoc kickDevice - kick device out.
+  /// @nodoc Access control by [userName]/[password] pair, device identified by [resource].
+  /// @nodoc If anything wrong, [onError] will be called.
   void kickDevice(
       {@required String userName,
       @required String password,
@@ -255,8 +258,8 @@ class EMClient {
     });
   }
 
-  /// kickAllDevices - kick out all devices by force.
-  /// Access control by [userName]/[password] pair. If anything wrong, [onError] will be called.
+  /// @nodoc kickAllDevices - kick out all devices by force.
+  /// @nodoc Access control by [userName]/[password] pair. If anything wrong, [onError] will be called.
   void kickAllDevices(
       {@required String userName,
       @required String password,
@@ -272,7 +275,7 @@ class EMClient {
     });
   }
 
-  /// getAccessToken - Returns local cached access token.
+  /// @nodoc getAccessToken - Returns local cached access token.
   String getAccessToken() {
     return _accessToken;
   }
