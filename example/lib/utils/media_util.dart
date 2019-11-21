@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'dart:io';
 
-import 'package:audio_recorder/audio_recorder.dart';
+//import 'package:audio_recorder/audio_recorder.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -58,14 +58,14 @@ class MediaUtil {
         "/" +
         DateTime.now().millisecondsSinceEpoch.toString() +
         ".aac";
-    await AudioRecorder.start(
-        path: tempPath, audioOutputFormat: AudioOutputFormat.AAC);
+//    await AudioRecorder.start(
+//        path: tempPath, audioOutputFormat: AudioOutputFormat.AAC);
   }
 
   //录音结束，通过 finished 返回本地路径和语音时长，注：Android 必须要加 file:// 头
   void stopRecordAudio(Function(String path, int duration) finished) async {
-    Recording recording = await AudioRecorder.stop();
-    String path = recording.path;
+//    Recording recording = await AudioRecorder.stop();
+    String path = ''; //recording.path;
 
     if (path == null) {
       if (finished != null) {
@@ -77,7 +77,7 @@ class MediaUtil {
       path = "file://" + path;
     }
     if (finished != null) {
-      finished(path, recording.duration.inSeconds);
+//      finished(path, recording.duration.inSeconds);
     }
   }
 

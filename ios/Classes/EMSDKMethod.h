@@ -28,6 +28,7 @@ static NSString * const EMMethodKeyCompressLogs = @"compressLogs";
 static NSString * const EMMethodKeyKickDevice = @"kickDevice";
 static NSString * const EMMethodKeyKickAllDevices = @"kickAllDevices";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
+static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
 
 
 static NSString * const EMMethodKeyOnConnected = @"onConnected";
