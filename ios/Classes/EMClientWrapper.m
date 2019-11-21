@@ -100,7 +100,7 @@
     EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager")
                                                                                                    registrar:self.flutterPluginRegister];
 #pragma clang diagnostic pop
-
+    
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {

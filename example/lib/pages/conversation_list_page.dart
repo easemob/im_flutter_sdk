@@ -147,7 +147,9 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         leading: Icon(null),
         actions: <Widget>[
           Icon(Icons.add,),
-          SizedBox(width: 24,)
+
+          SizedBox(width: 24.0,)
+
         ],
       ),
       key: UniqueKey(),

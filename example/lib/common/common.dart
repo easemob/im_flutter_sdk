@@ -4,10 +4,15 @@ class Constant{
   static const String toChatRoomListPage = "chatRoomListPage";
   static const String toChatPage = "chatPage";
   static const String toLoginPage = "loginPage";
+
   static const String toRegisterPage = "registerPage";
+  static const String toContactList = "contactList";
+  static const String toAddContact = "addContact";
 
   static const String deleteConversationKey = "DeleteConversationKey";
   static const String clearUnreadKey = "ClearUnreadKey";
+
+  static const String deleteContactKey = "DeleteContactKey";
 
   static const String conversationType = "conversationType";
   static const String chatType = "chatType";
