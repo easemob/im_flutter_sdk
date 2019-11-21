@@ -39,7 +39,7 @@ android {
         versionName flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
-            abiFilters 'x86','armeabi','arm64-v8a', 'armeabi-v7a'
+            abiFilters 'x86','arm64-v8a', 'armeabi-v7a'
         }
     }
 
@@ -60,4 +60,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation files('libs/mi_push_v3.6.12.jar')
+    implementation files('libs/vivo_push_v2.3.1.jar')
+    implementation files('libs/oppo_push_v1.0.1.jar')
 }

@@ -25,7 +25,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     EMConversationListItemDelegate{
     var conList = List<EMConversation>();
     var sortMap = Map<String, EMConversation>();
-    bool _isConnected = true;
+    bool _isConnected = EMClient.getInstance().isConnected();
     String errorText;
 
   @override
@@ -71,11 +71,11 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         scrollDirection: Axis.vertical,
         itemCount: conList.length + 1,
         itemBuilder: (BuildContext context,int index){
-          if(conList.length <= 0){
-            return WidgetUtil.buildEmptyWidget();
-          }
           if(index == 0){
             return _buildErrorItem();
+          }
+          if(conList.length <= 0){
+            return WidgetUtil.buildEmptyWidget();
           }
           return EMConversationListItem(conList[index - 1], this);
         }
@@ -123,7 +123,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   void sortConversation(){
     if(sortMap.length > 0) {
-      conList.clear();
+
       List sortKeys = sortMap.keys.toList();
       // key排序
       sortKeys.sort((a, b) => b.compareTo(a));

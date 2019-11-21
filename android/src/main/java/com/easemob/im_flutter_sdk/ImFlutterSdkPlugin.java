@@ -44,7 +44,6 @@ public class ImFlutterSdkPlugin {
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
-    registerGroupWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -76,10 +75,6 @@ public class ImFlutterSdkPlugin {
     channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
   }
 
-  public static void registerGroupWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group", JSONMethodCodec.INSTANCE);
-    channel.setMethodCallHandler(new EMGroupWrapper());
-  }
 }
 
 interface EMWrapper {
