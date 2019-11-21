@@ -168,7 +168,7 @@ class EMChatRoomManager{
       });
   }
 
-  /// fetchChatRoomFromServer - add contact of [roomId].
+  /// @nodoc fetchChatRoomFromServer - add contact of [roomId].
   /// Call [onSuccess] if contact added successfully, [onError] once error occured.
   void fetchChatRoomFromServer({
     @required String roomId,
@@ -185,7 +185,7 @@ class EMChatRoomManager{
     });
   }
 
-  /// getChatRoom - add contact of [roomId].
+  /// @nodoc getChatRoom - add contact of [roomId].
   /// Call [onSuccess] if contact added successfully, [onError] once error occured.
   Future<EMChatRoom> getChatRoom(String roomId) async{
     Map result = await _emChatRoomManagerChannel.invokeMethod(
@@ -197,7 +197,7 @@ class EMChatRoomManager{
     }
   }
 
-  /// getAllChatRooms .
+  /// @nodoc getAllChatRooms .
   /// Call [onSuccess] if contact added successfully, [onError] once error occured.
   Future<List> getAllChatRooms() async {
     Map result = await _emChatRoomManagerChannel
@@ -214,8 +214,8 @@ class EMChatRoomManager{
     }
   }
 
-  /// createChatRoom - add contact of [subject].[description].[welcomeMessage].[maxUserCount].[members]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc createChatRoom - add contact of [subject].[description].[welcomeMessage].[maxUserCount].[members]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void createChatRoom({
     @required String subject,
     @required String description,
@@ -236,8 +236,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// destroyChatRoom - add contact of [roomId]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc destroyChatRoom - add contact of [roomId]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void destroyChatRoom({
     @required String roomId,
     onSuccess(),
@@ -253,8 +253,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// changeChatRoomSubject - add contact of [roomId]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc changeChatRoomSubject - add contact of [roomId]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void changeChatRoomSubject({
     @required String roomId,
     @required String newSubject,
@@ -271,8 +271,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// changeChatRoomDescription - add contact of [roomId] .[newDescription]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc changeChatRoomDescription - add contact of [roomId] .[newDescription]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void changeChatRoomDescription({
     @required String roomId,
     @required String newDescription,
@@ -289,8 +289,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// fetchChatRoomMembers - add contact of [roomId].[cursor].[pageSize]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc fetchChatRoomMembers - add contact of [roomId].[cursor].[pageSize]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void fetchChatRoomMembers({
     @required String roomId,
     @required String cursor,
@@ -308,8 +308,8 @@ class EMChatRoomManager{
     });
 }
 
-  /// muteChatRoomMembers - add contact of [roomId].[duration].[muteMembers]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc muteChatRoomMembers - add contact of [roomId].[duration].[muteMembers]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void muteChatRoomMembers({
     @required String roomId,
     List muteMembers,
@@ -327,8 +327,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// unMuteChatRoomMembers - add contact of [roomId].[muteMembers]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc unMuteChatRoomMembers - add contact of [roomId].[muteMembers]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void unMuteChatRoomMembers({
     @required String roomId,
     List<String> muteMembers,
@@ -345,8 +345,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// changeOwner - add contact of [roomId] .[newOwner]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc changeOwner - add contact of [roomId] .[newOwner]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void changeOwner({
     @required String roomId,
     @required String newOwner,
@@ -363,8 +363,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// addChatRoomAdmin - add contact of [roomId].[admin]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc addChatRoomAdmin - add contact of [roomId].[admin]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void addChatRoomAdmin({
     @required String roomId,
     @required String admin,
@@ -381,8 +381,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// removeChatRoomAdmin - add contact of [roomId].[admin]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc removeChatRoomAdmin - add contact of [roomId].[admin]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void removeChatRoomAdmin({
     @required String roomId,
     @required String admin,
@@ -399,8 +399,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// fetchChatRoomMuteList - add contact of [roomId].[pageNum].[pageSize]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc fetchChatRoomMuteList - add contact of [roomId].[pageNum].[pageSize]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void fetchChatRoomMuteList({
     @required String roomId,
     int pageNum,
@@ -418,8 +418,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// removeChatRoomMembers - add contact of [roomId].[members].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc removeChatRoomMembers - add contact of [roomId].[members].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void removeChatRoomMembers({
     @required String roomId,
     List members,
@@ -436,8 +436,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// blockChatRoomMembers - add contact of [roomId].[members].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc blockChatRoomMembers - add contact of [roomId].[members].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void blockChatRoomMembers({
     @required String roomId,
     List members,
@@ -454,8 +454,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// unBlockChatRoomMembers - add contact of [roomId].[members].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc unBlockChatRoomMembers - add contact of [roomId].[members].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void unBlockChatRoomMembers({
     @required String roomId,
     List members,
@@ -472,8 +472,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// fetchChatRoomBlackList - add contact of [roomId].[pageNum].[pageSize]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc fetchChatRoomBlackList - add contact of [roomId].[pageNum].[pageSize]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void fetchChatRoomBlackList({
     @required String roomId,
     int pageNum,
@@ -492,8 +492,8 @@ class EMChatRoomManager{
   }
 
 
-  /// updateChatRoomAnnouncement - add contact of [roomId].[announcement]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc updateChatRoomAnnouncement - add contact of [roomId].[announcement]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void updateChatRoomAnnouncement({
     @required String roomId,
     @required String announcement,
@@ -510,8 +510,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// fetchChatRoomAnnouncement - add contact of [roomId]
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc fetchChatRoomAnnouncement - add contact of [roomId]
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void fetchChatRoomAnnouncement({
     @required String roomId,
     onSuccess(String res),

@@ -25,7 +25,7 @@ class EMConversation {
         _type = fromEMConversationType(data['type']),
         extField = data['ext'];
 
-  /// getUnreadMsgCount - Gets count of unread messages.
+  /// @nodoc getUnreadMsgCount - Gets count of unread messages.
   Future<int> getUnreadMsgCount() async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.getUnreadMsgCount, {"id": _conversationId});
@@ -35,7 +35,7 @@ class EMConversation {
     return -1; //-1 means error/unknown
   }
 
-  /// markAllMessagesAsRead - Marks all messages as read.
+  /// @nodoc markAllMessagesAsRead - Marks all messages as read.
   void markAllMessagesAsRead() {
     _emConversationChannel.invokeMethod(
         EMSDKMethod.markAllMessagesAsRead, {"id": _conversationId});
@@ -61,7 +61,7 @@ class EMConversation {
     return null;
   }
 
-  /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
+  /// @nodoc searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
   Future<List<EMMessage>> searchMsgFromDB(
       {final EMMessageType type,
         final String keywords,
@@ -88,7 +88,7 @@ class EMConversation {
     return null;
   }
 
-  /// searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
+  /// @nodoc searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
   Future<List<EMMessage>> searchMsgFromDBByType(
       {final EMMessageType type,
         final String keywords,
@@ -114,7 +114,7 @@ class EMConversation {
     return null;
   }
 
-  // getMessage - Gets message by [mesasgeId], set it to read if [markAsRead].
+  // @nodoc getMessage - Gets message by [mesasgeId], set it to read if [markAsRead].
   Future<EMMessage> getMessage(
       {@required final String messageId, final bool markAsRead = true}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -129,7 +129,7 @@ class EMConversation {
     return null;
   }
 
-  /// loadMessages - Loads all messages presenting in list [msgIds].
+  /// @nodoc loadMessages - Loads all messages presenting in list [msgIds].
   Future<List<EMMessage>> loadMessages(
       {@required final List<String> msgIds}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -145,13 +145,13 @@ class EMConversation {
     return null;
   }
 
-  /// markMessageAsRead - Marks message [messageId] as read.
+  /// @nodoc markMessageAsRead - Marks message [messageId] as read.
   void markMessageAsRead({@required final String messageId}) {
     _emConversationChannel.invokeMethod(EMSDKMethod.markMessageAsRead,
         {"id": _conversationId, "messageId": messageId});
   }
 
-  /// removeMessage - Removes message [messageId] from the conversation.
+  /// @nodoc removeMessage - Removes message [messageId] from the conversation.
   void removeMessage({@required String messageId}) {
     _emConversationChannel.invokeMethod(EMSDKMethod.removeMessage,
         {"id": _conversationId, "messageId": messageId});
@@ -167,7 +167,7 @@ class EMConversation {
     return null;
   }
 
-  /// getLatestMessageFromOthers - Gets latest messages sent from others.
+  /// @nodoc getLatestMessageFromOthers - Gets latest messages sent from others.
   Future<EMMessage> getLatestMessageFromOthers() async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.getLatestMessageFromOthers, {"id": _conversationId});
@@ -177,36 +177,36 @@ class EMConversation {
     return null;
   }
 
-  /// clear - Clears the conversation.
+  /// @nodoc clear - Clears the conversation.
   void clear() {
     _emConversationChannel
         .invokeMethod(EMSDKMethod.clear, {"id": _conversationId});
   }
 
-  /// clearAllMessages - Clears all messages in the conversation.
+  /// @nodoc clearAllMessages - Clears all messages in the conversation.
   void clearAllMessages() {
     _emConversationChannel
         .invokeMethod(EMSDKMethod.clearAllMessages, {"id": _conversationId});
   }
 
-  /// isGroup - Is conversation is a group chat?
+  /// @nodoc isGroup - Is conversation is a group chat?
   bool isGroup() {
     return EMConversationType.GroupChat == type;
   }
 
-  /// insertMessage - Inserts message [msg] into conversation.
+  /// @nodoc insertMessage - Inserts message [msg] into conversation.
   void insertMessage(EMMessage msg) {
     _emConversationChannel.invokeMethod(EMSDKMethod.insertMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }
 
-  /// appendMessage - Appends message [msg] into conversation.
+  /// @nodoc appendMessage - Appends message [msg] into conversation.
   void appendMessage(EMMessage msg) {
     _emConversationChannel.invokeMethod(EMSDKMethod.appendMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }
 
-  /// updateMessage - Updates message with new content set.
+  /// @nodoc updateMessage - Updates message with new content set.
   Future<bool> updateMessage(EMMessage msg) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.updateConversationMessage,
@@ -217,7 +217,7 @@ class EMConversation {
     return false;
   }
 
-  /// getMessageAttachmentPath - Gets message's attachement path.
+  /// @nodoc getMessageAttachmentPath - Gets message's attachement path.
   Future<String> getMessageAttachmentPath() async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.getMessageAttachmentPath, {"id": _conversationId});
