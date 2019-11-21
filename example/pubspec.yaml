@@ -17,6 +17,11 @@ dependencies:
   flustars: ^0.2.6+1
   provider: ^3.1.0+1
   fluttertoast: ^3.1.3
+  oktoast: ^2.2.0
+  cached_network_image: ^1.1.1
+  audio_recorder: ^1.0.1
+  flutter_sound: ^1.4.2
+  image_picker: ^0.4.12+1
 
 dev_dependencies:
   flutter_test:
@@ -44,8 +49,6 @@ flutter:
     - images/default_avatar.png
     - images/group_icon.png
     - images/chatroom_icon.png
-    - images/ease_default_avatar.png
-    - images/ease_group_icon.png
     - images/star.png
     - images/logo@2x.png
     - images/back_01.png
@@ -64,6 +67,20 @@ flutter:
     - images/自定义服务器@2x.png
     - images/清除缓存@2x.png
     - images/同意条款@2x.png
+    - images/voice.png
+    - images/voice_select.png
+    - images/phone.png
+    - images/phone_select.png
+    - images/video.png
+    - images/video_select.png
+    - images/camera.png
+    - images/camera_select.png
+    - images/picture.png
+    - images/picture_select.png
+    - images/emojicon.png
+    - images/emojicon_select.png
+    - images/add.png
+    - images/add_select.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -18,6 +18,7 @@ class EMSDKMethod {
   static const String onDisconnected = "onDisconnected";
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
+  static const String getCurrentUser =  "getCurrentUser";
 
   /// EMContactManager methods
   static const String addContact = 'addContact';

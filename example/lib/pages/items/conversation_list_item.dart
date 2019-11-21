@@ -5,6 +5,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/time_util.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 class EMConversationListItem extends StatefulWidget{
 
@@ -111,25 +112,31 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   Widget _buildUnreadMark(){
     if(underCount > 0){
+      String count = underCount.toString();
+      double width = EMLayout.emConListUnreadSize;
+      if(underCount > 9){
+        width = EMLayout.emConListUnreadSize/2*3;
+      }
+      if(underCount > 99){
+        count = '99+';
+        width = EMLayout.emConListUnreadSize*2;
+      }
       return Positioned(
         right: 0.0,
         top: 0.0,
         child: Container(
-          width: EMLayout.emConListUnreadSize,
+          width: width,
           height: EMLayout.emConListUnreadSize,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(EMLayout.emConListUnreadSize/2.0),
               color: _isDark ? EMColor.darkRed : EMColor.red,
           ),
+            child: Text(count, style:TextStyle(fontSize: EMFont.emConUnreadFont, color: _isDark ? EMColor.darkUnreadCount : EMColor.unreadCount,))
         ),
       );
     }
-    return Container(
-      height: 1,
-      width: 1,
-    );
-
+    return WidgetUtil.buildEmptyWidget();
   }
 
   Widget _buildPortrait(){
@@ -177,7 +184,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         children: <Widget>[
           Text(
             titleName,
-
             style: TextStyle(fontSize: EMFont.emConListTitleFont,fontWeight:FontWeight.w400),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -185,7 +191,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
           SizedBox(height: 6,),
           Text(
             content,
-
             style: TextStyle(fontSize: EMFont.emConListContentFont,
             color: _isDark ? EMColor.darkTextGray : EMColor.textGray),
             maxLines: 1,
@@ -199,7 +204,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   Widget _buildTime(){
     var time = TimeUtil.convertTime(int.parse(message.msgTime));
     return Container(
-
       width: EMLayout.emConListItemHeight,
       margin: EdgeInsets.only(right:10),
       child: Column(
@@ -242,10 +246,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
         ),
       );
     }
-    return Container(
-      height: 1,
-      width: 1,
-    );
+    return WidgetUtil.buildEmptyWidget();
   }
 }
 

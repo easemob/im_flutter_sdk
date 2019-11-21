@@ -3,6 +3,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 import 'package:im_flutter_sdk_example/utils/style.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 
 class EMContactsListPage extends StatefulWidget {
@@ -59,7 +60,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
         title: Text(DemoLocalizations.of(context).addressBook, style: TextStyle(fontSize: EMFont.emAppBarTitleFont, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
         leading: Icon(null),
         elevation: 0, // 隐藏阴影
-        backgroundColor: Colors.white,
+        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
         actions: <Widget>[
           Icon(Icons.add,),
           SizedBox(width: 24,)
@@ -78,7 +79,6 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   }
 
   Widget _rowStyle(int index) {
-
     if(index == 0) {
       return InkWell(
         onTap: (){

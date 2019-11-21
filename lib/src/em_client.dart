@@ -279,8 +279,13 @@ class EMClient {
 
   /// getCurrentUser - get current user name.
   /// Return null if not successfully login IM server yet.
-  String getCurrentUser() {
-    return _currentUser;
+  Future<String> getCurrentUser() async{
+    Map<String, dynamic> result =
+    await _emClientChannel.invokeMethod(EMSDKMethod.getCurrentUser);
+    if(result['success']){
+      return result['userName'];
+    }
+    return '';
   }
 
   /// isLoggedInBefore - whether successful login invoked before.
