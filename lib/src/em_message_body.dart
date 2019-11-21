@@ -77,7 +77,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody.ofData(Map data)
       : this.displayName = data['displayName'],
         this.localUrl = data['localUrl'],
-        this.downloadStatus = data['downloadStatus'],
+        this.downloadStatus = fromEMDownloadStatus(data['downloadStatus']),
         this.fileName = data['fileName'],
         this.remoteUrl = data['remoteUrl'],
         this.secret = data['secret'];
@@ -106,7 +106,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
     result['localUrl'] = localUrl;
     result['remoteUrl'] = remoteUrl;
     result['secret'] = secret;
-    result['status'] = toEMDownloadStatus(downloadStatus);
+    result['downloadStatus'] = toEMDownloadStatus(downloadStatus);
     return result;
   }
 }

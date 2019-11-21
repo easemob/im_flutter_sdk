@@ -113,7 +113,6 @@ class EMContactManager {
           if (response['value'] != null) {
             for (var contact in response['value']) {
               contacts.add(contact);
-              print('好友列表---$contacts');
             }
           }
           onSuccess(contacts);

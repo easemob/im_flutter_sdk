@@ -100,7 +100,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
   void onDisconnected(int errorCode) {
     // TODO: implement onDisconnected
-    print("网络连接断开");
+    print("网络连接断开 ");
   }
 
 }
