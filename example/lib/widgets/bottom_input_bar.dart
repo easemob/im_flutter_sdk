@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk_example/utils/media_util.dart';
+import 'package:im_flutter_sdk_example/utils/style.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 
 class BottomInputBar extends StatefulWidget {
@@ -136,32 +139,38 @@ class _BottomInputBarState extends State<BottomInputBar> {
 //    if(imgPath == null) {
 //      return;
 //    }
-//    this.delegate.onTapItemCamera(imgPath);
+    this.delegate.onTapItemCamera('');
   }
 
   ///点击表情item
   void  _selectEmojicon() async{
     print("_selectEmojicon_");
-//    this.delegate.onTapItemEmojicon();
+    this.delegate.onTapItemEmojicon();
   }
 
   ///点击音频item
   void  _makeVoiceCall() async{
     print("_makeVoiceCall_");
-//    this.delegate.onTapItemPhone();
+    this.delegate.onTapItemPhone();
   }
 
   ///点击视频item
   void  _makeVideoCall() async{
     print("_makeVideoCall_");
-//    this.delegate.onTapItemVideo();
+    this.delegate.onTapItemVideo();
+  }
+
+  ///点击语音消息item
+  void  _sendVoiceMessage() async{
+    print("_sendVoiceMessage_");
+    this.delegate.sendVoice('', 0);
   }
 
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color:  ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
       padding: EdgeInsets.fromLTRB(15, 6,15, 2),
       child:Column(
         children: <Widget>[
@@ -179,13 +188,14 @@ class _BottomInputBarState extends State<BottomInputBar> {
                       ),
                     ),
                 ),
-                Material(
+                Container(
+                  width: 50,
+                  height: 50,
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  child:IconButton(
-                      icon: Icon(Icons.send,color: Colors.lightBlueAccent,),
-                      iconSize: 24,
-                      highlightColor: Colors.lightBlueAccent,
+                  alignment: Alignment.center,
+                  child:RaisedButton(
+                      shape:CircleBorder(side: BorderSide(color: Colors.white)),
+                      child: Image.asset('images/send.png',),
                       onPressed:() {
                         sendMessages();
                       } ,
@@ -202,6 +212,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                     iconSize: 26,
                     onPressed:() {
                       isShowVoiceAction = true;
+                      _sendVoiceMessage();
                     } ,
                   ),
                 ),
