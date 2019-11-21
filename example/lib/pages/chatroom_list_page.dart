@@ -35,6 +35,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
   void _loadChatRoomList(){
     EMClient.getInstance().chatRoomManager().fetchPublicChatRoomsFromServer(pageNum : 0, pageSize: 20,
     onSuccess: (data){
+      print(data);
       roomList = data.getData();
       _loading = false;
       _refreshUI();
