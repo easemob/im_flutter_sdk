@@ -36,26 +36,26 @@ class EMChatRoom{
      return _administratorList;
   }
 
-  ///返回成员列表
-  ///return member list
+  /// @nodoc 返回成员列表
+  /// @nodoc return member list
   List getMemberList(){
      return _memberList;
   }
 
-  /// 返回聊天室黑名单
+  /// @nodoc 返回聊天室黑名单
   /// return black list
   List getBlackList(){
      return _blockList;
   }
 
-  /// 返回禁言列表, Map.entry.key 是禁言的成员id，Map.entry.value是禁言动作存在的时间，单位是毫秒。
-  /// return mute list, Map.entry.key is username of mute action, Map.entry.value is expired time of banning post action, in milli-seconds
+  /// @nodoc 返回禁言列表, Map.entry.key 是禁言的成员id，Map.entry.value是禁言动作存在的时间，单位是毫秒。
+  /// @nodoc return mute list, Map.entry.key is username of mute action, Map.entry.value is expired time of banning post action, in milli-seconds
   Map getMuteList(){
      return _muteList;
   }
 
-  /// 获取聊天室公告
-  /// get chatroom announcement
+  /// @nodoc 获取聊天室公告
+  /// @nodoc get chatroom announcement
   String getAnnouncement(){
      return _announcement;
   }
@@ -72,13 +72,13 @@ class EMChatRoom{
     return _description;
   }
 
-  /// 获取聊天室的所有者，如果没有获取聊天室详情，返回可能为空
+  /// @nodoc 获取聊天室的所有者，如果没有获取聊天室详情，返回可能为空
   String getOwner(){
     return _owner;
   }
 
-  /// 返回在线成员人数
-  /// return online member count
+  /// @nodoc 返回在线成员人数
+  /// @nodoc return online member count
   int getMemberCount(){
     return _affiliationsCount;
   }

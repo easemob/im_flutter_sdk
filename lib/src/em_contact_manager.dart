@@ -62,8 +62,8 @@ class EMContactManager {
     }
   }
 
-  /// addContact - add contact of [userName] with [reason].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc addContact - add contact of [userName] with [reason].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void addContact(
       {@required String userName,
       @required String reason,
@@ -80,8 +80,8 @@ class EMContactManager {
     });
   }
 
-  /// deleteContact - delete contact [userName] while keep the conversation existing if [keepConversation] set to true.
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc deleteContact - delete contact [userName] while keep the conversation existing if [keepConversation] set to true.
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void deleteContact(
       {@required String userName,
       bool keepConversation = false,
@@ -126,9 +126,9 @@ class EMContactManager {
 
 
 
-  /// addUserToBlackList - Adds user [userName] into black list.
-  /// If [both] set to true, both sides couldn't send message to counterpart. Otherwise, [userName] still can receive messages.
-  /// Call [onError] if error occured, with [code] and [desc] as the specific error information.
+  /// @nodoc addUserToBlackList - Adds user [userName] into black list.
+  /// @nodoc If [both] set to true, both sides couldn't send message to counterpart. Otherwise, [userName] still can receive messages.
+  /// @nodoc Call [onError] if error occured, with [code] and [desc] as the specific error information.
   void addUserToBlackList(
       {@required String userName,
       bool both = false,
@@ -145,8 +145,8 @@ class EMContactManager {
     });
   }
 
-  /// removeUserFromBlackList - Removes [userName] from black list.
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc removeUserFromBlackList - Removes [userName] from black list.
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void removeUserFromBlackList(
       {@required String userName,
       onSuccess(),
@@ -162,13 +162,13 @@ class EMContactManager {
     });
   }
 
-  /// getBlackListUserNames - Returns local stored black-listed user names.
+  /// @nodoc getBlackListUserNames - Returns local stored black-listed user names.
   List<String> getBlackListUserNames() {
     return _blackList;
   }
 
-  /// getBlackListFromServer - Gets black list from server and stores locally for next call to [getBlackListUserNames].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc getBlackListFromServer - Gets black list from server and stores locally for next call to [getBlackListUserNames].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void getBlackListFromServer(
       {onSuccess(List<String> blackList), onError(int code, String desc)}) {
     Future<Map<String, dynamic>> result = _emContactManagerChannel
@@ -191,8 +191,8 @@ class EMContactManager {
     });
   }
 
-  /// acceptInvitation - Accepts invitation from [userName].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc acceptInvitation - Accepts invitation from [userName].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void acceptInvitation(
       {@required String userName,
       onSuccess(),
@@ -208,8 +208,8 @@ class EMContactManager {
     });
   }
 
-  /// declineInvitation - Declines invitation from [userName].
-  /// Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc declineInvitation - Declines invitation from [userName].
+  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
   void declineInvitation(
       {@required String userName,
       onSuccess(),
@@ -225,8 +225,8 @@ class EMContactManager {
     });
   }
 
-  /// getSelfIdsOnOtherPlatform - Gets self ids on other platform.
-  /// Call [onError] if error occured, with [code], [desc] set with detail error information.
+  /// @nodoc getSelfIdsOnOtherPlatform - Gets self ids on other platform.
+  /// @nodoc Call [onError] if error occured, with [code], [desc] set with detail error information.
   void getSelfIdsOnOtherPlatform(
       {onSuccess(List<String> devices),
         onError(int code, String desc)}){
@@ -250,12 +250,12 @@ class EMContactManager {
 
   }
 
-  /// setContactListener - Sets listener [contactListener] to be aware of contact modification events.
+  /// @nodoc setContactListener - Sets listener [contactListener] to be aware of contact modification events.
   void addContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.add(contactListener);
   }
 
-  /// removeContactListener - Removes listener [contactListener] from listener list.
+  /// @nodoc removeContactListener - Removes listener [contactListener] from listener list.
   void removeContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.remove(contactListener);
   }
