@@ -65,6 +65,8 @@
         [self kickAllDevices:call.arguments result:result];
     } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
+    } else if([EMMethodKeyGetCurrentUser isEqualToString:call.method]) {
+        [self getCurrentUser:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -95,7 +97,7 @@
     EMGroupManagerWrapper * groupManagerWrapper = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_group_manager")
                                                                                            registrar:self.flutterPluginRegister];
     
-    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chatroom_manager")
+    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager")
                                                                                                    registrar:self.flutterPluginRegister];
 #pragma clang diagnostic pop
 
@@ -175,7 +177,7 @@
     NSString *username = EMClient.sharedClient.currentUsername;
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:@{@"value":username}];
+                 userInfo:@{@"userName":username}];
 }
 
 - (void)updateCurrentUserNick:(NSDictionary *)param result:(FlutterResult)result {

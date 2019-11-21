@@ -29,7 +29,7 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-
+    NSLog(@"leave chatroom -- %@ -- %@",call.method, call.arguments);
     if ([EMMethodKeyGetChatroomsFromServer isEqualToString:call.method]) {
         [self getChatroomsFromServer:call.arguments result:result];
     } else if ([EMMethodKeyCreateChatRoom isEqualToString:call.method]) {
@@ -129,6 +129,7 @@
 
 - (void)leaveChatroom:(NSDictionary *)param result:(FlutterResult)result {
     NSString *chatroomId = param[@"roomId"];
+    NSLog(@"leave chatroom --- %@",chatroomId);
     [EMClient.sharedClient.roomManager leaveChatroom:chatroomId
                                           completion:^(EMError *aError)
      {
