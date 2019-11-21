@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'dart:typed_data';
-import 'dart:convert';
+import 'package:im_flutter_sdk_example/utils/media_util.dart';
 
 class MessageItemFactory extends StatelessWidget {
   final EMMessage message;
@@ -25,55 +24,21 @@ class MessageItemFactory extends StatelessWidget {
 
     Widget widget;
     if (msg.thumbnailUrl != null && msg.thumbnailUrl.length > 0) {
-      Uint8List bytes = base64.decode(msg.thumbnailUrl);
-      widget = Image.memory(bytes);
+      widget = Image.network(msg.thumbnailUrl,width: 90,height: 100,fit: BoxFit.fill);
     } else {
       if(msg.localUrl != null) {
-//        String path = MediaUtil.instance.getCorrectedLocalPath(msg.localUrl);
-//        File file = File(path);
-//        if(file != null && file.existsSync()) {
-//          widget = Image.file(file);
-//        }else {
-//          widget = Image.network(msg.imageUri);
-//        }
+        String path = MediaUtil.instance.getCorrectedLocalPath(msg.localUrl);
+        File file = File(path);
+        if(file != null && file.existsSync()) {
+          widget = Image.file(file,width: 90,height: 100,fit: BoxFit.fill);
+        }else {
+          widget = Image.network(msg.localUrl,width: 90,height: 100,fit: BoxFit.fill);
+        }
       }else {
-//        widget = Image.network(msg.imageUri);
+        widget = Image.network(msg.remoteUrl,width: 90,height: 100,fit: BoxFit.fill);
       }
     }
     return widget;
-  }
-
-  ///语音消息 item
-  Widget voiceMessageItem() {
-    EMVoiceMessageBody msg = message.body;
-    List<Widget> list = new List();
-    if(message.direction == Direction.SEND) {
-      list.add(SizedBox(width: 6,));
-      list.add(Text("语音时长",style: TextStyle(fontSize: 13),));
-      list.add(SizedBox(width: 20,));
-      list.add(Container(
-        width: 20,
-        height: 20,
-        child: Image.asset("assets/images/voice_icon.png"),
-      ));
-    }else {
-      list.add(SizedBox(width: 6,));
-      list.add(Container(
-        width: 20,
-        height: 20,
-        child: Image.asset("assets/images/voice_icon_reverse.png"),
-      ));
-      list.add(SizedBox(width: 20,));
-      list.add(Text("语音时长"));
-    }
-
-    return Container(
-      width: 80,
-      height: 44,
-      child: Row(
-          children:list
-      ) ,
-    );
   }
 
   Widget messageItem() {
@@ -81,9 +46,7 @@ class MessageItemFactory extends StatelessWidget {
       return textMessageItem();
     } else if (message.body is EMImageMessageBody){
       return imageMessageItem();
-    } else if (message.body is EMVoiceMessageBody) {
-      return voiceMessageItem();
-    } else {
+    }  else {
       return Text("无法识别消息 ");
     }
   }

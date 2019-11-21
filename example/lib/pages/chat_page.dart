@@ -1,15 +1,14 @@
-
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/ease_user_info.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
+import 'package:im_flutter_sdk_example/widgets/bottom_input_bar.dart';
 
-import '../bottom_input_bar.dart';
 import 'items/chat_item.dart';
 
 
+// ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
-
   var arguments;
   ChatPage({Key key, this.arguments}) : super(key: key);
 
@@ -20,19 +19,20 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatItemDelegate,BottomInputBarDelegate{
   var arguments;
-  EMConversationType conversationType;
+  int mType;
   String toChatUsername;
   EMConversation conversation;
 
   UserInfo user;
   int _pageSize = 10;
-  int msgCount = 0;
-  int allMsgCount = 0;
   bool isLoad = false;
+  bool isJoinRoom = true;
   String msgStartId = '';
+  String afterLoadMessageId = '';
 
   List<EMMessage> messageTotalList = new List();//消息数组
   List<EMMessage> messageList = new List();//消息数组
+  List<EMMessage>  msgListFromDB = new List();
   List<Widget> extWidgetList = new List();//加号扩展栏的 widget 列表
   bool showExtWidget = false;//是否显示加号扩展栏内容
 
@@ -44,12 +44,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   Widget build(BuildContext context) {
-//    arguments = ModalRoute.of(context).settings.arguments;
-//    print(arguments.toString() + '.....');
-//    ///聊天类型 和 ID
-//    conversationType = arguments["conversationType"];
-//    toChatUsername = arguments["toChatUsername"];
-    print(isLoad);
+
     if(messageList.length > 0 ){
       messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
       if(!isLoad){
@@ -86,7 +81,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
               onSelected: (String action) {
                 // 点击选项的时候
                 switch (action) {
-                  case 'A': break;
+                  case 'A':
+                    _cleanAllMessage();
+                    break;
                 }
               },
             ),
@@ -110,7 +107,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
                               itemCount: messageTotalList.length,
                               itemBuilder: (BuildContext context, int index) {
                                 if (messageTotalList.length != null && messageTotalList.length > 0) {
-                                  return ChatItem(this,messageTotalList[index],_needShowTime(index));
+                                  return ChatItem(this,messageTotalList[index],_isShowTime(index));
                                 } else {
                                   return WidgetUtil.buildEmptyWidget();
                                 }
@@ -124,7 +121,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
                       height: 110,
                       child: BottomInputBar(this),
                     ),
-//                    _getExtentionWidget(),
+                    _getExtWidgets(),
                   ],
                 ),
               ),
@@ -141,6 +138,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         child: new Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
+            // ignore: non_constant_identifier_names
             new Icon(icon, color: Colors.blue),
             new Text(text),
           ],
@@ -159,9 +157,12 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     messageTotalList.clear();
 
-    ///聊天类型 和 ID
-    conversationType = arguments["conversationType"];
+    mType = arguments["mType"];
     toChatUsername = arguments["toChatUsername"];
+
+    if(fromChatType(mType) == ChatType.ChatRoom ){
+      _joinChatRoom();
+    }
 
     this.user = UserInfoDataSource.getUserInfo(toChatUsername);
     _onConversationInit();
@@ -178,52 +179,28 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void _onConversationInit() async{
     messageList.clear();
     conversation = await EMClient.getInstance().chatManager().
-    getConversation(id:toChatUsername,type:conversationType,createIfNotExists:true );
+    getConversation(id:toChatUsername,type:fromEMConversationType(mType),createIfNotExists:true );
     conversation.markAllMessagesAsRead();
-//    var cacheList =  await conversation.getAllMessages();
-//    print(cacheList.length.toString() + '...oldList....');
-//    allMsgCount = await conversation.getAllMsgCount();
-//    print(allMsgCount.toString() + '...getAllMsgCount....');
-//    msgCount = cacheList != null ? cacheList.length : 0;
-//    print('conversationCount: '+ allMsgCount.toString() + '   msgCount: ' + msgCount.toString());
-//    if (msgCount < allMsgCount && msgCount < _pageSize) {
-//      var msgid = '';
-//      if (cacheList != null && cacheList.length > 0) {
-//        msgid = cacheList[0].msgId;
-//      }
-//      var loadList = await conversation.loadMoreMsgFromDB(startMsgId: msgid,pageSize:_pageSize - msgCount);
-//      messageList.clear();
-//      if(loadList.length > 0){
-//        messageList  =  await conversation.getAllMessages();
-//      }
-//      print(messageList.length.toString() + '....messageList...');
-//    }else{
-//      messageList.clear();
-//      messageList.addAll(cacheList);
-//    }
 
-    var msgListFromDB = await conversation.loadMoreMsgFromDB(startMsgId: msgStartId, pageSize: 20);
-    msgStartId = msgListFromDB.first.msgId;
-    messageList.addAll(msgListFromDB);
+    if(null != conversation){
+      conversation.markAllMessagesAsRead();
+      msgListFromDB = await conversation.loadMoreMsgFromDB(startMsgId: '', pageSize: 20);
+    }
+
+    if(msgListFromDB != null && msgListFromDB.length > 0){
+      afterLoadMessageId = msgListFromDB.first.msgId;
+        messageList.addAll(msgListFromDB);
+    }
     isLoad = false;
     _refreshUI();
   }
 
 
   void _loadMessage() async {
-    //todo 加载历史消息
-    print('加载历史消息');
-//    var msgid = '';
-//    if(messageTotalList != null && messageTotalList.length > 0){
-//      msgid = messageTotalList[messageTotalList.length - 1].msgId;
-//    }
-    var loadlist = await conversation.loadMoreMsgFromDB(startMsgId: msgStartId,pageSize:_pageSize);
+    var loadlist = await conversation.loadMoreMsgFromDB(startMsgId: afterLoadMessageId ,pageSize:_pageSize);
     if(loadlist.length > 0){
-//      messageList.clear();
-//      messageTotalList.clear();
-//      messageList  =  await conversation.getAllMessages();
-//      print(messageList.length.toString() + 'load list');
-//      messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
+      afterLoadMessageId = loadlist.first.msgId;
+      loadlist.sort((a, b) => b.msgTime.compareTo(a.msgTime));
       await Future.delayed(Duration(seconds: 1), () {
         setState(() {
           messageTotalList.addAll(loadlist);
@@ -239,6 +216,23 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 2), curve: Curves.ease);
   }
 
+  ///如果是聊天室类型 先加入聊天室
+  _joinChatRoom(){
+    EMClient.getInstance().chatRoomManager().joinChatRoom(roomId: toChatUsername ,
+        onSuccess: (){
+
+        },
+        onError: (int errorCode,String errorString){
+          print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
+        });
+  }
+
+  _cleanAllMessage(){
+     if(null != conversation){
+        conversation.clearAllMessages();
+     }
+  }
+
   /// 禁止随意调用 setState 接口刷新 UI，必须调用该接口刷新 UI
   void _refreshUI() {
     setState(() {
@@ -248,7 +242,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   Widget _getExtWidgets() {
     if(showExtWidget) {
       return Container(
-          height: 180,
+          height: 110,
           child: GridView.count(
             physics: new NeverScrollableScrollPhysics(),
             crossAxisCount: 4,
@@ -261,18 +255,19 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     }
   }
 
-  ///长按录制语音的 gif 动画
-  Widget _buildExtraCenterWidget() {
-    if(this.currentStatus == ChatStatus.VoiceRecorder) {
-      return WidgetUtil.buildVoiceRecorderWidget();
-    }else {
-      return WidgetUtil.buildEmptyWidget();
-    }
-  }
-
   void _showExtraCenterWidget(ChatStatus status) {
     this.currentStatus = status;
     _refreshUI();
+  }
+
+  void checkOutRoom(){
+    EMClient.getInstance().chatRoomManager().leaveChatRoom(roomId: toChatUsername,
+        onSuccess: (){
+          print('退出聊天室成功');
+        },
+        onError: (int errorCode,String errorString){
+          print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
+        });
   }
 
 
@@ -318,9 +313,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         conversation.markMessageAsRead(messageId:message.msgId);
       }
     }
-
     _onConversationInit();
-
   }
 
   @override
@@ -329,10 +322,24 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMClient.getInstance().chatManager().removeMessageListener(this);
     _scrollController.dispose();
     messageTotalList.clear();
+    if(isJoinRoom){
+      checkOutRoom();
+    }
   }
 
-  bool _needShowTime(int index) {
-    return true;
+  /// 判断时间间隔在60秒内不需要显示时间
+  bool _isShowTime(int index) {
+//    if(index == 0){
+//      return true;
+//    }
+//    print(messageTotalList.toString());
+//    print(index);
+//    String lastTime = messageTotalList[index - 1].msgTime;
+//    print('before' + messageTotalList[index - 1].body.toString() + ' beforeTime:'+lastTime);
+//    String afterTime = messageTotalList[index].msgTime;
+//    print('after' + messageTotalList[index].body.toString() + ' afterTime:'+afterTime);
+//    return WidgetUtil.isCloseEnough(lastTime,afterTime);
+    return false;
   }
 
   @override
@@ -360,6 +367,47 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void inputStatusChanged(InputBarStatus status) {
     // TODO: implement inputStatusDidChange  输入工具栏状态发生变更
+    if(status == InputBarStatus.Ext) {
+      showExtWidget = true;
+    }else {
+      showExtWidget = false;
+    }
+    _refreshUI();
+  }
+
+  @override
+  void onTapItemPicture(String imgPath){
+    // TODO: onTapItemPicture  点击相册 返回选中图片的Url
+    print('onTapItemPicture' + imgPath);
+
+    EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
+    imageMessage.chatType = fromChatType(mType);
+    EMClient.getInstance().chatManager().sendMessage(imageMessage);
+
+    _onConversationInit();
+
+  }
+
+  @override
+  void onTapItemCamera(String imgPath) {
+    // TODO: implement onTapItemCamera
+    print('onTapItemCamera' + imgPath);
+  }
+
+
+  @override
+  void onTapItemEmojicon() {
+    // TODO: implement onTapItemEmojicon
+  }
+
+  @override
+  void onTapItemPhone() {
+    // TODO: implement onTapItemPhone
+  }
+
+  @override
+  void onTapItemVideo() {
+    // TODO: implement onTapItemVideo
   }
 
   @override
@@ -367,24 +415,11 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     // TODO: implement willSendText   发送文本消息
     EMMessage message = EMMessage.createSendMessage(EMMessageType.TXT);
     message.to = toChatUsername;
-    message.chatType = getChatType(conversationType);
+    message.chatType = fromChatType(mType);
     EMTextMessageBody body = EMTextMessageBody(text);
     message.body = body;
     EMClient.getInstance().chatManager().sendMessage(message);
     _onConversationInit();
-  }
-
-  ChatType getChatType(EMConversationType conversationType){
-    switch(conversationType){
-      case EMConversationType.Chat:
-        return ChatType.Chat;
-      case EMConversationType.GroupChat:
-        return ChatType.GroupChat;
-      case EMConversationType.ChatRoom:
-        return ChatType.ChatRoom;
-      default:
-        return ChatType.Chat;
-    }
   }
 
   @override

@@ -63,12 +63,10 @@ class EMCmdMessageBody extends EMMessageBody {
 abstract class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody(String localUrl)
       : this.displayName = '',
-        this.localUrl = localUrl,
-        this._fileLength = getFileLength(localUrl);
+        this.localUrl = localUrl;
 
   EMFileMessageBody.of(EMFileMessageBody body)
       : this.displayName = body.displayName,
-        this._fileLength = body._fileLength,
         this.localUrl = body.localUrl,
         this.downloadStatus = body.downloadStatus,
         this.fileName = body.fileName,
@@ -78,15 +76,12 @@ abstract class EMFileMessageBody extends EMMessageBody {
 
   EMFileMessageBody.ofData(Map data)
       : this.displayName = data['displayName'],
-        this._fileLength = data['fileLength'],
         this.localUrl = data['localUrl'],
         this.downloadStatus = data['downloadStatus'],
         this.fileName = data['fileName'],
         this.remoteUrl = data['remoteUrl'],
         this.secret = data['secret'];
 
-  var _fileLength;
-  set fileLength(int length) => _fileLength = length;
   EMMessageBody _body;
 
   String displayName;
@@ -100,18 +95,13 @@ abstract class EMFileMessageBody extends EMMessageBody {
   String toString() =>
       '[EMFileMessageBody], {displayName: $displayName, fileName: $fileName,'
       'localUrl: $localUrl, remoteUrl: $remoteUrl, secret: $secret,'
-      'fileLength: $_fileLength,'
       'body: $_body}';
 
-   static Future<String> getFileLength(String fileUrl) async{
-      return  new File(fileUrl).length().toString();
-  }
 
   @override
   Map toDataMap() {
     var result = {};
     result['displayName'] = displayName;
-    result['fileLength'] = _fileLength;
     result['fileName'] = fileName;
     result['localUrl'] = localUrl;
     result['remoteUrl'] = remoteUrl;
@@ -158,7 +148,7 @@ class EMLocationMessageBody extends EMMessageBody {
 /// Subclasses of EMFileMessageBody.
 class EMImageMessageBody extends EMFileMessageBody {
   EMImageMessageBody(File imageFile,
-      [bool sendOriginalImage])
+      bool sendOriginalImage)
       : this._imageFile = imageFile,
         this.sendOriginalImage = sendOriginalImage,
         super(imageFile.path);
@@ -208,8 +198,8 @@ class EMImageMessageBody extends EMFileMessageBody {
       'sendOriginalImage: $sendOriginalImage }';
 
   @override
-  Map<String, dynamic> toDataMap() {
-    var result = Map<String, dynamic>();
+  Map toDataMap() {
+    var result = Map.of(super.toDataMap());
     result["height"] = height;
     result["width"] = width;
     result["sendOriginalImage"] = sendOriginalImage;
