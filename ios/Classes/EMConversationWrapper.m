@@ -70,6 +70,7 @@
 {
     NSString *conversationId = param[@"id"];
     // TODO: 是否需要类型？
+    NSLog(@"ios -- getConversationWithParam %@", conversationId);
     EMConversationType type = 0;
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type

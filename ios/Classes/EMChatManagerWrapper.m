@@ -101,21 +101,29 @@
 }
 
 - (void)ackMessageRead:(NSDictionary *)param result:(FlutterResult)result {
-    // 此处先不实现，等待3.6.2 sdk发版。
+    
 }
 
 - (void)recallMessage:(NSDictionary *)param result:(FlutterResult)result {
-    // 此处先不实现，等待3.6.2 sdk发版。
+    
 }
 
 - (void)getMessage:(NSDictionary *)param result:(FlutterResult)result {
-    // 此处先不实现，等待3.6.2 sdk发版。
+    
 }
 
 - (void)getConversation:(NSDictionary *)param result:(FlutterResult)result {
     NSString *conversationId = param[@"id"];
-    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
+    EMConversationType type;
+    if ([param[@"type"] isKindOfClass:[NSNull class]]){
+        type = EMConversationTypeChat;
+    }else {
+        type = (EMConversationType)[param[@"type"] intValue];
+    }
     BOOL isCreateIfNotExists = [param[@"createIfNotExists"] boolValue];
+    
+    NSLog(@"getConversation conversationId -- %@ -- %d -- %d",conversationId, type, isCreateIfNotExists);
+    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
                                                                      createIfNotExist:isCreateIfNotExists];
