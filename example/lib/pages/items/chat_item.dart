@@ -8,6 +8,7 @@ import '../../ease_user_info.dart';
 import 'message_item_factory.dart';
 
 
+// ignore: must_be_immutable
 class ChatItem extends StatefulWidget {
   EMMessage message ;
   ChatItemDelegate delegate;
@@ -47,7 +48,7 @@ class _ChatItemState extends State<ChatItem> {
       padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
       child:Column(
         children: <Widget>[
-//          this.showTime? WidgetUtil.buildMessageTimeWidget(0):WidgetUtil.buildEmptyWidget(),
+          this.showTime? WidgetUtil.buildMessageTimeWidget(message.msgTime):WidgetUtil.buildEmptyWidget(),
           Row(
             children: <Widget>[subContent()],
           )

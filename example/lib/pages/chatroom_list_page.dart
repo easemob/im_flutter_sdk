@@ -87,7 +87,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
   }
 
   void onTapChatRoom(EMChatRoom room){
-    Navigator.of(context).pushNamed(Constant.toChatPage);
+    Navigator.of(context).pushNamed(Constant.toChatPage,arguments: {'mType': Constant.chatTypeChatRoom ,'toChatUsername': room.getId()});
   }
 }
 
