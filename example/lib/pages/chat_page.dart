@@ -160,7 +160,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     mType = arguments["mType"];
     toChatUsername = arguments["toChatUsername"];
 
-    if(fromChatType(mType) == ChatType.ChatRoom ){
+    if(fromChatType(mType) == ChatType.ChatRoom && !isJoinRoom){
       _joinChatRoom();
     }
 
@@ -326,7 +326,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMClient.getInstance().chatManager().removeMessageListener(this);
     _scrollController.dispose();
     messageTotalList.clear();
-    if(!isJoinRoom){
+    if(isJoinRoom){
       checkOutRoom();
     }
   }
@@ -397,22 +397,26 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onTapItemCamera(String imgPath) {
     // TODO: implement onTapItemCamera
     print('onTapItemCamera' + imgPath);
+    WidgetUtil.hintBoxWithDefault('相机拍照待实现!');
   }
 
 
   @override
   void onTapItemEmojicon() {
     // TODO: implement onTapItemEmojicon
+    WidgetUtil.hintBoxWithDefault('发送表情待实现!');
   }
 
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
+    WidgetUtil.hintBoxWithDefault('音频通话待实现!');
   }
 
   @override
   void onTapItemVideo() {
     // TODO: implement onTapItemVideo
+    WidgetUtil.hintBoxWithDefault('视频通话待实现!');
   }
 
   @override
@@ -429,7 +433,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void sendVoice(String path, int duration) {
-
+    WidgetUtil.hintBoxWithDefault('语音消息待实现!');
   }
 
   @override
