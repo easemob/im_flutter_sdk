@@ -14,6 +14,7 @@ class DemoLocalizations {
       'mine': 'Mine',
       'login': 'Login',
       'delete_conversation' : 'DeleteConversation',
+      'delete_contact' : 'DeleteContact',
       'clear_unread' : 'ClearUnread',
       'chat_room' : 'ChatRoom',
       'search' : 'Search',
@@ -26,6 +27,7 @@ class DemoLocalizations {
       'mine': '我的',
       'login': '登录',
       'delete_conversation' : '删除会话',
+      'delete_contact' : '删除联系人',
       'clear_unread' : '清除未读',
       'chat_room' : '聊天室',
       'search' : '搜索',
@@ -51,6 +53,11 @@ class DemoLocalizations {
   get deleteConversation {
     return _localizedValues[locale.languageCode]['delete_conversation'];
   }
+
+  get deleteContact {
+    return _localizedValues[locale.languageCode]['delete_contact'];
+  }
+
   get clearUnread {
     return _localizedValues[locale.languageCode]['clear_unread'];
   }

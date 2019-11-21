@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk_example/utils/style.dart';
-import 'package:im_flutter_sdk_example/utils/theme_util.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 
 class EMContactAddPage extends StatefulWidget {
+
   @override
   State<StatefulWidget> createState() {
     return _EMContactAddPageState();
@@ -16,6 +16,7 @@ class EMContactAddPage extends StatefulWidget {
 class _EMContactAddPageState extends State<EMContactAddPage>  {
 
   TextEditingController _addController = TextEditingController();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -28,14 +29,15 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
     return Scaffold(
       appBar: AppBar(
         centerTitle : true,
-        title: Text(DemoLocalizations.of(context).addressBook, style: TextStyle(fontSize: 18, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
-        leading: Icon(null),
-        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
+        title: Text('添加好友', ),
+//        leading: Icon(Icons.arrow_back, color: Colors.black, ),
+        elevation: 0, // 隐藏阴影
+//        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
+        backgroundColor: Colors.white,
       ),
-      key: UniqueKey(),
+//      key: UniqueKey(),
       body: Column(
         children: <Widget>[
-
 
           SizedBox(height: 50,),
           /// 好友id
@@ -48,7 +50,7 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
                 hintText: "用户名",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(57),
-                  borderSide: BorderSide.none,
+                  borderSide: BorderSide(color: Colors.blue, width: 1.0, style: BorderStyle.solid),
                 ),
                 fillColor: Colors.white,
                 filled: true,
@@ -69,15 +71,23 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
               padding: EdgeInsets.all(12.0),
               shape: StadiumBorder(),
               child: Text(
-                '添 加',
+                '添加好友',
 //              DemoLocalizations.of(context).login,
                 style: TextStyle(color: Colors.white, fontSize: 16.0),
 
               ),
-              color: Color.fromRGBO(0, 0, 0, 0.1),
+              color: Colors.blue,
               onPressed: () {
+
+                if(WidgetUtil.isChinese(this._addController.text)) {
+                  WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
+                  return ;
+                }
+
 //                    register(context);
 //                Navigator.of(context).pushNamed('login_page');
+
+              _addContact(_addController.text);
 
               },
             ),
@@ -86,4 +96,20 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
       ),
     );
   }
+
+  _addContact(String username) {
+    EMClient.getInstance().contactManager().addContact(userName: username, reason: null ,
+        onSuccess: () {
+//          Navigator.of(context).pushNamed(Constant.toContactList);
+          Navigator.of(context).pop();
+//          Navigator.push(
+//              context, new MaterialPageRoute(builder: (BuildContext context) {
+//            return new ChatPage();
+//          }));
+        },
+        onError: (code, desc){
+          WidgetUtil.hintBoxWithDefault(desc);
+        });
+  }
+
 }
