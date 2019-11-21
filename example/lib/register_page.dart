@@ -179,6 +179,11 @@ class RegisterPageState extends State<RegisterPage> {
                       return ;
                     }
 
+                    if(WidgetUtil.isChinese(this._usernameController.text)) {
+                      WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
+                      return ;
+                    }
+
                     if(this._pwdController.text != this._onfirmPwdController.text) {
                       WidgetUtil.hintBoxWithDefault('输入的密码不同!');
                       return ;
@@ -233,6 +238,5 @@ class RegisterPageState extends State<RegisterPage> {
             break;
           }
         });
-
   }
 }

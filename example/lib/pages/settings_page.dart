@@ -195,7 +195,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
       height: 60.0,
 //      color: Color.fromRGBO(240, 240, 240, 1.0),
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
+        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
         width: double.infinity,
         height: 50.0,
         child: RaisedButton(
@@ -217,16 +217,15 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   }
 
   void logout (BuildContext context){
-
     EMClient.getInstance().logout(
       unbindToken: false,
       onSuccess: (){
         Navigator.of(context).pushNamed(Constant.toLoginPage);
       },
       onError: (code, desc) {
+
         WidgetUtil.hintBoxWithDefault(desc);
       },
     );
-
   }
 }
