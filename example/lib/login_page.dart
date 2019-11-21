@@ -197,18 +197,22 @@ class LoginPageState extends State<LoginPage> {
             ),
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
-              setState(() {
-                login(this._usernameController.text,this._pwdController.text);
-              });
-              print('用户名${this._usernameController.text}');
-              print('密码${this._pwdController.text}');
+                if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
+                  WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
+                  return ;
+                } else if(WidgetUtil.isChinese(this._usernameController.text)) {
+                  WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
+                  return ;
+                }
 
+                login(this._usernameController.text,this._pwdController.text);
             },
           ),
         ),
       ],
     ),
   );
+
 
   saveCurrentUser(String currentUser) async {
 //    SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -227,10 +231,10 @@ class LoginPageState extends State<LoginPage> {
 
   void login(String username , String password){
 
-    if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
-      WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
-      return ;
-    }
+//    if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
+//      WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
+//      return ;
+//    }
 
     if(isLogged){
       Navigator.of(context).pushNamed(Constant.toHomePage);
