@@ -500,7 +500,7 @@ class EMContact {
 
 // EMMessageBody - body of message.
 abstract class EMMessageBody {
-  Map toDataMap();
+  toDataMap();
   static EMMessageBody from(Map data) {
     switch (data['type']) {
       case 0:
