@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
-import 'utils/widget_util.dart';
-import 'common/common.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
+import 'package:im_flutter_sdk_example/common/common.dart';
+import 'package:im_flutter_sdk_example/utils/localizations.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -15,6 +17,8 @@ class RegisterPageState extends State<RegisterPage> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _pwdController = TextEditingController();
   TextEditingController _onfirmPwdController = TextEditingController();
+
+  bool _loading = false;
 
   @override
   void initState() {
@@ -59,6 +63,8 @@ class RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
+
+        ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inRegister,),
       ],
     );
   }
@@ -205,12 +211,13 @@ class RegisterPageState extends State<RegisterPage> {
   );
 
   void register(String username, String password){
+    _refreshUI(true);
     EMClient.getInstance().createAccount(userName: username, password: password,
         onSuccess: (){
           Navigator.of(context).pushNamed(Constant.toLoginPage ,arguments:{'username':this._usernameController.text, 'password':this._pwdController.text});
         },
         onError: (code, desc){
-
+          _refreshUI(false);
           switch(code) {
             case 101: {
               WidgetUtil.hintBoxWithDefault('用户ID不合法!');
@@ -238,5 +245,12 @@ class RegisterPageState extends State<RegisterPage> {
             break;
           }
         });
+  }
+
+  void _refreshUI(bool loading){
+    _loading = loading;
+    setState(() {
+
+    });
   }
 }
