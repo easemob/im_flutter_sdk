@@ -135,11 +135,11 @@ class _BottomInputBarState extends State<BottomInputBar> {
 
   ///点击相机拍照
   void  _takePicture() async{
-//    String imgPath = await MediaUtil.instance.takePhoto();
-//    if(imgPath == null) {
-//      return;
-//    }
-    this.delegate.onTapItemCamera('');
+    String imgPath = await MediaUtil.instance.takePhoto();
+    if(imgPath == null) {
+      return;
+    }
+    this.delegate.onTapItemCamera(imgPath);
   }
 
   ///点击表情item
