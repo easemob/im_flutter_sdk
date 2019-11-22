@@ -22,6 +22,9 @@ class DemoLocalizations {
       'chat_groups' : 'ChatGroups',
       'public_groups' : 'PublicGroups',
       'loading' : 'loading...',
+      'inLogin' : 'In the login...',
+      'inRegister' : 'In the register...',
+      'inLogout' : 'In the logout...',
     },
     'zh': {
       'conversation': '会话',
@@ -38,6 +41,9 @@ class DemoLocalizations {
       'chat_groups' : '群组',
       'public_groups' : '公开群组',
       'loading' : '正在加载...',
+      'inLogin' : '正在登录...',
+      'inRegister' : '正在注册...',
+      'inLogout' : '正在退出...',
     }
   };
 
@@ -84,6 +90,15 @@ class DemoLocalizations {
   }
   get loading {
     return _localizedValues[locale.languageCode]['loading'];
+  }
+  get inLogin {
+    return _localizedValues[locale.languageCode]['inLogin'];
+  }
+  get inRegister {
+    return _localizedValues[locale.languageCode]['inRegister'];
+  }
+  get inLogout {
+    return _localizedValues[locale.languageCode]['inLogout'];
   }
   static DemoLocalizations of(BuildContext context) {
     return Localizations.of(context, DemoLocalizations);
