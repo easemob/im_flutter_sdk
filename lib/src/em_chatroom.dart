@@ -11,7 +11,7 @@ class EMChatRoom{
   List _administratorList;
   List _memberList;
   List _blockList;
-  Map _muteList;
+  List _muteList;
   EMChatRoomPermissionType _permissionType;
 
 
@@ -45,8 +45,8 @@ class EMChatRoom{
      return _blockList;
   }
 
-  /// @nodoc 返回禁言列表, Map.entry.key 是禁言的成员id，Map.entry.value是禁言动作存在的时间，单位是毫秒。
-  Map getMuteList(){
+  /// @nodoc return mute list, Map.entry.key is username of mute action, Map.entry.value is expired time of banning post action, in milli-seconds
+  List getMuteList(){
      return _muteList;
   }
 

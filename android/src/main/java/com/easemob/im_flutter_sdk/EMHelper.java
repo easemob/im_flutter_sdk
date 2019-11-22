@@ -329,7 +329,13 @@ class EMHelper {
         chatRoomMap.put("maxUsers",emChatRoom.getMaxUsers());
         chatRoomMap.put("memberList",emChatRoom.getMemberList());
         chatRoomMap.put("blackList",emChatRoom.getBlackList());
-        chatRoomMap.put("muteList",emChatRoom.getMuteList());
+        if (emChatRoom.getMuteList() != null && emChatRoom.getMuteList().size() > 0) {
+            List list = new LinkedList();
+            emChatRoom.getMuteList().forEach((k, v) ->{
+                list.add(k);
+            });
+            chatRoomMap.put("muteList",list);
+        }
         chatRoomMap.put("announcement",emChatRoom.getAnnouncement());
         String currentUser = EMClient.getInstance().getCurrentUser();
         for (String s : emChatRoom.getMemberList()) {

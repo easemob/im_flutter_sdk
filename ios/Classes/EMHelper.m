@@ -111,7 +111,7 @@
             NSString *localUrl = msgBodyDict[@"localUrl"];
             long long fileLength = [msgBodyDict[@"fileLength"] longLongValue];
             body = [[EMImageMessageBody alloc] initWithLocalPath:localUrl
-                                                     displayName:@""];
+                                                     displayName:@"image"];
             ((EMImageMessageBody *)body).fileLength = fileLength;
         }
             break;
@@ -121,7 +121,7 @@
             int videoDuration = [msgBodyDict[@"videoDuration"] intValue];
             long long fileLength = [msgBodyDict[@"fileLength"] longLongValue];
             body = [[EMVideoMessageBody alloc] initWithLocalPath:localUrl
-                                                     displayName:@""];
+                                                     displayName:@"video"];
             ((EMVideoMessageBody *)body).fileLength = fileLength;
             ((EMVideoMessageBody *)body).duration = videoDuration;
         }
@@ -141,7 +141,7 @@
             NSString *localUrl = msgBodyDict[@"localUrl"];
             int voiceDuration = [msgBodyDict[@"voiceDuration"] intValue];
             long long fileLength = [msgBodyDict[@"fileLength"] longLongValue];
-            body = [[EMVoiceMessageBody alloc] initWithLocalPath:localUrl displayName:@""];
+            body = [[EMVoiceMessageBody alloc] initWithLocalPath:localUrl displayName:@"voice"];
             ((EMVoiceMessageBody *)body).duration = voiceDuration;
             ((EMVoiceMessageBody *)body).fileLength = fileLength;
         }
@@ -150,7 +150,7 @@
         {
             NSString *localUrl = msgBodyDict[@"localUrl"];
             long long fileLength = [msgBodyDict[@"fileLength"] longLongValue];
-            body = [[EMFileMessageBody alloc] initWithLocalPath:localUrl displayName:@""];
+            body = [[EMFileMessageBody alloc] initWithLocalPath:localUrl displayName:@"file"];
             ((EMFileMessageBody *)body).fileLength = fileLength;
         }
             break;
@@ -420,24 +420,48 @@
         type = 0;
     } else if (permissionType == EMChatroomPermissionTypeAdmin) {
         type = 1;
-    } else {
+    } else if (permissionType == EMChatroomPermissionTypeOwner){
         type = 2;
     }
     
     // @"permissionType":[NSNumber numberWithInt:type],
-    NSDictionary *chatRoomDitc = @{@"roomId":aChatRoom.chatroomId,
-                                @"roomName":aChatRoom.subject,
-                                @"description":aChatRoom.description,
-                                @"owner":aChatRoom.owner,
-                                @"announcement":aChatRoom.announcement,
-                                @"administratorList":aChatRoom.adminList,
-                                @"memberList":aChatRoom.memberList,
-                                @"blockList":aChatRoom.blacklist,
-                                @"muteList":aChatRoom.muteList,
-                                @"maxUserCount":[NSNumber numberWithInteger:aChatRoom.maxOccupantsCount],
-                                @"affiliationsCount":[NSNumber numberWithInteger:aChatRoom.occupantsCount]
-                               };
     
+    NSMutableDictionary *chatRoomDitc = [NSMutableDictionary dictionary];
+    if (aChatRoom.chatroomId) {
+        chatRoomDitc[@"roomId"] = aChatRoom.chatroomId;
+    }
+    if (aChatRoom.subject) {
+        chatRoomDitc[@"roomName"] = aChatRoom.subject;
+    }
+    if (aChatRoom.description) {
+        chatRoomDitc[@"description"] = aChatRoom.description;
+    }
+    if (aChatRoom.owner) {
+        chatRoomDitc[@"owner"] = aChatRoom.owner;
+    }
+    if (aChatRoom.announcement) {
+        chatRoomDitc[@"announcement"] = aChatRoom.announcement;
+    }
+    if (aChatRoom.adminList) {
+        chatRoomDitc[@"administratorList"] = aChatRoom.adminList;
+    }
+    if (aChatRoom.memberList) {
+        chatRoomDitc[@"memberList"] = aChatRoom.memberList;
+    }
+    if (aChatRoom.blacklist) {
+        chatRoomDitc[@"blacklist"] = aChatRoom.blacklist;
+    }
+    if (aChatRoom.muteList) {
+        NSMutableArray *muteList = [NSMutableArray array];
+        chatRoomDitc[@"muteList"] = aChatRoom.muteList;
+    }
+    if (aChatRoom.maxOccupantsCount) {
+        chatRoomDitc[@"maxUserCount"] = @(aChatRoom.maxOccupantsCount);
+    }
+    if (aChatRoom.occupantsCount) {
+        chatRoomDitc[@"affiliationsCount"] = @(aChatRoom.occupantsCount);
+    }
+     
     return chatRoomDitc;
 }
 
