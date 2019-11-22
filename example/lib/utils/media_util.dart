@@ -45,9 +45,6 @@ class MediaUtil {
     }
     String imgPath = imgfile.path;
     print('-------->imgUrl: ' + imgPath);
-//    if (TargetPlatform.android == defaultTargetPlatform) {
-//      imgPath = "file://" + imgfile.path;
-//    }
     return imgPath;
   }
 
