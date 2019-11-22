@@ -1,3 +1,263 @@
-class EMContactManager{
+import "dart:async";
 
+import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
+
+import "em_listeners.dart";
+import 'em_log.dart';
+import 'em_sdk_method.dart';
+
+class EMContactManager {
+  static const _channelPrefix = 'com.easemob.im';
+  static const MethodChannel _emContactManagerChannel =
+      const MethodChannel('$_channelPrefix/em_contact_manager', JSONMethodCodec());
+  static EMContactManager _instance;
+
+  final EMLog log;
+  final List<EMContactEventListener> _contactChangeEventListeners =
+      List<EMContactEventListener>();
+  List<String> _blackList;
+
+  EMContactManager._internal(EMLog log) : log = log {
+    _addNativeMethodCallHandler();
+  }
+
+  factory EMContactManager.getInstance({@required EMLog log}) {
+    return _instance = _instance ?? EMContactManager._internal(log);
+  }
+
+  void _addNativeMethodCallHandler() {
+    _emContactManagerChannel.setMethodCallHandler((MethodCall call) {
+      Map argMap = call.arguments;
+      if (call.method == EMSDKMethod.onContactChanged) {
+        return _onContactChanged(argMap);
+      }
+      return null;
+    });
+  }
+
+  Future<void> _onContactChanged(Map event) async {
+    var type = event['type'];
+    String userName = event['userName'];
+    String reason = event['reason'];
+    for (var listener in _contactChangeEventListeners) {
+      switch (type) {
+        case EMContactChangeEvent.CONTACT_ADD:
+          listener.onContactAdded(userName);
+          break;
+        case EMContactChangeEvent.CONTACT_DELETE:
+          listener.onContactDeleted(userName);
+          break;
+        case EMContactChangeEvent.INVITED:
+          listener.onContactInvited(userName, reason);
+          break;
+        case EMContactChangeEvent.INVITATION_ACCEPTED:
+          listener.onFriendRequestAccepted(userName);
+          break;
+        case EMContactChangeEvent.INVITATION_DECLINED:
+          listener.onFriendRequestDeclined(userName);
+          break;
+        default:
+      }
+    }
+  }
+
+  /// @nodoc 添加联系人[userName] with [reason].
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void addContact(
+      {@required String userName,
+      @required String reason,
+      onSuccess(),
+      onError(int code, String desc)}) {
+    Future<Map> result = _emContactManagerChannel.invokeMethod(
+        EMSDKMethod.addContact, {"userName": userName, "reason": reason});
+    result.then((response) {
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// @nodoc 删除联系人 [userName]
+  /// @nodoc [keepConversation] true 保留会话和消息  false 不保留
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void deleteContact(
+      {@required String userName,
+      bool keepConversation = false,
+      onSuccess(),
+      onError(int code, String desc)}) {
+    Future<Map> result = _emContactManagerChannel.invokeMethod(
+        EMSDKMethod.deleteContact,
+        {"userName": userName, "keepConversation" : keepConversation});
+    result.then((response) {
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// 从服务器获取所有的好友
+  /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void getAllContactsFromServer({
+      onSuccess(List<String> contacts),
+      onError(int code, String desc)}){
+    Future<Map<String, dynamic>> result = _emContactManagerChannel
+        .invokeMethod(EMSDKMethod.getAllContactsFromServer);
+    result.then((response){
+      if (response['success']) {
+        if(onSuccess != null) {
+          var contacts = List<String>();
+          if (response['value'] != null) {
+            for (var contact in response['value']) {
+              contacts.add(contact);
+            }
+          }
+          onSuccess(contacts);
+        }
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+
+  }
+
+
+
+  /// @nodoc 把指定用户加入到黑名单中 [userName] .
+  /// @nodoc 如果[both]设置为true，则双方都无法向对方发送消息。否则，[userName]仍然可以接收消息。
+  /// @nodoc 如果加入成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void addUserToBlackList(
+      {@required String userName,
+      bool both = false,
+      onSuccess(),
+      onError(int code, String desc)}) {
+    Future<Map> result = _emContactManagerChannel.invokeMethod(
+        EMSDKMethod.addUserToBlackList, {"userName": userName, "both": both});
+    result.then((response) {
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// @nodoc 把用户从黑名单中移除 [userName].
+  /// @nodoc 如果移除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void removeUserFromBlackList(
+      {@required String userName,
+      onSuccess(),
+      onError(int code, String desc)}) {
+    Future<Map> result = _emContactManagerChannel.invokeMethod(
+        EMSDKMethod.removeUserFromBlackList, {"userName": userName});
+    result.then((response) {
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// @nodoc 从本地获取黑名单中的用户的ID
+  List<String> getBlackListUserNames() {
+    return _blackList;
+  }
+
+  /// @nodoc 从服务器获取黑名单中的用户的ID
+  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void getBlackListFromServer(
+      {onSuccess(List<String> blackList), onError(int code, String desc)}) {
+    Future<Map<String, dynamic>> result = _emContactManagerChannel
+        .invokeMethod(EMSDKMethod.getBlackListFromServer);
+    result.then((response){
+      if (response['success']) {
+        if(onSuccess != null){
+        var blackUsers = List<String>();
+        if(response['value'] != null){
+          for (var user in response['value']) {
+            blackUsers.add(user);
+          }
+        }
+        _blackList = blackUsers;
+        onSuccess(blackUsers);
+        }
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// @nodoc 接受加好友的邀请[userName].
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void acceptInvitation(
+      {@required String userName,
+      onSuccess(),
+      onError(int code, String desc)}) {
+    Future<Map> result = _emContactManagerChannel
+        .invokeMethod(EMSDKMethod.acceptInvitation, {"userName": userName});
+    result.then((response) {
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// @nodoc 拒绝加好友的邀请 [userName].
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void declineInvitation(
+      {@required String userName,
+      onSuccess(),
+      onError(int code, String desc)}) {
+    Future<Map> result = _emContactManagerChannel
+        .invokeMethod(EMSDKMethod.declineInvitation, {"userName": userName});
+    result.then((response) {
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+
+  /// @nodoc 从服务器获取登录用户在其他设备上登录的ID
+  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void getSelfIdsOnOtherPlatform(
+      {onSuccess(List<String> devices),
+        onError(int code, String desc)}){
+    Future<Map<String, dynamic>> result = _emContactManagerChannel
+        .invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
+    result.then((response){
+      if (response['success']) {
+        if(onSuccess != null){
+          var devices = List<String>();
+          if(response['value'] != null){
+            for (var device in response['value']) {
+              devices.add(device);
+            }
+          }
+          onSuccess(devices);
+        }
+      } else {
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+
+  }
+
+  /// @nodoc 设置好友监听器 [contactListener]
+  void addContactListener(EMContactEventListener contactListener) {
+    _contactChangeEventListeners.add(contactListener);
+  }
+
+  /// @nodoc 移除好友监听器  [contactListener]
+  void removeContactListener(EMContactEventListener contactListener) {
+    _contactChangeEventListeners.remove(contactListener);
+  }
 }

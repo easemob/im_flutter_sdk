@@ -1,10 +1,13 @@
-group 'com.example.im_flutter_sdk'
+group 'com.easemob.im_flutter_sdk'
 version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
-        google()
-        jcenter()
+//        google()
+//        jcenter()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
     }
 
     dependencies {
@@ -14,8 +17,11 @@ buildscript {
 
 rootProject.allprojects {
     repositories {
-        google()
-        jcenter()
+//        google()
+//        jcenter()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
     }
 }
 
@@ -25,10 +31,28 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 24
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    //自3.6.0开始需要java8的支持
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     lintOptions {
         disable 'InvalidPackage'
     }
+
+    //use legacy for android > 6.0
+    useLibrary 'org.apache.http.legacy'
+}
+
+dependencies {
+    api 'com.android.support:appcompat-v7:28.0.0-alpha1'
+    // Google firebase cloud messaging
+    implementation 'com.google.android.gms:play-services-base:11.4.0'
+    implementation 'com.google.firebase:firebase-messaging:11.4.0'
+    api 'com.hyphenate:hyphenate-sdk:3.6.1'
 }
