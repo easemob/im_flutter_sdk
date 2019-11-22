@@ -26,7 +26,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   UserInfo user;
   int _pageSize = 10;
   bool isLoad = false;
-  bool isJoinRoom = true;
+  bool isJoinRoom = false;
   String msgStartId = '';
   String afterLoadMessageId = '';
 
@@ -160,7 +160,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     mType = arguments["mType"];
     toChatUsername = arguments["toChatUsername"];
 
-    if(fromChatType(mType) == ChatType.ChatRoom ){
+    if(fromChatType(mType) == ChatType.ChatRoom && !isJoinRoom){
       _joinChatRoom();
     }
 
@@ -220,7 +220,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   _joinChatRoom(){
     EMClient.getInstance().chatRoomManager().joinChatRoom(roomId: toChatUsername ,
         onSuccess: (){
-
+          isJoinRoom = true;
         },
         onError: (int errorCode,String errorString){
           print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
@@ -230,6 +230,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   _cleanAllMessage(){
      if(null != conversation){
         conversation.clearAllMessages();
+        setState(() {
+          messageList = [];
+          messageTotalList = [];
+        });
      }
   }
 
@@ -382,9 +386,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
     imageMessage.chatType = fromChatType(mType);
-    EMClient.getInstance().chatManager().sendMessage(imageMessage);
-
-    _onConversationInit();
+    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess: (){
+       print('-----------success---------->' );
+       _onConversationInit();
+    });
 
   }
 
@@ -392,22 +397,26 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onTapItemCamera(String imgPath) {
     // TODO: implement onTapItemCamera
     print('onTapItemCamera' + imgPath);
+    WidgetUtil.hintBoxWithDefault('相机拍照待实现!');
   }
 
 
   @override
   void onTapItemEmojicon() {
     // TODO: implement onTapItemEmojicon
+    WidgetUtil.hintBoxWithDefault('发送表情待实现!');
   }
 
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
+    WidgetUtil.hintBoxWithDefault('音频通话待实现!');
   }
 
   @override
   void onTapItemVideo() {
     // TODO: implement onTapItemVideo
+    WidgetUtil.hintBoxWithDefault('视频通话待实现!');
   }
 
   @override
@@ -424,7 +433,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void sendVoice(String path, int duration) {
-
+    WidgetUtil.hintBoxWithDefault('语音消息待实现!');
   }
 
   @override

@@ -70,7 +70,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
           IconButton(icon: Icon(Icons.add,), onPressed: (){
             Navigator.of(context).pushNamed(Constant.toAddContact);
           }),
-          SizedBox(width: 24.0),
+          SizedBox(width: 12.0),
         ],
       ),
       key: UniqueKey(),
@@ -141,7 +141,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
           }
         } else {
           Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-            return new ChatPage(arguments: {'conversationType': EMConversationType.Chat,'toChatUsername':_getData(index - 7)});
+            return new ChatPage(arguments: {'mType': Constant.chatTypeSingle,'toChatUsername':_getData(index - 7)});
           }));
         }
       },
