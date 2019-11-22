@@ -2,10 +2,13 @@
 import 'package:flutter/material.dart';
 
 class EMLayout {
-  static const double emConListPortraitSize = 45;
+  static const double emConListPortraitSize = 46;
   static const double emConListItemHeight = 74;
   static const double emConListUnreadSize = 12;
   static const double emSearchBarHeight = 36;
+  static const double emContactListPortraitSize = 38;
+  static const double emContactListItemHeight = 58;
+
 }
 
 class EMFont{

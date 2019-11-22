@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/pages/chatgroup_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/chatroom_list_page.dart';
+import 'package:im_flutter_sdk_example/pages/public_group_list_page.dart';
 import 'utils/localizations.dart';
 import 'pages/home_page.dart';
 import 'login_page.dart';
@@ -44,6 +46,8 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         Constant.toChatPage: (BuildContext context) => new ChatPage(),
         Constant.toAddContact: (BuildContext context) => new EMContactAddPage(),
         Constant.toContactList: (BuildContext context) => new EMContactsListPage(),
+        Constant.toChatGroupListPage: (BuildContext context) => new EMChatGroupListPage(),
+        Constant.toPublicGroupListPage: (BuildContext context) => new PublicGroupListPage(),
       },
       /// 配置国际化语言
       localizationsDelegates: [

@@ -41,7 +41,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
       _refreshUI();
     },
     onError: (code ,desc){
-
+      WidgetUtil.hintBoxWithDefault(code.toString()+':'+desc);
     });
   }
 
@@ -81,7 +81,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
       key: UniqueKey(),
       body: Stack(children: <Widget>[
         _buildChatRoomListView(),
-        ProgressDialog(loading: _loading, msg: '正在加载...',),
+        ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).loading,),
         ],
       ),
     );
