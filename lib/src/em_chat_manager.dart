@@ -30,7 +30,7 @@ class EMChatManager {
     return _instance = _instance ?? EMChatManager._internal(log);
   }
 
-  /// sendMessage - Sends message [message].
+  /// 发送消息 [message].
   void sendMessage(EMMessage message,
       { onSuccess(),
         onProgress(int progress),
@@ -67,7 +67,7 @@ class EMChatManager {
     });
   }
 
-  /// @nodoc ackMessageRead - Acknowledges [to] user that message [messageId] has been read.
+  /// @nodoc ackMessageRead-> 用户[to] 确认已读取消息[messageId]。
   void ackMessageRead(
       {@required String to,
       @required String messageId,
@@ -81,8 +81,8 @@ class EMChatManager {
     });
   }
 
-  /// @nodoc recallMessage - Recalls [message] sent before.
-  /// @nodoc Calls [onSuccess] if everything runs ok, [onError] if anything wrong, with [code], [desc] set as detail error information.
+  /// @nodoc 调用以前发送的[message]消息。
+  /// @nodoc 如果一切正常，则调用[onSuccess]，[onError]如果有任何错误，将[code]，[desc]设置为详细错误信息。
   void recallMessage(
       {@required EMMessage message,
       onSuccess(),
@@ -98,7 +98,7 @@ class EMChatManager {
     });
   }
 
-  /// getMessage - Gets message identified by [messageId].
+  /// 通过[messageId] 获取消息.
   Future<EMMessage> getMessage(String messageId) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.getMessage, {"id": messageId});
@@ -109,7 +109,7 @@ class EMChatManager {
     }
   }
 
-  /// getConversation - Gets conversation form [id].
+  /// 通过[id] 获取会话
   Future<EMConversation> getConversation(
       {@required String id,
       EMConversationType type,
@@ -124,12 +124,12 @@ class EMChatManager {
     }
   }
 
-  /// @nodoc markAllConversationAsRead - Marks all conversation as read.
+  /// @nodoc 将所有对话标记为已读。
   void markAllConversationsAsRead() {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.markAllChatMsgAsRead);
   }
 
-  /// getUnreadMessageCount - Gets count number of messages unread.
+  /// 获取未读消息的计数。
   Future<int> getUnreadMessageCount() async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.getUnreadMessageCount);
@@ -140,13 +140,13 @@ class EMChatManager {
     }
   }
 
-  /// @nodoc saveMessage - Saves [message].
+  /// @nodoc 保存消息[message].
   void saveMessage(EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.saveMessage, {"message": message.toDataMap()});
   }
 
-  /// @nodoc updateMessage - Updates [message].
+  /// @nodoc 更新消息[message].
   Future<bool> updateMessage(EMMessage message) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateChatMessage,
@@ -158,25 +158,25 @@ class EMChatManager {
     }
   }
 
-  /// @nodoc downloadAttachment - Downloads attachment of [message].
+  /// @nodoc 下载附件 [message].
   void downloadAttachment(final EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.downloadAttachment, {"message": message.toDataMap()});
   }
 
-  /// @nodoc downloadThumbnail - Downloads thumbnail of [message].
+  /// @nodoc 下载缩略图 [message].
   void downloadThumbnail(final EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.downloadThumbnail, {"message": message.toDataMap()});
   }
 
-  /// @nodoc importMessages - Imports list of [messages].
+  /// @nodoc 导入消息 [messages].
   void importMessages(List<EMMessage> messages) {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
         {"messages": messages.map((message) => message.toDataMap())});
   }
 
-  /// @nodoc getConversationsByType - Gets all conversations of [type].
+  /// @nodoc 根据类型获取会话 [type].
   Future<List<EMConversation>> getConversationsByType(
       EMConversationType type) async {
     Map<String, dynamic> result = await _emChatManagerChannel
@@ -194,7 +194,7 @@ class EMChatManager {
     }
   }
 
-  /// @nodoc downloadFile - Downloads file, specified by [remoteUrl], to store locally at [localFilePath].
+  /// @nodoc 下载文件 远程地址[remoteUrl],本地地址[localFilePath].
   void downloadFile(
       {@required final String remoteUrl,
       @required final String localFilePath,
@@ -216,7 +216,7 @@ class EMChatManager {
     });
   }
 
-  /// getAllConversations - Gets all conversations.
+  /// 获取所有会话
   Future<Map<String, EMConversation>> getAllConversations() async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.getAllConversations);
@@ -232,12 +232,12 @@ class EMChatManager {
     }
   }
 
-  /// loadAllConversations - Loads all conversations.
+  /// 加载所有会话
   void loadAllConversations() {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.loadAllConversations);
   }
 
-  /// deleteConversation - Deletes conversations with [userName], deletes also messages if [deleteMessages] set to true.
+  /// 删除与[userName] 的对话, 如果[deletecoversations]设置为true，则还会删除消息。
   Future<bool> deleteConversation(
       {@required final String userName, @required bool deleteMessages}) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
@@ -250,30 +250,30 @@ class EMChatManager {
     }
   }
 
-  /// addMessageListener - Adds [listener] to be aware of message change events.
+  /// 添加消息监听 [listener]
   void addMessageListener(EMMessageListener listener) {
     assert(listener != null);
     _messageListeners.add(listener);
   }
 
-  /// removeMessageListener - Remove [listener] from the listener list.
+  /// 移除消息监听[listener]
   void removeMessageListener(EMMessageListener listener) {
     assert(listener != null);
     _messageListeners.remove(listener);
   }
 
-  ///  onConversationUpdate - Sets conversation update callback function [onConversationUpdate].
+  ///  设置会话更新回调函数[onConversationUpdate].
   void onConversationUpdate(onConversationUpdate()) {
     _conversationUpdateFunc = onConversationUpdate;
   }
 
-  /// @nodoc setVoiceMessageListened - Sets voice [message] as listened.
+  /// @nodoc 设置语音消息监听 [message].
   void setVoiceMessageListened(EMMessage message) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.setVoiceMessageListened, {"message": message.toDataMap()});
   }
 
-  /// @nodoc updateParticipant - Updates participant from [from] to [changeTo].
+  /// @nodoc 将某个联系人相关信息[from]更新为另外一个联系人[changeTo]。
   Future<bool> updateParticipant(String from, String changeTo) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateParticipant, {"from": from, "changeTo": changeTo});
@@ -284,8 +284,8 @@ class EMChatManager {
     }
   }
 
-  /// @nodoc fetchHistoryMessages - Fetches history messages in conversation [conversationId], filtered by [type].
-  /// @nodoc Result paginated by [pageSize] per page, started from [startMsgId].
+  /// @nodoc 在会话[conversationId]中提取历史消息，按[type]筛选。
+  /// @nodoc 结果按每页[pageSize]分页，从[startMsgId]开始。
   Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
       {@required final String conversationId,
       @required final EMConversationType type,
@@ -307,8 +307,8 @@ class EMChatManager {
     }
   }
 
-  /// @nodoc searchMsgFromDB - Searches messages with [keywords] as keyword, of [type], timestamp set at [timeStamp], from user [from], in [direction].
-  /// @nodoc Result paginated to return maximize [maxCount] records per call.
+  /// @nodoc 搜索以[keywords]为关键字的消息，[type]，时间戳设置为[timeStamp]，来自用户[from]，方向[direction]。
+  /// @nodoc 结果返回到每个调用的最大值[maxCount]记录。
   Future<List<EMMessage>> searchMsgFromDB(
       {String keywords,
       EMMessageType type,
@@ -337,7 +337,6 @@ class EMChatManager {
     }
   }
 
-  /// Listeners interface
   Future<void> _onMessageReceived(Map map) async {
     var list = map['messages'];
     var messageList = List<EMMessage>();
@@ -402,7 +401,7 @@ class EMChatManager {
   }
 }
 
-// _EMCursorResult - internal EMCursorResult implementation.
+/// _EMCursorResult - 内部EMCursorResult实现。
 class _EMCursorResults<T> extends EMCursorResults<T> {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emChatManagerChannel =

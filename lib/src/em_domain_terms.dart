@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import '../im_flutter_sdk.dart';
 import 'em_message_body.dart';
 
-/// EMOptions - options to initialize SDK context.
+/// 初始化SDK上下文的选项
 class EMOptions {
   EMOptions({
     @required this.appKey,
@@ -29,90 +29,91 @@ class EMOptions {
   bool _isAutoDownload = true;
 //  EMPushConfig _pushConfig;
 
+  /// @nodoc 获取已读确认设置
   bool getRequireAck(){
     return _requireAck;
   }
-
+  /// @nodoc 设置是否需要接受方已读确认
   void setRequireAck(bool requireAck){
     _requireAck = requireAck;
   }
-
+  /// @nodoc 获取送达确认设置
   bool getRequireDeliveryAck(){
     return _requireDeliveryAck;
   }
-
+  /// @nodoc 设置是否需要接受方送达确认,默认false
   void setRequireDeliveryAck(bool requireDeliveryAck){
     _requireDeliveryAck = requireDeliveryAck;
   }
-
+  /// @nodoc 获取是否自动接受加好友邀请 默认true
   bool getAcceptInvitationAlways(){
     return _acceptInvitationAlways;
   }
-
+  /// @nodoc 设置是否自动接受加好友邀请 默认true
   void setAcceptInvitationAlways(bool acceptInvitationAlways){
     _acceptInvitationAlways = acceptInvitationAlways;
   }
-
+  /// @nodoc 获取退出(主动和被动退出)群组时是否删除聊天消息
   bool isDeleteMessagesAsExitGroup(){
     return _deleteMessagesAsExitGroup;
   }
-
+  /// @nodoc 设置退出(主动和被动退出)群组时是否删除聊天消息
   void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup){
     _deleteMessagesAsExitGroup = deleteMessagesAsExitGroup;
   }
-
+  /// @nodoc 获取是否自动接受加群邀请
   bool isAutoAcceptGroupInvitation(){
     return _autoAcceptGroupInvitation;
   }
-
+  /// @nodoc 设置是否自动接受加群邀请
   void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation){
     _autoAcceptGroupInvitation = autoAcceptGroupInvitation;
   }
-
+  /// @nodoc 是否允许聊天室owner离开
   bool isChatRoomOwnerLeaveAllowed(){
     return _isChatRoomOwnerLeaveAllowed;
   }
-
+  /// @nodoc 设置是否允许聊天室owner离开并删除会话记录
   void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed){
     _isChatRoomOwnerLeaveAllowed = isChatRoomOwnerLeaveAllowed;
   }
-
+  /// @nodoc 是否按照server收到时间进行排序
   bool isSortMessageByServerTime(){
     return _sortMessageByServerTime;
   }
-
+  /// @nodoc 设置server收到时间进行排序 默认是false
   void setSortMessageByServerTime(bool sortMessageByServerTime){
     _sortMessageByServerTime = sortMessageByServerTime;
   }
-
+  /// @nodoc 获取设置的im server
   String getIMServer(){
     return _imServer;
   }
-
+  /// @nodoc 设置im server地址
   void setIMServer(String imServer){
     _imServer = imServer;
   }
-
+  /// @nodoc 获取设置的im server端口号
   int getImPort(){
     return _imPort;
   }
-
+  /// @nodoc 设置 im server端口号
   void setImPort(int imPort){
     _imPort = imPort;
   }
-
+  /// @nodoc 获取设置的rest server
   String getRestServer(){
     return _restServer;
   }
-
+  /// @nodoc 设置 rest server
   void setRestServer(String restServer){
     _restServer = restServer;
   }
-
+  /// @nodoc 获取是否自动登录
   bool getAutoLogin(){
     return _autoLogin;
   }
-
+  /// @nodoc 设置是否自动登录
   void setAutoLogin(bool autoLogin){
     _autoLogin = autoLogin;
   }
@@ -124,27 +125,27 @@ class EMOptions {
   void enableDNSConfig(bool enableDNSConfig){
     _enableDNSConfig = enableDNSConfig;
   }
-
+  /// @nodoc 获取是否使用https进行REST操作，默认值是false。
   bool getUsingHttpsOnly(){
     return _usingHttpsOnly;
   }
-
+  /// @nodoc 只使用https进行REST操作，默认值是false。
   void setUsingHttpsOnly(bool usingHttpsOnly){
     _usingHttpsOnly = usingHttpsOnly;
   }
-
+  /// @nodoc 获取是否使用环信服务器进行上传下载，默认值是true。
   bool getAutoTransferMessageAttachments(){
     return _serverTransfer;
   }
-
+  /// @nodoc 设置是否使用环信服务器进行上传下载
   void setAutoTransferMessageAttachments(bool serverTransfer){
     _serverTransfer = serverTransfer;
   }
-
+  /// @nodoc 是否自动下载缩略图，默认为true。
   bool getAutoDownloadThumbnail(){
     return _isAutoDownload;
   }
-
+  /// @nodoc 设置是否自动下载缩略图
   void setAutoDownloadThumbnail(bool isAutoDownload){
     _isAutoDownload = isAutoDownload;
   }
@@ -212,15 +213,15 @@ class EMMessage {
         _conversationId = '',
         _userName = '';
 
-  /// Constructors to create various of messages.
+  /// 用于创建各种消息的构造函数 - 发送方。
   EMMessage.createSendMessage(EMMessageType type)
       : this(type: type, direction: Direction.SEND);
 
-  /// Create received messages.
+  /// 用于创建各种消息的构造函数 - 接收方。
   EMMessage.createReceiveMessage(EMMessageType type)
       : this(type: type, direction: Direction.RECEIVE);
 
-  /// Create send text messages.
+  /// 创建文本类型消息 - 发送方
   EMMessage.createTxtSendMessage(String content, String userName)
       : this(
             direction: Direction.SEND,
@@ -228,12 +229,12 @@ class EMMessage {
             type: EMMessageType.TXT,
             body: EMTextMessageBody(content));
 
-  /// @nodoc Create send voice messages.
+  /// @nodoc 创建语音类型消息 - 发送方
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
       : this(direction: Direction.SEND);
 
-  /// @nodoc Create send image messages.
+  /// @nodoc 创建图片类型消息 - 发送方.
   EMMessage.createImageSendMessage(
       String filePath, bool sendOriginalImage, String userName)
       : this(
@@ -242,7 +243,7 @@ class EMMessage {
             body: EMImageMessageBody(File(filePath),sendOriginalImage),
             to: userName);
 
-  /// @nodoc Create send video messages.
+  /// @nodoc 创建视频类型消息 - 发送方
   EMMessage.createVideoSendMessage(String videoFilePath,
       int timeLength, String userName)
       : this(
@@ -251,7 +252,7 @@ class EMMessage {
             body: EMVideoMessageBody(File(videoFilePath),timeLength),
             to: userName);
 
-  /// @nodoc Create send location messages.
+  /// @nodoc 创建位置类型消息 - 发送方
   EMMessage.createLocationSendMessage(double latitude, double longitude,
       String locationAddress, String userName)
       : this(
@@ -260,7 +261,7 @@ class EMMessage {
             body: EMLocationMessageBody(locationAddress, latitude, longitude),
             to: userName);
 
-  /// @nodoc Create send file messages.
+  /// @nodoc 创建文件类型消息 - 发送方
   EMMessage.createFileSendMessage(String filePath, String userName)
       : this(
             direction: Direction.SEND,
@@ -294,7 +295,7 @@ class EMMessage {
   bool unread;
   EMMessageType type;
 
-  /// attributes holding arbitrary key/value pair
+  /// 扩展属性 包含任意键/值对的属性
   final Map _attributes;
 
   void setAttribute(String attr, dynamic value) {
@@ -359,7 +360,7 @@ class EMMessage {
   }
 
 }
-
+  /// 消息类型 int 类型数据转 EMMessageType
   fromType(int type){
       switch(type){
         case 0:
@@ -378,7 +379,7 @@ class EMMessage {
           return EMMessageType.CMD;
       }
   }
-
+  /// 消息类型 EMMessageType 类型数据转 int
   toType(EMMessageType type){
       if(type == EMMessageType.TXT){
         return 0;
@@ -396,7 +397,7 @@ class EMMessage {
         return 6;
       }
   }
-
+  /// 聊天类型 int 类型数据转 ChatType
   fromChatType(int type){
       switch(type){
         case 0:
@@ -407,7 +408,7 @@ class EMMessage {
           return ChatType.ChatRoom;
       }
   }
-
+  /// 聊天类型 ChatType 类型数据转 int
   toChatType(ChatType type){
       if(type == ChatType.Chat){
         return 0;
@@ -417,7 +418,7 @@ class EMMessage {
         return 2;
       }
   }
-
+  /// 消息方向 int 类型数据转 Direction
   fromDirect(int type){
     switch(type){
       case 0:
@@ -426,7 +427,7 @@ class EMMessage {
         return Direction.RECEIVE;
     }
   }
-
+  /// 消息方向 Direction 类型数据转 int
   toDirect(Direction direction){
      if(direction == Direction.SEND){
        return 0;
@@ -434,7 +435,7 @@ class EMMessage {
        return 1;
      }
   }
-
+  /// 消息状态 int 类型数据转 Status
   fromEMMessageStatus(int status){
     switch(status){
       case 0:
@@ -447,7 +448,7 @@ class EMMessage {
         return Status.CREATE;
     }
   }
-
+  /// 消息状态 Status 类型数据转 int
   toEMMessageStatus(Status status){
      if(status == Status.SUCCESS){
        return 0;
@@ -459,7 +460,7 @@ class EMMessage {
        return 3;
      }
   }
-
+  /// 下载状态 int 类型数据转 EMDownloadStatus
   toEMDownloadStatus(EMDownloadStatus status){
     if(status == EMDownloadStatus.DOWNLOADING){
       return 0;
@@ -471,7 +472,7 @@ class EMMessage {
       return 3;
     }
   }
-
+  /// 下载状态 EMDownloadStatus 类型数据转 int
   fromEMDownloadStatus(int status){
     if(status == 0){
       return EMDownloadStatus.DOWNLOADING;
@@ -491,7 +492,7 @@ class EMContact {
   EMContact({@required String userName}) : userName = userName;
 }
 
-// EMMessageBody - body of message.
+/// EMMessageBody - body of message.
 abstract class EMMessageBody {
   toDataMap();
   static EMMessageBody from(Map data) {
@@ -739,7 +740,7 @@ EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
   return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }
 
-
+/// 会话类型 EMConversationType 数据类型转 int
 toEMConversationType(EMConversationType type){
   if(type == EMConversationType.Chat){
     return 0;
@@ -749,7 +750,7 @@ toEMConversationType(EMConversationType type){
     return 2;
   }
 }
-
+/// 会话类型 int 数据类型转 EMConversationType
 fromEMConversationType(int type){
   if(type == 0){
     return EMConversationType.Chat;
@@ -763,7 +764,7 @@ fromEMConversationType(int type){
     return EMConversationType.HelpDesk;
   }
 }
-
+/// 搜索方向 EMSearchDirection 数据类型转 int
 toEMSearchDirection(EMSearchDirection direction){
   if(direction == EMSearchDirection.Up){
     return 0;
