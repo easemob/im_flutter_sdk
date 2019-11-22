@@ -100,7 +100,6 @@ class DemoLocalizations {
   get inLogout {
     return _localizedValues[locale.languageCode]['inLogout'];
   }
-
   static DemoLocalizations of(BuildContext context) {
     return Localizations.of(context, DemoLocalizations);
   }
