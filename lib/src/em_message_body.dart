@@ -166,11 +166,11 @@ class EMImageMessageBody extends EMFileMessageBody {
 
   EMImageMessageBody._internal(Map<String, dynamic> data)
       : this.height = data["height"],
+        this.width = data["width"],
         this.sendOriginalImage = data["sendOriginalImage"],
         this.thumbnailLocalPath = data["thumbnailLocalPath"],
         this.thumbnailSecret = data["thumbnailSecret"],
         this.thumbnailUrl = data["thumbnailUrl"],
-        this.width = data["width"],
         super.ofData(data);
 
   File _imageFile;

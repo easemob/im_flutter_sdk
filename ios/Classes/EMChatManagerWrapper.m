@@ -122,8 +122,6 @@
     }
     BOOL isCreateIfNotExists = [param[@"createIfNotExists"] boolValue];
     
-    NSLog(@"getConversation conversationId -- %@ -- %d -- %d",conversationId, type, isCreateIfNotExists);
-    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
                                                                      createIfNotExist:isCreateIfNotExists];
