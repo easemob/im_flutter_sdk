@@ -26,8 +26,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
 
-import static com.easemob.im_flutter_sdk.EMHelper.convertIntToEMConversationType;
-import static com.easemob.im_flutter_sdk.EMHelper.convertIntToEMSearchDirection;
 
 @SuppressWarnings("unchecked")
 public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
@@ -149,7 +147,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         }else if(EMSDKMethod.getConversation.equals(call.method)) {
             getConversation(call.arguments, result);
         }else if(EMSDKMethod.markAllChatMsgAsRead.equals(call.method)) {
-            markAllMessagesAsRead(call.arguments, result);
+            markAllConversationsAsRead(call.arguments, result);
         }else if(EMSDKMethod.getUnreadMessageCount.equals(call.method)) {
             getUnreadMessageCount(call.arguments,result);
         }else if(EMSDKMethod.saveMessage.equals(call.method)) {
@@ -238,7 +236,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         try {
             JSONObject argMap = (JSONObject)args;
             String conversationId = argMap.getString("id");
-            EMConversation.EMConversationType type = convertIntToEMConversationType(argMap.getInt("type"));
+            EMConversation.EMConversationType type = EMHelper.convertIntToEMConversationType(argMap.getInt("type"));
             Boolean createIfNotExists = argMap.getBoolean("createIfNotExists");
             EMConversation conversation = manager.getConversation(conversationId, type, createIfNotExists);
             Map<String, Object> data = new HashMap<String, Object>();
@@ -250,8 +248,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         }
     }
 
-    // TODO: 这个方法不正确？ allMessageAsRead 和 allConversationAsRead不一样
-    private void markAllMessagesAsRead(Object args, Result result) {
+    private void markAllConversationsAsRead(Object args, Result result) {
         manager.markAllConversationsAsRead();
     }
 
@@ -310,7 +307,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         try {
             JSONObject argMap = (JSONObject)args;
             int type = argMap.getInt("type");
-            List<EMConversation> list = manager.getConversationsByType(convertIntToEMConversationType(type));
+            List<EMConversation> list = manager.getConversationsByType(EMHelper.convertIntToEMConversationType(type));
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             ArrayList<Map<String, Object>> conversations = new ArrayList<>();
@@ -397,7 +394,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             int pageSize = argMap.getInt("pageSize");
             String startMsgId = argMap.getString("startMsgId");
             try{
-                EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, convertIntToEMConversationType(type), pageSize, startMsgId);
+                EMCursorResult<EMMessage> cursorResult = manager.fetchHistoryMessages(conversationId, EMHelper.convertIntToEMConversationType(type), pageSize, startMsgId);
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("success", Boolean.TRUE);
                 String cursorId = UUID.randomUUID().toString();
@@ -437,7 +434,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             int maxCount = argMap.getInt("maxCount");
             String from = argMap.getString("from");
             int direction = argMap.getInt("direction");
-            List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, convertIntToEMSearchDirection(direction));
+            List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, EMHelper.convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
             list.forEach((message)->{
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
