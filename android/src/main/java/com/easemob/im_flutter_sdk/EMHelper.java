@@ -324,11 +324,11 @@ class EMHelper {
         chatRoomMap.put("maxUsers",emChatRoom.getMaxUsers());
         chatRoomMap.put("memberList",emChatRoom.getMemberList());
         chatRoomMap.put("blackList",emChatRoom.getBlackList());
-        if (emChatRoom.getMuteList()) {
+        if (emChatRoom.getMuteList() != null && emChatRoom.getMuteList().size() > 0) {
             List list = new LinkedList();
-            for (Map member : emChatRoom.getMuteList()) {
-                list.add(member.getKey());
-            }
+            emChatRoom.getMuteList().forEach((k, v) ->{
+                list.add(k);
+            });
             chatRoomMap.put("muteList",list);
         }
         chatRoomMap.put("announcement",emChatRoom.getAnnouncement());
