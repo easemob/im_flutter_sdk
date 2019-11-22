@@ -243,7 +243,7 @@
 - (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:@{@"isLogged":@(EMClient.sharedClient.isConnected)}];
+                 userInfo:@{@"isLogged":@(EMClient.sharedClient.isLoggedIn)}];
 }
 
 - (void)onMultiDeviceEvent:(NSDictionary *)param result:(FlutterResult)result {
