@@ -325,9 +325,9 @@
 #pragma mark - Group
 
 + (NSDictionary *)groupToDictionary:(EMGroup *)aGroup {
-     EMGroupOptions *options = aGroup.setting;
-       EMGroupStyle style = options.style;
-       BOOL isMemberAllowToInvite;
+    EMGroupOptions *options = aGroup.setting;
+    EMGroupStyle style = options.style;
+    BOOL isMemberAllowToInvite;
        BOOL isMemberOnly;
        if (style == EMGroupStylePrivateOnlyOwnerInvite) {
            isMemberAllowToInvite = NO;
@@ -355,27 +355,52 @@
            type = 2;
        }
        
-       NSDictionary *groupDict = @{@"groupId":aGroup.groupId,
-                                   @"groupName":aGroup.subject,
-                                   @"description":aGroup.description,
-                                   @"announcement":aGroup.announcement,
-                                   @"isMemberAllowToInvite":[NSNumber numberWithBool:isMemberAllowToInvite],
-                                   @"isMemberOnly":[NSNumber numberWithBool:isMemberOnly],
-                                   @"maxUserCount":[NSNumber numberWithInteger:options.maxUsersCount],
-                                   @"owner":aGroup.owner,
-                                   @"adminList":aGroup.adminList,
-                                   @"members":aGroup.memberList,
-                                   @"blackList":aGroup.blacklist,
-                                   @"muteList":aGroup.muteList,
-                                   @"extension":options.ext,
-                                   @"sharedFileList":[self groupFileListToDictionaries:aGroup.sharedFileList],
-                                   @"isPushNotificationEnabled":[NSNumber numberWithBool:aGroup.isPushNotificationEnabled],
-                                   @"isPublic":[NSNumber numberWithBool:aGroup.isPublic],
-                                   @"isMsgBlocked":[NSNumber numberWithBool:aGroup.isBlocked],
-                                   @"permissionType":[NSNumber numberWithInt:type],
-                                   @"occupants":aGroup.occupants,
-                                   @"memberCount":[NSNumber numberWithInteger:aGroup.occupantsCount]
-                                  };
+    NSMutableDictionary *groupDict = [NSMutableDictionary dictionary];
+    if (aGroup.groupId) {
+        groupDict[@"groupId"] = aGroup.groupId;
+    }
+    if (aGroup.subject) {
+        groupDict[@"groupName"] = aGroup.subject;
+    }
+    if (aGroup.description) {
+        groupDict[@"description"] = aGroup.description;
+    }
+    if (aGroup.announcement) {
+        groupDict[@"announcement"] = aGroup.announcement;
+    }
+    if (aGroup.owner) {
+        groupDict[@"owner"] = aGroup.owner;
+    }
+    if (aGroup.adminList) {
+        groupDict[@"adminList"] = aGroup.adminList;
+    }
+    if (aGroup.memberList) {
+        groupDict[@"memberList"] = aGroup.memberList;
+    }
+    if (aGroup.blacklist) {
+        groupDict[@"blacklist"] = aGroup.blacklist;
+    }
+    if (aGroup.muteList) {
+        groupDict[@"muteList"] = aGroup.muteList;
+    }
+    if (options.ext) {
+        groupDict[@"extension"] = options.ext;
+    }
+    if (aGroup.sharedFileList) {
+        groupDict[@"sharedFileList"] = [self groupFileListToDictionaries:aGroup.sharedFileList];
+    }
+    if (aGroup.occupants) {
+        groupDict[@"occupants"] = aGroup.occupants;
+    }
+    groupDict[@"memberCount"] = [NSNumber numberWithInteger:aGroup.occupantsCount];
+    groupDict[@"isMemberAllowToInvite"] = [NSNumber numberWithBool:isMemberAllowToInvite];
+    groupDict[@"isMemberOnly"] = [NSNumber numberWithBool:isMemberOnly];
+    groupDict[@"maxUserCount"] = [NSNumber numberWithInteger:options.maxUsersCount];
+    groupDict[@"isPublic"] = [NSNumber numberWithBool:aGroup.isPublic];
+    groupDict[@"isPushNotificationEnabled"] = [NSNumber numberWithBool:aGroup.isPushNotificationEnabled];
+    groupDict[@"isMsgBlocked"] = [NSNumber numberWithBool:aGroup.isBlocked];
+    groupDict[@"permissionType"] = [NSNumber numberWithInt:type];
+
        
        return groupDict;
 }
