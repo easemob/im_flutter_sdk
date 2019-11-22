@@ -16,9 +16,12 @@ class DemoLocalizations {
       'delete_conversation' : 'DeleteConversation',
       'delete_contact' : 'DeleteContact',
       'clear_unread' : 'ClearUnread',
-      'chat_room' : 'ChatRoom',
+      'chat_rooms' : 'ChatRooms',
       'search' : 'Search',
       'unable_connect_to_server' : 'Unable connect to server',
+      'chat_groups' : 'ChatGroups',
+      'public_groups' : 'PublicGroups',
+      'loading' : 'loading...',
     },
     'zh': {
       'conversation': '会话',
@@ -29,9 +32,12 @@ class DemoLocalizations {
       'delete_conversation' : '删除会话',
       'delete_contact' : '删除联系人',
       'clear_unread' : '清除未读',
-      'chat_room' : '聊天室',
+      'chat_rooms' : '聊天室',
       'search' : '搜索',
       'unable_connect_to_server' : '无法连接到服务器',
+      'chat_groups' : '群组',
+      'public_groups' : '公开群组',
+      'loading' : '正在加载...',
     }
   };
 
@@ -62,7 +68,7 @@ class DemoLocalizations {
     return _localizedValues[locale.languageCode]['clear_unread'];
   }
   get chatRoom {
-    return _localizedValues[locale.languageCode]['chat_room'];
+    return _localizedValues[locale.languageCode]['chat_rooms'];
   }
   get search {
     return _localizedValues[locale.languageCode]['search'];
@@ -70,7 +76,15 @@ class DemoLocalizations {
   get unableConnectToServer {
     return _localizedValues[locale.languageCode]['unable_connect_to_server'];
   }
-
+  get chatGroup {
+    return _localizedValues[locale.languageCode]['chat_groups'];
+  }
+  get publicGroups {
+    return _localizedValues[locale.languageCode]['public_groups'];
+  }
+  get loading {
+    return _localizedValues[locale.languageCode]['loading'];
+  }
   static DemoLocalizations of(BuildContext context) {
     return Localizations.of(context, DemoLocalizations);
   }
