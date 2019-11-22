@@ -386,11 +386,11 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
     imageMessage.chatType = fromChatType(mType);
-    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess: (){
+    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
        print('-----------success---------->' );
        _onConversationInit();
     });
-
+    _onConversationInit();
   }
 
   @override
