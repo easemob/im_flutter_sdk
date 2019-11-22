@@ -32,12 +32,15 @@ class EMChatManager {
 
   /// sendMessage - Sends message [message].
   void sendMessage(EMMessage message,
-      {onProgress(int progress),
+      { onSuccess(),
+        onProgress(int progress),
       onError(int errorCode, String desc)}){
     Future<Map> result = _emChatManagerChannel.invokeMethod(
         EMSDKMethod.sendMessage, message.toDataMap());
     result.then((response){
-
+      if (response["success"]) {
+        if (onSuccess != null) onSuccess();
+      }
     });
   }
 
