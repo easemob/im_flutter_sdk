@@ -43,6 +43,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   void getData() async{
     message = await con.getLastMessage();
+    content = '';
     switch(message.type){
       case EMMessageType.TXT:
         var body = message.body as EMTextMessageBody;
