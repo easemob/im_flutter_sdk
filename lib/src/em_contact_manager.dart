@@ -62,8 +62,8 @@ class EMContactManager {
     }
   }
 
-  /// @nodoc addContact - add contact of [userName] with [reason].
-  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc 添加联系人[userName] with [reason].
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void addContact(
       {@required String userName,
       @required String reason,
@@ -80,8 +80,9 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc deleteContact - delete contact [userName] while keep the conversation existing if [keepConversation] set to true.
-  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc 删除联系人 [userName]
+  /// @nodoc [keepConversation] true 保留会话和消息  false 不保留
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void deleteContact(
       {@required String userName,
       bool keepConversation = false,
@@ -99,8 +100,8 @@ class EMContactManager {
     });
   }
 
-  /// getAllContactsFromServer - get contact list.
-  /// If anything wrong, [onError] is called with error [code] and [desc] as args.
+  /// 从服务器获取所有的好友
+  /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void getAllContactsFromServer({
       onSuccess(List<String> contacts),
       onError(int code, String desc)}){
@@ -126,9 +127,9 @@ class EMContactManager {
 
 
 
-  /// @nodoc addUserToBlackList - Adds user [userName] into black list.
-  /// @nodoc If [both] set to true, both sides couldn't send message to counterpart. Otherwise, [userName] still can receive messages.
-  /// @nodoc Call [onError] if error occured, with [code] and [desc] as the specific error information.
+  /// @nodoc 把指定用户加入到黑名单中 [userName] .
+  /// @nodoc 如果[both]设置为true，则双方都无法向对方发送消息。否则，[userName]仍然可以接收消息。
+  /// @nodoc 如果加入成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void addUserToBlackList(
       {@required String userName,
       bool both = false,
@@ -145,8 +146,8 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc removeUserFromBlackList - Removes [userName] from black list.
-  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc 把用户从黑名单中移除 [userName].
+  /// @nodoc 如果移除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void removeUserFromBlackList(
       {@required String userName,
       onSuccess(),
@@ -162,13 +163,13 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc getBlackListUserNames - Returns local stored black-listed user names.
+  /// @nodoc 从本地获取黑名单中的用户的ID
   List<String> getBlackListUserNames() {
     return _blackList;
   }
 
-  /// @nodoc getBlackListFromServer - Gets black list from server and stores locally for next call to [getBlackListUserNames].
-  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc 从服务器获取黑名单中的用户的ID
+  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void getBlackListFromServer(
       {onSuccess(List<String> blackList), onError(int code, String desc)}) {
     Future<Map<String, dynamic>> result = _emContactManagerChannel
@@ -191,8 +192,8 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc acceptInvitation - Accepts invitation from [userName].
-  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc 接受加好友的邀请[userName].
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void acceptInvitation(
       {@required String userName,
       onSuccess(),
@@ -208,8 +209,8 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc declineInvitation - Declines invitation from [userName].
-  /// @nodoc Call [onSuccess] if contact added successfully, [onError] once error occured.
+  /// @nodoc 拒绝加好友的邀请 [userName].
+  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void declineInvitation(
       {@required String userName,
       onSuccess(),
@@ -225,8 +226,8 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc getSelfIdsOnOtherPlatform - Gets self ids on other platform.
-  /// @nodoc Call [onError] if error occured, with [code], [desc] set with detail error information.
+  /// @nodoc 从服务器获取登录用户在其他设备上登录的ID
+  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void getSelfIdsOnOtherPlatform(
       {onSuccess(List<String> devices),
         onError(int code, String desc)}){
@@ -250,12 +251,12 @@ class EMContactManager {
 
   }
 
-  /// @nodoc setContactListener - Sets listener [contactListener] to be aware of contact modification events.
+  /// @nodoc 设置好友监听器 [contactListener]
   void addContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.add(contactListener);
   }
 
-  /// @nodoc removeContactListener - Removes listener [contactListener] from listener list.
+  /// @nodoc 移除好友监听器  [contactListener]
   void removeContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.remove(contactListener);
   }

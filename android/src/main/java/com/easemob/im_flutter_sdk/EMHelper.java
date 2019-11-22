@@ -196,7 +196,12 @@ class EMHelper {
      */
     static Map<String, Object> convertEMMessageToStringMap(EMMessage message) {
         Map<String, Object> result = new HashMap<String, Object>();
-        result.put("attributes", message.ext());
+        if (null != message.ext()){
+            result.put("attributes", message.ext());
+        }else {
+            HashMap<Object, Object> hashMap = new HashMap<>();
+            result.put("attributes", hashMap);
+        }
         result.put("conversationId", message.conversationId());
         result.put("type", getType(message));
         result.put("userName", message.getUserName());
@@ -324,11 +329,11 @@ class EMHelper {
         chatRoomMap.put("maxUsers",emChatRoom.getMaxUsers());
         chatRoomMap.put("memberList",emChatRoom.getMemberList());
         chatRoomMap.put("blackList",emChatRoom.getBlackList());
-        if (emChatRoom.getMuteList()) {
+        if (emChatRoom.getMuteList() != null && emChatRoom.getMuteList().size() > 0) {
             List list = new LinkedList();
-            for (Map member : emChatRoom.getMuteList()) {
-                list.add(member.getKey());
-            }
+            emChatRoom.getMuteList().forEach((k, v) ->{
+                list.add(k);
+            });
             chatRoomMap.put("muteList",list);
         }
         chatRoomMap.put("announcement",emChatRoom.getAnnouncement());

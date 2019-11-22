@@ -61,6 +61,9 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
       case EMMessageType.VOICE:
         content = '[语音]';
         break;
+      case EMMessageType.LOCATION:
+        content = '[位置]';
+        break;
       default:
         content = '';
     }

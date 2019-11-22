@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
-import 'utils/localizations.dart';
-import 'utils/widget_util.dart';
-import 'common/common.dart';
+import 'package:im_flutter_sdk_example/utils/localizations.dart';
+import 'package:im_flutter_sdk_example/utils/widget_util.dart';
+import 'package:im_flutter_sdk_example/common/common.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -17,6 +18,7 @@ class LoginPageState extends State<LoginPage> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _pwdController = TextEditingController();
 
+  bool _loading = false;
 
 
   bool isLogged;
@@ -111,6 +113,8 @@ class LoginPageState extends State<LoginPage> {
 
           ),
         ),
+
+        ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inLogin,),
       ],
     );
   }
@@ -213,32 +217,9 @@ class LoginPageState extends State<LoginPage> {
     ),
   );
 
-
-  saveCurrentUser(String currentUser) async {
-//    SharedPreferences prefs = await SharedPreferences.getInstance();
-//    await prefs.setString('currentUser', currentUser);
-//    User.currentUser = currentUser;
-  }
-
-  Future<void> onLoginClick(String currentUser) async {
-//    ImLeancloudPlugin ImleancloudPlugin = ImLeancloudPlugin.getInstance();
-//    // ImleancloudPlugin.onLoginClick(currentUser);
-//    bool islogin = await ImleancloudPlugin.onLoginClick(currentUser);
-//    if (islogin) {
-//      User.isloginLcchat = true;
-//    }
-  }
-
   void login(String username , String password){
-
-//    if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
-//      WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
-//      return ;
-//    }
-
-    if(isLogged){
-      Navigator.of(context).pushNamed(Constant.toHomePage);
-    }else {
+    print(username+':'+password);
+    _refreshUI(true);
       EMClient.getInstance().login(
           userName: username,
           password: password,
@@ -247,7 +228,7 @@ class LoginPageState extends State<LoginPage> {
             Navigator.of(context).pushNamed(Constant.toHomePage);
           },
           onError: (code, desc) {
-
+            _refreshUI(false);
             switch(code) {
               case 2: {
                 WidgetUtil.hintBoxWithDefault('网络未连接!');
@@ -280,6 +261,12 @@ class LoginPageState extends State<LoginPage> {
                 "//" +
                 desc.toString());
           });
-    }
+  }
+
+  void _refreshUI(bool loading){
+    _loading = loading;
+    setState(() {
+
+    });
   }
 }

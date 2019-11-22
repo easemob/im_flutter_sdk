@@ -6,6 +6,7 @@ import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
+import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
 class EMSettingsPage extends StatefulWidget {
   @override
@@ -28,6 +29,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   ];
 
   String userName = 'name';
+  bool _loading = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -37,10 +39,11 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
 
   void _getCurrentUser() async{
     userName = await EMClient.getInstance().getCurrentUser();
-    _refreshUI();
+    _refreshUI(false);
   }
 
-  _refreshUI(){
+  _refreshUI(bool loading){
+    _loading = loading;
     setState(() {
 
     });
@@ -49,24 +52,31 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Scaffold(
+    return
+      Stack(
+        children: <Widget>[
+          Scaffold(
 //        backgroundColor: Colors.blue,
-        appBar: AppBar(
-          elevation: 0, // 隐藏阴影
-          backgroundColor: Colors.blue,
-          leading: Icon(null),
-        ),
-        body: SingleChildScrollView(
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics:NeverScrollableScrollPhysics(),
-            itemCount: this._mapData.length + 1 + 3,
-            itemBuilder: (BuildContext context,int index){
-              return _rowStyle(index);
-            },
+            appBar: AppBar(
+              elevation: 0, // 隐藏阴影
+              backgroundColor: Colors.blue,
+              leading: Icon(null),
+            ),
+            body: SingleChildScrollView(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics:NeverScrollableScrollPhysics(),
+                itemCount: this._mapData.length + 1 + 3,
+                itemBuilder: (BuildContext context,int index){
+                  return _rowStyle(index);
+                },
+              ),
+            ),
           ),
-        ),
-    );
+          ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inLogout,),
+        ],
+      );
+
   }
 
  Widget _rowStyle(int index) {
@@ -217,13 +227,14 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   }
 
   void logout (BuildContext context){
+    _refreshUI(true);
     EMClient.getInstance().logout(
       unbindToken: false,
       onSuccess: (){
         Navigator.of(context).pushNamed(Constant.toLoginPage);
       },
       onError: (code, desc) {
-
+        _refreshUI(false);
         WidgetUtil.hintBoxWithDefault(desc);
       },
     );
