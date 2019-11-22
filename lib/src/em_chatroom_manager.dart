@@ -149,7 +149,7 @@ class EMChatRoomManager{
   void fetchPublicChatRoomsFromServer({
     @required int pageNum,
     @required int pageSize,
-      onSuccess(EMPageResult res),
+      onSuccess(EMPageResult<EMChatRoom> res),
       onError(int code, String desc)}){
       Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchPublicChatRoomsFromServer, {"pageNum": pageNum ,"pageSize": pageSize });
@@ -159,8 +159,11 @@ class EMChatRoomManager{
               var data = List<EMChatRoom>();
               EMPageResult emPageResult = EMPageResult.from(response['value']);
               emPageResult.getData().forEach((page) => data.add(EMChatRoom.from(page)));
-              emPageResult.setData(data);
-              onSuccess(emPageResult);
+
+              EMPageResult<EMChatRoom> pageResult = EMPageResult.from(Map());
+              pageResult.setPageCount(emPageResult.getPageCount());
+              pageResult.setData(data);
+              onSuccess(pageResult);
           }
         } else {
           if (onError != null) onError(response['code'], response['desc']);
