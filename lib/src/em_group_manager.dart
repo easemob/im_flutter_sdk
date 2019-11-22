@@ -242,7 +242,7 @@ class EMGroupManager{
   void getPublicGroupsFromServer({
     @required int pageSize,
     @required String cursor,
-    onSuccess(EMCursorResult result),
+    onSuccess(EMCursorResult<EMGroupInfo> result),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.getPublicGroupsFromServer, {"pageSize" : pageSize, "cursor" : cursor});
@@ -250,8 +250,15 @@ class EMGroupManager{
       if (response['success']) {
           if (onSuccess != null) {
             if(response['value'] != null) {
-              var groups = response['value'] as Map<String, dynamic>;
-              onSuccess(EMCursorResult.from(groups));
+              print(response['value']);
+              var data = List<EMGroupInfo>();
+              EMCursorResult emCursorResult = EMCursorResult.from(response['value']);
+              emCursorResult.getData().forEach((item) => data.add(EMGroupInfo.from(item)));
+
+              EMCursorResult<EMGroupInfo> cursorResult =  EMCursorResult.from(Map());
+              cursorResult.setCursor(emCursorResult.getCursor());
+              cursorResult.setData(data);
+              onSuccess(cursorResult);
             }else{
               onSuccess(null);
             }

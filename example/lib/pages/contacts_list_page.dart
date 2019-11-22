@@ -23,7 +23,6 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   String _name;
 
 
-//  List contactsList = ['小明','小红','小刚','小王','小丽','小丽','小丽','小丽','小丽','小丽'];
   var contactsList = new List();
 
   var mapTest = [
@@ -131,7 +130,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
           if(index == 1){
 //            Navigator.of(context).pushNamed(Constant.toAddContact);
           } else if (index == 2) {
-            WidgetUtil.hintBoxWithDefault('正在开发中...');
+            Navigator.of(context).pushNamed(Constant.toChatGroupListPage);
           } else if (index == 3) {
             WidgetUtil.hintBoxWithDefault('正在开发中...');
           } else if (index == 4) {
@@ -166,11 +165,11 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
         children: <Widget>[
           Container(
             padding: EdgeInsets.only(left: 16.0),
-            height: 67,
+            height: EMLayout.emContactListItemHeight,
             child: Row(
               children: <Widget>[
                 ClipOval(
-                  child: Image.asset(this._imageName, width: 40.0,height: 40.0,),
+                  child: Image.asset(this._imageName, width: EMLayout.emContactListPortraitSize,height: EMLayout.emContactListPortraitSize,),
                 ),
                 Padding(padding: EdgeInsets.all(8.0)),
                 Text(this._name, style: TextStyle(fontSize: 18.0),)

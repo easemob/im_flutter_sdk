@@ -574,17 +574,25 @@ abstract class EMCursorResults<T> {
   Future<T> getCursor();
 }
 
-class EMCursorResult {
+class EMCursorResult<T> {
   String _cursor;
 
-  List _data;
+  List<T> _data;
 
   String getCursor(){
     return _cursor;
   }
 
-  List getData(){
+  void setCursor(String cursor){
+    _cursor = cursor;
+  }
+
+  List<T> getData(){
     return _data;
+  }
+
+  void setData(List list){
+    _data = list;
   }
 
   EMCursorResult.from(Map<String, dynamic> data)
@@ -599,6 +607,10 @@ class EMPageResult<T>{
 
   int getPageCount() {
     return _pageCount;
+  }
+
+  void setPageCount(int pageCount) {
+    _pageCount = pageCount;
   }
 
   List<T> getData(){
