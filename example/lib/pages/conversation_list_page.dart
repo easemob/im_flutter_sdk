@@ -144,16 +144,17 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     // TODO: implement build
     return new Scaffold(
       appBar: AppBar(
-        elevation: 0,
         centerTitle : true,
-        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
         title: Text(DemoLocalizations.of(context).conversation, style: TextStyle(fontSize: EMFont.emAppBarTitleFont, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
         leading: Icon(null),
+        elevation: 0, // 隐藏阴影
+        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
         actions: <Widget>[
-          Icon(Icons.add,),
+          IconButton(icon: Icon(Icons.add,), onPressed: (){
 
-          SizedBox(width: 24.0,)
+          }),
 
+          SizedBox(width: 12.0),
         ],
       ),
       key: UniqueKey(),
