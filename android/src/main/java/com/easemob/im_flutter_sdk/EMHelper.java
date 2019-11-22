@@ -196,7 +196,12 @@ class EMHelper {
      */
     static Map<String, Object> convertEMMessageToStringMap(EMMessage message) {
         Map<String, Object> result = new HashMap<String, Object>();
-        result.put("attributes", message.ext());
+        if (null != message.ext()){
+            result.put("attributes", message.ext());
+        }else {
+            HashMap<Object, Object> hashMap = new HashMap<>();
+            result.put("attributes", hashMap);
+        }
         result.put("conversationId", message.conversationId());
         result.put("type", getType(message));
         result.put("userName", message.getUserName());
