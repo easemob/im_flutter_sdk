@@ -37,6 +37,8 @@
         [self getGroup:call.arguments result:result];
     } else if ([EMMethodKeyGetJoinedGroupsFromServer isEqualToString:call.method]) {
         [self getJoinedGroupsFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyLoadAllGroups isEqualToString:call.method]) {
+        [self loadAllGroups:call.arguments result:result];
     } else if ([EMMethodKeyGetPublicGroupsFromServer isEqualToString:call.method]) {
         [self getPublicGroupsFromServer:call.arguments result:result];
     } else if ([EMMethodKeyCreateGroup isEqualToString:call.method]) {
@@ -135,10 +137,10 @@
 
 - (void)getGroup:(NSDictionary *)param result:(FlutterResult)result {
     NSString *groupId = param[@"groupId"];
-    EMGroup *group = [EMGroup groupWithId:groupId];
+    EMGroup *aGroup = [EMGroup groupWithId:groupId];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:[EMHelper groupToDictionary:group]];
+                 userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
 }
 
 
@@ -153,6 +155,10 @@
     }];
 }
 
+- (void)loadAllGroups:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
+
 - (void)getPublicGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSString *cursor = param[@"cursor"];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
@@ -162,7 +168,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithCursorResult:aResult]];
+                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult isGroupList:YES]}];
     }];
 }
 
@@ -184,7 +190,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -195,7 +201,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -210,7 +216,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithCursorResult:aResult]];
+                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult isGroupList:NO]}];
     }];
 }
 
@@ -225,7 +231,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
+                     userInfo:@{@"value":aList}];
     }];
 }
 
@@ -240,7 +246,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
+                     userInfo:@{@"value":aList}];
     }];
 }
 
@@ -256,7 +262,7 @@
         
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper groupsToDictionaries:aList]}];
+                     userInfo:@{@"value":[EMHelper groupFileListToDictionaries:aList]}];
     }];
 }
 
@@ -280,7 +286,7 @@
         EMGroup *group = [EMClient.sharedClient.groupManager addOccupants:members toGroup:groupId welcomeMessage:message error:&aError];
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:group]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:group]}];
     });
     
 }
@@ -296,7 +302,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -322,7 +328,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -335,7 +341,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -361,7 +367,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -394,7 +400,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -405,7 +411,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -418,7 +424,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -431,7 +437,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -444,7 +450,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -459,7 +465,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -472,7 +478,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -488,7 +494,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupSharedFileToDictionary:aSharedFile]];
+                     userInfo:nil];
     }];
 }
 
@@ -506,7 +512,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -516,7 +522,7 @@
     [EMClient.sharedClient.groupManager removeGroupSharedFileWithId:groupId sharedFileId:fileId completion:^(EMGroup *aGroup, EMError *aError) {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -529,7 +535,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -542,7 +548,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -553,7 +559,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -566,7 +572,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -579,7 +585,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -594,7 +600,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:nil];
     }];
 }
 
@@ -607,7 +613,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 
@@ -635,7 +641,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper groupToDictionary:aGroup]];
+                     userInfo:@{@"value":[EMHelper groupToDictionary:aGroup]}];
     }];
 }
 // 有疑议
@@ -882,13 +888,22 @@
                      arguments:map];
 }
 
-
-// 群组搜索结果转字典
-- (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult
+// 群组搜索结果转字典,EMCursorResult的list有群组列表和群组成员列表的区分，所以做判断区分
+- (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult isGroupList:(BOOL)isGroupList
 {
-    NSDictionary *resultDict = @{@"list":[EMHelper groupsToDictionaries:cursorResult.list],
-                                 @"cursor":cursorResult.cursor
-                                };
+    NSDictionary *resultDict = nil;
+    if (isGroupList) {
+        resultDict= @{
+            @"data":[EMHelper groupsToDictionaries:cursorResult.list],
+            @"cursor":cursorResult.cursor
+        };
+    } else {
+        resultDict= @{
+            @"data":cursorResult.list,
+            @"cursor":cursorResult.cursor
+        };
+    }
+    
     return resultDict;
 }
 
