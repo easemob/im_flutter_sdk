@@ -667,7 +667,7 @@ class EMGroupManager{
     @required String groupId,
     @required int pageNum,
     @required int pageSize,
-    onSuccess(Map map),
+    onSuccess(List list),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -676,8 +676,8 @@ class EMGroupManager{
       if (response['success']) {
         if (onSuccess != null) {
           if (response['value'] != null) {
-            var m = response['value'] as Map<String, dynamic>;
-            onSuccess(m);
+            var muteList = response['value'] as List<dynamic>;
+            onSuccess(muteList);
           } else {
             onSuccess(null);
           }

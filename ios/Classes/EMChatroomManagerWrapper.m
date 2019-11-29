@@ -111,7 +111,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -122,7 +122,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -154,16 +154,16 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
 - (void)getChatroom:(NSDictionary *)param result:(FlutterResult)result {
     NSString *chatroomId = param[@"chatroomId"];
-    EMChatroom *chatroom = [EMChatroom chatroomWithId:chatroomId];
+    EMChatroom *aChatroom = [EMChatroom chatroomWithId:chatroomId];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:[EMHelper chatRoomToDictionary:chatroom]];
+                 userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
 }
 
 - (void)getAllChatrooms:(NSDictionary *)param result:(FlutterResult)result {
@@ -173,7 +173,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper pageReslutToDictionary:aResult]];
+                     userInfo:@{@"value":[EMHelper pageReslutToDictionary:aResult]}];
         
     }];
 }
@@ -189,7 +189,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithCursorResult:aResult]];
+                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult]}];
     }];
 }
 
@@ -243,7 +243,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -256,7 +256,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -269,7 +269,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -282,7 +282,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -295,7 +295,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -308,7 +308,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -321,7 +321,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroomp]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroomp]}];
     }];
 }
 
@@ -334,7 +334,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -349,7 +349,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -362,7 +362,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
@@ -375,7 +375,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
     }];
 }
 
