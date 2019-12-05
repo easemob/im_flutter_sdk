@@ -45,7 +45,7 @@
         [self getChatroom:call.arguments result:result];
     } else if ([EMMethodKeyGetAllChatRooms isEqualToString:call.method]) {
         [self getAllChatrooms:call.arguments result:result];
-    }  else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
+    } else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
         [self getChatroomMemberListFromServer:call.arguments result:result];
     } else if ([EMMethodKeyGetChatroomBlacklistFromServer isEqualToString:call.method]) {
         [self getChatroomBlacklistFromServer:call.arguments result:result];
@@ -122,7 +122,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
     }];
 }
 
@@ -146,9 +146,8 @@
     }];
 }
 
-
 - (void)getChatroomSpecificationFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
+    NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId
                                                                      completion:^(EMChatroom *aChatroom, EMError *aError)
     {
@@ -159,11 +158,11 @@
 }
 
 - (void)getChatroom:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"chatroomId"];
-    EMChatroom *aChatroom = [EMChatroom chatroomWithId:chatroomId];
+    NSString *chatroomId = param[@"roomId"];
+    EMChatroom *chatroom = [EMChatroom chatroomWithId:chatroomId];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+                 userInfo:@{@"value":[EMHelper chatRoomToDictionary:chatroom]}];
 }
 
 - (void)getAllChatrooms:(NSDictionary *)param result:(FlutterResult)result {
@@ -173,7 +172,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper pageReslutToDictionary:aResult]}];
+                     userInfo:@{@"value":[EMHelper chatRoomsToDictionaries:aResult.list]}];
         
     }];
 }
@@ -204,7 +203,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomsToDictionaries:aList]}];
+                     userInfo:@{@"value":aList}];
     }];
 }
 
@@ -219,7 +218,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomsToDictionaries:aList]}];
+                     userInfo:@{@"value":aList}];
     }];
 }
 
@@ -375,7 +374,7 @@
     {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+                     userInfo:nil];
     }];
 }
 
@@ -436,7 +435,7 @@
                        muteExpire:(NSInteger)aMuteExpire {
     NSDictionary *map = @{
         @"type":@"onMuteListAdded",
-        @"chatRoomId":aChatroom.chatroomId,
+        @"roomId":aChatroom.chatroomId,
         @"mutes":aMutes,
         @"expireTime":[NSString stringWithFormat:@"%ld", aMuteExpire]
     };
@@ -448,7 +447,7 @@
               removedMutedMembers:(NSArray *)aMutes {
     NSDictionary *map = @{
         @"type":@"onMuteListRemoved",
-        @"chatRoomId":aChatroom.chatroomId,
+        @"roomId":aChatroom.chatroomId,
         @"mutes":aMutes
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -459,7 +458,7 @@
                         addedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
         @"type":@"onAdminAdded",
-        @"chatRoomId":aChatroom.chatroomId,
+        @"roomId":aChatroom.chatroomId,
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -470,7 +469,7 @@
                       removedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
         @"type":@"onAdminRemoved",
-        @"chatRoomId":aChatroom.chatroomId,
+        @"roomId":aChatroom.chatroomId,
         @"admin":aAdmin
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
@@ -482,7 +481,7 @@
                       oldOwner:(NSString *)aOldOwner {
     NSDictionary *map = @{
         @"type":@"onOwnerChanged",
-        @"chatRoomId":aChatroom.chatroomId,
+        @"roomId":aChatroom.chatroomId,
         @"newOwner":aNewOwner,
         @"oldOwner":aOldOwner
     };
@@ -494,7 +493,7 @@
                          announcement:(NSString *)aAnnouncement {
     NSDictionary *map = @{
         @"type":@"onAnnouncementChanged",
-        @"chatRoomId":aChatroom.chatroomId,
+        @"roomId":aChatroom.chatroomId,
         @"announcement":aAnnouncement
     };
     [self.channel invokeMethod:EMMethodKeyChatroomChanged
