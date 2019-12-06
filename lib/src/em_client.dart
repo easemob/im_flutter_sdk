@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import 'em_chat_manager.dart';
 import 'em_chatroom_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
 import 'em_group_manager.dart';
-import 'em_log.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
 
@@ -18,14 +16,13 @@ class EMClient {
   static const MethodChannel _emClientChannel =
       const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
 
-  static final EMLog _log = EMLog();
-  final EMChatManager _chatManager = EMChatManager.getInstance(log: _log);
-  final EMContactManager _contactManager =
-      EMContactManager.getInstance(log: _log);
+  final EMChatManager _chatManager = EMChatManager.getInstance();
+
+  final EMContactManager _contactManager =  EMContactManager.getInstance();
+
   final EMChatRoomManager _chatRoomManager = EMChatRoomManager.getInstance();
 
-  final EMGroupManager _groupManager =
-  EMGroupManager.getInstance(log: _log);
+  final EMGroupManager _groupManager =  EMGroupManager.getInstance();
 
 
   final _connectionListeners = List<EMConnectionListener>();
@@ -42,11 +39,12 @@ class EMClient {
     return _instance = _instance ?? EMClient._internal();
   }
 
-  /// private constructor
+  /// @nodoc private constructor
   EMClient._internal() {
     _addNativeMethodCallHandler();
   }
 
+  /// @nodoc
   void _addNativeMethodCallHandler() {
     _emClientChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
@@ -70,8 +68,8 @@ class EMClient {
   /// 注册环信账号[userName]/[password].
   /// 如果注册成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void createAccount(
-      { @required String userName,
-        @required String password,
+      { String userName,
+        String password,
         onSuccess(),
         onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
@@ -91,8 +89,8 @@ class EMClient {
   /// 账号密码登录[id]/[password].
   /// 如果登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void login(
-      {@required String userName,
-      @required String password,
+      {String userName,
+      String password,
       onSuccess(String username),
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
@@ -114,8 +112,8 @@ class EMClient {
   /// @nodoc 使用账号和token登录 [userName] and [token].
   /// @nodoc 如果登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void loginWithToken(
-      {@required String userName,
-      @required String token,
+      {String userName,
+      String token,
       onSuccess(),
       onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
@@ -147,7 +145,7 @@ class EMClient {
 
   /// @nodoc 修改appkey [appKey].
   /// @nodoc 如果修改成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void changeAppKey({@required String appKey, onSuccess(), onError(int code, String desc)}) {
+  void changeAppKey({String appKey, onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.changeAppKey, {"appKey": appKey});
     result.then((response) {
@@ -213,8 +211,8 @@ class EMClient {
   /// @nodoc 当前登录账号和密码 [userName]/[password]
   /// @nodoc 如果出现错误，请调用[onError]。
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
-      {@required String userName,
-      @required String password,
+      {String userName,
+       String password,
       onError(int code, String desc)}) async {
     Map<String, dynamic> result = await _emClientChannel.invokeMethod(
         EMSDKMethod.getLoggedInDevicesFromServer,
@@ -240,9 +238,9 @@ class EMClient {
   /// @nodoc 账号和密码 [userName]/[password] 设备ID[resource].
   /// @nodoc 如果出现错误，请调用[onError]。
   void kickDevice(
-      {@required String userName,
-      @required String password,
-      @required String resource,
+      {String userName,
+      String password,
+      String resource,
       onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.kickDevice,
         {"userName": userName, "password": password, "resource": resource});
@@ -258,9 +256,9 @@ class EMClient {
   /// @nodoc 账号和密码 [userName]/[password] pair.
   /// @nodoc 如果出现错误，请调用[onError].
   void kickAllDevices(
-      {@required String userName,
-      @required String password,
-      onError(int code, String desc)}) {
+      String userName,
+      String password,
+      {onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.kickAllDevices,
         {"userName": userName, "password": password});
@@ -318,13 +316,13 @@ class EMClient {
 
   /* Listeners*/
 
-  /// 添加多设备监听的接口 [listener].
+  /// @nodoc 添加多设备监听的接口 [listener].
   void addMultiDeviceListener(EMMultiDeviceListener listener) {
     assert(listener != null);
     _multiDeviceListeners.add(listener);
   }
 
-  /// 移除多设备监听的接口[listener].
+  /// @nodoc 移除多设备监听的接口[listener].
   void removeMultiDeviceListener(EMMultiDeviceListener listener) {
     assert(listener != null);
     _multiDeviceListeners.remove(listener);
@@ -342,7 +340,7 @@ class EMClient {
     _connectionListeners.remove(listener);
   }
 
-  ///@nodoc once connection changed, listeners to be informed.
+  /// @nodoc once connection changed, listeners to be informed.
   Future<void> _onConnected() async {
     _connected = true;
     for (var listener in _connectionListeners) {
@@ -350,6 +348,7 @@ class EMClient {
     }
   }
 
+  /// @nodoc
   Future<void> _onDisconnected(Map map) async {
     _connected = false;
     for (var listener in _connectionListeners) {
@@ -358,7 +357,7 @@ class EMClient {
     }
   }
 
-  ///@nodoc on multi device event emitted, call listeners func.
+  /// @nodoc on multi device event emitted, call listeners func.
   Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
@@ -370,24 +369,26 @@ class EMClient {
     }
   }
 
-  /// chatManager - retrieve [EMChatManager] handle.
+  /// @nodoc chatManager - retrieve [EMChatManager] handle.
   EMChatManager chatManager() {
     return _chatManager;
   }
 
-  /// contactManager - retrieve [EMContactManager] handle.
+  /// @nodoc  contactManager - retrieve [EMContactManager] handle.
   EMContactManager contactManager() {
     return _contactManager;
   }
 
+  /// @nodoc
   EMChatRoomManager chatRoomManager(){
     return _chatRoomManager;
   }
-  /// groupManager - retrieve [EMGroupManager] handle.
+  /// @nodoc  groupManager - retrieve [EMGroupManager] handle.
   EMGroupManager groupManager(){
     return _groupManager;
   }
 
+  /// @nodoc
   EMContactGroupEvent convertIntToEMContactGroupEvent(int i){
     switch(i){
       case 2:

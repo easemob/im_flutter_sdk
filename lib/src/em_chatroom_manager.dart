@@ -1,8 +1,8 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:im_flutter_sdk/src/em_domain_terms.dart';
-import 'package:meta/meta.dart';
 
 import 'em_chatroom.dart';
 import "em_listeners.dart";
@@ -13,18 +13,23 @@ class EMChatRoomManager{
   static const MethodChannel _emChatRoomManagerChannel =
   const MethodChannel('$_channelPrefix/em_chat_room_manager', JSONMethodCodec());
 
+  /// @nodoc
   static EMChatRoomManager _instance;
 
+  /// @nodoc
   final List<EMChatRoomEventListener> _chatRoomEventListeners =  List<EMChatRoomEventListener>();
 
+  /// @nodoc
   factory EMChatRoomManager.getInstance() {
     return _instance = _instance ?? EMChatRoomManager._internal();
   }
 
+  /// @nodoc
   EMChatRoomManager._internal(){
     _addNativeMethodCallHandler();
   }
 
+  /// @nodoc
   void _addNativeMethodCallHandler() {
     _emChatRoomManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
@@ -45,7 +50,7 @@ class EMChatRoomManager{
      _chatRoomEventListeners.remove(listener);
   }
 
-
+  /// @nodoc
   Future<void> _chatRoomChange(Map event) async{
     String type = event['chatRoomChange'];
     for (var listener in _chatRoomEventListeners) {
@@ -113,9 +118,10 @@ class EMChatRoomManager{
   /// 加入聊天室[roomId].
   /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void joinChatRoom({
-    @required String roomId,
+    final String roomId,
     onSuccess(),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.joinChatRoom, {"roomId": roomId });
     result.then((response) {
@@ -130,9 +136,10 @@ class EMChatRoomManager{
   /// 退出聊天室[roomId].
   /// 如果退出成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void leaveChatRoom({
-    @required String roomId,
+    final String roomId,
     onSuccess(),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.leaveChatRoom, {"roomId": roomId });
     result.then((response) {
@@ -147,10 +154,11 @@ class EMChatRoomManager{
   /// 翻页从服务器获取聊天室 [pageNum] and [pageSize]
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void fetchPublicChatRoomsFromServer({
-    @required int pageNum,
-    @required int pageSize,
-      onSuccess(EMPageResult<EMChatRoom> res),
-      onError(int code, String desc)}){
+    final int pageNum,
+    final int pageSize,
+    onSuccess(EMPageResult<EMChatRoom> res),
+    onError(int code, String desc)
+  }){
       Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchPublicChatRoomsFromServer, {"pageNum": pageNum ,"pageSize": pageSize });
       result.then((response) {
@@ -173,10 +181,11 @@ class EMChatRoomManager{
 
   /// @nodoc 从服务器获取聊天室详情 [roomId].
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void fetchChatRoomFromServer({
-    @required String roomId,
-    onSuccess(Map<String,Object> chatRoom),
-    onError(int code, String desc)}){
+  void fetchChatRoomFromServer(
+      String roomId,{
+      onSuccess(Map<String,Object> chatRoom),
+      onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomFromServer, {"roomId": roomId });
     result.then((response) {
@@ -188,9 +197,9 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 获取聊天室 [roomId].
+  /// 获取聊天室 [roomId].
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  Future<EMChatRoom> getChatRoom(String roomId) async{
+  Future<EMChatRoom> getChatRoom({final String roomId}) async{
     Map result = await _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.getChatRoom,{"roomId": roomId });
     if (result['success']) {
@@ -200,7 +209,7 @@ class EMChatRoomManager{
     }
   }
 
-  /// @nodoc 获取当前内存的聊天室 .
+  /// 获取当前内存的聊天室 .
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   Future<List> getAllChatRooms() async {
     Map result = await _emChatRoomManagerChannel
@@ -220,11 +229,11 @@ class EMChatRoomManager{
   /// @nodoc 创建聊天室（目前只有环信demo可以使用）[subject].[description].[welcomeMessage].[maxUserCount].[members]
   /// @nodoc 如果创建成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void createChatRoom({
-    @required String subject,
-    @required String description,
-    @required String welcomeMessage,
-    @required int maxUserCount,
-    @required List members,
+    final String subject,
+    final String description,
+    final String welcomeMessage,
+    final int maxUserCount,
+    final List members,
     onSuccess(Map emChatRoom),
     onError(int code, String desc)}){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
@@ -242,9 +251,10 @@ class EMChatRoomManager{
   /// @nodoc 销毁聊天室，需要owner权限 [roomId]
   /// @nodoc 如果销毁成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void destroyChatRoom({
-    @required String roomId,
+    final String roomId,
     onSuccess(),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.destroyChatRoom, {"roomId": roomId });
     result.then((response) {
@@ -259,10 +269,11 @@ class EMChatRoomManager{
   /// @nodoc 修改聊天室标题，需要owner权限[roomId]
   /// @nodoc 如果修改成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void changeChatRoomSubject({
-    @required String roomId,
-    @required String newSubject,
+    final String roomId,
+    final String newSubject,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.changeChatRoomSubject, {"roomId": roomId ,"newSubject":newSubject});
     result.then((response) {
@@ -274,13 +285,14 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 修改群描述信息，需要owner权限 [roomId] .[newDescription]
+  /// @nodoc 修改聊天室描述信息，需要owner权限 [roomId] .[newDescription]
   /// @nodoc 如果修改成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void changeChatRoomDescription({
-    @required String roomId,
-    @required String newDescription,
+    final String roomId,
+    final String newDescription,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.changeChatRoomDescription, {"roomId": roomId ,"newDescription" : newDescription });
     result.then((response) {
@@ -292,20 +304,32 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 获取聊天室成员列表
+  /// 获取聊天室成员列表
   /// [roomId] 聊天室ID.[cursor] 游标.[pageSize] 每页数量
-  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void fetchChatRoomMembers({
     @required String roomId,
     @required String cursor,
     int pageSize,
-    onSuccess(Map map),
+    onSuccess(EMCursorResult<String> result),
     onError(int code, String desc)}){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomMembers, {"roomId": roomId ,"cursor" : cursor ,"pageSize" : pageSize});
     result.then((response) {
       if (response["success"]) {
-        if (onSuccess != null) onSuccess(response['value']);
+        if (onSuccess != null) {
+          List<String> list = [];
+          var value = response['value'] as Map<String, dynamic>;
+          EMCursorResult emCursorResult = EMCursorResult.from(value);
+          emCursorResult.getData().forEach((item) => list.add(item));
+
+          EMCursorResult<String> cursorResult = EMCursorResult.from(Map());
+          cursorResult.setData(list);
+          cursorResult.setCursor(emCursorResult.getCursor());
+          if (onSuccess != null) onSuccess(cursorResult);
+        }else{
+          onSuccess(null);
+        }
       } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
@@ -316,11 +340,12 @@ class EMChatRoomManager{
   /// [roomId] 聊天室ID [duration] 禁言的时间，单位是毫秒 [muteMembers] 禁言的用户列表
   /// @nodoc 如果禁言成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void muteChatRoomMembers({
-    @required String roomId,
-    List muteMembers,
-    @required String duration,
+    final String roomId,
+    final List muteMembers,
+    String duration,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.muteChatRoomMembers, {"roomId": roomId  ,"muteMembers" : muteMembers ,"duration" : duration});
     result.then((response) {
@@ -335,10 +360,11 @@ class EMChatRoomManager{
   /// @nodoc 取消禁言，需要聊天室拥有者或者管理员权限 [roomId].[muteMembers]
   /// @nodoc 如果取消禁言成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void unMuteChatRoomMembers({
-    @required String roomId,
-    List<String> muteMembers,
+    final String roomId,
+    final List<String> muteMembers,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.unMuteChatRoomMembers, {"roomId": roomId ,"muteMembers" : muteMembers});
     result.then((response) {
@@ -353,10 +379,11 @@ class EMChatRoomManager{
   /// @nodoc 转移聊天室的所有权，需要聊天室拥有者权限 [roomId] .[newOwner]
   /// @nodoc 如果转移成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void changeOwner({
-    @required String roomId,
-    @required String newOwner,
+    final String roomId,
+    final String newOwner,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.changeChatRoomOwner, {"roomId": roomId ,"newOwner" : newOwner});
     result.then((response) {
@@ -368,13 +395,14 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 为聊天室添加管理员，需要拥有者权限 [roomId].[admin]
-  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 为聊天室添加管理员，需要拥有者权限 [roomId].[admin]
+  /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void addChatRoomAdmin({
-    @required String roomId,
-    @required String admin,
+    final String roomId,
+    final String admin,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.addChatRoomAdmin, {"roomId": roomId ,"admin" : admin});
     result.then((response) {
@@ -386,13 +414,14 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 删除聊天室管理员，需要拥有着权限[roomId].[admin]
-  /// @nodoc 如果删除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 删除聊天室管理员，需要拥有着权限[roomId].[admin]
+  /// 如果删除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void removeChatRoomAdmin({
-    @required String roomId,
-    @required String admin,
+    final String roomId,
+    final String admin,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.removeChatRoomAdmin, {"roomId": roomId ,"admin" : admin});
     result.then((response) {
@@ -407,11 +436,12 @@ class EMChatRoomManager{
   /// @nodoc 获取聊天室的禁言列表，需要拥有者或者管理员权限 [roomId].[pageNum].[pageSize]
   /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void fetchChatRoomMuteList({
-    @required String roomId,
-    int pageNum,
-    int pageSize,
+    final String roomId,
+    final int pageNum,
+    final int pageSize,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomMuteList, {"roomId": roomId ,"pageNum" : pageNum ,"pageSize": pageSize});
     result.then((response) {
@@ -426,10 +456,11 @@ class EMChatRoomManager{
   /// @nodoc 删除聊天室成员，需要拥有者或者管理员权限[roomId].[members].
   /// @nodoc 如果删除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void removeChatRoomMembers({
-    @required String roomId,
-    List members,
+    final String roomId,
+    final List members,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.removeChatRoomMembers, {"roomId": roomId ,"members" : members });
     result.then((response) {
@@ -444,10 +475,11 @@ class EMChatRoomManager{
   /// @nodoc 添加成员到黑名单，禁止成员继续加入聊天室，需要拥有者或者管理员权限[roomId].[members].
   /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void blockChatRoomMembers({
-    @required String roomId,
-    List members,
+    final String roomId,
+    final List members,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.blockChatRoomMembers, {"roomId": roomId ,"members" : members });
     result.then((response) {
@@ -462,10 +494,11 @@ class EMChatRoomManager{
   /// @nodoc 将成员从黑名单种移除，需要拥有者或者管理员权限[roomId].[members].
   /// @nodoc 如果移除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void unBlockChatRoomMembers({
-    @required String roomId,
-    List members,
+    final String roomId,
+    final List members,
     onSuccess(Map map),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.unBlockChatRoomMembers, {"roomId": roomId ,"members" : members });
     result.then((response) {
@@ -480,11 +513,12 @@ class EMChatRoomManager{
   /// @nodoc 获取群组黑名单列表，分页显示，需要拥有者或者管理员权限 [roomId].[pageNum].[pageSize]
   /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void fetchChatRoomBlackList({
-    @required String roomId,
-    int pageNum,
-    int pageSize,
+    final String roomId,
+    final int pageNum,
+    final int pageSize,
     onSuccess(List list),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomBlackList, {"roomId": roomId ,"pageNum" : pageNum ,"pageSize": pageSize});
     result.then((response) {
@@ -497,13 +531,14 @@ class EMChatRoomManager{
   }
 
 
-  /// @nodoc 更新聊天室公告[roomId].[announcement]
-  /// @nodoc 如果更新成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 更新聊天室公告[roomId].[announcement]
+  /// 如果更新成功，回调[onSuccess]，如果出现错误，回调[onError]。
   void updateChatRoomAnnouncement({
-    @required String roomId,
-    @required String announcement,
+    final String roomId,
+    final String announcement,
     onSuccess(),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.updateChatRoomAnnouncement, {"roomId": roomId ,"announcement": announcement});
     result.then((response) {
@@ -515,12 +550,13 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 从服务器获取聊天室公告内容[roomId]
-  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 从服务器获取聊天室公告内容[roomId]
+  /// 如果获取成功，回调[onSuccess]，如果出现错误，回调[onError]。
   void fetchChatRoomAnnouncement({
-    @required String roomId,
+    final String roomId,
     onSuccess(String res),
-    onError(int code, String desc)}){
+    onError(int code, String desc)
+  }){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomAnnouncement, {"roomId": roomId });
     result.then((response) {

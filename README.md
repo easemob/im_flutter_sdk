@@ -6,10 +6,12 @@ A new flutter plugin project.
 
 ## 生成文档
 
-SDK API文档由以下命令生成并由[Github Pages](http://easemob.github.io/im_flutter_sdk)维护:
+SDK API文档由以下命令生成,线上文档请参看[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):
 
 ```shell
 
-dartdoc --exclude dart:io,dart:async,dart:ui,dart:math,dart:collection,dart:convert,dart:core,dart:developer,dart:isolate,dart:typed_data --output docs
-
+dartdoc --exclude dart:io,dart:async,dart:ui,dart:math,dart:collection,dart:convert,dart:core,dart:developer,dart:isolate,dart:typed_data --output doc
 ```
+
+
+## SDK简要说明

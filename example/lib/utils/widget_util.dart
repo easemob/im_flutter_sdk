@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:im_flutter_sdk_example/widgets/ease_button_widget.dart';
 
 import 'style.dart';
+import 'theme_util.dart';
 import 'time_util.dart';
 
 enum PromptBoxLocation { TOP, BOTTOM, CENTER }
@@ -14,33 +16,27 @@ class WidgetUtil {
   static const int INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
   /// 会话页面加号扩展栏里面的 widget，上面图片，下面文本
-  static Widget buildExtentionWidget(IconData icon,String text,Function()clicked) {
-    return Column(
-      children: <Widget>[
-        SizedBox(
-          height: 8,
-        ),
-        InkWell(
-          onTap: () {
-            if(clicked != null) {
-              clicked();
-            }
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: 50,
-              height: 50,
-              color: Colors.white,
-              child: Icon(icon,size: 40),
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 5,
-        ),
-        Text(text,style:TextStyle(fontSize: 13))
-      ],
+  static Widget buildExtentionWidget(String iconPath,String text,bool _isDark,Function()clicked) {
+    return Container(
+      margin:  EdgeInsets.fromLTRB(1,0,1,0),
+      decoration: BoxDecoration(
+        border: Border.all(width: 6, color: EMColor.borderLine),
+        borderRadius: const BorderRadius.all(const Radius.circular(8)),
+        color: _isDark ? EMColor.borderLine : EMColor.unreadCount,
+      ),
+       padding: EdgeInsets.fromLTRB(0,5,0,0),
+       child: ImageButton(
+           normalImage: Image.asset(iconPath),
+           pressedImage: Image.asset(iconPath),
+           title: text ,
+           padding: 5 ,
+           normalStyle: new TextStyle(),
+           onPressed: (){
+               if(clicked != null){
+                 clicked();
+               }
+           },
+       ),
     );
   }
 
@@ -191,6 +187,15 @@ class WidgetUtil {
       delta = -delta;
     }
     return delta > INTERVAL_IN_MILLISECONDS;
+  }
+
+  static AppBar buildAppBar(BuildContext context, String title){
+    return AppBar(
+      elevation: 0,
+      centerTitle : true,
+      backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
+      title: Text(title, style: TextStyle(fontSize:EMFont.emAppBarTitleFont, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
+    );
   }
 }
 

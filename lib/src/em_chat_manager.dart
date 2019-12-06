@@ -2,7 +2,6 @@ import "dart:async";
 import 'dart:collection';
 
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import "em_conversation.dart";
 import 'em_domain_terms.dart';
@@ -15,19 +14,19 @@ class EMChatManager {
   static const MethodChannel _emChatManagerChannel =
       const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
 
+  /// @nodoc
   static EMChatManager _instance;
-
-  final EMLog log;
 
   final _messageListeners = List<EMMessageListener>();
   Function _conversationUpdateFunc;
 
-  EMChatManager._internal(EMLog log) : log = log {
+  EMChatManager._internal() {
     _addNativeMethodCallHandler();
   }
 
-  factory EMChatManager.getInstance({@required EMLog log}) {
-    return _instance = _instance ?? EMChatManager._internal(log);
+  /// @nodoc
+  factory EMChatManager.getInstance() {
+    return _instance = _instance ?? EMChatManager._internal();
   }
 
   /// 发送消息 [message].
@@ -68,9 +67,9 @@ class EMChatManager {
   }
 
   /// @nodoc ackMessageRead-> 用户[to] 确认已读取消息[messageId]。
-  void ackMessageRead(
-      {@required String to,
-      @required String messageId,
+  void ackMessageRead({
+    final String to,
+    final String messageId,
       onError(int code, String desc)}) {
     Future<Map> result = _emChatManagerChannel
         .invokeMethod(EMSDKMethod.ackMessageRead, {"to": to, "id": messageId});
@@ -83,8 +82,8 @@ class EMChatManager {
 
   /// @nodoc 调用以前发送的[message]消息。
   /// @nodoc 如果一切正常，则调用[onSuccess]，[onError]如果有任何错误，将[code]，[desc]设置为详细错误信息。
-  void recallMessage(
-      {@required EMMessage message,
+  void recallMessage({
+    final EMMessage message,
       onSuccess(),
       onError(int code, String desc)}) {
     Future<Map> result = _emChatManagerChannel.invokeMethod(
@@ -99,7 +98,7 @@ class EMChatManager {
   }
 
   /// 通过[messageId] 获取消息.
-  Future<EMMessage> getMessage(String messageId) async {
+  Future<EMMessage> getMessage({final String messageId}) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.getMessage, {"id": messageId});
     if (result['success']) {
@@ -110,10 +109,10 @@ class EMChatManager {
   }
 
   /// 通过[id] 获取会话
-  Future<EMConversation> getConversation(
-      {@required String id,
-      EMConversationType type,
-      bool createIfNotExists}) async {
+  Future<EMConversation> getConversation({
+    final String id,
+    final EMConversationType type,
+    final bool createIfNotExists}) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.getConversation,
         {"id": id, "type": toEMConversationType(type), "createIfNotExists": createIfNotExists});
@@ -147,7 +146,7 @@ class EMChatManager {
   }
 
   /// @nodoc 更新消息[message].
-  Future<bool> updateMessage(EMMessage message) async {
+  Future<bool> updateMessage({final EMMessage message}) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateChatMessage,
         {"message": message.toDataMap()}); //TODO: only message id needed?
@@ -171,7 +170,7 @@ class EMChatManager {
   }
 
   /// @nodoc 导入消息 [messages].
-  void importMessages(List<EMMessage> messages) {
+  void importMessages({final List<EMMessage> messages}) {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
         {"messages": messages.map((message) => message.toDataMap())});
   }
@@ -195,10 +194,10 @@ class EMChatManager {
   }
 
   /// @nodoc 下载文件 远程地址[remoteUrl],本地地址[localFilePath].
-  void downloadFile(
-      {@required final String remoteUrl,
-      @required final String localFilePath,
-      final Map<String, String> headers,
+  void downloadFile({
+    final String remoteUrl,
+    final String localFilePath,
+    final Map<String, String> headers,
       onSuccess(),
       onError(int code, String desc)}) {
     Future<Map> result = _emChatManagerChannel.invokeMethod(
@@ -237,9 +236,11 @@ class EMChatManager {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.loadAllConversations);
   }
 
-  /// 删除与[userName] 的对话, 如果[deletecoversations]设置为true，则还会删除消息。
-  Future<bool> deleteConversation(
-      {@required final String userName, @required bool deleteMessages}) async {
+  /// 删除与[userName] 的对话, 如果[deleteCoversations]设置为true，则还会删除消息。
+  Future<bool> deleteConversation({
+    final String userName,
+    bool deleteMessages
+  }) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.deleteConversation,
         {"userName": userName, "deleteMessages": deleteMessages});
@@ -268,13 +269,16 @@ class EMChatManager {
   }
 
   /// @nodoc 设置语音消息监听 [message].
-  void setVoiceMessageListened(EMMessage message) {
+  void setVoiceMessageListened({final EMMessage message}) {
     _emChatManagerChannel.invokeMethod(
         EMSDKMethod.setVoiceMessageListened, {"message": message.toDataMap()});
   }
 
   /// @nodoc 将某个联系人相关信息[from]更新为另外一个联系人[changeTo]。
-  Future<bool> updateParticipant(String from, String changeTo) async {
+  Future<bool> updateParticipant({
+    final String from,
+    final String changeTo
+  }) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateParticipant, {"from": from, "changeTo": changeTo});
     if (result['success']) {
@@ -286,13 +290,13 @@ class EMChatManager {
 
   /// @nodoc 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// @nodoc 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
-      {@required final String conversationId,
-      @required final EMConversationType type,
-      int pageSize = 10,
-      String startMsgId,
-      onSuccess(),
-      onError(int code, String desc)}) async {
+  Future<EMCursorResults<EMMessage>> fetchHistoryMessages({
+    final String conversationId,
+    final EMConversationType type,
+    final int pageSize = 10,
+    final String startMsgId,
+    onSuccess(),
+    onError(int code, String desc)}) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.fetchHistoryMessages, {
       "id": conversationId,
@@ -309,13 +313,14 @@ class EMChatManager {
 
   /// @nodoc 搜索以[keywords]为关键字的消息，[type]，时间戳设置为[timeStamp]，来自用户[from]，方向[direction]。
   /// @nodoc 结果返回到每个调用的最大值[maxCount]记录。
-  Future<List<EMMessage>> searchMsgFromDB(
-      {String keywords,
-      EMMessageType type,
-      String timeStamp,
-      int maxCount,
-      String from,
-      EMSearchDirection direction}) async {
+  Future<List<EMMessage>> searchMsgFromDB({
+    final String keywords,
+    final EMMessageType type,
+    final String timeStamp,
+    final int maxCount,
+    final String from,
+    final EMSearchDirection direction
+  }) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.searchChatMsgFromDB, {
       "keywords": keywords,
@@ -337,6 +342,7 @@ class EMChatManager {
     }
   }
 
+  /// @nodoc
   Future<void> _onMessageReceived(Map map) async {
     var list = map['messages'];
     var messageList = List<EMMessage>();
@@ -348,6 +354,7 @@ class EMChatManager {
     }
   }
 
+  /// @nodoc
   Future<void> _onCmdMessageReceived(Map map) async {
     var list = map['messages'];
     var messages = List<EMMessage>();
@@ -359,6 +366,7 @@ class EMChatManager {
     }
   }
 
+  /// @nodoc
   Future<void> _onMessageRead(Map map) async {
     var list = map['messages'];
     var messages = List<EMMessage>();
@@ -370,6 +378,7 @@ class EMChatManager {
     }
   }
 
+  /// @nodoc
   Future<void> _onMessageDelivered(Map map) async {
     var list = map['messages'];
     var messages = List<EMMessage>();
@@ -392,11 +401,11 @@ class EMChatManager {
     }
   }
 
+  /// @nodoc
   Future<void> _onMessageChanged(Map map) async {
     EMMessage message = EMMessage.from(map['message']);
-    Object change = map['change'];
     for (var listener in _messageListeners) {
-      listener.onMessageChanged(message, change);
+      listener.onMessageChanged(message);
     }
   }
 }

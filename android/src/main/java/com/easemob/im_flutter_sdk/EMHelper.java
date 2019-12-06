@@ -1,7 +1,9 @@
 package com.easemob.im_flutter_sdk;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
+import android.util.Log;
 
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
@@ -26,6 +28,7 @@ import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.push.EMPushConfig;
 import com.hyphenate.util.EMLog;
 import com.hyphenate.util.PathUtil;
 
@@ -198,9 +201,11 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         if (null != message.ext()){
             result.put("attributes", message.ext());
-        }else {
-            HashMap<Object, Object> hashMap = new HashMap<>();
-            result.put("attributes", hashMap);
+        }else{
+            ///扩展不能为空 设置一个默认值
+            HashMap<String,String> map = new HashMap<>();
+            map.put("easemob","flutter");
+            result.put("attributes", map);
         }
         result.put("conversationId", message.conversationId());
         result.put("type", getType(message));
@@ -653,6 +658,12 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("cursor", emCursorResult.getCursor());
         List list = (List)emCursorResult.getData();
+        if(list.size() == 0){
+            list = new LinkedList();
+            result.put("data", list);
+            return result;
+        }
+
         String className = list.get(0).getClass().getSimpleName();
         if(className.equals("String")){
             result.put("data", list);
@@ -695,7 +706,7 @@ class EMHelper {
      * @param json
      * @return
      */
-    static EMOptions convertStringMapToEMOptions(JSONObject json){
+    static EMOptions convertStringMapToEMOptions(JSONObject json, Context context){
         EMOptions options = new EMOptions();
         try {
             options.setAppKey(json.getString("appKey"));
@@ -747,7 +758,27 @@ class EMHelper {
             if(!json.getBoolean("isAutoDownload")) {
                 options.setAutoDownloadThumbnail(false);
             }
-
+            JSONObject pushConfig = json.getJSONObject("pushConfig");
+            EMPushConfig.Builder builder = new EMPushConfig.Builder(context);
+            if(pushConfig.getBoolean("enableVivoPush")){
+                builder.enableVivoPush();
+            }
+            if(pushConfig.getBoolean("enableMeiZuPush")){
+                builder.enableMeiZuPush(pushConfig.getString("mzAppId"), pushConfig.getString("mzAppKey"));
+            }
+            if(pushConfig.getBoolean("enableMiPush")){
+                builder.enableMiPush(pushConfig.getString("miAppId"), pushConfig.getString("miAppKey"));
+            }
+            if(pushConfig.getBoolean("enableOppoPush")){
+                builder.enableMiPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
+            }
+            if(pushConfig.getBoolean("enableHWPush")){
+                builder.enableHWPush();
+            }
+            if(pushConfig.getBoolean("enableFCM")){
+                builder.enableFCM(pushConfig.getString("fcmSenderId"));
+            }
+            options.setPushConfig(builder.build());
         }catch (JSONException e){
             e.printStackTrace();
         }

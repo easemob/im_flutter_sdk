@@ -253,7 +253,6 @@
 
 - (void)searchChatMsgFromDB:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    
     NSString *keywords = param[@"keywords"];
     long long timeStamp = [param[@"timeStamp"] longLongValue];
     int maxCount = [param[@"maxCount"] intValue];
@@ -263,7 +262,8 @@
                                                      timestamp:timeStamp
                                                          count:maxCount
                                                       fromUser:from
-                                               searchDirection:direction completion:^(NSArray *aMessages, EMError *aError)
+                                               searchDirection:direction
+                                                    completion:^(NSArray *aMessages, EMError *aError)
      {
         NSMutableArray *msgList = [NSMutableArray array];
         for (EMMessage *msg in aMessages) {

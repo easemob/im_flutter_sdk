@@ -1,10 +1,8 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import "em_listeners.dart";
-import 'em_log.dart';
 import 'em_sdk_method.dart';
 
 class EMContactManager {
@@ -13,19 +11,22 @@ class EMContactManager {
       const MethodChannel('$_channelPrefix/em_contact_manager', JSONMethodCodec());
   static EMContactManager _instance;
 
-  final EMLog log;
+
   final List<EMContactEventListener> _contactChangeEventListeners =
       List<EMContactEventListener>();
   List<String> _blackList;
 
-  EMContactManager._internal(EMLog log) : log = log {
+  /// @nodoc
+  EMContactManager._internal(){
     _addNativeMethodCallHandler();
   }
 
-  factory EMContactManager.getInstance({@required EMLog log}) {
-    return _instance = _instance ?? EMContactManager._internal(log);
+  /// @nodoc
+  factory EMContactManager.getInstance() {
+    return _instance = _instance ?? EMContactManager._internal();
   }
 
+  /// @nodoc
   void _addNativeMethodCallHandler() {
     _emContactManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
@@ -36,6 +37,7 @@ class EMContactManager {
     });
   }
 
+  /// @nodoc
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
     String userName = event['userName'];
@@ -62,11 +64,11 @@ class EMContactManager {
     }
   }
 
-  /// @nodoc 添加联系人[userName] with [reason].
-  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 添加联系人[userName] with [reason].
+  /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void addContact(
-      {@required String userName,
-      @required String reason,
+      {String userName,
+      String reason,
       onSuccess(),
       onError(int code, String desc)}) {
     Future<Map> result = _emContactManagerChannel.invokeMethod(
@@ -80,11 +82,11 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc 删除联系人 [userName]
-  /// @nodoc [keepConversation] true 保留会话和消息  false 不保留
-  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 删除联系人 [userName]
+  /// [keepConversation] true 保留会话和消息  false 不保留
+  /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void deleteContact(
-      {@required String userName,
+      {String userName,
       bool keepConversation = false,
       onSuccess(),
       onError(int code, String desc)}) {
@@ -126,12 +128,11 @@ class EMContactManager {
   }
 
 
-
-  /// @nodoc 把指定用户加入到黑名单中 [userName] .
-  /// @nodoc 如果[both]设置为true，则双方都无法向对方发送消息。否则，[userName]仍然可以接收消息。
-  /// @nodoc 如果加入成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 把指定用户加入到黑名单中 [userName] .
+  /// 如果[both]设置为true，则双方都无法向对方发送消息。否则，[userName]仍然可以接收消息。
+  /// 如果加入成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void addUserToBlackList(
-      {@required String userName,
+      {String userName,
       bool both = false,
       onSuccess(),
       onError(int code, String desc)}) {
@@ -146,10 +147,10 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc 把用户从黑名单中移除 [userName].
-  /// @nodoc 如果移除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 把用户从黑名单中移除 [userName].
+  /// 如果移除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void removeUserFromBlackList(
-      {@required String userName,
+      {String userName,
       onSuccess(),
       onError(int code, String desc)}) {
     Future<Map> result = _emContactManagerChannel.invokeMethod(
@@ -163,13 +164,13 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc 从本地获取黑名单中的用户的ID
+  /// 从本地获取黑名单中的用户的ID
   List<String> getBlackListUserNames() {
     return _blackList;
   }
 
-  /// @nodoc 从服务器获取黑名单中的用户的ID
-  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 从服务器获取黑名单中的用户的ID
+  /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void getBlackListFromServer(
       {onSuccess(List<String> blackList), onError(int code, String desc)}) {
     Future<Map<String, dynamic>> result = _emContactManagerChannel
@@ -192,10 +193,10 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc 接受加好友的邀请[userName].
-  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 接受加好友的邀请[userName].
+  /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void acceptInvitation(
-      {@required String userName,
+      {String userName,
       onSuccess(),
       onError(int code, String desc)}) {
     Future<Map> result = _emContactManagerChannel
@@ -209,10 +210,10 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc 拒绝加好友的邀请 [userName].
-  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 拒绝加好友的邀请 [userName].
+  /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void declineInvitation(
-      {@required String userName,
+      {String userName,
       onSuccess(),
       onError(int code, String desc)}) {
     Future<Map> result = _emContactManagerChannel
@@ -251,12 +252,12 @@ class EMContactManager {
 
   }
 
-  /// @nodoc 设置好友监听器 [contactListener]
+  /// 设置好友监听器 [contactListener]
   void addContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.add(contactListener);
   }
 
-  /// @nodoc 移除好友监听器  [contactListener]
+  /// 移除好友监听器  [contactListener]
   void removeContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.remove(contactListener);
   }

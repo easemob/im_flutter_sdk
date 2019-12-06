@@ -12,6 +12,9 @@ class Constant{
 
   static const String deleteConversationKey = "DeleteConversationKey";
   static const String clearUnreadKey = "ClearUnreadKey";
+  static const String addBlackListKey = "AddBlackListKey";
+  static const String addMuteListKey = "AddMuteListKey";
+  static const String addAdminListKey = "AddAdminListKey";
 
   static const String deleteContactKey = "DeleteContactKey";
 
@@ -21,4 +24,11 @@ class Constant{
   static const int chatTypeSingle = 0;
   static const int chatTypeGroup = 1;
   static const int chatTypeChatRoom = 2;
+
+  static const int defaultGroupMember = 0;
+  static const int removeGroupMember = 1;
+
+  static const int blackList = 0;
+  static const int muteList = 1;
+  static const int adminList = 2;
 }
