@@ -172,8 +172,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomsToDictionaries:aResult.list]}];
-        
+                     userInfo:@{@"value":aResult.list}];
     }];
 }
 
@@ -188,7 +187,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":aResult.list}];
+                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult]}];
     }];
 }
 
