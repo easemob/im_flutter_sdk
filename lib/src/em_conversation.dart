@@ -25,7 +25,7 @@ class EMConversation {
         _type = fromEMConversationType(data['type']),
         extField = data['ext'];
 
-  /// @nodoc getUnreadMsgCount - Gets count of unread messages.
+  /// @nodoc 获取此对话中未读取的消息数量.
   Future<int> getUnreadMsgCount() async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.getUnreadMsgCount, {"id": _conversationId});
@@ -35,13 +35,13 @@ class EMConversation {
     return -1; //-1 means error/unknown
   }
 
-  /// @nodoc markAllMessagesAsRead - Marks all messages as read.
+  /// @nodoc 将所有未读消息设置为已读.
   void markAllMessagesAsRead() {
     _emConversationChannel.invokeMethod(
         EMSDKMethod.markAllMessagesAsRead, {"id": _conversationId});
   }
 
-  /// loadMoreMsgFromDB - Loads messages starts from [startMsgId], [pageSize] in total.
+  /// 根据传入的参数从db加载startMsgId之前(存储顺序)指定数量的message[startMsgId], [pageSize]
   Future<List<EMMessage>> loadMoreMsgFromDB(
       {@required String startMsgId, int pageSize = 10}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -61,7 +61,12 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
+  /// @nodoc 根据传入的参数从本地存储中搜索指定数量的消息
+  /// @nodoc [type] 消息类型，文本、图片、语音等等
+  /// @nodoc [keywords], 搜索消息中的关键词
+  /// @nodoc [timeStamp],搜索消息的时间点
+  /// @nodoc [maxCount] 搜索结果的最大条数
+  /// @nodoc [direction]. 方向
   Future<List<EMMessage>> searchMsgFromDB(
       {final EMMessageType type,
         final String keywords,
@@ -88,7 +93,7 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc searchMsgFromDB - Searches messages from DB, of [type], matches [keywords], after [timeStamp], [maxCount] most messages returned, in [direction].
+  /// @nodoc 搜索来自DB的消息，类型为[type]，匹配[keywords]，在[timeStamp]之后，[maxCount]返回的大多数消息，方向为[direction]。
   Future<List<EMMessage>> searchMsgFromDBByType(
       {final EMMessageType type,
         final String keywords,
@@ -114,7 +119,7 @@ class EMConversation {
     return null;
   }
 
-  // @nodoc getMessage - Gets message by [mesasgeId], set it to read if [markAsRead].
+  /// @nodoc 通过[mesasgeId]获取消息，[markAsRead] 将其设置为已读.
   Future<EMMessage> getMessage(
       {@required final String messageId, final bool markAsRead = true}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -129,7 +134,7 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc loadMessages - Loads all messages presenting in list [msgIds].
+  /// @nodoc 加载列表[msgIds]中显示的所有消息。
   Future<List<EMMessage>> loadMessages(
       {@required final List<String> msgIds}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -145,19 +150,19 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc markMessageAsRead - Marks message [messageId] as read.
+  /// @nodoc 将消息[messageId]标记为已读。
   void markMessageAsRead({@required final String messageId}) {
     _emConversationChannel.invokeMethod(EMSDKMethod.markMessageAsRead,
         {"id": _conversationId, "messageId": messageId});
   }
 
-  /// @nodoc removeMessage - Removes message [messageId] from the conversation.
+  /// @nodoc 从对话中删除消息[messageId]。
   void removeMessage({@required String messageId}) {
     _emConversationChannel.invokeMethod(EMSDKMethod.removeMessage,
         {"id": _conversationId, "messageId": messageId});
   }
 
-  /// getLastMessage - Gets last message of the conversation.
+  /// 获取对话的最后一条消息
   Future<EMMessage> getLastMessage() async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.getLastMessage, {"id": _conversationId});
@@ -167,7 +172,7 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc getLatestMessageFromOthers - Gets latest messages sent from others.
+  /// @nodoc 获取其他人发送的最新消息。
   Future<EMMessage> getLatestMessageFromOthers() async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.getLatestMessageFromOthers, {"id": _conversationId});
@@ -177,36 +182,36 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc clear - Clears the conversation.
+  /// @nodoc 清除对话中的所有消息，只清除内存的，不清除db的消息 在退出会话的时候清除内存缓存，减小内存消耗
   void clear() {
     _emConversationChannel
         .invokeMethod(EMSDKMethod.clear, {"id": _conversationId});
   }
 
-  /// @nodoc clearAllMessages - Clears all messages in the conversation.
+  /// @nodoc 删除该会话所有消息，同时清除内存和数据库中的消息
   void clearAllMessages() {
     _emConversationChannel
         .invokeMethod(EMSDKMethod.clearAllMessages, {"id": _conversationId});
   }
 
-  /// @nodoc isGroup - Is conversation is a group chat?
+  /// @nodoc 群组和聊天室类型都会返回true
   bool isGroup() {
     return EMConversationType.GroupChat == type;
   }
 
-  /// @nodoc insertMessage - Inserts message [msg] into conversation.
+  /// @nodoc 插入一条消息[msg]
   void insertMessage(EMMessage msg) {
     _emConversationChannel.invokeMethod(EMSDKMethod.insertMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }
 
-  /// @nodoc appendMessage - Appends message [msg] into conversation.
+  /// @nodoc 插入一条消息到会话尾部[msg]
   void appendMessage(EMMessage msg) {
     _emConversationChannel.invokeMethod(EMSDKMethod.appendMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }
 
-  /// @nodoc updateMessage - Updates message with new content set.
+  /// @nodoc 更新本地的消息[msg]
   Future<bool> updateMessage(EMMessage msg) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.updateConversationMessage,
@@ -217,7 +222,7 @@ class EMConversation {
     return false;
   }
 
-  /// @nodoc getMessageAttachmentPath - Gets message's attachement path.
+  /// @nodoc 返回会话对应的附件存储路径.
   Future<String> getMessageAttachmentPath() async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.getMessageAttachmentPath, {"id": _conversationId});
@@ -228,7 +233,7 @@ class EMConversation {
   }
 }
 
-/// EMConversationType - Type of conversation enumeration.
+/// @nodoc EMConversationType - 会话枚举的类型。
 enum EMConversationType {
   Chat,
   GroupChat,

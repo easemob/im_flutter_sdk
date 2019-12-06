@@ -6,6 +6,7 @@ import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
+import 'package:image_picker/image_picker.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -227,7 +228,7 @@ class LoginPageState extends State<LoginPage> {
     ),
   );
 
-  void login(String username , String password){
+void login(String username , String password){
     print(username+':'+password);
     _refreshUI(true);
       EMClient.getInstance().login(
