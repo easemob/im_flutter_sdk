@@ -203,6 +203,7 @@ class EMGroupManager{
       if (response['success']) {
         if (onSuccess != null) {
           if(response['value'] != null) {
+            print(response['value']);
             onSuccess(EMGroup.from(response['value']));
           }else{
             onSuccess(null);
@@ -529,7 +530,7 @@ class EMGroupManager{
     @required String groupId,
     @required String cursor,
     @required int pageSize,
-    onSuccess(EMCursorResult result),
+    onSuccess(EMCursorResult<String> result),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.fetchGroupMembers, {"groupId" : groupId, "cursor" : cursor, "pageSize" : pageSize});
@@ -537,8 +538,15 @@ class EMGroupManager{
       if (response['success']) {
         if (onSuccess != null) {
           if(response['value'] != null) {
+            List<String> list = [];
             var value = response['value'] as Map<String, dynamic>;
-            onSuccess(EMCursorResult.from(value));
+            EMCursorResult emCursorResult = EMCursorResult.from(value);
+            emCursorResult.getData().forEach((item) => list.add(item));
+
+            EMCursorResult<String> cursorResult = EMCursorResult.from(Map());
+            cursorResult.setData(list);
+            cursorResult.setCursor(emCursorResult.getCursor());
+            onSuccess(cursorResult);
           }else{
             onSuccess(null);
           }
@@ -671,7 +679,7 @@ class EMGroupManager{
     @required String groupId,
     @required int pageNum,
     @required int pageSize,
-    onSuccess(List list),
+    onSuccess(List<String> muteList),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -679,11 +687,13 @@ class EMGroupManager{
     result.then((response) {
       if (response['success']) {
         if (onSuccess != null) {
+          var data = List<String>();
           if (response['value'] != null) {
-            var muteList = response['value'] as List<dynamic>;
-            onSuccess(muteList);
+            var list = response['value'] as List<dynamic>;
+            list.forEach((item) => data.add(item));
+            onSuccess(data);
           } else {
-            onSuccess(null);
+            onSuccess(data);
           }
         }
       } else {
@@ -697,7 +707,7 @@ class EMGroupManager{
     @required String groupId,
     @required int pageNum,
     @required int pageSize,
-    onSuccess(List list),
+    onSuccess(List<String> blackList),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -708,9 +718,7 @@ class EMGroupManager{
           var data = List<String>();
           if(response['value'] != null) {
             var users = response['value'] as List<dynamic>;
-            for (var user in users) {
-              data.add(user);
-            }
+            users.forEach((user) => data.add(user));
             onSuccess(data);
           }else{
             onSuccess(data);
@@ -802,7 +810,7 @@ class EMGroupManager{
             }
             onSuccess(data);
           }else{
-            onSuccess(null);
+            onSuccess(data);
           }
         }
       } else {
