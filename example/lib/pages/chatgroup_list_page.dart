@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
+import 'package:im_flutter_sdk_example/pages/group_details_page.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
@@ -32,21 +33,22 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   }
 
   void getJoinedGroups() async{
+    _loading = true;
     EMClient.getInstance().groupManager().getJoinedGroupsFromServer(
         onSuccess: (groups){
           groupList = groups;
-          _loading = false;
-          _refreshUI();
+          _refreshUI(false);
         },
         onError: (code, desc){
           WidgetUtil.hintBoxWithDefault(code.toString()+':'+desc);
+          _refreshUI(false);
         }
     );
   }
 
-  _refreshUI(){
+  _refreshUI(bool loading){
     setState(() {
-
+      _loading = loading;
     });
   }
 
@@ -54,6 +56,50 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+
+  Widget _buildCreateGroupItem(){
+    return InkWell(
+      onTap: (){
+        WidgetUtil.hintBoxWithDefault('默认创建可直接加入公开群');
+        _refreshUI(true);
+        EMClient.getInstance().groupManager().createGroup(groupName: '可直接加入的公开群' + DateTime.now().millisecondsSinceEpoch.toString(), desc: '', members: [], reason: '', options: EMGroupOptions(maxUsers : 2000, style: EMGroupStyle.EMGroupStylePublicOpenJoin),
+        onSuccess: (group){
+          WidgetUtil.hintBoxWithDefault('创建群组成功');
+          getJoinedGroups();
+        },
+        onError: (code, desc){
+          WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
+          _refreshUI(false);
+        });
+      },
+      child : Container(
+        height: 67,
+        child: Stack(
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.only(left: 8.0),
+              height: 67,
+              child: Row(
+                children: <Widget>[
+                  ClipOval(
+                    child: Image.asset('images/群聊@2x.png', width: EMLayout.emContactListPortraitSize,height: EMLayout.emContactListPortraitSize,),
+                  ),
+                  Padding(padding: EdgeInsets.all(8.0)),
+                  Text(DemoLocalizations.of(context).createGroup, style: TextStyle(fontSize: 18.0),)
+                ],
+              ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width - 64.0,
+              height: 1.0,
+              color: Color(0xffe5e5e5),
+              margin: EdgeInsets.fromLTRB(64.0, 66.0, 0.0, 0.0),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildPublicGroupsItem(){
@@ -93,12 +139,15 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   Widget _buildChatGroupListView(){
     return ListView.builder(
         scrollDirection: Axis.vertical,
-        itemCount: groupList.length + 1,
+        itemCount: groupList.length + 2,
         itemBuilder:(BuildContext context, int index){
           if(index == 0){
+            return _buildCreateGroupItem();
+          }
+          if(index == 1){
             return _buildPublicGroupsItem();
           }
-          return EMChatGroupListItem(groupList[index - 1], this);
+          return EMChatGroupListItem(groupList[index - 2], this);
         });
   }
 
@@ -122,8 +171,12 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   }
 
   void onTapChatGroup(EMGroup group){
-    Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+    Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
       return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
-    }));
+    })).then((bool isRefresh){
+      if(isRefresh){
+        getJoinedGroups();
+      }
+    });
   }
 }

@@ -219,7 +219,11 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
       }
 
       if(value.getClass().getSimpleName().equals("HashMap")){
-          data.put("value", value);
+          List<String> dataList = new LinkedList<String>();
+          ((Map<String, Long>)value).forEach((k, v) -> {
+            dataList.add(k);
+          });
+          data.put("value", dataList);
       }
 
       if(value.getClass().getSimpleName().equals("String")){
