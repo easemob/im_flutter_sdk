@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="API docs for the EMMessage class from the im_flutter_sdk library, for the Dart programming language.">
+  <title>EMMessage class - im_flutter_sdk library - Dart API</title>
+  <!-- required because all the links are pseudo-absolute -->
+  <base href="..">
+
+  <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500,400i,400,300|Source+Sans+Pro:400,300,700" rel="stylesheet">
+  <link rel="stylesheet" href="static-assets/github.css">
+  <link rel="stylesheet" href="static-assets/styles.css">
+  <link rel="icon" href="static-assets/favicon.png">
+
+</head>
+
+<body>
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="index.html">im_flutter_sdk</a></li>
+    <li><a href="im_flutter_sdk/im_flutter_sdk-library.html">im_flutter_sdk</a></li>
+    <li class="self-crumb">EMMessage class</li>
+  </ol>
+  <div class="self-name">EMMessage</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+  <div class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left">
+    <h5>im_flutter_sdk library</h5>
+    <ol>
+      <li class="section-title"><a href="im_flutter_sdk/im_flutter_sdk-library.html#classes">Classes</a></li>
+      <li><a href="im_flutter_sdk/EMChatManager-class.html">EMChatManager</a></li>
+      <li><a href="im_flutter_sdk/EMChatRoom-class.html">EMChatRoom</a></li>
+      <li><a href="im_flutter_sdk/EMChatRoomEventListener-class.html">EMChatRoomEventListener</a></li>
+      <li><a href="im_flutter_sdk/EMClient-class.html">EMClient</a></li>
+      <li><a href="im_flutter_sdk/EMCmdMessageBody-class.html">EMCmdMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMConnectionListener-class.html">EMConnectionListener</a></li>
+      <li><a href="im_flutter_sdk/EMContact-class.html">EMContact</a></li>
+      <li><a href="im_flutter_sdk/EMContactEventListener-class.html">EMContactEventListener</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager-class.html">EMContactManager</a></li>
+      <li><a href="im_flutter_sdk/EMConversation-class.html">EMConversation</a></li>
+      <li><a href="im_flutter_sdk/EMDeviceInfo-class.html">EMDeviceInfo</a></li>
+      <li><a href="im_flutter_sdk/EMFileMessageBody-class.html">EMFileMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMGroup-class.html">EMGroup</a></li>
+      <li><a href="im_flutter_sdk/EMGroupChangeListener-class.html">EMGroupChangeListener</a></li>
+      <li><a href="im_flutter_sdk/EMGroupInfo-class.html">EMGroupInfo</a></li>
+      <li><a href="im_flutter_sdk/EMGroupManager-class.html">EMGroupManager</a></li>
+      <li><a href="im_flutter_sdk/EMGroupOptions-class.html">EMGroupOptions</a></li>
+      <li><a href="im_flutter_sdk/EMImageMessageBody-class.html">EMImageMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMLocationMessageBody-class.html">EMLocationMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessageListener-class.html">EMMessageListener</a></li>
+      <li><a href="im_flutter_sdk/EMMucSharedFile-class.html">EMMucSharedFile</a></li>
+      <li><a href="im_flutter_sdk/EMNormalFileMessageBody-class.html">EMNormalFileMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMOptions-class.html">EMOptions</a></li>
+      <li><a href="im_flutter_sdk/EMTextMessageBody-class.html">EMTextMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMVideoMessageBody-class.html">EMVideoMessageBody</a></li>
+      <li><a href="im_flutter_sdk/EMVoiceMessageBody-class.html">EMVoiceMessageBody</a></li>
+    
+    
+    
+    
+    
+      <li class="section-title"><a href="im_flutter_sdk/im_flutter_sdk-library.html#enums">Enums</a></li>
+      <li><a href="im_flutter_sdk/EMChatRoomPermissionType-class.html">EMChatRoomPermissionType</a></li>
+      <li><a href="im_flutter_sdk/EMGroupPermissionType-class.html">EMGroupPermissionType</a></li>
+      <li><a href="im_flutter_sdk/EMGroupStyle-class.html">EMGroupStyle</a></li>
+      <li><a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></li>
+    
+    
+    </ol>
+  </div>
+
+  <div class="col-xs-12 col-sm-9 col-md-8 main-content">
+      <h1>EMMessage class </h1>
+
+    <section class="desc markdown">
+      <p>EMMessage - various types of message</p>
+    </section>
+    
+
+    <section class="summary offset-anchor" id="constructors">
+      <h2>Constructors</h2>
+
+      <dl class="constructor-summary-list">
+        <dt id="EMMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.html">EMMessage</a></span><span class="signature">({<span class="parameter" id="-param-acked"><span class="type-annotation">bool</span> <span class="parameter-name">acked</span>, </span> <span class="parameter" id="-param-body"><span class="type-annotation">EMMessageBody</span> <span class="parameter-name">body</span>, </span> <span class="parameter" id="-param-chatType"><span class="type-annotation">ChatType</span> <span class="parameter-name">chatType</span>, </span> <span class="parameter" id="-param-delivered"><span class="type-annotation">bool</span> <span class="parameter-name">delivered</span>, </span> <span class="parameter" id="-param-direction"><span class="type-annotation">Direction</span> <span class="parameter-name">direction</span>, </span> <span class="parameter" id="-param-from"><span class="type-annotation">String</span> <span class="parameter-name">from</span>, </span> <span class="parameter" id="-param-listened"><span class="type-annotation">bool</span> <span class="parameter-name">listened</span>, </span> <span class="parameter" id="-param-localTime"><span class="type-annotation">String</span> <span class="parameter-name">localTime</span>, </span> <span class="parameter" id="-param-msgId"><span class="type-annotation">String</span> <span class="parameter-name">msgId</span>, </span> <span class="parameter" id="-param-msgTime"><span class="type-annotation">String</span> <span class="parameter-name">msgTime</span>, </span> <span class="parameter" id="-param-status"><span class="type-annotation">Status</span> <span class="parameter-name">status</span>, </span> <span class="parameter" id="-param-to"><span class="type-annotation">String</span> <span class="parameter-name">to</span>, </span> <span class="parameter" id="-param-type"><span class="type-annotation"><a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></span> <span class="parameter-name">type</span>, </span> <span class="parameter" id="-param-unread"><span class="type-annotation">bool</span> <span class="parameter-name">unread</span>, </span> <span class="parameter" id="-param-deliverAcked"><span class="type-annotation">bool</span> <span class="parameter-name">deliverAcked</span></span> })</span>
+        </dt>
+        <dd>
+          
+        </dd>
+        <dt id="EMMessage.createFileSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createFileSendMessage.html">EMMessage.createFileSendMessage</a></span><span class="signature">(<span class="parameter" id="createFileSendMessage-param-filePath"><span class="type-annotation">String</span> <span class="parameter-name">filePath</span>, </span> <span class="parameter" id="createFileSendMessage-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span></span>)</span>
+        </dt>
+        <dd>
+          创建文件类型消息 <code>filePath</code>: 文件路径; <code>userName</code>: 接收方id
+        </dd>
+        <dt id="EMMessage.createImageSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createImageSendMessage.html">EMMessage.createImageSendMessage</a></span><span class="signature">(<span class="parameter" id="createImageSendMessage-param-filePath"><span class="type-annotation">String</span> <span class="parameter-name">filePath</span>, </span> <span class="parameter" id="createImageSendMessage-param-sendOriginalImage"><span class="type-annotation">bool</span> <span class="parameter-name">sendOriginalImage</span>, </span> <span class="parameter" id="createImageSendMessage-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span></span>)</span>
+        </dt>
+        <dd>
+          创建图片类型消息 <code>filePath</code>: 图片路径; <code>sendOriginalImage</code>: 是否发送原图; <code>userName</code>: 接收方id.
+        </dd>
+        <dt id="EMMessage.createLocationSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createLocationSendMessage.html">EMMessage.createLocationSendMessage</a></span><span class="signature">(<span class="parameter" id="createLocationSendMessage-param-latitude"><span class="type-annotation">double</span> <span class="parameter-name">latitude</span>, </span> <span class="parameter" id="createLocationSendMessage-param-longitude"><span class="type-annotation">double</span> <span class="parameter-name">longitude</span>, </span> <span class="parameter" id="createLocationSendMessage-param-locationAddress"><span class="type-annotation">String</span> <span class="parameter-name">locationAddress</span>, </span> <span class="parameter" id="createLocationSendMessage-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span></span>)</span>
+        </dt>
+        <dd>
+          创建位置类型消息 <code>latitude</code>: 纬度; <code>longitude</code>: 经度; <code>locationAddress</code>: 位置名称; <code>userName</code>: 接收方id
+        </dd>
+        <dt id="EMMessage.createReceiveMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createReceiveMessage.html">EMMessage.createReceiveMessage</a></span><span class="signature">(<span class="parameter" id="createReceiveMessage-param-type"><span class="type-annotation"><a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></span> <span class="parameter-name">type</span></span>)</span>
+        </dt>
+        <dd>
+          用于创建各种消息的构造函数 - 接收方。
+        </dd>
+        <dt id="EMMessage.createSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createSendMessage.html">EMMessage.createSendMessage</a></span><span class="signature">(<span class="parameter" id="createSendMessage-param-type"><span class="type-annotation"><a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></span> <span class="parameter-name">type</span></span>)</span>
+        </dt>
+        <dd>
+          用于创建各种消息的构造函数 - 发送方。
+        </dd>
+        <dt id="EMMessage.createTxtSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createTxtSendMessage.html">EMMessage.createTxtSendMessage</a></span><span class="signature">(<span class="parameter" id="createTxtSendMessage-param-content"><span class="type-annotation">String</span> <span class="parameter-name">content</span>, </span> <span class="parameter" id="createTxtSendMessage-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span></span>)</span>
+        </dt>
+        <dd>
+          创建文本类型消息 <code>content</code>: 消息内容; <code>userName</code>: 接收方id
+        </dd>
+        <dt id="EMMessage.createVideoSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createVideoSendMessage.html">EMMessage.createVideoSendMessage</a></span><span class="signature">(<span class="parameter" id="createVideoSendMessage-param-filePath"><span class="type-annotation">String</span> <span class="parameter-name">filePath</span>, </span> <span class="parameter" id="createVideoSendMessage-param-timeLength"><span class="type-annotation">int</span> <span class="parameter-name">timeLength</span>, </span> <span class="parameter" id="createVideoSendMessage-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span></span>)</span>
+        </dt>
+        <dd>
+          创建视频类型消息 <code>filePath</code>: 视频片断路径;  <code>timeLength</code>: 语音时长; <code>userName</code>: 接收方id
+        </dd>
+        <dt id="EMMessage.createVoiceSendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/EMMessage.createVoiceSendMessage.html">EMMessage.createVoiceSendMessage</a></span><span class="signature">(<span class="parameter" id="createVoiceSendMessage-param-filePath"><span class="type-annotation">String</span> <span class="parameter-name">filePath</span>, </span> <span class="parameter" id="createVoiceSendMessage-param-timeLength"><span class="type-annotation">int</span> <span class="parameter-name">timeLength</span>, </span> <span class="parameter" id="createVoiceSendMessage-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span></span>)</span>
+        </dt>
+        <dd>
+          创建语音类型消息 <code>filePath</code>: 语音片断路径;  <code>timeLength</code>: 语音时长; <code>userName</code>: 接收方id
+        </dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor" id="instance-properties">
+      <h2>Properties</h2>
+
+      <dl class="properties">
+        <dt id="acked" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/acked.html">acked</a></span>
+          <span class="signature">&#8596; bool</span> 
+        </dt>
+        <dd>
+          是否已读
+          <div class="features">read / write</div>
+</dd>
+        <dt id="body" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/body.html">body</a></span>
+          <span class="signature">&#8596; EMMessageBody</span> 
+        </dt>
+        <dd>
+          消息body
+          <div class="features">read / write</div>
+</dd>
+        <dt id="chatType" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/chatType.html">chatType</a></span>
+          <span class="signature">&#8596; ChatType</span> 
+        </dt>
+        <dd>
+          消息类型<code>单聊，群聊，聊天室</code>
+          <div class="features">read / write</div>
+</dd>
+        <dt id="conversationId" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/conversationId.html">conversationId</a></span>
+          <span class="signature">&#8594; String</span> 
+        </dt>
+        <dd>
+          会话id
+          <div class="features">read-only</div>
+</dd>
+        <dt id="direction" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/direction.html">direction</a></span>
+          <span class="signature">&#8596; Direction</span> 
+        </dt>
+        <dd>
+          消息反向(发送，接收)
+          <div class="features">read / write</div>
+</dd>
+        <dt id="from" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/from.html">from</a></span>
+          <span class="signature">&#8596; String</span> 
+        </dt>
+        <dd>
+          消息发送方
+          <div class="features">read / write</div>
+</dd>
+        <dt id="localTime" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/localTime.html">localTime</a></span>
+          <span class="signature">&#8596; String</span> 
+        </dt>
+        <dd>
+          本地时间
+          <div class="features">read / write</div>
+</dd>
+        <dt id="msgId" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/msgId.html">msgId</a></span>
+          <span class="signature">&#8596; String</span> 
+        </dt>
+        <dd>
+          消息id
+          <div class="features">read / write</div>
+</dd>
+        <dt id="msgTime" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/msgTime.html">msgTime</a></span>
+          <span class="signature">&#8596; String</span> 
+        </dt>
+        <dd>
+          服务器时间
+          <div class="features">read / write</div>
+</dd>
+        <dt id="status" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/status.html">status</a></span>
+          <span class="signature">&#8596; Status</span> 
+        </dt>
+        <dd>
+          消息发送状态
+          <div class="features">read / write</div>
+</dd>
+        <dt id="to" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/to.html">to</a></span>
+          <span class="signature">&#8596; String</span> 
+        </dt>
+        <dd>
+          消息接收方
+          <div class="features">read / write</div>
+</dd>
+        <dt id="type" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/type.html">type</a></span>
+          <span class="signature">&#8596; <a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></span> 
+        </dt>
+        <dd>
+          消息类型<code>文字，图片，语音...</code>
+          <div class="features">read / write</div>
+</dd>
+        <dt id="unread" class="property">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/unread.html">unread</a></span>
+          <span class="signature">&#8596; bool</span> 
+        </dt>
+        <dd>
+          是否未读
+          <div class="features">read / write</div>
+</dd>
+        <dt id="hashCode" class="property inherited">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/hashCode.html">hashCode</a></span>
+          <span class="signature">&#8594; int</span> 
+        </dt>
+        <dd class="inherited">
+          The hash code for this object. <a href="im_flutter_sdk/EMMessage/hashCode.html">[...]</a>
+          <div class="features">read-only, inherited</div>
+</dd>
+        <dt id="runtimeType" class="property inherited">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/runtimeType.html">runtimeType</a></span>
+          <span class="signature">&#8594; Type</span> 
+        </dt>
+        <dd class="inherited">
+          A representation of the runtime type of the object.
+          <div class="features">read-only, inherited</div>
+</dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor" id="instance-methods">
+      <h2>Methods</h2>
+      <dl class="callables">
+        <dt id="ext" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/ext.html">ext</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; Map</span>
+          </span>
+          </dt>
+        <dd>
+          TODO: setMessageStatusCallback (EMCallBack callback)
+ext
+          
+</dd>
+        <dt id="noSuchMethod" class="callable inherited">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation">Invocation</span> <span class="parameter-name">invocation</span></span>)
+            <span class="returntype parameter">&#8594; dynamic</span>
+          </span>
+          </dt>
+        <dd class="inherited">
+          Invoked when a non-existent method or property is accessed. <a href="im_flutter_sdk/EMMessage/noSuchMethod.html">[...]</a>
+          <div class="features">inherited</div>
+</dd>
+      </dl>
+    </section>
+
+    <section class="summary offset-anchor inherited" id="operators">
+      <h2>Operators</h2>
+      <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+          <span class="name"><a href="im_flutter_sdk/EMMessage/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation">dynamic</span> <span class="parameter-name">other</span></span>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+          </dt>
+        <dd class="inherited">
+          The equality operator. <a href="im_flutter_sdk/EMMessage/operator_equals.html">[...]</a>
+          <div class="features">inherited</div>
+</dd>
+      </dl>
+    </section>
+
+
+
+
+  </div> <!-- /.main-content -->
+
+  <div class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li class="section-title"><a href="im_flutter_sdk/EMMessage-class.html#constructors">Constructors</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.html">EMMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createFileSendMessage.html">createFileSendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createImageSendMessage.html">createImageSendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createLocationSendMessage.html">createLocationSendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createReceiveMessage.html">createReceiveMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createSendMessage.html">createSendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createTxtSendMessage.html">createTxtSendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createVideoSendMessage.html">createVideoSendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/EMMessage.createVoiceSendMessage.html">createVoiceSendMessage</a></li>
+    
+      <li class="section-title">
+        <a href="im_flutter_sdk/EMMessage-class.html#instance-properties">Properties</a>
+      </li>
+      <li><a href="im_flutter_sdk/EMMessage/acked.html">acked</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/body.html">body</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/chatType.html">chatType</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/conversationId.html">conversationId</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/direction.html">direction</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/from.html">from</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/localTime.html">localTime</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/msgId.html">msgId</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/msgTime.html">msgTime</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/status.html">status</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/to.html">to</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/type.html">type</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/unread.html">unread</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMMessage/hashCode.html">hashCode</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMMessage/runtimeType.html">runtimeType</a></li>
+    
+      <li class="section-title"><a href="im_flutter_sdk/EMMessage-class.html#instance-methods">Methods</a></li>
+      <li><a href="im_flutter_sdk/EMMessage/ext.html">ext</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMMessage/noSuchMethod.html">noSuchMethod</a></li>
+    
+      <li class="section-title inherited"><a href="im_flutter_sdk/EMMessage-class.html#operators">Operators</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMMessage/operator_equals.html">operator ==</a></li>
+    
+    
+    
+    </ol>
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    im_flutter_sdk 1.0.0
+  </span>
+
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="static-assets/typeahead.bundle.min.js"></script>
+<script src="static-assets/highlight.pack.js"></script>
+<script src="static-assets/URI.js"></script>
+<script src="static-assets/script.js"></script>
+
+
+</body>
+
+</html>
