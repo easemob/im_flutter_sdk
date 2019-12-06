@@ -22,6 +22,7 @@ class EMConversation {
   /// 会话扩展
   String extField;
 
+  /// @nodoc
   EMConversation({@required String conversationId})
       : _conversationId = conversationId;
 

@@ -28,6 +28,7 @@ class EMChatManager {
     _addNativeMethodCallHandler();
   }
 
+  /// @nodoc
   factory EMChatManager.getInstance({@required EMLog log}) {
     return _instance = _instance ?? EMChatManager._internal(log);
   }

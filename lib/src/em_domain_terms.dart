@@ -226,7 +226,7 @@ class EMMessage {
   EMMessage.createReceiveMessage(EMMessageType type)
       : this(type: type, direction: Direction.RECEIVE);
 
-  /// 创建文本类型消息 - 发送方
+  /// 创建文本类型消息 [content]: 消息内容; [userName]: 接收方id
   EMMessage.createTxtSendMessage(String content, String userName)
       : this(
             direction: Direction.SEND,
@@ -234,12 +234,12 @@ class EMMessage {
             type: EMMessageType.TXT,
             body: EMTextMessageBody(content));
 
-  /// @nodoc 创建语音类型消息 - 发送方
+  /// 创建语音类型消息 [filePath]: 语音片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
       : this(direction: Direction.SEND);
 
-  /// @nodoc 创建图片类型消息 - 发送方.
+  /// 创建图片类型消息 [filePath]: 图片路径; [sendOriginalImage]: 是否发送原图; [userName]: 接收方id.
   EMMessage.createImageSendMessage(
       String filePath, bool sendOriginalImage, String userName)
       : this(
@@ -248,8 +248,8 @@ class EMMessage {
             body: EMImageMessageBody(File(filePath),sendOriginalImage),
             to: userName);
 
-  /// @nodoc 创建视频类型消息 - 发送方
-  EMMessage.createVideoSendMessage(String videoFilePath,
+  /// 创建视频类型消息 [filePath]: 视频片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
+  EMMessage.createVideoSendMessage(String filePath,
       int timeLength, String userName)
       : this(
             direction: Direction.SEND,
@@ -257,7 +257,7 @@ class EMMessage {
             body: EMVideoMessageBody(File(videoFilePath),timeLength),
             to: userName);
 
-  /// @nodoc 创建位置类型消息 - 发送方
+  /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
   EMMessage.createLocationSendMessage(double latitude, double longitude,
       String locationAddress, String userName)
       : this(
@@ -266,7 +266,7 @@ class EMMessage {
             body: EMLocationMessageBody(locationAddress, latitude, longitude),
             to: userName);
 
-  /// @nodoc 创建文件类型消息 - 发送方
+  /// 创建文件类型消息 [filePath]: 文件路径; [userName]: 接收方id
   EMMessage.createFileSendMessage(String filePath, String userName)
       : this(
             direction: Direction.SEND,
@@ -274,30 +274,64 @@ class EMMessage {
             body: EMNormalFileMessageBody(File(filePath)),
             to: userName);
 
+  /// @nodoc TODO:
   set isDeliverAcked(bool acked) {
     deliverAcked = acked;
   }
 
   final String _conversationId;
+
+  /// 会话id
   String get conversationId => _conversationId;
 
   final String _userName;
+
+  /// @nodoc TODO:
   String get userName => _userName;
 
+  /// @nodoc TODO:
   bool deliverAcked;
+
+  /// 是否已读
   bool acked;
+
+  /// 消息body
   EMMessageBody body;
+
+  /// 消息类型[单聊，群聊，聊天室]
   ChatType chatType;
+
+  /// @nodoc TODO:
   bool delivered;
+
+  /// 消息反向(发送，接收)
   Direction direction;
+
+  /// 消息发送方
   String from;
+
+  /// @nodoc TODO：
   bool listened;
+
+  /// 本地时间
   String localTime;
+
+  /// 消息id
   String msgId;
+
+  /// 服务器时间
   String msgTime;
+
+  /// 消息发送状态
   Status status;
+
+  /// 消息接收方
   String to;
+
+  /// 是否未读
   bool unread;
+
+  /// 消息类型[文字，图片，语音...]
   EMMessageType type;
 
   /// 扩展属性 包含任意键/值对的属性
@@ -315,10 +349,12 @@ class EMMessage {
 
   /// TODO: setMessageStatusCallback (EMCallBack callback)
 
+  /// ext
   Map ext() {
     return _attributes;
   }
 
+  /// @nodoc
   Map toDataMap() {
     var result = {};
     result["acked"] = this.acked;
@@ -368,7 +404,7 @@ class EMMessage {
   }
 
 }
-  /// 消息类型 int 类型数据转 EMMessageType
+  /// @nodoc 消息类型 int 类型数据转 EMMessageType
   fromType(int type){
       switch(type){
         case 0:
@@ -387,7 +423,7 @@ class EMMessage {
           return EMMessageType.CMD;
       }
   }
-  /// 消息类型 EMMessageType 类型数据转 int
+  /// @nodoc 消息类型 EMMessageType 类型数据转 int
   toType(EMMessageType type){
       if(type == EMMessageType.TXT){
         return 0;
@@ -405,7 +441,7 @@ class EMMessage {
         return 6;
       }
   }
-  /// 聊天类型 int 类型数据转 ChatType
+  /// @nodoc 聊天类型 int 类型数据转 ChatType
   fromChatType(int type){
       switch(type){
         case 0:
@@ -416,7 +452,7 @@ class EMMessage {
           return ChatType.ChatRoom;
       }
   }
-  /// 聊天类型 ChatType 类型数据转 int
+/// @nodoc 聊天类型 ChatType 类型数据转 int
   toChatType(ChatType type){
       if(type == ChatType.Chat){
         return 0;
@@ -426,7 +462,7 @@ class EMMessage {
         return 2;
       }
   }
-  /// 消息方向 int 类型数据转 Direction
+/// @nodoc 消息方向 int 类型数据转 Direction
   fromDirect(int type){
     switch(type){
       case 0:
@@ -435,7 +471,7 @@ class EMMessage {
         return Direction.RECEIVE;
     }
   }
-  /// 消息方向 Direction 类型数据转 int
+/// @nodoc 消息方向 Direction 类型数据转 int
   toDirect(Direction direction){
      if(direction == Direction.SEND){
        return 0;
@@ -443,7 +479,7 @@ class EMMessage {
        return 1;
      }
   }
-  /// 消息状态 int 类型数据转 Status
+/// @nodoc 消息状态 int 类型数据转 Status
   fromEMMessageStatus(int status){
     switch(status){
       case 0:
@@ -456,7 +492,7 @@ class EMMessage {
         return Status.CREATE;
     }
   }
-  /// 消息状态 Status 类型数据转 int
+/// @nodoc 消息状态 Status 类型数据转 int
   toEMMessageStatus(Status status){
      if(status == Status.SUCCESS){
        return 0;
@@ -468,7 +504,7 @@ class EMMessage {
        return 3;
      }
   }
-  /// 下载状态 int 类型数据转 EMDownloadStatus
+/// @nodoc 下载状态 int 类型数据转 EMDownloadStatus
   toEMDownloadStatus(EMDownloadStatus status){
     if(status == EMDownloadStatus.DOWNLOADING){
       return 0;
@@ -480,7 +516,7 @@ class EMMessage {
       return 3;
     }
   }
-  /// 下载状态 EMDownloadStatus 类型数据转 int
+/// @nodoc 下载状态 EMDownloadStatus 类型数据转 int
   fromEMDownloadStatus(int status){
     if(status == 0){
       return EMDownloadStatus.DOWNLOADING;
@@ -504,7 +540,7 @@ class EMContact {
   EMContact({@required String userName}) : userName = userName;
 }
 
-/// EMMessageBody - body of message.
+/// @nodoc  EMMessageBody - body of message.
 abstract class EMMessageBody {
   toDataMap();
   static EMMessageBody from(Map data) {
@@ -529,18 +565,25 @@ abstract class EMMessageBody {
   }
 }
 
-/// Type - EMMessage type enumeration.
+/// 消息类型
 enum EMMessageType {
+  /// 文字消息
   TXT,
+  /// 图片消息
   IMAGE,
+  /// 视频消息
   VIDEO,
+  /// 位置消息
   LOCATION,
+  /// 音频消息
   VOICE,
+  /// 文件消息
   FILE,
+  /// CMD消息
   CMD,
 }
 
-/// Status - EMMessage status enumeration.
+/// @nodoc Status - EMMessage status enumeration.
 enum Status {
   SUCCESS,
   FAIL,
@@ -548,13 +591,13 @@ enum Status {
   CREATE,
 }
 
-/// ChatType - EMMessage chat type enumeration.
+/// @nodoc ChatType - EMMessage chat type enumeration.
 enum ChatType { Chat, GroupChat, ChatRoom }
 
-/// Direction - EMMessage direction enumeration.
+/// @nodoc Direction - EMMessage direction enumeration.
 enum Direction { SEND, RECEIVE }
 
-/// EMDownloadStatus - download status enumeration.
+/// @nodoc EMDownloadStatus - download status enumeration.
 enum EMDownloadStatus { DOWNLOADING, SUCCESSED, FAILED, PENDING }
 
 /// EMDeviceInfo - device info.
@@ -569,6 +612,7 @@ class EMDeviceInfo {
   /// 设备名称
   final String deviceName;
 
+  /// nodoc
   EMDeviceInfo(String resource, String deviceUUID, String deviceName)
       : resource = resource,
         deviceUUID = deviceUUID,
@@ -585,15 +629,16 @@ enum EMCheckType {
   DO_LOGOUT,
 }
 
-/// EMSearchDirection - Search direction.
+/// @nodoc EMSearchDirection - Search direction.
 enum EMSearchDirection { Up, Down }
 
-/// EMCursorResult - Cursor result for iteration.
+/// @nodoc EMCursorResult - Cursor result for iteration.
 abstract class EMCursorResults<T> {
   /// 获取cursor
   Future<T> getCursor();
 }
 
+/// @nodoc
 class EMCursorResult<T> {
   String _cursor;
 
@@ -620,6 +665,7 @@ class EMCursorResult<T> {
         _data = data['data'];
 }
 
+/// @nodoc
 class EMPageResult<T>{
   int _pageCount;
 
@@ -648,22 +694,32 @@ class EMPageResult<T>{
 }
 
 class EMGroupOptions {
+  /// GroupOptions
   EMGroupOptions({
     this.maxUsers = 200,
     this.style = EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite,
   });
 
+  /// 群人数上限
   int maxUsers;
+
+  /// 群类型
   EMGroupStyle style;
 }
 
+/// 群组类型
 enum EMGroupStyle{
+  /// 私有群，只有群主可邀请
   EMGroupStylePrivateOnlyOwnerInvite,
+  /// 私有群，成员都可邀请
   EMGroupStylePrivateMemberCanInvite,
+  /// 共有群，加入需要申请
   EMGroupStylePublicJoinNeedApproval,
+  /// 共有群，任何人可加入
   EMGroupStylePublicOpenJoin,
 }
 
+/// @nodoc
 int convertEMGroupStyleToInt(EMGroupStyle style){
   if(style == EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite){
     return 0;
@@ -687,22 +743,32 @@ class EMMucSharedFile{
   int _updateTime;
   int _fileSize;
 
+  /// 获取文件id
   String getFileId(){
     return _fileId;
   }
 
+  /// 获取文件文件
   String getFileName(){
     return _fileName;
   }
+
+  /// 获取文件上传者
   String getFileOwner(){
     return _fileOwner;
   }
+
+  /// 获取文件更新时间
   int getFileUpdateTime(){
     return _updateTime;
   }
+
+  /// 获取文件大小
   int getFileSize(){
     return _fileSize;
   }
+
+  /// @nodoc
   EMMucSharedFile.from(Map<String, dynamic> data)
       : _fileId = data['fileId'],
         _fileName = data['fileName'],
@@ -710,6 +776,7 @@ class EMMucSharedFile{
         _updateTime = data['updateTime'],
         _fileSize = data['fileSize'];
 
+  /// @nodoc
   String toString(){
     return 'fileId:' + _fileId +"--"
     +'fileName:' + _fileName +"--"
@@ -719,30 +786,40 @@ class EMMucSharedFile{
   }
 }
 
+/// 群组详情
 class EMGroupInfo{
   String _groupId;
   String _groupName;
 
+  /// 获取群id
   String getGroupId(){
     return _groupId;
   }
 
+  /// 获取群名称
   String getGroupName(){
     return _groupName;
   }
 
+  /// @nodoc
   EMGroupInfo.from(Map<String, dynamic> data)
       : _groupId = data['groupId'],
         _groupName = data['groupName'];
 }
 
+/// 群成员权限
 enum EMGroupPermissionType{
+  /// none
   EMGroupPermissionTypeNone,
+  /// 群成员
   EMGroupPermissionTypeMember,
+  /// 群管理员
   EMGroupPermissionTypeAdmin,
+  /// 群拥有者
   EMGroupPermissionTypeOwner,
 }
 
+/// @nodoc
 EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
   if(i == -1){
     return EMGroupPermissionType.EMGroupPermissionTypeNone;
@@ -759,7 +836,7 @@ EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
   return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }
 
-/// 会话类型 EMConversationType 数据类型转 int
+/// @nodoc 会话类型 EMConversationType 数据类型转 int
 toEMConversationType(EMConversationType type){
   if(type == EMConversationType.Chat){
     return 0;
@@ -769,7 +846,7 @@ toEMConversationType(EMConversationType type){
     return 2;
   }
 }
-/// 会话类型 int 数据类型转 EMConversationType
+/// @nodoc 会话类型 int 数据类型转 EMConversationType
 fromEMConversationType(int type){
   if(type == 0){
     return EMConversationType.Chat;
@@ -783,7 +860,7 @@ fromEMConversationType(int type){
     return EMConversationType.HelpDesk;
   }
 }
-/// 搜索方向 EMSearchDirection 数据类型转 int
+/// @nodoc 搜索方向 EMSearchDirection 数据类型转 int
 toEMSearchDirection(EMSearchDirection direction){
   if(direction == EMSearchDirection.Up){
     return 0;

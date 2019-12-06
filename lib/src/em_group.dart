@@ -47,6 +47,7 @@ class EMGroup{
 
   bool _isPushNotificationEnabled;
 
+  /// @nodoc
   EMGroup.from(Map<String, dynamic> data){
     _groupId = data['groupId'];
     _groupName = data['groupName'];
@@ -110,60 +111,73 @@ class EMGroup{
     return _maxUserCount;
   }
 
-  /// 是否免打扰
+  /// 是否不接收群消息
   bool isMsgBlocked(){
     return _isMsgBlocked;
   }
 
+  /// 获取群创建者
   String getOwner(){
     return _owner;
   }
 
+  /// 获取群成员
   List getMembers(){
     return _members;
   }
 
+  /// 获取群人数上限
   int getMemberCount(){
     return _memberCount;
   }
 
+  /// @nodoc
   String toString(){
     String str = getGroupName();
     return str != null ? str : getGroupId();
   }
 
+  /// 获取群管理员列表
   List getAdminList(){
     return _adminList;
   }
 
+  /// 获取群黑名单列表
   List getBlackList(){
     return _blackList;
   }
 
+  /// 获取群禁言列表
   List getMuteList(){
     return _muteList;
   }
 
+  /// 获取群扩展信息
   String getExtension(){
     return _extension;
   }
 
+  /// 获取群公告
   String getAnnouncement(){
     return _announcement;
   }
 
+  /// 获取群文件列表
   List<EMMucSharedFile> getSharedFileList(){
     return _sharedFileList;
   }
 
+  /// 获取群所有人员
   List getOccupants(){
     return _occupants;
   }
 
+  /// 获取群组类型
   EMGroupPermissionType getPermissionType(){
     return _permissionType;
   }
 
+  /// 是否免打扰
   bool isPushNotificationEnabled(){
     return _isPushNotificationEnabled;
   }

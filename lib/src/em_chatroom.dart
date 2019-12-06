@@ -113,9 +113,17 @@ class EMChatRoom{
   }
 }
 
+/// 聊天室权限
 enum EMChatRoomPermissionType{
+  /// none
   EMChatRoomPermissionTypeNone,
+
+  /// 成员
   EMChatRoomPermissionMember,
+
+  /// 管理员
   EMChatRoomPermissionAdmin,
+
+  /// 创建者
   EMChatRoomPermissionOwner,
 }
