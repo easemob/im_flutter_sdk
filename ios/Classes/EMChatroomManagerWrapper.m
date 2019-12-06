@@ -188,7 +188,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult]}];
+                     userInfo:@{@"value":aResult.list}];
     }];
 }
 
