@@ -25,6 +25,28 @@ class DemoLocalizations {
       'inLogin' : 'In the login...',
       'inRegister' : 'In the register...',
       'inLogout' : 'In the logout...',
+      'group_details' : 'Group Details',
+      'group_files' : 'Group Files',
+      'group_memebers' : 'Group Members',
+      'in_operation' : 'In Operation',
+      'remove_member' : 'Remove Member',
+      'group_announcement' : 'Group Announcement',
+      'group_management' : 'Group Management',
+      'mute_management' : 'Mute Management',
+      'blackList_management' : 'Black List Management',
+      'admin_management' : 'Admin Management',
+      'add_blackList' : 'Add Black List',
+      'add_muteList' : 'Add Mute List',
+      'add_adminList' : 'Add Admin List',
+      'create_group' : 'Create Group',
+      'group_head' : 'Group Head',
+      'group_name' : 'Group Name',
+      'change_group_name' : 'Change Group Name',
+      'yes' : 'Yes',
+      'no' : 'No',
+      'exit_group' : 'Exit Group',
+      'destroy_group' : 'Destroy Group',
+      'pick_contact' : 'Pick Contact',
     },
     'zh': {
       'conversation': '会话',
@@ -44,6 +66,28 @@ class DemoLocalizations {
       'inLogin' : '正在登录...',
       'inRegister' : '正在注册...',
       'inLogout' : '正在退出...',
+      'group_details' : '群组详情',
+      'group_files' : '群文件',
+      'group_memebers' : '群成员',
+      'in_operation' : '正在操作...',
+      'remove_member' : '移除成员',
+      'group_announcement' : '群公告',
+      'group_management' : '群组管理',
+      'mute_management' : '禁言管理',
+      'blackList_management' : '黑名单管理',
+      'admin_management' : '管理员管理',
+      'add_blackList' : '加入黑名单',
+      'add_muteList' : '禁言',
+      'add_adminList' : '添加管理员',
+      'create_group' : '创建群组',
+      'group_head' : '群头像',
+      'group_name' : '群名称',
+      'change_group_name' : '修改群名称',
+      'yes' : '确定',
+      'no' : '取消',
+      'exit_group' : '退出群组',
+      'destroy_group' : '解散群组',
+      'pick_contact' : '选择好友',
     }
   };
 
@@ -100,6 +144,73 @@ class DemoLocalizations {
   get inLogout {
     return _localizedValues[locale.languageCode]['inLogout'];
   }
+  get groupDetails {
+    return _localizedValues[locale.languageCode]['group_details'];
+  }
+  get groupFiles {
+    return _localizedValues[locale.languageCode]['group_files'];
+  }
+  get groupMembers {
+    return _localizedValues[locale.languageCode]['group_memebers'];
+  }
+  get inOperation {
+    return _localizedValues[locale.languageCode]['in_operation'];
+  }
+  get removeMember {
+    return _localizedValues[locale.languageCode]['remove_member'];
+  }
+  get groupAnnouncement {
+    return _localizedValues[locale.languageCode]['group_announcement'];
+  }
+  get groupManagement {
+    return _localizedValues[locale.languageCode]['group_management'];
+  }
+  get muteManagement {
+    return _localizedValues[locale.languageCode]['mute_management'];
+  }
+  get blackListManagement {
+    return _localizedValues[locale.languageCode]['blackList_management'];
+  }
+  get adminManagement {
+    return _localizedValues[locale.languageCode]['admin_management'];
+  }
+  get addBlackList {
+    return _localizedValues[locale.languageCode]['add_blackList'];
+  }
+  get addMuteList {
+    return _localizedValues[locale.languageCode]['add_muteList'];
+  }
+  get addAdminList {
+    return _localizedValues[locale.languageCode]['add_adminList'];
+  }
+  get createGroup {
+    return _localizedValues[locale.languageCode]['create_group'];
+  }
+  get groupHead {
+    return _localizedValues[locale.languageCode]['group_head'];
+  }
+  get groupName {
+    return _localizedValues[locale.languageCode]['group_name'];
+  }
+  get changeGroupName {
+    return _localizedValues[locale.languageCode]['change_group_name'];
+  }
+  get yes {
+    return _localizedValues[locale.languageCode]['yes'];
+  }
+  get no {
+    return _localizedValues[locale.languageCode]['no'];
+  }
+  get exitGroup {
+    return _localizedValues[locale.languageCode]['exit_group'];
+  }
+  get destroyGroup {
+    return _localizedValues[locale.languageCode]['destroy_group'];
+  }
+  get pickContact {
+    return _localizedValues[locale.languageCode]['pick_contact'];
+  }
+
   static DemoLocalizations of(BuildContext context) {
     return Localizations.of(context, DemoLocalizations);
   }
