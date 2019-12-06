@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import android.content.Context;
 
@@ -12,12 +13,15 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+import com.hyphenate.EMCallBack;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.push.EMPushHelper;
+import com.hyphenate.push.EMPushType;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONException;
@@ -76,7 +80,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     private void init(Object args, Result result) {
             JSONObject argMap = (JSONObject) args;
             EMLog.e("init:", argMap.toString());
-            EMOptions options = convertStringMapToEMOptions(argMap);
+            EMOptions options = convertStringMapToEMOptions(argMap, context);
             EMClient client = EMClient.getInstance();
             client.init(context, options);
             //setup connection listener
@@ -152,7 +156,57 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
             String password = argMap.getString("password");
-            EMClient.getInstance().login(userName, password, new EMWrapperCallBack(result));
+            EMClient.getInstance().login(userName, password, new EMCallBack() {
+                void post(Consumer<Void> func) {
+                    ImFlutterSdkPlugin.handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            func.accept(null);
+                        }
+                    });
+                }
+
+                @Override
+                public void onSuccess() {
+                    post((Void) -> {
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.TRUE);
+                        EMLog.e("callback", "onSuccess");
+                        result.success(data);
+                        if(ImFlutterSdkPlugin.getPushType() == EMPushType.FCM){
+                            EMClient.getInstance().sendFCMTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.HMSPUSH){
+                            EMClient.getInstance().sendHMSPushTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MIPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MIPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MEIZUPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MEIZUPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.OPPOPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.OPPOPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.VIVOPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.VIVOPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }
+
+                    });
+                }
+
+                @Override
+                public void onError(int code, String desc) {
+                    post((Void) -> {
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.FALSE);
+                        data.put("code", code);
+                        data.put("desc", desc);
+                        EMLog.e("callback", "onError");
+                        result.success(data);
+                    });
+                }
+
+                @Override
+                public void onProgress(int progress, String status) {
+
+                }
+            });
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -163,7 +217,57 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject)args;
             String userName = argMap.getString("userName");
             String token = argMap.getString("token");
-            EMClient.getInstance().loginWithToken(userName, token, new EMWrapperCallBack(result));
+            EMClient.getInstance().loginWithToken(userName, token, new EMCallBack() {
+                void post(Consumer<Void> func) {
+                    ImFlutterSdkPlugin.handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            func.accept(null);
+                        }
+                    });
+                }
+
+                @Override
+                public void onSuccess() {
+                    post((Void) -> {
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.TRUE);
+                        EMLog.e("callback", "onSuccess");
+                        result.success(data);
+                        if(ImFlutterSdkPlugin.getPushType() == EMPushType.FCM){
+                            EMClient.getInstance().sendFCMTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.HMSPUSH){
+                            EMClient.getInstance().sendHMSPushTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MIPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MIPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MEIZUPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MEIZUPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.OPPOPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.OPPOPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.VIVOPUSH){
+                            EMPushHelper.getInstance().onReceiveToken(EMPushType.VIVOPUSH, ImFlutterSdkPlugin.getDeviceToken());
+                        }
+
+                    });
+                }
+
+                @Override
+                public void onError(int code, String desc) {
+                    post((Void) -> {
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.FALSE);
+                        data.put("code", code);
+                        data.put("desc", desc);
+                        EMLog.e("callback", "onError");
+                        result.success(data);
+                    });
+                }
+
+                @Override
+                public void onProgress(int progress, String status) {
+
+                }
+            });
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
