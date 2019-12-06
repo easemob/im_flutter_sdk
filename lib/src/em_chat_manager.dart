@@ -15,8 +15,10 @@ class EMChatManager {
   static const MethodChannel _emChatManagerChannel =
       const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
 
+  /// @nodoc
   static EMChatManager _instance;
 
+  /// @nodoc
   final EMLog log;
 
   final _messageListeners = List<EMMessageListener>();
@@ -26,6 +28,7 @@ class EMChatManager {
     _addNativeMethodCallHandler();
   }
 
+  /// @nodoc
   factory EMChatManager.getInstance({@required EMLog log}) {
     return _instance = _instance ?? EMChatManager._internal(log);
   }
@@ -394,9 +397,8 @@ class EMChatManager {
 
   Future<void> _onMessageChanged(Map map) async {
     EMMessage message = EMMessage.from(map['message']);
-    Object change = map['change'];
     for (var listener in _messageListeners) {
-      listener.onMessageChanged(message, change);
+      listener.onMessageChanged(message);
     }
   }
 }

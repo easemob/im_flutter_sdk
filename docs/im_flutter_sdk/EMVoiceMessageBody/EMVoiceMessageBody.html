@@ -50,23 +50,18 @@
       <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/displayName.html">displayName</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/downloadStatus.html">downloadStatus</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/fileName.html">fileName</a></li>
-      <li class="inherited"><a href="im_flutter_sdk/EMMessageBody/hashCode.html">hashCode</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/hashCode.html">hashCode</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/localUrl.html">localUrl</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/remoteUrl.html">remoteUrl</a></li>
-      <li class="inherited"><a href="im_flutter_sdk/EMMessageBody/runtimeType.html">runtimeType</a></li>
-      <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/secret.html">secret</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/runtimeType.html">runtimeType</a></li>
     
       <li class="section-title"><a href="im_flutter_sdk/EMVoiceMessageBody-class.html#instance-methods">Methods</a></li>
-      <li><a href="im_flutter_sdk/EMVoiceMessageBody/toDataMap.html">toDataMap</a></li>
-      <li><a href="im_flutter_sdk/EMVoiceMessageBody/toString.html">toString</a></li>
-      <li class="inherited"><a href="im_flutter_sdk/EMMessageBody/noSuchMethod.html">noSuchMethod</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/noSuchMethod.html">noSuchMethod</a></li>
     
       <li class="section-title inherited"><a href="im_flutter_sdk/EMVoiceMessageBody-class.html#operators">Operators</a></li>
-      <li class="inherited"><a href="im_flutter_sdk/EMMessageBody/operator_equals.html">operator ==</a></li>
+      <li class="inherited"><a href="im_flutter_sdk/EMFileMessageBody/operator_equals.html">operator ==</a></li>
     
     
-      <li class="section-title"><a href="im_flutter_sdk/EMVoiceMessageBody-class.html#static-methods">Static methods</a></li>
-      <li><a href="im_flutter_sdk/EMVoiceMessageBody/fromData.html">fromData</a></li>
     
     </ol>
   </div><!--/.sidebar-offcanvas-left-->
@@ -79,10 +74,14 @@
       <span class="name ">EMVoiceMessageBody</span>(<wbr><span class="parameter" id="-param-voiceFile"><span class="type-annotation">File</span> <span class="parameter-name">voiceFile</span>, </span> <span class="parameter" id="-param-duration"><span class="type-annotation">int</span> <span class="parameter-name">duration</span></span>)
     </section>
 
+    <section class="desc markdown">
+      <p>创建方法，<code>voiceFile</code>: 要发送的音频文件; <code>duration</code>: 文件时长</p>
+    </section>
     
     <section class="summary source-code" id="source">
       <h2><span>Implementation</span> </h2>
       <pre class="language-dart"><code class="language-dart">EMVoiceMessageBody(File voiceFile, int duration)
+
     : this._file = voiceFile,
       this._length = duration,
       super(voiceFile.path);</code></pre>

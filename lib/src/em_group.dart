@@ -41,12 +41,35 @@ class EMGroup{
 
   List<EMMucSharedFile> _sharedFileList;
 
-  List _occupants;
+  List _occupants ;
 
   EMGroupPermissionType _permissionType;
 
   bool _isPushNotificationEnabled;
 
+  EMGroup():
+        _groupId = '',
+        _groupName = 'groupName',
+        _description = '',
+        _isPublic = false,
+        _isMemberAllowToInvite = false,
+        _isMemberOnly = false,
+        _maxUserCount = 200,
+        _isMsgBlocked = false,
+        _owner = '',
+        _members = [],
+        _memberCount = 0,
+        _adminList = [],
+        _blackList = [],
+        _muteList = [],
+        _extension = '',
+        _announcement = '',
+        _sharedFileList = [],
+        _occupants = [],
+        _permissionType = EMGroupPermissionType.EMGroupPermissionTypeNone,
+        _isPushNotificationEnabled = false;
+
+  /// @nodoc
   EMGroup.from(Map<String, dynamic> data){
     _groupId = data['groupId'];
     _groupName = data['groupName'];
@@ -75,87 +98,108 @@ class EMGroup{
     _isPushNotificationEnabled = data['isPushNotificationEnabled'];
   }
 
+  /// 群id
   String getGroupId() {
     return _groupId;
   }
 
+  /// 群名称
   String getGroupName(){
     return _groupName;
   }
 
+  /// 群描述
   String getDescription(){
     return _description;
   }
 
+  /// 是否是公开群
   bool isPublic(){
     return _isPublic;
   }
 
+  /// 是否需要成员邀请
   bool isMemberAllowToInvite(){
     return _isMemberAllowToInvite;
   }
 
+  /// @nodoc TODO: 需要明确这个在什么场景下生效
   bool isMemberOnly(){
     return _isMemberOnly;
   }
 
+  /// 群人数上限
   int getMaxUserCount(){
     return _maxUserCount;
   }
 
+  /// 是否不接收群消息
   bool isMsgBlocked(){
     return _isMsgBlocked;
   }
 
+  /// 获取群创建者
   String getOwner(){
     return _owner;
   }
 
+  /// 获取群成员
   List getMembers(){
     return _members;
   }
 
+  /// 获取群人数上限
   int getMemberCount(){
     return _memberCount;
   }
 
+  /// @nodoc
   String toString(){
     String str = getGroupName();
     return str != null ? str : getGroupId();
   }
 
+  /// 获取群管理员列表
   List getAdminList(){
     return _adminList;
   }
 
+  /// 获取群黑名单列表
   List getBlackList(){
     return _blackList;
   }
 
+  /// 获取群禁言列表
   List getMuteList(){
     return _muteList;
   }
 
+  /// 获取群扩展信息
   String getExtension(){
     return _extension;
   }
 
+  /// 获取群公告
   String getAnnouncement(){
     return _announcement;
   }
 
+  /// 获取群文件列表
   List<EMMucSharedFile> getSharedFileList(){
     return _sharedFileList;
   }
 
+  /// 获取群所有人员
   List getOccupants(){
     return _occupants;
   }
 
+  /// 获取群组类型
   EMGroupPermissionType getPermissionType(){
     return _permissionType;
   }
 
+  /// 是否免打扰
   bool isPushNotificationEnabled(){
     return _isPushNotificationEnabled;
   }
