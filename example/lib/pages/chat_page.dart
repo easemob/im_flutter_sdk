@@ -381,7 +381,6 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void onTapItemPicture(String imgPath){
-    // TODO: onTapItemPicture  点击相册 返回选中图片的Url
     print('onTapItemPicture' + imgPath);
 
     EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
@@ -395,9 +394,14 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void onTapItemCamera(String imgPath) {
-    // TODO: implement onTapItemCamera
     print('onTapItemCamera' + imgPath);
-    WidgetUtil.hintBoxWithDefault('相机拍照待实现!');
+    EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
+    imageMessage.chatType = fromChatType(mType);
+    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
+      print('-----------success---------->' );
+      _onConversationInit();
+    });
+    _onConversationInit();
   }
 
 
