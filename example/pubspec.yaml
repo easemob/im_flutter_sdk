@@ -82,6 +82,10 @@ flutter:
     - images/add.png
     - images/add_select.png
     - images/send.png
+    - images/file.png
+    - images/file_select.png
+    - images/location.png
+    - images/video_item.png
     - images/add_member.png
     - images/remove_member.png
 

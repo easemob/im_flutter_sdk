@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk_example/utils/media_util.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
-import 'package:im_flutter_sdk_example/utils/widget_util.dart';
+import 'package:im_flutter_sdk_example/widgets/ease_button_widget.dart';
 
 
+// ignore: must_be_immutable
 class BottomInputBar extends StatefulWidget {
   BottomInputBarDelegate delegate;
   BottomInputBar(BottomInputBarDelegate delegate) {
@@ -23,6 +24,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
   String message;
   bool isChanged = false;
   bool isShowVoiceAction = false;
+  bool _isDark;
 
 
   final controller = new TextEditingController();
@@ -36,6 +38,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
       controller: controller,
       decoration: InputDecoration(
           border: InputBorder.none,
+          fillColor: Color(0x1F000000),
           contentPadding:EdgeInsets.fromLTRB(10,2,10,0),
 //          hintText: '请输入信息......',
           hintStyle: TextStyle(
@@ -72,6 +75,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
       print("没有实现 BottomInputBarDelegate");
     }
     this.textField.controller.text = '';
+    this.message = '';
   }
 
   switchExt() {
@@ -155,9 +159,9 @@ class _BottomInputBarState extends State<BottomInputBar> {
   }
 
   ///点击视频item
-  void  _makeVideoCall() async{
-    print("_makeVideoCall_");
-    this.delegate.onTapItemVideo();
+  void  _makeFileCall() async{
+    print("_makeFileCall_");
+    this.delegate.onTapItemFile();
   }
 
   ///点击语音消息item
@@ -169,6 +173,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
 
   @override
   Widget build(BuildContext context) {
+    _isDark = ThemeUtils.isDark(context);
     return Container(
       color:  ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
       padding: EdgeInsets.fromLTRB(15, 6,15, 2),
@@ -182,7 +187,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
                           height: 34,
                           padding: EdgeInsets.fromLTRB(0,5,0,0),
                           decoration: BoxDecoration(
-                          color: Color(0x1AFFFFFF),
+                          color: _isDark ? EMColor.darkBorderLine : EMColor.borderLine,
                           border:  new Border.all(color: Colors.black26, width: 0.3),
                           borderRadius:  BorderRadius.circular(18)
                       ),
@@ -207,67 +212,74 @@ class _BottomInputBarState extends State<BottomInputBar> {
             Row(
               children: <Widget>[
                 Expanded(
-                  child:IconButton(
-                    icon: Icon(Icons.keyboard_voice),
-                    iconSize: 26,
-                    onPressed:() {
-                      isShowVoiceAction = true;
-                      _sendVoiceMessage();
-                    } ,
-                  ),
-                ),
-                Expanded(
-                  child:IconButton(
-                      icon: Icon(Icons.phone),
-                      iconSize: 26,
-                      onPressed:() {
-                        _makeVoiceCall();
-                      } ,
+                   child: SimpleImageButton(
+                     normalImage: 'images/voice.png',
+                     pressedImage: 'images/voice_select.png',
+                     width: 40,
+                     onPressed: (){
+                        isShowVoiceAction = true;
+                        _sendVoiceMessage();
+                     },
                    ),
                 ),
                 Expanded(
-                  child:IconButton(
-                    icon: Icon(Icons.videocam),
-                    iconSize: 26,
-                    onPressed:() {
-                      _makeVideoCall();
-                    } ,
+                  child: SimpleImageButton(
+                    normalImage: 'images/phone.png',
+                    pressedImage: 'images/phone_select.png',
+                    width: 40,
+                    onPressed: (){
+                      _makeVoiceCall();
+                    },
                   ),
                 ),
                 Expanded(
-                  child:IconButton(
-                    icon: Icon(Icons.photo_camera),
-                    iconSize: 26,
-                    onPressed:() {
+                  child: SimpleImageButton(
+                    normalImage: 'images/file.png',
+                    pressedImage: 'images/file_select.png',
+                    width: 40,
+                    onPressed: (){
+                      _makeFileCall();
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: SimpleImageButton(
+                    normalImage: 'images/camera.png',
+                    pressedImage: 'images/camera_select.png',
+                    width: 40,
+                    onPressed: (){
                       _takePicture();
-                    } ,
+                    },
                   ),
                 ),
                 Expanded(
-                  child:IconButton(
-                    icon: Icon(Icons.photo),
-                    iconSize: 26,
-                    onPressed:() {
+                  child: SimpleImageButton(
+                    normalImage: 'images/picture.png',
+                    pressedImage: 'images/picture_select.png',
+                    width: 40,
+                    onPressed: (){
                       _selectPicture();
-                    } ,
+                    },
                   ),
                 ),
                 Expanded(
-                  child:IconButton(
-                    icon: Icon(Icons.tag_faces),
-                    iconSize: 26,
-                    onPressed:() {
+                  child: SimpleImageButton(
+                    normalImage: 'images/emojicon.png',
+                    pressedImage: 'images/emojicon_select.png',
+                    width: 40,
+                    onPressed: (){
                       _selectEmojicon();
-                    } ,
+                    },
                   ),
                 ),
                 Expanded(
-                  child:IconButton(
-                    icon: Icon(Icons.add_circle_outline),
-                    iconSize: 26,
-                    onPressed:() {
+                  child: SimpleImageButton(
+                    normalImage: 'images/add.png',
+                    pressedImage: 'images/add_select.png',
+                    width: 40,
+                    onPressed: (){
                       switchExt();
-                    } ,
+                    },
                   ),
                 ),
                ],
@@ -309,7 +321,7 @@ abstract class BottomInputBarDelegate {
   ///点击音频
   void onTapItemPhone();
   ///点击视频
-  void onTapItemVideo();
+  void onTapItemFile();
 
 }
 
