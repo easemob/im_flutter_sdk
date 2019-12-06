@@ -15,6 +15,7 @@ class EMChatRoom{
   EMChatRoomPermissionType _permissionType;
 
 
+  /// @nodoc
   EMChatRoom.from(Map data)
       : _roomId = data['roomId'],
         _roomName = data['roomName'],
@@ -35,7 +36,7 @@ class EMChatRoom{
      return _administratorList;
   }
 
-  /// @nodoc 返回成员列表
+  /// 返回成员列表
   List getMemberList(){
      return _memberList;
   }
@@ -45,32 +46,32 @@ class EMChatRoom{
      return _blockList;
   }
 
-  /// @nodoc return mute list, Map.entry.key is username of mute action, Map.entry.value is expired time of banning post action, in milli-seconds
+  /// @nodoc 返回mute列表
   List getMuteList(){
      return _muteList;
   }
 
-  /// @nodoc 获取聊天室公告
+  /// 获取聊天室公告
   String getAnnouncement(){
      return _announcement;
   }
 
-  /// @nodoc 获取聊天室ID
+  /// 获取聊天室ID
   String getId(){
     return _roomId;
   }
 
-  /// @nodoc 获取聊天室名称
+  /// 获取聊天室名称
   String getName(){
     return _roomName;
   }
 
-  /// @nodoc 获取聊天室详情
+  /// 获取聊天室详情
   String getDescription(){
     return _description;
   }
 
-  /// @nodoc 获取聊天室的所有者，如果没有获取聊天室详情，返回可能为空
+  /// 获取聊天室的所有者，如果没有获取聊天室详情，返回可能为空
   String getOwner(){
     return _owner;
   }
@@ -80,21 +81,25 @@ class EMChatRoom{
     return _affiliationsCount;
   }
 
+  /// 获取聊天室最大用户数
   int getMaxUsers(){
     return _maxUserCount;
   }
 
+  /// 获取权限
   getPermissionType(){
     return _permissionType;
   }
 
   @override
+  /// @nodoc
   String toString() =>
       '[EMChatRoom],{ roomId: $_roomId, roomName: $_roomName, description: $_description'
           ' owner: $_owner, announcement: $_announcement, affiliationsCount: $_affiliationsCount'
           ' administratorList: $_administratorList, maxUserCount: $_maxUserCount, memberList: $_memberList'
           ' blockList: $_blockList, muteList: $_muteList}';
 
+  /// @nodoc
  static EMChatRoomPermissionType toPermissionType(int type){
       switch(type){
         case 0:

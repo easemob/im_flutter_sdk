@@ -29,59 +29,59 @@ class EMOptions {
   bool _isAutoDownload = true;
 //  EMPushConfig _pushConfig;
 
-  /// @nodoc 获取已读确认设置
+  /// 获取已读确认设置
   bool getRequireAck(){
     return _requireAck;
   }
-  /// @nodoc 设置是否需要接受方已读确认
+  /// 设置是否需要接受方已读确认
   void setRequireAck(bool requireAck){
     _requireAck = requireAck;
   }
-  /// @nodoc 获取送达确认设置
+  /// 获取送达确认设置
   bool getRequireDeliveryAck(){
     return _requireDeliveryAck;
   }
-  /// @nodoc 设置是否需要接受方送达确认,默认false
+  /// 设置是否需要接受方送达确认,默认false
   void setRequireDeliveryAck(bool requireDeliveryAck){
     _requireDeliveryAck = requireDeliveryAck;
   }
-  /// @nodoc 获取是否自动接受加好友邀请 默认true
+  /// 获取是否自动接受加好友邀请 默认true
   bool getAcceptInvitationAlways(){
     return _acceptInvitationAlways;
   }
-  /// @nodoc 设置是否自动接受加好友邀请 默认true
+  /// 设置是否自动接受加好友邀请 默认true
   void setAcceptInvitationAlways(bool acceptInvitationAlways){
     _acceptInvitationAlways = acceptInvitationAlways;
   }
-  /// @nodoc 获取退出(主动和被动退出)群组时是否删除聊天消息
+  /// 获取退出(主动和被动退出)群组时是否删除聊天消息
   bool isDeleteMessagesAsExitGroup(){
     return _deleteMessagesAsExitGroup;
   }
-  /// @nodoc 设置退出(主动和被动退出)群组时是否删除聊天消息
+  /// 设置退出(主动和被动退出)群组时是否删除聊天消息
   void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup){
     _deleteMessagesAsExitGroup = deleteMessagesAsExitGroup;
   }
-  /// @nodoc 获取是否自动接受加群邀请
+  /// 获取是否自动接受加群邀请
   bool isAutoAcceptGroupInvitation(){
     return _autoAcceptGroupInvitation;
   }
-  /// @nodoc 设置是否自动接受加群邀请
+  /// 设置是否自动接受加群邀请
   void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation){
     _autoAcceptGroupInvitation = autoAcceptGroupInvitation;
   }
-  /// @nodoc 是否允许聊天室owner离开
+  /// 是否允许聊天室owner离开
   bool isChatRoomOwnerLeaveAllowed(){
     return _isChatRoomOwnerLeaveAllowed;
   }
-  /// @nodoc 设置是否允许聊天室owner离开并删除会话记录
+  /// 设置是否允许聊天室owner离开并删除会话记录
   void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed){
     _isChatRoomOwnerLeaveAllowed = isChatRoomOwnerLeaveAllowed;
   }
-  /// @nodoc 是否按照server收到时间进行排序
+  /// 是否按照server收到时间进行排序
   bool isSortMessageByServerTime(){
     return _sortMessageByServerTime;
   }
-  /// @nodoc 设置server收到时间进行排序 默认是false
+  /// 设置server收到时间进行排序 默认是false
   void setSortMessageByServerTime(bool sortMessageByServerTime){
     _sortMessageByServerTime = sortMessageByServerTime;
   }
@@ -109,19 +109,21 @@ class EMOptions {
   void setRestServer(String restServer){
     _restServer = restServer;
   }
-  /// @nodoc 获取是否自动登录
+  /// 获取是否自动登录
   bool getAutoLogin(){
     return _autoLogin;
   }
-  /// @nodoc 设置是否自动登录
+  /// 设置是否自动登录
   void setAutoLogin(bool autoLogin){
     _autoLogin = autoLogin;
   }
 
+  /// @nodoc 获取是否使用DNSConfig
   bool getEnableDNSConfig(){
     return _enableDNSConfig;
   }
 
+  /// @nodoc 是否使用DNSConfig
   void enableDNSConfig(bool enableDNSConfig){
     _enableDNSConfig = enableDNSConfig;
   }
@@ -150,10 +152,12 @@ class EMOptions {
     _isAutoDownload = isAutoDownload;
   }
 
+  /// @nodoc 获取DNSURL
   String getDnsUrl(){
     return _dnsUrl;
   }
 
+  /// @nodoc 设置DNSURL
   void setDnsUrl(String dnsUrl){
     _dnsUrl = dnsUrl;
   }
@@ -166,6 +170,7 @@ class EMOptions {
 //    _pushConfig = pushConfig;
 //  }
 
+  /// @nodoc
   Map convertToMap(){
     var map = {};
     map.putIfAbsent("acceptInvitationAlways", ()=> _acceptInvitationAlways );
@@ -298,10 +303,12 @@ class EMMessage {
   /// 扩展属性 包含任意键/值对的属性
   final Map _attributes;
 
+  /// @nodoc
   void setAttribute(String attr, dynamic value) {
     _attributes[attr] = value;
   }
 
+  /// @nodoc
   dynamic getAttribute(String attr) {
     return _attributes[attr];
   }
@@ -335,7 +342,8 @@ class EMMessage {
     return result;
   }
 
-   EMMessage.from(Map data):
+  /// @nodoc
+  EMMessage.from(Map data):
         _attributes = data['attributes'],
         localTime = data['localTime'],
         chatType = fromChatType(data['chatType']),
@@ -354,7 +362,7 @@ class EMMessage {
         type = fromType(data['type']),
         unread = data['unread'];
 
-
+  /// @nodoc
   String toString(){
     return body.toString();
   }
