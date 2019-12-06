@@ -30,6 +30,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     //TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMClient.getInstance().init(options);
+    EMClient.getInstance().setDebugMode(true);
     EMClient.getInstance().addConnectionListener(this);
     super.initState();
   }

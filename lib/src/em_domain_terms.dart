@@ -9,25 +9,43 @@ import 'em_message_body.dart';
 class EMOptions {
   EMOptions({
     @required this.appKey,
-  });
-  bool _acceptInvitationAlways = true;
-  bool _autoAcceptGroupInvitation = true;
-  bool _requireAck = true;
-  bool _requireDeliveryAck = false;
-  bool _deleteMessagesAsExitGroup = true;
-  bool _isChatRoomOwnerLeaveAllowed = true;
-  String appKey = '';
-  bool _autoLogin = true;
-  bool _enableDNSConfig = true;
-  bool _sortMessageByServerTime = true;
-  String _dnsUrl = '';
-  String _restServer = '';
-  String _imServer = '';
-  int _imPort = 0;
-  bool _usingHttpsOnly = false;
-  bool _serverTransfer = true;
-  bool _isAutoDownload = true;
-//  EMPushConfig _pushConfig;
+  }):
+        _acceptInvitationAlways = true,
+        _autoAcceptGroupInvitation = true,
+        _requireAck = true,
+        _requireDeliveryAck = false,
+        _deleteMessagesAsExitGroup = true,
+        _isChatRoomOwnerLeaveAllowed = true,
+        _autoLogin = true,
+        _enableDNSConfig = true,
+        _sortMessageByServerTime = true,
+        _dnsUrl = '',
+        _restServer = '',
+        _imServer = '',
+        _imPort = 0,
+        _usingHttpsOnly = false,
+        _serverTransfer = true,
+        _isAutoDownload = true,
+        _pushConfig = EMPushConfig();
+
+  bool _acceptInvitationAlways;
+  bool _autoAcceptGroupInvitation;
+  bool _requireAck;
+  bool _requireDeliveryAck;
+  bool _deleteMessagesAsExitGroup;
+  bool _isChatRoomOwnerLeaveAllowed ;
+  String appKey;
+  bool _autoLogin;
+  bool _enableDNSConfig;
+  bool _sortMessageByServerTime;
+  String _dnsUrl;
+  String _restServer;
+  String _imServer;
+  int _imPort;
+  bool _usingHttpsOnly;
+  bool _serverTransfer;
+  bool _isAutoDownload;
+  EMPushConfig _pushConfig;
 
   /// 获取已读确认设置
   bool getRequireAck(){
@@ -162,13 +180,15 @@ class EMOptions {
     _dnsUrl = dnsUrl;
   }
 
-//  EMPushConfig getPushConfig(){
-//    return _pushConfig;
-//  }
-//
-//  void setPushConfig(EMPushConfig pushConfig){
-//    _pushConfig = pushConfig;
-//  }
+  /// @nodoc 获取推送配置
+  EMPushConfig getPushConfig(){
+    return _pushConfig;
+  }
+
+  /// @nodoc 设置推送配置
+  void setPushConfig(EMPushConfig pushConfig){
+    _pushConfig = pushConfig;
+  }
 
   /// @nodoc
   Map convertToMap(){
@@ -190,44 +210,105 @@ class EMOptions {
     map.putIfAbsent("usingHttpsOnly", ()=> _usingHttpsOnly );
     map.putIfAbsent("serverTransfer", ()=> _serverTransfer );
     map.putIfAbsent("isAutoDownload", ()=> _isAutoDownload );
+    map.putIfAbsent("pushConfig", ()=> _pushConfig.convertToMap() );
     print(map);
     return map;
   }
 }
 
-//class EMPushConfig{
-//
-//  bool _enableVivoPush;
-//  bool _enableMeiZuPush;
-//  bool _enableMiPush;
-//  bool _enableOppoPush;
-//  bool _enableHWPush;
-//  bool _enableFCM;
-//
-//  void enableVivoPush(){
-//    _enableVivoPush = true;
-//  }
-//
-//  void enableMeiZuPush(String appId, String appKey){
-//    _enableMeiZuPush = true;
-//  }
-//
-//  void enableMiPush(String appId, String appKey){
-//    _enableMiPush = true;
-//  }
-//
-//  void enableOppoPush(String appKey, String appSecret){
-//    _enableOppoPush = true;
-//  }
-//
-//  void enableHWPush(){
-//    _enableHWPush = true;
-//  }
-//
-//  void enableFCM(String senderId){
-//    _enableFCM = true;
-//  }
-//}
+class EMPushConfig{
+
+  EMPushConfig():
+        _enableVivoPush = false,
+        _enableMeiZuPush = false,
+        _enableMiPush = false,
+        _enableOppoPush = false,
+        _enableHWPush = false,
+        _enableFCM = false,
+        _enableAPNS =false,
+        _miAppId = '',
+        _miAppKey = '',
+        _mzAppId = '',
+        _mzAppKey = '',
+        _oppoAppKey = '',
+        _oppoAppSecret = '',
+        _fcmSenderId = '',
+        _apnsSenderId = '';
+
+  bool _enableVivoPush;
+  bool _enableMeiZuPush;
+  bool _enableMiPush;
+  bool _enableOppoPush;
+  bool _enableHWPush;
+  bool _enableFCM;
+  bool _enableAPNS;
+  String _miAppId;
+  String _miAppKey;
+  String _mzAppId;
+  String _mzAppKey;
+  String _oppoAppKey;
+  String _oppoAppSecret;
+  String _fcmSenderId;
+  String _apnsSenderId;
+
+  void enableVivoPush(){
+    _enableVivoPush = true;
+  }
+
+  void enableMeiZuPush(String appId, String appKey){
+    _enableMeiZuPush = true;
+    _mzAppId = appId;
+    _mzAppKey = appKey;
+  }
+
+  void enableMiPush(String appId, String appKey){
+    _enableMiPush = true;
+    _miAppId = appId;
+    _miAppKey = appKey;
+  }
+
+  void enableOppoPush(String appKey, String appSecret){
+    _enableOppoPush = true;
+    _oppoAppKey = appKey;
+    _oppoAppSecret = appSecret;
+  }
+
+  void enableHWPush(){
+    _enableHWPush = true;
+  }
+
+  void enableFCM(String senderId){
+    _enableFCM = true;
+    _fcmSenderId = senderId;
+  }
+
+  void enableAPNS(String senderId){
+    _enableAPNS = true;
+    _apnsSenderId = senderId;
+  }
+
+  /// @nodoc
+  Map convertToMap(){
+    var map = Map();
+    map.putIfAbsent("enableVivoPush", ()=> _enableVivoPush );
+    map.putIfAbsent("enableMeiZuPush", ()=> _enableMeiZuPush );
+    map.putIfAbsent("enableMiPush", ()=> _enableMiPush );
+    map.putIfAbsent("enableOppoPush", ()=> _enableOppoPush );
+    map.putIfAbsent("enableHWPush", ()=> _enableHWPush );
+    map.putIfAbsent("enableFCM", ()=> _enableFCM );
+    map.putIfAbsent("enableAPNS", ()=> _enableAPNS );
+    map.putIfAbsent("miAppId", ()=> _miAppId );
+    map.putIfAbsent("miAppKey", ()=> _miAppKey );
+    map.putIfAbsent("mzAppId", ()=> _mzAppId );
+    map.putIfAbsent("mzAppKey", ()=> _mzAppKey );
+    map.putIfAbsent("oppoAppKey", ()=> _oppoAppKey );
+    map.putIfAbsent("oppoAppSecret", ()=> _oppoAppSecret );
+    map.putIfAbsent("fcmSenderId", ()=> _fcmSenderId );
+    map.putIfAbsent("apnsSenderId", ()=> _apnsSenderId );
+    return map;
+  }
+
+}
 
 /// EMMessage - various types of message
 class EMMessage {
