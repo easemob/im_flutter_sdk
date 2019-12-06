@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/ease_user_info.dart';
+import 'package:im_flutter_sdk_example/utils/style.dart';
+import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/widgets/bottom_input_bar.dart';
 
@@ -27,6 +29,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   int _pageSize = 10;
   bool isLoad = false;
   bool isJoinRoom = false;
+  bool _isDark;
+  bool _singleChat;
   String msgStartId = '';
   String afterLoadMessageId = '';
 
@@ -44,7 +48,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   Widget build(BuildContext context) {
-
+    _isDark = ThemeUtils.isDark(context);
     if(messageList.length > 0 ){
       messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
       if(!isLoad){
@@ -60,9 +64,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     return Scaffold(
         appBar:AppBar(
-          title: Text(this.user.userId, style: TextStyle(color: Colors.black)),
+          title: Text(this.user.userId, style: TextStyle(color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
           centerTitle: true,
-          backgroundColor: Colors.white,
+          backgroundColor:ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
           leading: Builder(builder:(BuildContext context){
             return IconButton(
               icon: new Icon(Icons.arrow_back,color: Colors.black),
@@ -75,14 +79,21 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
             // 隐藏的菜单
             new PopupMenuButton<String>(
               icon: new Icon(Icons.more_vert,color: Colors.black,),
-              itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
+              itemBuilder: _singleChat == true ?
+              (BuildContext context) => <PopupMenuItem<String>>[
+                this.SelectView(Icons.delete, '删除记录', 'A'),]
+                  :
+              (BuildContext context) => <PopupMenuItem<String>>[
                 this.SelectView(Icons.delete, '删除记录', 'A'),
-              ],
+                this.SelectView(Icons.people, '查看详情', 'B'),] ,
               onSelected: (String action) {
                 // 点击选项的时候
                 switch (action) {
                   case 'A':
                     _cleanAllMessage();
+                    break;
+                  case 'B':
+                    _viewDetails();
                     break;
                 }
               },
@@ -90,6 +101,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
           ],
         ),
         body: Container(
+          color: _isDark ? EMColor.darkBorderLine : EMColor.borderLine,
           child: Stack(
             children: <Widget>[
               SafeArea(
@@ -125,13 +137,14 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
                   ],
                 ),
               ),
-//              _buildExtraCenterWidget(),
+//              _buildActionWidget(),
             ],
           ),
         )
     );
   }
 
+  // ignore: non_constant_identifier_names
   SelectView(IconData icon, String text, String id) {
     return new PopupMenuItem<String>(
         value: id,
@@ -160,6 +173,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     mType = arguments["mType"];
     toChatUsername = arguments["toChatUsername"];
 
+    //增加加号扩展栏的 widget
+    _initExtWidgets();
+
+    if(fromChatType(mType) == ChatType.Chat){
+      _singleChat = true;
+    }
+
     if(fromChatType(mType) == ChatType.ChatRoom && !isJoinRoom){
       _joinChatRoom();
     }
@@ -180,9 +200,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     messageList.clear();
     conversation = await EMClient.getInstance().chatManager().
     getConversation(id:toChatUsername,type:fromEMConversationType(mType),createIfNotExists:true );
-    conversation.markAllMessagesAsRead();
 
-    if(null != conversation){
+    if(conversation != null){
       conversation.markAllMessagesAsRead();
       msgListFromDB = await conversation.loadMoreMsgFromDB(startMsgId: '', pageSize: 20);
     }
@@ -227,6 +246,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         });
   }
 
+  ///清除记录
   _cleanAllMessage(){
      if(null != conversation){
         conversation.clearAllMessages();
@@ -235,6 +255,16 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
           messageTotalList = [];
         });
      }
+  }
+
+  ///查看详情
+  _viewDetails() async{
+    switch(fromChatType(mType)){
+      case ChatType.GroupChat:
+        break;
+      case ChatType.ChatRoom:
+        break;
+    }
   }
 
   /// 禁止随意调用 setState 接口刷新 UI，必须调用该接口刷新 UI
@@ -247,6 +277,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     if(showExtWidget) {
       return Container(
           height: 110,
+          color: _isDark ? EMColor.darkBorderLine : EMColor.unreadCount,
           child: GridView.count(
             physics: new NeverScrollableScrollPhysics(),
             crossAxisCount: 4,
@@ -272,6 +303,17 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         onError: (int errorCode,String errorString){
           print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
         });
+  }
+
+  void _initExtWidgets(){
+    Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',false,() async {
+      WidgetUtil.hintBoxWithDefault('视频通话待实现!');
+    });
+    Widget locationWidget = WidgetUtil.buildExtentionWidget('images/location.png','位置',false,() async {
+      WidgetUtil.hintBoxWithDefault('发送位置消息待实现!');
+    });
+    extWidgetList.add(videoWidget);
+    extWidgetList.add(locationWidget);
   }
 
 
@@ -418,9 +460,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   @override
-  void onTapItemVideo() {
+  void onTapItemFile() {
     // TODO: implement onTapItemVideo
-    WidgetUtil.hintBoxWithDefault('视频通话待实现!');
+    WidgetUtil.hintBoxWithDefault('选择文件待实现!');
   }
 
   @override
