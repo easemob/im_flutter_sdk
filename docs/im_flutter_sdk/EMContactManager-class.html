@@ -113,32 +113,11 @@
 
     
 
-    <section class="summary offset-anchor" id="constructors">
-      <h2>Constructors</h2>
 
-      <dl class="constructor-summary-list">
-        <dt id="EMContactManager.getInstance" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMContactManager/EMContactManager.getInstance.html">EMContactManager.getInstance</a></span><span class="signature">({<span class="parameter" id="getInstance-param-log"><span>@required</span> <span class="type-annotation">EMLog</span> <span class="parameter-name">log</span></span> })</span>
-        </dt>
-        <dd>
-          
-          <div class="constructor-modifier features">factory</div>
-        </dd>
-      </dl>
-    </section>
-
-    <section class="summary offset-anchor" id="instance-properties">
+    <section class="summary offset-anchor inherited" id="instance-properties">
       <h2>Properties</h2>
 
       <dl class="properties">
-        <dt id="log" class="property">
-          <span class="name"><a href="im_flutter_sdk/EMContactManager/log.html">log</a></span>
-          <span class="signature">&#8594; EMLog</span> 
-        </dt>
-        <dd>
-          
-          <div class="features">final</div>
-</dd>
         <dt id="hashCode" class="property inherited">
           <span class="name"><a href="im_flutter_sdk/EMContactManager/hashCode.html">hashCode</a></span>
           <span class="signature">&#8594; int</span> 
@@ -161,6 +140,67 @@
     <section class="summary offset-anchor" id="instance-methods">
       <h2>Methods</h2>
       <dl class="callables">
+        <dt id="acceptInvitation" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/acceptInvitation.html">acceptInvitation</a></span><span class="signature">(<wbr>{<span class="parameter" id="acceptInvitation-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span>, </span> <span class="parameter" id="acceptInvitation-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(), </span> <span class="parameter" id="acceptInvitation-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          接受加好友的邀请<code>userName</code>.
+如果添加成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
+        <dt id="addContact" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/addContact.html">addContact</a></span><span class="signature">(<wbr>{<span class="parameter" id="addContact-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span>, </span> <span class="parameter" id="addContact-param-reason"><span class="type-annotation">String</span> <span class="parameter-name">reason</span>, </span> <span class="parameter" id="addContact-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(), </span> <span class="parameter" id="addContact-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          添加联系人<code>userName</code> with <code>reason</code>.
+如果添加成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
+        <dt id="addContactListener" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/addContactListener.html">addContactListener</a></span><span class="signature">(<wbr><span class="parameter" id="addContactListener-param-contactListener"><span class="type-annotation"><a href="im_flutter_sdk/EMContactEventListener-class.html">EMContactEventListener</a></span> <span class="parameter-name">contactListener</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          设置好友监听器 <code>contactListener</code>
+          
+</dd>
+        <dt id="addUserToBlackList" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/addUserToBlackList.html">addUserToBlackList</a></span><span class="signature">(<wbr>{<span class="parameter" id="addUserToBlackList-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span>, </span> <span class="parameter" id="addUserToBlackList-param-both"><span class="type-annotation">bool</span> <span class="parameter-name">both</span>: <span class="default-value">false</span>, </span> <span class="parameter" id="addUserToBlackList-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(), </span> <span class="parameter" id="addUserToBlackList-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          把指定用户加入到黑名单中 <code>userName</code> .
+如果<code>both</code>设置为true，则双方都无法向对方发送消息。否则，<code>userName</code>仍然可以接收消息。
+如果加入成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
+        <dt id="declineInvitation" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/declineInvitation.html">declineInvitation</a></span><span class="signature">(<wbr>{<span class="parameter" id="declineInvitation-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span>, </span> <span class="parameter" id="declineInvitation-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(), </span> <span class="parameter" id="declineInvitation-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          拒绝加好友的邀请 <code>userName</code>.
+如果添加成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
+        <dt id="deleteContact" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/deleteContact.html">deleteContact</a></span><span class="signature">(<wbr>{<span class="parameter" id="deleteContact-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span>, </span> <span class="parameter" id="deleteContact-param-keepConversation"><span class="type-annotation">bool</span> <span class="parameter-name">keepConversation</span>: <span class="default-value">false</span>, </span> <span class="parameter" id="deleteContact-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(), </span> <span class="parameter" id="deleteContact-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          删除联系人 <code>userName</code>
+<code>keepConversation</code> true 保留会话和消息  false 不保留
+如果添加成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
         <dt id="getAllContactsFromServer" class="callable">
           <span class="name"><a href="im_flutter_sdk/EMContactManager/getAllContactsFromServer.html">getAllContactsFromServer</a></span><span class="signature">(<wbr>{<span class="parameter" id="getAllContactsFromServer-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(<span class="parameter" id="onSuccess-param-contacts"><span class="type-annotation">List<span class="signature">&lt;<wbr><span class="type-parameter">String</span>&gt;</span></span> <span class="parameter-name">contacts</span></span>), </span> <span class="parameter" id="getAllContactsFromServer-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
             <span class="returntype parameter">&#8594; void</span>
@@ -169,6 +209,44 @@
         <dd>
           从服务器获取所有的好友
 如果获取成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
+        <dt id="getBlackListFromServer" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/getBlackListFromServer.html">getBlackListFromServer</a></span><span class="signature">(<wbr>{<span class="parameter" id="getBlackListFromServer-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(<span class="parameter" id="onSuccess-param-blackList"><span class="type-annotation">List<span class="signature">&lt;<wbr><span class="type-parameter">String</span>&gt;</span></span> <span class="parameter-name">blackList</span></span>), </span> <span class="parameter" id="getBlackListFromServer-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          从服务器获取黑名单中的用户的ID
+如果获取成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
+          
+</dd>
+        <dt id="getBlackListUserNames" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/getBlackListUserNames.html">getBlackListUserNames</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; List<span class="signature">&lt;<wbr><span class="type-parameter">String</span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          从本地获取黑名单中的用户的ID
+          
+</dd>
+        <dt id="removeContactListener" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/removeContactListener.html">removeContactListener</a></span><span class="signature">(<wbr><span class="parameter" id="removeContactListener-param-contactListener"><span class="type-annotation"><a href="im_flutter_sdk/EMContactEventListener-class.html">EMContactEventListener</a></span> <span class="parameter-name">contactListener</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          移除好友监听器  <code>contactListener</code>
+          
+</dd>
+        <dt id="removeUserFromBlackList" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMContactManager/removeUserFromBlackList.html">removeUserFromBlackList</a></span><span class="signature">(<wbr>{<span class="parameter" id="removeUserFromBlackList-param-userName"><span class="type-annotation">String</span> <span class="parameter-name">userName</span>, </span> <span class="parameter" id="removeUserFromBlackList-param-onSuccess"><span class="type-annotation">dynamic</span> <span class="parameter-name">onSuccess</span>(), </span> <span class="parameter" id="removeUserFromBlackList-param-onError"><span class="type-annotation">dynamic</span> <span class="parameter-name">onError</span>(<span class="parameter" id="onError-param-code"><span class="type-annotation">int</span> <span class="parameter-name">code</span>, </span> <span class="parameter" id="onError-param-desc"><span class="type-annotation">String</span> <span class="parameter-name">desc</span></span>)</span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          把用户从黑名单中移除 <code>userName</code>.
+如果移除成功，请调用<code>onSuccess</code>，如果出现错误，请调用<code>onError</code>。
           
 </dd>
         <dt id="noSuchMethod" class="callable inherited">
@@ -214,18 +292,25 @@
 
   <div class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
     <ol>
-      <li class="section-title"><a href="im_flutter_sdk/EMContactManager-class.html#constructors">Constructors</a></li>
-      <li><a href="im_flutter_sdk/EMContactManager/EMContactManager.getInstance.html">getInstance</a></li>
     
-      <li class="section-title">
+      <li class="section-title inherited">
         <a href="im_flutter_sdk/EMContactManager-class.html#instance-properties">Properties</a>
       </li>
-      <li><a href="im_flutter_sdk/EMContactManager/log.html">log</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMContactManager/hashCode.html">hashCode</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMContactManager/runtimeType.html">runtimeType</a></li>
     
       <li class="section-title"><a href="im_flutter_sdk/EMContactManager-class.html#instance-methods">Methods</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/acceptInvitation.html">acceptInvitation</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/addContact.html">addContact</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/addContactListener.html">addContactListener</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/addUserToBlackList.html">addUserToBlackList</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/declineInvitation.html">declineInvitation</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/deleteContact.html">deleteContact</a></li>
       <li><a href="im_flutter_sdk/EMContactManager/getAllContactsFromServer.html">getAllContactsFromServer</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/getBlackListFromServer.html">getBlackListFromServer</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/getBlackListUserNames.html">getBlackListUserNames</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/removeContactListener.html">removeContactListener</a></li>
+      <li><a href="im_flutter_sdk/EMContactManager/removeUserFromBlackList.html">removeUserFromBlackList</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMContactManager/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMContactManager/toString.html">toString</a></li>
     

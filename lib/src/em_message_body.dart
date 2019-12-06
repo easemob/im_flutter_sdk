@@ -40,11 +40,15 @@ class EMCmdMessageBody extends EMMessageBody {
         this.deliverOnlineOnly = false;
 
   final String _action;
+
+  /// 命令内容
   String get action => _action;
 
+  /// 是否只发在线
   bool deliverOnlineOnly;
 
   @override
+  /// @nodoc
   Map toDataMap() {
     var result = {};
     result['action'] = _action;
@@ -52,6 +56,7 @@ class EMCmdMessageBody extends EMMessageBody {
     return result;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map data) {
     var message = EMCmdMessageBody(data['action']);
     message.deliverOnlineOnly = data['deliverOnlineOnly'];
@@ -84,14 +89,26 @@ abstract class EMFileMessageBody extends EMMessageBody {
 
   EMMessageBody _body;
 
+  /// 文件名称
   String displayName;
+
+  /// 文件下载状态
   EMDownloadStatus downloadStatus;
+
+  /// 文件名称
   String fileName;
+
+  /// 文件本地路径
   String localUrl;
+
+  /// 文件服务器路径
   String remoteUrl;
+
+  /// @nodoc secret
   String secret;
 
   @override
+  /// @nodoc
   String toString() =>
       '[EMFileMessageBody], {displayName: $displayName, fileName: $fileName,'
       'localUrl: $localUrl, remoteUrl: $remoteUrl, secret: $secret,'
@@ -99,6 +116,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
 
 
   @override
+  /// @nodoc
   Map toDataMap() {
     var result = {};
     result['displayName'] = displayName;
@@ -121,8 +139,13 @@ class EMLocationMessageBody extends EMMessageBody {
         this._body = body;
 
   EMLocationMessageBody _body;
+  /// 地址
   final String address;
+
+  /// 纬度
   final double latitude;
+
+  /// 经度
   final double longitude;
 
   @override
@@ -173,15 +196,30 @@ class EMImageMessageBody extends EMFileMessageBody {
         this.thumbnailUrl = data["thumbnailUrl"],
         super.ofData(data);
 
+  /// 大图文件
   File _imageFile;
+
+  /// 缩略图文件
   File _thumbnailFile;
 
+  /// 高度
   int height;
-  bool sendOriginalImage;
-  String thumbnailLocalPath;
-  String thumbnailSecret;
-  String thumbnailUrl;
+
+  /// 宽度
   int width;
+
+  /// @nodoc 是否发送原图
+  bool sendOriginalImage;
+
+  /// 缩略图路径
+  String thumbnailLocalPath;
+
+  /// @nodoc
+  String thumbnailSecret;
+
+  /// 缩略图远端地址
+  String thumbnailUrl;
+
 
   void setThumbnailSize(int width, int height) {
     this.width = width;
@@ -189,15 +227,18 @@ class EMImageMessageBody extends EMFileMessageBody {
   }
 
   @override
+  /// 文件名称
   String get fileName => _imageFile.path;
 
   @override
+  /// @nodoc
   String toString() =>
       '[EMImageMessageBody], {fileName: $fileName, :$width, height: $height,'
       'thumbnailLocalPath: $thumbnailLocalPath, thumbnailSecret: $thumbnailSecret, thumbnailUrl: $thumbnailUrl,'
       'sendOriginalImage: $sendOriginalImage }';
 
   @override
+  /// @nodoc
   Map toDataMap() {
     var result = Map.of(super.toDataMap());
     result["height"] = height;
@@ -209,6 +250,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     return result;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map<String, dynamic> data) {
     return EMImageMessageBody._internal(data);
   }
@@ -227,6 +269,7 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
   final File _file;
   int _fileSize;
 
+  /// 文件大小
   Future<int> get fileSize async {
     //lazy load file size
     if (_fileSize == null) {
@@ -236,15 +279,18 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
   }
 
   @override
+  /// @nodoc
   String toString() => '[EMNormalFileMessageBody], {fileSize: $fileSize}';
 
   @override
+  /// @nodoc
   Map toDataMap() {
     var result = Map.of(super.toDataMap());
     result["fileSize"] = _fileSize;
     return result;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map<String, dynamic> data) {
     return EMNormalFileMessageBody._internal(data);
   }
@@ -252,6 +298,7 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
 
 class EMVoiceMessageBody extends EMFileMessageBody {
   EMVoiceMessageBody(File voiceFile, int duration)
+
       : this._file = voiceFile,
         this._length = duration,
         super(voiceFile.path);
@@ -269,6 +316,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   final File _file;
   int _length;
 
+  /// 文件时长
   Future<int> get length async {
     if (_length == null) {
       _length = await _file.length();
@@ -277,21 +325,24 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   }
 
   @override
+  /// @nodoc
   String toString() => '[EMVoiceMessageBody], {length: $length}';
 
   @override
+
+  /// @nodoc
   Map toDataMap() {
     var result = Map.of(super.toDataMap());
     result["voiceDuration"] = _length;
     return result;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map<String, dynamic> data) {
     return EMVoiceMessageBody._internal(data);
   }
 }
 
-/// TODO: class EMVideoMessageBody extends EMFileMessageBody {}
 class EMVideoMessageBody extends EMFileMessageBody {
   EMVideoMessageBody(File videoFilePath, int duration)
       : this._file = videoFilePath,
@@ -311,6 +362,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
   var _file;
   var _length;
 
+  /// 文件时长
   Future<int> get length async {
     if (_length == null) {
       _length = await _file.length();
@@ -318,11 +370,13 @@ class EMVideoMessageBody extends EMFileMessageBody {
     return _length;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map data) {
     return EMVideoMessageBody._internal(data);
   }
 
   @override
+  /// @nodoc
   Map toDataMap() {
     var result = Map.of(super.toDataMap());
     result["videoDuration"] = _length;
