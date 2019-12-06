@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/ease_user_info.dart';
-import 'package:im_flutter_sdk_example/pages/chatroom_details_page.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
