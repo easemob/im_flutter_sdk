@@ -11,21 +11,27 @@ class EMConversation {
   static const MethodChannel _emConversationChannel =
   const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
   final String _conversationId;
+
+  /// 会话id
   String get conversationId => _conversationId;
   EMConversationType _type;
+
+  /// 会话类型
   EMConversationType get type => _type;
 
+  /// 会话扩展
   String extField;
 
   EMConversation({@required String conversationId})
       : _conversationId = conversationId;
 
+  /// @nodoc
   EMConversation.from(Map data)
       : _conversationId = data['id'],
         _type = fromEMConversationType(data['type']),
         extField = data['ext'];
 
-  /// @nodoc 获取此对话中未读取的消息数量.
+  /// 获取此对话中未读取的消息数量.
   Future<int> getUnreadMsgCount() async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.getUnreadMsgCount, {"id": _conversationId});
@@ -35,7 +41,7 @@ class EMConversation {
     return -1; //-1 means error/unknown
   }
 
-  /// @nodoc 将所有未读消息设置为已读.
+  /// 将所有未读消息设置为已读.
   void markAllMessagesAsRead() {
     _emConversationChannel.invokeMethod(
         EMSDKMethod.markAllMessagesAsRead, {"id": _conversationId});
@@ -61,12 +67,12 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc 根据传入的参数从本地存储中搜索指定数量的消息
-  /// @nodoc [type] 消息类型，文本、图片、语音等等
-  /// @nodoc [keywords], 搜索消息中的关键词
-  /// @nodoc [timeStamp],搜索消息的时间点
-  /// @nodoc [maxCount] 搜索结果的最大条数
-  /// @nodoc [direction]. 方向
+  /// 根据传入的参数从本地存储中搜索指定数量的消息
+  /// [type] 消息类型，文本、图片、语音等等
+  /// [keywords], 搜索消息中的关键词
+  /// [timeStamp],搜索消息的时间点
+  /// [maxCount] 搜索结果的最大条数
+  /// [direction]. 方向
   Future<List<EMMessage>> searchMsgFromDB(
       {final EMMessageType type,
         final String keywords,
@@ -93,7 +99,7 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc 搜索来自DB的消息，类型为[type]，匹配[keywords]，在[timeStamp]之后，[maxCount]返回的大多数消息，方向为[direction]。
+  /// 搜索来自DB的消息，类型为[type]，匹配[keywords]，在[timeStamp]之后，[maxCount]返回的大多数消息，方向为[direction]。
   Future<List<EMMessage>> searchMsgFromDBByType(
       {final EMMessageType type,
         final String keywords,
@@ -119,7 +125,7 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc 通过[mesasgeId]获取消息，[markAsRead] 将其设置为已读.
+  /// 通过[mesasgeId]获取消息，[markAsRead] 将其设置为已读.
   Future<EMMessage> getMessage(
       {@required final String messageId, final bool markAsRead = true}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -150,13 +156,13 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc 将消息[messageId]标记为已读。
+  /// 将id是[messageId]的消息标记为已读。
   void markMessageAsRead({@required final String messageId}) {
     _emConversationChannel.invokeMethod(EMSDKMethod.markMessageAsRead,
         {"id": _conversationId, "messageId": messageId});
   }
 
-  /// @nodoc 从对话中删除消息[messageId]。
+  /// 从对话中删除id是[messageId]的消息。
   void removeMessage({@required String messageId}) {
     _emConversationChannel.invokeMethod(EMSDKMethod.removeMessage,
         {"id": _conversationId, "messageId": messageId});
@@ -172,7 +178,7 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc 获取其他人发送的最新消息。
+  /// 获取其他人发送的最新消息。
   Future<EMMessage> getLatestMessageFromOthers() async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.getLatestMessageFromOthers, {"id": _conversationId});
@@ -182,36 +188,36 @@ class EMConversation {
     return null;
   }
 
-  /// @nodoc 清除对话中的所有消息，只清除内存的，不清除db的消息 在退出会话的时候清除内存缓存，减小内存消耗
+  /// 清除对话中的所有消息，只清除内存的，不清除db的消息 在退出会话的时候清除内存缓存，减小内存消耗
   void clear() {
     _emConversationChannel
         .invokeMethod(EMSDKMethod.clear, {"id": _conversationId});
   }
 
-  /// @nodoc 删除该会话所有消息，同时清除内存和数据库中的消息
+  /// 删除该会话所有消息，同时清除内存和数据库中的消息
   void clearAllMessages() {
     _emConversationChannel
         .invokeMethod(EMSDKMethod.clearAllMessages, {"id": _conversationId});
   }
 
-  /// @nodoc 群组和聊天室类型都会返回true
+  /// 群组和聊天室类型都会返回true
   bool isGroup() {
     return EMConversationType.GroupChat == type;
   }
 
-  /// @nodoc 插入一条消息[msg]
+  /// 插入一条消息[msg]
   void insertMessage(EMMessage msg) {
     _emConversationChannel.invokeMethod(EMSDKMethod.insertMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }
 
-  /// @nodoc 插入一条消息到会话尾部[msg]
+  /// 插入一条消息到会话尾部[msg]
   void appendMessage(EMMessage msg) {
     _emConversationChannel.invokeMethod(EMSDKMethod.appendMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }
 
-  /// @nodoc 更新本地的消息[msg]
+  /// 更新本地的消息[msg]
   Future<bool> updateMessage(EMMessage msg) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.updateConversationMessage,

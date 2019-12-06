@@ -281,7 +281,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   @override
-  void onMessageChanged(EMMessage message, Object change) {
+  void onMessageChanged(EMMessage message) {
     // TODO: implement onMessageChanged
   }
 

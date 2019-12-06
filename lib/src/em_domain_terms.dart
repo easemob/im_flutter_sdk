@@ -493,8 +493,12 @@ class EMMessage {
     }
   }
 
+
 class EMContact {
+  /// 环信id
   final String userName;
+
+  /// @nodoc 昵称(暂未实现)
   String nickName;
 
   EMContact({@required String userName}) : userName = userName;
@@ -555,8 +559,14 @@ enum EMDownloadStatus { DOWNLOADING, SUCCESSED, FAILED, PENDING }
 
 /// EMDeviceInfo - device info.
 class EMDeviceInfo {
+
+  /// 设备资源描述
   final String resource;
+
+  /// 设备的UUID
   final String deviceUUID;
+
+  /// 设备名称
   final String deviceName;
 
   EMDeviceInfo(String resource, String deviceUUID, String deviceName)
@@ -565,7 +575,7 @@ class EMDeviceInfo {
         deviceName = deviceName;
 }
 
-/// EMCheckType - check type enumeration.
+/// @nodoc EMCheckType - check type enumeration.
 enum EMCheckType {
   ACCOUNT_VALIDATION,
   GET_DNS_LIST_FROM_SERVER,
@@ -580,6 +590,7 @@ enum EMSearchDirection { Up, Down }
 
 /// EMCursorResult - Cursor result for iteration.
 abstract class EMCursorResults<T> {
+  /// 获取cursor
   Future<T> getCursor();
 }
 

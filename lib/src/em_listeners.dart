@@ -1,12 +1,18 @@
 import "em_domain_terms.dart";
 
 abstract class EMConnectionListener {
+  /// 网络已连接
   void onConnected();
+
+  /// 连接失败，原因是[errorCode]
   void onDisconnected(int errorCode);
 }
 
 abstract class EMMultiDeviceListener {
+  /// @nodoc
   void onContactEvent(EMContactGroupEvent event, String target, String ext);
+
+  /// @nodoc
   void onGroupEvent(
       EMContactGroupEvent event, String target, List<String> usernames);
 }
@@ -42,10 +48,20 @@ enum EMContactGroupEvent {
 }
 
 abstract class EMContactEventListener {
+
+  /// 被[userName]添加为好友
   void onContactAdded(String userName);
+
+  /// 被[userName]从好友中删除
   void onContactDeleted(String userName);
+
+  /// 收到[userName]的好友申请，原因是[reason]
   void onContactInvited(String userName, String reason);
+
+  /// 发出的好友申请被[userName]同意
   void onFriendRequestAccepted(String userName);
+
+  /// 发出的好友申请被[userName]拒绝
   void onFriendRequestDeclined(String userName);
 }
 

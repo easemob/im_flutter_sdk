@@ -152,33 +152,6 @@
     <section class="summary offset-anchor" id="instance-methods">
       <h2>Methods</h2>
       <dl class="callables">
-        <dt id="onAdminAdded" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onAdminAdded.html">onAdminAdded</a></span><span class="signature">(<wbr><span class="parameter" id="onAdminAdded-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onAdminAdded-param-admin"><span class="type-annotation">String</span> <span class="parameter-name">admin</span></span>)
-            <span class="returntype parameter">&#8594; void</span>
-          </span>
-          </dt>
-        <dd>
-          
-          
-</dd>
-        <dt id="onAdminRemoved" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onAdminRemoved.html">onAdminRemoved</a></span><span class="signature">(<wbr><span class="parameter" id="onAdminRemoved-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onAdminRemoved-param-admin"><span class="type-annotation">String</span> <span class="parameter-name">admin</span></span>)
-            <span class="returntype parameter">&#8594; void</span>
-          </span>
-          </dt>
-        <dd>
-          
-          
-</dd>
-        <dt id="onAnnouncementChanged" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onAnnouncementChanged.html">onAnnouncementChanged</a></span><span class="signature">(<wbr><span class="parameter" id="onAnnouncementChanged-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onAnnouncementChanged-param-announcement"><span class="type-annotation">String</span> <span class="parameter-name">announcement</span></span>)
-            <span class="returntype parameter">&#8594; void</span>
-          </span>
-          </dt>
-        <dd>
-          
-          
-</dd>
         <dt id="onChatRoomDestroyed" class="callable">
           <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onChatRoomDestroyed.html">onChatRoomDestroyed</a></span><span class="signature">(<wbr><span class="parameter" id="onChatRoomDestroyed-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onChatRoomDestroyed-param-roomName"><span class="type-annotation">String</span> <span class="parameter-name">roomName</span></span>)
             <span class="returntype parameter">&#8594; void</span>
@@ -206,40 +179,13 @@
           有用户<code>participant</code>加入id是<code>roomId</code>的聊天室
           
 </dd>
-        <dt id="onMuteListAdded" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onMuteListAdded.html">onMuteListAdded</a></span><span class="signature">(<wbr><span class="parameter" id="onMuteListAdded-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onMuteListAdded-param-mutes"><span class="type-annotation">List</span> <span class="parameter-name">mutes</span>, </span> <span class="parameter" id="onMuteListAdded-param-expireTime"><span class="type-annotation">String</span> <span class="parameter-name">expireTime</span></span>)
-            <span class="returntype parameter">&#8594; void</span>
-          </span>
-          </dt>
-        <dd>
-          
-          
-</dd>
-        <dt id="onMuteListRemoved" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onMuteListRemoved.html">onMuteListRemoved</a></span><span class="signature">(<wbr><span class="parameter" id="onMuteListRemoved-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onMuteListRemoved-param-mutes"><span class="type-annotation">List</span> <span class="parameter-name">mutes</span></span>)
-            <span class="returntype parameter">&#8594; void</span>
-          </span>
-          </dt>
-        <dd>
-          
-          
-</dd>
-        <dt id="onOwnerChanged" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onOwnerChanged.html">onOwnerChanged</a></span><span class="signature">(<wbr><span class="parameter" id="onOwnerChanged-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onOwnerChanged-param-newOwner"><span class="type-annotation">String</span> <span class="parameter-name">newOwner</span>, </span> <span class="parameter" id="onOwnerChanged-param-oldOwner"><span class="type-annotation">String</span> <span class="parameter-name">oldOwner</span></span>)
-            <span class="returntype parameter">&#8594; void</span>
-          </span>
-          </dt>
-        <dd>
-          
-          
-</dd>
         <dt id="onRemovedFromChatRoom" class="callable">
           <span class="name"><a href="im_flutter_sdk/EMChatRoomEventListener/onRemovedFromChatRoom.html">onRemovedFromChatRoom</a></span><span class="signature">(<wbr><span class="parameter" id="onRemovedFromChatRoom-param-reason"><span class="type-annotation">int</span> <span class="parameter-name">reason</span>, </span> <span class="parameter" id="onRemovedFromChatRoom-param-roomId"><span class="type-annotation">String</span> <span class="parameter-name">roomId</span>, </span> <span class="parameter" id="onRemovedFromChatRoom-param-roomName"><span class="type-annotation">String</span> <span class="parameter-name">roomName</span>, </span> <span class="parameter" id="onRemovedFromChatRoom-param-participant"><span class="type-annotation">String</span> <span class="parameter-name">participant</span></span>)
             <span class="returntype parameter">&#8594; void</span>
           </span>
           </dt>
         <dd>
-          
+          用用户<code>participant</code>被id是<code>roomId</code>,名称<code>roomName</code>的聊天室删除，删除原因是<code>reason</code>
           
 </dd>
         <dt id="noSuchMethod" class="callable inherited">
@@ -295,15 +241,9 @@
       <li class="inherited"><a href="im_flutter_sdk/EMChatRoomEventListener/runtimeType.html">runtimeType</a></li>
     
       <li class="section-title"><a href="im_flutter_sdk/EMChatRoomEventListener-class.html#instance-methods">Methods</a></li>
-      <li><a href="im_flutter_sdk/EMChatRoomEventListener/onAdminAdded.html">onAdminAdded</a></li>
-      <li><a href="im_flutter_sdk/EMChatRoomEventListener/onAdminRemoved.html">onAdminRemoved</a></li>
-      <li><a href="im_flutter_sdk/EMChatRoomEventListener/onAnnouncementChanged.html">onAnnouncementChanged</a></li>
       <li><a href="im_flutter_sdk/EMChatRoomEventListener/onChatRoomDestroyed.html">onChatRoomDestroyed</a></li>
       <li><a href="im_flutter_sdk/EMChatRoomEventListener/onMemberExited.html">onMemberExited</a></li>
       <li><a href="im_flutter_sdk/EMChatRoomEventListener/onMemberJoined.html">onMemberJoined</a></li>
-      <li><a href="im_flutter_sdk/EMChatRoomEventListener/onMuteListAdded.html">onMuteListAdded</a></li>
-      <li><a href="im_flutter_sdk/EMChatRoomEventListener/onMuteListRemoved.html">onMuteListRemoved</a></li>
-      <li><a href="im_flutter_sdk/EMChatRoomEventListener/onOwnerChanged.html">onOwnerChanged</a></li>
       <li><a href="im_flutter_sdk/EMChatRoomEventListener/onRemovedFromChatRoom.html">onRemovedFromChatRoom</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMChatRoomEventListener/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMChatRoomEventListener/toString.html">toString</a></li>

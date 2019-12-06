@@ -75,34 +75,42 @@ class EMGroup{
     _isPushNotificationEnabled = data['isPushNotificationEnabled'];
   }
 
+  /// 群id
   String getGroupId() {
     return _groupId;
   }
 
+  /// 群名称
   String getGroupName(){
     return _groupName;
   }
 
+  /// 群描述
   String getDescription(){
     return _description;
   }
 
+  /// 是否是公开群
   bool isPublic(){
     return _isPublic;
   }
 
+  /// 是否需要成员邀请
   bool isMemberAllowToInvite(){
     return _isMemberAllowToInvite;
   }
 
+  /// @nodoc TODO: 需要明确这个在什么场景下生效
   bool isMemberOnly(){
     return _isMemberOnly;
   }
 
+  /// 群人数上限
   int getMaxUserCount(){
     return _maxUserCount;
   }
 
+  /// 是否免打扰
   bool isMsgBlocked(){
     return _isMsgBlocked;
   }
