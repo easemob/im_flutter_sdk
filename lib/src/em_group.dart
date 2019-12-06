@@ -41,11 +41,34 @@ class EMGroup{
 
   List<EMMucSharedFile> _sharedFileList;
 
-  List _occupants;
+  List _occupants ;
 
   EMGroupPermissionType _permissionType;
 
   bool _isPushNotificationEnabled;
+
+
+  EMGroup():
+        _groupId = '',
+        _groupName = 'groupName',
+        _description = '',
+        _isPublic = false,
+        _isMemberAllowToInvite = false,
+        _isMemberOnly = false,
+        _maxUserCount = 200,
+        _isMsgBlocked = false,
+        _owner = '',
+        _members = [],
+        _memberCount = 0,
+        _adminList = [],
+        _blackList = [],
+        _muteList = [],
+        _extension = '',
+        _announcement = '',
+        _sharedFileList = [],
+        _occupants = [],
+        _permissionType = EMGroupPermissionType.EMGroupPermissionTypeNone,
+        _isPushNotificationEnabled = false;
 
   /// @nodoc
   EMGroup.from(Map<String, dynamic> data){
