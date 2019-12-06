@@ -201,6 +201,7 @@ class EMGroupManager{
       if (response['success']) {
         if (onSuccess != null) {
           if(response['value'] != null) {
+            print(response['value']);
             onSuccess(EMGroup.from(response['value']));
           }else{
             onSuccess(null);
@@ -524,10 +525,17 @@ class EMGroupManager{
 
   /// 获取群组成员列表
   void fetchGroupMembers({
+<<<<<<< HEAD
     final String groupId,
     final String cursor,
     final int pageSize,
     onSuccess(EMCursorResult result),
+=======
+    @required String groupId,
+    @required String cursor,
+    @required int pageSize,
+    onSuccess(EMCursorResult<String> result),
+>>>>>>> easemob/dev
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.fetchGroupMembers, {"groupId" : groupId, "cursor" : cursor, "pageSize" : pageSize});
@@ -535,8 +543,15 @@ class EMGroupManager{
       if (response['success']) {
         if (onSuccess != null) {
           if(response['value'] != null) {
+            List<String> list = [];
             var value = response['value'] as Map<String, dynamic>;
-            onSuccess(EMCursorResult.from(value));
+            EMCursorResult emCursorResult = EMCursorResult.from(value);
+            emCursorResult.getData().forEach((item) => list.add(item));
+
+            EMCursorResult<String> cursorResult = EMCursorResult.from(Map());
+            cursorResult.setData(list);
+            cursorResult.setCursor(emCursorResult.getCursor());
+            onSuccess(cursorResult);
           }else{
             onSuccess(null);
           }
@@ -666,10 +681,17 @@ class EMGroupManager{
 
   ///  获取群组的禁言列表
   void fetchGroupMuteList({
+<<<<<<< HEAD
     final String groupId,
     final int pageNum,
     final int pageSize,
     onSuccess(List list),
+=======
+    @required String groupId,
+    @required int pageNum,
+    @required int pageSize,
+    onSuccess(List<String> muteList),
+>>>>>>> easemob/dev
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -677,11 +699,13 @@ class EMGroupManager{
     result.then((response) {
       if (response['success']) {
         if (onSuccess != null) {
+          var data = List<String>();
           if (response['value'] != null) {
-            var muteList = response['value'] as List<dynamic>;
-            onSuccess(muteList);
+            var list = response['value'] as List<dynamic>;
+            list.forEach((item) => data.add(item));
+            onSuccess(data);
           } else {
-            onSuccess(null);
+            onSuccess(data);
           }
         }
       } else {
@@ -692,10 +716,17 @@ class EMGroupManager{
 
   /// 从服务器获分页获取群组黑名单
   void fetchGroupBlackList({
+<<<<<<< HEAD
     final String groupId,
     final int pageNum,
     final int pageSize,
     onSuccess(List list),
+=======
+    @required String groupId,
+    @required int pageNum,
+    @required int pageSize,
+    onSuccess(List<String> blackList),
+>>>>>>> easemob/dev
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -706,9 +737,7 @@ class EMGroupManager{
           var data = List<String>();
           if(response['value'] != null) {
             var users = response['value'] as List<dynamic>;
-            for (var user in users) {
-              data.add(user);
-            }
+            users.forEach((user) => data.add(user));
             onSuccess(data);
           }else{
             onSuccess(data);
@@ -800,7 +829,7 @@ class EMGroupManager{
             }
             onSuccess(data);
           }else{
-            onSuccess(null);
+            onSuccess(data);
           }
         }
       } else {
