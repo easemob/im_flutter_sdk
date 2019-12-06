@@ -173,7 +173,6 @@
         [self wrapperCallBack:result
                         error:aError
                      userInfo:@{@"value":aResult.list}];
-
     }];
 }
 
