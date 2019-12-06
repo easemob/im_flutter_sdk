@@ -18,14 +18,16 @@ class EMClient {
   static const MethodChannel _emClientChannel =
       const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
 
+  /// @nodoc
   static final EMLog _log = EMLog();
+
   final EMChatManager _chatManager = EMChatManager.getInstance(log: _log);
-  final EMContactManager _contactManager =
-      EMContactManager.getInstance(log: _log);
+
+  final EMContactManager _contactManager =  EMContactManager.getInstance(log: _log);
+
   final EMChatRoomManager _chatRoomManager = EMChatRoomManager.getInstance();
 
-  final EMGroupManager _groupManager =
-  EMGroupManager.getInstance(log: _log);
+  final EMGroupManager _groupManager =  EMGroupManager.getInstance(log: _log);
 
 
   final _connectionListeners = List<EMConnectionListener>();
@@ -42,11 +44,12 @@ class EMClient {
     return _instance = _instance ?? EMClient._internal();
   }
 
-  /// private constructor
+  /// @nodoc private constructor
   EMClient._internal() {
     _addNativeMethodCallHandler();
   }
 
+  /// @nodoc
   void _addNativeMethodCallHandler() {
     _emClientChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
