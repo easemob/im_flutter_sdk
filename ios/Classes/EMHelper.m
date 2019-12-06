@@ -416,12 +416,22 @@
 
 + (NSDictionary *)groupSharedFileToDictionary:(EMGroupSharedFile *)sharedFile
 {
-    NSDictionary *sharedFileDict = @{@"fileId":sharedFile.fileId,
-                                     @"fileName":sharedFile.fileName,
-                                     @"fileOwner":sharedFile.fileOwner,
-                                     @"createTime":[NSNumber numberWithLongLong:sharedFile.createTime],
-                                     @"fileSize":[NSNumber numberWithLongLong:sharedFile.fileSize]
-                                    };
+    NSMutableDictionary *sharedFileDict = [NSMutableDictionary dictionary];
+    if (sharedFile.fileId) {
+        sharedFileDict[@"fileId"] = sharedFile.fileId;
+    }
+    if (sharedFile.fileName) {
+        sharedFileDict[@"fileName"] = sharedFile.fileName;
+    }
+    if (sharedFile.fileOwner) {
+        sharedFileDict[@"fileOwner"] = sharedFile.fileOwner;
+    }
+    if (sharedFile.createTime) {
+        sharedFileDict[@"createTime"] = [NSNumber numberWithLongLong:sharedFile.createTime];
+    }
+    if (sharedFile.fileSize) {
+        sharedFileDict[@"fileSize"] = [NSNumber numberWithLongLong:sharedFile.fileSize];
+    }
     return sharedFileDict;
 }
 
@@ -448,8 +458,6 @@
     } else if (permissionType == EMChatroomPermissionTypeOwner){
         type = 2;
     }
-    
-    // @"permissionType":[NSNumber numberWithInt:type],
     
     NSMutableDictionary *chatRoomDitc = [NSMutableDictionary dictionary];
     if (aChatRoom.chatroomId) {
