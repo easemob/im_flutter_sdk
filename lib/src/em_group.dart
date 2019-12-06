@@ -47,7 +47,6 @@ class EMGroup{
 
   bool _isPushNotificationEnabled;
 
-
   EMGroup():
         _groupId = '',
         _groupName = 'groupName',
