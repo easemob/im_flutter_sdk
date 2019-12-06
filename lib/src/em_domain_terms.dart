@@ -254,7 +254,7 @@ class EMMessage {
       : this(
             direction: Direction.SEND,
             type: EMMessageType.VIDEO,
-            body: EMVideoMessageBody(File(videoFilePath),timeLength),
+            body: EMVideoMessageBody(File(filePath),timeLength),
             to: userName);
 
   /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
