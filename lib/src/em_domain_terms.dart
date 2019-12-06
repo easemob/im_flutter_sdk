@@ -195,6 +195,40 @@ class EMOptions {
   }
 }
 
+//class EMPushConfig{
+//
+//  bool _enableVivoPush;
+//  bool _enableMeiZuPush;
+//  bool _enableMiPush;
+//  bool _enableOppoPush;
+//  bool _enableHWPush;
+//  bool _enableFCM;
+//
+//  void enableVivoPush(){
+//    _enableVivoPush = true;
+//  }
+//
+//  void enableMeiZuPush(String appId, String appKey){
+//    _enableMeiZuPush = true;
+//  }
+//
+//  void enableMiPush(String appId, String appKey){
+//    _enableMiPush = true;
+//  }
+//
+//  void enableOppoPush(String appKey, String appSecret){
+//    _enableOppoPush = true;
+//  }
+//
+//  void enableHWPush(){
+//    _enableHWPush = true;
+//  }
+//
+//  void enableFCM(String senderId){
+//    _enableFCM = true;
+//  }
+//}
+
 /// EMMessage - various types of message
 class EMMessage {
   EMMessage({

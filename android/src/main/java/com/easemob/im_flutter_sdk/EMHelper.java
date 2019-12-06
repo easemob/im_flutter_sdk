@@ -653,6 +653,12 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("cursor", emCursorResult.getCursor());
         List list = (List)emCursorResult.getData();
+        if(list.size() == 0){
+            list = new LinkedList();
+            result.put("data", list);
+            return result;
+        }
+
         String className = list.get(0).getClass().getSimpleName();
         if(className.equals("String")){
             result.put("data", list);
