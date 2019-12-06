@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
@@ -48,20 +49,25 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
       BottomNavigationBarItem(icon: new Icon(Icons.apps,),activeIcon: new Icon(Icons.apps,),title: new Text(DemoLocalizations.of(context).find),),
       BottomNavigationBarItem(icon: new Icon(Icons.face,),activeIcon: new Icon(Icons.face,),title: new Text(DemoLocalizations.of(context).mine),),
     ];
-    return Scaffold(
-          bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
-            items: tabbarList,
-            type: BottomNavigationBarType.fixed,
-            onTap: (int index) {
-              setState(() {
-                curIndex = index;
-              });
-            },
-            currentIndex: curIndex,
-          ),
-          body: vcList[curIndex],
-    );
+    return WillPopScope(
+      onWillPop: () async{
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
+          items: tabbarList,
+          type: BottomNavigationBarType.fixed,
+          onTap: (int index) {
+            setState(() {
+              curIndex = index;
+            });
+          },
+          currentIndex: curIndex,
+        ),
+        body: vcList[curIndex],
+      ),);
+
   }
 
   void onMessageReceived(List<EMMessage> messages){
