@@ -70,7 +70,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
     underCount = await con.getUnreadMsgCount();
     titleName = con.conversationId;
     if(con.isGroup()){
-      EMGroup group = await EMClient.getInstance().groupManager().getGroup(con.conversationId);
+      EMGroup group = await EMClient.getInstance().groupManager().getGroup(groupId: con.conversationId);
       if(group != null){
         titleName = group.getGroupName();
       }

@@ -1,10 +1,8 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import 'em_group.dart';
-import 'em_log.dart';
 import 'em_sdk_method.dart';
 import 'em_domain_terms.dart';
 import 'em_listeners.dart';
@@ -16,18 +14,15 @@ class EMGroupManager{
   static EMGroupManager _instance;
 
   /// @nodoc
-  final EMLog log;
-
-  /// @nodoc
   final _groupChangeListeners = List<EMGroupChangeListener>();
 
-  EMGroupManager._internal(EMLog log) : log = log {
+  EMGroupManager._internal() {
     _addNativeMethodCallHandler();
   }
 
   /// @nodoc
-  factory EMGroupManager.getInstance({@required EMLog log}) {
-    return _instance = _instance ?? EMGroupManager._internal(log);
+  factory EMGroupManager.getInstance() {
+    return _instance = _instance ?? EMGroupManager._internal();
   }
 
   /// @nodoc
@@ -64,7 +59,7 @@ class EMGroupManager{
   }
 
   /// 根据群组ID，获得群组对象
-  Future<EMGroup> getGroup(String groupId) async{
+  Future<EMGroup> getGroup({final String groupId}) async{
     Map<String, dynamic> result = await _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.getGroup, {"groupId" : groupId});
     if (result['success']) {
@@ -79,11 +74,12 @@ class EMGroupManager{
   }
 
   /// 在IM服务器创建一个群组
-  void createGroup({@required String groupName,
-    @required String desc,
-    @required List<String> members,
-    @required String reason,
-    @required EMGroupOptions options,
+  void createGroup({
+    final String groupName,
+    final String desc,
+    final List<String> members,
+    final String reason,
+    final EMGroupOptions options,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}
       ) {
@@ -117,7 +113,8 @@ class EMGroupManager{
   }
 
   /// 解散群组
-  void destroyGroup({@required String groupId,
+  void destroyGroup({
+    final String groupId,
     onSuccess(),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -135,8 +132,8 @@ class EMGroupManager{
 
   /// 向群组中添加新的成员
   void addUsersToGroup({
-    @required String groupId,
-    @required List<String> members,
+    final String groupId,
+    final List<String> members,
     onSuccess(),
     onError(int errorCode, String desc)
   }){
@@ -155,8 +152,8 @@ class EMGroupManager{
 
   /// 从群组中删除成员
   void removeUserFromGroup({
-    @required String groupId,
-    @required String userName,
+    final String groupId,
+    final String userName,
     onSuccess(),
     onError(int errorCode, String desc)
   }){
@@ -175,7 +172,7 @@ class EMGroupManager{
 
   /// 当前登录用户退出群组
   void leaveGroup({
-    @required String groupId,
+    final String groupId,
     onSuccess(),
     onError(int errorCode, String desc)
   }){
@@ -194,7 +191,7 @@ class EMGroupManager{
 
   /// 从服务器获取群组的详细信息
   void getGroupFromServer({
-    @required String groupId,
+    final String groupId,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -245,8 +242,8 @@ class EMGroupManager{
 
   /// 从服务器获取公开群组,EMCursorResult加泛型
   void getPublicGroupsFromServer({
-    @required int pageSize,
-    @required String cursor,
+    final int pageSize,
+    final String cursor,
     onSuccess(EMCursorResult<EMGroupInfo> result),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -276,7 +273,7 @@ class EMGroupManager{
 
   /// 当前登录用户加入公开群(如果是自由加入的公开群，直接进入群组)
   void joinGroup({
-    @required String groupId,
+    final String groupId,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -294,8 +291,8 @@ class EMGroupManager{
 
   /// 改变群组的名称
   void changeGroupName({
-    @required String groupId,
-    @required String groupName,
+    final String groupId,
+    final String groupName,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -313,8 +310,8 @@ class EMGroupManager{
 
   /// 修改群描述
   void changeGroupDescription({
-    @required String groupId,
-    @required String desc,
+    final String groupId,
+    final String desc,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -332,8 +329,8 @@ class EMGroupManager{
 
   /// 接受加入群的邀请
   void acceptInvitation({
-    @required String groupId,
-    @required String inviter,
+    final String groupId,
+    final String inviter,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -355,9 +352,9 @@ class EMGroupManager{
 
   /// 拒绝加入群的邀请
   void declineInvitation({
-    @required String groupId,
-    @required String inviter,
-    @required String reason,
+    final String groupId,
+    final String inviter,
+    final String reason,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -375,8 +372,8 @@ class EMGroupManager{
 
   /// 同意加群申请
   void acceptApplication({
-    @required String userName,
-    @required String groupId,
+    final String userName,
+    final String groupId,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -394,9 +391,9 @@ class EMGroupManager{
 
   /// 拒绝加群申请
   void declineApplication({
-    @required String userName,
-    @required String groupId,
-    @required String reason,
+    final String userName,
+    final String groupId,
+    final String reason,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -414,9 +411,9 @@ class EMGroupManager{
 
   ///  群成员邀请用户加入群组 （如果群组设置成开放群成员邀请，群组成员可以邀请其他用户加入）
   void inviteUser({
-     @required String groupId,
-     @required List<String> members,
-     @required String reason,
+    final String groupId,
+    final List<String> members,
+    final String reason,
      onSuccess(),
      onError(int errorCode, String desc)}){
      Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -434,8 +431,8 @@ class EMGroupManager{
 
   /// 申请加入某个群
   void applyJoinToGroup({
-    @required String groupId,
-    @required String reason,
+    final String groupId,
+    final String reason,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -453,7 +450,7 @@ class EMGroupManager{
 
   /// 屏蔽群消息（还是群里面的成员，但不再接收群消息）
   void blockGroupMessage({
-    @required String groupId,
+    final String groupId,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -471,7 +468,7 @@ class EMGroupManager{
 
   /// 取消屏蔽群消息
   void unblockGroupMessage({
-    @required String groupId,
+    final String groupId,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -489,8 +486,8 @@ class EMGroupManager{
 
   /// 将用户加到群组的黑名单，被加入黑名单的用户无法加入群，无法收发此群的消息
   void blockUser({
-    @required String groupId,
-    @required String userName,
+    final String groupId,
+    final String userName,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -508,8 +505,8 @@ class EMGroupManager{
 
   /// 将用户从群组的黑名单移除
   void unblockUser({
-    @required String groupId,
-    @required String userName,
+    final String groupId,
+    final String userName,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -527,10 +524,10 @@ class EMGroupManager{
 
   /// 获取群组成员列表
   void fetchGroupMembers({
-    @required String groupId,
-    @required String cursor,
-    @required int pageSize,
-    onSuccess(EMCursorResult<String> result),
+    final String groupId,
+    final String cursor,
+    final int pageSize,
+    onSuccess(EMCursorResult result),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.fetchGroupMembers, {"groupId" : groupId, "cursor" : cursor, "pageSize" : pageSize});
@@ -559,8 +556,8 @@ class EMGroupManager{
 
   /// 转让群组，群组所有权给他人
   void changeOwner({
-    @required String groupId,
-    @required String newOwner,
+    final String groupId,
+    final String newOwner,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -582,8 +579,8 @@ class EMGroupManager{
 
   /// 增加群组管理员，需要owner权限，admin无权限
   void addGroupAdmin ({
-    @required String groupId,
-    @required String admin,
+    final String groupId,
+    final String admin,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -605,8 +602,8 @@ class EMGroupManager{
 
   /// 删除群组管理员，需要owner权限
   void removeGroupAdmin({
-    @required String groupId,
-    @required String admin,
+    final String groupId,
+    final String admin,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -628,9 +625,9 @@ class EMGroupManager{
 
   /// 禁止某些群组成员发言
   void muteGroupMembers({
-    @required String groupId,
-    @required List<String> members,
-    @required String duration,
+    final String groupId,
+    final List<String> members,
+    final String duration,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -652,8 +649,8 @@ class EMGroupManager{
 
   /// 解除禁言
   void unMuteGroupMembers({
-    @required String groupId,
-    @required List<String> members,
+    final String groupId,
+    final List<String> members,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}) {
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -676,10 +673,10 @@ class EMGroupManager{
 
   ///  获取群组的禁言列表
   void fetchGroupMuteList({
-    @required String groupId,
-    @required int pageNum,
-    @required int pageSize,
-    onSuccess(List<String> muteList),
+    final String groupId,
+    final int pageNum,
+    final int pageSize,
+    onSuccess(List list),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -704,10 +701,10 @@ class EMGroupManager{
 
   /// 从服务器获分页获取群组黑名单
   void fetchGroupBlackList({
-    @required String groupId,
-    @required int pageNum,
-    @required int pageSize,
-    onSuccess(List<String> blackList),
+    final String groupId,
+    final int pageNum,
+    final int pageSize,
+    onSuccess(List list),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -732,8 +729,8 @@ class EMGroupManager{
 
   ///  更新群公告
   void updateGroupAnnouncement({
-    @required String groupId,
-    @required String announcement,
+    final String groupId,
+    final String announcement,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -751,7 +748,7 @@ class EMGroupManager{
 
   /// 从服务器获取群公告
   void fetchGroupAnnouncement({
-    @required String groupId,
+    final String groupId,
     onSuccess(String announcement),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -773,8 +770,8 @@ class EMGroupManager{
 
   /// 上传共享文件至群组
   void uploadGroupSharedFile({
-    @required String groupId,
-    @required String filePath,
+    final String groupId,
+    final String filePath,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -792,9 +789,9 @@ class EMGroupManager{
 
   /// 从服务器获取群组的共享文件列表
   void fetchGroupSharedFileList({
-    @required String groupId,
-    @required int pageNum,
-    @required int pageSize,
+    final String groupId,
+    final int pageNum,
+    final int pageSize,
     onSuccess(List<EMMucSharedFile> files),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -821,8 +818,8 @@ class EMGroupManager{
 
   /// 从群组里删除这个共享文件
   void deleteGroupSharedFile({
-    @required String groupId,
-    @required String fileId,
+    final String groupId,
+    final String fileId,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -840,9 +837,9 @@ class EMGroupManager{
 
   /// 下载群里的某个共享文件
   void downloadGroupSharedFile({
-    @required String groupId,
-    @required String fileId,
-    @required String savePath,
+    final String groupId,
+    final String fileId,
+    final String savePath,
     onSuccess(),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
@@ -860,8 +857,8 @@ class EMGroupManager{
 
   /// 更新群组扩展字段
   void updateGroupExtension({
-    @required String groupId,
-    @required String extension,
+    final String groupId,
+    final String extension,
     onSuccess(EMGroup group),
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
