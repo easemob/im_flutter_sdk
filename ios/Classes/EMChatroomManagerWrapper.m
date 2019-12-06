@@ -173,7 +173,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper pageReslutToDictionary:aResult]];
+                     userInfo:@{@"value":aResult.list}];
         
     }];
 }
@@ -189,7 +189,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[self dictionaryWithCursorResult:aResult]];
+                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult]}];
     }];
 }
 
