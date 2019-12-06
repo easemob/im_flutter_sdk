@@ -20,7 +20,7 @@ class WidgetUtil {
     return Container(
       margin:  EdgeInsets.fromLTRB(1,0,1,0),
       decoration: BoxDecoration(
-        border: Border.all(width: 6, color: Colors.lightBlue),
+        border: Border.all(width: 6, color: EMColor.borderLine),
         borderRadius: const BorderRadius.all(const Radius.circular(8)),
         color: _isDark ? EMColor.borderLine : EMColor.unreadCount,
       ),
