@@ -122,7 +122,7 @@
      {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:[EMHelper chatRoomToDictionary:aChatroom]];
+                     userInfo:nil];
     }];
 }
 

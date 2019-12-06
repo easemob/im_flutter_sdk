@@ -299,7 +299,7 @@ class EMChatRoomManager{
     @required String roomId,
     @required String cursor,
     int pageSize,
-    onSuccess(Map map),
+    onSuccess(List list),
     onError(int code, String desc)}){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomMembers, {"roomId": roomId ,"cursor" : cursor ,"pageSize" : pageSize});
