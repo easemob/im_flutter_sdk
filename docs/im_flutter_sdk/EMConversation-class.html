@@ -123,12 +123,6 @@
         <dd>
           
         </dd>
-        <dt id="EMConversation.from" class="callable">
-          <span class="name"><a href="im_flutter_sdk/EMConversation/EMConversation.from.html">EMConversation.from</a></span><span class="signature">(<span class="parameter" id="from-param-data"><span class="type-annotation">Map</span> <span class="parameter-name">data</span></span>)</span>
-        </dt>
-        <dd>
-          
-        </dd>
       </dl>
     </section>
 
@@ -141,7 +135,7 @@
           <span class="signature">&#8594; String</span> 
         </dt>
         <dd>
-          
+          会话id
           <div class="features">read-only</div>
 </dd>
         <dt id="extField" class="property">
@@ -149,7 +143,7 @@
           <span class="signature">&#8596; String</span> 
         </dt>
         <dd>
-          
+          会话扩展
           <div class="features">read / write</div>
 </dd>
         <dt id="type" class="property">
@@ -157,7 +151,7 @@
           <span class="signature">&#8594; EMConversationType</span> 
         </dt>
         <dd>
-          
+          会话类型
           <div class="features">read-only</div>
 </dd>
         <dt id="hashCode" class="property inherited">
@@ -182,6 +176,33 @@
     <section class="summary offset-anchor" id="instance-methods">
       <h2>Methods</h2>
       <dl class="callables">
+        <dt id="appendMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/appendMessage.html">appendMessage</a></span><span class="signature">(<wbr><span class="parameter" id="appendMessage-param-msg"><span class="type-annotation"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span> <span class="parameter-name">msg</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          插入一条消息到会话尾部<code>msg</code>
+          
+</dd>
+        <dt id="clear" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/clear.html">clear</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          清除对话中的所有消息，只清除内存的，不清除db的消息 在退出会话的时候清除内存缓存，减小内存消耗
+          
+</dd>
+        <dt id="clearAllMessages" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/clearAllMessages.html">clearAllMessages</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          删除该会话所有消息，同时清除内存和数据库中的消息
+          
+</dd>
         <dt id="getLastMessage" class="callable">
           <span class="name"><a href="im_flutter_sdk/EMConversation/getLastMessage.html">getLastMessage</a></span><span class="signature">(<wbr>)
             <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>
@@ -191,6 +212,51 @@
           获取对话的最后一条消息
           
 </dd>
+        <dt id="getLatestMessageFromOthers" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/getLatestMessageFromOthers.html">getLatestMessageFromOthers</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          获取其他人发送的最新消息。
+          
+</dd>
+        <dt id="getMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/getMessage.html">getMessage</a></span><span class="signature">(<wbr>{<span class="parameter" id="getMessage-param-messageId"><span class="type-annotation">String</span> <span class="parameter-name">messageId</span>, </span> <span class="parameter" id="getMessage-param-markAsRead"><span class="type-annotation">bool</span> <span class="parameter-name">markAsRead</span>: <span class="default-value">true</span></span> })
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          通过<code>mesasgeId</code>获取消息，<code>markAsRead</code> 将其设置为已读.
+          
+</dd>
+        <dt id="getUnreadMsgCount" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/getUnreadMsgCount.html">getUnreadMsgCount</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">int</span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          获取此对话中未读取的消息数量.
+          
+</dd>
+        <dt id="insertMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/insertMessage.html">insertMessage</a></span><span class="signature">(<wbr><span class="parameter" id="insertMessage-param-msg"><span class="type-annotation"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span> <span class="parameter-name">msg</span></span>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          插入一条消息<code>msg</code>
+          
+</dd>
+        <dt id="isGroup" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/isGroup.html">isGroup</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; bool</span>
+          </span>
+          </dt>
+        <dd>
+          群组和聊天室类型都会返回true
+          
+</dd>
         <dt id="loadMoreMsgFromDB" class="callable">
           <span class="name"><a href="im_flutter_sdk/EMConversation/loadMoreMsgFromDB.html">loadMoreMsgFromDB</a></span><span class="signature">(<wbr>{<span class="parameter" id="loadMoreMsgFromDB-param-startMsgId"><span class="type-annotation">String</span> <span class="parameter-name">startMsgId</span>, </span> <span class="parameter" id="loadMoreMsgFromDB-param-pageSize"><span class="type-annotation">int</span> <span class="parameter-name">pageSize</span>: <span class="default-value">10</span></span> })
             <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">List<span class="signature">&lt;<wbr><span class="type-parameter"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>&gt;</span></span>
@@ -198,6 +264,65 @@
           </dt>
         <dd>
           根据传入的参数从db加载startMsgId之前(存储顺序)指定数量的message<code>startMsgId</code>, <code>pageSize</code>
+          
+</dd>
+        <dt id="markAllMessagesAsRead" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/markAllMessagesAsRead.html">markAllMessagesAsRead</a></span><span class="signature">(<wbr>)
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          将所有未读消息设置为已读.
+          
+</dd>
+        <dt id="markMessageAsRead" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/markMessageAsRead.html">markMessageAsRead</a></span><span class="signature">(<wbr>{<span class="parameter" id="markMessageAsRead-param-messageId"><span class="type-annotation">String</span> <span class="parameter-name">messageId</span></span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          将id是<code>messageId</code>的消息标记为已读。
+          
+</dd>
+        <dt id="removeMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/removeMessage.html">removeMessage</a></span><span class="signature">(<wbr>{<span class="parameter" id="removeMessage-param-messageId"><span class="type-annotation">String</span> <span class="parameter-name">messageId</span></span> })
+            <span class="returntype parameter">&#8594; void</span>
+          </span>
+          </dt>
+        <dd>
+          从对话中删除id是<code>messageId</code>的消息。
+          
+</dd>
+        <dt id="searchMsgFromDB" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/searchMsgFromDB.html">searchMsgFromDB</a></span><span class="signature">(<wbr>{<span class="parameter" id="searchMsgFromDB-param-type"><span class="type-annotation"><a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></span> <span class="parameter-name">type</span>, </span> <span class="parameter" id="searchMsgFromDB-param-keywords"><span class="type-annotation">String</span> <span class="parameter-name">keywords</span>, </span> <span class="parameter" id="searchMsgFromDB-param-timeStamp"><span class="type-annotation">int</span> <span class="parameter-name">timeStamp</span>, </span> <span class="parameter" id="searchMsgFromDB-param-maxCount"><span class="type-annotation">int</span> <span class="parameter-name">maxCount</span>: <span class="default-value">10</span>, </span> <span class="parameter" id="searchMsgFromDB-param-direction"><span class="type-annotation"><a href="im_flutter_sdk/EMSearchDirection-class.html">EMSearchDirection</a></span> <span class="parameter-name">direction</span></span> })
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">List<span class="signature">&lt;<wbr><span class="type-parameter"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          根据传入的参数从本地存储中搜索指定数量的消息
+<code>type</code> 消息类型，文本、图片、语音等等
+<code>keywords</code>, 搜索消息中的关键词
+<code>timeStamp</code>,搜索消息的时间点
+<code>maxCount</code> 搜索结果的最大条数
+<code>direction</code>. 方向
+          
+</dd>
+        <dt id="searchMsgFromDBByType" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/searchMsgFromDBByType.html">searchMsgFromDBByType</a></span><span class="signature">(<wbr>{<span class="parameter" id="searchMsgFromDBByType-param-type"><span class="type-annotation"><a href="im_flutter_sdk/EMMessageType-class.html">EMMessageType</a></span> <span class="parameter-name">type</span>, </span> <span class="parameter" id="searchMsgFromDBByType-param-keywords"><span class="type-annotation">String</span> <span class="parameter-name">keywords</span>, </span> <span class="parameter" id="searchMsgFromDBByType-param-timeStamp"><span class="type-annotation">int</span> <span class="parameter-name">timeStamp</span>, </span> <span class="parameter" id="searchMsgFromDBByType-param-maxCount"><span class="type-annotation">int</span> <span class="parameter-name">maxCount</span>: <span class="default-value">10</span>, </span> <span class="parameter" id="searchMsgFromDBByType-param-direction"><span class="type-annotation"><a href="im_flutter_sdk/EMSearchDirection-class.html">EMSearchDirection</a></span> <span class="parameter-name">direction</span></span> })
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">List<span class="signature">&lt;<wbr><span class="type-parameter"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          搜索来自DB的消息，类型为<code>type</code>，匹配<code>keywords</code>，在<code>timeStamp</code>之后，<code>maxCount</code>返回的大多数消息，方向为<code>direction</code>。
+          
+</dd>
+        <dt id="updateMessage" class="callable">
+          <span class="name"><a href="im_flutter_sdk/EMConversation/updateMessage.html">updateMessage</a></span><span class="signature">(<wbr><span class="parameter" id="updateMessage-param-msg"><span class="type-annotation"><a href="im_flutter_sdk/EMMessage-class.html">EMMessage</a></span> <span class="parameter-name">msg</span></span>)
+            <span class="returntype parameter">&#8594; Future<span class="signature">&lt;<wbr><span class="type-parameter">bool</span>&gt;</span></span>
+          </span>
+          </dt>
+        <dd>
+          更新本地的消息<code>msg</code>
           
 </dd>
         <dt id="noSuchMethod" class="callable inherited">
@@ -245,7 +370,6 @@
     <ol>
       <li class="section-title"><a href="im_flutter_sdk/EMConversation-class.html#constructors">Constructors</a></li>
       <li><a href="im_flutter_sdk/EMConversation/EMConversation.html">EMConversation</a></li>
-      <li><a href="im_flutter_sdk/EMConversation/EMConversation.from.html">from</a></li>
     
       <li class="section-title">
         <a href="im_flutter_sdk/EMConversation-class.html#instance-properties">Properties</a>
@@ -257,8 +381,22 @@
       <li class="inherited"><a href="im_flutter_sdk/EMConversation/runtimeType.html">runtimeType</a></li>
     
       <li class="section-title"><a href="im_flutter_sdk/EMConversation-class.html#instance-methods">Methods</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/appendMessage.html">appendMessage</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/clear.html">clear</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/clearAllMessages.html">clearAllMessages</a></li>
       <li><a href="im_flutter_sdk/EMConversation/getLastMessage.html">getLastMessage</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/getLatestMessageFromOthers.html">getLatestMessageFromOthers</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/getMessage.html">getMessage</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/getUnreadMsgCount.html">getUnreadMsgCount</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/insertMessage.html">insertMessage</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/isGroup.html">isGroup</a></li>
       <li><a href="im_flutter_sdk/EMConversation/loadMoreMsgFromDB.html">loadMoreMsgFromDB</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/markAllMessagesAsRead.html">markAllMessagesAsRead</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/markMessageAsRead.html">markMessageAsRead</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/removeMessage.html">removeMessage</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/searchMsgFromDB.html">searchMsgFromDB</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/searchMsgFromDBByType.html">searchMsgFromDBByType</a></li>
+      <li><a href="im_flutter_sdk/EMConversation/updateMessage.html">updateMessage</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMConversation/noSuchMethod.html">noSuchMethod</a></li>
       <li class="inherited"><a href="im_flutter_sdk/EMConversation/toString.html">toString</a></li>
     

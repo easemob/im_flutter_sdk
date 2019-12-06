@@ -71,6 +71,6 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
   void onMessageRead(List<EMMessage> messages){}
   void onMessageDelivered(List<EMMessage> messages){}
   void onMessageRecalled(List<EMMessage> messages){}
-  void onMessageChanged(EMMessage message, Object change){}
+  void onMessageChanged(EMMessage message){}
 
 }
