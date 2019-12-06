@@ -79,9 +79,11 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   }
 
   void _refresh(){
-    setState(() {
+    if(mounted){
+      setState(() {
 
-    });
+      });
+    }
   }
 
   void _onTaped() {

@@ -207,10 +207,13 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   }
 
   /// 点击事件
+  @override
   void onTapConversation(EMConversation conversation){
-      Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+      Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
           return new ChatPage(arguments: {'mType': getType(conversation.type),'toChatUsername':conversation.conversationId});
-      }));
+      })).then((bool _isRefresh){
+        _loadEMConversationList();
+      });
   }
 
   int getType(EMConversationType type){
@@ -227,15 +230,16 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   }
 
   /// 长按事件
+  @override
   void onLongPressConversation(EMConversation conversation,Offset tapPos){
     Map<String,String> actionMap = {
       Constant.deleteConversationKey:DemoLocalizations.of(context).deleteConversation,
       Constant.clearUnreadKey:DemoLocalizations.of(context).clearUnread,
     };
     WidgetUtil.showLongPressMenu(context, tapPos,actionMap,(String key){
-      if(key == "DeleteConversationKey") {
+      if(key == Constant.deleteConversationKey) {
         _deleteConversation(conversation);
-      }else if(key == "ClearUnreadKey") {
+      }else if(key == Constant.clearUnreadKey) {
         _clearConversationUnread(conversation);
       }
     });

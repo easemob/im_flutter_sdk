@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'style.dart';
+import 'theme_util.dart';
 import 'time_util.dart';
 
 enum PromptBoxLocation { TOP, BOTTOM, CENTER }
@@ -191,6 +192,15 @@ class WidgetUtil {
       delta = -delta;
     }
     return delta > INTERVAL_IN_MILLISECONDS;
+  }
+
+  static AppBar buildAppBar(BuildContext context, String title){
+    return AppBar(
+      elevation: 0,
+      centerTitle : true,
+      backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
+      title: Text(title, style: TextStyle(fontSize:EMFont.emAppBarTitleFont, color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
+    );
   }
 }
 
