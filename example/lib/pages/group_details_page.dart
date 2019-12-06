@@ -670,6 +670,8 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
               return _buildBlankWidget();
             case 10:
               return _buildExitWidget();
+            default:
+              return _buildBlankWidget();
           }
         });
   }

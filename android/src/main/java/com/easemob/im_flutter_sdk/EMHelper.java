@@ -198,9 +198,11 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         if (null != message.ext()){
             result.put("attributes", message.ext());
-        }else {
-            HashMap<Object, Object> hashMap = new HashMap<>();
-            result.put("attributes", hashMap);
+        }else{
+            ///扩展不能为空 设置一个默认值
+            HashMap<String,String> map = new HashMap<>();
+            map.put("easemob","flutter");
+            result.put("attributes", map);
         }
         result.put("conversationId", message.conversationId());
         result.put("type", getType(message));

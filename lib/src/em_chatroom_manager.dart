@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:im_flutter_sdk/src/em_domain_terms.dart';
 
 import 'em_chatroom.dart';
@@ -180,7 +181,8 @@ class EMChatRoomManager{
 
   /// @nodoc 从服务器获取聊天室详情 [roomId].
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void fetchChatRoomFromServer( String roomId,{
+  void fetchChatRoomFromServer(
+      String roomId,{
       onSuccess(Map<String,Object> chatRoom),
       onError(int code, String desc)
   }){
@@ -306,17 +308,28 @@ class EMChatRoomManager{
   /// [roomId] 聊天室ID.[cursor] 游标.[pageSize] 每页数量
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void fetchChatRoomMembers({
-    final String roomId,
-    final String cursor,
-    final int pageSize,
-    onSuccess(List list),
-    onError(int code, String desc)
-  }){
+    @required String roomId,
+    @required String cursor,
+    int pageSize,
+    onSuccess(EMCursorResult<String> result),
+    onError(int code, String desc)}){
     Future<Map> result = _emChatRoomManagerChannel.invokeMethod(
         EMSDKMethod.fetchChatRoomMembers, {"roomId": roomId ,"cursor" : cursor ,"pageSize" : pageSize});
     result.then((response) {
       if (response["success"]) {
-        if (onSuccess != null) onSuccess(response['value']);
+        if (onSuccess != null) {
+          List<String> list = [];
+          var value = response['value'] as Map<String, dynamic>;
+          EMCursorResult emCursorResult = EMCursorResult.from(value);
+          emCursorResult.getData().forEach((item) => list.add(item));
+
+          EMCursorResult<String> cursorResult = EMCursorResult.from(Map());
+          cursorResult.setData(list);
+          cursorResult.setCursor(emCursorResult.getCursor());
+          if (onSuccess != null) onSuccess(cursorResult);
+        }else{
+          onSuccess(null);
+        }
       } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
