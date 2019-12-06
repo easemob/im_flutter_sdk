@@ -8,6 +8,7 @@ abstract class EMConnectionListener {
   void onDisconnected(int errorCode);
 }
 
+/// @nodoc
 abstract class EMMultiDeviceListener {
   /// @nodoc
   void onContactEvent(EMContactGroupEvent event, String target, String ext);
@@ -166,25 +167,61 @@ class EMGroupChangeEvent {
 
 abstract class EMGroupChangeListener {
 
-  ///
+  /// id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
   void onInvitationReceived(String groupId, String groupName, String inviter, String reason);
+
+  /// 收到用户[applicant]申请加入id是[groupId], 名称是[groupName]的群，原因是[reason]
   void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason);
+
+  /// 入群申请被同意
   void onRequestToJoinAccepted(String groupId, String groupName, String accepter);
+
+  /// 入群申请被拒绝
   void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason);
+
+  /// 入群邀请被同意
   void onInvitationAccepted(String groupId, String invitee, String reason);
+
+  /// 入群邀请被拒绝
   void onInvitationDeclined(String groupId, String invitee, String reason);
+
+  /// 被移出群组
   void onUserRemoved(String groupId, String groupName);
+
+  /// 群组解散
   void onGroupDestroyed(String groupId, String groupName);
+
+  /// @nodoc 自动同意加群
   void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage);
+
+  /// 群禁言列表增加
   void onMuteListAdded(String groupId, List mutes, int muteExpire);
+
+  /// 群禁言列表减少
   void onMuteListRemoved(String groupId, List mutes);
+
+  /// 群管理增加
   void onAdminAdded(String groupId, String administrator);
+
+  /// 群管理被移除
   void onAdminRemoved(String groupId, String administrator);
+
+  /// 群所有者变更
   void onOwnerChanged(String groupId, String newOwner, String oldOwner);
+
+  /// 有用户加入群
   void onMemberJoined(String groupId, String member);
+
+  /// 有用户离开群
   void onMemberExited(String groupId,  String member);
+
+  /// 群公告变更
   void onAnnouncementChanged(String groupId, String announcement);
+
+  /// 群共享文件增加
   void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile);
+
+  /// 群共享文件被删除
   void onSharedFileDeleted(String groupId, String fileId);
 }
 

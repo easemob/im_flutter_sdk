@@ -13,18 +13,23 @@ class EMChatRoomManager{
   static const MethodChannel _emChatRoomManagerChannel =
   const MethodChannel('$_channelPrefix/em_chat_room_manager', JSONMethodCodec());
 
+  /// @nodoc
   static EMChatRoomManager _instance;
 
+  /// @nodoc
   final List<EMChatRoomEventListener> _chatRoomEventListeners =  List<EMChatRoomEventListener>();
 
+  /// @nodoc
   factory EMChatRoomManager.getInstance() {
     return _instance = _instance ?? EMChatRoomManager._internal();
   }
 
+  /// @nodoc
   EMChatRoomManager._internal(){
     _addNativeMethodCallHandler();
   }
 
+  /// @nodoc
   void _addNativeMethodCallHandler() {
     _emChatRoomManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
@@ -45,7 +50,7 @@ class EMChatRoomManager{
      _chatRoomEventListeners.remove(listener);
   }
 
-
+  /// @nodoc
   Future<void> _chatRoomChange(Map event) async{
     String type = event['chatRoomChange'];
     for (var listener in _chatRoomEventListeners) {
@@ -188,7 +193,7 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 获取聊天室 [roomId].
+  /// 获取聊天室 [roomId].
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   Future<EMChatRoom> getChatRoom(String roomId) async{
     Map result = await _emChatRoomManagerChannel.invokeMethod(
@@ -200,7 +205,7 @@ class EMChatRoomManager{
     }
   }
 
-  /// @nodoc 获取当前内存的聊天室 .
+  /// 获取当前内存的聊天室 .
   /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   Future<List> getAllChatRooms() async {
     Map result = await _emChatRoomManagerChannel
@@ -274,7 +279,7 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 修改群描述信息，需要owner权限 [roomId] .[newDescription]
+  /// @nodoc 修改聊天室描述信息，需要owner权限 [roomId] .[newDescription]
   /// @nodoc 如果修改成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void changeChatRoomDescription({
     @required String roomId,
@@ -292,9 +297,9 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 获取聊天室成员列表
+  /// 获取聊天室成员列表
   /// [roomId] 聊天室ID.[cursor] 游标.[pageSize] 每页数量
-  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void fetchChatRoomMembers({
     @required String roomId,
     @required String cursor,
@@ -368,8 +373,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 为聊天室添加管理员，需要拥有者权限 [roomId].[admin]
-  /// @nodoc 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 为聊天室添加管理员，需要拥有者权限 [roomId].[admin]
+  /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void addChatRoomAdmin({
     @required String roomId,
     @required String admin,
@@ -386,8 +391,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 删除聊天室管理员，需要拥有着权限[roomId].[admin]
-  /// @nodoc 如果删除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 删除聊天室管理员，需要拥有着权限[roomId].[admin]
+  /// 如果删除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
   void removeChatRoomAdmin({
     @required String roomId,
     @required String admin,
@@ -497,8 +502,8 @@ class EMChatRoomManager{
   }
 
 
-  /// @nodoc 更新聊天室公告[roomId].[announcement]
-  /// @nodoc 如果更新成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 更新聊天室公告[roomId].[announcement]
+  /// 如果更新成功，回调[onSuccess]，如果出现错误，回调[onError]。
   void updateChatRoomAnnouncement({
     @required String roomId,
     @required String announcement,
@@ -515,8 +520,8 @@ class EMChatRoomManager{
     });
   }
 
-  /// @nodoc 从服务器获取聊天室公告内容[roomId]
-  /// @nodoc 如果获取成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// 从服务器获取聊天室公告内容[roomId]
+  /// 如果获取成功，回调[onSuccess]，如果出现错误，回调[onError]。
   void fetchChatRoomAnnouncement({
     @required String roomId,
     onSuccess(String res),
