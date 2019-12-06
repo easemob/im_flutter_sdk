@@ -15,19 +15,23 @@ import 'em_domain_terms.dart';
 
 /// EMTextMessageBody - text message body.
 class EMTextMessageBody extends EMMessageBody {
+  /// 初始化方法，[message]: 消息内容
   EMTextMessageBody(String message) : this.message = message;
   final String message;
 
   @override
+  /// @nodoc
   String toString() => '[EMTextMessageBody], {message: $message}';
 
   @override
+  /// @nodoc
   Map<String, dynamic> toDataMap() {
     var result = Map<String, dynamic>();
     result['message'] = message;
     return result;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map data) {
     return EMTextMessageBody(data['message']);
   }
@@ -35,6 +39,7 @@ class EMTextMessageBody extends EMMessageBody {
 
 /// EMCmdMessageBody - cmd message body.
 class EMCmdMessageBody extends EMMessageBody {
+  /// 初始化方法，[action]: 命令内容
   EMCmdMessageBody(String action)
       : this._action = action,
         this.deliverOnlineOnly = false;
@@ -66,10 +71,12 @@ class EMCmdMessageBody extends EMMessageBody {
 
 /// EMNormalFileMessageBody - file message body.
 abstract class EMFileMessageBody extends EMMessageBody {
+  /// 初始化方法, [localUrl]: 文件路径
   EMFileMessageBody(String localUrl)
       : this.displayName = '',
         this.localUrl = localUrl;
 
+  /// @nodoc
   EMFileMessageBody.of(EMFileMessageBody body)
       : this.displayName = body.displayName,
         this.localUrl = body.localUrl,
@@ -79,6 +86,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
         this.secret = body.secret,
         this._body = body;
 
+  /// @nodoc
   EMFileMessageBody.ofData(Map data)
       : this.displayName = data['displayName'],
         this.localUrl = data['localUrl'],
@@ -131,12 +139,14 @@ abstract class EMFileMessageBody extends EMMessageBody {
 
 /// EMLocationMessageBody - location message body.
 class EMLocationMessageBody extends EMMessageBody {
+  /// 初始化方法, [address]: 地址名称; [latitude]: 维度; [longitude]: 经度
   EMLocationMessageBody(String address, double latitude, double longitude,
       [EMLocationMessageBody body])
       : this.address = address,
         this.latitude = latitude,
         this.longitude = longitude,
         this._body = body;
+
 
   EMLocationMessageBody _body;
   /// 地址
@@ -149,10 +159,12 @@ class EMLocationMessageBody extends EMMessageBody {
   final double longitude;
 
   @override
+  /// @nodoc
   String toString() =>
       '[EMLocationMessageBody], {address: $address, latitude: $latitude, longitude: $longitude, body: $_body}';
 
   @override
+  /// @nodoc
   Map toDataMap() {
     var result = {};
     result['address'] = address;
@@ -161,6 +173,7 @@ class EMLocationMessageBody extends EMMessageBody {
     return result;
   }
 
+  /// @nodoc
   static EMMessageBody fromData(Map<String, dynamic> data) {
     var message = EMLocationMessageBody(
         data['address'], data['latitude'], data['longitude']);
@@ -170,12 +183,14 @@ class EMLocationMessageBody extends EMMessageBody {
 
 /// Subclasses of EMFileMessageBody.
 class EMImageMessageBody extends EMFileMessageBody {
+  /// 创建方法， [imageFile]: 图片文件;  [sendOriginalImage]: 是否发送原图
   EMImageMessageBody(File imageFile,
       bool sendOriginalImage)
       : this._imageFile = imageFile,
         this.sendOriginalImage = sendOriginalImage,
         super(imageFile.path);
 
+  /// @nodoc
   EMImageMessageBody.of(EMImageMessageBody body)
       : this._imageFile = body._imageFile,
         this._thumbnailFile = body._thumbnailFile,
@@ -187,6 +202,7 @@ class EMImageMessageBody extends EMFileMessageBody {
         this.width = body.width,
         super.of(body);
 
+  /// @nodoc
   EMImageMessageBody._internal(Map<String, dynamic> data)
       : this.height = data["height"],
         this.width = data["width"],
@@ -220,7 +236,7 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// 缩略图远端地址
   String thumbnailUrl;
 
-
+  /// @nodoc
   void setThumbnailSize(int width, int height) {
     this.width = width;
     this.height = height;
@@ -257,16 +273,19 @@ class EMImageMessageBody extends EMFileMessageBody {
 }
 
 class EMNormalFileMessageBody extends EMFileMessageBody {
+  /// 创建方法, [file] 要发送的文件
   EMNormalFileMessageBody(File file)
       : this._file = file,
         super(file.path);
 
+  /// @nodoc
   EMNormalFileMessageBody._internal(Map<String, dynamic> data)
       : this._file = null,
         this._fileSize = data['fileSize'],
         super.ofData(data);
 
   final File _file;
+
   int _fileSize;
 
   /// 文件大小
@@ -297,6 +316,7 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
 }
 
 class EMVoiceMessageBody extends EMFileMessageBody {
+  /// 创建方法，[voiceFile]: 要发送的音频文件; [duration]: 文件时长
   EMVoiceMessageBody(File voiceFile, int duration)
 
       : this._file = voiceFile,
@@ -344,16 +364,19 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 }
 
 class EMVideoMessageBody extends EMFileMessageBody {
+  /// 创建方法，[videoFilePath]: 要发送的文件路径; [duration]: 文件时长
   EMVideoMessageBody(File videoFilePath, int duration)
       : this._file = videoFilePath,
         this._length = duration,
         super(videoFilePath.path);
 
+  /// @nodoc
   EMVideoMessageBody.of(EMVideoMessageBody body)
       : this._file = body._file,
         this._length = body._length,
         super.of(body);
 
+  /// @nodoc
   EMVideoMessageBody._internal(Map data)
       : this._file = null,
         this._length = data['length'],
