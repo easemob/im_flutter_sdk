@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
@@ -34,6 +35,7 @@ class LoginPageState extends State<LoginPage> {
      print('是否登录$isLoggedInBefore');
     isLogged = isLoggedInBefore;
     if(isLoggedInBefore){
+      Navigator.of(context).pop();
       Navigator.of(context).pushNamed(Constant.toHomePage);
     }
   }
@@ -45,78 +47,85 @@ class LoginPageState extends State<LoginPage> {
       _usernameController.text = arguments['username'];
       _pwdController.text = arguments['password'];
     }
-    return Stack(
-      children: <Widget>[
-        Scaffold(
-            backgroundColor: Colors.white,
-            body: Container(
-              /// 背景图
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('images/star.png'),
-                  fit: BoxFit.cover,
+    return WillPopScope(
+      onWillPop: () async{
+        SystemNavigator.pop();
+      },
+      child: Stack(
+        children: <Widget>[
+          Scaffold(
+              backgroundColor: Colors.white,
+              body: Container(
+                /// 背景图
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('images/star.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              child: Align(
-                alignment: Alignment(0, -0.4),
-                child: loginBody(),
-              ),
-            )
-        ),
-
-        /// 注册账号
-        Positioned(
-          left: 33,
-          bottom: 54,
-          width: 100,
-          height: 17,
-          child: FlatButton(
-            child: Text(
-              '账号注册',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white,
-                decoration: TextDecoration.none,
-                letterSpacing: 2,
-                fontWeight: FontWeight.normal,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            onPressed: (){
-              Navigator.of(context).pushNamed(Constant.toRegisterPage);
-            },
-
+                child: Align(
+                  alignment: Alignment(0, -0.4),
+                  child: loginBody(),
+                ),
+              )
           ),
-        ),
 
-        /// 服务器配置
-        Positioned(
-          right: 33,
-          bottom: 54,
-          width: 130,
-          height: 17,
-          child: FlatButton(
-            child: Text(
-              '服务器端配置',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white,
-                decoration: TextDecoration.none,
-                letterSpacing: 2,
-                fontWeight: FontWeight.normal,
+          /// 注册账号
+          Positioned(
+            left: 33,
+            bottom: 54,
+            width: 100,
+            height: 17,
+            child: FlatButton(
+              child: Text(
+                '账号注册',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.normal,
+                ),
+                textAlign: TextAlign.left,
               ),
-              textAlign: TextAlign.right,
+              onPressed: (){
+                Navigator.of(context).pushNamed(Constant.toRegisterPage);
+              },
+
             ),
-            onPressed: (){
-
-            },
-
           ),
-        ),
 
-        ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inLogin,),
-      ],
+          /// 服务器配置
+          Positioned(
+            right: 33,
+            bottom: 54,
+            width: 130,
+            height: 17,
+            child: FlatButton(
+              child: Text(
+                '服务器端配置',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.normal,
+                ),
+                textAlign: TextAlign.right,
+              ),
+              onPressed: (){
+
+              },
+
+            ),
+          ),
+
+          ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inLogin,),
+        ],
+      ),
     );
+
+
   }
 
   loginBody() => SingleChildScrollView(
@@ -169,6 +178,7 @@ class LoginPageState extends State<LoginPage> {
         Container(
           padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
           child: TextField(
+            obscureText : true,
             controller: _pwdController,
             maxLines: 1,
             decoration: InputDecoration(
@@ -225,7 +235,9 @@ class LoginPageState extends State<LoginPage> {
           password: password,
           onSuccess: (username) {
             print("login succes");
+            Navigator.of(context).pop();
             Navigator.of(context).pushNamed(Constant.toHomePage);
+
           },
           onError: (code, desc) {
             _refreshUI(false);
