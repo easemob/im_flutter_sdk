@@ -113,8 +113,6 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             public void onMessageChanged(EMMessage message, Object change) {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("message", EMHelper.convertEMMessageToStringMap(message));
-                // TODO: change 无意义，不需要加
-//                data.put("change", change);
                 post((Void)->{
                     channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
                 });

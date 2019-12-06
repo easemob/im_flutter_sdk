@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/ease_user_info.dart';
+import 'package:im_flutter_sdk_example/pages/chatroom_details_page.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/widgets/bottom_input_bar.dart';
 
+import 'group_details_page.dart';
 import 'items/chat_item.dart';
 
 
@@ -62,85 +64,88 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       print(messageTotalList.length.toString() + 'build');
     }
 
-    return Scaffold(
-        appBar:AppBar(
-          title: Text(this.user.userId, style: TextStyle(color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
-          centerTitle: true,
-          backgroundColor:ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
-          leading: Builder(builder:(BuildContext context){
-            return IconButton(
-              icon: new Icon(Icons.arrow_back,color: Colors.black),
-                onPressed: (){
-                  Navigator.pop(context);
-                }
-            );
-          }),
-          actions: <Widget>[
-            // 隐藏的菜单
-            new PopupMenuButton<String>(
-              icon: new Icon(Icons.more_vert,color: Colors.black,),
-              itemBuilder: _singleChat == true ?
-              (BuildContext context) => <PopupMenuItem<String>>[
-                this.SelectView(Icons.delete, '删除记录', 'A'),]
-                  :
-              (BuildContext context) => <PopupMenuItem<String>>[
-                this.SelectView(Icons.delete, '删除记录', 'A'),
-                this.SelectView(Icons.people, '查看详情', 'B'),] ,
-              onSelected: (String action) {
-                // 点击选项的时候
-                switch (action) {
-                  case 'A':
-                    _cleanAllMessage();
-                    break;
-                  case 'B':
-                    _viewDetails();
-                    break;
-                }
-              },
-            ),
-          ],
-        ),
-        body: Container(
-          color: _isDark ? EMColor.darkBorderLine : EMColor.borderLine,
-          child: Stack(
-            children: <Widget>[
-              SafeArea(
-                child: Column(
-                  children: <Widget>[
-                    Flexible(
-                      child: Column(
-                        children: <Widget>[
-                          Flexible(
-                            child: ListView.builder(
-                              key: UniqueKey(),
-                              shrinkWrap: true,
-                              reverse: true,
-                              controller: _scrollController,
-                              itemCount: messageTotalList.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                if (messageTotalList.length != null && messageTotalList.length > 0) {
-                                  return ChatItem(this,messageTotalList[index],_isShowTime(index));
-                                } else {
-                                  return WidgetUtil.buildEmptyWidget();
-                                }
-                              },
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    Container(
-                      height: 110,
-                      child: BottomInputBar(this),
-                    ),
-                    _getExtWidgets(),
-                  ],
-                ),
+    return WillPopScope(
+      onWillPop: _willPop,
+      child: new Scaffold(
+          appBar:AppBar(
+            title: Text(this.user.userId, style: TextStyle(color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
+            centerTitle: true,
+            backgroundColor:ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
+            leading: Builder(builder:(BuildContext context){
+              return IconButton(
+                  icon: new Icon(Icons.arrow_back,color: Colors.black),
+                  onPressed: (){
+                    Navigator.pop(context,true);
+                  }
+              );
+            }),
+            actions: <Widget>[
+              // 隐藏的菜单
+              new PopupMenuButton<String>(
+                icon: new Icon(Icons.more_vert,color: Colors.black,),
+                itemBuilder: _singleChat == true ?
+                    (BuildContext context) => <PopupMenuItem<String>>[
+                  this.SelectView(Icons.delete, '删除记录', 'A'),]
+                    :
+                    (BuildContext context) => <PopupMenuItem<String>>[
+                  this.SelectView(Icons.delete, '删除记录', 'A'),
+                  this.SelectView(Icons.people, '查看详情', 'B'),] ,
+                onSelected: (String action) {
+                  // 点击选项的时候
+                  switch (action) {
+                    case 'A':
+                      _cleanAllMessage();
+                      break;
+                    case 'B':
+                      _viewDetails();
+                      break;
+                  }
+                },
               ),
-//              _buildActionWidget(),
             ],
           ),
-        )
+          body: Container(
+            color: _isDark ? EMColor.darkBorderLine : EMColor.borderLine,
+            child: Stack(
+              children: <Widget>[
+                SafeArea(
+                  child: Column(
+                    children: <Widget>[
+                      Flexible(
+                        child: Column(
+                          children: <Widget>[
+                            Flexible(
+                              child: ListView.builder(
+                                key: UniqueKey(),
+                                shrinkWrap: true,
+                                reverse: true,
+                                controller: _scrollController,
+                                itemCount: messageTotalList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  if (messageTotalList.length != null && messageTotalList.length > 0) {
+                                    return ChatItem(this,messageTotalList[index],_isShowTime(index));
+                                  } else {
+                                    return WidgetUtil.buildEmptyWidget();
+                                  }
+                                },
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 110,
+                        child: BottomInputBar(this),
+                      ),
+                      _getExtWidgets(),
+                    ],
+                  ),
+                ),
+//              _buildActionWidget(),
+              ],
+            ),
+          )
+      ),
     );
   }
 
@@ -261,6 +266,14 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   _viewDetails() async{
     switch(fromChatType(mType)){
       case ChatType.GroupChat:
+        Navigator.push<bool>(context,
+            new MaterialPageRoute(builder: (BuildContext context) {
+              return EMGroupDetailsPage(this.toChatUsername);
+            })).then((bool _isRefresh){
+              if(_isRefresh){
+                Navigator.pop(context, true);
+              }
+        });
         break;
       case ChatType.ChatRoom:
         break;
@@ -323,7 +336,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   @override
-  void onMessageChanged(EMMessage message, Object change) {
+  void onMessageChanged(EMMessage message) {
     // TODO: implement onMessageChanged
   }
 
@@ -490,6 +503,11 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void stopRecordVoice() {
     _showExtraCenterWidget(ChatStatus.Normal);
+  }
+
+  Future<bool> _willPop () { //返回值必须是Future<bool>
+    Navigator.of(context).pop(false);
+    return Future.value(false);
   }
 
 }
