@@ -3,7 +3,6 @@ import "dart:async";
 import 'package:flutter/services.dart';
 
 import 'em_group.dart';
-import 'em_log.dart';
 import 'em_sdk_method.dart';
 import 'em_domain_terms.dart';
 import 'em_listeners.dart';
@@ -525,17 +524,10 @@ class EMGroupManager{
 
   /// 获取群组成员列表
   void fetchGroupMembers({
-<<<<<<< HEAD
     final String groupId,
     final String cursor,
     final int pageSize,
     onSuccess(EMCursorResult result),
-=======
-    @required String groupId,
-    @required String cursor,
-    @required int pageSize,
-    onSuccess(EMCursorResult<String> result),
->>>>>>> easemob/dev
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(EMSDKMethod.fetchGroupMembers, {"groupId" : groupId, "cursor" : cursor, "pageSize" : pageSize});
@@ -681,17 +673,10 @@ class EMGroupManager{
 
   ///  获取群组的禁言列表
   void fetchGroupMuteList({
-<<<<<<< HEAD
     final String groupId,
     final int pageNum,
     final int pageSize,
     onSuccess(List list),
-=======
-    @required String groupId,
-    @required int pageNum,
-    @required int pageSize,
-    onSuccess(List<String> muteList),
->>>>>>> easemob/dev
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
@@ -716,17 +701,10 @@ class EMGroupManager{
 
   /// 从服务器获分页获取群组黑名单
   void fetchGroupBlackList({
-<<<<<<< HEAD
     final String groupId,
     final int pageNum,
     final int pageSize,
     onSuccess(List list),
-=======
-    @required String groupId,
-    @required int pageNum,
-    @required int pageSize,
-    onSuccess(List<String> blackList),
->>>>>>> easemob/dev
     onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emGroupManagerChannel
         .invokeMethod(
