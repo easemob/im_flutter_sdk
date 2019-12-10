@@ -21,8 +21,9 @@
 @implementation EMClientWrapper
 
 + (void)setDeivceToken:(NSData *)aDeviceToken {
-    [EMClient.sharedClient registerForRemoteNotificationsWithDeviceToken:aDeviceToken
-                                                              completion:nil];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[EMClient sharedClient] bindDeviceToken:aDeviceToken];
+    });
 }
 
 - (instancetype)initWithChannelName:(NSString *)aChannelName
