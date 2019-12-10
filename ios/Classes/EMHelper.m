@@ -14,6 +14,10 @@
 + (EMOptions *)dictionaryToEMOptions:(NSDictionary *)aDictionary
 {
     EMOptions *options = [EMOptions optionsWithAppkey:aDictionary[@"appKey"]];
+    if (aDictionary[@"pushConfig"]) {
+        NSLog(@"证书名称----%@", aDictionary[@"pushConfig"][@"apnsSenderId"]);
+        options.apnsCertName = aDictionary[@"pushConfig"][@"apnsSenderId"];
+    }
     if (aDictionary[@"acceptInvitationAlways"]) {
         options.isAutoAcceptFriendInvitation = [aDictionary[@"acceptInvitationAlways"] boolValue];
     }
