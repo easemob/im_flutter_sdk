@@ -315,13 +315,11 @@ class EMMessage {
   EMMessage({
     this.acked,
     this.body,
-    this.chatType ,
     this.delivered,
     this.direction,
     this.from,
     this.listened ,
     this.localTime,
-    this.msgId ,
     this.msgTime,
     this.status ,
     this.to,
@@ -331,7 +329,9 @@ class EMMessage {
   })
       : _attributes = {},
         _conversationId = '',
-        _userName = '';
+        _userName = '',
+        chatType = ChatType.Chat,
+        msgId = currentTimeMillis();
 
   /// 用于创建各种消息的构造函数 - 发送方。
   EMMessage.createSendMessage(EMMessageType type)
@@ -467,6 +467,10 @@ class EMMessage {
   /// ext
   Map ext() {
     return _attributes;
+  }
+
+  static String currentTimeMillis() {
+    return new DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   /// @nodoc
@@ -953,12 +957,15 @@ EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
 
 /// @nodoc 会话类型 EMConversationType 数据类型转 int
 toEMConversationType(EMConversationType type){
-  if(type == EMConversationType.Chat){
-    return 0;
-  }else if(type == EMConversationType.GroupChat){
-    return 1;
-  }else if(type == EMConversationType.ChatRoom){
-    return 2;
+  switch(type){
+    case EMConversationType.Chat:
+      return 0;
+    case EMConversationType.GroupChat:
+      return 1;
+    case EMConversationType.ChatRoom:
+      return 2;
+    default:
+      return 0;
   }
 }
 /// @nodoc 会话类型 int 数据类型转 EMConversationType

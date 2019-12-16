@@ -157,4 +157,5 @@ public class EMSDKMethod {
 
     static final String onGroupChanged = "onGroupChanged";
 
+    static final String onMessageStatus_onProgress = "onMessageStatus_onProgress";
 }

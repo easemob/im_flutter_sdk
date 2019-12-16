@@ -41,6 +41,23 @@ class MessageItemFactory extends StatelessWidget {
     return widget;
   }
 
+  ///文件消息
+  Widget fileMessageItem(){
+    EMNormalFileMessageBody msg = message.body;
+
+    Widget widget;
+    List<Widget> list = new List();
+
+
+    return Container(
+      width: 230,
+      height: 80,
+      child: Row(
+
+      ),
+    );
+  }
+
   Widget messageItem() {
     if (message.body is EMTextMessageBody) {
       return textMessageItem();

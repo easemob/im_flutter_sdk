@@ -18,6 +18,7 @@ class EMChatManager {
   static EMChatManager _instance;
 
   final _messageListeners = List<EMMessageListener>();
+  final _messageStatusListeners = List<EMMessageStatus>();
   Function _conversationUpdateFunc;
 
   EMChatManager._internal() {
@@ -38,6 +39,7 @@ class EMChatManager {
         EMSDKMethod.sendMessage, message.toDataMap());
     result.then((response){
       if (response["success"]) {
+        message.msgId = response['ServerMsgId'];
         if (onSuccess != null) onSuccess();
       }
     });
@@ -61,6 +63,8 @@ class EMChatManager {
         return _onMessageChanged(argMap);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
         return _conversationUpdateFunc();
+      } else if(call.method == EMSDKMethod.onMessageStatus_onProgress){
+        return _messageStatus_onProgress(argMap);
       }
       return null;
     });
@@ -408,6 +412,18 @@ class EMChatManager {
       listener.onMessageChanged(message);
     }
   }
+
+  void addMessageStatusListener(EMMessageStatus listener) {
+    assert(listener != null);
+    _messageStatusListeners.add(listener);
+  }
+
+  /// @nodoc
+  Future<void>_messageStatus_onProgress(Map map) async{
+    for (var listener in _messageStatusListeners) {
+      listener.onProgress(map['progress'], map['status']);
+    }
+  }
 }
 
 /// _EMCursorResult - 内部EMCursorResult实现。
@@ -434,4 +450,8 @@ class _EMCursorResults<T> extends EMCursorResults<T> {
       return null;
     }
   }
+}
+
+abstract class EMMessageStatus{
+  void onProgress(int progress, String status);
 }
