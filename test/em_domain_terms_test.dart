@@ -16,10 +16,8 @@ main() {
   test('EMMessage created successfully with fields set with default values',
       () {
     EMMessage message = EMMessage(
-        msgId: '123456',
         from: '123',
         to: '456',
-        chatType: ChatType.Chat,
         direction: Direction.SEND);
     expect(message.msgId, '123456');
     expect(message.from, '123');
