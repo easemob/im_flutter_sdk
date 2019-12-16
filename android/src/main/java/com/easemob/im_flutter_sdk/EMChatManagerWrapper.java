@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMChatManager;
 import com.hyphenate.chat.EMClient;
@@ -20,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -185,7 +187,43 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     private void sendMessage(Object args, Result result) {
         JSONObject argMap = (JSONObject)args;
         EMMessage message = EMHelper.convertDataMapToMessage(argMap);
-        message.setMessageStatusCallback(new EMWrapperCallBack(result));
+        String localMsgId = message.getMsgId();
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("success", Boolean.TRUE);
+        message.setMessageStatusCallback(new EMCallBack() {
+            @Override
+            public void onSuccess() {
+                post((Void)->{
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("success", Boolean.TRUE);
+                    data.put("ServerMsgId",message.getMsgId());
+                    EMLog.e("callback", "onSuccess");
+                    result.success(data);
+                });
+            }
+
+            @Override
+            public void onError(int code, String error) {
+                post((Void)->{
+                    Map<String, Object> data = new HashMap<String, Object>();
+                    data.put("success", Boolean.FALSE);
+                    data.put("code", code );
+                    data.put("error", error);
+                    result.success(data);
+                });
+
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+                post((Void)->{
+                    data.put("progress", progress );
+                    data.put("status", status);
+                    data.put("localMsgId",localMsgId);
+                    channel.invokeMethod(EMSDKMethod.onMessageStatus_onProgress, data);
+                });
+            }
+        });
         manager.sendMessage(message);
     }
 
