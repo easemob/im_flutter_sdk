@@ -137,6 +137,10 @@ class EMHelper {
                     setExt(args,message);
                     break;
             }
+
+            if (message != null) {
+                message.setMsgId(args.getString("msgId"));
+            }
         }catch(Exception e){
             e.printStackTrace();
         }

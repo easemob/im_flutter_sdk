@@ -20,7 +20,7 @@ class ChatPage extends StatefulWidget {
       _ChatPageState(arguments: this.arguments);
 }
 
-class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatItemDelegate,BottomInputBarDelegate{
+class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatItemDelegate,BottomInputBarDelegate,EMMessageStatus{
   var arguments;
   int mType;
   String toChatUsername;
@@ -30,7 +30,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   int _pageSize = 10;
   bool isLoad = false;
   bool isJoinRoom = false;
-  bool _isDark;
+  bool _isDark = false;
   bool _singleChat;
   String msgStartId = '';
   String afterLoadMessageId = '';
@@ -171,6 +171,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     EMClient.getInstance().chatManager().addMessageListener(this);
     EMClient.getInstance().chatManager().loadAllConversations();
+    EMClient.getInstance().chatManager().addMessageStatusListener(this);
 
     messageTotalList.clear();
 
@@ -318,10 +319,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   void _initExtWidgets(){
-    Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',false,() async {
+    Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
       WidgetUtil.hintBoxWithDefault('视频通话待实现!');
     });
-    Widget locationWidget = WidgetUtil.buildExtentionWidget('images/location.png','位置',false,() async {
+    Widget locationWidget = WidgetUtil.buildExtentionWidget('images/location.png','位置',_isDark,() async {
       WidgetUtil.hintBoxWithDefault('发送位置消息待实现!');
     });
     extWidgetList.add(videoWidget);
@@ -485,7 +486,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     message.chatType = fromChatType(mType);
     EMTextMessageBody body = EMTextMessageBody(text);
     message.body = body;
-    EMClient.getInstance().chatManager().sendMessage(message);
+    print('-----------LocalID---------->' + message.msgId);
+    EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
+      print('-----------ServerID---------->' + message.msgId);
+    });
     _onConversationInit();
   }
 
@@ -507,6 +511,12 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   Future<bool> _willPop () { //返回值必须是Future<bool>
     Navigator.of(context).pop(false);
     return Future.value(false);
+  }
+
+  @override
+  void onProgress(int progress, String status) {
+    // TODO: implement onProgress
+    print('-----------onProgress---------->'+ ': '+ progress.toString());
   }
 
 }
