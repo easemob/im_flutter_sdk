@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/plugin/im_demo_plugin.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 import 'conversation_list_page.dart';
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
     // TODO: implement initState
     super.initState();
     EMClient.getInstance().chatManager().addMessageListener(this);
+    new ImDemoPlugin().loginComplete();
   }
 
   void refreshUI(bool visible){
