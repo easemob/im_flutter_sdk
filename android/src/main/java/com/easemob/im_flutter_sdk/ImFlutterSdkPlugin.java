@@ -7,11 +7,13 @@ import android.util.Log;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMChatRoom;
+import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.push.EMPushHelper;
 import com.hyphenate.push.EMPushType;
 import com.hyphenate.util.EMLog;
 
@@ -35,8 +37,6 @@ import static com.easemob.im_flutter_sdk.EMHelper.convertEMPageResultToStringMap
 public class ImFlutterSdkPlugin {
   private static final String CHANNEL_PREFIX = "com.easemob.im";
   static final Handler handler = new Handler(Looper.getMainLooper());
-  static String deviceToken;
-  static EMPushType pushType = EMPushType.NORMAL;
 
   private ImFlutterSdkPlugin(){}
 
@@ -48,6 +48,7 @@ public class ImFlutterSdkPlugin {
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
+    registerPushManagerWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -74,22 +75,15 @@ public class ImFlutterSdkPlugin {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_room_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
   }
+
   public static void registerGroupManagerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
   }
 
-  public static void setDeviceToken(EMPushType emPushType, String emDeviceToken){
-    pushType = emPushType;
-    deviceToken = emDeviceToken;
-  }
-
-  public static String getDeviceToken(){
-    return deviceToken;
-  }
-
-  public static EMPushType getPushType(){
-    return pushType;
+  public static void registerPushManagerWith(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_client", JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMPushManagerWrapper(registrar.context(), channel));
   }
 
 }
