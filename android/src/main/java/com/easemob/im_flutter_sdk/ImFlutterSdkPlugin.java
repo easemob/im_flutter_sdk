@@ -48,7 +48,7 @@ public class ImFlutterSdkPlugin {
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
-    registerPushManagerWith(registrar);
+//    registerPushManagerWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
