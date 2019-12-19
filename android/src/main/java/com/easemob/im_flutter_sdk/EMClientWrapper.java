@@ -156,57 +156,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject) args;
             String userName = argMap.getString("userName");
             String password = argMap.getString("password");
-            EMClient.getInstance().login(userName, password, new EMCallBack() {
-                void post(Consumer<Void> func) {
-                    ImFlutterSdkPlugin.handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            func.accept(null);
-                        }
-                    });
-                }
-
-                @Override
-                public void onSuccess() {
-                    post((Void) -> {
-                        Map<String, Object> data = new HashMap<String, Object>();
-                        data.put("success", Boolean.TRUE);
-                        EMLog.e("callback", "onSuccess");
-                        result.success(data);
-                        if(ImFlutterSdkPlugin.getPushType() == EMPushType.FCM){
-                            EMClient.getInstance().sendFCMTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.HMSPUSH){
-                            EMClient.getInstance().sendHMSPushTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MIPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MIPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MEIZUPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MEIZUPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.OPPOPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.OPPOPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.VIVOPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.VIVOPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }
-
-                    });
-                }
-
-                @Override
-                public void onError(int code, String desc) {
-                    post((Void) -> {
-                        Map<String, Object> data = new HashMap<String, Object>();
-                        data.put("success", Boolean.FALSE);
-                        data.put("code", code);
-                        data.put("desc", desc);
-                        EMLog.e("callback", "onError");
-                        result.success(data);
-                    });
-                }
-
-                @Override
-                public void onProgress(int progress, String status) {
-
-                }
-            });
+            EMClient.getInstance().login(userName, password, new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -217,57 +167,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject)args;
             String userName = argMap.getString("userName");
             String token = argMap.getString("token");
-            EMClient.getInstance().loginWithToken(userName, token, new EMCallBack() {
-                void post(Consumer<Void> func) {
-                    ImFlutterSdkPlugin.handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            func.accept(null);
-                        }
-                    });
-                }
-
-                @Override
-                public void onSuccess() {
-                    post((Void) -> {
-                        Map<String, Object> data = new HashMap<String, Object>();
-                        data.put("success", Boolean.TRUE);
-                        EMLog.e("callback", "onSuccess");
-                        result.success(data);
-                        if(ImFlutterSdkPlugin.getPushType() == EMPushType.FCM){
-                            EMClient.getInstance().sendFCMTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.HMSPUSH){
-                            EMClient.getInstance().sendHMSPushTokenToServer(ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MIPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MIPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.MEIZUPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.MEIZUPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.OPPOPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.OPPOPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }else if(ImFlutterSdkPlugin.getPushType() == EMPushType.VIVOPUSH){
-                            EMPushHelper.getInstance().onReceiveToken(EMPushType.VIVOPUSH, ImFlutterSdkPlugin.getDeviceToken());
-                        }
-
-                    });
-                }
-
-                @Override
-                public void onError(int code, String desc) {
-                    post((Void) -> {
-                        Map<String, Object> data = new HashMap<String, Object>();
-                        data.put("success", Boolean.FALSE);
-                        data.put("code", code);
-                        data.put("desc", desc);
-                        EMLog.e("callback", "onError");
-                        result.success(data);
-                    });
-                }
-
-                @Override
-                public void onProgress(int progress, String status) {
-
-                }
-            });
+            EMClient.getInstance().loginWithToken(userName, token, new EMWrapperCallBack(result));
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
