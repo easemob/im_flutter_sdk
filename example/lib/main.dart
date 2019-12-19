@@ -29,6 +29,9 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   void initState() {
     //TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
+//    EMPushConfig config = new EMPushConfig();
+//    config.enableAPNS('证书名称');
+//    options.setPushConfig(config);
     EMClient.getInstance().init(options);
     EMClient.getInstance().setDebugMode(true);
     EMClient.getInstance().addConnectionListener(this);

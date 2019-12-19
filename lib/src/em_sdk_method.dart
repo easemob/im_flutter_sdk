@@ -157,4 +157,5 @@ class EMSDKMethod {
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
 
+  static const String onMessageStatus_onProgress = "onMessageStatus_onProgress";
 }

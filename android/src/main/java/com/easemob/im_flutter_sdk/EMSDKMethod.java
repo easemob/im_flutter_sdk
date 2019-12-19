@@ -157,4 +157,15 @@ public class EMSDKMethod {
 
     static final String onGroupChanged = "onGroupChanged";
 
+    static final String onMessageStatus_onProgress = "onMessageStatus_onProgress";
+
+    //EMPushManager
+    static final String enableOfflinePush = "enableOfflinePush";
+    static final String disableOfflinePush = "disableOfflinePush";
+    static final String getPushConfigs = "getPushConfigs";
+    static final String getPushConfigsFromServer = "getPushConfigsFromServer";
+    static final String updatePushServiceForGroup = "updatePushServiceForGroup";
+    static final String getNoPushGroups = "getNoPushGroups";
+    static final String updatePushNickname = "updatePushNickname";
+
 }
