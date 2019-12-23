@@ -204,11 +204,11 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void _onConversationInit() async{
     messageList.clear();
     conversation = await EMClient.getInstance().chatManager().
-    getConversation(id:toChatUsername,type:fromEMConversationType(mType),createIfNotExists:true );
+    getConversation(toChatUsername, fromEMConversationType(mType), true );
 
     if(conversation != null){
       conversation.markAllMessagesAsRead();
-      msgListFromDB = await conversation.loadMoreMsgFromDB(startMsgId: '', pageSize: 20);
+      msgListFromDB = await conversation.loadMoreMsgFromDB('', 20);
     }
 
     if(msgListFromDB != null && msgListFromDB.length > 0){
@@ -221,7 +221,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
 
   void _loadMessage() async {
-    var loadlist = await conversation.loadMoreMsgFromDB(startMsgId: afterLoadMessageId ,pageSize:_pageSize);
+    var loadlist = await conversation.loadMoreMsgFromDB(afterLoadMessageId , _pageSize);
     if(loadlist.length > 0){
       afterLoadMessageId = loadlist.first.msgId;
       loadlist.sort((a, b) => b.msgTime.compareTo(a.msgTime));
@@ -242,7 +242,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   ///如果是聊天室类型 先加入聊天室
   _joinChatRoom(){
-    EMClient.getInstance().chatRoomManager().joinChatRoom(roomId: toChatUsername ,
+    EMClient.getInstance().chatRoomManager().joinChatRoom(toChatUsername ,
         onSuccess: (){
           isJoinRoom = true;
         },
@@ -309,7 +309,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   void checkOutRoom(){
-    EMClient.getInstance().chatRoomManager().leaveChatRoom(roomId: toChatUsername,
+    EMClient.getInstance().chatRoomManager().leaveChatRoom(toChatUsername,
         onSuccess: (){
           print('退出聊天室成功');
         },
@@ -369,7 +369,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       }
       // if the message is for current conversation
       if(username == toChatUsername || message.to == toChatUsername || message.conversationId == toChatUsername) {
-        conversation.markMessageAsRead(messageId:message.msgId);
+        conversation.markMessageAsRead(message.msgId);
       }
     }
     _onConversationInit();
