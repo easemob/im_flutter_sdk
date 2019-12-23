@@ -48,7 +48,7 @@ public class ImFlutterSdkPlugin {
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
-//    registerPushManagerWith(registrar);
+    registerPushManagerWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -82,8 +82,8 @@ public class ImFlutterSdkPlugin {
   }
 
   public static void registerPushManagerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_client", JSONMethodCodec.INSTANCE);
-    channel.setMethodCallHandler(new EMPushManagerWrapper(registrar.context(), channel));
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_push_manager", JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMPushManagerWrapper());
   }
 
 }
