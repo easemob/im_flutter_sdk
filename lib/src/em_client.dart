@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/src/em_push_manager.dart';
 
 import 'em_chat_manager.dart';
 import 'em_chatroom_manager.dart';
@@ -10,7 +11,6 @@ import 'em_group_manager.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
 
-
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emClientChannel =
@@ -18,12 +18,13 @@ class EMClient {
 
   final EMChatManager _chatManager = EMChatManager.getInstance();
 
-  final EMContactManager _contactManager =  EMContactManager.getInstance();
+  final EMContactManager _contactManager = EMContactManager.getInstance();
 
   final EMChatRoomManager _chatRoomManager = EMChatRoomManager.getInstance();
 
-  final EMGroupManager _groupManager =  EMGroupManager.getInstance();
+  final EMGroupManager _groupManager = EMGroupManager.getInstance();
 
+  final EMPushManager _pushManager = EMPushManager();
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
@@ -67,11 +68,8 @@ class EMClient {
 
   /// 注册环信账号[userName]/[password].
   /// 如果注册成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void createAccount(
-      { String userName,
-        String password,
-        onSuccess(),
-        onError(int errorCode, String desc)}) {
+  void createAccount(String userName, String password,
+      {onSuccess(), onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.createAccount,
         {"userName": userName, "password": password});
@@ -88,11 +86,8 @@ class EMClient {
 
   /// 账号密码登录[id]/[password].
   /// 如果登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void login(
-      {String userName,
-      String password,
-      onSuccess(String username),
-      onError(int errorCode, String desc)}) {
+  void login(String userName, String password,
+      {onSuccess(String username), onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.login, {"userName": userName, "password": password});
     result.then((response) {
@@ -111,11 +106,8 @@ class EMClient {
 
   /// @nodoc 使用账号和token登录 [userName] and [token].
   /// @nodoc 如果登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void loginWithToken(
-      {String userName,
-      String token,
-      onSuccess(),
-      onError(int errorCode, String desc)}) {
+  void loginWithToken(String userName, String token,
+      {onSuccess(), onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.login, {"userName": userName, "token": token});
     result.then((response) {
@@ -130,8 +122,7 @@ class EMClient {
   /// 退出登录.
   /// [unbindToken] true 解除推送绑定 ： false 不解除绑定
   /// 如果退出登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void logout(
-      {bool unbindToken = false, onSuccess(), onError(int code, String desc)}) {
+  void logout(bool unbindToken, {onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.logout, {"unbindToken": unbindToken});
     result.then((response) {
@@ -145,7 +136,8 @@ class EMClient {
 
   /// @nodoc 修改appkey [appKey].
   /// @nodoc 如果修改成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void changeAppKey({String appKey, onSuccess(), onError(int code, String desc)}) {
+  void changeAppKey(String appKey,
+      {onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel
         .invokeMethod(EMSDKMethod.changeAppKey, {"appKey": appKey});
     result.then((response) {
@@ -211,9 +203,8 @@ class EMClient {
   /// @nodoc 当前登录账号和密码 [userName]/[password]
   /// @nodoc 如果出现错误，请调用[onError]。
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
-      {String userName,
-       String password,
-      onError(int code, String desc)}) async {
+      String userName, String password,
+      {onError(int code, String desc)}) async {
     Map<String, dynamic> result = await _emClientChannel.invokeMethod(
         EMSDKMethod.getLoggedInDevicesFromServer,
         {"userName": userName, "password": password});
@@ -237,11 +228,8 @@ class EMClient {
   /// @nodoc 根据设备ID，将该设备下线,
   /// @nodoc 账号和密码 [userName]/[password] 设备ID[resource].
   /// @nodoc 如果出现错误，请调用[onError]。
-  void kickDevice(
-      {String userName,
-      String password,
-      String resource,
-      onError(int code, String desc)}) {
+  void kickDevice(String userName, String password, String resource,
+      {onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.kickDevice,
         {"userName": userName, "password": password, "resource": resource});
     result.then((response) {
@@ -255,9 +243,7 @@ class EMClient {
   /// @nodoc 将该账号下的所有设备都踢下线
   /// @nodoc 账号和密码 [userName]/[password] pair.
   /// @nodoc 如果出现错误，请调用[onError].
-  void kickAllDevices(
-      String userName,
-      String password,
+  void kickAllDevices(String userName, String password,
       {onError(int code, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
         EMSDKMethod.kickAllDevices,
@@ -277,20 +263,20 @@ class EMClient {
 
   /// 获取当前用户名
   /// 如果尚未成功登录IM服务器，则返回null
-  Future<String> getCurrentUser() async{
+  Future<String> getCurrentUser() async {
     Map<String, dynamic> result =
-    await _emClientChannel.invokeMethod(EMSDKMethod.getCurrentUser);
-    if(result['success']){
+        await _emClientChannel.invokeMethod(EMSDKMethod.getCurrentUser);
+    if (result['success']) {
       return result['userName'];
     }
     return '';
   }
 
   /// 判断当前是否登录 true 已登录  false 未登录
-  Future<bool> isLoggedInBefore() async{
+  Future<bool> isLoggedInBefore() async {
     Map<String, dynamic> result =
-    await _emClientChannel.invokeMethod(EMSDKMethod.isLoggedInBefore);
-    if(result['success']){
+        await _emClientChannel.invokeMethod(EMSDKMethod.isLoggedInBefore);
+    if (result['success']) {
       return result['isLogged'];
     }
     return false;
@@ -362,9 +348,11 @@ class EMClient {
     var event = map["event"];
     for (var listener in _multiDeviceListeners) {
       if (event >= 10) {
-        listener.onGroupEvent(convertIntToEMContactGroupEvent(event), map['target'], map['userNames']);
+        listener.onGroupEvent(convertIntToEMContactGroupEvent(event),
+            map['target'], map['userNames']);
       } else {
-        listener.onContactEvent(convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
+        listener.onContactEvent(
+            convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
       }
     }
   }
@@ -380,17 +368,23 @@ class EMClient {
   }
 
   /// @nodoc
-  EMChatRoomManager chatRoomManager(){
+  EMChatRoomManager chatRoomManager() {
     return _chatRoomManager;
   }
+
   /// @nodoc  groupManager - retrieve [EMGroupManager] handle.
-  EMGroupManager groupManager(){
+  EMGroupManager groupManager() {
     return _groupManager;
   }
 
+  /// @nodoc  pushManager - retrieve [EMPushManager] handle.
+  EMPushManager pushManager() {
+    return _pushManager;
+  }
+
   /// @nodoc
-  EMContactGroupEvent convertIntToEMContactGroupEvent(int i){
-    switch(i){
+  EMContactGroupEvent convertIntToEMContactGroupEvent(int i) {
+    switch (i) {
       case 2:
         return EMContactGroupEvent.CONTACT_REMOVE;
       case 3:
@@ -445,5 +439,4 @@ class EMClient {
         return null;
     }
   }
-
 }
