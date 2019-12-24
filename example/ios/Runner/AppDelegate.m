@@ -25,7 +25,7 @@
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    [ImFlutterSdkPlugin setDeivceToken:deviceToken];
+    [ImFlutterSdkPlugin setDeviceToken:deviceToken];
 }
 
 @end
