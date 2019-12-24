@@ -232,8 +232,8 @@ void login(String username , String password){
     print(username+':'+password);
     _refreshUI(true);
       EMClient.getInstance().login(
-          userName: username,
-          password: password,
+          username,
+          password,
           onSuccess: (username) {
             print("login succes");
             Navigator.of(context).pop();

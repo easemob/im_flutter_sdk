@@ -62,7 +62,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
       onTap: (){
         WidgetUtil.hintBoxWithDefault('默认创建可直接加入公开群');
         _refreshUI(true);
-        EMClient.getInstance().groupManager().createGroup(groupName: '可直接加入的公开群' + DateTime.now().millisecondsSinceEpoch.toString(), desc: '', members: [], reason: '', options: EMGroupOptions(maxUsers : 2000, style: EMGroupStyle.EMGroupStylePublicOpenJoin),
+        EMClient.getInstance().groupManager().createGroup('可直接加入的公开群' + DateTime.now().millisecondsSinceEpoch.toString(), '', [], '', EMGroupOptions(maxUsers : 2000, style: EMGroupStyle.EMGroupStylePublicOpenJoin),
         onSuccess: (group){
           WidgetUtil.hintBoxWithDefault('创建群组成功');
           getJoinedGroups();

@@ -8,7 +8,7 @@ import "em_sdk_method.dart";
 class EMConversation {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emConversationChannel =
-  const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
+      const MethodChannel('$_channelPrefix/em_conversation', JSONMethodCodec());
   final String _conversationId;
 
   /// 会话id
@@ -22,8 +22,7 @@ class EMConversation {
   String extField;
 
   /// @nodoc
-  EMConversation(String conversationId)
-      : _conversationId = conversationId;
+  EMConversation(String conversationId) : _conversationId = conversationId;
 
   /// @nodoc
   EMConversation.from(Map data)
@@ -48,7 +47,8 @@ class EMConversation {
   }
 
   /// 根据传入的参数从db加载startMsgId之前(存储顺序)指定数量的message[startMsgId], [pageSize]
-  Future<List<EMMessage>> loadMoreMsgFromDB({String startMsgId, int pageSize = 10}) async {
+  Future<List<EMMessage>> loadMoreMsgFromDB(
+      String startMsgId, int pageSize) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.loadMoreMsgFromDB, {
       "id": _conversationId,
@@ -72,12 +72,8 @@ class EMConversation {
   /// [timeStamp],搜索消息的时间点
   /// [maxCount] 搜索结果的最大条数
   /// [direction]. 方向
-  Future<List<EMMessage>> searchMsgFromDB(
-    EMMessageType type,
-    String keywords,
-    int timeStamp,
-    int maxCount,
-    EMSearchDirection direction) async {
+  Future<List<EMMessage>> searchMsgFromDB(EMMessageType type, String keywords,
+      int timeStamp, int maxCount, EMSearchDirection direction) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDB, {
       "id": _conversationId,
@@ -125,8 +121,8 @@ class EMConversation {
   }
 
   /// 通过[mesasgeId]获取消息，[markAsRead] 将其设置为已读.
-  Future<EMMessage> getMessage(
-      String messageId,{bool markAsRead = true}) async {
+  Future<EMMessage> getMessage(String messageId,
+      {bool markAsRead = true}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.getMessage, {
       "id": _conversationId,
@@ -155,13 +151,13 @@ class EMConversation {
   }
 
   /// 将id是[messageId]的消息标记为已读。
-  void markMessageAsRead({final String messageId}) {
+  void markMessageAsRead(String messageId) {
     _emConversationChannel.invokeMethod(EMSDKMethod.markMessageAsRead,
         {"id": _conversationId, "messageId": messageId});
   }
 
   /// 从对话中删除id是[messageId]的消息。
-  void removeMessage({final String messageId}) {
+  void removeMessage(String messageId) {
     _emConversationChannel.invokeMethod(EMSDKMethod.removeMessage,
         {"id": _conversationId, "messageId": messageId});
   }
