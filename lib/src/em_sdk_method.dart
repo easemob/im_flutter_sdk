@@ -63,6 +63,8 @@ class EMSDKMethod {
   static const String onMessageChanged = "onMessageChanged";
   static const String onConversationUpdate = "onConversationUpdate";
 
+  static const String onMessageStatusOnProgress = "onMessageStatusOnProgress";
+
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
@@ -157,7 +159,6 @@ class EMSDKMethod {
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
 
-  static const String onMessageStatus_onProgress = "onMessageStatus_onProgress";
 
   /// EMPushManager
   static const String enableOfflinePush = "enableOfflinePush";

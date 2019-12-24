@@ -66,6 +66,7 @@ public class EMSDKMethod {
     static final String onMessageRecalled = "onMessageRecalled";
     static final String onMessageChanged = "onMessageChanged";
     static final String onConversationUpdate = "onConversationUpdate";
+    static final String onMessageStatusOnProgress = "onMessageStatusOnProgress";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
@@ -156,8 +157,6 @@ public class EMSDKMethod {
     static final String updateGroupExtension = "updateGroupExtension";
 
     static final String onGroupChanged = "onGroupChanged";
-
-    static final String onMessageStatus_onProgress = "onMessageStatus_onProgress";
 
     //EMPushManager
     static final String enableOfflinePush = "enableOfflinePush";

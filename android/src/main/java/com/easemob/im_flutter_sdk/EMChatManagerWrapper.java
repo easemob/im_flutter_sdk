@@ -196,7 +196,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                 post((Void)->{
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("success", Boolean.TRUE);
-                    data.put("ServerMsgId",message.getMsgId());
+                    data.put("message", EMHelper.convertEMMessageToStringMap(message));
                     EMLog.e("callback", "onSuccess");
                     result.success(data);
                 });
@@ -220,7 +220,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     data.put("progress", progress );
                     data.put("status", status);
                     data.put("localMsgId",localMsgId);
-                    channel.invokeMethod(EMSDKMethod.onMessageStatus_onProgress, data);
+                    channel.invokeMethod(EMSDKMethod.onMessageStatusOnProgress, data);
                 });
             }
         });
