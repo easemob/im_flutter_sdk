@@ -67,7 +67,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
     _muteList.clear();
     _currentUser = await EMClient.getInstance().getCurrentUser();
     EMClient.getInstance().groupManager().getGroupFromServer(
-        groupId: _groupId,
+        _groupId,
         onSuccess: (group) {
           _emGroup = group;
           _owner = group.getOwner();
@@ -85,9 +85,9 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
             _isAdmin = true;
           }
           EMClient.getInstance().groupManager().fetchGroupMembers(
-              groupId: _groupId,
-              cursor: '',
-              pageSize: 200,
+              _groupId,
+              '',
+              200,
               onSuccess: (result) {
                 result.getData().forEach((member) {
                   _groupMembers.add(member);
@@ -96,10 +96,10 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                 _cursor = result.getCursor();
 
                 if(_isOwner || _isAdmin){
-                  EMClient.getInstance().groupManager().fetchGroupBlackList(groupId: _groupId, pageNum: 0, pageSize: 200,
+                  EMClient.getInstance().groupManager().fetchGroupBlackList(_groupId, 0, 200,
                       onSuccess: (blackList){
                         _blackList = blackList;
-                        EMClient.getInstance().groupManager().fetchGroupMuteList(groupId: _groupId, pageNum: 0, pageSize: 200,
+                        EMClient.getInstance().groupManager().fetchGroupMuteList(_groupId, 0, 200,
                             onSuccess: (muteList){
                               _muteList = muteList;
                               _refreshUI(false);
@@ -280,8 +280,8 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                                           EMClient.getInstance()
                                               .groupManager()
                                               .addUsersToGroup(
-                                              groupId: _groupId,
-                                              members: contacts,
+                                              _groupId,
+                                              contacts,
                                               onSuccess: () {
                                                 WidgetUtil.hintBoxWithDefault(
                                                     '群组邀请发送成功');
@@ -294,7 +294,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                                                 _refreshUI(false);
                                               });
                                         }else{
-                                          EMClient.getInstance().groupManager().inviteUser(groupId: _groupId, members: contacts, reason: '',
+                                          EMClient.getInstance().groupManager().inviteUser(_groupId, contacts,  '',
                                               onSuccess: () {
                                                 WidgetUtil.hintBoxWithDefault(
                                                     '群组邀请发送成功');
@@ -419,8 +419,8 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                         Navigator.of(context).pop();
                         _refreshUI(true);
                         EMClient.getInstance().groupManager().changeGroupName(
-                            groupId: _groupId,
-                            groupName: _groupNameController.text,
+                            _groupId,
+                            _groupNameController.text,
                             onSuccess: () {
                               WidgetUtil.hintBoxWithDefault('修改群名称成功');
                               _fetchGroupDetails();
@@ -511,8 +511,8 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
           if(_isOwner || _isAdmin){
           _loading = true;
           EMClient.getInstance().groupManager().updateGroupAnnouncement(
-              groupId: _groupId,
-              announcement: announcement,
+              _groupId,
+              announcement,
               onSuccess: () {
                 WidgetUtil.hintBoxWithDefault('群公告更新成功');
                 _refreshUI(false);
@@ -620,7 +620,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
       ),
       onTap: () {
         if(_isOwner){
-          EMClient.getInstance().groupManager().destroyGroup(groupId: _groupId,
+          EMClient.getInstance().groupManager().destroyGroup(_groupId,
           onSuccess: (){
             WidgetUtil.hintBoxWithDefault('解散群组成功');
             Navigator.of(context).pop(true);
@@ -629,7 +629,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
             WidgetUtil.hintBoxWithDefault(code.toString() + ':'+ desc);
           });
         }else{
-          EMClient.getInstance().groupManager().leaveGroup(groupId: _groupId,
+          EMClient.getInstance().groupManager().leaveGroup(_groupId,
           onSuccess: (){
             WidgetUtil.hintBoxWithDefault('退出群组成功');
             Navigator.of(context).pop(true);
