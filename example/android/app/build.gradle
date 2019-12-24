@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         applicationId "com.easemob.im_flutter_sdk_example"
-        minSdkVersion 19
+        minSdkVersion 23
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

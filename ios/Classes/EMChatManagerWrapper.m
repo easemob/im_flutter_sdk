@@ -87,17 +87,24 @@
 #pragma mark - Actions
 
 - (void)sendMessage:(NSDictionary *)param result:(FlutterResult)result {
+    
     EMMessage *msg = [EMHelper dictionaryToMessage:param];
-    [EMClient.sharedClient.chatManager sendMessage:msg
-                                          progress:^(int progress)
-     {
-        
-    } completion:^(EMMessage *message, EMError *error)
-     {
+    
+    __block void (^progress)(int progress) = ^(int progress) {
+        [self.channel invokeMethod:EMMethodKeyOnMessageStatusOnProgress
+                         arguments:@{@"progress":@(progress)}];
+    };
+    
+    __block void (^completion)(EMMessage *message, EMError *error) = ^(EMMessage *message, EMError *error) {
         [self wrapperCallBack:result
                         error:error
                      userInfo:@{@"message":[EMHelper messageToDictionary:message]}];
-    }];
+    };
+    
+    
+    [EMClient.sharedClient.chatManager sendMessage:msg
+                                          progress:progress
+                                        completion:completion];
 }
 
 - (void)ackMessageRead:(NSDictionary *)param result:(FlutterResult)result {
