@@ -158,4 +158,13 @@ class EMSDKMethod {
   static const String onGroupChanged = "onGroupChanged";
 
   static const String onMessageStatus_onProgress = "onMessageStatus_onProgress";
+
+  /// EMPushManager
+  static const String enableOfflinePush = "enableOfflinePush";
+  static const String disableOfflinePush = "disableOfflinePush";
+  static const String getPushConfigs = "getPushConfigs";
+  static const String getPushConfigsFromServer = "getPushConfigsFromServer";
+  static const String updatePushServiceForGroup = "updatePushServiceForGroup";
+  static const String getNoPushGroups = "getNoPushGroups";
+  static const String updatePushNickname = "updatePushNickname";
 }
