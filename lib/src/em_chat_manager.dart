@@ -39,7 +39,6 @@ class EMChatManager {
         EMSDKMethod.sendMessage, message.toDataMap());
     result.then((response){
       if (response["success"]) {
-        message.msgId = response['ServerMsgId'];
         if (onSuccess != null) onSuccess();
       }
     });
@@ -63,7 +62,7 @@ class EMChatManager {
         return _onMessageChanged(argMap);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
         return _conversationUpdateFunc();
-      } else if(call.method == EMSDKMethod.onMessageStatus_onProgress){
+      } else if(call.method == EMSDKMethod.onMessageStatusOnProgress){
         return _messageStatus_onProgress(argMap);
       }
       return null;
