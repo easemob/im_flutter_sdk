@@ -375,9 +375,12 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         assert(args instanceof Map);
         Map<String, EMConversation> list = manager.getAllConversations();
         List<Map<String, Object>> conversations = new LinkedList<Map<String, Object>>();
-        list.forEach((String id, EMConversation conversation)->{
-            conversations.add(EMHelper.convertEMConversationToStringMap(conversation));
-        });
+//        list.forEach((String id, EMConversation conversation)->{
+//            conversations.add(EMHelper.convertEMConversationToStringMap(conversation));
+//        });
+        for(Map.Entry<String, EMConversation> m : list.entrySet()){
+            conversations.add(EMHelper.convertEMConversationToStringMap( m.getValue()));
+        }
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
         data.put("conversations", conversations);
@@ -472,9 +475,12 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             int direction = argMap.getInt("direction");
             List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, EMHelper.convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-            list.forEach((message)->{
+//            list.forEach((message)->{
+//                messages.add(EMHelper.convertEMMessageToStringMap(message));
+//            });
+            for (EMMessage message : list) {
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
-            });
+            }
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("messages", messages);

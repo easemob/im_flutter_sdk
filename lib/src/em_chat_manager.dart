@@ -39,6 +39,9 @@ class EMChatManager {
         EMSDKMethod.sendMessage, message.toDataMap());
     result.then((response){
       if (response["success"]) {
+//        message.msgId = response['ServerMsgId'];
+         message.msgId = EMMessage.from(response['message']).msgId;
+         message.status = EMMessage.from(response['message']).status;
         if (onSuccess != null) onSuccess();
       }
     });

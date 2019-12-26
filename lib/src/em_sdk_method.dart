@@ -168,4 +168,5 @@ class EMSDKMethod {
   static const String updatePushServiceForGroup = "updatePushServiceForGroup";
   static const String getNoPushGroups = "getNoPushGroups";
   static const String updatePushNickname = "updatePushNickname";
+
 }
