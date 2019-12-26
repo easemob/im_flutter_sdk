@@ -229,7 +229,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   void logout (BuildContext context){
     _refreshUI(true);
     EMClient.getInstance().logout(
-      unbindToken: false,
+      false,
       onSuccess: (){
         Navigator.of(context).pushNamed(Constant.toLoginPage);
       },

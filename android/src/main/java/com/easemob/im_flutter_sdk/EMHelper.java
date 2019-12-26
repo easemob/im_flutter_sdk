@@ -25,6 +25,7 @@ import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMPageResult;
+import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -806,6 +807,18 @@ class EMHelper {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("userName", contact.getUsername());
         result.put("nickName", contact.getNickname());
+        return result;
+    }
+
+    static Map<String, Object> convertEMPushConfigsToStringMap(EMPushConfigs configs) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        if(configs == null){
+            return result;
+        }
+        result.put("nickName", configs.getDisplayNickname());
+        result.put("noDisturbOn", configs.isNoDisturbOn());
+        result.put("startHour", configs.getNoDisturbStartHour());
+        result.put("endHour", configs.getNoDisturbEndHour());
         return result;
     }
 

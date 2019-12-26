@@ -204,7 +204,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   }
 
   _deleteContact(int index) {
-    EMClient.getInstance().contactManager().deleteContact(userName: _getData(index - 7),
+    EMClient.getInstance().contactManager().deleteContact(_getData(index - 7), false,
         onSuccess: (){
           this.contactsList.removeAt(index - 7);
           loadEMContactsList();
@@ -221,7 +221,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
     loadEMContactsList();
   }
   void onContactInvited(String userName, String reason){
-    EMClient.getInstance().contactManager().acceptInvitation(userName: userName,
+    EMClient.getInstance().contactManager().acceptInvitation(userName,
         onSuccess: (){
           Future.sync((){
             WidgetUtil.hintBoxWithDefault('自动同意$userName的好友请求!');

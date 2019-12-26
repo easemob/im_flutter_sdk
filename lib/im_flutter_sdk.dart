@@ -6,6 +6,7 @@ export 'src/em_chat_manager.dart';
 export 'src/em_conversation.dart';
 export 'src/em_group_manager.dart';
 export 'src/em_group.dart';
+export 'src/em_push_manager.dart';
 
 
 
