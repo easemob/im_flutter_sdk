@@ -483,9 +483,12 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     // TODO: implement willSendText   发送文本消息
     EMMessage message = EMMessage.createTxtSendMessage(text, toChatUsername);
     message.chatType = fromChatType(mType);
+    EMTextMessageBody body = EMTextMessageBody(text);
+    message.body = body;
     print('-----------LocalID---------->' + message.msgId);
     EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
       print('-----------ServerID---------->' + message.msgId);
+      print('-----------MessageStatus---------->' + message.status.toString());
     });
     _onConversationInit();
   }

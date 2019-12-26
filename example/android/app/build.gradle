@@ -26,6 +26,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     compileSdkVersion 28
+    buildToolsVersion = '28.0.3'
 
     lintOptions {
         disable 'InvalidPackage'
@@ -33,7 +34,7 @@ android {
 
     defaultConfig {
         applicationId "com.easemob.im_flutter_sdk_example"
-        minSdkVersion 23
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -49,6 +50,10 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

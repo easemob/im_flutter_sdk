@@ -27,8 +27,6 @@ import com.hyphenate.util.EMLog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static com.easemob.im_flutter_sdk.EMHelper.convertStringMapToEMOptions;
-import static com.easemob.im_flutter_sdk.EMHelper.convertDevicesToStringMap;
 
 
 @SuppressWarnings("unchecked")
@@ -80,7 +78,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
     private void init(Object args, Result result) {
             JSONObject argMap = (JSONObject) args;
             EMLog.e("init:", argMap.toString());
-            EMOptions options = convertStringMapToEMOptions(argMap, context);
+            EMOptions options = EMHelper.convertStringMapToEMOptions(argMap, context);
             EMClient client = EMClient.getInstance();
             client.init(context, options);
             //setup connection listener
@@ -255,7 +253,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper{
                         List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(userName, password);
                         List<Map<String, Object>> devicesMap = new LinkedList<Map<String, Object>>();
                         for(EMDeviceInfo device : devices) {
-                            devicesMap.add(convertDevicesToStringMap(device));
+                            devicesMap.add(EMHelper.convertDevicesToStringMap(device));
                         }
                         Map<String, Object> data = new HashMap<String, Object>();
                         data.put("success", Boolean.TRUE);
