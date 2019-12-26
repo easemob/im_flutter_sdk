@@ -73,7 +73,7 @@ class EMCmdMessageBody extends EMMessageBody {
 abstract class EMFileMessageBody extends EMMessageBody {
   /// 初始化方法, [localUrl]: 文件路径
   EMFileMessageBody(String localUrl)
-      : this.displayName = '',
+      :
         this.localUrl = localUrl;
 
   /// @nodoc
@@ -317,43 +317,46 @@ class EMNormalFileMessageBody extends EMFileMessageBody {
 
 class EMVoiceMessageBody extends EMFileMessageBody {
   /// 创建方法，[voiceFile]: 要发送的音频文件; [duration]: 文件时长
-  EMVoiceMessageBody(File voiceFile, int duration)
+  EMVoiceMessageBody(File voiceFile, int voiceDuration)
 
       : this._file = voiceFile,
-        this._length = duration,
+        this._voiceDuration = voiceDuration,
         super(voiceFile.path);
 
   EMVoiceMessageBody.of(EMVoiceMessageBody body)
       : this._file = body._file,
-        this._length = body._length,
+        this._fileLength = body._fileLength,
         super.of(body);
 
   EMVoiceMessageBody._internal(Map<String, dynamic> data)
       : this._file = null,
-        this._length = data['length'],
+        this._voiceDuration = data['voiceDuration'],
         super.ofData(data);
 
   final File _file;
-  int _length;
+  /// 文件大小
+  int _fileLength;
+  /// 音频文件时长
+  int _voiceDuration;
 
-  /// 文件时长
-  Future<int> get length async {
-    if (_length == null) {
-      _length = await _file.length();
+  /// 文件大小
+  Future<int> get getFileLength async {
+    if (_fileLength == null) {
+      _fileLength = await _file.length();
     }
-    return _length;
+    return _fileLength;
   }
 
   @override
   /// @nodoc
-  String toString() => '[EMVoiceMessageBody], {length: $length}';
+  String toString() => '[EMVoiceMessageBody], {fileLength: $_fileLength},{voiceDuration: $_voiceDuration}';
 
   @override
 
   /// @nodoc
   Map toDataMap() {
     var result = Map.of(super.toDataMap());
-    result["voiceDuration"] = _length;
+    result["voiceDuration"] = _voiceDuration;
     return result;
   }
 
@@ -365,32 +368,33 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 
 class EMVideoMessageBody extends EMFileMessageBody {
   /// 创建方法，[videoFilePath]: 要发送的文件路径; [duration]: 文件时长
-  EMVideoMessageBody(File videoFilePath, int duration)
+  EMVideoMessageBody(File videoFilePath, int videoDuration)
       : this._file = videoFilePath,
-        this._length = duration,
+        this._videoDuration = videoDuration,
         super(videoFilePath.path);
 
   /// @nodoc
   EMVideoMessageBody.of(EMVideoMessageBody body)
       : this._file = body._file,
-        this._length = body._length,
+        this._fileLength = body._fileLength,
         super.of(body);
 
   /// @nodoc
   EMVideoMessageBody._internal(Map data)
       : this._file = null,
-        this._length = data['length'],
+        this._videoDuration = data['videoDuration'],
         super.ofData(data);
 
   var _file;
-  var _length;
+  var _fileLength;
+  var _videoDuration;
 
-  /// 文件时长
-  Future<int> get length async {
-    if (_length == null) {
-      _length = await _file.length();
+  /// 文件大小
+  Future<int> get getFileLength async {
+    if (_fileLength == null) {
+      _fileLength = await _file.length();
     }
-    return _length;
+    return _fileLength;
   }
 
   /// @nodoc
@@ -402,7 +406,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
   /// @nodoc
   Map toDataMap() {
     var result = Map.of(super.toDataMap());
-    result["videoDuration"] = _length;
+    result["videoDuration"] = _videoDuration;
     return result;
   }
 
