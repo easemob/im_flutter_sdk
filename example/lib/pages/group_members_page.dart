@@ -106,7 +106,7 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                     WidgetUtil.showLongPressMenu(context, tapPos,actionMap,(String key){
                       if(key == Constant.addBlackListKey) {
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager().blockUser(groupId: _groupId, userName: _members[index],
+                        EMClient.getInstance().groupManager().blockUser(_groupId, _members[index],
                         onSuccess: (){
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '加入黑名单成功');
                           _members.removeAt(index);
@@ -119,7 +119,7 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                         });
                       }else if(key == Constant.addMuteListKey) {
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager().muteGroupMembers(groupId: _groupId, members: [_members[index]], duration: '86400000',
+                        EMClient.getInstance().groupManager().muteGroupMembers(_groupId, [_members[index]], '86400000',
                         onSuccess: (group){
                           _muteList.add(_members[index]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '禁言成功');
@@ -133,7 +133,7 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
 
                       }else if(key == Constant.addAdminListKey) {
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager().addGroupAdmin(groupId: _groupId, admin: _members[index],
+                        EMClient.getInstance().groupManager().addGroupAdmin(_groupId, _members[index],
                         onSuccess: (group){
                           _admins.add(_members[index]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '添加管理员成功');
@@ -173,8 +173,8 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                               EMClient.getInstance()
                                   .groupManager()
                                   .removeUserFromGroup(
-                                      groupId: _groupId,
-                                      userName: _members[index],
+                                      _groupId,
+                                      _members[index],
                                       onSuccess: () {
                                         _isRefresh = true;
                                         WidgetUtil.hintBoxWithDefault('移除成员成功');

@@ -15,12 +15,12 @@ void main() {
     final dynamic onSuccess = expectAsync1((String userName) {
       expect(userName == 'user1', 'Wrong user name returned.');
     });
-    client.login(userName: 'user1', password: 'passw0rd', onSuccess: onSuccess);
+    client.login('user1', 'passw0rd', onSuccess: onSuccess);
     final dynamic onError = expectAsync2((int code, String reason) {
       expect(code == 1, "Incorrect error code.");
       expect(reason == "reason", "Incorrect error reason.");
     });
-    client.login(userName: 'user2', password: 'passw0rd', onError: onError);
+    client.login('user2', 'passw0rd', onError: onError);
   });
 
   tearDown(() {});

@@ -98,7 +98,7 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
   }
 
   _addContact(String username) {
-    EMClient.getInstance().contactManager().addContact(userName: username, reason: null ,
+    EMClient.getInstance().contactManager().addContact(username, null ,
         onSuccess: () {
 //          Navigator.of(context).pushNamed(Constant.toContactList);
           Navigator.of(context).pop();

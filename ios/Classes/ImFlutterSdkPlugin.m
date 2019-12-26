@@ -19,8 +19,8 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
 }
 
-+(void)setDeivceToken:(NSData *)aDeviceToken {
-    [EMClientWrapper setDeivceToken:aDeviceToken];
++(void)setDeviceToken:(NSData *)aDeviceToken {
+    [EMClientWrapper setDeviceToken:aDeviceToken];
 }
 @end
 

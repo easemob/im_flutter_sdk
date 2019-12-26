@@ -9,8 +9,7 @@ import 'em_message_body.dart';
 class EMOptions {
   EMOptions({
     @required this.appKey,
-  }):
-        _acceptInvitationAlways = true,
+  })  : _acceptInvitationAlways = true,
         _autoAcceptGroupInvitation = true,
         _requireAck = true,
         _requireDeliveryAck = false,
@@ -33,7 +32,8 @@ class EMOptions {
   bool _requireAck;
   bool _requireDeliveryAck;
   bool _deleteMessagesAsExitGroup;
-  bool _isChatRoomOwnerLeaveAllowed ;
+  bool _isChatRoomOwnerLeaveAllowed;
+
   String appKey;
   bool _autoLogin;
   bool _enableDNSConfig;
@@ -48,184 +48,213 @@ class EMOptions {
   EMPushConfig _pushConfig;
 
   /// 获取已读确认设置
-  bool getRequireAck(){
+  bool getRequireAck() {
     return _requireAck;
   }
+
   /// 设置是否需要接受方已读确认
-  void setRequireAck(bool requireAck){
+  void setRequireAck(bool requireAck) {
     _requireAck = requireAck;
   }
+
   /// 获取送达确认设置
-  bool getRequireDeliveryAck(){
+  bool getRequireDeliveryAck() {
     return _requireDeliveryAck;
   }
+
   /// 设置是否需要接受方送达确认,默认false
-  void setRequireDeliveryAck(bool requireDeliveryAck){
+  void setRequireDeliveryAck(bool requireDeliveryAck) {
     _requireDeliveryAck = requireDeliveryAck;
   }
+
   /// 获取是否自动接受加好友邀请 默认true
-  bool getAcceptInvitationAlways(){
+  bool getAcceptInvitationAlways() {
     return _acceptInvitationAlways;
   }
+
   /// 设置是否自动接受加好友邀请 默认true
-  void setAcceptInvitationAlways(bool acceptInvitationAlways){
+  void setAcceptInvitationAlways(bool acceptInvitationAlways) {
     _acceptInvitationAlways = acceptInvitationAlways;
   }
+
   /// 获取退出(主动和被动退出)群组时是否删除聊天消息
-  bool isDeleteMessagesAsExitGroup(){
+  bool isDeleteMessagesAsExitGroup() {
     return _deleteMessagesAsExitGroup;
   }
+
   /// 设置退出(主动和被动退出)群组时是否删除聊天消息
-  void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup){
+  void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup) {
     _deleteMessagesAsExitGroup = deleteMessagesAsExitGroup;
   }
+
   /// 获取是否自动接受加群邀请
-  bool isAutoAcceptGroupInvitation(){
+  bool isAutoAcceptGroupInvitation() {
     return _autoAcceptGroupInvitation;
   }
+
   /// 设置是否自动接受加群邀请
-  void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation){
+  void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation) {
     _autoAcceptGroupInvitation = autoAcceptGroupInvitation;
   }
+
   /// 是否允许聊天室owner离开
-  bool isChatRoomOwnerLeaveAllowed(){
+  bool isChatRoomOwnerLeaveAllowed() {
     return _isChatRoomOwnerLeaveAllowed;
   }
+
   /// 设置是否允许聊天室owner离开并删除会话记录
-  void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed){
+  void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed) {
     _isChatRoomOwnerLeaveAllowed = isChatRoomOwnerLeaveAllowed;
   }
+
   /// 是否按照server收到时间进行排序
-  bool isSortMessageByServerTime(){
+  bool isSortMessageByServerTime() {
     return _sortMessageByServerTime;
   }
+
   /// 设置server收到时间进行排序 默认是false
-  void setSortMessageByServerTime(bool sortMessageByServerTime){
+  void setSortMessageByServerTime(bool sortMessageByServerTime) {
     _sortMessageByServerTime = sortMessageByServerTime;
   }
+
   /// @nodoc 获取设置的im server
-  String getIMServer(){
+  String getIMServer() {
     return _imServer;
   }
+
   /// @nodoc 设置im server地址
-  void setIMServer(String imServer){
+  void setIMServer(String imServer) {
     _imServer = imServer;
   }
+
   /// @nodoc 获取设置的im server端口号
-  int getImPort(){
+  int getImPort() {
     return _imPort;
   }
+
   /// @nodoc 设置 im server端口号
-  void setImPort(int imPort){
+  void setImPort(int imPort) {
     _imPort = imPort;
   }
+
   /// @nodoc 获取设置的rest server
-  String getRestServer(){
+  String getRestServer() {
     return _restServer;
   }
+
   /// @nodoc 设置 rest server
-  void setRestServer(String restServer){
+  void setRestServer(String restServer) {
     _restServer = restServer;
   }
+
   /// 获取是否自动登录
-  bool getAutoLogin(){
+  bool getAutoLogin() {
     return _autoLogin;
   }
+
   /// 设置是否自动登录
-  void setAutoLogin(bool autoLogin){
+  void setAutoLogin(bool autoLogin) {
     _autoLogin = autoLogin;
   }
 
   /// @nodoc 获取是否使用DNSConfig
-  bool getEnableDNSConfig(){
+  bool getEnableDNSConfig() {
     return _enableDNSConfig;
   }
 
   /// @nodoc 是否使用DNSConfig
-  void enableDNSConfig(bool enableDNSConfig){
+  void enableDNSConfig(bool enableDNSConfig) {
     _enableDNSConfig = enableDNSConfig;
   }
+
   /// @nodoc 获取是否使用https进行REST操作，默认值是false。
-  bool getUsingHttpsOnly(){
+  bool getUsingHttpsOnly() {
     return _usingHttpsOnly;
   }
+
   /// @nodoc 只使用https进行REST操作，默认值是false。
-  void setUsingHttpsOnly(bool usingHttpsOnly){
+  void setUsingHttpsOnly(bool usingHttpsOnly) {
     _usingHttpsOnly = usingHttpsOnly;
   }
+
   /// @nodoc 获取是否使用环信服务器进行上传下载，默认值是true。
-  bool getAutoTransferMessageAttachments(){
+  bool getAutoTransferMessageAttachments() {
     return _serverTransfer;
   }
+
   /// @nodoc 设置是否使用环信服务器进行上传下载
-  void setAutoTransferMessageAttachments(bool serverTransfer){
+  void setAutoTransferMessageAttachments(bool serverTransfer) {
     _serverTransfer = serverTransfer;
   }
+
   /// @nodoc 是否自动下载缩略图，默认为true。
-  bool getAutoDownloadThumbnail(){
+  bool getAutoDownloadThumbnail() {
     return _isAutoDownload;
   }
+
   /// @nodoc 设置是否自动下载缩略图
-  void setAutoDownloadThumbnail(bool isAutoDownload){
+  void setAutoDownloadThumbnail(bool isAutoDownload) {
     _isAutoDownload = isAutoDownload;
   }
 
   /// @nodoc 获取DNSURL
-  String getDnsUrl(){
+  String getDnsUrl() {
     return _dnsUrl;
   }
 
   /// @nodoc 设置DNSURL
-  void setDnsUrl(String dnsUrl){
+  void setDnsUrl(String dnsUrl) {
     _dnsUrl = dnsUrl;
   }
 
   /// @nodoc 获取推送配置
-  EMPushConfig getPushConfig(){
+  EMPushConfig getPushConfig() {
     return _pushConfig;
   }
 
   /// @nodoc 设置推送配置
-  void setPushConfig(EMPushConfig pushConfig){
+  void setPushConfig(EMPushConfig pushConfig) {
     _pushConfig = pushConfig;
   }
 
   /// @nodoc
-  Map convertToMap(){
+  Map convertToMap() {
     var map = {};
-    map.putIfAbsent("acceptInvitationAlways", ()=> _acceptInvitationAlways );
-    map.putIfAbsent("autoAcceptGroupInvitation", ()=> _autoAcceptGroupInvitation );
-    map.putIfAbsent("requireAck", ()=> _requireAck );
-    map.putIfAbsent("requireDeliveryAck", ()=> _requireDeliveryAck );
-    map.putIfAbsent("deleteMessagesAsExitGroup", ()=> _deleteMessagesAsExitGroup );
-    map.putIfAbsent("isChatRoomOwnerLeaveAllowed", ()=> _isChatRoomOwnerLeaveAllowed );
-    map.putIfAbsent("appKey", ()=> appKey );
-    map.putIfAbsent("autoLogin", ()=> _autoLogin );
-    map.putIfAbsent("enableDNSConfig", ()=> _enableDNSConfig );
-    map.putIfAbsent("sortMessageByServerTime", ()=> _sortMessageByServerTime );
-    map.putIfAbsent("dnsUrl", ()=> _dnsUrl );
-    map.putIfAbsent("restServer", ()=> _restServer );
-    map.putIfAbsent("imServer", ()=> _imServer );
-    map.putIfAbsent("imPort", ()=> _imPort );
-    map.putIfAbsent("usingHttpsOnly", ()=> _usingHttpsOnly );
-    map.putIfAbsent("serverTransfer", ()=> _serverTransfer );
-    map.putIfAbsent("isAutoDownload", ()=> _isAutoDownload );
-    map.putIfAbsent("pushConfig", ()=> _pushConfig.convertToMap() );
+    map.putIfAbsent("acceptInvitationAlways", () => _acceptInvitationAlways);
+    map.putIfAbsent(
+        "autoAcceptGroupInvitation", () => _autoAcceptGroupInvitation);
+    map.putIfAbsent("requireAck", () => _requireAck);
+    map.putIfAbsent("requireDeliveryAck", () => _requireDeliveryAck);
+    map.putIfAbsent(
+        "deleteMessagesAsExitGroup", () => _deleteMessagesAsExitGroup);
+    map.putIfAbsent(
+        "isChatRoomOwnerLeaveAllowed", () => _isChatRoomOwnerLeaveAllowed);
+    map.putIfAbsent("appKey", () => appKey);
+    map.putIfAbsent("autoLogin", () => _autoLogin);
+    map.putIfAbsent("enableDNSConfig", () => _enableDNSConfig);
+    map.putIfAbsent("sortMessageByServerTime", () => _sortMessageByServerTime);
+    map.putIfAbsent("dnsUrl", () => _dnsUrl);
+    map.putIfAbsent("restServer", () => _restServer);
+    map.putIfAbsent("imServer", () => _imServer);
+    map.putIfAbsent("imPort", () => _imPort);
+    map.putIfAbsent("usingHttpsOnly", () => _usingHttpsOnly);
+    map.putIfAbsent("serverTransfer", () => _serverTransfer);
+    map.putIfAbsent("isAutoDownload", () => _isAutoDownload);
+    map.putIfAbsent("pushConfig", () => _pushConfig.convertToMap());
     print(map);
     return map;
   }
 }
 
-class EMPushConfig{
-
-  EMPushConfig():
-        _enableVivoPush = false,
+class EMPushConfig {
+  EMPushConfig()
+      : _enableVivoPush = false,
         _enableMeiZuPush = false,
         _enableMiPush = false,
         _enableOppoPush = false,
         _enableHWPush = false,
         _enableFCM = false,
-        _enableAPNS =false,
+        _enableAPNS = false,
         _miAppId = '',
         _miAppKey = '',
         _mzAppId = '',
@@ -251,63 +280,62 @@ class EMPushConfig{
   String _fcmSenderId;
   String _apnsSenderId;
 
-  void enableVivoPush(){
+  void enableVivoPush() {
     _enableVivoPush = true;
   }
 
-  void enableMeiZuPush(String appId, String appKey){
+  void enableMeiZuPush(String appId, String appKey) {
     _enableMeiZuPush = true;
     _mzAppId = appId;
     _mzAppKey = appKey;
   }
 
-  void enableMiPush(String appId, String appKey){
+  void enableMiPush(String appId, String appKey) {
     _enableMiPush = true;
     _miAppId = appId;
     _miAppKey = appKey;
   }
 
-  void enableOppoPush(String appKey, String appSecret){
+  void enableOppoPush(String appKey, String appSecret) {
     _enableOppoPush = true;
     _oppoAppKey = appKey;
     _oppoAppSecret = appSecret;
   }
 
-  void enableHWPush(){
+  void enableHWPush() {
     _enableHWPush = true;
   }
 
-  void enableFCM(String senderId){
+  void enableFCM(String senderId) {
     _enableFCM = true;
     _fcmSenderId = senderId;
   }
 
-  void enableAPNS(String senderId){
+  void enableAPNS(String senderId) {
     _enableAPNS = true;
     _apnsSenderId = senderId;
   }
 
   /// @nodoc
-  Map convertToMap(){
+  Map convertToMap() {
     var map = Map();
-    map.putIfAbsent("enableVivoPush", ()=> _enableVivoPush );
-    map.putIfAbsent("enableMeiZuPush", ()=> _enableMeiZuPush );
-    map.putIfAbsent("enableMiPush", ()=> _enableMiPush );
-    map.putIfAbsent("enableOppoPush", ()=> _enableOppoPush );
-    map.putIfAbsent("enableHWPush", ()=> _enableHWPush );
-    map.putIfAbsent("enableFCM", ()=> _enableFCM );
-    map.putIfAbsent("enableAPNS", ()=> _enableAPNS );
-    map.putIfAbsent("miAppId", ()=> _miAppId );
-    map.putIfAbsent("miAppKey", ()=> _miAppKey );
-    map.putIfAbsent("mzAppId", ()=> _mzAppId );
-    map.putIfAbsent("mzAppKey", ()=> _mzAppKey );
-    map.putIfAbsent("oppoAppKey", ()=> _oppoAppKey );
-    map.putIfAbsent("oppoAppSecret", ()=> _oppoAppSecret );
-    map.putIfAbsent("fcmSenderId", ()=> _fcmSenderId );
-    map.putIfAbsent("apnsSenderId", ()=> _apnsSenderId );
+    map.putIfAbsent("enableVivoPush", () => _enableVivoPush);
+    map.putIfAbsent("enableMeiZuPush", () => _enableMeiZuPush);
+    map.putIfAbsent("enableMiPush", () => _enableMiPush);
+    map.putIfAbsent("enableOppoPush", () => _enableOppoPush);
+    map.putIfAbsent("enableHWPush", () => _enableHWPush);
+    map.putIfAbsent("enableFCM", () => _enableFCM);
+    map.putIfAbsent("enableAPNS", () => _enableAPNS);
+    map.putIfAbsent("miAppId", () => _miAppId);
+    map.putIfAbsent("miAppKey", () => _miAppKey);
+    map.putIfAbsent("mzAppId", () => _mzAppId);
+    map.putIfAbsent("mzAppKey", () => _mzAppKey);
+    map.putIfAbsent("oppoAppKey", () => _oppoAppKey);
+    map.putIfAbsent("oppoAppSecret", () => _oppoAppSecret);
+    map.putIfAbsent("fcmSenderId", () => _fcmSenderId);
+    map.putIfAbsent("apnsSenderId", () => _apnsSenderId);
     return map;
   }
-
 }
 
 /// EMMessage - various types of message
@@ -318,16 +346,15 @@ class EMMessage {
     this.delivered,
     this.direction,
     this.from,
-    this.listened ,
+    this.listened,
     this.localTime,
     this.msgTime,
-    this.status ,
+    this.status,
     this.to,
     this.type,
     this.unread,
     this.deliverAcked,
-  })
-      : _attributes = {},
+  })  : _attributes = {},
         _conversationId = '',
         _userName = '',
         chatType = ChatType.Chat,
@@ -360,16 +387,16 @@ class EMMessage {
       : this(
             direction: Direction.SEND,
             type: EMMessageType.IMAGE,
-            body: EMImageMessageBody(File(filePath),sendOriginalImage),
+            body: EMImageMessageBody(File(filePath), sendOriginalImage),
             to: userName);
 
   /// 创建视频类型消息 [filePath]: 视频片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
-  EMMessage.createVideoSendMessage(String filePath,
-      int timeLength, String userName)
+  EMMessage.createVideoSendMessage(
+      String filePath, int timeLength, String userName)
       : this(
             direction: Direction.SEND,
             type: EMMessageType.VIDEO,
-            body: EMVideoMessageBody(File(filePath),timeLength),
+            body: EMVideoMessageBody(File(filePath), timeLength),
             to: userName);
 
   /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
@@ -498,8 +525,8 @@ class EMMessage {
   }
 
   /// @nodoc
-  EMMessage.from(Map data):
-        _attributes = data['attributes'],
+  EMMessage.from(Map data)
+      : _attributes = data['attributes'],
         localTime = data['localTime'],
         chatType = fromChatType(data['chatType']),
         msgId = data['msgId'],
@@ -518,136 +545,144 @@ class EMMessage {
         unread = data['unread'];
 
   /// @nodoc
-  String toString(){
+  String toString() {
     return body.toString();
   }
-
 }
-  /// @nodoc 消息类型 int 类型数据转 EMMessageType
-  fromType(int type){
-      switch(type){
-        case 0:
-          return EMMessageType.TXT;
-        case 1:
-          return EMMessageType.IMAGE;
-        case 2:
-          return EMMessageType.VIDEO;
-        case 3:
-          return EMMessageType.LOCATION;
-        case 4:
-          return EMMessageType.VOICE;
-        case 5:
-          return EMMessageType.FILE;
-        case 6:
-          return EMMessageType.CMD;
-      }
-  }
-  /// @nodoc 消息类型 EMMessageType 类型数据转 int
-  toType(EMMessageType type){
-      if(type == EMMessageType.TXT){
-        return 0;
-      }else if(type == EMMessageType.IMAGE){
-        return 1;
-      }else if(type == EMMessageType.VIDEO){
-        return 2;
-      }else if(type == EMMessageType.LOCATION){
-        return 3;
-      }else if(type == EMMessageType.VOICE){
-        return 4;
-      }else if(type == EMMessageType.FILE){
-        return 5;
-      }else if(type == EMMessageType.CMD){
-        return 6;
-      }
-  }
-  /// @nodoc 聊天类型 int 类型数据转 ChatType
-  fromChatType(int type){
-      switch(type){
-        case 0:
-          return ChatType.Chat;
-        case 1:
-          return ChatType.GroupChat;
-        case 2:
-          return ChatType.ChatRoom;
-      }
-  }
-/// @nodoc 聊天类型 ChatType 类型数据转 int
-  toChatType(ChatType type){
-      if(type == ChatType.Chat){
-        return 0;
-      }else if(type == ChatType.GroupChat){
-        return 1;
-      }else if(type == ChatType.ChatRoom){
-        return 2;
-      }
-  }
-/// @nodoc 消息方向 int 类型数据转 Direction
-  fromDirect(int type){
-    switch(type){
-      case 0:
-        return Direction.SEND;
-      case 1:
-        return Direction.RECEIVE;
-    }
-  }
-/// @nodoc 消息方向 Direction 类型数据转 int
-  toDirect(Direction direction){
-     if(direction == Direction.SEND){
-       return 0;
-     }else if(direction == Direction.RECEIVE){
-       return 1;
-     }
-  }
-/// @nodoc 消息状态 int 类型数据转 Status
-  fromEMMessageStatus(int status){
-    switch(status){
-      case 0:
-        return Status.SUCCESS;
-      case 1:
-        return Status.FAIL;
-      case 2:
-        return Status.INPROGRESS;
-      case 3:
-        return Status.CREATE;
-    }
-  }
-/// @nodoc 消息状态 Status 类型数据转 int
-  toEMMessageStatus(Status status){
-     if(status == Status.SUCCESS){
-       return 0;
-     } else if(status == Status.FAIL){
-       return 1;
-     } else if(status == Status.INPROGRESS){
-       return 2;
-     } else if(status == Status.CREATE){
-       return 3;
-     }
-  }
-/// @nodoc 下载状态 int 类型数据转 EMDownloadStatus
-  toEMDownloadStatus(EMDownloadStatus status){
-    if(status == EMDownloadStatus.DOWNLOADING){
-      return 0;
-    } else if(status == EMDownloadStatus.SUCCESSED){
-      return 1;
-    } else if(status == EMDownloadStatus.FAILED){
-      return 2;
-    } else if(status == EMDownloadStatus.PENDING){
-      return 3;
-    }
-  }
-/// @nodoc 下载状态 EMDownloadStatus 类型数据转 int
-  fromEMDownloadStatus(int status){
-    if(status == 0){
-      return EMDownloadStatus.DOWNLOADING;
-    } else if(status == 1){
-      return EMDownloadStatus.SUCCESSED;
-    } else if(status == 2){
-      return EMDownloadStatus.FAILED;
-    } else if(status == 3){
-      return EMDownloadStatus.PENDING;
-    }
-  }
 
+/// @nodoc 消息类型 int 类型数据转 EMMessageType
+fromType(int type) {
+  switch (type) {
+    case 0:
+      return EMMessageType.TXT;
+    case 1:
+      return EMMessageType.IMAGE;
+    case 2:
+      return EMMessageType.VIDEO;
+    case 3:
+      return EMMessageType.LOCATION;
+    case 4:
+      return EMMessageType.VOICE;
+    case 5:
+      return EMMessageType.FILE;
+    case 6:
+      return EMMessageType.CMD;
+  }
+}
+
+/// @nodoc 消息类型 EMMessageType 类型数据转 int
+toType(EMMessageType type) {
+  if (type == EMMessageType.TXT) {
+    return 0;
+  } else if (type == EMMessageType.IMAGE) {
+    return 1;
+  } else if (type == EMMessageType.VIDEO) {
+    return 2;
+  } else if (type == EMMessageType.LOCATION) {
+    return 3;
+  } else if (type == EMMessageType.VOICE) {
+    return 4;
+  } else if (type == EMMessageType.FILE) {
+    return 5;
+  } else if (type == EMMessageType.CMD) {
+    return 6;
+  }
+}
+
+/// @nodoc 聊天类型 int 类型数据转 ChatType
+fromChatType(int type) {
+  switch (type) {
+    case 0:
+      return ChatType.Chat;
+    case 1:
+      return ChatType.GroupChat;
+    case 2:
+      return ChatType.ChatRoom;
+  }
+}
+
+/// @nodoc 聊天类型 ChatType 类型数据转 int
+toChatType(ChatType type) {
+  if (type == ChatType.Chat) {
+    return 0;
+  } else if (type == ChatType.GroupChat) {
+    return 1;
+  } else if (type == ChatType.ChatRoom) {
+    return 2;
+  }
+}
+
+/// @nodoc 消息方向 int 类型数据转 Direction
+fromDirect(int type) {
+  switch (type) {
+    case 0:
+      return Direction.SEND;
+    case 1:
+      return Direction.RECEIVE;
+  }
+}
+
+/// @nodoc 消息方向 Direction 类型数据转 int
+toDirect(Direction direction) {
+  if (direction == Direction.SEND) {
+    return 0;
+  } else if (direction == Direction.RECEIVE) {
+    return 1;
+  }
+}
+
+/// @nodoc 消息状态 int 类型数据转 Status
+fromEMMessageStatus(int status) {
+  switch (status) {
+    case 0:
+      return Status.SUCCESS;
+    case 1:
+      return Status.FAIL;
+    case 2:
+      return Status.INPROGRESS;
+    case 3:
+      return Status.CREATE;
+  }
+}
+
+/// @nodoc 消息状态 Status 类型数据转 int
+toEMMessageStatus(Status status) {
+  if (status == Status.SUCCESS) {
+    return 0;
+  } else if (status == Status.FAIL) {
+    return 1;
+  } else if (status == Status.INPROGRESS) {
+    return 2;
+  } else if (status == Status.CREATE) {
+    return 3;
+  }
+}
+
+/// @nodoc 下载状态 int 类型数据转 EMDownloadStatus
+toEMDownloadStatus(EMDownloadStatus status) {
+  if (status == EMDownloadStatus.DOWNLOADING) {
+    return 0;
+  } else if (status == EMDownloadStatus.SUCCESSED) {
+    return 1;
+  } else if (status == EMDownloadStatus.FAILED) {
+    return 2;
+  } else if (status == EMDownloadStatus.PENDING) {
+    return 3;
+  }
+}
+
+/// @nodoc 下载状态 EMDownloadStatus 类型数据转 int
+fromEMDownloadStatus(int status) {
+  if (status == 0) {
+    return EMDownloadStatus.DOWNLOADING;
+  } else if (status == 1) {
+    return EMDownloadStatus.SUCCESSED;
+  } else if (status == 2) {
+    return EMDownloadStatus.FAILED;
+  } else if (status == 3) {
+    return EMDownloadStatus.PENDING;
+  }
+}
 
 class EMContact {
   /// 环信id
@@ -662,6 +697,7 @@ class EMContact {
 /// @nodoc  EMMessageBody - body of message.
 abstract class EMMessageBody {
   toDataMap();
+
   static EMMessageBody from(Map data) {
     switch (data['type']) {
       case 0:
@@ -688,16 +724,22 @@ abstract class EMMessageBody {
 enum EMMessageType {
   /// 文字消息
   TXT,
+
   /// 图片消息
   IMAGE,
+
   /// 视频消息
   VIDEO,
+
   /// 位置消息
   LOCATION,
+
   /// 音频消息
   VOICE,
+
   /// 文件消息
   FILE,
+
   /// CMD消息
   CMD,
 }
@@ -721,7 +763,6 @@ enum EMDownloadStatus { DOWNLOADING, SUCCESSED, FAILED, PENDING }
 
 /// EMDeviceInfo - device info.
 class EMDeviceInfo {
-
   /// 设备资源描述
   final String resource;
 
@@ -763,19 +804,19 @@ class EMCursorResult<T> {
 
   List<T> _data;
 
-  String getCursor(){
+  String getCursor() {
     return _cursor;
   }
 
-  void setCursor(String cursor){
+  void setCursor(String cursor) {
     _cursor = cursor;
   }
 
-  List<T> getData(){
+  List<T> getData() {
     return _data;
   }
 
-  void setData(List list){
+  void setData(List list) {
     _data = list;
   }
 
@@ -785,7 +826,7 @@ class EMCursorResult<T> {
 }
 
 /// @nodoc
-class EMPageResult<T>{
+class EMPageResult<T> {
   int _pageCount;
 
   List<T> _data;
@@ -798,18 +839,17 @@ class EMPageResult<T>{
     _pageCount = pageCount;
   }
 
-  List<T> getData(){
+  List<T> getData() {
     return _data;
   }
 
-  void setData(List list){
-     _data = list;
+  void setData(List list) {
+    _data = list;
   }
 
   EMPageResult.from(Map<String, dynamic> data)
       : _pageCount = data['pageCount'],
         _data = data['data'];
-
 }
 
 class EMGroupOptions {
@@ -827,35 +867,38 @@ class EMGroupOptions {
 }
 
 /// 群组类型
-enum EMGroupStyle{
+enum EMGroupStyle {
   /// 私有群，只有群主可邀请
   EMGroupStylePrivateOnlyOwnerInvite,
+
   /// 私有群，成员都可邀请
   EMGroupStylePrivateMemberCanInvite,
+
   /// 共有群，加入需要申请
   EMGroupStylePublicJoinNeedApproval,
+
   /// 共有群，任何人可加入
   EMGroupStylePublicOpenJoin,
 }
 
 /// @nodoc
-int convertEMGroupStyleToInt(EMGroupStyle style){
-  if(style == EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite){
+int convertEMGroupStyleToInt(EMGroupStyle style) {
+  if (style == EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite) {
     return 0;
   }
-  if(style == EMGroupStyle.EMGroupStylePrivateMemberCanInvite){
+  if (style == EMGroupStyle.EMGroupStylePrivateMemberCanInvite) {
     return 1;
   }
-  if(style == EMGroupStyle.EMGroupStylePublicJoinNeedApproval){
+  if (style == EMGroupStyle.EMGroupStylePublicJoinNeedApproval) {
     return 2;
   }
-  if(style == EMGroupStyle.EMGroupStylePublicOpenJoin){
+  if (style == EMGroupStyle.EMGroupStylePublicOpenJoin) {
     return 3;
   }
   return 0;
 }
 
-class EMMucSharedFile{
+class EMMucSharedFile {
   String _fileId;
   String _fileName;
   String _fileOwner;
@@ -863,27 +906,27 @@ class EMMucSharedFile{
   int _fileSize;
 
   /// 获取文件id
-  String getFileId(){
+  String getFileId() {
     return _fileId;
   }
 
   /// 获取文件文件
-  String getFileName(){
+  String getFileName() {
     return _fileName;
   }
 
   /// 获取文件上传者
-  String getFileOwner(){
+  String getFileOwner() {
     return _fileOwner;
   }
 
   /// 获取文件更新时间
-  int getFileUpdateTime(){
+  int getFileUpdateTime() {
     return _updateTime;
   }
 
   /// 获取文件大小
-  int getFileSize(){
+  int getFileSize() {
     return _fileSize;
   }
 
@@ -896,27 +939,36 @@ class EMMucSharedFile{
         _fileSize = data['fileSize'];
 
   /// @nodoc
-  String toString(){
-    return 'fileId:' + _fileId +"--"
-    +'fileName:' + _fileName +"--"
-    +'fileOwner:' + _fileOwner +"--"
-    +'updateTime:' + _updateTime.toString() +"--"
-    +'fileSize:' + _fileSize.toString();
+  String toString() {
+    return 'fileId:' +
+        _fileId +
+        "--" +
+        'fileName:' +
+        _fileName +
+        "--" +
+        'fileOwner:' +
+        _fileOwner +
+        "--" +
+        'updateTime:' +
+        _updateTime.toString() +
+        "--" +
+        'fileSize:' +
+        _fileSize.toString();
   }
 }
 
 /// 群组详情
-class EMGroupInfo{
+class EMGroupInfo {
   String _groupId;
   String _groupName;
 
   /// 获取群id
-  String getGroupId(){
+  String getGroupId() {
     return _groupId;
   }
 
   /// 获取群名称
-  String getGroupName(){
+  String getGroupName() {
     return _groupName;
   }
 
@@ -927,37 +979,40 @@ class EMGroupInfo{
 }
 
 /// 群成员权限
-enum EMGroupPermissionType{
+enum EMGroupPermissionType {
   /// none
   EMGroupPermissionTypeNone,
+
   /// 群成员
   EMGroupPermissionTypeMember,
+
   /// 群管理员
   EMGroupPermissionTypeAdmin,
+
   /// 群拥有者
   EMGroupPermissionTypeOwner,
 }
 
 /// @nodoc
-EMGroupPermissionType convertIntToEMGroupPermissionType(int i){
-  if(i == -1){
+EMGroupPermissionType convertIntToEMGroupPermissionType(int i) {
+  if (i == -1) {
     return EMGroupPermissionType.EMGroupPermissionTypeNone;
   }
-  if(i == 0){
+  if (i == 0) {
     return EMGroupPermissionType.EMGroupPermissionTypeMember;
   }
-  if(i == 1){
+  if (i == 1) {
     return EMGroupPermissionType.EMGroupPermissionTypeAdmin;
   }
-  if(i == 2){
+  if (i == 2) {
     return EMGroupPermissionType.EMGroupPermissionTypeOwner;
   }
   return EMGroupPermissionType.EMGroupPermissionTypeNone;
 }
 
 /// @nodoc 会话类型 EMConversationType 数据类型转 int
-toEMConversationType(EMConversationType type){
-  switch(type){
+toEMConversationType(EMConversationType type) {
+  switch (type) {
     case EMConversationType.Chat:
       return 0;
     case EMConversationType.GroupChat:
@@ -968,26 +1023,56 @@ toEMConversationType(EMConversationType type){
       return 0;
   }
 }
+
 /// @nodoc 会话类型 int 数据类型转 EMConversationType
-fromEMConversationType(int type){
-  if(type == 0){
+fromEMConversationType(int type) {
+  if (type == 0) {
     return EMConversationType.Chat;
-  }else if(type == 1){
+  } else if (type == 1) {
     return EMConversationType.GroupChat;
-  }else if(type == 2){
+  } else if (type == 2) {
     return EMConversationType.ChatRoom;
-  }else if(type == 3){
+  } else if (type == 3) {
     return EMConversationType.DiscussionGroup;
-  }else if(type == 4){
+  } else if (type == 4) {
     return EMConversationType.HelpDesk;
   }
 }
+
 /// @nodoc 搜索方向 EMSearchDirection 数据类型转 int
-toEMSearchDirection(EMSearchDirection direction){
-  if(direction == EMSearchDirection.Up){
+toEMSearchDirection(EMSearchDirection direction) {
+  if (direction == EMSearchDirection.Up) {
     return 0;
-  }else if(direction == EMSearchDirection.Down){
+  } else if (direction == EMSearchDirection.Down) {
     return 1;
   }
 }
 
+class EMPushConfigs {
+  String _displayNickname;
+  bool _noDisturbOn;
+  int _noDisturbStartHour;
+  int _noDisturbEndHour;
+
+  String getDisplayNickname() {
+    return _displayNickname;
+  }
+
+  bool isNoDisturbOn() {
+    return _noDisturbOn;
+  }
+
+  int getNoDisturbStartHour() {
+    return _noDisturbStartHour;
+  }
+
+  int getNoDisturbEndHour() {
+    return _noDisturbEndHour;
+  }
+
+  EMPushConfigs.from(Map<String, dynamic> data)
+      : _displayNickname = data['nickName'],
+        _noDisturbOn = data['noDisturbOn'],
+        _noDisturbStartHour = data['startHour'],
+        _noDisturbEndHour = data['endHour'];
+}

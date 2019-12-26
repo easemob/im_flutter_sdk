@@ -2,7 +2,6 @@ package com.easemob.im_flutter_sdk;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
@@ -12,7 +11,6 @@ import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.push.EMPushType;
 import com.hyphenate.util.EMLog;
 
 import io.flutter.plugin.common.JSONMethodCodec;
@@ -26,17 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.easemob.im_flutter_sdk.EMHelper.convertEMChatRoomToStringMap;
-import static com.easemob.im_flutter_sdk.EMHelper.convertEMCursorResultToStringMap;
-import static com.easemob.im_flutter_sdk.EMHelper.convertEMPageResultToStringMap;
 
 /** ImFlutterSdkPlugin */
 @SuppressWarnings("unchecked")
 public class ImFlutterSdkPlugin {
   private static final String CHANNEL_PREFIX = "com.easemob.im";
   static final Handler handler = new Handler(Looper.getMainLooper());
-  static String deviceToken;
-  static EMPushType pushType = EMPushType.NORMAL;
 
   private ImFlutterSdkPlugin(){}
 
@@ -48,6 +41,7 @@ public class ImFlutterSdkPlugin {
     registerConversationWith(registrar);
     registerEMChatRoomManagerWrapper(registrar);
     registerGroupManagerWith(registrar);
+    registerPushManagerWith(registrar);
   }
 
   public static void registerClientWith(Registrar registrar) {
@@ -74,22 +68,15 @@ public class ImFlutterSdkPlugin {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_room_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
   }
+
   public static void registerGroupManagerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group_manager", JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
   }
 
-  public static void setDeviceToken(EMPushType emPushType, String emDeviceToken){
-    pushType = emPushType;
-    deviceToken = emDeviceToken;
-  }
-
-  public static String getDeviceToken(){
-    return deviceToken;
-  }
-
-  public static EMPushType getPushType(){
-    return pushType;
+  public static void registerPushManagerWith(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_push_manager", JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(new EMPushManagerWrapper());
   }
 
 }
@@ -221,25 +208,28 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
       }
 
       if(value.getClass().getSimpleName().equals("EMCursorResult")){
-          data.put("value", convertEMCursorResultToStringMap((EMCursorResult)value));
+          data.put("value", EMHelper.convertEMCursorResultToStringMap((EMCursorResult)value));
       }
 
       if(value.getClass().getSimpleName().equals("EMPageResult")){
         EMPageResult result = (EMPageResult)value;
         if (((List)(result.getData())).get(0).getClass().getSimpleName().equals("EMChatRoom")){
-          data.put("value", convertEMPageResultToStringMap(result));
+          data.put("value", EMHelper.convertEMPageResultToStringMap(result));
         }
       }
 
       if(value.getClass().getSimpleName().equals("EMChatRoom")){
-        data.put("value", convertEMChatRoomToStringMap((EMChatRoom)value));
+        data.put("value", EMHelper.convertEMChatRoomToStringMap((EMChatRoom)value));
       }
 
       if(value.getClass().getSimpleName().equals("HashMap")){
           List<String> dataList = new LinkedList<String>();
-          ((Map<String, Long>)value).forEach((k, v) -> {
-            dataList.add(k);
-          });
+//          ((Map<String, Long>)value).forEach((k, v) -> {
+//            dataList.add(k);
+//          });
+        for(Map.Entry<String, Long> m : ((Map<String, Long>)value).entrySet()){
+          dataList.add(m.getKey());
+        }
           data.put("value", dataList);
       }
 

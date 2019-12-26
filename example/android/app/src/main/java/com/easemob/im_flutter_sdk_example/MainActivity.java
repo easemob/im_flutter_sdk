@@ -7,6 +7,7 @@ import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsManager;
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsResultAction;
 
 import io.flutter.app.FlutterActivity;
+import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
@@ -14,7 +15,12 @@ public class MainActivity extends FlutterActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     GeneratedPluginRegistrant.registerWith(this);
+    registerCustomPlugin(this);
     requestPermissions();
+  }
+
+  private static void registerCustomPlugin(PluginRegistry registrar) {
+    ImDemoFlugin.registerWith(registrar.registrarFor(ImDemoFlugin.CHANNEL));
   }
 
   @TargetApi(23)
