@@ -486,6 +486,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMTextMessageBody body = EMTextMessageBody(text);
     message.body = body;
     print('-----------LocalID---------->' + message.msgId);
+    message.setAttribute({"test1":"1111","test2":"2222"});
     EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
       print('-----------ServerID---------->' + message.msgId);
       print('-----------MessageStatus---------->' + message.status.toString());
