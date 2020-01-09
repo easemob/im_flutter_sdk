@@ -154,9 +154,8 @@ class EMHelper {
                 JSONObject data = args.getJSONObject("attributes");
                 Iterator iterator = data.keys();
                 while (iterator.hasNext()){
-                    String key = data.keys().next();
+                    String key = iterator.next().toString();
                     message.setAttribute(key,data.getString(key));
-                    iterator.next();
                 }
             }
         } catch (JSONException e) {
@@ -341,9 +340,12 @@ class EMHelper {
         chatRoomMap.put("blackList",emChatRoom.getBlackList());
         if (emChatRoom.getMuteList() != null && emChatRoom.getMuteList().size() > 0) {
             List list = new LinkedList();
-            emChatRoom.getMuteList().forEach((k, v) ->{
-                list.add(k);
-            });
+//            emChatRoom.getMuteList().forEach((k, v) ->{
+//                list.add(k);
+//            });
+            for (Map.Entry<String, Long> m :  emChatRoom.getMuteList().entrySet()){
+                list.add(m.getKey());
+            }
             chatRoomMap.put("muteList",list);
         }
         chatRoomMap.put("announcement",emChatRoom.getAnnouncement());
