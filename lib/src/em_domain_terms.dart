@@ -480,8 +480,8 @@ class EMMessage {
   final Map _attributes;
 
   /// @nodoc
-  void setAttribute(String attr, dynamic value) {
-    _attributes[attr] = value;
+  void setAttribute(Map map) {
+    _attributes.addAll(map);
   }
 
   /// @nodoc
