@@ -8,6 +8,7 @@ import 'em_chatroom_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
 import 'em_group_manager.dart';
+import 'em_call_manager.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
 
@@ -25,6 +26,8 @@ class EMClient {
   final EMGroupManager _groupManager = EMGroupManager.getInstance();
 
   final EMPushManager _pushManager = EMPushManager();
+
+  final EMCallManager _callManager = EMCallManager.getInstance();
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
@@ -380,6 +383,11 @@ class EMClient {
   /// @nodoc  pushManager - retrieve [EMPushManager] handle.
   EMPushManager pushManager() {
     return _pushManager;
+  }
+
+  /// @nodoc  callManager - retrieve [EMCallManager] handle.
+  EMCallManager callManager() {
+    return _callManager;
   }
 
   /// @nodoc
