@@ -12,7 +12,9 @@
 #import "EMConversationWrapper.h"
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
+#import "EMCallManagerWrapper.h"
 #import "EMHelper.h"
+#import "DemoCallManager.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
 @property (nonatomic, strong) NSMutableDictionary *deviceDict;
@@ -79,7 +81,9 @@
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
+    [DemoCallManager sharedManager];
     [self registerManagers];
+    
 }
 
 
@@ -100,6 +104,9 @@
     
     EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager")
                                                                                                    registrar:self.flutterPluginRegister];
+    
+    EMCallManagerWrapper * callManagerWrapper =[[EMCallManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_call_manager")
+                                                                                       registrar:self.flutterPluginRegister];
 #pragma clang diagnostic pop
     
 }
