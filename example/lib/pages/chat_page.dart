@@ -469,7 +469,14 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    WidgetUtil.hintBoxWithDefault('音频通话待实现!');
+    EMClient.getInstance().callManager().startCall(EMCallType.Video, conversation.conversationId, false, false, "123",
+        onSuccess:(){
+          print('拨打通话成功 --- ');
+        } ,
+        onError:(code, desc){
+          print('拨打通话失败 --- $desc');
+        } );
+//    WidgetUtil.hintBoxWithDefault('音频通话待实现!');
   }
 
   @override

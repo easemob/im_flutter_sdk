@@ -182,5 +182,8 @@ static NSString * const EMMethodKeyUpdatePushServiceForGroups = @"updatePushServ
 
 static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
 
+#pragma mark - EMCallManagerWrapper
+static NSString * const EMMethodKeyStartCall = @"startCall";
+
 
 
