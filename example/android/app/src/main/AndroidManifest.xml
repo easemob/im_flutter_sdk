@@ -61,6 +61,15 @@
             </intent-filter>
         </activity>
 
+        <!-- 视频通话 -->
+        <activity
+            android:name="VideoCallActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+
         <!-- VIVO推送配置 start -->
         <service
             android:name="com.vivo.push.sdk.service.CommandClientService"
