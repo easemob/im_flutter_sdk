@@ -171,5 +171,16 @@ class EMSDKMethod {
 
   /// EMCallManager
   static const String startCall = "startCall";
+  static const String onCallChanged = "onCallChanged";
+  static const String registerCallReceiver = "registerCallReceiver";
+  static const String setCallOptions = "setCallOptions";
 
+  static const String getCallId = "getCallId";
+  static const String getConnectType = "getConnectType";
+  static const String getExt = "getExt";
+  static const String getLocalName = "getLocalName";
+  static const String getRemoteName = "getRemoteName";
+  static const String getServerRecordId = "getServerRecordId";
+  static const String getCallType = "getCallType";
+  static const String isRecordOnServer = "isRecordOnServer";
 }

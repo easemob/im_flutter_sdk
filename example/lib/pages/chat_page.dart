@@ -20,7 +20,7 @@ class ChatPage extends StatefulWidget {
       _ChatPageState(arguments: this.arguments);
 }
 
-class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatItemDelegate,BottomInputBarDelegate,EMMessageStatus{
+class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatItemDelegate,BottomInputBarDelegate,EMMessageStatus,EMCallStateChangeListener{
   var arguments;
   int mType;
   String toChatUsername;
@@ -172,6 +172,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMClient.getInstance().chatManager().addMessageListener(this);
     EMClient.getInstance().chatManager().loadAllConversations();
     EMClient.getInstance().chatManager().addMessageStatusListener(this);
+    EMClient.getInstance().callManager().addCallStateChangeListener(this);
 
     messageTotalList.clear();
 
@@ -318,9 +319,21 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         });
   }
 
+  void toStringInfo() async{
+
+  }
+
   void _initExtWidgets(){
     Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
-      WidgetUtil.hintBoxWithDefault('视频通话待实现!');
+//      WidgetUtil.hintBoxWithDefault('视频通话待实现!');
+
+      EMClient.getInstance().callManager().startCall(EMCallType.Video, toChatUsername, true, true, "1323",
+          onSuccess:() {
+
+          } ,
+          onError:(code, desc){
+            print('拨打通话失败 --- $desc');
+          } );
     });
     Widget locationWidget = WidgetUtil.buildExtentionWidget('images/location.png','位置',_isDark,() async {
       WidgetUtil.hintBoxWithDefault('发送位置消息待实现!');
@@ -469,7 +482,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    EMClient.getInstance().callManager().startCall(EMCallType.Video, conversation.conversationId, false, false, "123",
+    EMClient.getInstance().callManager().startCall(EMCallType.Voice, toChatUsername, false, false, "123",
         onSuccess:(){
           print('拨打通话成功 --- ');
         } ,
@@ -525,6 +538,93 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onProgress(int progress, String status) {
     // TODO: implement onProgress
     print('-----------onProgress---------->'+ ': '+ progress.toString());
+  }
+
+  @override
+  void onAccepted() async{
+    // TODO: implement onAccepted
+    var callId = await EMClient.getInstance().callManager().getCallId();
+    var getExt = await EMClient.getInstance().callManager().getExt();
+    var getLocalName = await EMClient.getInstance().callManager().getLocalName();
+    var getRemoteName = await EMClient.getInstance().callManager().getRemoteName();
+    var isRecordOnServer = await EMClient.getInstance().callManager().isRecordOnServer();
+    var getConnectType = await EMClient.getInstance().callManager().getConnectType();
+    var getCallType = await EMClient.getInstance().callManager().getCallType();
+    print(' onAcceptedinfo:  ' + ' callId: '
+      + callId.toString()  + ' getExt: '
+      + getExt.toString() + ' getLocalName: '
+      + getLocalName.toString() + ' getRemoteName: '
+      + getRemoteName.toString() + ' isRecordOnServer: '
+      + isRecordOnServer.toString() + ' getConnectType: '
+      + getConnectType.toString() + ' getCallType: '
+      + getCallType.toString()
+    );
+    print('-----------EMCallStateChangeListener---------->'+ ': onAccepted');
+  }
+
+  @override
+  void onConnected() {
+    // TODO: implement onConnected
+    print('-----------EMCallStateChangeListener---------->'+ ': onConnected');
+  }
+
+  @override
+  void onConnecting() {
+    // TODO: implement onConnecting
+    print('-----------EMCallStateChangeListener---------->'+ ': onConnecting');
+  }
+
+  @override
+  void onDisconnected(CallReason reason) async{
+    // TODO: implement onDisconnected
+    Future.delayed(Duration(milliseconds: 500), () {
+      _onConversationInit();
+    });
+    var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();
+    print('-----------getServerRecordId----------> '+ getServerRecordId);
+    print('-----------EMCallStateChangeListener---------->'+ ': onDisconnected' + reason.toString());
+  }
+
+  @override
+  void onNetVideoPause() {
+    // TODO: implement onNetVideoPause
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetVideoPause');
+  }
+
+  @override
+  void onNetVideoResume() {
+    // TODO: implement onNetVideoResume
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetVideoResume');
+  }
+
+  @override
+  void onNetVoicePause() {
+    // TODO: implement onNetVoicePause
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetVoicePause');
+  }
+
+  @override
+  void onNetVoiceResume() {
+    // TODO: implement onNetVoiceResume
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetVoiceResume');
+  }
+
+  @override
+  void onNetWorkDisconnected() {
+    // TODO: implement onNetWorkDisconnected
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetWorkDisconnected');
+  }
+
+  @override
+  void onNetWorkNormal() {
+    // TODO: implement onNetWorkNormal
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetWorkNormal');
+  }
+
+  @override
+  void onNetworkUnstable() {
+    // TODO: implement onNetworkUnstable
+    print('-----------EMCallStateChangeListener---------->'+ ': onNetworkUnstable');
   }
 
 }

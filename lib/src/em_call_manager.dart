@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/src/em_call_setup.dart';
 import 'em_sdk_method.dart';
 
 class EMCallManager {
@@ -12,7 +13,7 @@ class EMCallManager {
   static EMCallManager _instance;
 
   /// @nodoc
-//  final List<EMCallEventListener> _callEventListeners =  List<EMCallEventListener>();
+  final List<EMCallStateChangeListener> _callStateChangeListeners =  List<EMCallStateChangeListener>();
 
   /// @nodoc
   factory EMCallManager.getInstance() {
@@ -24,13 +25,66 @@ class EMCallManager {
     _addNativeMethodCallHandler();
   }
 
+  void addCallStateChangeListener(EMCallStateChangeListener listener){
+    assert(listener != null);
+    _callStateChangeListeners.add(listener);
+  }
+
+  void removeCallStateChangeListener(EMCallStateChangeListener listener){
+    assert(listener != null);
+    _callStateChangeListeners.remove(listener);
+  }
+
   /// @nodoc
   void _addNativeMethodCallHandler() {
     _emCallManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
-
+      if (call.method == EMSDKMethod.onCallChanged) {
+         _onCallChanged(argMap);
+      }
       return null;
     });
+  }
+
+  Future<void> _onCallChanged(Map event) async{
+    String type = event['type'];
+    for (var listener in _callStateChangeListeners) {
+      switch(type){
+        case EMCallEvent.ON_CONNECTING:
+          listener.onConnecting();
+          break;
+        case EMCallEvent.ON_CONNECTED:
+          listener.onConnected();
+          break;
+        case EMCallEvent.ON_ACCEPTED:
+          listener.onAccepted();
+          break;
+        case EMCallEvent.ON_NET_WORK_DISCONNECTED:
+          listener.onNetWorkDisconnected();
+          break;
+        case EMCallEvent.ON_NET_WORK_UNSTABLE:
+          listener.onNetworkUnstable();
+          break;
+        case EMCallEvent.ON_NET_WORK_NORMAL:
+          listener.onNetWorkNormal();
+          break;
+        case EMCallEvent.ON_NET_VIDEO_PAUSE:
+          listener.onNetVideoPause();
+          break;
+        case EMCallEvent.ON_NET_VIDEO_RESUME:
+          listener.onNetVideoResume();
+          break;
+        case EMCallEvent.ON_NET_VOICE_PAUSE:
+          listener.onNetVoicePause();
+          break;
+        case EMCallEvent.ON_NET_VOICE_RESUME:
+          listener.onNetVoiceResume();
+          break;
+        case EMCallEvent.ON_DISCONNECTED:
+          listener.onDisconnected(fromCallReason(event['reason']));
+          break;
+      }
+    }
   }
 
   /// @nodoc 发起实时会话
@@ -55,17 +109,78 @@ class EMCallManager {
     });
   }
 
-  toEMCallType(EMCallType type) {
-    if(type == EMCallType.Voice) {
-      return 0;
-    } else {
-      return 1;
+  ///设置通话配置
+  void setCallOptions(EMCallOptions options){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.setCallOptions,convertToMap(options));
+  }
+
+  /// 获取通话ID
+  Future<String> getCallId() async {
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getCallId);
+    if (result['success']) {
+      return result['value'];
     }
   }
-}
 
-/// @nodoc EMCallType -  通话枚举的类型。
-enum EMCallType {
-  Voice,
-  Video
+  /// 获取通话状态
+  Future<ConnectTypes> getConnectType() async {
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getConnectType);
+    if (result['success']) {
+      return fromConnectTypes(result['value']);
+    }
+  }
+
+  /// 获取通话扩展
+  Future<String> getExt() async {
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getExt);
+    if (result['success']) {
+      return result['value'];
+    }
+  }
+
+  /// 获取本地通话userName
+  Future<String> getLocalName() async{
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getLocalName);
+    if (result['success']) {
+      return result['value'];
+    }
+  }
+
+  /// 获取远程通话userName
+  Future<String> getRemoteName() async{
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getRemoteName);
+    if (result['success']) {
+      return result['value'];
+    }
+  }
+
+  /// 获取服务端录制ID
+  Future<String> getServerRecordId() async{
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getServerRecordId);
+    if (result['success']) {
+      return result['value'];
+    }
+  }
+
+  /// 获取通话类型 VOICE/VIDEO
+  Future<EMCallType> getCallType() async{
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getCallType);
+    if (result['success']) {
+      return fromCallType(result['value']);
+    }
+  }
+
+  /// 是否开启录制
+  Future<bool> isRecordOnServer() async{
+    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.isRecordOnServer);
+    if (result['success']) {
+      return result['value'];
+    }
+  }
+
+  /// Android端用来注册广播服务调起音视频通话界面
+  void registerCallReceiver(){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallReceiver);
+  }
+
 }
