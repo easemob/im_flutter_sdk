@@ -158,7 +158,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
     this.delegate.onTapItemPhone();
   }
 
-  ///点击视频item
+  ///点击文件item
   void  _makeFileCall() async{
     print("_makeFileCall_");
     this.delegate.onTapItemFile();
@@ -320,7 +320,7 @@ abstract class BottomInputBarDelegate {
   void onTapItemEmojicon();
   ///点击音频
   void onTapItemPhone();
-  ///点击视频
+  ///点击文件
   void onTapItemFile();
 
 }

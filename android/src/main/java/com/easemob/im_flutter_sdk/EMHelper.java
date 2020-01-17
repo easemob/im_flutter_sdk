@@ -203,7 +203,7 @@ class EMHelper {
      */
     static Map<String, Object> convertEMMessageToStringMap(EMMessage message) {
         Map<String, Object> result = new HashMap<String, Object>();
-        if (null != message.ext()){
+        if (message.ext().size() > 0 && null != message.ext()){
             result.put("attributes", message.ext());
         }else{
             ///扩展不能为空 设置一个默认值

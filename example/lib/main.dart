@@ -103,6 +103,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   void onConnected() {
     // TODO: implement onConnected
     print("网络连接成功");
+    EMClient.getInstance().callManager().registerCallReceiver();
   }
 
   @override
