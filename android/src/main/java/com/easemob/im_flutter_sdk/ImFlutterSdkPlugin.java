@@ -81,31 +81,6 @@ public class ImFlutterSdkPlugin {
 
 }
 
-interface EMWrapper {
-  default void post(Consumer<Void> func) {
-    ImFlutterSdkPlugin.handler.post(new Runnable() {
-      @Override
-      public void run() {
-        func.accept(null);
-      }
-    });
-  }
-
-  default void onSuccess(Result result) {
-    Map<String, Object> data = new HashMap<String, Object>();
-    data.put("success", Boolean.TRUE);
-    result.success(data);
-  }
-
-  default void onError(Result result, HyphenateException e) {
-    Map<String, Object> data = new HashMap<String, Object>();
-    data.put("success", Boolean.FALSE);
-    data.put("code", e.getErrorCode());
-    data.put("desc", e.getDescription());
-    result.success(data);
-  }
-}
-
 
 @SuppressWarnings("unchecked")
 class EMWrapperCallBack implements EMCallBack{

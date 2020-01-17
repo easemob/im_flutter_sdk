@@ -19,8 +19,9 @@ public class MainActivity extends FlutterActivity {
     requestPermissions();
   }
 
-  private static void registerCustomPlugin(PluginRegistry registrar) {
+  private void registerCustomPlugin(PluginRegistry registrar) {
     ImDemoFlugin.registerWith(registrar.registrarFor(ImDemoFlugin.CHANNEL));
+    EMCallPlugin.registerWith(registrar.registrarFor(EMCallPlugin.CALL));
   }
 
   @TargetApi(23)
