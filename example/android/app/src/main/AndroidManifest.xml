@@ -70,6 +70,15 @@
             android:screenOrientation="portrait"
             android:theme="@style/horizontal_slide" />
 
+        <!-- 语音通话 -->
+        <activity
+            android:name="VoiceCallActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+
         <!-- VIVO推送配置 start -->
         <service
             android:name="com.vivo.push.sdk.service.CommandClientService"

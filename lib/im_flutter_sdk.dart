@@ -8,6 +8,7 @@ export 'src/em_group_manager.dart';
 export 'src/em_group.dart';
 export 'src/em_push_manager.dart';
 export 'src/em_call_manager.dart';
+export 'src/em_call_setup.dart';
 
 
 
