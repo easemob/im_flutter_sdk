@@ -442,6 +442,7 @@ static DemoCallManager *callManager = nil;
                   mergeStream:(BOOL)isMerge
                           ext:(NSString *)ext
             isCustomVideoData:(BOOL)aIsCustomVideo
+                   completion:(void(^)(EMCallSession *aCallSession, EMError *aError))aCompletion
 {
     if ([aUsername length] == 0) {
         return;
@@ -486,18 +487,19 @@ static DemoCallManager *callManager = nil;
             gIsCalling = NO;
             [[EMClient sharedClient].callManager endCall:aCallSession.callId reason:EMCallEndReasonNoResponse];
         }
+        
     };
     
     gIsCalling = YES;
     EMCallOptions *options = [[EMClient sharedClient].callManager getCallOptions];
     options.enableCustomizeVideoData = aIsCustomVideo;
-    options.isSendPushIfOffline = YES;
     [[EMClient sharedClient].callManager startCall:aType remoteName:aUsername
                                             record:isRecord
                                        mergeStream:isMerge
                                                ext:ext completion:^(EMCallSession *aCallSession, EMError *aError) {
-                                                   completionBlock(aCallSession, aError);
-                                               }];
+        completionBlock(aCallSession, aError);
+        aCompletion(aCallSession, aError);
+    }];
 }
 
 #pragma mark - public

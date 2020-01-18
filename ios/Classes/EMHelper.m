@@ -489,7 +489,6 @@
         chatRoomDitc[@"blacklist"] = aChatRoom.blacklist;
     }
     if (aChatRoom.muteList) {
-        NSMutableArray *muteList = [NSMutableArray array];
         chatRoomDitc[@"muteList"] = aChatRoom.muteList;
     }
     if (aChatRoom.maxOccupantsCount) {
@@ -510,6 +509,27 @@
     }
     return ret;
 }
+
+#pragma mark - ChatRoom
++ (EMCallOptions *)callOptionsDictionaryToEMCallOptions:(NSDictionary *)optionsDict
+{
+    EMCallOptions *options = [[EMClient sharedClient].callManager getCallOptions];
+    options.isSendPushIfOffline = [optionsDict[@"isSendPushIfOffline"] boolValue];
+    
+    if ([optionsDict[@"userSetAutoResizing"] boolValue]) {
+        options.videoResolution = EMCallVideoResolutionDefault;
+    } else {
+        options.videoResolution = EMCallVideoResolution1280_720;
+    }
+    options.pingInterval = [optionsDict[@"pingInterval"] intValue];
+    options.maxVideoKbps = [optionsDict[@"maxVideoKbps"] intValue];
+    options.minVideoKbps = [optionsDict[@"minVideoKbps"] intValue];
+    options.maxVideoFrameRate = [optionsDict[@"maxVideoFrameRate"] intValue];
+    options.maxAudioKbps = [optionsDict[@"maxAudioKbps"] intValue];
+    
+    return options;
+}
+
 #pragma mark - Others
 
 + (NSDictionary *)pageReslutToDictionary:(EMPageResult *)aPageResult {
