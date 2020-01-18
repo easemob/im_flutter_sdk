@@ -482,7 +482,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    EMClient.getInstance().callManager().startCall(EMCallType.Voice, toChatUsername, false, false, "123",
+    EMClient.getInstance().callManager().startCall(EMCallType.Voice, toChatUsername, true, false, "123",
         onSuccess:(){
           print('拨打通话成功 --- ');
         } ,
@@ -577,11 +577,11 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onDisconnected(CallReason reason) async{
     // TODO: implement onDisconnected
-    Future.delayed(Duration(milliseconds: 500), () {
-      _onConversationInit();
-    });
-    var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();
-    print('-----------getServerRecordId----------> '+ getServerRecordId);
+//    Future.delayed(Duration(milliseconds: 500), () {
+//      _onConversationInit();
+//    });
+//    var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();
+//    print('-----------getServerRecordId----------> '+ getServerRecordId);
     print('-----------EMCallStateChangeListener---------->'+ ': onDisconnected' + reason.toString());
   }
 
