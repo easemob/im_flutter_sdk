@@ -22,9 +22,10 @@
 
 - (void)_makeCallWithUsername:(NSString *)aUsername
              type:(EMCallType)aType
-             record:(BOOL)isRecord
-             mergeStream:(BOOL)isMerge
-                     ext:(NSString *)ext
-            isCustomVideoData:(BOOL)aIsCustomVideo;
+           record:(BOOL)isRecord
+      mergeStream:(BOOL)isMerge
+              ext:(NSString *)ext
+isCustomVideoData:(BOOL)aIsCustomVideo
+       completion:(void(^)(EMCallSession *aCallSession, EMError *aError))aCompletion;
 
 @end
