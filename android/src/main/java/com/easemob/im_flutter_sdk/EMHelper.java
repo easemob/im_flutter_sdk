@@ -55,8 +55,10 @@ class EMHelper {
         try {
             EMLog.d("convertDataMapToMessage", args.toString());
 
-            int data_type = Integer.parseInt(args.getString("type"));
-            int data_chatType = Integer.parseInt(args.getString("chatType"));
+            int data_type =args.getInt("type");
+            int data_chatType = args.getInt("chatType");
+
+
             emChatType = EMMessage.ChatType.Chat;
             intToChatType(data_chatType);
 
@@ -146,6 +148,29 @@ class EMHelper {
             e.printStackTrace();
         }
         return message;
+    }
+
+    static boolean updateDataMapToMessage(JSONObject args){
+        EMMessage message = null;
+        try {
+            String msgid = args.getString("msgId");
+            message = EMClient.getInstance().chatManager().getMessage(msgid);
+            if(message == null){
+                EMLog.e("EMHelper","Message is null object");
+                return false;
+            }
+            message.setAcked(args.getBoolean("acked"));
+            message.setDeliverAcked(args.getBoolean("deliverAcked"));
+            message.setDelivered(args.getBoolean("delivered"));
+            message.setListened(args.getBoolean("listened"));
+            message.setLocalTime(Long.valueOf(args.getString("localTime")));
+            message.setMsgTime(Long.valueOf(args.getString("msgTime")));
+            message.setUnread(args.getBoolean("unread"));
+            setExt(args,message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return EMClient.getInstance().chatManager().updateMessage(message);
     }
 
     private static void setExt(JSONObject args, EMMessage message){

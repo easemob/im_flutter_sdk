@@ -432,10 +432,10 @@ class EMMessage {
   String get userName => _userName;
 
   /// @nodoc TODO:
-  bool deliverAcked;
+  bool deliverAcked = false;
 
   /// 是否已读
-  bool acked;
+  bool acked = false;
 
   /// 消息body
   EMMessageBody body;
