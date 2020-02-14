@@ -15,13 +15,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -304,12 +302,15 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
 
     private void updateMessage(Object args, Result result) {
         JSONObject argMap = (JSONObject)args;
-        EMMessage message = EMHelper.convertDataMapToMessage(argMap);
-        boolean status = manager.updateMessage(message);
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("status", Boolean.valueOf(status));
-        result.success(data);
+        try {
+            boolean status = EMHelper.updateDataMapToMessage(argMap.getJSONObject("message"));
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("status", status);
+            result.success(data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void downloadAttachment(Object args, Result result) {
