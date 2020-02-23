@@ -17,7 +17,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                            registrar:registrar]) {
-//        [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
+       [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     }
     return self;
 }
@@ -27,7 +27,7 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
-    [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
+    //[EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     
     if ([EMMethodKeyAddContact isEqualToString:call.method]) {
         [self addContact:call.arguments result:result];
