@@ -52,9 +52,11 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                 }
                 data.put("messages", msgs);
                 EMLog.e("onMessageReceived->>",data.toString());
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onMessageReceived, data);
+                    }});
             }
 
             @Override
@@ -65,9 +67,11 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onCmdMessageReceived, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onCmdMessageReceived, data);
+                    }});
             }
 
             @Override
@@ -78,9 +82,11 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMessageRead, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onMessageRead, data);
+                    }});
             }
 
             @Override
@@ -91,9 +97,11 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMessageDelivered, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onMessageDelivered, data);
+                    }});
             }
 
             @Override
@@ -104,27 +112,33 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                     msgs.add(EMHelper.convertEMMessageToStringMap(message));
                 }
                 data.put("messages", msgs);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMessageRecalled, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onMessageRecalled, data);
+                    }});
             }
 
             @Override
             public void onMessageChanged(EMMessage message, Object change) {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("message", EMHelper.convertEMMessageToStringMap(message));
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onMessageChanged, data);
+                    }});
 
             }
         });
         //setup conversation listener
         manager.addConversationListener(() -> {
             Map<String, Object> data = new HashMap<String, Object>();
-            post((Void)->{
-                channel.invokeMethod(EMSDKMethod.onConversationUpdate,data);
-            });
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    channel.invokeMethod(EMSDKMethod.onConversationUpdate,data);
+                }});
         });
     }
 
@@ -191,35 +205,40 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         message.setMessageStatusCallback(new EMCallBack() {
             @Override
             public void onSuccess() {
-                post((Void)->{
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.TRUE);
-                    data.put("message", EMHelper.convertEMMessageToStringMap(message));
-                    EMLog.e("callback", "onSuccess");
-                    result.success(data);
-                });
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.TRUE);
+                        data.put("message", EMHelper.convertEMMessageToStringMap(message));
+                        EMLog.e("callback", "onSuccess");
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        result.success(data);
+                    }});
             }
 
             @Override
             public void onError(int code, String error) {
-                post((Void)->{
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.FALSE);
-                    data.put("code", code );
-                    data.put("error", error);
-                    result.success(data);
-                });
-
+                        Map<String, Object> data = new HashMap<String, Object>();
+                        data.put("success", Boolean.FALSE);
+                        data.put("code", code );
+                        data.put("error", error);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        result.success(data);
+                    }});
             }
 
             @Override
             public void onProgress(int progress, String status) {
-                post((Void)->{
-                    data.put("progress", progress );
-                    data.put("status", status);
-                    data.put("localMsgId",localMsgId);
-                    channel.invokeMethod(EMSDKMethod.onMessageStatusOnProgress, data);
-                });
+                        data.put("progress", progress );
+                        data.put("status", status);
+                        data.put("localMsgId",localMsgId);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onMessageStatusOnProgress, data);
+                    }});
             }
         });
         manager.sendMessage(message);
@@ -253,6 +272,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void getMessage(Object args, Result result) {
+
         try {
             JSONObject argMap = (JSONObject)args;
             String messageId = argMap.getString("id");
@@ -260,13 +280,19 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("message", EMHelper.convertEMMessageToStringMap(message));
+            post(new Runnable() {
+                @Override
+                public void run() {
             result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
+
     }
 
     private void getConversation(Object args, Result result) {
+
         try {
             JSONObject argMap = (JSONObject)args;
             String conversationId = argMap.getString("id");
@@ -276,10 +302,15 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("conversation", EMHelper.convertEMConversationToStringMap(conversation));
+            post(new Runnable() {
+                @Override
+                public void run() {
             result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
+
     }
 
     private void markAllConversationsAsRead(Object args, Result result) {
@@ -287,11 +318,16 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void getUnreadMessageCount(Object args, Result result) {
+
         int count = manager.getUnreadMessageCount();
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
         data.put("count", count);
+        post(new Runnable() {
+            @Override
+            public void run() {
         result.success(data);
+            }});
     }
 
     private void saveMessage(Object args, Result result) {
@@ -301,16 +337,22 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void updateMessage(Object args, Result result) {
+
         JSONObject argMap = (JSONObject)args;
         try {
             boolean status = EMHelper.updateDataMapToMessage(argMap.getJSONObject("message"));
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("status", status);
+            post(new Runnable() {
+                @Override
+                public void run() {
             result.success(data);
+                }});
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
     }
 
     private void downloadAttachment(Object args, Result result) {
@@ -341,6 +383,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void getConversationsByType(Object args, Result result) {
+
         try {
             JSONObject argMap = (JSONObject)args;
             int type = argMap.getInt("type");
@@ -352,10 +395,15 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                 conversations.add(EMHelper.convertEMConversationToStringMap(conversation));
             }
             data.put("conversations",conversations);
+            post(new Runnable() {
+                @Override
+                public void run() {
             result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
+
     }
 
     private void downloadFile(Object args, Result result) {
@@ -373,19 +421,20 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void getAllConversations(Object args, Result result) {
-        assert(args instanceof Map);
+
         Map<String, EMConversation> list = manager.getAllConversations();
         List<Map<String, Object>> conversations = new LinkedList<Map<String, Object>>();
-//        list.forEach((String id, EMConversation conversation)->{
-//            conversations.add(EMHelper.convertEMConversationToStringMap(conversation));
-//        });
         for(Map.Entry<String, EMConversation> m : list.entrySet()){
             conversations.add(EMHelper.convertEMConversationToStringMap( m.getValue()));
         }
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
         data.put("conversations", conversations);
+        post(new Runnable() {
+            @Override
+            public void run() {
         result.success(data);
+            }});
     }
 
     private void loadAllConversations(Object args, Result result) {
@@ -393,6 +442,7 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void deleteConversation(Object args, Result result) {
+
         try {
             JSONObject argMap = (JSONObject)args;
             String userName = argMap.getString("userName");
@@ -401,10 +451,15 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("status", status);
+            post(new Runnable() {
+                @Override
+                public void run() {
             result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
+
     }
 
 
@@ -440,7 +495,11 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
                 String cursorId = UUID.randomUUID().toString();
                 cursorResultList.put(cursorId, cursorResult);
                 data.put("cursorId", cursorId);
-                result.success(data);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        result.success(data);
+                    }});
             }catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -476,16 +535,17 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
             int direction = argMap.getInt("direction");
             List<EMMessage> list = manager.searchMsgFromDB(keywords, timeStamp, maxCount, from, EMHelper.convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-//            list.forEach((message)->{
-//                messages.add(EMHelper.convertEMMessageToStringMap(message));
-//            });
             for (EMMessage message : list) {
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
             }
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("messages", messages);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }

@@ -1,11 +1,13 @@
 package com.easemob.im_flutter_sdk_example;
 
+import com.easemob.im_flutter_sdk.EMWrapper;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
 public class
-ImDemoFlugin implements MethodChannel.MethodCallHandler {
+ImDemoFlugin implements MethodChannel.MethodCallHandler, EMWrapper {
     public static final String CHANNEL = "com.easemob.demo/plugin";
     static MethodChannel channel;
 
@@ -27,8 +29,11 @@ ImDemoFlugin implements MethodChannel.MethodCallHandler {
              * EMClient.getInstance().sendHMSPushTokenToServer(token)
              * 去上传推送token
              */
-
-            result.success("success");
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success("success");
+                }});
         }
     }
 }

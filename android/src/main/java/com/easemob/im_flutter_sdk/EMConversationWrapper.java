@@ -82,7 +82,11 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("count", Integer.valueOf(count));
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -106,16 +110,17 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             int pageSize = argMap.getInt("pageSize");
             List<EMMessage> list = getConversation(id).loadMoreMsgFromDB(startMsgId, pageSize);
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-//            list.forEach(message->{
-//                messages.add(EMHelper.convertEMMessageToStringMap(message));
-//            });
             for (EMMessage message : list) {
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
             }
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("messages", messages);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -132,16 +137,17 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             int direction = argMap.getInt("direction");
             List<EMMessage> list = getConversation(id).searchMsgFromDB(keywords,timeStamp,maxCount,from,convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-//            list.forEach(message->{
-//                messages.add(EMHelper.convertEMMessageToStringMap(message));
-//            });
             for (EMMessage message : list) {
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
             }
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("messages", messages);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -158,16 +164,17 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             int direction = argMap.getInt("direction");
             List<EMMessage> list = getConversation(id).searchMsgFromDB(convertIntToEMMessageType(type), Long.parseLong(timeStamp), maxCount, from, convertIntToEMSearchDirection(direction));
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-//            list.forEach(message->{
-//                messages.add(EMHelper.convertEMMessageToStringMap(message));
-//            });
             for (EMMessage message : list) {
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
             }
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("messages", messages);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -183,7 +190,11 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("message", EMHelper.convertEMMessageToStringMap(message));
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -200,16 +211,17 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             }
             List<EMMessage> list = getConversation(id).loadMessages(msgIds);
             List<Map<String, Object>> messages = new LinkedList<Map<String, Object>>();
-//            list.forEach(message->{
-//                messages.add(EMHelper.convertEMMessageToStringMap(message));
-//            });
             for (EMMessage message : list) {
                 messages.add(EMHelper.convertEMMessageToStringMap(message));
             }
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("messages", messages);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -245,7 +257,11 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("message", EMHelper.convertEMMessageToStringMap(message));
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -259,7 +275,11 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("message", EMHelper.convertEMMessageToStringMap(message));
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -326,7 +346,11 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("path", path);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
