@@ -35,9 +35,12 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", "onContactAdded");
                 data.put("userName", userName);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                    }});
+
             }
 
             @Override
@@ -45,9 +48,11 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", "onContactDeleted");
                 data.put("userName", userName);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onContactChanged, data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onContactChanged, data);
+                    }});
             }
 
             @Override
@@ -56,9 +61,11 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 data.put("type", "onContactInvited");
                 data.put("userName", userName);
                 data.put("reason", reason);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
-                });
+                    }});
             }
 
             @Override
@@ -66,9 +73,11 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", "onFriendRequestAccepted");
                 data.put("userName", userName);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
-                });
+                }});
             }
 
             @Override
@@ -76,9 +85,11 @@ public class EMContactManagerWrapper implements MethodCallHandler, EMWrapper{
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("type", "onFriendRequestDeclined");
                 data.put("userName", userName);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onContactChanged, data);
-                });
+                    }});
             }
         });
     }
