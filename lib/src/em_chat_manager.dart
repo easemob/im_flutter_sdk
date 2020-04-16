@@ -178,7 +178,7 @@ class EMChatManager {
   /// @nodoc 导入消息 [messages].
   void importMessages(List<EMMessage> messages) {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
-        {"messages": messages.map((message) => message.toDataMap())});
+        {"messages": messages.map((message) => message.toDataMap()).toList()});
   }
 
   /// @nodoc 根据类型获取会话 [type].
