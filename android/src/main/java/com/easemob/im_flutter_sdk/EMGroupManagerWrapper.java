@@ -50,9 +50,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupName", groupName);
                 data.put("inviter", inviter);
                 data.put("reason", reason);
-                post((Void)->{
-                    channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
+                    }});
             }
 
             @Override
@@ -64,9 +66,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupName", groupName);
                 data.put("applicant", applicant);
                 data.put("reason", reason);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -77,9 +81,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
                 data.put("accepter", accepter);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -91,9 +97,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupName", groupName);
                 data.put("decliner", decliner);
                 data.put("reason", reason);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -104,9 +112,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupId", groupId);
                 data.put("invitee", invitee);
                 data.put("reason", reason);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -117,9 +127,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupId", groupId);
                 data.put("invitee", invitee);
                 data.put("reason", reason);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -129,9 +141,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onUserRemoved");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -141,9 +155,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onGroupDestroyed");
                 data.put("groupId", groupId);
                 data.put("groupName", groupName);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -154,9 +170,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupId", groupId);
                 data.put("inviter", inviter);
                 data.put("inviteMessage", inviteMessage);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -167,9 +185,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupId", groupId);
                 data.put("mutes", mutes);
                 data.put("muteExpire", muteExpire);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -179,9 +199,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onMuteListRemoved");
                 data.put("groupId", groupId);
                 data.put("mutes", mutes);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -191,9 +213,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onAdminAdded");
                 data.put("groupId", groupId);
                 data.put("administrator", administrator);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -203,9 +227,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onAdminRemoved");
                 data.put("groupId", groupId);
                 data.put("administrator", administrator);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -216,9 +242,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("groupId", groupId);
                 data.put("newOwner", newOwner);
                 data.put("oldOwner", oldOwner);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -228,9 +256,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onMemberJoined");
                 data.put("groupId", groupId);
                 data.put("member", member);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -240,9 +270,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onMemberExited");
                 data.put("groupId", groupId);
                 data.put("member", member);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -252,9 +284,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onAnnouncementChanged");
                 data.put("groupId", groupId);
                 data.put("announcement", announcement);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
 
             @Override
@@ -264,9 +298,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onSharedFileAdded");
                 data.put("groupId", groupId);
                 data.put("sharedFile", EMHelper.convertEMMucSharedFileToStringMap(sharedFile));
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                    }});
             }
 
             @Override
@@ -276,9 +312,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                 data.put("type", "onSharedFileDeleted");
                 data.put("groupId", groupId);
                 data.put("fileId", fileId);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     channel.invokeMethod(EMSDKMethod.onGroupChanged,data);
-                });
+                }});
             }
         });
 
@@ -381,7 +419,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("value", EMHelper.convertEMGroupToStringMap(group));
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -396,7 +438,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
         }
         data.put("success", Boolean.TRUE);
         data.put("value", list);
-        result.success(data);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 
     private void createGroup(Object args, MethodChannel.Result result){
@@ -857,7 +903,11 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("success", Boolean.TRUE);
                     data.put("value", EMHelper.convertEMGroupToStringMap(group));
-                    result.success(data);
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(data);
+                        }});
                 }catch (Exception e){
                     e.printStackTrace();
                 }
