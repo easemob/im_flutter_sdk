@@ -259,7 +259,8 @@
                         completion:^(EMConversation *conversation)
     {
         NSDictionary *msgDict = param[@"msg"];
-        [conversation insertMessage:[EMHelper dictionaryToMessage:msgDict]
+        EMMessage *msg = [EMHelper dictionaryToMessage:msgDict];
+        [conversation insertMessage:msg
                               error:nil];
     }];
 }

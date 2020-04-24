@@ -74,6 +74,8 @@
         [self searchChatMsgFromDB:call.arguments result:result];
     } else if ([EMMethodKeyGetCursor isEqualToString:call.method]) {
         [self getCursor:call.arguments result:result];
+    } else if ([EMMethodKeyAddMessageListener isEqualToString:call.method]) {
+        [self addMessageListener:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -179,9 +181,16 @@
     }];
 }
 
-// TODO: 目前这种方式实现后，消息id不一致，考虑如何处理。
 - (void)importMessages:(NSDictionary *)param result:(FlutterResult)result {
     
+    NSArray *messageArr = param[@"messages"];
+    NSMutableArray *messages;
+    for (NSDictionary *messageDict in messageArr) {
+        EMMessage *msg = [EMHelper dictionaryToMessage:messageDict];
+        [messages addObject:msg];
+    }
+    [[EMClient sharedClient].chatManager importMessages:messages completion:^(EMError *aError) {
+    }];
 }
 
 // TODO: ios需调添加该实现
@@ -286,6 +295,10 @@
     
 }
 
+// 兼容安卓
+- (void)addMessageListener:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
 
 #pragma mark - EMChatManagerDelegate
 

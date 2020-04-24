@@ -282,7 +282,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh",
 				"${PODS_ROOT}/../.symlinks/flutter/ios/Flutter.framework",
-				"${PODS_ROOT}/Hyphenate/iOS_Pods_IMFullSDK_V3.6.2/Hyphenate.framework",
+				"${PODS_ROOT}/Hyphenate/Hyphenate.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -401,6 +401,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.easemob.imFlutterDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Profile;
@@ -533,6 +534,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.easemob.imFlutterDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -559,6 +561,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.easemob.imFlutterDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
