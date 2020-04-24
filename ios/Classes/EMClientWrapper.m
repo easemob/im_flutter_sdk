@@ -83,7 +83,7 @@
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [DemoCallManager sharedManager];
     [self registerManagers];
-    
+    NSLog(@"SDK版本 --- %@", [EMClient sharedClient].version);
 }
 
 

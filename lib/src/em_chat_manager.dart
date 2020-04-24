@@ -176,10 +176,30 @@ class EMChatManager {
   }
 
   /// @nodoc 导入消息 [messages].
+//  void importMessages(List<EMMessage> messages) {
+//    _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
+//        {"messages": messages.map((message) => message.toDataMap())});
+//
+//  }
+
+  /// @nodoc 导入消息 [messages].
   void importMessages(List<EMMessage> messages) {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
-        {"messages": messages.map((message) => message.toDataMap()).toList()});
+        {"messages": messageListToMap(messages)});
   }
+
+  List messageListToMap(List<EMMessage> messages) {
+    var messageList = List();
+    for (EMMessage message in messages) {
+      messageList.add(message.toDataMap());
+    }
+    return messageList;
+  }
+
+//  void importMessages(EMMessage message) {
+//    _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages, message.toDataMap());
+//  }
+
 
   /// @nodoc 根据类型获取会话 [type].
   Future<List<EMConversation>> getConversationsByType(
