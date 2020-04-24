@@ -144,6 +144,24 @@ class EMHelper {
             if (message != null) {
                 message.setMsgId(args.getString("msgId"));
             }
+            String messageId = args.getString("msgId");
+            if (messageId != null) {
+                message.setMsgId(messageId);
+            }
+            Long msgTime = args.getLong("msgTime");
+            if (msgTime != null) {
+                message.setMsgTime(msgTime);
+            }
+            Long localTime = args.getLong("localTime");
+            if (msgTime != null) {
+                message.setLocalTime(localTime);
+            }
+            int direction = args.getInt("direction");
+            if (direction == 0) {
+                message.setDirection(EMMessage.Direct.SEND);
+            } else {
+                message.setDirection(EMMessage.Direct.RECEIVE);
+            }
         }catch(Exception e){
             e.printStackTrace();
         }

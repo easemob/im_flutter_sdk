@@ -81,7 +81,7 @@ class EMConversation {
       "keywords": keywords,
       "timeStamp": timeStamp,
       "maxCount": maxCount,
-      "direction": direction
+      "direction": toEMSearchDirection(direction)
     });
     if (result['success']) {
       var messages = List<EMMessage>();
@@ -107,7 +107,7 @@ class EMConversation {
       "type": type,
       "timeStamp": timeStamp,
       "maxCount": maxCount,
-      "direction": direction
+      "direction": toEMSearchDirection(direction)
     });
     if (result['success']) {
       var messages = List<EMMessage>();
