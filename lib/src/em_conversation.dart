@@ -201,6 +201,7 @@ class EMConversation {
 
   /// 插入一条消息[msg]
   void insertMessage(EMMessage msg) {
+    print('插入消息-------------');
     _emConversationChannel.invokeMethod(EMSDKMethod.insertMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
   }

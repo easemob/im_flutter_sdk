@@ -84,6 +84,8 @@ static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate
 
 static NSString * const EMMethodKeyOnMessageStatusOnProgress = @"onMessageStatusOnProgress";
 
+static NSString * const EMMethodKeyAddMessageListener = @"addMessageListener";
+
 #pragma mark - EMConversationWrapper
 
 static NSString * const EMMethodKeyGetUnreadMsgCount = @"getUnreadMsgCount";
