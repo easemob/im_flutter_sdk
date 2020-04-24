@@ -47,44 +47,52 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             @Override
             public void onChatRoomDestroyed(String roomId, String roomName) {
                 EMLog.d(TAG,"<---onChatRoomDestroyed--->"+"roomId: "+ roomId + " roomName: " + roomName );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                    Map<String, Object> data = new HashMap<String, Object>();
                    data.put("roomId",roomId);
                    data.put("roomName",roomName);
                    data.put("chatRoomChange","onChatRoomDestroyed");
                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                    }});
             }
 
             @Override
             public void onMemberJoined(String roomId, String participant) {
                 EMLog.d(TAG,"<---onMemberJoined--->"+"roomId: "+ roomId + " participant: " + participant );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",roomId);
                     data.put("participant",participant);
                     data.put("chatRoomChange","onMemberJoined");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                    }});
             }
 
             @Override
             public void onMemberExited(String roomId, String roomName, String participant) {
                 EMLog.d(TAG,"<---onMemberExited--->"+"roomId: "+ roomId + " roomName: " + roomName +" participant: "+ participant);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",roomId);
                     data.put("roomName",roomName);
                     data.put("participant",participant);
                     data.put("chatRoomChange","onMemberExited");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                    }});
             }
 
             @Override
             public void onRemovedFromChatRoom(int reason, String roomId, String roomName, String participant) {
                 EMLog.d(TAG,"<---onRemovedFromChatRoom--->"+"roomId: "+ roomId + " roomName: " + roomName +" participant: "+ participant);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",roomId);
                     data.put("roomName",roomName);
@@ -92,86 +100,96 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
                     data.put("reason",reason);
                     data.put("chatRoomChange","onRemovedFromChatRoom");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                }});
             }
 
             @Override
             public void onMuteListAdded(String chatRoomId, List<String> mutes, long expireTime) {
                 EMLog.d(TAG,"<---onMuteListAdded--->"+"roomId: "+ chatRoomId + " mutesList: " + mutes.toString() + " expireTime: " + expireTime);
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("mutes",mutes);
                     data.put("expireTime",String.valueOf(expireTime));
                     data.put("chatRoomChange","onMuteListAdded");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                    }});
             }
 
             @Override
             public void onMuteListRemoved(String chatRoomId, List<String> mutes) {
                 EMLog.d(TAG,"<---onMuteListRemoved--->"+"roomId: "+ chatRoomId + " mutesList: " + mutes.toString() );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("mutes",mutes);
                     data.put("chatRoomChange","onMuteListRemoved");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                }});
             }
 
             @Override
             public void onAdminAdded(String chatRoomId, String admin) {
                 EMLog.d(TAG,"<---onAdminAdded--->"+"roomId: "+ chatRoomId + " admin: " + admin );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("admin",admin);
                     data.put("chatRoomChange","onAdminAdded");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                    }});
             }
 
             @Override
             public void onAdminRemoved(String chatRoomId, String admin) {
                 EMLog.d(TAG,"<---onAdminRemoved--->"+"roomId: "+ chatRoomId + " admin: " + admin );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("admin",admin);
                     data.put("chatRoomChange","onAdminRemoved");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                }});
             }
 
             @Override
             public void onOwnerChanged(String chatRoomId, String newOwner, String oldOwner) {
                 EMLog.d(TAG,"<---onOwnerChanged--->"+"roomId: "+ chatRoomId + " oldOwner: " + oldOwner );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("newOwner",newOwner);
                     data.put("oldOwner",oldOwner);
                     data.put("chatRoomChange","onOwnerChanged");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                    }});
             }
 
             @Override
             public void onAnnouncementChanged(String chatRoomId, String announcement) {
                 EMLog.d(TAG,"<---onAnnouncementChanged--->"+"roomId: "+ chatRoomId + " announcement: " + announcement );
-                post((Void)->{
+                post(new Runnable() {
+                    @Override
+                    public void run() {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("roomId",chatRoomId);
                     data.put("announcement",announcement);
                     data.put("chatRoomChange","onAnnouncementChanged");
                     channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
-                });
+                }});
             }
         });
     }
-
-
 
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull MethodChannel.Result result) {
@@ -245,7 +263,11 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             emChatRoomManager.leaveChatRoom(chatRoomId);
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -280,7 +302,11 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
             data.put("value", EMHelper.convertEMChatRoomToStringMap(chatRoom));
-            result.success(data);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    result.success(data);
+                }});
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -295,7 +321,11 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
         data.put("value", roomlist);
-        result.success(data);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 
     private void createChatRoom(Object args, MethodChannel.Result result){
@@ -512,7 +542,11 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
     public void onSuccess(MethodChannel.Result result) {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
-        result.success(data);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 
     public void onError(MethodChannel.Result result, HyphenateException e) {
@@ -520,6 +554,10 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
         data.put("success", Boolean.FALSE);
         data.put("code", e.getErrorCode());
         data.put("desc", e.getDescription());
-        result.success(data);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 }

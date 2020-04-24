@@ -85,7 +85,11 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
         data.put("value", convertEMPushConfigsToStringMap(configs));
-        result.success(data);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 
     private void getPushConfigsFromServer(Object args, Result result){
@@ -97,7 +101,11 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("success", Boolean.TRUE);
                     data.put("value", convertEMPushConfigsToStringMap(configs));
-                    result.success(data);
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(data);
+                        }});
                 }catch (HyphenateException e){
                     EMLog.e("HyphenateException", e.getMessage());
                     onError(result, e);
@@ -136,7 +144,11 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("success", Boolean.TRUE);
         data.put("value", EMClient.getInstance().pushManager().getNoPushGroups());
-        result.success(data);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 
     private void updatePushNickname(Object args, Result result){
@@ -150,7 +162,11 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
                     Map<String, Object> data = new HashMap<String, Object>();
                     data.put("success", Boolean.TRUE);
                     data.put("value", updatenick);
-                    result.success(data);
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(data);
+                        }});
                 }catch (JSONException e){
                     EMLog.e("JSONException", e.getMessage());
                 }
