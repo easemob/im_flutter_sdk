@@ -18,14 +18,14 @@ class EMSettingsPage extends StatefulWidget {
 class _EMSettingsPageState extends State<EMSettingsPage> {
 
   var _mapData = [
-    {'imageName':'images/通用@2x.png','name':'通用'},
-    {'imageName':'images/安全与隐私@2x.png','name':'安全与隐私'},
-    {'imageName':'images/消息设置@2x.png','name':'消息设置'},
-    {'imageName':'images/群组设置@2x.png','name':'群组设置'},
-    {'imageName':'images/黑名单@2x.png','name':'黑名单'},
-    {'imageName':'images/多端多设备管理@2x.png','name':'多端多设备管理'},
-    {'imageName':'images/自定义服务器@2x.png','name':'自定义服务器'},
-    {'imageName':'images/清除缓存@2x.png','name':'清除缓存'}
+    {'imageName':'images/general@2x.png','name':'通用'},
+    {'imageName':'images/security@2x.png','name':'安全与隐私'},
+    {'imageName':'images/messageSetup@2x.png','name':'消息设置'},
+    {'imageName':'images/groupSetup@2x.png','name':'群组设置'},
+    {'imageName':'images/blacklist@2x.png','name':'黑名单'},
+    {'imageName':'images/multiterminal@2x.png','name':'多端多设备管理'},
+    {'imageName':'images/customServer@2x.png','name':'自定义服务器'},
+    {'imageName':'images/clearCache@2x.png','name':'清除缓存'}
   ];
 
   String userName = 'name';

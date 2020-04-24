@@ -26,11 +26,11 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   var contactsList = new List();
 
   var mapTest = [
-    {'imageName':'images/新的好友@2x.png','name':'新的好友'},
-    {'imageName':'images/群聊@2x.png','name':'群聊'},
-    {'imageName':'images/标签@2x.png','name':'标签'},
-    {'imageName':'images/聊天室@2x.png','name':'聊天室'},
-    {'imageName':'images/公众号@2x.png','name':'公众号'}
+    {'imageName':'images/newFriend@2x.png','name':'新的好友'},
+    {'imageName':'images/chatgroup@2x.png','name':'群聊'},
+    {'imageName':'images/label@2x.png','name':'标签'},
+    {'imageName':'images/chatroom@2x.png','name':'聊天室'},
+    {'imageName':'images/public@2x.png','name':'公众号'}
   ];
 
   Offset tapPos;

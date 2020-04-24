@@ -175,7 +175,25 @@
                                                body:body
                                                 ext:ext];
     ret.chatType = chatType;
+    
+    if (![aDictionary[@"msgId"] isKindOfClass:[NSNull class]]) {
+        ret.messageId = aDictionary[@"msgId"];
+    }
+    
+    if (![aDictionary[@"msgTime"] isKindOfClass:[NSNull class]]) {
+        ret.timestamp = [aDictionary[@"msgTime"] longLongValue];
+    }
 
+    if (![aDictionary[@"localTime"] isKindOfClass:[NSNull class]]) {
+        ret.localTime = [aDictionary[@"localTime"] longLongValue];
+    }
+    
+    if ([aDictionary[@"direction"] intValue] == 0) {
+        ret.direction = EMMessageDirectionSend;
+    } else {
+        ret.direction = EMMessageDirectionReceive;
+    }
+    
     return ret;
 }
 
@@ -215,6 +233,7 @@
             ret[@"displayName"] = ((EMImageMessageBody *)aBody).displayName;
             ret[@"downloadStatus"] = @(((EMImageMessageBody *)aBody).downloadStatus);
             ret[@"localUrl"] = ((EMImageMessageBody *)aBody).localPath;
+            NSLog(@"image.localPath -- %@", ((EMImageMessageBody *)aBody).localPath);
             ret[@"remoteUrl"] = ((EMImageMessageBody *)aBody).remotePath;
             ret[@"fileLength"] = @(((EMImageMessageBody *)aBody).fileLength);
             

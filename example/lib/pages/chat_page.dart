@@ -190,6 +190,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       _joinChatRoom();
     }
 
+
     this.user = UserInfoDataSource.getUserInfo(toChatUsername);
     _onConversationInit();
 
