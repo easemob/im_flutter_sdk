@@ -12,6 +12,8 @@
 
 然后 Package get 一下
 
+注意点: 在调试iOS时，将ios->podfile文件中的 #platform :ios, '9.0' 改成 platform :ios, '9.0'
+
 ## 本地方式：
 
 可以先将SDK clone 或者 download 到本地项目中
