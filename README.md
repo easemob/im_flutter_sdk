@@ -1,6 +1,8 @@
 # im_flutter_sdk
 
-集成SDK：
+集成SDK
+
+远程方式：
 
 在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
 
@@ -8,7 +10,19 @@ im_flutter_sdk:
     git:
       url: https://github.com/easemob/im_flutter_sdk.git
 
-然后 Package get 一下，将SDK下载下来
+然后 Package get 一下
+
+本地方式：
+
+先将SDK下载到本地
+
+在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
+
+im_flutter_sdk:
+    path : /本地路径/im_flutter_sdk
+
+然后 Package get 一下
+
 
 想使用SDK方法时导入SDK头文件即可： import 'package:im_flutter_sdk/im_flutter_sdk.dart';  
 
