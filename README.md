@@ -24,7 +24,8 @@ im_flutter_sdk:
 然后 Package get 一下
 
 
-## 使用SDK方法时导入SDK头文件即可： import 'package:im_flutter_sdk/im_flutter_sdk.dart';  
+## 使用SDK方法时导入SDK头文件即可： 
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';  
 
 SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):
 
