@@ -1,8 +1,8 @@
 # im_flutter_sdk
 
-集成SDK
+## 集成SDK
 
-远程方式：
+## 远程方式：
 
 在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
 
@@ -12,7 +12,7 @@ im_flutter_sdk:
 
 然后 Package get 一下
 
-本地方式：
+## 本地方式：
 
 先将SDK下载到本地
 
