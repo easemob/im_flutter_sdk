@@ -14,7 +14,7 @@ im_flutter_sdk:
 
 ## 本地方式：
 
-先将SDK下载到本地
+先将SDK clone 或者 download 到本地
 
 在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
 
