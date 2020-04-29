@@ -9,6 +9,7 @@ import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
 import 'em_group_manager.dart';
 import 'em_call_manager.dart';
+import 'em_conference_manager.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
 
@@ -28,6 +29,8 @@ class EMClient {
   final EMPushManager _pushManager = EMPushManager();
 
   final EMCallManager _callManager = EMCallManager.getInstance();
+
+  final EMConferenceManager _conferenceManager = EMConferenceManager.getInstance();
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
@@ -388,6 +391,10 @@ class EMClient {
   /// @nodoc  callManager - retrieve [EMCallManager] handle.
   EMCallManager callManager() {
     return _callManager;
+  }
+
+  EMConferenceManager conferenceManager() {
+    return _conferenceManager;
   }
 
   /// @nodoc

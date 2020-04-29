@@ -82,7 +82,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
               child: Row(
                 children: <Widget>[
                   ClipOval(
-                    child: Image.asset('images/群聊@2x.png', width: EMLayout.emContactListPortraitSize,height: EMLayout.emContactListPortraitSize,),
+                    child: Image.asset('images/chatgroup@2x.png', width: EMLayout.emContactListPortraitSize,height: EMLayout.emContactListPortraitSize,),
                   ),
                   Padding(padding: EdgeInsets.all(8.0)),
                   Text(DemoLocalizations.of(context).createGroup, style: TextStyle(fontSize: 18.0),)
@@ -116,7 +116,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
               child: Row(
                 children: <Widget>[
                   ClipOval(
-                    child: Image.asset('images/群聊@2x.png', width: EMLayout.emContactListPortraitSize,height: EMLayout.emContactListPortraitSize,),
+                    child: Image.asset('images/chatgroup@2x.png', width: EMLayout.emContactListPortraitSize,height: EMLayout.emContactListPortraitSize,),
                   ),
                   Padding(padding: EdgeInsets.all(8.0)),
                   Text(DemoLocalizations.of(context).publicGroups, style: TextStyle(fontSize: 18.0),)
