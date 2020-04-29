@@ -19,18 +19,21 @@ class EMContactsListPage extends StatefulWidget {
 
 class _EMContactsListPageState extends State<EMContactsListPage> implements EMContactEventListener {
 
+  int contactItemCount = 8;
   String _imageName;
   String _name;
 
 
+
   var contactsList = new List();
 
-  var mapTest = [
+  var imageNameList = [
     {'imageName':'images/newFriend@2x.png','name':'新的好友'},
     {'imageName':'images/chatgroup@2x.png','name':'群聊'},
     {'imageName':'images/label@2x.png','name':'标签'},
     {'imageName':'images/chatroom@2x.png','name':'聊天室'},
-    {'imageName':'images/public@2x.png','name':'公众号'}
+    {'imageName':'images/public@2x.png','name':'公众号'},
+    {'imageName':'images/call@2x.png','name':'多人会议'},
   ];
 
   Offset tapPos;
@@ -76,7 +79,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
       body: ListView.builder(
 //        shrinkWrap: true,
 //        physics:NeverScrollableScrollPhysics(),
-        itemCount: this.contactsList.length + 7,
+        itemCount: this.contactsList.length + contactItemCount,
         itemBuilder: (BuildContext context,int index){
           return _rowStyle(index);
         },
@@ -111,36 +114,42 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
         ],
         ),
       );
-    } else if(index > 0 && index < 6) {
-      this._imageName = mapTest[index - 1]['imageName'];
-      this._name = mapTest[index - 1]['name'];
+    } else if(index > 0 && index < contactItemCount - 1) {
+      this._imageName = imageNameList[index - 1]['imageName'];
+      this._name = imageNameList[index - 1]['name'];
 
-    } else if(index == 6) {
+    } else if(index == contactItemCount - 1) {
       return Container(
         height: 5.0,
       );
     } else {
       this._imageName = 'images/default_avatar.png';
-      this._name = _getData(index - 7);
+      this._name = _getData(index - contactItemCount);
     }
 
     return InkWell(
       onTap: (){
-        if(index > 0 && index < 7){
+        if(index > 0 && index < contactItemCount){
           if(index == 1){
 //            Navigator.of(context).pushNamed(Constant.toAddContact);
           } else if (index == 2) {
             Navigator.of(context).pushNamed(Constant.toChatGroupListPage);
           } else if (index == 3) {
-            WidgetUtil.hintBoxWithDefault('正在开发中...');
+//            WidgetUtil.hintBoxWithDefault('正在开发中...');
           } else if (index == 4) {
             Navigator.of(context).pushNamed(Constant.toChatRoomListPage);
+          } else if (index == 6) {
+            EMClient.getInstance().conferenceManager().createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication, '123', false, false, onSuccess:(EMConference conf) {
+
+            }, onError: (code, desc){
+              print('创建会议失败 --- $desc');
+            });
           } else {
             WidgetUtil.hintBoxWithDefault('正在开发中...');
           }
         } else {
           Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-            return new ChatPage(arguments: {'mType': Constant.chatTypeSingle,'toChatUsername':_getData(index - 7)});
+            return new ChatPage(arguments: {'mType': Constant.chatTypeSingle,'toChatUsername':_getData(index - contactItemCount)});
           }));
         }
       },
@@ -204,9 +213,9 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   }
 
   _deleteContact(int index) {
-    EMClient.getInstance().contactManager().deleteContact(_getData(index - 7), false,
+    EMClient.getInstance().contactManager().deleteContact(_getData(index - contactItemCount), false,
         onSuccess: (){
-          this.contactsList.removeAt(index - 7);
+          this.contactsList.removeAt(index - contactItemCount);
           loadEMContactsList();
         },
         onError: (code, desc){

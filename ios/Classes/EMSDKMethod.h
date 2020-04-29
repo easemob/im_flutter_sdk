@@ -202,5 +202,9 @@ static NSString * const EMMethodKeyIsRecordOnServer = @"isRecordOnServer";
 
 static NSString * const EMMethodKeyOnCallChanged = @"onCallChanged";
 
+#pragma mark - EMConferenceManagerWrapper
+static NSString * const EMMethodKeyCreateAndJoinConference = @"createAndJoinConference";
+static NSString * const EMMethodKeyJoinConference = @"joinConference";
+
 
 

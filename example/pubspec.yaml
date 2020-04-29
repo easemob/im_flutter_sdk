@@ -68,6 +68,7 @@ flutter:
     - images/customServer@2x.png
     - images/clearCache@2x.png
     - images/agreeTerms@2x.png
+    - images/call@2x.png
     - images/voice.png
     - images/voice_select.png
     - images/phone.png

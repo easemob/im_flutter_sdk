@@ -424,7 +424,29 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapMessageItem(EMMessage message) {
     // TODO: implement didTapMessageItem
-    print("点击了Item ");
+    if (message.direction == Direction.RECEIVE) {
+      if (message.ext() != null) {
+        String conferenceId;
+        String password;
+        if (message.ext()['conferenceId'] != null && message.ext()['conferenceId'].length > 0) {
+          conferenceId = message.ext()['conferenceId'];
+        } else if (message.ext()['em_conference_id'] != null) {
+          conferenceId = message.ext()['em_conference_id'];
+        }
+
+        if (message.ext()['password'] != null) {
+          password = message.ext()['password'];
+        } else if(message.ext()['em_conference_password'] != null) {
+          password = message.ext()['em_conference_password'];
+        }
+
+        EMClient.getInstance().conferenceManager().joinConference(conferenceId, password,
+            onSuccess:(EMConference conf) {
+            }, onError:(code, desc) {
+          print('加入会议失败 --- $desc');
+        });
+      }
+    }
   }
 
   @override

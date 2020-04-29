@@ -382,8 +382,8 @@
     if (aGroup.groupId) {
         groupDict[@"groupId"] = aGroup.groupId;
     }
-    if (aGroup.subject) {
-        groupDict[@"groupName"] = aGroup.subject;
+    if (aGroup.groupName) {
+        groupDict[@"groupName"] = aGroup.groupName;
     }
     if (aGroup.description) {
         groupDict[@"description"] = aGroup.description;
@@ -547,6 +547,52 @@
     options.maxAudioKbps = [optionsDict[@"maxAudioKbps"] intValue];
     
     return options;
+}
+
+#pragma mark - CallConference
++ (NSDictionary *)callConferenceToDictionary:(EMCallConference *)aCall {
+    NSMutableDictionary *callConferenceDitc = [NSMutableDictionary dictionary];
+        
+    if (aCall.confId) {
+        callConferenceDitc[@"conferenceId"] = aCall.confId;
+    }
+    callConferenceDitc[@"password"] = @"";
+    
+    EMConferenceType conferenceType = aCall.type;
+    int cType;
+    if (conferenceType == EMConferenceTypeCommunication) {
+        cType = 10;
+    }
+    callConferenceDitc[@"conferenceType"] = [NSNumber numberWithInt:cType];
+    
+    EMConferenceRole conferenceRoleType = aCall.role;
+    int roleType;
+    if (conferenceRoleType == EMConferenceRoleNone) {
+        roleType = 0;
+    } else if (conferenceRoleType == EMConferenceRoleAudience) {
+        roleType = 1;
+    } else if (conferenceRoleType == EMConferenceRoleSpeaker) {
+        roleType = 3;
+    } else {
+        roleType = 7;
+    }
+    callConferenceDitc[@"conferenceRole"] = [NSNumber numberWithInt:roleType];
+    
+    if (aCall.memberCount) {
+        callConferenceDitc[@"memberNum"] = @(aCall.memberCount);
+    }
+    
+    if (aCall.adminIds) {
+        callConferenceDitc[@"admins"] = aCall.adminIds;
+    }
+    
+    if (aCall.speakerIds) {
+        callConferenceDitc[@"speakers"] = aCall.speakerIds;
+    }
+    
+    callConferenceDitc[@"isRecordOnServer"] = [NSNumber numberWithBool:aCall.willRecord];
+    
+    return callConferenceDitc;
 }
 
 #pragma mark - Others
