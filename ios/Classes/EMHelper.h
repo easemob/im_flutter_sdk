@@ -51,6 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (EMCallOptions *)callOptionsDictionaryToEMCallOptions:(NSDictionary *)options;
 
+#pragma mark - CallConference
++ (NSDictionary *)callConferenceToDictionary:(EMCallConference *)aCall;
 
 #pragma mark - Others
 
