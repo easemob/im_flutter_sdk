@@ -20,8 +20,9 @@ public class MainActivity extends FlutterActivity {
   }
 
   private void registerCustomPlugin(PluginRegistry registrar) {
-    ImDemoFlugin.registerWith(registrar.registrarFor(ImDemoFlugin.CHANNEL));
+    ImDemoPlugin.registerWith(registrar.registrarFor(ImDemoPlugin.CHANNEL));
     EMCallPlugin.registerWith(registrar.registrarFor(EMCallPlugin.CALL));
+    EMConferencePlugin.registerWith(registrar.registrarFor(EMConferencePlugin.Conference));
   }
 
   @TargetApi(23)
