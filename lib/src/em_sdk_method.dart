@@ -183,4 +183,11 @@ class EMSDKMethod {
   static const String getServerRecordId = "getServerRecordId";
   static const String getCallType = "getCallType";
   static const String isRecordOnServer = "isRecordOnServer";
+
+  /// EMConferenceManager
+  static const String createAndJoinConference = "createAndJoinConference";
+  static const String joinConference = "joinConference";
+
+
+
 }

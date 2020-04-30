@@ -28,11 +28,14 @@ class MessageItemFactory extends StatelessWidget {
     } else {
       if(msg.localUrl != null) {
         String path = MediaUtil.instance.getCorrectedLocalPath(msg.localUrl);
+        print('图片path -----');
         File file = File(path);
         if(file != null && file.existsSync()) {
           widget = Image.file(file,width: 90,height: 100,fit: BoxFit.fill);
+          print('显示缩略图-----');
         }else {
           widget = Image.network(msg.localUrl,width: 90,height: 100,fit: BoxFit.fill);
+          print('显示缩略图123 -----');
         }
       }else {
         widget = Image.network(msg.remoteUrl,width: 90,height: 100,fit: BoxFit.fill);

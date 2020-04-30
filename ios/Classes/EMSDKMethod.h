@@ -84,6 +84,8 @@ static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate
 
 static NSString * const EMMethodKeyOnMessageStatusOnProgress = @"onMessageStatusOnProgress";
 
+static NSString * const EMMethodKeyAddMessageListener = @"addMessageListener";
+
 #pragma mark - EMConversationWrapper
 
 static NSString * const EMMethodKeyGetUnreadMsgCount = @"getUnreadMsgCount";
@@ -199,6 +201,10 @@ static NSString * const EMMethodKeyGetCallType = @"getCallType";
 static NSString * const EMMethodKeyIsRecordOnServer = @"isRecordOnServer";
 
 static NSString * const EMMethodKeyOnCallChanged = @"onCallChanged";
+
+#pragma mark - EMConferenceManagerWrapper
+static NSString * const EMMethodKeyCreateAndJoinConference = @"createAndJoinConference";
+static NSString * const EMMethodKeyJoinConference = @"joinConference";
 
 
 

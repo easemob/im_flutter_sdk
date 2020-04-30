@@ -175,11 +175,21 @@ class EMChatManager {
         EMSDKMethod.downloadThumbnail, {"message": message.toDataMap()});
   }
 
+
   /// @nodoc 导入消息 [messages].
   void importMessages(List<EMMessage> messages) {
     _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
-        {"messages": messages.map((message) => message.toDataMap())});
+        {"messages": messageListToMap(messages)});
   }
+
+  List messageListToMap(List<EMMessage> messages) {
+    var messageList = List();
+    for (EMMessage message in messages) {
+      messageList.add(message.toDataMap());
+    }
+    return messageList;
+  }
+  
 
   /// @nodoc 根据类型获取会话 [type].
   Future<List<EMConversation>> getConversationsByType(
