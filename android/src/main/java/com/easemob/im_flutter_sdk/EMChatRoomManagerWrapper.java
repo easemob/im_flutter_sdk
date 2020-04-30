@@ -44,6 +44,22 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
      */
     private void registerChatRoomChangeListener(){
         emChatRoomManager.addChatRoomChangeListener(new EMChatRoomChangeListener() {
+
+            @Override
+            public void onWhiteListAdded(String chatRoomId, List<String> whitelist) {
+
+            }
+
+            @Override
+            public void onWhiteListRemoved(String chatRoomId, List<String> whitelist) {
+
+            }
+
+            @Override
+            public void onAllMemberMuteStateChanged(String chatRoomId, boolean isMuted) {
+
+            }
+
             @Override
             public void onChatRoomDestroyed(String roomId, String roomName) {
                 EMLog.d(TAG,"<---onChatRoomDestroyed--->"+"roomId: "+ roomId + " roomName: " + roomName );

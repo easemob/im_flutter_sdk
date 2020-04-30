@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.hyphenate.media.EMCallSurfaceView
+        android:id="@+id/item_surface_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/img_call_avatar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/em_default_avatar" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/adaptive_44dp"
+        android:background="@drawable/em_conference_member_cover">
+
+        <TextView
+            android:id="@+id/text_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/adaptive_12dp"
+            android:textColor="#ffffff"
+            android:textSize="@dimen/adaptive_18sp" />
+
+        <ImageView
+            android:id="@+id/icon_mute"
+            android:layout_width="@dimen/adaptive_40dp"
+            android:layout_height="@dimen/adaptive_40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:padding="2dp"
+            android:src="@mipmap/em_call_mute"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/icon_talking"
+            android:layout_width="@dimen/adaptive_40dp"
+            android:layout_height="@dimen/adaptive_40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:padding="2dp"
+            android:src="@mipmap/em_call_sound_on"
+            android:visibility="gone" />
+    </RelativeLayout>
+</RelativeLayout>
