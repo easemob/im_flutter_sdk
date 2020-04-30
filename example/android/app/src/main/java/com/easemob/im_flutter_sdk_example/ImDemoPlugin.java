@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk_example;
 
+import android.app.Activity;
+
 import com.easemob.im_flutter_sdk.EMWrapper;
 
 import io.flutter.plugin.common.MethodCall;
@@ -7,16 +9,19 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
 public class
-ImDemoFlugin implements MethodChannel.MethodCallHandler, EMWrapper {
+ImDemoPlugin implements MethodChannel.MethodCallHandler, EMWrapper {
     public static final String CHANNEL = "com.easemob.demo/plugin";
     static MethodChannel channel;
+    private Activity activity;
 
-    private ImDemoFlugin(){}
+    private ImDemoPlugin(Activity activity) {
+        this.activity = activity;
+    }
 
     public static void registerWith(PluginRegistry.Registrar registrar) {
         channel = new MethodChannel(registrar.messenger(), CHANNEL);
-        ImDemoFlugin imDemoFlugin = new ImDemoFlugin();
-        channel.setMethodCallHandler(imDemoFlugin);
+        ImDemoPlugin imDemoPlugin = new ImDemoPlugin(registrar.activity());
+        channel.setMethodCallHandler(imDemoPlugin);
     }
 
 

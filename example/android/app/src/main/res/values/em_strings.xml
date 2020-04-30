@@ -13,8 +13,16 @@
     <string name="did_not_answer">未接听</string>
     <string name="Has_been_cancelled">已取消</string>
     <string name="call_version_inconsistent">通话协议版本不一致</string>
-
     <string name="Are_connected_to_each_other">正在连接对方……</string>
     <string name="direct_call">Direct</string>
     <string name="relay_call">Relay</string>
+    <string name="button_start_video_conference">开始视频会议 (%1$d)</string>
+    <string name="tips_invite_to_join">%1$s 邀请您加入视频 …</string>
+    <string name="tips_select_contacts_first">请先选择联系人 ~</string>
+    <string name="tips_desk_share">你正在共享当前桌面</string>
+    <string name="alert_window_permission_denied">当前App未被授予悬浮窗权限 :(</string>
+    <string name="msg_conference_invite">快来加入会议</string>
+    <string name="Select_the_contact">选择联系人</string>
+    <string name="cancel">取消</string>
+    <string name="search">搜索</string>
 </resources>

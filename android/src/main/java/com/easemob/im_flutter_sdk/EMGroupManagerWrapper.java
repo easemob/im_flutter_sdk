@@ -41,6 +41,22 @@ public class EMGroupManagerWrapper implements MethodCallHandler, EMWrapper {
         EMLog.e("_emGroupManagerWrapper", "addGroupChangeListener");
         //setup group listener
         manager.addGroupChangeListener(new EMGroupChangeListener() {
+
+            @Override
+            public void onWhiteListAdded(String groupId, List<String> whitelist) {
+
+            }
+
+            @Override
+            public void onWhiteListRemoved(String groupId, List<String> whitelist) {
+
+            }
+
+            @Override
+            public void onAllMemberMuteStateChanged(String groupId, boolean isMuted) {
+
+            }
+
             @Override
             public void onInvitationReceived(String groupId, String groupName, String inviter, String reason) {
                 EMLog.e("_emGroupManagerWrapper", "onInvitationReceived");

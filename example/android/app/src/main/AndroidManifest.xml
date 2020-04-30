@@ -79,6 +79,21 @@
             android:screenOrientation="portrait"
             android:theme="@style/horizontal_slide" />
 
+        <activity
+            android:name="com.easemob.im_flutter_sdk_example.conference.ConferenceActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+
+        <!-- 会议成员邀请 -->
+        <activity
+            android:name="com.easemob.im_flutter_sdk_example.conference.ConferenceInviteActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/nornal_style"
+            android:windowSoftInputMode="adjustPan"/>
         <!-- VIVO推送配置 start -->
         <service
             android:name="com.vivo.push.sdk.service.CommandClientService"
