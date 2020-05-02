@@ -271,7 +271,6 @@ class EMChatManager {
   void addMessageListener(EMMessageListener listener) {
     assert(listener != null);
     _messageListeners.add(listener);
-    _emChatManagerChannel.invokeMethod("addMessageListener");
   }
 
   /// 移除消息监听[listener]

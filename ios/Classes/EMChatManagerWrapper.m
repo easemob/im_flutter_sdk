@@ -74,8 +74,6 @@
         [self searchChatMsgFromDB:call.arguments result:result];
     } else if ([EMMethodKeyGetCursor isEqualToString:call.method]) {
         [self getCursor:call.arguments result:result];
-    } else if ([EMMethodKeyAddMessageListener isEqualToString:call.method]) {
-        [self addMessageListener:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -292,11 +290,6 @@
 
 // ??
 - (void)getCursor:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-// 兼容安卓
-- (void)addMessageListener:(NSDictionary *)param result:(FlutterResult)result {
     
 }
 
