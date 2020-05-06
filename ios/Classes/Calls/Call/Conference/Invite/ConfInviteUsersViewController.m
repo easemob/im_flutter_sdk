@@ -385,10 +385,15 @@
 - (void)tableViewDidTriggerHeaderRefresh
 {
     if (self.type == ConfInviteTypeUser) {
-        NSArray *usernames = [self _getInvitableUsers:[[EMClient sharedClient].contactManager getContacts]];
-        [self.dataArray removeAllObjects];
-        [self.dataArray addObjectsFromArray:usernames];
-        [self.tableView reloadData];
+        
+        [[EMClient sharedClient].contactManager getContactsFromServerWithCompletion:^(NSArray *aList, EMError *aError) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSArray *usernames = [self _getInvitableUsers:aList];
+                [self.dataArray removeAllObjects];
+                [self.dataArray addObjectsFromArray:usernames];
+                [self.tableView reloadData];
+            });
+        }];
         
 //        [self tableViewDidFinishTriggerHeader:YES reload:NO];
     } else if (self.type == ConfInviteTypeGroup) {
