@@ -65,13 +65,13 @@ dartdoc --exclude dart:io,dart:async,dart:ui,dart:math,dart:collection,dart:conv
 
 ## SDK主要方法介绍
 
-初始化SDK：
+## 初始化SDK：
 
 EMOptions options = new EMOptions(appKey: "appkey");
 
 EMClient.getInstance().init(options);
 
-登录：
+## 登录：
 
 /// 账号密码登录[id]/[password].
 
@@ -89,7 +89,7 @@ EMClient.getInstance().login('id', 'password', onSuccess:(username) {
   
 });
 
-退出登录:
+## 退出登录:
 
 /// [unbindToken] true 解除推送绑定 ： false 不解除绑定
 
