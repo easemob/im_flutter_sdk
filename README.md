@@ -107,7 +107,6 @@ EMClient.getInstance().logout(true ,onSuccess:() {
 
 });
 
-其他方法请参考文档：[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):
 
 ## 发起1v1音视频通话：
 
@@ -176,3 +175,5 @@ onSuccess:(EMConference conf){
     print('加入会议失败 --- $desc');
        
 });
+
+其他方法请参考文档：[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):
