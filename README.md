@@ -117,6 +117,10 @@ EMClient.getInstance().logout(true ,onSuccess:() {
 
 /// @nodoc 如果发起实时会话成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
 
+void startCall(EMCallType callType,String remoteName,bool isRecord,bool isMerge,String ext,{onSuccess(),onError(int code, 
+
+String desc)})
+        
 EMClient.getInstance().callManager().startCall(EMCallType.Video, 'remoteName', false, false, "ext",onSuccess:() {
 
     print('拨打通话成功');
@@ -135,6 +139,10 @@ onError:(code, desc){
 
 /// @nodoc 如果创建并加入会议成成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
 
+void createAndJoinConference(EMConferenceType conferenceType,String password,bool isRecord,bool isMerge{onSuccess(EMConference 
+
+conf),onError(int code, String desc)})
+        
 EMClient.getInstance().conferenceManager().createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication,
 
 '123',false, false,
@@ -154,6 +162,8 @@ onSuccess:(EMConference conf){
 /// @nodoc [ConfId] 会议ID，[password ] 会议密码
 
 /// @nodoc 如果加入已有会议成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+
+void joinConference(String confId,String password,{onSuccess(EMConference conf),onError(int code, String desc)})
 
 EMClient.getInstance().conferenceManager().joinConference('ConfId', 'password',
 
