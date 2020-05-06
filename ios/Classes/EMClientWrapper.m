@@ -13,7 +13,7 @@
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
 #import "EMCallManagerWrapper.h"
-#import "EMConferenceManagerWrapper.m"
+#import "EMConferenceManagerWrapper.h"
 #import "EMHelper.h"
 #import "DemoCallManager.h"
 #import "DemoConfManager.h"
