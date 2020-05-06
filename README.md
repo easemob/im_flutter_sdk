@@ -34,14 +34,21 @@ SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob
 A new flutter plugin project.
 
 ## 使用音视频功能（单人，多人）
+
 需要将自己原生iOS项目中的环信flutter SDK中的资源图片文件夹CallImgs和SharedImgs加到Assets.xcassets中
+
 图片文件夹路径：
+
 项目名称/ios/.symlinks/plugins/im_flutter_sdk/ios/Classes/Calls/Helper/SharedImg
+
 项目名称/ios/.symlinks/plugins/im_flutter_sdk/ios/Classes/Calls/Call/CallImgs
 
 需要向.plist文件中添加权限：
+
 Privacy - Camera Usage Description          相机
+
 Privacy - Photo Library Usage Description   相册
+
 Privacy - Microphone Usage Description      麦克风
 
 ## Getting Started
