@@ -92,6 +92,31 @@
     
     EMMessage *msg = [EMHelper dictionaryToMessage:param];
     
+    EMMessageBody *msgBody = msg.body;
+    switch (msgBody.type) {
+        case EMMessageBodyTypeImage:
+        {
+            // 得到一个图片消息body
+            EMImageMessageBody *body = ((EMImageMessageBody *)msgBody);
+            NSLog(@"大图remote路径 -- %@"   ,body.remotePath);
+            NSLog(@"大图local路径 -- %@"    ,body.localPath); // // 需要使用sdk提供的下载方法后才会存在
+            NSLog(@"大图的secret -- %@"    ,body.secretKey);
+            NSLog(@"大图的W -- %f ,大图的H -- %f",body.size.width,body.size.height);
+            NSLog(@"大图的下载状态 -- %ld",body.downloadStatus);
+
+
+            // 缩略图sdk会自动下载
+            NSLog(@"小图remote路径 -- %@"   ,body.thumbnailRemotePath);
+            NSLog(@"小图local路径 -- %@"    ,body.thumbnailLocalPath);
+            NSLog(@"小图的secret -- %@"    ,body.thumbnailSecretKey);
+            NSLog(@"小图的W -- %f ,大图的H -- %f",body.thumbnailSize.width,body.thumbnailSize.height);
+            NSLog(@"小图的下载状态 -- %lu",body.thumbnailDownloadStatus);
+        }
+        break;
+        default:
+        break;
+    }
+    
     __block void (^progress)(int progress) = ^(int progress) {
         [self.channel invokeMethod:EMMethodKeyOnMessageStatusOnProgress
                          arguments:@{@"progress":@(progress)}];

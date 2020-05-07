@@ -46,10 +46,7 @@
                         error:aError
                      userInfo:@{@"value":[EMHelper callConferenceToDictionary:aCall]}];
     }];
-    
-    
 }
-
 
 - (void)joinConference:(NSDictionary *)param result:(FlutterResult)result {
     NSString *conferenceId = param[@"confId"];
