@@ -313,7 +313,6 @@
     for (EMMessage *msg in aMessages) {
         [msgList addObject:[EMHelper messageToDictionary:msg]];
     }
-    NSLog(@"has receive messages -- %@", msgList);
     [self.channel invokeMethod:EMMethodKeyOnMessageReceived arguments:@{@"messages":msgList}];
 }
 
