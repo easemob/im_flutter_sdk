@@ -3,7 +3,7 @@ package com.easemob.im_flutter_sdk_example;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.easemob.im_flutter_sdk.EMSDKMethod;
 import com.easemob.im_flutter_sdk.EMWrapper;
@@ -13,7 +13,6 @@ import com.hyphenate.chat.EMCallOptions;
 import com.hyphenate.chat.EMCallSession;
 import com.hyphenate.chat.EMCallStateChangeListener;
 import com.hyphenate.chat.EMClient;
-import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
