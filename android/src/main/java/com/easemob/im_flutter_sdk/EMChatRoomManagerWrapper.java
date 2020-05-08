@@ -1,10 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
-import android.support.annotation.NonNull;
-
-import com.hyphenate.EMCallBack;
 import com.hyphenate.EMChatRoomChangeListener;
-import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMChatRoomManager;
 import com.hyphenate.chat.EMClient;
@@ -19,7 +15,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -208,7 +203,7 @@ public class EMChatRoomManagerWrapper implements MethodChannel.MethodCallHandler
     }
 
     @Override
-    public void onMethodCall(@NonNull MethodCall methodCall, @NonNull MethodChannel.Result result) {
+    public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
         if(emChatRoomManager == null) {
             emChatRoomManager = EMClient.getInstance().chatroomManager();
             EMLog.d("ChatRoomChange","注册ChatRoomChange监听");
