@@ -33,6 +33,24 @@ SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob
 
 A new flutter plugin project.
 
+## iOS使用音视频功能（单人，多人）
+
+需要将自己原生iOS项目中的环信flutter SDK中的资源图片文件夹CallImgs和SharedImgs加到Assets.xcassets中
+
+图片文件夹路径：
+
+Pods/Development Pods/im_flutter_sdk/.../项目名称/ios/.symlinks/plugins/im_flutter_sdk/ios/Classes/Calls/Helper/SharedImg
+
+Pods/Development Pods/im_flutter_sdk/.../项目名称/ios/.symlinks/plugins/im_flutter_sdk/ios/Classes/Calls/Call/CallImgs
+
+需要向.plist文件中添加权限：
+
+Privacy - Camera Usage Description          相机
+
+Privacy - Photo Library Usage Description   相册
+
+Privacy - Microphone Usage Description      麦克风
+
 ## Getting Started
 
 ## 生成文档
@@ -45,4 +63,117 @@ dartdoc --exclude dart:io,dart:async,dart:ui,dart:math,dart:collection,dart:conv
 ```
 
 
-## SDK简要说明
+## SDK主要方法介绍
+
+## 初始化SDK：
+
+EMOptions options = new EMOptions(appKey: "appkey");
+
+EMClient.getInstance().init(options);
+
+## 登录：
+
+/// 账号密码登录[id]/[password].
+
+/// 如果登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+
+void login(String userName, String password,{onSuccess(String username), onError(int errorCode, String desc)})
+
+EMClient.getInstance().login('id', 'password', onSuccess:(username) {
+
+  print('登录成功 --- ');
+  
+},onError: (code, desc) {
+
+  print('登录错误 --- $desc');
+  
+});
+
+## 退出登录:
+
+/// [unbindToken] true 解除推送绑定 ： false 不解除绑定
+
+/// 如果退出登录成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+
+void logout(bool unbindToken, {onSuccess(), onError(int code, String desc)})
+
+EMClient.getInstance().logout(true ,onSuccess:() {
+
+    print('退出登录成功 --- ');
+    
+}, onError:(int code, String desc){
+
+    print('退出登录失败 --- $desc');
+
+});
+
+
+## 发起1v1音视频通话：
+
+/// @nodoc [type] 通话类型，[remoteName] 被呼叫的用户（不能与自己通话），[isRecord] 是否开启服务端录制，[isMerge] 录制时是否合并数据流，
+
+[ext] 通话扩展信息，会传给被呼叫方
+
+/// @nodoc 如果发起实时会话成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+
+void startCall(EMCallType callType,String remoteName,bool isRecord,bool isMerge,String ext,{onSuccess(),onError(int code, 
+
+String desc)})
+        
+EMClient.getInstance().callManager().startCall(EMCallType.Video, 'remoteName', false, false, "ext",onSuccess:() {
+
+    print('拨打通话成功');
+  
+} ,
+    
+onError:(code, desc){
+  
+    print('拨打通话失败 --- $desc');
+    
+});
+
+## 发起多人会议（多人音视频通话）：
+
+/// @nodoc [aType] 会议类型，[password ] 会议密码，[isRecord ] 是否开启服务端录制，[isMerge ] 录制时是否合并数据流
+
+/// @nodoc 如果创建并加入会议成成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+
+void createAndJoinConference(EMConferenceType conferenceType,String password,bool isRecord,bool isMerge{onSuccess(EMConference 
+
+conf),onError(int code, String desc)})
+        
+EMClient.getInstance().conferenceManager().createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication,
+
+'123',false, false,
+
+onSuccess:(EMConference conf){
+    
+    print('发起会议成功');
+
+}, onError:(code,desc){
+
+    print('发起会议失败 --- $desc');
+    
+} );
+
+## 加入多人会议（加入多人音视频通话）：
+
+/// @nodoc [ConfId] 会议ID，[password ] 会议密码
+
+/// @nodoc 如果加入已有会议成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+
+void joinConference(String confId,String password,{onSuccess(EMConference conf),onError(int code, String desc)})
+
+EMClient.getInstance().conferenceManager().joinConference('ConfId', 'password',
+
+onSuccess:(EMConference conf){
+      
+    print('加入会议成功');
+      
+} ,onError:(code,desc){
+
+    print('加入会议失败 --- $desc');
+       
+});
+
+其他方法请参考文档：[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):

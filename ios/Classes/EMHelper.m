@@ -15,7 +15,6 @@
 {
     EMOptions *options = [EMOptions optionsWithAppkey:aDictionary[@"appKey"]];
     if (aDictionary[@"pushConfig"]) {
-        NSLog(@"证书名称----%@", aDictionary[@"pushConfig"][@"apnsSenderId"]);
         options.apnsCertName = aDictionary[@"pushConfig"][@"apnsSenderId"];
     }
     if (aDictionary[@"acceptInvitationAlways"]) {
@@ -114,8 +113,8 @@
             // TODO: size ?
             NSString *localUrl = msgBodyDict[@"localUrl"];
             long long fileLength = [msgBodyDict[@"fileLength"] longLongValue];
-            body = [[EMImageMessageBody alloc] initWithLocalPath:localUrl
-                                                     displayName:@"image"];
+            NSData *imageData = [NSData dataWithContentsOfFile:localUrl];
+            body = [[EMImageMessageBody alloc] initWithData:imageData displayName:@"image"];
             ((EMImageMessageBody *)body).fileLength = fileLength;
         }
             break;
@@ -233,7 +232,6 @@
             ret[@"displayName"] = ((EMImageMessageBody *)aBody).displayName;
             ret[@"downloadStatus"] = @(((EMImageMessageBody *)aBody).downloadStatus);
             ret[@"localUrl"] = ((EMImageMessageBody *)aBody).localPath;
-            NSLog(@"image.localPath -- %@", ((EMImageMessageBody *)aBody).localPath);
             ret[@"remoteUrl"] = ((EMImageMessageBody *)aBody).remotePath;
             ret[@"fileLength"] = @(((EMImageMessageBody *)aBody).fileLength);
             
