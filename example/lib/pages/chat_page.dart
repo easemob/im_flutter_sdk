@@ -170,7 +170,6 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     currentStatus = ChatStatus.Normal;
 
     EMClient.getInstance().chatManager().addMessageListener(this);
-    EMClient.getInstance().chatManager().loadAllConversations();
     EMClient.getInstance().chatManager().addMessageStatusListener(this);
     EMClient.getInstance().callManager().addCallStateChangeListener(this);
 
@@ -442,6 +441,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
         EMClient.getInstance().conferenceManager().joinConference(conferenceId, password,
             onSuccess:(EMConference conf) {
+          print('加入会议成功 --- ' + conf.getConferenceId());
             }, onError:(code, desc) {
           print('加入会议失败 --- $desc');
         });

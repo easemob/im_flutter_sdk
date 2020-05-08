@@ -1219,8 +1219,16 @@ class EMConference {
     _conferenceType = fromEMConferenceType(data["conferenceType"]);
     _conferenceRole = fromEMConferenceRole(data["conferenceRole"]);
     _memberNum = data["memberNum"];
-    _admins = data["admins"];
-    _speakers = data["speakers"];
+    var admins = new List<String>();
+    for(var s in data["admins"]){
+      admins.add(s);
+    }
+    _admins = admins;
+    var speakers = new List<String>();
+    for(var s in data["speakers"]){
+      speakers.add(s);
+    }
+    _speakers = speakers;
     _isRecordOnServer = data["isRecordOnServer"];
   }
 }

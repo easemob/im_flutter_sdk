@@ -14,7 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.easemob.im_flutter_sdk_example.BaseActivity;
 import com.easemob.im_flutter_sdk_example.Constant;
+import com.easemob.im_flutter_sdk_example.EMConferencePlugin;
 import com.easemob.im_flutter_sdk_example.PhoneStateManager;
 import com.easemob.im_flutter_sdk_example.R;
 import com.easemob.im_flutter_sdk_example.widget.EasePageIndicator;
@@ -43,7 +44,6 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMStreamParam;
 import com.hyphenate.chat.EMStreamStatistics;
-import com.hyphenate.chat.EMWaterMarkOption;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.EMLog;
 import com.hyphenate.util.EasyUtils;
@@ -141,32 +141,28 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
 
     private TimeHandler timeHandler;
 
-    //水印显示bitmap
-    private Bitmap watermarkbitmap;
-    private EMWaterMarkOption watermark;
+    private boolean record = false;
+    private boolean merge = false;
 
-    boolean record = false;
-    boolean merge = false;
+    private EMConferenceManager.EMConferenceType emConferenceType;
 
-    // 如果groupId不为null,则表示呼叫类型为群组呼叫,显示的联系人只能是该群组中成员
-    // 若groupId为null,则表示呼叫类型为联系人呼叫,显示的联系人为当前账号所有好友.
-    public static void startConferenceCall(Context context, String groupId) {
+    public static void startConferenceCall(Context context, int conferenceType,
+                                           String password, Boolean record, Boolean merge) {
         Intent i = new Intent(context, ConferenceActivity.class);
         i.putExtra(Constant.EXTRA_CONFERENCE_IS_CREATOR, true);
-        i.putExtra(Constant.EXTRA_CONFERENCE_GROUP_ID, groupId);
+        i.putExtra(Constant.EXTRA_CONFERENCE_CONFERENCE_TYPE, conferenceType);
+        i.putExtra(Constant.EXTRA_CONFERENCE_PASSWORD, password);
+        i.putExtra(Constant.EXTRA_CONFERENCE_RECORD, record);
+        i.putExtra(Constant.EXTRA_CONFERENCE_MERGE, merge);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(i);
     }
 
-    // 如果groupId不为null,则表示呼叫类型为群组呼叫,显示的联系人只能是该群组中成员
-    // 若groupId为null,则表示呼叫类型为联系人呼叫,显示的联系人为当前账号所有好友.
-    public static void receiveConferenceCall(Context context, String conferenceId, String password, String inviter, String groupId) {
+    public static void receiveConferenceCall(Context context, String conferenceId, String password) {
         Intent i = new Intent(context, ConferenceActivity.class);
         i.putExtra(Constant.EXTRA_CONFERENCE_ID, conferenceId);
-        i.putExtra(Constant.EXTRA_CONFERENCE_PASS, password);
-        i.putExtra(Constant.EXTRA_CONFERENCE_INVITER, inviter);
+        i.putExtra(Constant.EXTRA_CONFERENCE_PASSWORD, password);
         i.putExtra(Constant.EXTRA_CONFERENCE_IS_CREATOR, false);
-        i.putExtra(Constant.EXTRA_CONFERENCE_GROUP_ID, groupId);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(i);
     }
@@ -307,23 +303,31 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
         speakerSwitch.setActivated(true);
         openSpeaker();
 
-        groupId = getIntent().getStringExtra(Constant.EXTRA_CONFERENCE_GROUP_ID);
         isCreator = getIntent().getBooleanExtra(Constant.EXTRA_CONFERENCE_IS_CREATOR, false);
         if (isCreator) {
+            int type = getIntent().getIntExtra(Constant.EXTRA_CONFERENCE_CONFERENCE_TYPE, 10);
+            if(type == 10){
+                emConferenceType = EMConferenceManager.EMConferenceType.SmallCommunication;
+            }else if(type == 11){
+                emConferenceType = EMConferenceManager.EMConferenceType.LargeCommunication;
+            }else if(type == 12){
+                emConferenceType = EMConferenceManager.EMConferenceType.LiveStream;
+            }
+            password = getIntent().getStringExtra(Constant.EXTRA_CONFERENCE_PASSWORD);
+            record = getIntent().getBooleanExtra(Constant.EXTRA_CONFERENCE_RECORD, false);
+            merge = getIntent().getBooleanExtra(Constant.EXTRA_CONFERENCE_MERGE, false);
             incomingCallView.setVisibility(View.GONE);
             selectUserToJoinConference();
-        } else {
+        }else {
             confId = getIntent().getStringExtra(Constant.EXTRA_CONFERENCE_ID);
-            password = getIntent().getStringExtra(Constant.EXTRA_CONFERENCE_PASS);
+            password = getIntent().getStringExtra(Constant.EXTRA_CONFERENCE_PASSWORD);
 
             initLocalConferenceView();
             String inviter = getIntent().getStringExtra(Constant.EXTRA_CONFERENCE_INVITER);
             incomingCallView.setInviteInfo(String.format(getString(R.string.tips_invite_to_join), inviter));
             incomingCallView.setVisibility(View.VISIBLE);
         }
-
         timeHandler = new TimeHandler();
-
     }
 
     private View.OnClickListener listener = new View.OnClickListener() {
@@ -552,10 +556,11 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
      */
     private void createAndJoinConference(final EMValueCallBack<EMConference> callBack) {
 
-        EMClient.getInstance().conferenceManager().createAndJoinConference(EMConferenceManager.EMConferenceType.LargeCommunication,
+        EMClient.getInstance().conferenceManager().createAndJoinConference(emConferenceType,
                 password, true, record, merge, new EMValueCallBack<EMConference>() {
                     @Override
                     public void onSuccess(final EMConference value) {
+                        EMConferencePlugin.onResult(value, 0 ,"");
                         EMLog.e(TAG, "create and join conference success");
                         confId = value.getConferenceId();
                         password = value.getPassword();
@@ -576,6 +581,7 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
 
                     @Override
                     public void onError(final int error, final String errorMsg) {
+                        EMConferencePlugin.onResult(null, error ,errorMsg);
                         EMLog.e(TAG, "Create and join conference failed error " + error + ", msg " + errorMsg);
                         runOnUiThread(new Runnable() {
                             @Override
@@ -598,6 +604,7 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
         EMClient.getInstance().conferenceManager().joinConference(confId, password, new EMValueCallBack<EMConference>() {
             @Override
             public void onSuccess(EMConference value) {
+                EMConferencePlugin.onResult(value, 0 ,"");
                 conference = value;
                 startAudioTalkingMonitor();
                 publish();
@@ -612,6 +619,7 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
 
             @Override
             public void onError(final int error, final String errorMsg) {
+                EMConferencePlugin.onResult(null, error ,errorMsg);
                 EMLog.e(TAG, "join conference failed error " + error + ", msg " + errorMsg);
                 runOnUiThread(new Runnable() {
                     @Override
@@ -670,7 +678,6 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
                 final String[] members = data.getStringArrayExtra("members");
                 if (isCreator && conference == null) {
                     initLocalConferenceView();
-
                     createAndJoinConference(new EMValueCallBack<EMConference>() {
                         @Override
                         public void onSuccess(EMConference value) {

@@ -6,8 +6,8 @@ import 'em_domain_terms.dart';
 
 class EMConferenceManager {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _emConferenceManagerChannel =
-  const MethodChannel('$_channelPrefix/em_conference_manager', JSONMethodCodec());
+  static const MethodChannel _emConferenceManagerChannel = const MethodChannel(
+      '$_channelPrefix/em_conference_manager', JSONMethodCodec());
 
   /// @nodoc
   static EMConferenceManager _instance;
@@ -18,7 +18,7 @@ class EMConferenceManager {
   }
 
   /// @nodoc
-  EMConferenceManager._internal(){
+  EMConferenceManager._internal() {
     _addNativeMethodCallHandler();
   }
 
@@ -27,28 +27,27 @@ class EMConferenceManager {
     _emConferenceManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onCallChanged) {
-        _onConferenceChanged(argMap);
+        return _onConferenceChanged(argMap);
       }
       return null;
     });
   }
 
-  Future<void> _onConferenceChanged(Map event) async{
-
-  }
+  Future<void> _onConferenceChanged(Map event) async {}
 
   /// @nodoc 创建并加入会议
   /// @nodoc [aType] 会议类型，[password ] 会议密码，[isRecord ] 是否开启服务端录制，[isMerge ] 录制时是否合并数据流
   /// @nodoc 如果创建并加入会议成成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void createAndJoinConference(
-      EMConferenceType conferenceType,
-      String password,
-      bool isRecord,
-      bool isMerge,
-      {onSuccess(EMConference conf),
-        onError(int code, String desc)}) {
-    Future<Map> result = _emConferenceManagerChannel.invokeMethod(
-        EMSDKMethod.createAndJoinConference, {"conferenceType": toEMConferenceType(conferenceType), "password": password, "record": isRecord, "merge": isMerge});
+  void createAndJoinConference(EMConferenceType conferenceType, String password,
+      bool isRecord, bool isMerge,
+      {onSuccess(EMConference conf), onError(int code, String desc)}) {
+    Future<Map> result = _emConferenceManagerChannel
+        .invokeMethod(EMSDKMethod.createAndJoinConference, {
+      "conferenceType": toEMConferenceType(conferenceType),
+      "password": password,
+      "record": isRecord,
+      "merge": isMerge
+    });
     result.then((response) {
       if (response["success"]) {
         if (onSuccess != null) {
@@ -60,15 +59,11 @@ class EMConferenceManager {
     });
   }
 
-
   /// @nodoc 加入已有会议
   /// @nodoc [ConfId] 会议ID，[password ] 会议密码
   /// @nodoc 如果加入已有会议成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void joinConference(
-      String confId,
-      String password,
-      {onSuccess(EMConference conf),
-        onError(int code, String desc)}) {
+  void joinConference(String confId, String password,
+      {onSuccess(EMConference conf), onError(int code, String desc)}) {
     Future<Map> result = _emConferenceManagerChannel.invokeMethod(
         EMSDKMethod.joinConference, {"confId": confId, "password": password});
     result.then((response) {
@@ -79,6 +74,4 @@ class EMConferenceManager {
       }
     });
   }
-
-
 }
