@@ -18,7 +18,7 @@ A new flutter plugin project.
 
 
   s.dependency 'Flutter'
-  s.dependency 'Hyphenate'
+  s.dependency 'Hyphenate','~>3.6.5'
   s.dependency 'Masonry'
   s.dependency 'MBProgressHUD','~>1.1.0'
 

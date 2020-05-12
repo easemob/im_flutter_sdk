@@ -96,7 +96,7 @@ class EMPushManager{
     });
   }
 
-  /// 获取关闭了离线消息推送的群组
+  /// 获取关闭了离线消息推送的群组，需要先调用"从服务器获取推送配置信息"的方法
   void getNoPushGroups({onSuccess(List<String> groupIds), onError(int errorCode, String desc)}){
     Future<Map<String, dynamic>> result = _emPushManagerChannel
         .invokeMethod(EMSDKMethod.getNoPushGroups);
@@ -116,7 +116,7 @@ class EMPushManager{
     });
   }
 
-  /// 更新当前用户的nickname,这样离线消息推送的时候可以显示用户昵称而不是id
+  /// 更新当前用户的nickname,这样离线消息推送的时候可以显示用户昵称而不是id，需要登录环信服务器成功后调用才生效
   Future<bool> updatePushNickname (String nickname) async{
     Map<String, dynamic> result = await _emPushManagerChannel
         .invokeMethod(EMSDKMethod.updatePushNickname, {'nickname' : nickname});
@@ -125,4 +125,22 @@ class EMPushManager{
     }
     return false;
   }
+  
+  /// 设置消息推送的显示风格，仅支持对iOS的设置
+  void updatePushDisplayStyle(
+      EMPushDisplayStyle style,
+      {onSuccess(),onError(int errorCode, String desc)}){
+    Future<Map<String, dynamic>> result = _emPushManagerChannel
+        .invokeMethod(EMSDKMethod.updatePushDisplayStyle, {'pushDisplayStyle' : toEMPushDisplayStyle(style)});
+    result.then((response){
+      if(response['success']){
+        if(onSuccess != null){
+          onSuccess();
+        }
+      }else{
+        if (onError != null) onError(response['code'], response['desc']);
+      }
+    });
+  }
+  
 }

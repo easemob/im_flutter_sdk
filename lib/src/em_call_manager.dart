@@ -183,4 +183,9 @@ class EMCallManager {
     _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallReceiver);
   }
 
+  ///iOS端用来初始化1v1通话单例，监听相关回调
+  void registerCallSharedManager(){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallSharedManager);
+  }
+
 }

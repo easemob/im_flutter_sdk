@@ -168,6 +168,7 @@ class EMSDKMethod {
   static const String updatePushServiceForGroup = "updatePushServiceForGroup";
   static const String getNoPushGroups = "getNoPushGroups";
   static const String updatePushNickname = "updatePushNickname";
+  static const String updatePushDisplayStyle = "updatePushDisplayStyle";
 
   /// EMCallManager
   static const String startCall = "startCall";
@@ -183,10 +184,12 @@ class EMSDKMethod {
   static const String getServerRecordId = "getServerRecordId";
   static const String getCallType = "getCallType";
   static const String isRecordOnServer = "isRecordOnServer";
+  static const String registerCallSharedManager = "registerCallSharedManager";
 
   /// EMConferenceManager
   static const String createAndJoinConference = "createAndJoinConference";
   static const String joinConference = "joinConference";
+  static const String registerConferenceSharedManager = "registerConferenceSharedManager";
 
 
 

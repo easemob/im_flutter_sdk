@@ -7,6 +7,7 @@
 //
 
 #import "NSObject+Alert.h"
+#import <UIKit/UIKit.h>
 
 @implementation NSObject (Alert)
 

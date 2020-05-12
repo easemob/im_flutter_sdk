@@ -199,12 +199,23 @@ static NSString * const EMMethodKeyGetRemoteName = @"getRemoteName";
 static NSString * const EMMethodKeyGetServerRecordId = @"getServerRecordId";
 static NSString * const EMMethodKeyGetCallType = @"getCallType";
 static NSString * const EMMethodKeyIsRecordOnServer = @"isRecordOnServer";
+static NSString * const EMMethodKeyRegisterCallSharedManager = @"registerCallSharedManager";
 
 static NSString * const EMMethodKeyOnCallChanged = @"onCallChanged";
 
 #pragma mark - EMConferenceManagerWrapper
 static NSString * const EMMethodKeyCreateAndJoinConference = @"createAndJoinConference";
 static NSString * const EMMethodKeyJoinConference = @"joinConference";
+static NSString * const EMMethodKeyRegisterConferenceSharedManager = @"registerConferenceSharedManager";
 
+#pragma mark - EMPushManagerWrapper
+static NSString * const EMMethodKeyEnableOfflinePush = @"enableOfflinePush";
+static NSString * const EMMethodKeyDisableOfflinePush = @"disableOfflinePush";
+static NSString * const EMMethodKeyGetPushConfigs = @"getPushConfigs";
+static NSString * const EMMethodKeyGetPushConfigsFromServer = @"getPushConfigsFromServer";
+static NSString * const EMMethodKeyUpdatePushOptionServiceForGroup = @"updatePushServiceForGroup";
+static NSString * const EMMethodKeyGetNoPushGroups = @"getNoPushGroups";
+static NSString * const EMMethodKeyUpdatePushNickname = @"updatePushNickname";
+static NSString * const EMMethodKeyUpdatePushDisplayStyle = @"updatePushDisplayStyle";
 
 

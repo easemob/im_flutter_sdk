@@ -1048,30 +1048,69 @@ toEMSearchDirection(EMSearchDirection direction) {
   }
 }
 
+/// 推送消息的显示风格
+enum EMPushDisplayStyle {
+  /// 简单显示"您有一条新消息
+  EMPushDisplayStyleSimpleBanner,
+
+  /// 显示消息内容
+  EMPushDisplayStyleMessageSummary,
+}
+
+/// @nodoc 推送消息的显示风格 int 数据类型转 EMPushDisplayStyle
+fromEMPushDisplayStyle(int type) {
+  if (type == 0) {
+    return EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner;
+  } else {
+    return EMPushDisplayStyle.EMPushDisplayStyleMessageSummary;
+  }
+}
+
+toEMPushDisplayStyle(EMPushDisplayStyle Style) {
+  if (Style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
+    return 0;
+  } else if (Style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
+    return 1;
+  }
+}
+
+
+/// 消息推送设置
 class EMPushConfigs {
   String _displayNickname;
+  EMPushDisplayStyle _displayStyle;
   bool _noDisturbOn;
   int _noDisturbStartHour;
   int _noDisturbEndHour;
 
+  /// 设置推送昵称
   String getDisplayNickname() {
     return _displayNickname;
   }
 
+  /// 获取消息推送的显示风格 （目前只支持iOS）
+  EMPushDisplayStyle getDisplayStyle() {
+    return _displayStyle;
+  }
+
+  /// 是否开启消息推送免打扰
   bool isNoDisturbOn() {
     return _noDisturbOn;
   }
 
+  /// 消息推送免打扰开始时间，小时，暂时只支持整点（小时）
   int getNoDisturbStartHour() {
     return _noDisturbStartHour;
   }
 
+  /// 消息推送免打扰结束时间，小时，暂时只支持整点（小时）
   int getNoDisturbEndHour() {
     return _noDisturbEndHour;
   }
 
   EMPushConfigs.from(Map<String, dynamic> data)
       : _displayNickname = data['nickName'],
+        _displayStyle = fromEMPushDisplayStyle(data['displayStyle']),
         _noDisturbOn = data['noDisturbOn'],
         _noDisturbStartHour = data['startHour'],
         _noDisturbEndHour = data['endHour'];
@@ -1220,6 +1259,7 @@ class EMConference {
     _conferenceRole = fromEMConferenceRole(data["conferenceRole"]);
     _memberNum = data["memberNum"];
     var admins = new List<String>();
+    
     for(var s in data["admins"]){
       admins.add(s);
     }
