@@ -7,6 +7,8 @@
 //
 
 //#import "EMRefreshViewController.h"
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 typedef enum {
     ConfInviteTypeUser = 0,

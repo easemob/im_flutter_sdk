@@ -394,25 +394,42 @@
     }
     if (aGroup.adminList) {
         groupDict[@"adminList"] = aGroup.adminList;
+    } else {
+        groupDict[@"adminList"] = [NSArray array];
     }
+    
     if (aGroup.memberList) {
         groupDict[@"memberList"] = aGroup.memberList;
+    } else {
+        groupDict[@"memberList"] = [NSArray array];
     }
+    
     if (aGroup.blacklist) {
         groupDict[@"blacklist"] = aGroup.blacklist;
+    } else {
+        groupDict[@"blacklist"] = [NSArray array];
     }
+    
     if (aGroup.muteList) {
         groupDict[@"muteList"] = aGroup.muteList;
+    } else {
+        groupDict[@"muteList"] = [NSArray array];
     }
+    
     if (options.ext) {
         groupDict[@"extension"] = options.ext;
     }
+    
     if (aGroup.sharedFileList) {
         groupDict[@"sharedFileList"] = [self groupFileListToDictionaries:aGroup.sharedFileList];
     }
+    
     if (aGroup.occupants) {
         groupDict[@"occupants"] = aGroup.occupants;
+    } else {
+        groupDict[@"occupants"] = [NSArray array];
     }
+    
     groupDict[@"memberCount"] = [NSNumber numberWithInteger:aGroup.occupantsCount];
     groupDict[@"isMemberAllowToInvite"] = [NSNumber numberWithBool:isMemberAllowToInvite];
     groupDict[@"isMemberOnly"] = [NSNumber numberWithBool:isMemberOnly];
@@ -498,16 +515,28 @@
     }
     if (aChatRoom.adminList) {
         chatRoomDitc[@"administratorList"] = aChatRoom.adminList;
+    } else {
+        chatRoomDitc[@"administratorList"] = [NSArray array];
     }
+    
     if (aChatRoom.memberList) {
         chatRoomDitc[@"memberList"] = aChatRoom.memberList;
+    } else {
+        chatRoomDitc[@"memberList"] = [NSArray array];
     }
+    
     if (aChatRoom.blacklist) {
         chatRoomDitc[@"blacklist"] = aChatRoom.blacklist;
+    } else {
+        chatRoomDitc[@"blacklist"] = [NSArray array];
     }
+    
     if (aChatRoom.muteList) {
         chatRoomDitc[@"muteList"] = aChatRoom.muteList;
+    } else {
+        chatRoomDitc[@"muteList"] = [NSArray array];
     }
+    
     if (aChatRoom.maxOccupantsCount) {
         chatRoomDitc[@"maxUserCount"] = @(aChatRoom.maxOccupantsCount);
     }
@@ -582,15 +611,55 @@
     
     if (aCall.adminIds) {
         callConferenceDitc[@"admins"] = aCall.adminIds;
+    } else {
+        callConferenceDitc[@"admins"] = [NSArray array];
     }
-    
+  
     if (aCall.speakerIds) {
         callConferenceDitc[@"speakers"] = aCall.speakerIds;
+    } else {
+        callConferenceDitc[@"speakers"] = [NSArray array];
     }
     
     callConferenceDitc[@"isRecordOnServer"] = [NSNumber numberWithBool:aCall.willRecord];
     
     return callConferenceDitc;
+}
+
+#pragma mark - PushOptions
++ (NSDictionary *)pushOptionsToDictionary:(EMPushOptions *)aPushOptions {
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    dict[@"nickName"] = aPushOptions.displayName;
+    
+    EMPushNoDisturbStatus status = aPushOptions.noDisturbStatus;
+     BOOL isNoDisturbStatus;
+     if (status == EMPushNoDisturbStatusCustom) {
+         isNoDisturbStatus = YES;
+     } else if (status == EMPushNoDisturbStatusClose) {
+         isNoDisturbStatus = NO;
+     } else {
+         isNoDisturbStatus = YES;
+     }
+    
+    dict[@"noDisturbOn"] = [NSNumber numberWithBool:isNoDisturbStatus];
+    if (aPushOptions.noDisturbingStartH) {
+        dict[@"startHour"] = @(aPushOptions.noDisturbingStartH);
+    }
+    if (aPushOptions.noDisturbingStartH) {
+        dict[@"endHour"] = @(aPushOptions.noDisturbingEndH);
+    }
+    
+    EMPushDisplayStyle style = aPushOptions.displayStyle;
+    int styleTye;
+    if (style == EMPushDisplayStyleSimpleBanner) {
+        styleTye = 0;
+    } else {
+        styleTye = 1;
+    }
+    dict[@"displayStyle"] = [NSNumber numberWithInt:styleTye];
+    
+    
+    return nil;
 }
 
 #pragma mark - Others

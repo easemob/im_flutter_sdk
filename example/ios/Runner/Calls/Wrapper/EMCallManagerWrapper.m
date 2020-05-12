@@ -7,7 +7,6 @@
 
 #import "EMCallManagerWrapper.h"
 #import "EMSDKMethod.h"
-#import "EM1v1CallViewController.h"
 #import "DemoCallManager.h"
 #import "EMHelper.h"
 
@@ -51,7 +50,9 @@
         [self getCallType:call.arguments result:result];
     } else if ([EMMethodKeyIsRecordOnServer isEqualToString:call.method]) {
         [self isRecordOnServer:call.arguments result:result];
-    } else {
+    }else if ([EMMethodKeyRegisterCallSharedManager isEqualToString:call.method]) {
+        [self registerCallSharedManager:call.arguments result:result];
+    }else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -163,6 +164,10 @@
                         error:nil
                      userInfo:@{@"value":[NSNumber numberWithBool:willRecord]}];
     }
+}
+
+- (void)registerCallSharedManager:(NSDictionary *)param result:(FlutterResult)result {
+    [DemoCallManager sharedManager];
 }
 
 #pragma mark - EMCallManagerDelegate
