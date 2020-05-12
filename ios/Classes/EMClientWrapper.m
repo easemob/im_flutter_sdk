@@ -12,11 +12,8 @@
 #import "EMConversationWrapper.h"
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
-#import "EMCallManagerWrapper.h"
-#import "EMConferenceManagerWrapper.h"
+#import "EMPushManagerWrapper.h"
 #import "EMHelper.h"
-#import "DemoCallManager.h"
-#import "DemoConfManager.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
 @property (nonatomic, strong) NSMutableDictionary *deviceDict;
@@ -83,8 +80,6 @@
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
-    [DemoCallManager sharedManager];
-    [DemoConfManager sharedManager];
     [self registerManagers];
 }
 
@@ -106,11 +101,9 @@
     
     EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager")
                                                                                                    registrar:self.flutterPluginRegister];
-    
-    EMCallManagerWrapper * callManagerWrapper =[[EMCallManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_call_manager")
+    EMPushManagerWrapper * pushManagerWrapper =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_push_manager")
                                                                                        registrar:self.flutterPluginRegister];
-    EMConferenceManagerWrapper * conferenceManagerWrapper =[[EMConferenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_conference_manager")
-                                                                                   registrar:self.flutterPluginRegister];
+    
 #pragma clang diagnostic pop
     
 }

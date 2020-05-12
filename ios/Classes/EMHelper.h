@@ -54,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - CallConference
 + (NSDictionary *)callConferenceToDictionary:(EMCallConference *)aCall;
 
+#pragma mark - PushOptions
++ (NSDictionary *)pushOptionsToDictionary:(EMPushOptions *)aPushOptions;
+
 #pragma mark - Others
 
 + (NSDictionary *)pageReslutToDictionary:(EMPageResult *)pageResult;

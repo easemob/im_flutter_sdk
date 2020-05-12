@@ -35,6 +35,10 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMClient.getInstance().init(options);
     EMClient.getInstance().setDebugMode(true);
     EMClient.getInstance().addConnectionListener(this);
+
+    EMClient.getInstance().callManager().registerCallSharedManager();
+    EMClient.getInstance().conferenceManager().registerConferenceSharedManager();
+
     super.initState();
   }
 
