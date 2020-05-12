@@ -74,4 +74,9 @@ class EMConferenceManager {
       }
     });
   }
+
+  ///iOS端用来初始化会议通话单例，监听相关回调
+  void registerConferenceSharedManager(){
+    _emConferenceManagerChannel.invokeMethod(EMSDKMethod.registerConferenceSharedManager);
+  }
 }

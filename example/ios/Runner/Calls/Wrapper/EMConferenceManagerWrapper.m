@@ -29,6 +29,8 @@
         [self createAndJoinConference:call.arguments result:result];
     } else if ([EMMethodKeyJoinConference isEqualToString:call.method]) {
         [self joinConference:call.arguments result:result];
+    } else if ([EMMethodKeyRegisterConferenceSharedManager isEqualToString:call.method]) {
+        [self registerConferenceSharedManager:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -42,12 +44,13 @@
     NSDictionary *conferenceDict = @{@"type":@(conferenceType),@"password":password,@"record":@(isRecord),@"merge":
     @(isMerge)};
     [[DemoConfManager sharedManager] createAndJoinConference:conferenceDict completion:^(EMCallConference *aCall, EMError *aError) {
+        
+        NSLog(@"admins -- %@", aCall.adminIds);
+        
         [self wrapperCallBack:result
                         error:aError
                      userInfo:@{@"value":[EMHelper callConferenceToDictionary:aCall]}];
     }];
-    
-    
 }
 
 
@@ -63,6 +66,7 @@
     
 }
 
-
-
+- (void)registerConferenceSharedManager:(NSDictionary *)param result:(FlutterResult)result {
+    [DemoConfManager sharedManager];
+}
 @end
