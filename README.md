@@ -6,7 +6,10 @@
 
 在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
 
- im_flutter_sdk:
+  im_flutter_sdk:
+      git:
+         url: https://github.com/easemob/im_flutter_sdk.git
+         ref: dev
 
 然后 Package get 一下
 
