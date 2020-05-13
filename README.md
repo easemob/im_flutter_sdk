@@ -38,7 +38,7 @@ A new flutter plugin project.
 
 先下载一份im_flutter_sdk源码：git@github.com:easemob/im_flutter_sdk.git 
 
-然后到 /自己本地路径/im_flutter_sdk/example/ios/Runner/ ,拿到Calls文件（环信原生iOS音视频相关UI文件），加到自己iOS项目中
+然后到 /自己本地路径/im_flutter_sdk/example/ios/Runner/ ,拿到Calls文件（环信原生iOS音视频相关UI文件），加到自己iOS项目中，这样可以自己在修改Calls中的原生iOS音视频相关UI文件，不会因为更新im_flutter_sdk，导致自己修改的UI部分也被更新。
 
 注意点：如果是OC项目，flutter默认帮生成的iOS项目是swift的，所以是appdelegate.swift，需要将appdelegate.swift删除，自己创建个appdelegate类，然后添加下 main.m 文件，不然会报错
 
