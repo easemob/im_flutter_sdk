@@ -36,9 +36,16 @@ A new flutter plugin project.
 
 ## iOS使用音视频功能（单人，多人）
 
-先下载一份im_flutter_sdk源码：
+先下载一份im_flutter_sdk源码：git@github.com:easemob/im_flutter_sdk.git 
 
-然后到 /自己本地路径/im_flutter_sdk/example/ios/Runner/ ,拿到Calls文件（环信原生iOS音视频相关UI文件），加到自己iOS项目中。
+然后到 /自己本地路径/im_flutter_sdk/example/ios/Runner/ ,拿到Calls文件（环信原生iOS音视频相关UI文件），加到自己iOS项目中
+
+注意点：如果是OC项目，flutter默认帮生成的iOS项目是swift的，所以是appdelegate.swift，需要将appdelegate.swift删除，自己创建个appdelegate类，然后添加下 main.m 文件，不然会报错
+
+然后在appdelegate.m中，添加 #import "EMCallPlugin.h" 头文件，在 didFinishLaunchingWithOptions 中添加 [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]]; 注册plugin即可
+
+如果是swift项目，按照OC的方式向 appdelegate.swift 添加头文件和注册plugin的方法即可
+
 
 然后在appdelegate.m中，添加 #import "EMCallPlugin.h" 头文件，在 didFinishLaunchingWithOptions 中添加 [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]]; 即可
 
@@ -48,7 +55,7 @@ A new flutter plugin project.
 
 /Calls/Call/CallImgs
 
-需要向.plist文件中添加权限：
+需要向自己iOS项目的 .plist 文件中添加权限：
 
 Privacy - Camera Usage Description          相机
 
