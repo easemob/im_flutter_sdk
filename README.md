@@ -46,10 +46,7 @@ A new flutter plugin project.
 
 如果是swift项目，按照OC的方式向 appdelegate.swift 添加头文件和注册plugin的方法即可
 
-
-然后在appdelegate.m中，添加 #import "EMCallPlugin.h" 头文件，在 didFinishLaunchingWithOptions 中添加 [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]]; 即可
-
-在将音视频相关的资源图片添加到Assets.xcassets中，资源图片路径文件夹路径：
+需要将音视频相关的资源图片添加到Assets.xcassets中，资源图片路径文件夹路径：
 
 /Calls/Helper/SharedImgs
 
