@@ -36,13 +36,17 @@ A new flutter plugin project.
 
 ## iOS使用音视频功能（单人，多人）
 
-需要将自己原生iOS项目中的环信flutter SDK中的资源图片文件夹CallImgs和SharedImgs加到Assets.xcassets中
+先下载一份im_flutter_sdk源码：
 
-图片文件夹路径：
+然后到 /自己本地路径/im_flutter_sdk/example/ios/Runner/ ,拿到Calls文件（环信原生iOS音视频相关UI文件），加到自己iOS项目中。
 
-Pods/Development Pods/im_flutter_sdk/.../项目名称/ios/.symlinks/plugins/im_flutter_sdk/ios/Classes/Calls/Helper/SharedImg
+然后在appdelegate.m中，添加 #import "EMCallPlugin.h" 头文件，在 didFinishLaunchingWithOptions 中添加 [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]]; 即可
 
-Pods/Development Pods/im_flutter_sdk/.../项目名称/ios/.symlinks/plugins/im_flutter_sdk/ios/Classes/Calls/Call/CallImgs
+在将音视频相关的资源图片添加到Assets.xcassets中，资源图片路径文件夹路径：
+
+/Calls/Helper/SharedImgs
+
+/Calls/Call/CallImgs
 
 需要向.plist文件中添加权限：
 
