@@ -1069,7 +1069,7 @@ fromEMPushDisplayStyle(int type) {
 toEMPushDisplayStyle(EMPushDisplayStyle Style) {
   if (Style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
     return 0;
-  } else if (Style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
+  } else if (Style == EMPushDisplayStyle.EMPushDisplayStyleMessageSummary) {
     return 1;
   }
 }

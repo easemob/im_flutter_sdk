@@ -40,6 +40,8 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
             getNoPushGroups(call.arguments, result);
         }else if(EMSDKMethod.updatePushNickname.equals(call.method)){
             updatePushNickname(call.arguments, result);
+        }else if(EMSDKMethod.updatePushDisplayStyle.equals(call.method)){
+            updatePushDisplayStyle(call.arguments, result);
         }
     }
 
@@ -172,5 +174,15 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
                 }
             }
         }).start();
+    }
+
+    private void updatePushDisplayStyle(Object args, Result result){
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("success", Boolean.TRUE);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                result.success(data);
+            }});
     }
 }

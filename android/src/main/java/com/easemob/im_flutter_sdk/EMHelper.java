@@ -864,6 +864,7 @@ class EMHelper {
         result.put("noDisturbOn", configs.isNoDisturbOn());
         result.put("startHour", configs.getNoDisturbStartHour());
         result.put("endHour", configs.getNoDisturbEndHour());
+        result.put("displayStyle", 0);
         return result;
     }
 
