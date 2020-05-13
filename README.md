@@ -32,7 +32,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):
 
-A new flutter plugin project.
 
 ## iOS使用音视频功能（单人，多人）
 
@@ -45,12 +44,6 @@ A new flutter plugin project.
 然后在appdelegate.m中，添加 #import "EMCallPlugin.h" 头文件，在 didFinishLaunchingWithOptions 中添加 [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]]; 注册plugin即可
 
 如果是swift项目，按照OC的方式向 appdelegate.swift 添加头文件和注册plugin的方法即可
-
-需要将音视频相关的资源图片添加到Assets.xcassets中，资源图片路径文件夹路径：
-
-/Calls/Helper/SharedImgs
-
-/Calls/Call/CallImgs
 
 需要向自己iOS项目的 .plist 文件中添加权限：
 
