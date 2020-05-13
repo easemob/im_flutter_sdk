@@ -1,21 +1,15 @@
 package com.easemob.im_flutter_sdk_example;
 
-import android.app.Activity;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+
+import androidx.annotation.NonNull;
 
 import com.easemob.im_flutter_sdk.EMWrapper;
-import com.easemob.im_flutter_sdk.ImFlutterSdkPlugin;
 import com.easemob.im_flutter_sdk_example.conference.ConferenceActivity;
-import com.easemob.im_flutter_sdk_example.receiver.CallReceiver;
-import com.hyphenate.EMConferenceListener;
-import com.hyphenate.EMValueCallBack;
-import com.hyphenate.chat.EMCallManager;
-import com.hyphenate.chat.EMCallSession;
-import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConference;
 import com.hyphenate.chat.EMConferenceManager;
-import com.hyphenate.chat.EMConferenceMember;
-import com.hyphenate.chat.EMConferenceStream;
-import com.hyphenate.chat.EMStreamStatistics;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONException;
@@ -26,23 +20,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
-public class EMConferencePlugin implements MethodChannel.MethodCallHandler, EMWrapper {
+public class EMConferencePlugin implements FlutterPlugin, MethodChannel.MethodCallHandler, EMWrapper {
     static final String Conference = "com.easemob.im/em_conference_manager";
     static MethodChannel channel;
-    private static Activity activity;
+    private Context activity;
     private static MethodChannel.Result result;
-    private EMConferencePlugin(Activity activity) {
-        this.activity = activity;
+
+    private static Handler handler = new Handler(Looper.getMainLooper());
+
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), Conference, JSONMethodCodec.INSTANCE);
+        activity = binding.getApplicationContext();
+        channel.setMethodCallHandler(this);
+    }
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
+        channel = null;
     }
 
     static void registerWith(PluginRegistry.Registrar registrar) {
         channel = new MethodChannel(registrar.messenger(), Conference , JSONMethodCodec.INSTANCE);
-        EMConferencePlugin emConferencePlugin = new EMConferencePlugin(registrar.activity());
+        EMConferencePlugin emConferencePlugin = new EMConferencePlugin();
         channel.setMethodCallHandler(emConferencePlugin);
     }
 
@@ -121,7 +128,7 @@ public class EMConferencePlugin implements MethodChannel.MethodCallHandler, EMWr
     }
 
     public static void onResult(EMConference conference, int error, String errorMsg){
-        activity.runOnUiThread(new Runnable() {
+        handler.post(new Runnable() {
             @Override
             public void run() {
                 Map<String, Object> data = new HashMap<String, Object>();
