@@ -2,27 +2,37 @@ package com.easemob.im_flutter_sdk_example;
 
 import android.annotation.TargetApi;
 import android.os.Bundle;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsManager;
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsResultAction;
 
-import io.flutter.app.FlutterActivity;
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
+
+  @Override
+  public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+    super.configureFlutterEngine(flutterEngine);
+    registerCustomPlugin(flutterEngine);
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    GeneratedPluginRegistrant.registerWith(this);
-    registerCustomPlugin(this);
     requestPermissions();
   }
 
-  private void registerCustomPlugin(PluginRegistry registrar) {
-    ImDemoPlugin.registerWith(registrar.registrarFor(ImDemoPlugin.CHANNEL));
-    EMCallPlugin.registerWith(registrar.registrarFor(EMCallPlugin.CALL));
-    EMConferencePlugin.registerWith(registrar.registrarFor(EMConferencePlugin.Conference));
+  private void registerCustomPlugin(FlutterEngine flutterEngine) {
+    flutterEngine.getPlugins().add(new ImDemoPlugin());
+    flutterEngine.getPlugins().add(new EMCallPlugin());
+    flutterEngine.getPlugins().add(new EMConferencePlugin());
   }
 
   @TargetApi(23)
