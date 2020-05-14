@@ -820,7 +820,7 @@ class EMHelper {
                 builder.enableMiPush(pushConfig.getString("miAppId"), pushConfig.getString("miAppKey"));
             }
             if(pushConfig.getBoolean("enableOppoPush")){
-                builder.enableMiPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
+                builder.enableOppoPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
             }
             if(pushConfig.getBoolean("enableHWPush")){
                 builder.enableHWPush();
