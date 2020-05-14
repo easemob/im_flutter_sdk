@@ -1,8 +1,9 @@
 package com.easemob.im_flutter_sdk_example;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+
 import androidx.annotation.NonNull;
 
 import com.easemob.im_flutter_sdk.EMSDKMethod;
@@ -20,26 +21,36 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
-public class EMCallPlugin implements MethodChannel.MethodCallHandler,EMWrapper{
+public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler,EMWrapper{
     static final String CALL = "com.easemob.im/em_call_manager";
     static MethodChannel channel;
-    private Activity activity;
+    private Context activity;
     private CallReceiver callReceiver;
     private EMCallManager emCallManager;
-    EMCallSession callSession;
+    private EMCallSession callSession;
 
-    private EMCallPlugin(Activity activity) {
-        this.activity = activity;
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), CALL, JSONMethodCodec.INSTANCE);
+        activity = binding.getApplicationContext();
+        channel.setMethodCallHandler(this);
+    }
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
+        channel = null;
     }
 
     static void registerWith(PluginRegistry.Registrar registrar) {
         channel = new MethodChannel(registrar.messenger(), CALL , JSONMethodCodec.INSTANCE);
-        EMCallPlugin imCallPlugin = new EMCallPlugin(registrar.activity());
+        EMCallPlugin imCallPlugin = new EMCallPlugin();
         channel.setMethodCallHandler(imCallPlugin);
     }
 
@@ -68,6 +79,7 @@ public class EMCallPlugin implements MethodChannel.MethodCallHandler,EMWrapper{
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
                     }else {
                         intent = new Intent(activity,VoiceCallActivity.class);
@@ -82,6 +94,7 @@ public class EMCallPlugin implements MethodChannel.MethodCallHandler,EMWrapper{
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
                     }
                 } catch (JSONException e) {

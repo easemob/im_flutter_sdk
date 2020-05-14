@@ -166,6 +166,7 @@ public class EMSDKMethod {
     static final String updatePushServiceForGroup = "updatePushServiceForGroup";
     static final String getNoPushGroups = "getNoPushGroups";
     static final String updatePushNickname = "updatePushNickname";
+    static final String updatePushDisplayStyle = "updatePushDisplayStyle";
 
     //EMCallStatusListener
     public static final String callStatusConnecting = "connecting";
