@@ -28,7 +28,7 @@
             android:paddingRight="12dp"
             android:visibility="visible" />
 
-        <com.easemob.im_flutter_sdk_example.MyChronometer
+        <com.easemob.im_flutter_sdk_example.widget.MyChronometer
             android:visibility="invisible"
             android:id="@+id/chronometer"
             android:layout_width="wrap_content"

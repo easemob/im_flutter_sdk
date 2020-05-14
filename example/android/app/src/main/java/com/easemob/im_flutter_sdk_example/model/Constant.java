@@ -1,4 +1,4 @@
-package com.easemob.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example.model;
 
 public class Constant {
 

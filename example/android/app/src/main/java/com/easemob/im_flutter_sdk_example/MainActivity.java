@@ -2,18 +2,16 @@ package com.easemob.im_flutter_sdk_example;
 
 import android.annotation.TargetApi;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.easemob.im_flutter_sdk_example.call.EMCallPlugin;
+import com.easemob.im_flutter_sdk_example.conference.EMConferencePlugin;
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsManager;
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsResultAction;
 
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.embedding.engine.plugins.shim.ShimPluginRegistry;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
 

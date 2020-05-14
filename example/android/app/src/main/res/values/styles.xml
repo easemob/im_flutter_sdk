@@ -71,4 +71,5 @@
         <item name="android:windowBackground">@android:color/white</item>
     </style>
 
+    <style name="nornal_style" parent="android:Theme.NoTitleBar"></style>
 </resources>

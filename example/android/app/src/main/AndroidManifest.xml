@@ -70,7 +70,7 @@
 
         <!-- 视频通话 -->
         <activity
-            android:name="VideoCallActivity"
+            android:name=".call.VideoCallActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
@@ -79,7 +79,7 @@
 
         <!-- 语音通话 -->
         <activity
-            android:name="VoiceCallActivity"
+            android:name=".call.VoiceCallActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
