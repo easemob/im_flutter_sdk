@@ -40,9 +40,9 @@ SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob
 
 3、在AndroidManifest.xml里去配置权限及注册activity
 
-	<uses-permission android:name="android.permission.VIBRATE" />  
-    <uses-permission android:name="android.permission.INTERNET" />  
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />  
+	<uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -101,7 +101,9 @@ SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob
     </application>
 
 4、有几个类是使用的kotlin需要配置下
+
 	在project下的build.gradle里配置
+	
 	buildscript {
 	    ext.kotlin_version = '1.3.10'
 	    
