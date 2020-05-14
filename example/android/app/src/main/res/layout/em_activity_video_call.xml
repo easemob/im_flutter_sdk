@@ -52,7 +52,7 @@
                 android:textSize="22sp"
                 android:visibility="visible" />
 
-            <com.easemob.im_flutter_sdk_example.MyChronometer
+            <com.easemob.im_flutter_sdk_example.widget.MyChronometer
                 android:id="@+id/chronometer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

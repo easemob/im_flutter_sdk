@@ -1,4 +1,4 @@
-package com.easemob.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example.conference;
 
 import android.content.Context;
 import android.os.Handler;
@@ -7,7 +7,6 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 
 import com.easemob.im_flutter_sdk.EMWrapper;
-import com.easemob.im_flutter_sdk_example.conference.ConferenceActivity;
 import com.hyphenate.chat.EMConference;
 import com.hyphenate.chat.EMConferenceManager;
 import com.hyphenate.util.EMLog;

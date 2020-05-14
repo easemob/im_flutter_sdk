@@ -1,4 +1,4 @@
-package com.easemob.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
