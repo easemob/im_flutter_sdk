@@ -26,9 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.easemob.im_flutter_sdk_example.BaseActivity;
-import com.easemob.im_flutter_sdk_example.Constant;
-import com.easemob.im_flutter_sdk_example.EMConferencePlugin;
-import com.easemob.im_flutter_sdk_example.PhoneStateManager;
+import com.easemob.im_flutter_sdk_example.model.Constant;
+import com.easemob.im_flutter_sdk_example.utils.PhoneStateManager;
 import com.easemob.im_flutter_sdk_example.R;
 import com.easemob.im_flutter_sdk_example.widget.EasePageIndicator;
 import com.hyphenate.EMCallBack;

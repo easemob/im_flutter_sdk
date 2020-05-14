@@ -1,4 +1,4 @@
-package com.easemob.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example.call;
 
 import android.content.Context;
 import android.content.Intent;
@@ -67,7 +67,7 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
             }else if(methodCall.method.equals(EMSDKMethod.startCall)){
                 try {
                     if (argMap.getInt("callType") == 1){
-                        intent = new Intent(activity,VideoCallActivity.class);
+                        intent = new Intent(activity, VideoCallActivity.class);
                         try {
                             intent.putExtra("username",argMap.getString("remoteName"));
                             intent.putExtra("isComingCall",false);
@@ -82,7 +82,7 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
                     }else {
-                        intent = new Intent(activity,VoiceCallActivity.class);
+                        intent = new Intent(activity, VoiceCallActivity.class);
                         try {
                             intent.putExtra("username",argMap.getString("remoteName"));
                             intent.putExtra("isComingCall",false);

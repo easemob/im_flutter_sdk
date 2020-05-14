@@ -12,7 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.easemob.im_flutter_sdk_example.BaseActivity
-import com.easemob.im_flutter_sdk_example.Constant
+import com.easemob.im_flutter_sdk_example.model.Constant
 import com.easemob.im_flutter_sdk_example.R
 import com.hyphenate.chat.EMClient
 import com.hyphenate.chat.EMConferenceMember
