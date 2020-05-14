@@ -1,4 +1,4 @@
-package com.easemob.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example.call;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,9 +9,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import androidx.fragment.app.FragmentActivity;
 import android.widget.Toast;
 
+import com.easemob.im_flutter_sdk_example.BaseActivity;
+import com.easemob.im_flutter_sdk_example.R;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMError;
 import com.hyphenate.chat.EMCallManager;
@@ -25,7 +26,7 @@ import com.hyphenate.exceptions.EMServiceNotReadyException;
 import com.hyphenate.util.EMLog;
 
 @SuppressLint("Registered")
-public class CallActivity extends FragmentActivity {
+public class CallActivity extends BaseActivity {
     public final static String TAG = "CallActivity";
     public static final String MESSAGE_ATTR_IS_VOICE_CALL = "is_voice_call";
     public static final String MESSAGE_ATTR_IS_VIDEO_CALL = "is_video_call";

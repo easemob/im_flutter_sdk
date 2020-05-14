@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package com.easemob.im_flutter_sdk_example;
+package com.easemob.im_flutter_sdk_example.call;
 
 import android.media.AudioManager;
 import android.media.RingtoneManager;
@@ -24,7 +24,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
@@ -34,6 +33,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.easemob.im_flutter_sdk_example.utils.PhoneStateManager;
+import com.easemob.im_flutter_sdk_example.R;
 import com.hyphenate.chat.EMCallSession;
 import com.hyphenate.chat.EMCallStateChangeListener;
 import com.hyphenate.chat.EMClient;

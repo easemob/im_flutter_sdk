@@ -18,8 +18,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.easemob.im_flutter_sdk_example.VideoCallActivity;
-import com.easemob.im_flutter_sdk_example.VoiceCallActivity;
+import com.easemob.im_flutter_sdk_example.call.VideoCallActivity;
+import com.easemob.im_flutter_sdk_example.call.VoiceCallActivity;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.util.EMLog;
 
