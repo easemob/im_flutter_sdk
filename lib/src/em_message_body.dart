@@ -339,6 +339,11 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   /// 音频文件时长
   int _voiceDuration;
 
+  /// 获取音频时长，秒为单位
+  int getVoiceDuration(){
+    return _voiceDuration;
+  }
+
   /// 文件大小
   Future<int> get getFileLength async {
     if (_fileLength == null) {
@@ -387,7 +392,12 @@ class EMVideoMessageBody extends EMFileMessageBody {
 
   var _file;
   var _fileLength;
-  var _videoDuration;
+  int _videoDuration;
+
+  /// 获取视频时长，秒为单位
+  int getVoiceDuration(){
+    return _videoDuration;
+  }
 
   /// 文件大小
   Future<int> get getFileLength async {
