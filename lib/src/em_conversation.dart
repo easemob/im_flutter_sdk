@@ -213,14 +213,15 @@ class EMConversation {
   }
 
   /// 更新本地的消息[msg]
-  Future<bool> updateMessage(EMMessage msg) async {
+  void updateMessage(EMMessage msg,
+      {onSuccess(), onError(String desc)}) async {
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.updateConversationMessage,
         {"id": _conversationId, "msg": msg.toDataMap()});
     if (result['success']) {
-      return true;
+        if (onSuccess != null) onSuccess();
     }
-    return false;
+        if (onError != null) onError(result['error']);
   }
 
   /// @nodoc 返回会话对应的附件存储路径.
