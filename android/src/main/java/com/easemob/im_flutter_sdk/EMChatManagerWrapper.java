@@ -337,20 +337,21 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void updateMessage(Object args, Result result) {
-
+        Map<String, Object> data = null;
         JSONObject argMap = (JSONObject)args;
         try {
-            boolean status = EMHelper.updateDataMapToMessage(argMap.getJSONObject("message"));
-            Map<String, Object> data = new HashMap<String, Object>();
+            EMMessage message = EMHelper.updateDataMapToMessage(argMap.getJSONObject("message"));
+            if (message != null){
+                EMClient.getInstance().chatManager().updateMessage(message);
+            }
+            data = new HashMap<String, Object>();
             data.put("success", Boolean.TRUE);
-            data.put("status", status);
-            post(new Runnable() {
-                @Override
-                public void run() {
-            result.success(data);
-                }});
+           result.success(data);
         } catch (JSONException e) {
+            data.put("success", Boolean.FALSE);
+            data.put("error", e.getMessage());
             e.printStackTrace();
+            result.success(data);
         }
 
     }
