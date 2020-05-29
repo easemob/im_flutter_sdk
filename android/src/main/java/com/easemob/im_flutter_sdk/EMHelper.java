@@ -3,7 +3,7 @@ package com.easemob.im_flutter_sdk;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
-import android.util.Log;
+import android.text.TextUtils;
 
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
@@ -141,24 +141,24 @@ class EMHelper {
                     setExt(args,message);
                     break;
             }
+            if(message == null) return null;
 
-            if (message != null) {
+            if (args.getString("msgId") != null && !TextUtils.isEmpty(args.getString("msgId"))) {
                 message.setMsgId(args.getString("msgId"));
             }
-            String messageId = args.getString("msgId");
-            if (messageId != null) {
-                message.setMsgId(messageId);
+
+
+            if (!TextUtils.isEmpty(args.getString("msgTime"))) {
+                String msgTime = args.getString("msgTime");
+                message.setMsgTime(Long.parseLong(msgTime));
             }
-            Long msgTime = args.getLong("msgTime");
-            if (msgTime != null) {
-                message.setMsgTime(msgTime);
+
+            if (!TextUtils.isEmpty(args.getString("localTime"))) {
+                String localTime = args.getString("localTime");
+                message.setLocalTime(Long.parseLong(localTime));
             }
-            Long localTime = args.getLong("localTime");
-            if (msgTime != null) {
-                message.setLocalTime(localTime);
-            }
-            int direction = args.getInt("direction");
-            if (direction == 0) {
+
+            if (args.getInt("direction") == 0) {
                 message.setDirection(EMMessage.Direct.SEND);
             } else {
                 message.setDirection(EMMessage.Direct.RECEIVE);
@@ -169,14 +169,14 @@ class EMHelper {
         return message;
     }
 
-    static boolean updateDataMapToMessage(JSONObject args){
+    static EMMessage updateDataMapToMessage(JSONObject args){
         EMMessage message = null;
         try {
             String msgid = args.getString("msgId");
             message = EMClient.getInstance().chatManager().getMessage(msgid);
             if(message == null){
                 EMLog.e("EMHelper","Message is null object");
-                return false;
+                return null;
             }
             message.setAcked(args.getBoolean("acked"));
             message.setDeliverAcked(args.getBoolean("deliverAcked"));
@@ -189,7 +189,7 @@ class EMHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return EMClient.getInstance().chatManager().updateMessage(message);
+        return message;
     }
 
     private static void setExt(JSONObject args, EMMessage message){

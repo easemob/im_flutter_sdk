@@ -6,9 +6,9 @@
 
 在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
 
-  im_flutter_sdk:
-      git:
-         url: https://github.com/easemob/im_flutter_sdk.git
+  im_flutter_sdk:  
+      git:  
+         url: https://github.com/easemob/im_flutter_sdk.git  
          ref: dev
 
 然后 Package get 一下
@@ -21,7 +21,7 @@
 
 在flutter项目中的 pubspec.yaml 里面的 dependencies: 下添加
 
-im_flutter_sdk:
+im_flutter_sdk:  
     path : /本地路径/im_flutter_sdk
 
 然后 Package get 一下
@@ -32,11 +32,107 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob.github.io/im_flutter_sdk):
 
-A new flutter plugin project.
+##  Android使用音视频功能（单人，多人）
+
+1、先下载一份im_flutter_sdk源码：https://github.com/easemob/im_flutter_sdk
+
+2、导入Android Studio，将im_flutter_sdk/example/android项目里的call、conference、model、receiver、utils、widget目录、BaseActivity、以及res下的所有资源都去复制导入到你的android项目里，检索项目里的com.easemob.im_flutter_sdk_example去替换为自己的包名。
+
+3、在AndroidManifest.xml里去配置权限及注册activity
+
+	<uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- 悬浮窗权限 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+    	android:usesCleartextTraffic="true"
+    >
+    <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+
+    <!-- 视频通话 -->
+        <activity
+            android:name=".call.VideoCallActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+
+        <!-- 语音通话 -->
+        <activity
+            android:name=".call.VoiceCallActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+        <activity
+            android:name=".conference.ConferenceActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
+            android:theme="@style/horizontal_slide" />
+
+        <!-- 会议成员邀请 -->
+        <activity
+            android:name=".conference.ConferenceInviteActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/nornal_style"
+            android:windowSoftInputMode="adjustPan"/>
+
+    </application>
+
+4、有几个类是使用的kotlin需要配置下
+
+	在project下的build.gradle里配置
+	
+	buildscript {
+	    ext.kotlin_version = '1.3.10'
+	    
+	    dependencies {
+	        	classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+	    	}
+	}
+
+	在app的build.gradle里配置
+	apply plugin: 'kotlin-android'
+	apply plugin: 'kotlin-android-extensions'
+
+	dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+	}
+
+5、在MainActivity里去重写configureFlutterEngine方法，注册音视频plugin
+
+	@Override
+    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+        super.configureFlutterEngine(flutterEngine);
+        flutterEngine.getPlugins().add(new EMCallPlugin());
+        flutterEngine.getPlugins().add(new EMConferencePlugin());
+    }
+
 
 ## iOS使用音视频功能（单人，多人）
 
-先下载一份im_flutter_sdk源码：git@github.com:easemob/im_flutter_sdk.git 
+先下载一份im_flutter_sdk源码：https://github.com/easemob/im_flutter_sdk
 
 然后到 /自己本地路径/im_flutter_sdk/example/ios/Runner/ ,拿到Calls文件（环信原生iOS音视频相关UI文件），加到自己iOS项目中，这样可以自己在修改Calls中的原生iOS音视频相关UI文件，不会因为更新im_flutter_sdk，导致自己修改的UI部分也被更新。
 
@@ -45,12 +141,6 @@ A new flutter plugin project.
 然后在appdelegate.m中，添加 #import "EMCallPlugin.h" 头文件，在 didFinishLaunchingWithOptions 中添加 [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]]; 注册plugin即可
 
 如果是swift项目，按照OC的方式向 appdelegate.swift 添加头文件和注册plugin的方法即可
-
-需要将音视频相关的资源图片添加到Assets.xcassets中，资源图片路径文件夹路径：
-
-/Calls/Helper/SharedImgs
-
-/Calls/Call/CallImgs
 
 需要向自己iOS项目的 .plist 文件中添加权限：
 
