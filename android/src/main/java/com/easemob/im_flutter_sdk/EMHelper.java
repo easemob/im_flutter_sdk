@@ -33,6 +33,7 @@ import com.hyphenate.push.EMPushConfig;
 import com.hyphenate.util.EMLog;
 import com.hyphenate.util.PathUtil;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -198,7 +199,20 @@ class EMHelper {
                 Iterator iterator = data.keys();
                 while (iterator.hasNext()){
                     String key = iterator.next().toString();
-                    message.setAttribute(key,data.getString(key));
+                    Object result = data.get(key);
+                    if (result.getClass().getSimpleName().equals("Integer")) {
+                        message.setAttribute(key, (Integer) result);
+                    } else if (result.getClass().getSimpleName().equals("Boolean")) {
+                        message.setAttribute(key, (Boolean) result);
+                    } else if (result.getClass().getSimpleName().equals("Long")) {
+                        message.setAttribute(key, (Long) result);
+                    } else if (result.getClass().getSimpleName().equals("JSONObject")) {
+                        message.setAttribute(key, (JSONObject) result);
+                    } else if (result.getClass().getSimpleName().equals("JSONArray")) {
+                        message.setAttribute(key, (JSONArray) result);
+                    } else {
+                        message.setAttribute(key, data.getString(key));
+                    }
                 }
             }
         } catch (JSONException e) {
