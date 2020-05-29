@@ -56,6 +56,10 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     map.forEach((k, v) async{
       var conversation = v as EMConversation;
       EMMessage message = await conversation.getLastMessage();
+      if(message == null){
+        map.remove(k);
+        return ;
+      }
       sortMap.putIfAbsent(message.msgTime,() => v);
       i++;
       if(i == map.length){
