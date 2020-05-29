@@ -152,14 +152,15 @@ class EMChatManager {
   }
 
   /// @nodoc 更新消息[message].
-  Future<bool> updateMessage(EMMessage message) async {
+  void updateMessage(EMMessage message,
+      {onSuccess(), onError(String desc)}) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateChatMessage,
-        {"message": message.toDataMap()}); //TODO: only message id needed?
+        {"message": message.toDataMap()});
     if (result['success']) {
-      return result['status'];
+        if (onSuccess != null) onSuccess();
     } else {
-      return false;
+        if (onError != null) onError(result['error']);
     }
   }
 

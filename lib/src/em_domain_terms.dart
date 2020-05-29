@@ -347,8 +347,7 @@ class EMMessage {
     this.direction,
     this.from,
     this.listened,
-    this.localTime,
-    this.msgTime,
+    this.msgTime = '',
     this.status,
     this.to,
     this.type,
@@ -358,7 +357,8 @@ class EMMessage {
         _conversationId = '',
         _userName = '',
         chatType = ChatType.Chat,
-        msgId = currentTimeMillis();
+        msgId = currentTimeMillis(),
+        localTime = currentTimeMillis();
 
   /// 用于创建各种消息的构造函数 - 发送方。
   EMMessage.createSendMessage(EMMessageType type)
@@ -379,7 +379,10 @@ class EMMessage {
   /// 创建语音类型消息 [filePath]: 语音片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
   EMMessage.createVoiceSendMessage(
       String filePath, int timeLength, String userName)
-      : this(direction: Direction.SEND);
+      : this(direction: Direction.SEND,
+      type: EMMessageType.VOICE,
+      body:EMVoiceMessageBody(File(filePath),timeLength),
+      to:userName);
 
   /// 创建图片类型消息 [filePath]: 图片路径; [sendOriginalImage]: 是否发送原图; [userName]: 接收方id.
   EMMessage.createImageSendMessage(
