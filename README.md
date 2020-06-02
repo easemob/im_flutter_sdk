@@ -150,6 +150,12 @@ Privacy - Photo Library Usage Description   相册
 
 Privacy - Microphone Usage Description      麦克风
 
+flutter项目中，在调用初始化环信SDK方法之后，添加下面两个方法：
+
+如果使用1V1音视频通话请添加：EMClient.getInstance().callManager().registerCallSharedManager();
+
+如果使用多人音视频通话请添加：EMClient.getInstance().conferenceManager().registerConferenceSharedManager();
+
 ## Getting Started
 
 ## 生成文档
