@@ -67,20 +67,20 @@ class EMConversation {
   }
 
   /// 根据传入的参数从本地存储中搜索指定数量的消息
-  /// [type] 消息类型，文本、图片、语音等等
   /// [keywords], 搜索消息中的关键词
   /// [timeStamp],搜索消息的时间点
   /// [maxCount] 搜索结果的最大条数
+  /// [from] 搜索来自某人的消息，适用于搜索群组里的消息
   /// [direction]. 方向
-  Future<List<EMMessage>> searchMsgFromDB(EMMessageType type, String keywords,
-      int timeStamp, int maxCount, EMSearchDirection direction) async {
+  Future<List<EMMessage>> searchMsgFromDB(String keywords,
+      int timeStamp, int maxCount, String from, EMSearchDirection direction) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDB, {
       "id": _conversationId,
-      "type": type,
       "keywords": keywords,
       "timeStamp": timeStamp,
       "maxCount": maxCount,
+      "from" : from,
       "direction": toEMSearchDirection(direction)
     });
     if (result['success']) {
@@ -94,19 +94,20 @@ class EMConversation {
     return null;
   }
 
-  /// 搜索来自DB的消息，类型为[type]，匹配[keywords]，在[timeStamp]之后，[maxCount]返回的大多数消息，方向为[direction]。
+  /// 搜索来自DB的消息，类型为[type]，在[timeStamp]之后，[maxCount]返回的大多数消息，[from] 搜索来自某人的消息，适用于搜索群组里的消息,方向为[direction]。
   Future<List<EMMessage>> searchMsgFromDBByType(
       EMMessageType type,
-      String keywords,
       int timeStamp,
       int maxCount,
+      String from,
       EMSearchDirection direction) async {
     Map<String, dynamic> result = await _emConversationChannel
         .invokeMethod(EMSDKMethod.searchConversationMsgFromDBByType, {
       "id": _conversationId,
-      "type": type,
+      "type": toType(type),
       "timeStamp": timeStamp,
       "maxCount": maxCount,
+      "from" : from,
       "direction": toEMSearchDirection(direction)
     });
     if (result['success']) {
