@@ -2,62 +2,63 @@
 
 class EMCallOptions{
 
-  EMCallOptions()
-      : _isSendPushIfOffline = false,
-        _userSetAutoResizing = true,
-        _pingInterval = 30,
-        _maxVideoKbps = 0,
-        _minVideoKbps = 0,
-        _maxVideoFrameRate = 0,
-        _maxAudioKbps = 32;
+  EMCallOptions({
+    this.pingInterval = 30,
+    this.maxVideoKbps = 0,
+    this.minVideoKbps = 0,
+    this.maxVideoFrameRate = 0,
+    this.maxAudioKbps = 32,
+    this.isSendPushIfOffline = false,
+    this.userSetAutoResizing = true
+  });
 
   /// 开启或关闭自动调节分辨率
-  bool _userSetAutoResizing;
+  bool userSetAutoResizing;
   /// 被叫方不在线时，是否推送来电通知
-  bool _isSendPushIfOffline;
+  bool isSendPushIfOffline;
   /// 发送ping包的时间间隔，单位秒，默认30s，最小10s
-  int _pingInterval;
+  int pingInterval;
   /// 最大视频码率
-  int _maxVideoKbps;
+  int maxVideoKbps;
   /// 最小视频码率
-  int _minVideoKbps;
+  int minVideoKbps;
   /// 最大的视频帧率
-  int _maxVideoFrameRate;
+  int maxVideoFrameRate;
   /// 最大音频比特率
-  int _maxAudioKbps;
+  int maxAudioKbps;
 
 
   /// 设置最小的网络带宽
   void setMinVideoKbps(int minVideoKbps){
-    this._minVideoKbps = minVideoKbps;
+    this.minVideoKbps = minVideoKbps;
   }
   /// 设置最大的网络带宽
   void setMaxVideoKbps(int maxVideoKbps){
-    this._maxAudioKbps = maxVideoKbps;
+    this.maxAudioKbps = maxVideoKbps;
   }
 
   /// 设置最大的视频帧率
   void setMaxVideoFrameRate(int frameRate){
-    this._maxVideoFrameRate = frameRate;
+    this.maxVideoFrameRate = frameRate;
   }
 
 
   /// 设置ping 间隔，默认为30s，最小为10s
   void setPingInterval(int interval){
-    this._pingInterval = interval;
+    this.pingInterval = interval;
   }
 
 }
 
 Map convertToMap(EMCallOptions options) {
   var map = Map();
-  map.putIfAbsent("userSetAutoResizing", () => options._userSetAutoResizing);
-  map.putIfAbsent("isSendPushIfOffline", () => options._isSendPushIfOffline);
-  map.putIfAbsent("pingInterval", () => options._pingInterval);
-  map.putIfAbsent("maxVideoKbps", () => options._maxVideoKbps);
-  map.putIfAbsent("minVideoKbps", () => options._minVideoKbps);
-  map.putIfAbsent("maxVideoFrameRate", () => options._maxVideoFrameRate);
-  map.putIfAbsent("maxAudioKbps", () => options._maxAudioKbps);
+  map.putIfAbsent("userSetAutoResizing", () => options.userSetAutoResizing);
+  map.putIfAbsent("isSendPushIfOffline", () => options.isSendPushIfOffline);
+  map.putIfAbsent("pingInterval", () => options.pingInterval);
+  map.putIfAbsent("maxVideoKbps", () => options.maxVideoKbps);
+  map.putIfAbsent("minVideoKbps", () => options.minVideoKbps);
+  map.putIfAbsent("maxVideoFrameRate", () => options.maxVideoFrameRate);
+  map.putIfAbsent("maxAudioKbps", () => options.maxAudioKbps);
   return map;
 }
 

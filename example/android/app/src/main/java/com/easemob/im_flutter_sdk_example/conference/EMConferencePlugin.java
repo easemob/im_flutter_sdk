@@ -35,7 +35,7 @@ public class EMConferencePlugin implements FlutterPlugin, MethodChannel.MethodCa
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), Conference, JSONMethodCodec.INSTANCE);
+        channel = new MethodChannel(binding.getBinaryMessenger(), Conference, JSONMethodCodec.INSTANCE);
         activity = binding.getApplicationContext();
         channel.setMethodCallHandler(this);
     }

@@ -81,7 +81,6 @@ abstract class EMFileMessageBody extends EMMessageBody {
       : this.displayName = body.displayName,
         this.localUrl = body.localUrl,
         this.downloadStatus = body.downloadStatus,
-        this.fileName = body.fileName,
         this.remoteUrl = body.remoteUrl,
         this.secret = body.secret,
         this._body = body;
@@ -91,7 +90,6 @@ abstract class EMFileMessageBody extends EMMessageBody {
       : this.displayName = data['displayName'],
         this.localUrl = data['localUrl'],
         this.downloadStatus = fromEMDownloadStatus(data['downloadStatus']),
-        this.fileName = data['fileName'],
         this.remoteUrl = data['remoteUrl'],
         this.secret = data['secret'];
 
@@ -102,9 +100,6 @@ abstract class EMFileMessageBody extends EMMessageBody {
 
   /// 文件下载状态
   EMDownloadStatus downloadStatus;
-
-  /// 文件名称
-  String fileName;
 
   /// 文件本地路径
   String localUrl;
@@ -118,7 +113,7 @@ abstract class EMFileMessageBody extends EMMessageBody {
   @override
   /// @nodoc
   String toString() =>
-      '[EMFileMessageBody], {displayName: $displayName, fileName: $fileName,'
+      '[EMFileMessageBody], {displayName: $displayName,'
       'localUrl: $localUrl, remoteUrl: $remoteUrl, secret: $secret,'
       'body: $_body}';
 
@@ -128,7 +123,6 @@ abstract class EMFileMessageBody extends EMMessageBody {
   Map toDataMap() {
     var result = {};
     result['displayName'] = displayName;
-    result['fileName'] = fileName;
     result['localUrl'] = localUrl;
     result['remoteUrl'] = remoteUrl;
     result['secret'] = secret;
@@ -243,13 +237,9 @@ class EMImageMessageBody extends EMFileMessageBody {
   }
 
   @override
-  /// 文件名称
-  String get fileName => _imageFile.path;
-
-  @override
   /// @nodoc
   String toString() =>
-      '[EMImageMessageBody], {fileName: $fileName, :$width, height: $height,'
+      '[EMImageMessageBody], {width : $width, height: $height,'
       'thumbnailLocalPath: $thumbnailLocalPath, thumbnailSecret: $thumbnailSecret, thumbnailUrl: $thumbnailUrl,'
       'sendOriginalImage: $sendOriginalImage }';
 

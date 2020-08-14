@@ -3,6 +3,8 @@ package com.easemob.im_flutter_sdk_example.call;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -14,6 +16,8 @@ import com.hyphenate.chat.EMCallOptions;
 import com.hyphenate.chat.EMCallSession;
 import com.hyphenate.chat.EMCallStateChangeListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConference;
+import com.hyphenate.exceptions.EMServiceNotReadyException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,9 +39,12 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
     private EMCallManager emCallManager;
     private EMCallSession callSession;
 
+    private static MethodChannel.Result result;
+    private static Handler handler = new Handler(Looper.getMainLooper());
+
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), CALL, JSONMethodCodec.INSTANCE);
+        channel = new MethodChannel(binding.getBinaryMessenger(), CALL, JSONMethodCodec.INSTANCE);
         activity = binding.getApplicationContext();
         channel.setMethodCallHandler(this);
     }
@@ -56,6 +63,7 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
 
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull MethodChannel.Result result) {
+        this.result = result;
         if (emCallManager == null){
             emCallManager = EMClient.getInstance().callManager();
             registerStateListener();
@@ -68,34 +76,30 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
                 try {
                     if (argMap.getInt("callType") == 1){
                         intent = new Intent(activity, VideoCallActivity.class);
-                        try {
-                            intent.putExtra("username",argMap.getString("remoteName"));
-                            intent.putExtra("isComingCall",false);
-                            if (!argMap.getString("ext").isEmpty() && null != argMap.getString("ext")){
-                                intent.putExtra("ext",argMap.getString("ext"));
-                            }
-                            intent.putExtra("record",argMap.getBoolean("record"));
-                            intent.putExtra("mergeStream",argMap.getBoolean("mergeStream"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        intent.putExtra("username",argMap.getString("remoteName"));
+                        intent.putExtra("isComingCall",false);
+                        if (!argMap.getString("ext").isEmpty() && null != argMap.getString("ext")){
+                            intent.putExtra("ext",argMap.getString("ext"));
                         }
+                        intent.putExtra("record",argMap.getBoolean("record"));
+                        intent.putExtra("mergeStream",argMap.getBoolean("mergeStream"));
+
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
+
                     }else {
                         intent = new Intent(activity, VoiceCallActivity.class);
-                        try {
-                            intent.putExtra("username",argMap.getString("remoteName"));
-                            intent.putExtra("isComingCall",false);
-                            if (!argMap.getString("ext").isEmpty() && null != argMap.getString("ext")){
-                                intent.putExtra("ext",argMap.getString("ext"));
-                            }
-                            intent.putExtra("record",argMap.getBoolean("record"));
-                            intent.putExtra("mergeStream",argMap.getBoolean("mergeStream"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        intent.putExtra("username",argMap.getString("remoteName"));
+                        intent.putExtra("isComingCall",false);
+                        if (!argMap.getString("ext").isEmpty() && null != argMap.getString("ext")){
+                            intent.putExtra("ext",argMap.getString("ext"));
                         }
+                        intent.putExtra("record",argMap.getBoolean("record"));
+                        intent.putExtra("mergeStream",argMap.getBoolean("mergeStream"));
+
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(intent);
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -358,5 +362,23 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
         data.put("success", Boolean.TRUE);
         data.put("value", callSession.isRecordOnServer());
         result.success(data);
+    }
+
+    public static void onResult(int result_status , int error_code, String error_Msg){
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Map<String, Object> data = new HashMap<String, Object>();
+                if(result_status == 0) {
+                    data.put("success", Boolean.TRUE);
+                    result.success(data);
+                }else{
+                    data.put("success", Boolean.FALSE);
+                    data.put("code", error_code);
+                    data.put("desc", error_Msg);
+                    result.success(data);
+                }
+            }
+        });
     }
 }

@@ -7,12 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.CalendarContract;
 import android.provider.Settings;
 import androidx.annotation.Nullable;
 import android.telephony.TelephonyManager;
@@ -173,9 +175,9 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
         setContentView(R.layout.activity_conference);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+//                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+//                | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+//                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         init();
 
@@ -445,7 +447,8 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
         @Override
         public void onScreenModeChange(boolean isFullScreenMode, @Nullable View fullScreenView) {
             if (isFullScreenMode) { // 全屏模式
-                toolsPanelView.setBackgroundColor(getResources().getColor(R.color.color_transparent));
+//                toolsPanelView.setBackgroundColor(getResources().getColor(R.color.color_transparent));
+                toolsPanelView.setBackgroundColor(Color.TRANSPARENT);
 
                 membersTV.setVisibility(View.INVISIBLE);
                 memberCountTV.setVisibility(View.INVISIBLE);
@@ -460,7 +463,8 @@ public class ConferenceActivity extends BaseActivity implements EMConferenceList
                 closeBtn.setVisibility(View.GONE);
                 zoominBtn.setVisibility(View.VISIBLE);
             } else { // 非全屏模式
-                toolsPanelView.setBackgroundColor(getResources().getColor(R.color.bg_tools_panel));
+//                toolsPanelView.setBackgroundColor(getResources().getColor(R.color.bg_tools_panel));
+                toolsPanelView.setBackgroundColor(Color.GRAY);
 
                 membersTV.setVisibility(View.VISIBLE);
                 memberCountTV.setVisibility(View.VISIBLE);
