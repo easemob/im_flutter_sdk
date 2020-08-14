@@ -72,7 +72,7 @@ class EMSDKMethod {
   static const String searchConversationMsgFromDB =
       'searchConversationMsgFromDB';
   static const String searchConversationMsgFromDBByType =
-      'searchConversationMsgFromDB';
+      'searchConversationMsgFromDBByType';
   static const String loadMessages = 'loadMessages';
   static const String markMessageAsRead = 'markMessageAsRead';
   static const String removeMessage = 'removeMessage';
