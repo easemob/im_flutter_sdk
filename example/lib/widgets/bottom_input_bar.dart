@@ -36,10 +36,11 @@ class _BottomInputBarState extends State<BottomInputBar> {
     this.textField = TextField(
       onSubmitted: _submittedMessage,
       controller: controller,
+      maxLines:1,
       decoration: InputDecoration(
           border: InputBorder.none,
           fillColor: Color(0x1F000000),
-          contentPadding:EdgeInsets.fromLTRB(10,2,10,0),
+          contentPadding:EdgeInsets.fromLTRB(6,0,6,8),
 //          hintText: '请输入信息......',
           hintStyle: TextStyle(
               fontSize:15,
@@ -176,7 +177,7 @@ class _BottomInputBarState extends State<BottomInputBar> {
     _isDark = ThemeUtils.isDark(context);
     return Container(
       color:  ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
-      padding: EdgeInsets.fromLTRB(15, 6,15, 2),
+      padding: EdgeInsets.fromLTRB(15,10,15, 0),
       child:Column(
         children: <Widget>[
             Row(
@@ -184,8 +185,9 @@ class _BottomInputBarState extends State<BottomInputBar> {
                 Expanded(
                     child: Container(
                           child: this.textField,
-                          height: 34,
-                          padding: EdgeInsets.fromLTRB(0,5,0,0),
+                          height: 38,
+                          padding: EdgeInsets.fromLTRB(0,0,0,0),
+                          margin: EdgeInsets.fromLTRB(0,0,0,0),
                           decoration: BoxDecoration(
                           color: _isDark ? EMColor.darkBorderLine : EMColor.borderLine,
                           border:  new Border.all(color: Colors.black26, width: 0.3),

@@ -390,10 +390,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void dispose() {
-    super.dispose();
-    EMClient.getInstance().chatManager().removeMessageListener(this);
     _scrollController.dispose();
     messageTotalList.clear();
+    super.dispose();
+    EMClient.getInstance().chatManager().removeMessageListener(this);
     if(isJoinRoom){
       checkOutRoom();
     }
@@ -505,7 +505,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    EMClient.getInstance().callManager().startCall(EMCallType.Voice, toChatUsername, false, false, "123",
+    EMClient.getInstance().callManager().startCall(EMCallType.Video, toChatUsername, false, false, "123",
         onSuccess:(){
           print('拨打通话成功 --- ');
         } ,
@@ -529,12 +529,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMTextMessageBody body = EMTextMessageBody(text);
     message.body = body;
     print('-----------LocalID---------->' + message.msgId);
-    message.setAttribute({"test1":"1111","test2":"2222"});
+    message.setAttribute({"test1":"1111","test2":true});
     EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
       print('-----------ServerID---------->' + message.msgId);
       print('-----------MessageStatus---------->' + message.status.toString());
     });
     _onConversationInit();
+    new EMCallOptions(isSendPushIfOffline: true);
   }
 
   @override
@@ -601,6 +602,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onDisconnected(CallReason reason) async{
     // TODO: implement onDisconnected
     Future.delayed(Duration(milliseconds: 500), () {
+      messageTotalList.clear();
       _onConversationInit();
     });
     var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();

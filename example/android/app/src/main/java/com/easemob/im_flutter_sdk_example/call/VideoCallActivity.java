@@ -13,14 +13,17 @@
  */
 package com.easemob.im_flutter_sdk_example.call;
 
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.media.SoundPool;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AlphaAnimation;
@@ -32,6 +35,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.easemob.im_flutter_sdk_example.utils.PhoneStateManager;
 import com.easemob.im_flutter_sdk_example.R;
@@ -83,6 +88,11 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 //    private Button recordBtn;
     private EMVideoCallHelper callHelper;
 
+    private String CallErrorDesc = "未知异常";
+    private int CallErrorCode = -1;
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,7 +158,13 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
         // set call state listener
         addCallStateListener();
         if (!isInComingCall) {// outgoing call
-            soundPool = new SoundPool(1, AudioManager.STREAM_RING, 0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                SoundPool.Builder sb = new SoundPool.Builder();
+                sb.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build());
+                soundPool = sb.build();
+            }else {
+                soundPool = new SoundPool(1, AudioManager.STREAM_RING, 0);
+            }
             outgoing = soundPool.load(this, R.raw.em_outgoing, 1);
 
             comingBtnContainer.setVisibility(View.INVISIBLE);
@@ -227,6 +243,11 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 
                         @Override
                         public void run() {
+                            if(!isFirst){
+                                Log.e("call--->","isFirst");
+                                EMCallPlugin.onResult(0, 0 , "success");
+                                isFirst = true;
+                            }
 //                            callStateTextView.setText(R.string.have_connected_with);
                         }
 
@@ -350,65 +371,55 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                         public void run() {
                             chronometer.stop();
                             callDruationText = chronometer.getText().toString();
-                            String s1 = "对方拒绝接受！";
-                            String s2 = "连接建立失败！";
-                            String s3 = "对方不在线，请稍后再拨……";
-                            String s4 = "对方正在通话中，请稍后再拨";
-                            String s5 = getResources().getString(R.string.The_other_party_did_not_answer);
-
-                            String s6 = "挂断";
-                            String s7 = "对方已经挂断";
-                            String s8 = getResources().getString(R.string.did_not_answer);
-                            String s9 = getResources().getString(R.string.Has_been_cancelled);
-                            String s10 = getResources().getString(R.string.Refused);
 
                             if (fError == CallError.REJECTED) {
+                                CallErrorDesc = "对方拒绝接受！";
                                 callingState = CallingState.BEREFUSED;
-                                callStateTextView.setText(s1);
                             } else if (fError == CallError.ERROR_TRANSPORT) {
-                                callStateTextView.setText(s2);
+                                CallErrorDesc  = "连接建立失败！";
                             } else if (fError == CallError.ERROR_UNAVAILABLE) {
+                                CallErrorDesc = "对方不在线，请稍后再拨……";
                                 callingState = CallingState.OFFLINE;
-                                callStateTextView.setText(s3);
                             } else if (fError == CallError.ERROR_BUSY) {
+                                CallErrorDesc = "对方正在通话中，请稍后再拨";
                                 callingState = CallingState.BUSY;
-                                callStateTextView.setText(s4);
                             } else if (fError == CallError.ERROR_NORESPONSE) {
+                                CallErrorDesc = "对方未接听";
                                 callingState = CallingState.NO_RESPONSE;
-                                callStateTextView.setText(s5);
-                            }else if (fError == CallError.ERROR_LOCAL_SDK_VERSION_OUTDATED || fError == CallError.ERROR_REMOTE_SDK_VERSION_OUTDATED){
+                            }else if (fError == CallError.ERROR_LOCAL_SDK_VERSION_OUTDATED ){
+                                CallErrorDesc = "通话协议版本不一致";
                                 callingState = CallingState.VERSION_NOT_SAME;
-                                callStateTextView.setText(R.string.call_version_inconsistent);
+                            } else if (fError == CallError.ERROR_REMOTE_SDK_VERSION_OUTDATED){
+                                CallErrorDesc = "通话协议版本不一致";
+                                callingState = CallingState.VERSION_NOT_SAME;
                             } else {
                                 if (isRefused) {
+                                    CallErrorDesc = getResources().getString(R.string.Refused);
                                     callingState = CallingState.REFUSED;
-                                    callStateTextView.setText(s10);
                                 }
                                 else if (isAnswered) {
                                     callingState = CallingState.NORMAL;
-                                    if (endCallTriggerByMe) {
-//                                        callStateTextView.setText(s6);
-                                    } else {
-                                        callStateTextView.setText(s7);
+                                    if (!endCallTriggerByMe) {
+                                        CallErrorDesc = "对方已经挂断";
                                     }
                                 } else {
                                     if (isInComingCall) {
+                                        CallErrorDesc = getResources().getString(R.string.did_not_answer);
                                         callingState = CallingState.UNANSWERED;
-                                        callStateTextView.setText(s8);
                                     } else {
                                         if (callingState != CallingState.NORMAL) {
+                                            CallErrorDesc = getResources().getString(R.string.Has_been_cancelled);
                                             callingState = CallingState.CANCELLED;
-                                            callStateTextView.setText(s9);
                                         } else {
-                                            callStateTextView.setText(s6);
+                                            CallErrorDesc = "挂断";
                                         }
                                     }
                                 }
                             }
+                            callStateTextView.setText(CallErrorDesc);
                             Toast.makeText(VideoCallActivity.this, callStateTextView.getText(), Toast.LENGTH_SHORT).show();
                             postDelayedCloseMsg();
                         }
-
                     });
 
                     break;
