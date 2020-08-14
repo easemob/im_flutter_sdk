@@ -128,7 +128,7 @@ SDK的方法说明文档见：[Easemob IM Flutter SDK API文档](https://easemob
         flutterEngine.getPlugins().add(new EMCallPlugin());
         flutterEngine.getPlugins().add(new EMConferencePlugin());
     }
-
+6、flutter项目中，在调用初始化环信SDK方法之后，添加这个方法： EMClient.getInstance().callManager().registerCallReceiver();
 
 ## iOS使用音视频功能（单人，多人）
 
@@ -149,6 +149,12 @@ Privacy - Camera Usage Description          相机
 Privacy - Photo Library Usage Description   相册
 
 Privacy - Microphone Usage Description      麦克风
+
+flutter项目中，在调用初始化环信SDK方法之后，添加下面两个方法：
+
+如果使用1V1音视频通话请添加：EMClient.getInstance().callManager().registerCallSharedManager();
+
+如果使用多人音视频通话请添加：EMClient.getInstance().conferenceManager().registerConferenceSharedManager();
 
 ## Getting Started
 

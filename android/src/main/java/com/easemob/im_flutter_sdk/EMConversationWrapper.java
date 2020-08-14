@@ -253,15 +253,20 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
         try {
             JSONObject argMap = (JSONObject) args;
             String id = argMap.getString("id");
-            EMMessage message = getConversation(id).getLastMessage();
             Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            data.put("message", EMHelper.convertEMMessageToStringMap(message));
+            if(getConversation(id).getAllMsgCount() > 0) {
+                EMMessage message = getConversation(id).getLastMessage();
+                data.put("success", Boolean.TRUE);
+                data.put("message", EMHelper.convertEMMessageToStringMap(message));
+            } else {
+                data.put("success", Boolean.FALSE);
+            }
             post(new Runnable() {
                 @Override
                 public void run() {
                     result.success(data);
                 }});
+
         }catch (JSONException e){
             EMLog.e("JSONException", e.getMessage());
         }
@@ -271,10 +276,14 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
         try {
             JSONObject argMap = (JSONObject) args;
             String id = argMap.getString("id");
-            EMMessage message = getConversation(id).getLatestMessageFromOthers();
             Map<String, Object> data = new HashMap<String, Object>();
-            data.put("success", Boolean.TRUE);
-            data.put("message", EMHelper.convertEMMessageToStringMap(message));
+            if(getConversation(id).getAllMsgCount() > 0) {
+                EMMessage message = getConversation(id).getLatestMessageFromOthers();
+                data.put("success", Boolean.TRUE);
+                data.put("message", EMHelper.convertEMMessageToStringMap(message));
+            } else {
+                data.put("success", Boolean.FALSE);
+            }
             post(new Runnable() {
                 @Override
                 public void run() {
