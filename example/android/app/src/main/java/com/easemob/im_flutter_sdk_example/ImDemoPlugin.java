@@ -19,7 +19,7 @@ ImDemoPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler, EMWrappe
     private Context context;
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        channel = new MethodChannel(binding.getFlutterEngine().getDartExecutor(), CHANNEL, JSONMethodCodec.INSTANCE);
+        channel = new MethodChannel(binding.getBinaryMessenger(), CHANNEL, JSONMethodCodec.INSTANCE);
         context = binding.getApplicationContext();
         channel.setMethodCallHandler(this);
     }

@@ -9,10 +9,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.easemob.im_flutter_sdk_example.BaseActivity;
 import com.easemob.im_flutter_sdk_example.R;
+import com.easemob.im_flutter_sdk_example.conference.EMConferencePlugin;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMError;
 import com.hyphenate.chat.EMCallManager;
@@ -56,6 +58,7 @@ public class CallActivity extends BaseActivity {
     protected int streamID = -1;
     
     EMCallManager.EMCallPushProvider pushProvider;
+    protected boolean isFirst;
     
     /**
      * 0：voice call，1：video call
@@ -130,6 +133,7 @@ public class CallActivity extends BaseActivity {
             pushProvider = null;
         }
         releaseHandler();
+        isFirst = false;
         super.onDestroy();
     }
     
@@ -182,6 +186,8 @@ public class CallActivity extends BaseActivity {
                                 st2 = getResources().getString(R.string.can_not_connect_chat_server_connection);
                             }
                             Toast.makeText(CallActivity.this, st2, Toast.LENGTH_SHORT).show();
+                            Log.e("call--->","callactivity");
+                            EMCallPlugin.onResult(1, e.getErrorCode() , st2);
                             finish();
                         }
                     });
