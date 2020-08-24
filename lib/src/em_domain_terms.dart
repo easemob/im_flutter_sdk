@@ -419,6 +419,14 @@ class EMMessage {
             body: EMNormalFileMessageBody(File(filePath)),
             to: userName);
 
+  /// 创建自定义类型消息 [event]: 自定义event; [userName]: 接收方id
+  EMMessage.createCustomSendMessage(String event, String userName)
+      : this(
+      direction: Direction.SEND,
+      type: EMMessageType.CUSTOM,
+      body: EMCustomMessageBody(event),
+      to: userName);
+
   /// @nodoc TODO:
   set isDeliverAcked(bool acked) {
     deliverAcked = acked;
@@ -589,6 +597,8 @@ toType(EMMessageType type) {
     return 5;
   } else if (type == EMMessageType.CMD) {
     return 6;
+  }else if (type == EMMessageType.CUSTOM) {
+    return 7;
   }
 }
 
@@ -717,6 +727,8 @@ abstract class EMMessageBody {
         return EMNormalFileMessageBody.fromData(data);
       case 6:
         return EMCmdMessageBody.fromData(data);
+      case 7:
+        return EMCustomMessageBody.fromData(data);
       default:
         return null;
     }
@@ -745,6 +757,9 @@ enum EMMessageType {
 
   /// CMD消息
   CMD,
+
+  /// CUSTOM消息
+  CUSTOM,
 }
 
 /// @nodoc Status - EMMessage status enumeration.
