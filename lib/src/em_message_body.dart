@@ -25,7 +25,7 @@ class EMTextMessageBody extends EMMessageBody {
 
   @override
   /// @nodoc
-  Map<String, dynamic> toDataMap() {
+  Map toDataMap() {
     var result = Map<String, dynamic>();
     result['message'] = message;
     return result;
@@ -410,4 +410,38 @@ class EMVideoMessageBody extends EMFileMessageBody {
     return result;
   }
 
+}
+
+class EMCustomMessageBody extends EMMessageBody {
+  /// 初始化方法，[message]: 消息内容
+  EMCustomMessageBody(String event) : this.event = event;
+  final String event;
+
+  Map params;
+
+  @override
+  /// @nodoc
+  String toString() => '[EMCustomMessageBody], {event: $event}';
+
+  Map<String,String> getParams(){
+    return params;
+  }
+
+  void setParams(Map<String,String> params){
+    params = params;
+  }
+
+  @override
+  /// @nodoc
+  Map toDataMap() {
+    var result = Map<String, dynamic>();
+    result['event'] = event;
+    result['params'] = params;
+    return result;
+  }
+
+  /// @nodoc
+  static EMMessageBody fromData(Map data) {
+    return EMCustomMessageBody(data['message']);
+  }
 }
