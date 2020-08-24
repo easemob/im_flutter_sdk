@@ -13,6 +13,7 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMConversation.EMConversationType;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMCursorResult;
+import com.hyphenate.chat.EMCustomMessageBody;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
@@ -137,6 +138,22 @@ class EMHelper {
                     String action = data_body.getString("action");
                     EMCmdMessageBody cmdMessageBody = new EMCmdMessageBody(action);
                     message.addBody(cmdMessageBody);
+                    setCurrency(message,emChatType,data_to);
+                    setExt(args,message);
+                    break;
+                case 7:
+                    message = EMMessage.createSendMessage(Type.CUSTOM);
+                    String contents = data_body.getString("event");
+                    EMCustomMessageBody customMessageBody = new EMCustomMessageBody(contents);
+                    JSONObject data = data_body.getJSONObject("params");
+                    Map<String, String> map =new HashMap<>();
+                    Iterator iterator = data.keys();
+                    while (iterator.hasNext()){
+                        String key = iterator.next().toString();
+                        map.put(key, data.getString(key));
+                    }
+                    customMessageBody.setParams(map);
+                    message.addBody(customMessageBody);
                     setCurrency(message,emChatType,data_to);
                     setExt(args,message);
                     break;
@@ -362,6 +379,12 @@ class EMHelper {
             body.put("thumbnailUrl", videoMessageBody.getThumbnailUrl());
             body.put("fileLength", videoMessageBody.getVideoFileLength());
 //            body.put("status", videoMessageBody.thumbnailDownloadStatus());
+        }else if(mb instanceof EMCustomMessageBody) {
+            EMCustomMessageBody customMessageBody = (EMCustomMessageBody)mb;
+            body.put("type", enumMessageTypeToInt(Type.CUSTOM));
+            // base EMFileMessageBody fields
+            body.put("event",customMessageBody.event());
+            body.put("params",customMessageBody.getParams());
         }
         return body;
     }
@@ -553,8 +576,10 @@ class EMHelper {
                 return 5;
             case CMD:
                 return 6;
+            case CUSTOM:
+                return 7;
             default:
-                return -1;
+                return 0;
         }
     }
     /**

@@ -86,4 +86,19 @@ main() {
     expect(image.localUrl, 'c:\image1.png');
     expect(image.sendOriginalImage, true);
   });
+
+
+  test('EMMessage.createCustomSendMessage() creates a Custom message', () {
+    EMMessage message =
+    EMMessage.createCustomSendMessage('event','user1');
+    expect(message.type, EMMessageType.CUSTOM);
+    expect(message.to, 'user1');
+    expect(message.direction, Direction.SEND);
+    var body = message.body;
+    expect(body.runtimeType, EMCustomMessageBody);
+    EMCustomMessageBody customMessageBody = body as EMCustomMessageBody;
+    expect(customMessageBody.event, 'event');
+    expect(customMessageBody.params, {"params":"ceshi"});
+  });
+
 }

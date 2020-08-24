@@ -535,7 +535,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       print('-----------MessageStatus---------->' + message.status.toString());
     });
     _onConversationInit();
-    new EMCallOptions(isSendPushIfOffline: true);
+
   }
 
   @override
