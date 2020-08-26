@@ -578,6 +578,8 @@ fromType(int type) {
       return EMMessageType.FILE;
     case 6:
       return EMMessageType.CMD;
+    case 8:
+      return EMMessageType.CUSTOM;
   }
 }
 
@@ -598,7 +600,7 @@ toType(EMMessageType type) {
   } else if (type == EMMessageType.CMD) {
     return 6;
   }else if (type == EMMessageType.CUSTOM) {
-    return 7;
+    return 8;
   }
 }
 
@@ -727,7 +729,7 @@ abstract class EMMessageBody {
         return EMNormalFileMessageBody.fromData(data);
       case 6:
         return EMCmdMessageBody.fromData(data);
-      case 7:
+      case 8:
         return EMCustomMessageBody.fromData(data);
       default:
         return null;
