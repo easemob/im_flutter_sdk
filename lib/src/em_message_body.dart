@@ -421,20 +421,20 @@ class EMCustomMessageBody extends EMMessageBody {
 
   @override
   /// @nodoc
-  String toString() => '[EMCustomMessageBody], {event: $event}';
+  String toString() => '[EMCustomMessageBody], {event: $event } ,{ params: $params}';
 
-  Map<String,String> getParams(){
+  Map getParams(){
     return params;
   }
 
-  void setParams(Map<String,String> params){
-    params = params;
+  void setParams(Map params){
+    this.params = params;
   }
 
   @override
   /// @nodoc
   Map toDataMap() {
-    var result = Map<String, dynamic>();
+    var result = Map();
     result['event'] = event;
     result['params'] = params;
     return result;
@@ -442,6 +442,8 @@ class EMCustomMessageBody extends EMMessageBody {
 
   /// @nodoc
   static EMMessageBody fromData(Map data) {
-    return EMCustomMessageBody(data['message']);
+    var message = new EMCustomMessageBody(data['event']);
+    message.setParams(data['params']);
+    return message;
   }
 }
