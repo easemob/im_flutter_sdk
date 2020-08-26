@@ -141,7 +141,7 @@ class EMHelper {
                     setCurrency(message,emChatType,data_to);
                     setExt(args,message);
                     break;
-                case 7:
+                case 8:
                     message = EMMessage.createSendMessage(Type.CUSTOM);
                     String contents = data_body.getString("event");
                     EMCustomMessageBody customMessageBody = new EMCustomMessageBody(contents);
@@ -382,7 +382,6 @@ class EMHelper {
         }else if(mb instanceof EMCustomMessageBody) {
             EMCustomMessageBody customMessageBody = (EMCustomMessageBody)mb;
             body.put("type", enumMessageTypeToInt(Type.CUSTOM));
-            // base EMFileMessageBody fields
             body.put("event",customMessageBody.event());
             body.put("params",customMessageBody.getParams());
         }
@@ -550,8 +549,10 @@ class EMHelper {
                 return 5;
             case CMD:
                 return 6;
+            case CUSTOM:
+                return 8;
             default:
-                return -1;
+                return 0;
         }
     }
 
@@ -577,7 +578,7 @@ class EMHelper {
             case CMD:
                 return 6;
             case CUSTOM:
-                return 7;
+                return 8;
             default:
                 return 0;
         }
@@ -709,6 +710,9 @@ class EMHelper {
         if(type == Type.CMD){
             return 6;
         }
+        if(type == Type.CUSTOM){
+            return 8;
+        }
         return 0;
     }
 
@@ -734,6 +738,9 @@ class EMHelper {
         }
         if(type == 6){
             return Type.CMD;
+        }
+        if(type == 8){
+            return Type.CUSTOM;
         }
         return Type.TXT;
     }

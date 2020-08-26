@@ -12,7 +12,7 @@ class MessageItemFactory extends StatelessWidget {
   Widget textMessageItem() {
     EMTextMessageBody msg = message.body;
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: EdgeInsets.all(2),
       child: Text(msg.message,style: TextStyle(fontSize: 13),),
     );
   }
@@ -66,8 +66,10 @@ class MessageItemFactory extends StatelessWidget {
       return textMessageItem();
     } else if (message.body is EMImageMessageBody){
       return imageMessageItem();
-    }  else {
-      return Text("无法识别消息 ");
+    } else if (message.body is EMCustomMessageBody){
+      return Text("自定义消息 " ,style: TextStyle(fontSize: 13));
+    } else {
+      return Text("无法识别消息 ",style: TextStyle(fontSize: 13));
     }
   }
 
@@ -82,6 +84,7 @@ class MessageItemFactory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: EdgeInsets.all(5),
       color: _getMessageWidgetBGColor(toDirect(message.direction)),
       child: messageItem(),
     );
