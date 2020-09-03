@@ -169,8 +169,8 @@ public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
                         public void run() {
                             result.success(data);
                         }});
-                }catch (JSONException e){
-                    EMLog.e("JSONException", e.getMessage());
+                }catch (JSONException | HyphenateException e){
+                    EMLog.e("updatePushNickname", e.getMessage());
                 }
             }
         }).start();

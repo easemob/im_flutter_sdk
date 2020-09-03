@@ -18,11 +18,11 @@ A new flutter plugin project.
 
 
   s.dependency 'Flutter'
-  s.dependency 'Hyphenate','~>3.6.5'
+  s.dependency 'Hyphenate','~>3.7.0'
   s.dependency 'Masonry'
   s.dependency 'MBProgressHUD','~>1.1.0'
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '9.3'
 
 end
 

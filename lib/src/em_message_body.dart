@@ -1,4 +1,6 @@
 import "dart:io";
+import 'package:flutter/cupertino.dart';
+
 import 'em_domain_terms.dart';
 
 /// EMMessageBody class hierarchy.
@@ -414,22 +416,14 @@ class EMVideoMessageBody extends EMFileMessageBody {
 
 class EMCustomMessageBody extends EMMessageBody {
   /// 初始化方法，[message]: 消息内容
-  EMCustomMessageBody(String event) : this.event = event;
-  final String event;
+  EMCustomMessageBody({@required this.event, this.params});
 
+  String event;
   Map params;
 
   @override
   /// @nodoc
   String toString() => '[EMCustomMessageBody], {event: $event } ,{ params: $params}';
-
-  Map getParams(){
-    return params;
-  }
-
-  void setParams(Map params){
-    this.params = params;
-  }
 
   @override
   /// @nodoc
@@ -442,8 +436,7 @@ class EMCustomMessageBody extends EMMessageBody {
 
   /// @nodoc
   static EMMessageBody fromData(Map data) {
-    var message = new EMCustomMessageBody(data['event']);
-    message.setParams(data['params']);
+    var message = new EMCustomMessageBody(event: data['event'], params: data['params']);
     return message;
   }
 }

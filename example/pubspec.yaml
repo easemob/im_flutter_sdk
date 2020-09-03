@@ -20,8 +20,8 @@ dependencies:
   oktoast: ^2.2.0
   cached_network_image: 2.0.0
 #  audio_recorder: ^1.0.1
-  flutter_sound: ^1.4.2
-  image_picker: ^0.4.12+1
+  flutter_sound: ^4.0.0
+  image_picker: ^0.6.7+7
   device_info : ^0.2.0
 
 dev_dependencies:

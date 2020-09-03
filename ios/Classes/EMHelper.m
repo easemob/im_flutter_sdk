@@ -101,14 +101,14 @@
     
     NSDictionary *msgBodyDict = aDictionary[@"body"];
     switch (type) {
-        case 0:
+        case EMMessageBodyTypeText:
         {
             NSString *content = msgBodyDict[@"message"];
             body = [[EMTextMessageBody alloc] initWithText:content];
             
         }
             break;
-        case 1:
+        case EMMessageBodyTypeImage:
         {
             // TODO: size ?
             NSString *localUrl = msgBodyDict[@"localUrl"];
@@ -118,7 +118,7 @@
             ((EMImageMessageBody *)body).fileLength = fileLength;
         }
             break;
-        case 2:
+        case EMMessageBodyTypeVideo:
         {
             NSString *localUrl = msgBodyDict[@"localUrl"];
             int videoDuration = [msgBodyDict[@"videoDuration"] intValue];
@@ -129,7 +129,7 @@
             ((EMVideoMessageBody *)body).duration = videoDuration;
         }
             break;
-        case 3:
+        case EMMessageBodyTypeLocation:
         {
             NSString *address = msgBodyDict[@"address"];
             double latitude = [msgBodyDict[@"latitude"] doubleValue];
@@ -139,7 +139,7 @@
                                                            address:address];
         }
             break;
-        case 4:
+        case EMMessageBodyTypeVoice:
         {
             NSString *localUrl = msgBodyDict[@"localUrl"];
             int voiceDuration = [msgBodyDict[@"voiceDuration"] intValue];
@@ -149,7 +149,7 @@
             ((EMVoiceMessageBody *)body).fileLength = fileLength;
         }
             break;
-        case 5:
+        case EMMessageBodyTypeFile:
         {
             NSString *localUrl = msgBodyDict[@"localUrl"];
             long long fileLength = [msgBodyDict[@"fileLength"] longLongValue];
@@ -157,10 +157,17 @@
             ((EMFileMessageBody *)body).fileLength = fileLength;
         }
             break;
-        case 6:
+        case EMMessageBodyTypeCmd:
         {
             NSString *action = msgBodyDict[@"action"];
             body = [[EMCmdMessageBody alloc] initWithAction:action];
+        }
+            break;
+        case EMMessageBodyTypeCustom:
+        {
+            NSString *event = msgBodyDict[@"event"];
+            NSDictionary *params = msgBodyDict[@"params"];
+            body = [[EMCustomMessageBody alloc] initWithEvent:event ext:params];
         }
             break;
             
@@ -289,7 +296,12 @@
             ret[@"isDeliverOnlineOnly"] = @(((EMCmdMessageBody *)aBody).isDeliverOnlineOnly);
         }
             break;
-            
+        case EMMessageBodyTypeCustom:
+        {
+            ret[@"event"] = ((EMCustomMessageBody *)aBody).event;
+            ret[@"params"] = ((EMCustomMessageBody *)aBody).ext;
+        }
+            break;
         default:
             break;
     }
@@ -578,19 +590,19 @@
 
 #pragma mark - CallConference
 + (NSDictionary *)callConferenceToDictionary:(EMCallConference *)aCall {
-    NSMutableDictionary *callConferenceDitc = [NSMutableDictionary dictionary];
+    NSMutableDictionary *callConferenceDict = [NSMutableDictionary dictionary];
         
     if (aCall.confId) {
-        callConferenceDitc[@"conferenceId"] = aCall.confId;
+        callConferenceDict[@"conferenceId"] = aCall.confId;
     }
-    callConferenceDitc[@"password"] = @"";
+    callConferenceDict[@"password"] = @"";
     
     EMConferenceType conferenceType = aCall.type;
     int cType;
     if (conferenceType == EMConferenceTypeCommunication) {
         cType = 10;
     }
-    callConferenceDitc[@"conferenceType"] = [NSNumber numberWithInt:cType];
+    callConferenceDict[@"conferenceType"] = [NSNumber numberWithInt:cType];
     
     EMConferenceRole conferenceRoleType = aCall.role;
     int roleType;
@@ -603,27 +615,27 @@
     } else {
         roleType = 7;
     }
-    callConferenceDitc[@"conferenceRole"] = [NSNumber numberWithInt:roleType];
+    callConferenceDict[@"conferenceRole"] = [NSNumber numberWithInt:roleType];
     
     if (aCall.memberCount) {
-        callConferenceDitc[@"memberNum"] = @(aCall.memberCount);
+        callConferenceDict[@"memberNum"] = @(aCall.memberCount);
     }
     
     if (aCall.adminIds) {
-        callConferenceDitc[@"admins"] = aCall.adminIds;
+        callConferenceDict[@"admins"] = aCall.adminIds;
     } else {
-        callConferenceDitc[@"admins"] = [NSArray array];
+        callConferenceDict[@"admins"] = [NSArray array];
     }
   
     if (aCall.speakerIds) {
-        callConferenceDitc[@"speakers"] = aCall.speakerIds;
+        callConferenceDict[@"speakers"] = aCall.speakerIds;
     } else {
-        callConferenceDitc[@"speakers"] = [NSArray array];
+        callConferenceDict[@"speakers"] = [NSArray array];
     }
     
-    callConferenceDitc[@"isRecordOnServer"] = [NSNumber numberWithBool:aCall.willRecord];
+    callConferenceDict[@"isRecordOnServer"] = [NSNumber numberWithBool:aCall.willRecord];
     
-    return callConferenceDitc;
+    return callConferenceDict;
 }
 
 #pragma mark - PushOptions
@@ -679,25 +691,28 @@
     EMMessageBodyType type = aMessage.body.type;
     switch (type) {
         case EMMessageBodyTypeText:
-            ret = 0;
-            break;
-        case EMMessageBodyTypeImage:
             ret = 1;
             break;
-        case EMMessageBodyTypeVideo:
+        case EMMessageBodyTypeImage:
             ret = 2;
             break;
-        case EMMessageBodyTypeLocation:
+        case EMMessageBodyTypeVideo:
             ret = 3;
             break;
-        case EMMessageBodyTypeVoice:
+        case EMMessageBodyTypeLocation:
             ret = 4;
             break;
-        case EMMessageBodyTypeFile:
+        case EMMessageBodyTypeVoice:
             ret = 5;
             break;
-        case EMMessageBodyTypeCmd:
+        case EMMessageBodyTypeFile:
             ret = 6;
+            break;
+        case EMMessageBodyTypeCmd:
+            ret = 7;
+            break;
+        case EMMessageBodyTypeCustom:
+            ret = 8;
             break;
         default:
             break;
@@ -739,37 +754,42 @@
     switch (aType) {
         case EMMessageBodyTypeText:
         {
-            ret = 0;
+            ret = 1;
         }
             break;
         case EMMessageBodyTypeImage:
         {
-            ret = 1;
+            ret = 2;
         }
             break;
         case EMMessageBodyTypeVideo:
         {
-            ret = 2;
+            ret = 3;
         }
             break;
         case EMMessageBodyTypeLocation:
         {
-            ret = 3;
+            ret = 4;
         }
             break;
         case EMMessageBodyTypeVoice:
         {
-            ret = 4;
+            ret = 5;
         }
             break;
         case EMMessageBodyTypeFile:
         {
-            ret = 5;
+            ret = 6;
         }
             break;
         case EMMessageBodyTypeCmd:
         {
-            ret = 6;
+            ret = 7;
+        }
+            break;
+        case EMMessageBodyTypeCustom:
+        {
+            ret = 8;
         }
             break;
         default:

@@ -361,71 +361,73 @@ class EMMessage {
         localTime = currentTimeMillis();
 
   /// 用于创建各种消息的构造函数 - 发送方。
-  EMMessage.createSendMessage(EMMessageType type)
-      : this(type: type, direction: Direction.SEND);
+  EMMessage.createSendMessage(EMMessageType type) : this (
+      type: type,
+      direction: Direction.SEND
+  );
 
   /// 用于创建各种消息的构造函数 - 接收方。
-  EMMessage.createReceiveMessage(EMMessageType type)
-      : this(type: type, direction: Direction.RECEIVE);
+  EMMessage.createReceiveMessage(EMMessageType type) : this (
+      type: type,
+      direction: Direction.RECEIVE
+  );
 
   /// 创建文本类型消息 [content]: 消息内容; [userName]: 接收方id
-  EMMessage.createTxtSendMessage(String content, String userName)
-      : this(
-            direction: Direction.SEND,
-            to: userName,
-            type: EMMessageType.TXT,
-            body: EMTextMessageBody(content));
+  EMMessage.createTxtSendMessage({@required String userName, String content = ""}) : this (
+      direction: Direction.SEND,
+      to: userName,
+      type: EMMessageType.TXT,
+      body: EMTextMessageBody(content)
+  );
 
   /// 创建语音类型消息 [filePath]: 语音片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
-  EMMessage.createVoiceSendMessage(
-      String filePath, int timeLength, String userName)
-      : this(direction: Direction.SEND,
+  /// String filePath, int timeLength, String userName)
+  EMMessage.createVoiceSendMessage({@required String userName, @required String filePath, int timeLength = 0}) : this (
+      direction: Direction.SEND,
       type: EMMessageType.VOICE,
       body:EMVoiceMessageBody(File(filePath),timeLength),
-      to:userName);
+      to:userName
+  );
 
   /// 创建图片类型消息 [filePath]: 图片路径; [sendOriginalImage]: 是否发送原图; [userName]: 接收方id.
-  EMMessage.createImageSendMessage(
-      String filePath, bool sendOriginalImage, String userName)
-      : this(
-            direction: Direction.SEND,
-            type: EMMessageType.IMAGE,
-            body: EMImageMessageBody(File(filePath), sendOriginalImage),
-            to: userName);
+  EMMessage.createImageSendMessage({@required String userName, @required String filePath, bool sendOriginalImage = false}) : this (
+      direction: Direction.SEND,
+      type: EMMessageType.IMAGE,
+      body: EMImageMessageBody(File(filePath), sendOriginalImage),
+      to: userName
+  );
 
   /// 创建视频类型消息 [filePath]: 视频片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
-  EMMessage.createVideoSendMessage(
-      String filePath, int timeLength, String userName)
-      : this(
-            direction: Direction.SEND,
-            type: EMMessageType.VIDEO,
-            body: EMVideoMessageBody(File(filePath), timeLength),
-            to: userName);
+  EMMessage.createVideoSendMessage({@required String userName, @required String filePath, int timeLength = 0}) : this (
+      direction: Direction.SEND,
+      type: EMMessageType.VIDEO,
+      body: EMVideoMessageBody(File(filePath), timeLength),
+      to: userName
+  );
 
   /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
-  EMMessage.createLocationSendMessage(double latitude, double longitude,
-      String locationAddress, String userName)
-      : this(
-            direction: Direction.SEND,
-            type: EMMessageType.LOCATION,
-            body: EMLocationMessageBody(locationAddress, latitude, longitude),
-            to: userName);
+  EMMessage.createLocationSendMessage({@required String userName, double latitude, double longitude, String locationAddress}) : this (
+      direction: Direction.SEND,
+      type: EMMessageType.LOCATION,
+      body: EMLocationMessageBody(locationAddress, latitude, longitude),
+      to: userName
+  );
 
   /// 创建文件类型消息 [filePath]: 文件路径; [userName]: 接收方id
-  EMMessage.createFileSendMessage(String filePath, String userName)
-      : this(
-            direction: Direction.SEND,
-            type: EMMessageType.FILE,
-            body: EMNormalFileMessageBody(File(filePath)),
-            to: userName);
+  EMMessage.createFileSendMessage({@required String userName, @required String filePath}) : this (
+      direction: Direction.SEND,
+      type: EMMessageType.FILE,
+      body: EMNormalFileMessageBody(File(filePath)),
+      to: userName
+  );
 
   /// 创建自定义类型消息 [event]: 自定义event; [userName]: 接收方id
-  EMMessage.createCustomSendMessage(String event, String userName)
-      : this(
+  EMMessage.createCustomSendMessage({@required String userName, @required String event, Map params}) : this (
       direction: Direction.SEND,
       type: EMMessageType.CUSTOM,
-      body: EMCustomMessageBody(event),
-      to: userName);
+      body: EMCustomMessageBody(event: event, params: params),
+      to: userName
+  );
 
   /// @nodoc TODO:
   set isDeliverAcked(bool acked) {
@@ -564,19 +566,19 @@ class EMMessage {
 /// @nodoc 消息类型 int 类型数据转 EMMessageType
 fromType(int type) {
   switch (type) {
-    case 0:
-      return EMMessageType.TXT;
     case 1:
-      return EMMessageType.IMAGE;
+      return EMMessageType.TXT;
     case 2:
-      return EMMessageType.VIDEO;
+      return EMMessageType.IMAGE;
     case 3:
-      return EMMessageType.LOCATION;
+      return EMMessageType.VIDEO;
     case 4:
-      return EMMessageType.VOICE;
+      return EMMessageType.LOCATION;
     case 5:
-      return EMMessageType.FILE;
+      return EMMessageType.VOICE;
     case 6:
+      return EMMessageType.FILE;
+    case 7:
       return EMMessageType.CMD;
     case 8:
       return EMMessageType.CUSTOM;
@@ -586,19 +588,19 @@ fromType(int type) {
 /// @nodoc 消息类型 EMMessageType 类型数据转 int
 toType(EMMessageType type) {
   if (type == EMMessageType.TXT) {
-    return 0;
-  } else if (type == EMMessageType.IMAGE) {
     return 1;
-  } else if (type == EMMessageType.VIDEO) {
+  } else if (type == EMMessageType.IMAGE) {
     return 2;
-  } else if (type == EMMessageType.LOCATION) {
+  } else if (type == EMMessageType.VIDEO) {
     return 3;
-  } else if (type == EMMessageType.VOICE) {
+  } else if (type == EMMessageType.LOCATION) {
     return 4;
-  } else if (type == EMMessageType.FILE) {
+  } else if (type == EMMessageType.VOICE) {
     return 5;
-  } else if (type == EMMessageType.CMD) {
+  } else if (type == EMMessageType.FILE) {
     return 6;
+  } else if (type == EMMessageType.CMD) {
+    return 7;
   }else if (type == EMMessageType.CUSTOM) {
     return 8;
   }
@@ -715,19 +717,19 @@ abstract class EMMessageBody {
 
   static EMMessageBody from(Map data) {
     switch (data['type']) {
-      case 0:
-        return EMTextMessageBody.fromData(data);
       case 1:
-        return EMImageMessageBody.fromData(data);
+        return EMTextMessageBody.fromData(data);
       case 2:
-        return EMVideoMessageBody.fromData(data);
+        return EMImageMessageBody.fromData(data);
       case 3:
-        return EMLocationMessageBody.fromData(data);
+        return EMVideoMessageBody.fromData(data);
       case 4:
-        return EMVoiceMessageBody.fromData(data);
+        return EMLocationMessageBody.fromData(data);
       case 5:
-        return EMNormalFileMessageBody.fromData(data);
+        return EMVoiceMessageBody.fromData(data);
       case 6:
+        return EMNormalFileMessageBody.fromData(data);
+      case 7:
         return EMCmdMessageBody.fromData(data);
       case 8:
         return EMCustomMessageBody.fromData(data);
