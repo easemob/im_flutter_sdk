@@ -3,25 +3,25 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
-//        google()
-//        jcenter()
+        //google()
+        //jcenter()
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
+        classpath 'com.android.tools.build:gradle:3.5.3'
     }
 }
 
-rootProject.allprojects {
+allprojects {
     repositories {
-//        google()
-//        jcenter()
+        //google()
+        //jcenter()
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
     }
 }
 
@@ -55,5 +55,5 @@ dependencies {
     // Google firebase cloud messaging
     implementation 'com.google.android.gms:play-services-base:11.4.0'
     implementation 'com.google.firebase:firebase-messaging:11.4.0'
-    api 'com.hyphenate:hyphenate-sdk:3.6.7'
+    api 'com.hyphenate:hyphenate-sdk:3.7.1'
 }
