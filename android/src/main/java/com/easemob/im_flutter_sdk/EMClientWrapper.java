@@ -234,8 +234,8 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
                             result.success(data);
                         }
                     });
-                } catch (JSONException e) {
-                    EMLog.e("JSONException", e.getMessage());
+                } catch (JSONException | HyphenateException e) {
+                    EMLog.e("updatePushNickname", e.getMessage());
                 }
             }
         }).start();

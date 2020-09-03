@@ -141,7 +141,7 @@ class EMHelper {
                     setCurrency(message,emChatType,data_to);
                     setExt(args,message);
                     break;
-                case 8:
+                case 7:
                     message = EMMessage.createSendMessage(Type.CUSTOM);
                     String contents = data_body.getString("event");
                     EMCustomMessageBody customMessageBody = new EMCustomMessageBody(contents);
@@ -536,19 +536,19 @@ class EMHelper {
     static int getType(EMMessage message){
         switch (message.getType()){
             case TXT:
-                return 0;
-            case IMAGE:
                 return 1;
-            case VIDEO:
+            case IMAGE:
                 return 2;
-            case LOCATION:
+            case VIDEO:
                 return 3;
-            case VOICE:
+            case LOCATION:
                 return 4;
-            case FILE:
+            case VOICE:
                 return 5;
-            case CMD:
+            case FILE:
                 return 6;
+            case CMD:
+                return 7;
             case CUSTOM:
                 return 8;
             default:
@@ -564,19 +564,19 @@ class EMHelper {
     static int enumMessageTypeToInt(EMMessage.Type type) {
         switch (type) {
             case TXT:
-                return 0;
-            case IMAGE:
                 return 1;
-            case VIDEO:
+            case IMAGE:
                 return 2;
-            case LOCATION:
+            case VIDEO:
                 return 3;
-            case VOICE:
+            case LOCATION:
                 return 4;
-            case FILE:
+            case VOICE:
                 return 5;
-            case CMD:
+            case FILE:
                 return 6;
+            case CMD:
+                return 7;
             case CUSTOM:
                 return 8;
             default:
