@@ -4,6 +4,8 @@ class EMOptions {
 
   /// 环信 appkey
   String appKey = '';
+  bool autoLogin = true;
+  bool debugModel = false;
 
   bool acceptInvitationAlways = true;
   bool autoAcceptGroupInvitation = true;
@@ -11,8 +13,6 @@ class EMOptions {
   bool requireDeliveryAck = false;
   bool deleteMessagesAsExitGroup = true;
   bool isChatRoomOwnerLeaveAllowed = true;
-  bool autoLogin = true;
-
   bool sortMessageByServerTime = true;
 
   bool usingHttpsOnly = false;
@@ -27,9 +27,7 @@ class EMOptions {
   String imServer = '';
   int imPort = 0;
 
-  EMOptions();
-
-  EMOptions.initAppKey({
+  EMOptions({
     @required this.appKey
   });
 
@@ -49,6 +47,7 @@ class EMOptions {
     EMOptions options = EMOptions();
     options.appKey = json['appKey'];
     options.autoLogin = json['autoLogin'];
+    options.debugModel = json['debugModel'];
 
     options.requireAck = json['requireAck'];
     options.requireDeliveryAck = json['requireDeliveryAck'];
@@ -79,9 +78,10 @@ class EMOptions {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['appKey'] = this.appKey;
+    data['autoLogin'] = this.autoLogin;
+    data['debugModel'] = this.debugModel;
     data['acceptInvitationAlways'] = this.acceptInvitationAlways;
     data['autoAcceptGroupInvitation'] = this.autoAcceptGroupInvitation;
-    data['autoLogin'] = this.autoLogin;
     data['deleteMessagesAsExitGroup'] = this.deleteMessagesAsExitGroup;
     data['dnsUrl'] = this.dnsUrl;
     data['enableDNSConfig'] = this.enableDNSConfig;

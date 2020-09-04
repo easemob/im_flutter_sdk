@@ -158,12 +158,6 @@ class EMClient {
     });
   }
 
-  /// @nodoc 开启Debug模式 设置为在调试模式下运行
-  void setDebugMode(bool debugMode) {
-    _emClientChannel
-        .invokeMethod(EMSDKMethod.setDebugMode, {"debugMode": debugMode});
-  }
-
   /// 更新当前用户的nickname 此方法主要为了在苹果推送时能够推送nick而不是userid [nickName].
   Future<bool> updateCurrentUserNick(String nickName) async {
     Map<String, dynamic> result = await _emClientChannel.invokeMethod(

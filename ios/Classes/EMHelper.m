@@ -15,7 +15,7 @@
 {
     EMOptions *options = [EMOptions optionsWithAppkey:aDictionary[@"appKey"]];
     if (aDictionary[@"pushConfig"]) {
-        options.apnsCertName = aDictionary[@"pushConfig"][@"apnsSenderId"];
+        options.apnsCertName = aDictionary[@"pushConfig"][@"apnsCertName"];
     }
     if (aDictionary[@"acceptInvitationAlways"]) {
         options.isAutoAcceptFriendInvitation = [aDictionary[@"acceptInvitationAlways"] boolValue];
@@ -23,6 +23,10 @@
     
     if (aDictionary[@"autoAcceptGroupInvitation"]) {
         options.isAutoAcceptGroupInvitation = [aDictionary[@"autoAcceptGroupInvitation"] boolValue];
+    }
+
+    if (aDictionary[@"debugModel"]) {
+        options.enableConsoleLog = [aDictionary[@"debugModel"] boolValue];
     }
     
     if (aDictionary[@"requireDeliveryAck"]) {

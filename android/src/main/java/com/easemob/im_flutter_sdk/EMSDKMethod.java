@@ -9,7 +9,6 @@ public class EMSDKMethod {
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
     static final String isLoggedInBefore = "isLoggedInBefore";
-    static final String setDebugMode = "setDebugMode";
     static final String updateCurrentUserNick = "updateCurrentUserNick";
     static final String uploadLog = "uploadLog";
     static final String compressLogs = "compressLogs";

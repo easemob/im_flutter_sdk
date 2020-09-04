@@ -21,7 +21,6 @@ static NSString * const EMMethodKeyLoginWithToken = @"loginWithToken";
 static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
-static NSString * const EMMethodKeySetDebugMode = @"setDebugMode";
 static NSString * const EMMethodKeyUpdateCurrentUserNick = @"updateCurrentUserNick";
 static NSString * const EMMethodKeyUploadLog = @"uploadLog";
 static NSString * const EMMethodKeyCompressLogs = @"compressLogs";

@@ -32,18 +32,18 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
   void initState() {
 
-    EMOptions options = EMOptions.initAppKey(appKey: 'easemob-demo#chatdemoui');
+    EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
     EMPushConfig config = EMPushConfig();
     // 判断是否为debug模式
     if(kReleaseMode){
       config.enableAPNs(apnsCertName: "chatdemoui");
     }else {
       config.enableAPNs(apnsCertName: "chatdemoui_dev");
+      options.debugModel = true;
     }
     options.pushConfig = config;
     
     EMClient.getInstance().init(options);
-    EMClient.getInstance().setDebugMode(true);
     EMClient.getInstance().addConnectionListener(this);
 
     EMClient.getInstance().callManager().registerCallSharedManager();
