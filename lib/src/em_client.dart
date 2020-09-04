@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/em_push_manager.dart';
+import 'package:im_flutter_sdk/src/models/em_options.dart';
 
 import 'em_chat_manager.dart';
 import 'em_chatroom_manager.dart';
@@ -12,6 +13,8 @@ import 'em_call_manager.dart';
 import 'em_conference_manager.dart';
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
+
+import 'models/em_domain_terms.dart';
 
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
@@ -69,7 +72,7 @@ class EMClient {
   /// 初始化SDK 指定[options] .
   void init(EMOptions options) {
     _options = options;
-    _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
+    _emClientChannel.invokeMethod(EMSDKMethod.init, options.toJson());
   }
 
   /// 注册环信账号[userName]/[password].

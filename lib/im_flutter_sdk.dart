@@ -11,7 +11,7 @@ export 'src/em_call_manager.dart';
 export 'src/em_call_setup.dart';
 export 'src/em_conference_manager.dart';
 
-
+export 'src/models/em_domain_terms.dart';
 
 //EaseMob IM domain terms
 export 'src/em_domain_terms.dart';

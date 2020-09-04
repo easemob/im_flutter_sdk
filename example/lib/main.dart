@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,9 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/pages/chatgroup_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/chatroom_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/public_group_list_page.dart';
+
+
+
 import 'utils/localizations.dart';
 import 'pages/home_page.dart';
 import 'package:im_flutter_sdk_example/pages/login_page.dart';
@@ -27,11 +31,17 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
   void initState() {
-    //TODO: init sdk;
-    EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
-//    EMPushConfig config = new EMPushConfig();
-//    config.enableAPNS('证书名称');
-//    options.setPushConfig(config);
+
+    EMOptions options = EMOptions.initAppKey(appKey: 'easemob-demo#chatdemoui');
+    EMPushConfig config = EMPushConfig();
+    // 判断是否为debug模式
+    if(kReleaseMode){
+      config.enableAPNs(apnsCertName: "chatdemoui");
+    }else {
+      config.enableAPNs(apnsCertName: "chatdemoui_dev");
+    }
+    options.pushConfig = config;
+    
     EMClient.getInstance().init(options);
     EMClient.getInstance().setDebugMode(true);
     EMClient.getInstance().addConnectionListener(this);
