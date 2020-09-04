@@ -5,338 +5,340 @@ import 'package:flutter/cupertino.dart';
 import '../im_flutter_sdk.dart';
 import 'em_message_body.dart';
 
-/// 初始化SDK上下文的选项
-class EMOptions {
-  EMOptions({
-    @required this.appKey,
-  })  : _acceptInvitationAlways = true,
-        _autoAcceptGroupInvitation = true,
-        _requireAck = true,
-        _requireDeliveryAck = false,
-        _deleteMessagesAsExitGroup = true,
-        _isChatRoomOwnerLeaveAllowed = true,
-        _autoLogin = true,
-        _enableDNSConfig = true,
-        _sortMessageByServerTime = true,
-        _dnsUrl = '',
-        _restServer = '',
-        _imServer = '',
-        _imPort = 0,
-        _usingHttpsOnly = false,
-        _serverTransfer = true,
-        _isAutoDownload = true,
-        _pushConfig = EMPushConfig();
 
-  bool _acceptInvitationAlways;
-  bool _autoAcceptGroupInvitation;
-  bool _requireAck;
-  bool _requireDeliveryAck;
-  bool _deleteMessagesAsExitGroup;
-  bool _isChatRoomOwnerLeaveAllowed;
-
-  String appKey;
-  bool _autoLogin;
-  bool _enableDNSConfig;
-  bool _sortMessageByServerTime;
-  String _dnsUrl;
-  String _restServer;
-  String _imServer;
-  int _imPort;
-  bool _usingHttpsOnly;
-  bool _serverTransfer;
-  bool _isAutoDownload;
-  EMPushConfig _pushConfig;
-
-  /// 获取已读确认设置
-  bool getRequireAck() {
-    return _requireAck;
-  }
-
-  /// 设置是否需要接受方已读确认
-  void setRequireAck(bool requireAck) {
-    _requireAck = requireAck;
-  }
-
-  /// 获取送达确认设置
-  bool getRequireDeliveryAck() {
-    return _requireDeliveryAck;
-  }
-
-  /// 设置是否需要接受方送达确认,默认false
-  void setRequireDeliveryAck(bool requireDeliveryAck) {
-    _requireDeliveryAck = requireDeliveryAck;
-  }
-
-  /// 获取是否自动接受加好友邀请 默认true
-  bool getAcceptInvitationAlways() {
-    return _acceptInvitationAlways;
-  }
-
-  /// 设置是否自动接受加好友邀请 默认true
-  void setAcceptInvitationAlways(bool acceptInvitationAlways) {
-    _acceptInvitationAlways = acceptInvitationAlways;
-  }
-
-  /// 获取退出(主动和被动退出)群组时是否删除聊天消息
-  bool isDeleteMessagesAsExitGroup() {
-    return _deleteMessagesAsExitGroup;
-  }
-
-  /// 设置退出(主动和被动退出)群组时是否删除聊天消息
-  void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup) {
-    _deleteMessagesAsExitGroup = deleteMessagesAsExitGroup;
-  }
-
-  /// 获取是否自动接受加群邀请
-  bool isAutoAcceptGroupInvitation() {
-    return _autoAcceptGroupInvitation;
-  }
-
-  /// 设置是否自动接受加群邀请
-  void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation) {
-    _autoAcceptGroupInvitation = autoAcceptGroupInvitation;
-  }
-
-  /// 是否允许聊天室owner离开
-  bool isChatRoomOwnerLeaveAllowed() {
-    return _isChatRoomOwnerLeaveAllowed;
-  }
-
-  /// 设置是否允许聊天室owner离开并删除会话记录
-  void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed) {
-    _isChatRoomOwnerLeaveAllowed = isChatRoomOwnerLeaveAllowed;
-  }
-
-  /// 是否按照server收到时间进行排序
-  bool isSortMessageByServerTime() {
-    return _sortMessageByServerTime;
-  }
-
-  /// 设置server收到时间进行排序 默认是false
-  void setSortMessageByServerTime(bool sortMessageByServerTime) {
-    _sortMessageByServerTime = sortMessageByServerTime;
-  }
-
-  /// @nodoc 获取设置的im server
-  String getIMServer() {
-    return _imServer;
-  }
-
-  /// @nodoc 设置im server地址
-  void setIMServer(String imServer) {
-    _imServer = imServer;
-  }
-
-  /// @nodoc 获取设置的im server端口号
-  int getImPort() {
-    return _imPort;
-  }
-
-  /// @nodoc 设置 im server端口号
-  void setImPort(int imPort) {
-    _imPort = imPort;
-  }
-
-  /// @nodoc 获取设置的rest server
-  String getRestServer() {
-    return _restServer;
-  }
-
-  /// @nodoc 设置 rest server
-  void setRestServer(String restServer) {
-    _restServer = restServer;
-  }
-
-  /// 获取是否自动登录
-  bool getAutoLogin() {
-    return _autoLogin;
-  }
-
-  /// 设置是否自动登录
-  void setAutoLogin(bool autoLogin) {
-    _autoLogin = autoLogin;
-  }
-
-  /// @nodoc 获取是否使用DNSConfig
-  bool getEnableDNSConfig() {
-    return _enableDNSConfig;
-  }
-
-  /// @nodoc 是否使用DNSConfig
-  void enableDNSConfig(bool enableDNSConfig) {
-    _enableDNSConfig = enableDNSConfig;
-  }
-
-  /// @nodoc 获取是否使用https进行REST操作，默认值是false。
-  bool getUsingHttpsOnly() {
-    return _usingHttpsOnly;
-  }
-
-  /// @nodoc 只使用https进行REST操作，默认值是false。
-  void setUsingHttpsOnly(bool usingHttpsOnly) {
-    _usingHttpsOnly = usingHttpsOnly;
-  }
-
-  /// @nodoc 获取是否使用环信服务器进行上传下载，默认值是true。
-  bool getAutoTransferMessageAttachments() {
-    return _serverTransfer;
-  }
-
-  /// @nodoc 设置是否使用环信服务器进行上传下载
-  void setAutoTransferMessageAttachments(bool serverTransfer) {
-    _serverTransfer = serverTransfer;
-  }
-
-  /// @nodoc 是否自动下载缩略图，默认为true。
-  bool getAutoDownloadThumbnail() {
-    return _isAutoDownload;
-  }
-
-  /// @nodoc 设置是否自动下载缩略图
-  void setAutoDownloadThumbnail(bool isAutoDownload) {
-    _isAutoDownload = isAutoDownload;
-  }
-
-  /// @nodoc 获取DNSURL
-  String getDnsUrl() {
-    return _dnsUrl;
-  }
-
-  /// @nodoc 设置DNSURL
-  void setDnsUrl(String dnsUrl) {
-    _dnsUrl = dnsUrl;
-  }
-
-  /// @nodoc 获取推送配置
-  EMPushConfig getPushConfig() {
-    return _pushConfig;
-  }
-
-  /// @nodoc 设置推送配置
-  void setPushConfig(EMPushConfig pushConfig) {
-    _pushConfig = pushConfig;
-  }
-
-  /// @nodoc
-  Map convertToMap() {
-    var map = {};
-    map.putIfAbsent("acceptInvitationAlways", () => _acceptInvitationAlways);
-    map.putIfAbsent(
-        "autoAcceptGroupInvitation", () => _autoAcceptGroupInvitation);
-    map.putIfAbsent("requireAck", () => _requireAck);
-    map.putIfAbsent("requireDeliveryAck", () => _requireDeliveryAck);
-    map.putIfAbsent(
-        "deleteMessagesAsExitGroup", () => _deleteMessagesAsExitGroup);
-    map.putIfAbsent(
-        "isChatRoomOwnerLeaveAllowed", () => _isChatRoomOwnerLeaveAllowed);
-    map.putIfAbsent("appKey", () => appKey);
-    map.putIfAbsent("autoLogin", () => _autoLogin);
-    map.putIfAbsent("enableDNSConfig", () => _enableDNSConfig);
-    map.putIfAbsent("sortMessageByServerTime", () => _sortMessageByServerTime);
-    map.putIfAbsent("dnsUrl", () => _dnsUrl);
-    map.putIfAbsent("restServer", () => _restServer);
-    map.putIfAbsent("imServer", () => _imServer);
-    map.putIfAbsent("imPort", () => _imPort);
-    map.putIfAbsent("usingHttpsOnly", () => _usingHttpsOnly);
-    map.putIfAbsent("serverTransfer", () => _serverTransfer);
-    map.putIfAbsent("isAutoDownload", () => _isAutoDownload);
-    map.putIfAbsent("pushConfig", () => _pushConfig.convertToMap());
-    print(map);
-    return map;
-  }
-}
-
-class EMPushConfig {
-  EMPushConfig()
-      : _enableVivoPush = false,
-        _enableMeiZuPush = false,
-        _enableMiPush = false,
-        _enableOppoPush = false,
-        _enableHWPush = false,
-        _enableFCM = false,
-        _enableAPNS = false,
-        _miAppId = '',
-        _miAppKey = '',
-        _mzAppId = '',
-        _mzAppKey = '',
-        _oppoAppKey = '',
-        _oppoAppSecret = '',
-        _fcmSenderId = '',
-        _apnsSenderId = '';
-
-  bool _enableVivoPush;
-  bool _enableMeiZuPush;
-  bool _enableMiPush;
-  bool _enableOppoPush;
-  bool _enableHWPush;
-  bool _enableFCM;
-  bool _enableAPNS;
-  String _miAppId;
-  String _miAppKey;
-  String _mzAppId;
-  String _mzAppKey;
-  String _oppoAppKey;
-  String _oppoAppSecret;
-  String _fcmSenderId;
-  String _apnsSenderId;
-
-  void enableVivoPush() {
-    _enableVivoPush = true;
-  }
-
-  void enableMeiZuPush(String appId, String appKey) {
-    _enableMeiZuPush = true;
-    _mzAppId = appId;
-    _mzAppKey = appKey;
-  }
-
-  void enableMiPush(String appId, String appKey) {
-    _enableMiPush = true;
-    _miAppId = appId;
-    _miAppKey = appKey;
-  }
-
-  void enableOppoPush(String appKey, String appSecret) {
-    _enableOppoPush = true;
-    _oppoAppKey = appKey;
-    _oppoAppSecret = appSecret;
-  }
-
-  void enableHWPush() {
-    _enableHWPush = true;
-  }
-
-  void enableFCM(String senderId) {
-    _enableFCM = true;
-    _fcmSenderId = senderId;
-  }
-
-  void enableAPNS(String senderId) {
-    _enableAPNS = true;
-    _apnsSenderId = senderId;
-  }
-
-  /// @nodoc
-  Map convertToMap() {
-    var map = Map();
-    map.putIfAbsent("enableVivoPush", () => _enableVivoPush);
-    map.putIfAbsent("enableMeiZuPush", () => _enableMeiZuPush);
-    map.putIfAbsent("enableMiPush", () => _enableMiPush);
-    map.putIfAbsent("enableOppoPush", () => _enableOppoPush);
-    map.putIfAbsent("enableHWPush", () => _enableHWPush);
-    map.putIfAbsent("enableFCM", () => _enableFCM);
-    map.putIfAbsent("enableAPNS", () => _enableAPNS);
-    map.putIfAbsent("miAppId", () => _miAppId);
-    map.putIfAbsent("miAppKey", () => _miAppKey);
-    map.putIfAbsent("mzAppId", () => _mzAppId);
-    map.putIfAbsent("mzAppKey", () => _mzAppKey);
-    map.putIfAbsent("oppoAppKey", () => _oppoAppKey);
-    map.putIfAbsent("oppoAppSecret", () => _oppoAppSecret);
-    map.putIfAbsent("fcmSenderId", () => _fcmSenderId);
-    map.putIfAbsent("apnsSenderId", () => _apnsSenderId);
-    return map;
-  }
-}
+//
+///// 初始化SDK上下文的选项
+//class EMOptions {
+//  EMOptions({
+//    @required this.appKey,
+//  })  : _acceptInvitationAlways = true,
+//        _autoAcceptGroupInvitation = true,
+//        _requireAck = true,
+//        _requireDeliveryAck = false,
+//        _deleteMessagesAsExitGroup = true,
+//        _isChatRoomOwnerLeaveAllowed = true,
+//        _autoLogin = true,
+//        _enableDNSConfig = true,
+//        _sortMessageByServerTime = true,
+//        _dnsUrl = '',
+//        _restServer = '',
+//        _imServer = '',
+//        _imPort = 0,
+//        _usingHttpsOnly = false,
+//        _serverTransfer = true,
+//        _isAutoDownload = true,
+//        _pushConfig = EMPushConfig();
+//
+//  bool _acceptInvitationAlways;
+//  bool _autoAcceptGroupInvitation;
+//  bool _requireAck;
+//  bool _requireDeliveryAck;
+//  bool _deleteMessagesAsExitGroup;
+//  bool _isChatRoomOwnerLeaveAllowed;
+//
+//  String appKey;
+//  bool _autoLogin;
+//  bool _enableDNSConfig;
+//  bool _sortMessageByServerTime;
+//  String _dnsUrl;
+//  String _restServer;
+//  String _imServer;
+//  int _imPort;
+//  bool _usingHttpsOnly;
+//  bool _serverTransfer;
+//  bool _isAutoDownload;
+//  EMPushConfig _pushConfig;
+//
+//  /// 获取已读确认设置
+//  bool getRequireAck() {
+//    return _requireAck;
+//  }
+//
+//  /// 设置是否需要接受方已读确认
+//  void setRequireAck(bool requireAck) {
+//    _requireAck = requireAck;
+//  }
+//
+//  /// 获取送达确认设置
+//  bool getRequireDeliveryAck() {
+//    return _requireDeliveryAck;
+//  }
+//
+//  /// 设置是否需要接受方送达确认,默认false
+//  void setRequireDeliveryAck(bool requireDeliveryAck) {
+//    _requireDeliveryAck = requireDeliveryAck;
+//  }
+//
+//  /// 获取是否自动接受加好友邀请 默认true
+//  bool getAcceptInvitationAlways() {
+//    return _acceptInvitationAlways;
+//  }
+//
+//  /// 设置是否自动接受加好友邀请 默认true
+//  void setAcceptInvitationAlways(bool acceptInvitationAlways) {
+//    _acceptInvitationAlways = acceptInvitationAlways;
+//  }
+//
+//  /// 获取退出(主动和被动退出)群组时是否删除聊天消息
+//  bool isDeleteMessagesAsExitGroup() {
+//    return _deleteMessagesAsExitGroup;
+//  }
+//
+//  /// 设置退出(主动和被动退出)群组时是否删除聊天消息
+//  void setDeleteMessagesAsExitGroup(bool deleteMessagesAsExitGroup) {
+//    _deleteMessagesAsExitGroup = deleteMessagesAsExitGroup;
+//  }
+//
+//  /// 获取是否自动接受加群邀请
+//  bool isAutoAcceptGroupInvitation() {
+//    return _autoAcceptGroupInvitation;
+//  }
+//
+//  /// 设置是否自动接受加群邀请
+//  void setAutoAcceptGroupInvitation(bool autoAcceptGroupInvitation) {
+//    _autoAcceptGroupInvitation = autoAcceptGroupInvitation;
+//  }
+//
+//  /// 是否允许聊天室owner离开
+//  bool isChatRoomOwnerLeaveAllowed() {
+//    return _isChatRoomOwnerLeaveAllowed;
+//  }
+//
+//  /// 设置是否允许聊天室owner离开并删除会话记录
+//  void allowChatRoomOwnerLeave(bool isChatRoomOwnerLeaveAllowed) {
+//    _isChatRoomOwnerLeaveAllowed = isChatRoomOwnerLeaveAllowed;
+//  }
+//
+//  /// 是否按照server收到时间进行排序
+//  bool isSortMessageByServerTime() {
+//    return _sortMessageByServerTime;
+//  }
+//
+//  /// 设置server收到时间进行排序 默认是false
+//  void setSortMessageByServerTime(bool sortMessageByServerTime) {
+//    _sortMessageByServerTime = sortMessageByServerTime;
+//  }
+//
+//  /// @nodoc 获取设置的im server
+//  String getIMServer() {
+//    return _imServer;
+//  }
+//
+//  /// @nodoc 设置im server地址
+//  void setIMServer(String imServer) {
+//    _imServer = imServer;
+//  }
+//
+//  /// @nodoc 获取设置的im server端口号
+//  int getImPort() {
+//    return _imPort;
+//  }
+//
+//  /// @nodoc 设置 im server端口号
+//  void setImPort(int imPort) {
+//    _imPort = imPort;
+//  }
+//
+//  /// @nodoc 获取设置的rest server
+//  String getRestServer() {
+//    return _restServer;
+//  }
+//
+//  /// @nodoc 设置 rest server
+//  void setRestServer(String restServer) {
+//    _restServer = restServer;
+//  }
+//
+//  /// 获取是否自动登录
+//  bool getAutoLogin() {
+//    return _autoLogin;
+//  }
+//
+//  /// 设置是否自动登录
+//  void setAutoLogin(bool autoLogin) {
+//    _autoLogin = autoLogin;
+//  }
+//
+//  /// @nodoc 获取是否使用DNSConfig
+//  bool getEnableDNSConfig() {
+//    return _enableDNSConfig;
+//  }
+//
+//  /// @nodoc 是否使用DNSConfig
+//  void enableDNSConfig(bool enableDNSConfig) {
+//    _enableDNSConfig = enableDNSConfig;
+//  }
+//
+//  /// @nodoc 获取是否使用https进行REST操作，默认值是false。
+//  bool getUsingHttpsOnly() {
+//    return _usingHttpsOnly;
+//  }
+//
+//  /// @nodoc 只使用https进行REST操作，默认值是false。
+//  void setUsingHttpsOnly(bool usingHttpsOnly) {
+//    _usingHttpsOnly = usingHttpsOnly;
+//  }
+//
+//  /// @nodoc 获取是否使用环信服务器进行上传下载，默认值是true。
+//  bool getAutoTransferMessageAttachments() {
+//    return _serverTransfer;
+//  }
+//
+//  /// @nodoc 设置是否使用环信服务器进行上传下载
+//  void setAutoTransferMessageAttachments(bool serverTransfer) {
+//    _serverTransfer = serverTransfer;
+//  }
+//
+//  /// @nodoc 是否自动下载缩略图，默认为true。
+//  bool getAutoDownloadThumbnail() {
+//    return _isAutoDownload;
+//  }
+//
+//  /// @nodoc 设置是否自动下载缩略图
+//  void setAutoDownloadThumbnail(bool isAutoDownload) {
+//    _isAutoDownload = isAutoDownload;
+//  }
+//
+//  /// @nodoc 获取DNSURL
+//  String getDnsUrl() {
+//    return _dnsUrl;
+//  }
+//
+//  /// @nodoc 设置DNSURL
+//  void setDnsUrl(String dnsUrl) {
+//    _dnsUrl = dnsUrl;
+//  }
+//
+//  /// @nodoc 获取推送配置
+//  EMPushConfig getPushConfig() {
+//    return _pushConfig;
+//  }
+//
+//  /// @nodoc 设置推送配置
+//  void setPushConfig(EMPushConfig pushConfig) {
+//    _pushConfig = pushConfig;
+//  }
+//
+//  /// @nodoc
+//  Map convertToMap() {
+//    var map = {};
+//    map.putIfAbsent("acceptInvitationAlways", () => _acceptInvitationAlways);
+//    map.putIfAbsent(
+//        "autoAcceptGroupInvitation", () => _autoAcceptGroupInvitation);
+//    map.putIfAbsent("requireAck", () => _requireAck);
+//    map.putIfAbsent("requireDeliveryAck", () => _requireDeliveryAck);
+//    map.putIfAbsent(
+//        "deleteMessagesAsExitGroup", () => _deleteMessagesAsExitGroup);
+//    map.putIfAbsent(
+//        "isChatRoomOwnerLeaveAllowed", () => _isChatRoomOwnerLeaveAllowed);
+//    map.putIfAbsent("appKey", () => appKey);
+//    map.putIfAbsent("autoLogin", () => _autoLogin);
+//    map.putIfAbsent("enableDNSConfig", () => _enableDNSConfig);
+//    map.putIfAbsent("sortMessageByServerTime", () => _sortMessageByServerTime);
+//    map.putIfAbsent("dnsUrl", () => _dnsUrl);
+//    map.putIfAbsent("restServer", () => _restServer);
+//    map.putIfAbsent("imServer", () => _imServer);
+//    map.putIfAbsent("imPort", () => _imPort);
+//    map.putIfAbsent("usingHttpsOnly", () => _usingHttpsOnly);
+//    map.putIfAbsent("serverTransfer", () => _serverTransfer);
+//    map.putIfAbsent("isAutoDownload", () => _isAutoDownload);
+//    map.putIfAbsent("pushConfig", () => _pushConfig.convertToMap());
+//    print(map);
+//    return map;
+//  }
+//}
+//
+//class EMPushConfig {
+//  EMPushConfig()
+//      : _enableVivoPush = false,
+//        _enableMeiZuPush = false,
+//        _enableMiPush = false,
+//        _enableOppoPush = false,
+//        _enableHWPush = false,
+//        _enableFCM = false,
+//        _enableAPNS = false,
+//        _miAppId = '',
+//        _miAppKey = '',
+//        _mzAppId = '',
+//        _mzAppKey = '',
+//        _oppoAppKey = '',
+//        _oppoAppSecret = '',
+//        _fcmSenderId = '',
+//        _apnsSenderId = '';
+//
+//  bool _enableVivoPush;
+//  bool _enableMeiZuPush;
+//  bool _enableMiPush;
+//  bool _enableOppoPush;
+//  bool _enableHWPush;
+//  bool _enableFCM;
+//  bool _enableAPNS;
+//  String _miAppId;
+//  String _miAppKey;
+//  String _mzAppId;
+//  String _mzAppKey;
+//  String _oppoAppKey;
+//  String _oppoAppSecret;
+//  String _fcmSenderId;
+//  String _apnsSenderId;
+//
+//  void enableVivoPush() {
+//    _enableVivoPush = true;
+//  }
+//
+//  void enableMeiZuPush(String appId, String appKey) {
+//    _enableMeiZuPush = true;
+//    _mzAppId = appId;
+//    _mzAppKey = appKey;
+//  }
+//
+//  void enableMiPush(String appId, String appKey) {
+//    _enableMiPush = true;
+//    _miAppId = appId;
+//    _miAppKey = appKey;
+//  }
+//
+//  void enableOppoPush(String appKey, String appSecret) {
+//    _enableOppoPush = true;
+//    _oppoAppKey = appKey;
+//    _oppoAppSecret = appSecret;
+//  }
+//
+//  void enableHWPush() {
+//    _enableHWPush = true;
+//  }
+//
+//  void enableFCM(String senderId) {
+//    _enableFCM = true;
+//    _fcmSenderId = senderId;
+//  }
+//
+//  void enableAPNS(String senderId) {
+//    _enableAPNS = true;
+//    _apnsSenderId = senderId;
+//  }
+//
+//  /// @nodoc
+//  Map convertToMap() {
+//    var map = Map();
+//    map.putIfAbsent("enableVivoPush", () => _enableVivoPush);
+//    map.putIfAbsent("enableMeiZuPush", () => _enableMeiZuPush);
+//    map.putIfAbsent("enableMiPush", () => _enableMiPush);
+//    map.putIfAbsent("enableOppoPush", () => _enableOppoPush);
+//    map.putIfAbsent("enableHWPush", () => _enableHWPush);
+//    map.putIfAbsent("enableFCM", () => _enableFCM);
+//    map.putIfAbsent("enableAPNS", () => _enableAPNS);
+//    map.putIfAbsent("miAppId", () => _miAppId);
+//    map.putIfAbsent("miAppKey", () => _miAppKey);
+//    map.putIfAbsent("mzAppId", () => _mzAppId);
+//    map.putIfAbsent("mzAppKey", () => _mzAppKey);
+//    map.putIfAbsent("oppoAppKey", () => _oppoAppKey);
+//    map.putIfAbsent("oppoAppSecret", () => _oppoAppSecret);
+//    map.putIfAbsent("fcmSenderId", () => _fcmSenderId);
+//    map.putIfAbsent("apnsSenderId", () => _apnsSenderId);
+//    return map;
+//  }
+//}
 
 /// EMMessage - various types of message
 class EMMessage {
