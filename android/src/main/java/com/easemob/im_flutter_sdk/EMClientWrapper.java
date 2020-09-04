@@ -53,8 +53,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
             logout(call.arguments, result);
         } else if (EMSDKMethod.changeAppKey.equals(call.method)) {
             changeAppKey(call.arguments, result);
-        } else if (EMSDKMethod.setDebugMode.equals(call.method)) {
-            setDebugMode(call.arguments, result);
         } else if (EMSDKMethod.updateCurrentUserNick.equals(call.method)) {
             updateCurrentUserNick(call.arguments, result);
         } else if (EMSDKMethod.uploadLog.equals(call.method)) {
@@ -76,10 +74,17 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
 
     private void init(Object args, Result result) {
         JSONObject argMap = (JSONObject) args;
-        EMLog.e("init:", argMap.toString());
         EMOptions options = EMHelper.convertStringMapToEMOptions(argMap, context);
         EMClient client = EMClient.getInstance();
         client.init(context, options);
+
+        try {
+            boolean debugModel = argMap.getBoolean("debugModel");
+            client.setDebugMode(debugModel);
+        }catch (JSONException e) {
+
+        }
+
         //setup connection listener
         client.addConnectionListener(new EMConnectionListener() {
             @Override
@@ -202,16 +207,6 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
             } catch (HyphenateException e) {
                 onError(result, e);
             }
-        } catch (JSONException e) {
-            EMLog.e("JSONException", e.getMessage());
-        }
-    }
-
-    private void setDebugMode(Object args, Result result) {
-        try {
-            JSONObject argMap = (JSONObject) args;
-            Boolean debugMode = argMap.getBoolean("debugMode");
-            EMClient.getInstance().setDebugMode(debugMode);
         } catch (JSONException e) {
             EMLog.e("JSONException", e.getMessage());
         }

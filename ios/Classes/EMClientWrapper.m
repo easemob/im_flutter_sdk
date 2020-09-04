@@ -51,8 +51,6 @@
         [self logout:call.arguments result:result];
     } else if ([EMMethodKeyChangeAppKey isEqualToString:call.method]) {
         [self changeAppKey:call.arguments result:result];
-    } else if ([EMMethodKeySetDebugMode isEqualToString:call.method]) {
-        [self setDebugMode:call.arguments result:result];
     } else if ([EMMethodKeyUpdateCurrentUserNick isEqualToString:call.method]) {
         [self updateCurrentUserNick:call.arguments result:result];
     } else if ([EMMethodKeyUploadLog isEqualToString:call.method]) {
@@ -77,7 +75,6 @@
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param result:(FlutterResult)result {
     EMOptions *options = [EMHelper dictionaryToEMOptions:param];
-    options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
@@ -172,12 +169,6 @@
                  userInfo:nil];
 }
 
-// ios sdk 不支持这个实现
-- (void)setDebugMode:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                 userInfo:nil];
-}
 
 - (void)getCurrentUser:(NSDictionary *)param result:(FlutterResult)result {
     NSString *username = EMClient.sharedClient.currentUsername;

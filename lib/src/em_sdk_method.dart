@@ -7,7 +7,6 @@ class EMSDKMethod {
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
   static const String isLoggedInBefore = 'isLoggedInBefore';
-  static const String setDebugMode = 'setDebugMode';
   static const String updateCurrentUserNick = 'updateCurrentUserNick';
   static const String uploadLog = 'uploadLog';
   static const String compressLogs = 'compressLogs';
