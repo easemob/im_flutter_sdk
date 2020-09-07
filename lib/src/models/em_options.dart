@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 class EMOptions {
 
-  /// 环信 appkey
+  /// 环信 appKey
   String appKey = '';
   bool autoLogin = true;
   bool debugModel = false;
