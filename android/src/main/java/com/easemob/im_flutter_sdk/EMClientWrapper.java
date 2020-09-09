@@ -76,7 +76,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
 
     private void init(Object args, Result result) {
         JSONObject argMap = (JSONObject) args;
-        EMLog.e("init:", argMap.toString());
+//        EMLog.e("init:", argMap.toString());
         EMOptions options = EMHelper.convertStringMapToEMOptions(argMap, context);
         EMClient client = EMClient.getInstance();
         client.init(context, options);
