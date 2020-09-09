@@ -208,23 +208,20 @@ class EMMessage {
     return data;
   }
 
-  static EMMessage fromJson(Map <String, dynamic> map) {
-    EMMessage message = EMMessage();
-    message.to = map['to'];
-    message.from = map['from'];
-    message.body = EMMessage._bodyFromMap(map['body']);
-    message.attributes = map['attributes'];
-    message.direction = map['direction'] == 'send' ? EMMessageDirection.SEND : EMMessageDirection.RECEIVE;
-    message.hasReadAck = map['hasReadAck'];
-    message.hasDeliverAck = map['hasDeliverAck'];
-    message.msgId = map['msgId'];
-    message.conversationId = map['conversationId'];
-    message.chatType = EMMessage._chatTypeFromInt(map['chatType']);
-    message.localTime = map['localTime'];
-    message.serverTime = map['serverTime'];
-    message.status = EMMessage._chatStatusFromInt(map['status']);
-
-    return message;
+  factory EMMessage.fromJson(Map <String, dynamic> map) {
+    return EMMessage()..to = map['to']
+      ..from = map['from']
+      ..body = EMMessage._bodyFromMap(map['body'])
+      ..attributes = map['attributes']
+      ..direction = map['direction'] == 'send' ? EMMessageDirection.SEND : EMMessageDirection.RECEIVE
+      ..hasReadAck = map['hasReadAck']
+      ..hasDeliverAck = map['hasDeliverAck']
+      ..msgId = map['msgId']
+      ..conversationId = map['conversationId']
+      ..chatType = EMMessage._chatTypeFromInt(map['chatType'])
+      ..localTime = map['localTime']
+      ..serverTime = map['serverTime']
+      ..status = EMMessage._chatStatusFromInt(map['status']);
   }
 
   static int _chatTypeToInt(EMMessageChatType type) {
