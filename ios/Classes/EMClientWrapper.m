@@ -75,6 +75,7 @@
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param result:(FlutterResult)result {
     EMOptions *options = [EMHelper dictionaryToEMOptions:param];
+    options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
