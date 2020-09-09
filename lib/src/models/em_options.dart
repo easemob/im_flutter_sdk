@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class EMOptions {
 
@@ -44,35 +44,25 @@ class EMOptions {
 
   factory EMOptions.fromJson(Map<String, dynamic> json) {
 
-    EMOptions options = EMOptions();
-    options.appKey = json['appKey'];
-    options.autoLogin = json['autoLogin'];
-    options.debugModel = json['debugModel'];
-
-    options.requireAck = json['requireAck'];
-    options.requireDeliveryAck = json['requireDeliveryAck'];
-    options.sortMessageByServerTime = json['sortMessageByServerTime'];
-
-    options.acceptInvitationAlways = json['acceptInvitationAlways'];
-    options.autoAcceptGroupInvitation = json['autoAcceptGroupInvitation'];
-    options.deleteMessagesAsExitGroup = json['deleteMessagesAsExitGroup'];
-
-    options.isAutoDownload = json['isAutoDownload'];
-    options.isChatRoomOwnerLeaveAllowed = json['isChatRoomOwnerLeaveAllowed'];
-
-    options.serverTransfer = json['serverTransfer'];
-
-    options.usingHttpsOnly = json['usingHttpsOnly'];
-
-    options.pushConfig = json['pushConfig'] != null ? EMPushConfig.fromJson(json['pushConfig']) : null;
-
-    options.enableDNSConfig = json['enableDNSConfig'];
-    options.imPort = json['imPort'];
-    options.imServer = json['imServer'];
-    options.restServer = json['restServer'];
-    options.dnsUrl = json['dnsUrl'];
-
-    return options;
+    return EMOptions(appKey: json['appKey'])
+      ..autoLogin = json['autoLogin']
+      ..debugModel = json['debugModel']
+      ..requireAck = json['requireAck']
+      ..requireDeliveryAck = json['requireDeliveryAck']
+      ..sortMessageByServerTime = json['sortMessageByServerTime']
+      ..acceptInvitationAlways = json['acceptInvitationAlways']
+      ..autoAcceptGroupInvitation = json['autoAcceptGroupInvitation']
+      ..deleteMessagesAsExitGroup = json['deleteMessagesAsExitGroup']
+      ..isAutoDownload = json['isAutoDownload']
+      ..isChatRoomOwnerLeaveAllowed = json['isChatRoomOwnerLeaveAllowed']
+      ..serverTransfer = json['serverTransfer']
+      ..usingHttpsOnly = json['usingHttpsOnly']
+      ..pushConfig = json['pushConfig'] != null ? EMPushConfig.fromJson(json['pushConfig']) : null
+      ..enableDNSConfig = json['enableDNSConfig']
+      ..imPort = json['imPort']
+      ..imServer = json['imServer']
+      ..restServer = json['restServer']
+      ..dnsUrl = json['dnsUrl'];
   }
 
   Map<String, dynamic> toJson() {
@@ -175,33 +165,22 @@ class EMPushConfig {
   EMPushConfig();
 
   factory EMPushConfig.fromJson(Map<String, dynamic> json) {
-    EMPushConfig config = EMPushConfig();
 
-    config._mzAppId = json['mzAppId'];
-    config._mzAppKey = json['mzAppKey'];
-
-    config._oppoAppKey = json['oppoAppKey'];
-    config._oppoAppSecret = json['oppoAppSecret'];
-
-    config._miAppId = json['miAppId'];
-    config._miAppKey = json['miAppKey'];
-
-    config._fcmId = json['fcmId'];
-
-    config._apnsCertName = json['apnsCertName'];
-
-    config._enableMeiZuPush = json['enableMeiZuPush'];
-    config._enableOppoPush = json['enableOppoPush'];
-    config._enableMiPush = json['enableMiPush'];
-
-    config._enableFCM = json['enableFCM'];
-
-    config._enableVivoPush = json['enableVivoPush'];
-    config._enableHWPush = json['enableHWPush'];
-
-    config._enableAPNS = json['enableAPNS'];
-
-    return config;
+    return EMPushConfig().._mzAppId = json['mzAppId']
+      .._mzAppKey = json['mzAppKey']
+      .._oppoAppKey = json['oppoAppKey']
+      .._oppoAppSecret = json['oppoAppSecret']
+      .._miAppId = json['miAppId']
+      .._miAppKey = json['miAppKey']
+      .._fcmId = json['fcmId']
+      .._apnsCertName = json['apnsCertName']
+      .._enableMeiZuPush = json['enableMeiZuPush']
+      .._enableOppoPush = json['enableOppoPush']
+      .._enableMiPush = json['enableMiPush']
+      .._enableFCM = json['enableFCM']
+      .._enableVivoPush = json['enableVivoPush']
+      .._enableHWPush = json['enableHWPush']
+      .._enableAPNS = json['enableAPNS'];
   }
 
   Map<String, dynamic> toJson() {

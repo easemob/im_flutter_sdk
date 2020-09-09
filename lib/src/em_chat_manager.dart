@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import "em_conversation.dart";
 import 'em_domain_terms.dart';
 import 'em_listeners.dart';
-import 'em_log.dart';
 import 'em_sdk_method.dart';
 
 class EMChatManager {
