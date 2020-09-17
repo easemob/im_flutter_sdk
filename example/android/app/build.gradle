@@ -46,6 +46,19 @@ android {
         }
     }
 
+    repositories {
+        mavenCentral()
+        flatDir{
+            dirs 'libs'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
     buildTypes {
         debug {
             minifyEnabled false
@@ -76,6 +89,6 @@ dependencies {
     implementation 'com.meizu.flyme.internet:push-internal:3.7.0@aar'
     //配置集成sdk
     implementation files('libs/mi_push_v3.6.12.jar')
-    implementation files('libs/oppo_push_v2.0.2.jar')
+    implementation (name:'oppo_push_v2.1.0',ext:'aar')
     implementation files('libs/vivo_push_v2.3.1.jar')
 }
