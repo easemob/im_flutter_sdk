@@ -9,6 +9,9 @@
 #import "EMSDKMethod.h"
 #import "EMHelper.h"
 
+#import "EMMessage+Flutter.h"
+#import "EMConversation+Flutter.h"
+
 @interface EMChatManagerWrapper () <EMChatManagerDelegate> {
     FlutterEventSink _progressEventSink;
     FlutterEventSink _resultEventSink;
@@ -89,8 +92,8 @@
 #pragma mark - Actions
 
 - (void)sendMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-    EMMessage *msg = [EMHelper dictionaryToMessage:param];
+
+    EMMessage *msg = [EMMessage fromJson:param];
     
     __block void (^progress)(int progress) = ^(int progress) {
         [self.channel invokeMethod:EMMethodKeyOnMessageStatusOnProgress
@@ -100,7 +103,7 @@
     __block void (^completion)(EMMessage *message, EMError *error) = ^(EMMessage *message, EMError *error) {
         [self wrapperCallBack:result
                         error:error
-                     userInfo:@{@"message":[EMHelper messageToDictionary:message]}];
+                     userInfo:@{@"message":[message toJson]}];
     };
     
     
@@ -136,7 +139,7 @@
                                                                      createIfNotExist:isCreateIfNotExists];
     [self wrapperCallBack:result
                     error:nil
-                 userInfo:@{@"conversation":[EMHelper conversationToDictionary:conversation]}];
+                 userInfo:@{@"conversation":[conversation toJson]}];
 }
 
 // TODO: ios需调添加该实现
@@ -209,7 +212,7 @@
     NSArray *conversations = [EMClient.sharedClient.chatManager getAllConversations];
     NSMutableArray *conversationDictList = [NSMutableArray array];
     for (EMConversation *conversation in conversations) {
-        [conversationDictList addObject:[EMHelper conversationToDictionary:conversation]];
+        [conversationDictList addObject:[conversation toJson]];
     }
     [self wrapperCallBack:result error:nil userInfo:@{@"conversations" : conversationDictList}];
 }

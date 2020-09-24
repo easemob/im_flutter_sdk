@@ -15,6 +15,9 @@ import 'em_domain_terms.dart';
 /// * [EMVoiceMessageBody]
 /// * [EMVideoMessageBody]
 
+
+/*
+
 /// EMTextMessageBody - text message body.
 class EMTextMessageBody extends EMMessageBody {
   /// 初始化方法，[message]: 消息内容
@@ -440,3 +443,5 @@ class EMCustomMessageBody extends EMMessageBody {
     return message;
   }
 }
+
+ */

@@ -77,7 +77,7 @@ class WidgetUtil {
   }
 
   /// 消息 item 上的时间
-  static Widget buildMessageTimeWidget(String sentTime) {
+  static Widget buildMessageTimeWidget(int sentTime) {
     return ClipRRect(
         borderRadius: BorderRadius.circular(5),
         child: Container(
@@ -85,7 +85,7 @@ class WidgetUtil {
           width: 80,
           height: 22,
           color: Color(0xffC8C8C8),
-          child: Text(TimeUtil.convertTime(int.parse(sentTime)),style: TextStyle(color: Colors.white,fontSize: 12),),
+          child: Text(TimeUtil.convertTime(sentTime),style: TextStyle(color: Colors.white,fontSize: 12),),
         ),
       );
   }

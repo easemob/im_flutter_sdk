@@ -88,7 +88,7 @@
      {
         [weakSelf wrapperCallBack:result
                         error:aError
-                         userInfo:@{@"value":aList}];
+                         userInfo:@{@"value":aList ?: @[]}];
     }];
 }
 
@@ -100,7 +100,7 @@
      {
         [weakSelf wrapperCallBack:result
                         error:aError
-                         userInfo:@{@"value":aUsername}];
+                         userInfo:@{@"value" : aUsername ?: @""}];
     }];
 }
 
@@ -112,7 +112,7 @@
      {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"value":aUsername}];
+                         userInfo:@{@"value":aUsername ?: @""}];
     }];
     
 }
@@ -123,7 +123,7 @@
      {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"value":aList}];
+                         userInfo:@{@"value" : aList ?: @[]}];
     }];
 }
 
@@ -135,7 +135,7 @@
      {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"value":userName}];
+                         userInfo:@{@"value": userName ?: @""}];
     }];
 }
 
@@ -147,7 +147,7 @@
      {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"value":userName}];
+                         userInfo:@{@"value":userName ?: @""}];
     }];
 }
 
@@ -157,7 +157,7 @@
      {
         [weakSelf wrapperCallBack:result
                             error:aError
-                         userInfo:@{@"value":aList}];
+                         userInfo:@{@"value":aList ?: @[]}];
     }];
 }
 

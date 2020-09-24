@@ -16,6 +16,8 @@ import 'em_sdk_method.dart';
 
 import 'models/em_domain_terms.dart';
 
+import 'models/em_contact.dart';
+
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emClientChannel =

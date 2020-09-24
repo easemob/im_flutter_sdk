@@ -8,6 +8,7 @@
 #import <Flutter/Flutter.h>
 #import <Hyphenate/Hyphenate.h>
 
+
 NS_ASSUME_NONNULL_BEGIN
 
 #define EMChannelName(name) [NSString stringWithFormat:@"com.easemob.im/%@",name]
@@ -21,11 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar;
 
-
-
 - (void)wrapperCallBack:(FlutterResult)result
                     error:(EMError *__nullable)error
                  userInfo:(NSDictionary *__nullable)userInfo;
+
+
+- (void)wrapperCallBack:(FlutterResult)result
+            channelName:(NSString *)aChannelName
+                    error:(EMError *__nullable)error
+                    object:(NSObject *__nullable)aObj;
 
 @end
 

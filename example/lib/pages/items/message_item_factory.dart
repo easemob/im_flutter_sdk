@@ -13,7 +13,7 @@ class MessageItemFactory extends StatelessWidget {
     EMTextMessageBody msg = message.body;
     return Container(
       padding: EdgeInsets.all(2),
-      child: Text(msg.message,style: TextStyle(fontSize: 13),),
+      child: Text(msg.content,style: TextStyle(fontSize: 13),),
     );
   }
 
@@ -23,22 +23,22 @@ class MessageItemFactory extends StatelessWidget {
     EMImageMessageBody msg = message.body;
 
     Widget widget;
-    if (msg.thumbnailUrl != null && msg.thumbnailUrl.length > 0) {
-      widget = Image.network(msg.thumbnailUrl,width: 90,height: 100,fit: BoxFit.fill);
+    if (msg.thumbnailLocalPath != null && msg.thumbnailRemotePath.length > 0) {
+      widget = Image.network(msg.thumbnailRemotePath,width: 90,height: 100,fit: BoxFit.fill);
     } else {
-      if(msg.localUrl != null) {
-        String path = MediaUtil.instance.getCorrectedLocalPath(msg.localUrl);
+      if(msg.localPath != null) {
+        String path = MediaUtil.instance.getCorrectedLocalPath(msg.localPath);
         print('图片path -----');
         File file = File(path);
         if(file != null && file.existsSync()) {
           widget = Image.file(file,width: 90,height: 100,fit: BoxFit.fill);
           print('显示缩略图-----');
         }else {
-          widget = Image.network(msg.localUrl,width: 90,height: 100,fit: BoxFit.fill);
+          widget = Image.network(msg.localPath,width: 90,height: 100,fit: BoxFit.fill);
           print('显示缩略图123 -----');
         }
       }else {
-        widget = Image.network(msg.remoteUrl,width: 90,height: 100,fit: BoxFit.fill);
+        widget = Image.network(msg.remotePath,width: 90,height: 100,fit: BoxFit.fill);
       }
     }
     return widget;
@@ -46,11 +46,9 @@ class MessageItemFactory extends StatelessWidget {
 
   ///文件消息
   Widget fileMessageItem(){
-    EMNormalFileMessageBody msg = message.body;
 
     Widget widget;
     List<Widget> list = new List();
-
 
     return Container(
       width: 230,
@@ -75,7 +73,7 @@ class MessageItemFactory extends StatelessWidget {
 
   Color _getMessageWidgetBGColor(int messageDirection) {
     Color color = Color(0xffC8E9FD);
-    if(message.direction == Direction.RECEIVE) {
+    if(message.direction == EMMessageDirection.RECEIVE) {
       color = Color(0xffffffff);
     }
     return color;
@@ -85,7 +83,7 @@ class MessageItemFactory extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(5),
-      color: _getMessageWidgetBGColor(toDirect(message.direction)),
+      color: _getMessageWidgetBGColor(message.direction == EMMessageDirection.SEND ? 0 : 1),
       child: messageItem(),
     );
   }

@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import '../im_flutter_sdk.dart';
 import 'em_message_body.dart';
 
-
+/*
 /// EMMessage - various types of message
 class EMMessage {
   EMMessage({
@@ -369,15 +369,6 @@ fromEMDownloadStatus(int status) {
   }
 }
 
-class EMContact {
-  /// 环信id
-  final String userName;
-
-  /// @nodoc 昵称(暂未实现)
-  String nickName;
-
-  EMContact({@required String userName}) : userName = userName;
-}
 
 /// @nodoc  EMMessageBody - body of message.
 abstract class EMMessageBody {
@@ -450,6 +441,20 @@ enum Direction { SEND, RECEIVE }
 
 /// @nodoc EMDownloadStatus - download status enumeration.
 enum EMDownloadStatus { DOWNLOADING, SUCCESSED, FAILED, PENDING }
+
+
+ */
+
+
+//class EMContact {
+//  /// 环信id
+//  final String userName;
+//
+//  /// @nodoc 昵称(暂未实现)
+//  String nickName;
+//
+//  EMContact({@required String userName}) : userName = userName;
+//}
 
 /// EMDeviceInfo - device info.
 class EMDeviceInfo {
@@ -714,20 +719,6 @@ toEMConversationType(EMConversationType type) {
   }
 }
 
-/// @nodoc 会话类型 int 数据类型转 EMConversationType
-fromEMConversationType(int type) {
-  if (type == 0) {
-    return EMConversationType.Chat;
-  } else if (type == 1) {
-    return EMConversationType.GroupChat;
-  } else if (type == 2) {
-    return EMConversationType.ChatRoom;
-  } else if (type == 3) {
-    return EMConversationType.DiscussionGroup;
-  } else if (type == 4) {
-    return EMConversationType.HelpDesk;
-  }
-}
 
 /// @nodoc 搜索方向 EMSearchDirection 数据类型转 int
 toEMSearchDirection(EMSearchDirection direction) {

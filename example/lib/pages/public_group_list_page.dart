@@ -156,13 +156,14 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
               });
           }else{
             EMClient.getInstance().groupManager().joinGroup(group.getGroupId(),
-            onSuccess: (){
-              WidgetUtil.hintBoxWithDefault('加入公开群成功');
-              Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-                return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
-              }));
-            },
-            onError: (code, desc){
+                onSuccess: (){
+              // TODO: conversation
+//              WidgetUtil.hintBoxWithDefault('加入公开群成功');
+//              Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+//                return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
+//              }));
+                },
+                onError: (code, desc){
               WidgetUtil.hintBoxWithDefault('加入公开群失败：'+desc);
             }
             );
