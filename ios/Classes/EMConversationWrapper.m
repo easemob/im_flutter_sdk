@@ -9,6 +9,9 @@
 #import "EMSDKMethod.h"
 #import "EMHelper.h"
 
+#import "EMMessage+Flutter.h"
+#import "EMConversation+Flutter.h"
+
 @interface EMConversationWrapper ()
 
 @end
@@ -69,8 +72,7 @@
                   completion:(void(^)(EMConversation *conversation))aCompletion
 {
     NSString *conversationId = param[@"id"];
-    // TODO: 是否需要类型？
-    EMConversationType type = 0;
+    EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
                                                                      createIfNotExist:YES];
@@ -83,39 +85,52 @@
 - (void)getUnreadMsgCount:(NSDictionary *)param
                    result:(FlutterResult)result
 {
+    __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation) {
-        [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"count":@(conversation.unreadMessagesCount)}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetUnreadMsgCount
+                            error:nil
+                           object:@(conversation.unreadMessagesCount)];
     }];
 }
 
 - (void)markAllMessagesAsRead:(NSDictionary *)param
                        result:(FlutterResult)result
 {
+    __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation) {
-        [conversation markAllMessagesAsRead:nil];
+        EMError *error = nil;
+        [conversation markAllMessagesAsRead:&error];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyMarkAllMessagesAsRead
+                            error:error
+                           object:nil];
     }];
 }
 
 - (void)loadMoreMsgFromDB:(NSDictionary *)param
                    result:(FlutterResult)result
 {
+//    EMMethodKeyLoadMoreMsgFromDB
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                          completion:^(EMConversation *conversation) {
-        NSString *startMsgId = param[@"startMsgId"];
-        int pageSize = [param[@"pageSize"] intValue];
-        [conversation loadMessagesStartFromId:startMsgId
-                                        count:pageSize
+        [conversation loadMessagesStartFromId:param[@"startId"]
+                                        count:[param[@"count"] intValue]
                               searchDirection:EMMessageSearchDirectionUp
                                    completion:^(NSArray *aMessages, EMError *aError)
         {
+            NSMutableArray *jsonMsgs = [NSMutableArray array];
+            for (EMMessage *msg in aMessages) {
+                [jsonMsgs addObject:[msg toJson]];
+            }
+            
             [weakSelf wrapperCallBack:result
+                          channelName:EMMethodKeyLoadMoreMsgFromDB
                                 error:aError
-                             userInfo:@{@"messages":[EMHelper messagesToDictionaries:aMessages]}];
+                               object:jsonMsgs];
         }];
     }];
 }
@@ -223,7 +238,7 @@
         EMMessage *msg = conversation.latestMessage;
         [self wrapperCallBack:result
                         error:nil
-                     userInfo:@{@"message":[EMHelper messageToDictionary:msg]}];
+                     userInfo: msg ? @{@"message":[msg toJson]} : nil];
     }];
 }
 
@@ -249,7 +264,15 @@
 - (void)clearAllMessages:(NSDictionary *)param
                   result:(FlutterResult)result
 {
-    
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation){
+        EMError *error = nil;
+        [conversation deleteAllMessages:&error];
+        [self wrapperCallBack:result
+                  channelName:EMMethodKeyClearAllMessages
+                        error:error
+                       object:nil];
+    }];
 }
 
 - (void)insertMessage:(NSDictionary *)param

@@ -48,7 +48,7 @@ class _ChatItemState extends State<ChatItem> {
       padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
       child:Column(
         children: <Widget>[
-          this.showTime? WidgetUtil.buildMessageTimeWidget(message.msgTime):WidgetUtil.buildEmptyWidget(),
+          this.showTime? WidgetUtil.buildMessageTimeWidget(message.serverTime):WidgetUtil.buildEmptyWidget(),
           Row(
             children: <Widget>[subContent()],
           )
@@ -58,7 +58,7 @@ class _ChatItemState extends State<ChatItem> {
   }
 
   Widget subContent() {
-    if (message.direction == Direction.SEND) {
+    if (message.direction == EMMessageDirection.SEND) {
       return Expanded(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -85,7 +85,7 @@ class _ChatItemState extends State<ChatItem> {
           ],
         ),
       );
-    } else if (message.direction == Direction.RECEIVE) {
+    } else if (message.direction == EMMessageDirection.RECEIVE) {
       return Expanded(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -123,7 +123,7 @@ class _ChatItemState extends State<ChatItem> {
         Expanded(
           child: Container(
               padding: EdgeInsets.fromLTRB(15, 6, 15, 10),
-              alignment: message.direction == Direction.SEND
+              alignment: message.direction == EMMessageDirection.SEND
                   ? Alignment.centerRight
                   : Alignment.centerLeft,
               child: GestureDetector(
@@ -132,7 +132,7 @@ class _ChatItemState extends State<ChatItem> {
                   this.tapPos = details.globalPosition;
                 },
                 onTap: () {
-                  __onTapedMesssage();
+                  __onTapedMessage();
                 },
                 onLongPress: () {
                   __onLongPressMessage(this.tapPos);
@@ -148,7 +148,7 @@ class _ChatItemState extends State<ChatItem> {
     );
   }
 
-  void __onTapedMesssage() {
+  void __onTapedMessage() {
     if(delegate != null) {
       delegate.onTapMessageItem(message);
     }else {
@@ -166,7 +166,7 @@ class _ChatItemState extends State<ChatItem> {
 
   void __onTapedUserPortrait() {
     if(delegate != null) {
-      delegate.onTapUserPortrait(message.userName);
+      delegate.onTapUserPortrait(message.to);
     }else {
       print("没有实现 ConversationItemDelegate");
     }

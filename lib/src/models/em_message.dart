@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 // 消息类型
 enum EMMessageChatType {
@@ -61,11 +62,11 @@ class EMMessage {
   EMMessage.createImageSendMessage({
     @required String userName,
     @required String filePath,
-    String displayName,
-    String thumbnailLocalPath,
+    String displayName = '',
+    String thumbnailLocalPath = '',
     bool sendOriginalImage = false,
-    int width,
-    int height,
+    int width = 0,
+    int height = 0,
   }) : this.createSendMessage (
       to:userName,
       body:EMImageMessageBody(
@@ -82,11 +83,11 @@ class EMMessage {
   EMMessage.createVideoSendMessage({
     @required String userName,
     @required String filePath,
-    String displayName,
-    int duration,
-    String thumbnailLocalPath ,
-    int width,
-    int height,
+    String displayName = '',
+    int duration = 0,
+    String thumbnailLocalPath = '',
+    int width = 0,
+    int height = 0,
   }) : this.createSendMessage (
       to: userName,
       body: EMVideoMessageBody (
@@ -103,8 +104,8 @@ class EMMessage {
   EMMessage.createVoiceSendMessage({
     @required String userName,
     @required String filePath,
-    int duration,
-    String displayName,
+    int duration = 0,
+    String displayName = '',
   }) : this.createSendMessage (
       to: userName,
       body: EMVoiceMessageBody(
@@ -119,7 +120,7 @@ class EMMessage {
     @required String userName,
     @required double latitude,
     @required double longitude,
-    String address
+    String address = '',
   }) : this.createSendMessage (
       to:userName,
       body:EMLocationMessageBody(
@@ -131,7 +132,8 @@ class EMMessage {
 
   /// 构造发送的cmd消息
   EMMessage.createCmdSendMessage({
-    @required String userName, @required action
+    @required String userName,
+    @required action
   }) : this.createSendMessage (
       to: userName,
       body:EMCmdMessageBody(
@@ -141,7 +143,8 @@ class EMMessage {
 
   /// 构造发送的自定义消息
   EMMessage.createCustomSendMessage({
-    @required String userName, @required event, Map params
+    @required String userName,
+    @required event, Map params
   }) : this.createSendMessage (
       to:userName,
       body: EMCustomMessageBody(
@@ -150,7 +153,6 @@ class EMMessage {
       )
   );
 
-
   // 消息id
   String msgId = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -158,10 +160,10 @@ class EMMessage {
   String conversationId;
 
   // 消息发送方
-  String from;
+  String from = '';
 
   // 消息接收方
-  String to;
+  String to = '';
 
   // 消息本地时间
   int localTime = DateTime.now().millisecondsSinceEpoch;
@@ -175,6 +177,9 @@ class EMMessage {
   // 消息是否收到已读回执
   bool hasReadAck = false;
 
+  // 是否已读
+  bool hasRead = false;
+
   // 消息类型
   EMMessageChatType chatType = EMMessageChatType.Chat;
 
@@ -185,7 +190,8 @@ class EMMessage {
   EMMessageStatus status = EMMessageStatus.CREATE;
 
   // 消息扩展
-  Map attributes;
+  Map attributes = {};
+
   // msg body
   EMMessageBody body;
 
@@ -198,33 +204,38 @@ class EMMessage {
     data['direction'] = this.direction == EMMessageDirection.SEND ? 'send' : 'rec';
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
+    data['hasRead'] = this.hasRead;
     data['msgId'] = this.msgId;
-    data['conversationId'] = this.conversationId;
-    data['chatType'] = EMMessage._chatTypeToInt(this.chatType);
+    data['conversationId'] = this.conversationId ?? this.to;
+    data['chatType'] = chatTypeToInt(this.chatType);
     data['localTime'] = this.localTime;
     data['serverTime'] = this.serverTime;
-    data['status'] = EMMessage._chatStatusToInt(this.status);
+    data['status'] = _chatStatusToInt(this.status);
 
     return data;
   }
 
   factory EMMessage.fromJson(Map <String, dynamic> map) {
-    return EMMessage()..to = map['to']
+    if(map == null)
+      return null;
+    return EMMessage()
+      ..to = map['to']
       ..from = map['from']
-      ..body = EMMessage._bodyFromMap(map['body'])
-      ..attributes = map['attributes']
+      ..body = _bodyFromMap(map['body'])
+      ..attributes = map['attributes'] ?? {}
       ..direction = map['direction'] == 'send' ? EMMessageDirection.SEND : EMMessageDirection.RECEIVE
-      ..hasReadAck = map['hasReadAck']
-      ..hasDeliverAck = map['hasDeliverAck']
+      ..hasReadAck = map['hasReadAck'] == 0 ? false : true
+      ..hasDeliverAck = map['hasDeliverAck'] == 0 ? false : true
+      ..hasRead = map['hasRead'] == 0 ? false : true
       ..msgId = map['msgId']
       ..conversationId = map['conversationId']
-      ..chatType = EMMessage._chatTypeFromInt(map['chatType'])
+      ..chatType = chatTypeFromInt(map['chatType'])
       ..localTime = map['localTime']
       ..serverTime = map['serverTime']
-      ..status = EMMessage._chatStatusFromInt(map['status']);
+      ..status = _chatStatusFromInt(map['status']);
   }
 
-  static int _chatTypeToInt(EMMessageChatType type) {
+  static int chatTypeToInt(EMMessageChatType type) {
     if(type == EMMessageChatType.ChatRoom) {
       return 2;
     }else if (type == EMMessageChatType.GroupChat) {
@@ -234,7 +245,7 @@ class EMMessage {
     }
   }
 
-  static EMMessageChatType _chatTypeFromInt(int type) {
+  static EMMessageChatType chatTypeFromInt(int type) {
     if(type == 2) {
       return EMMessageChatType.ChatRoom;
     }else if (type == 1) {
@@ -274,26 +285,26 @@ class EMMessage {
       case 'txt':
         body = EMTextMessageBody.fromJson(map: map);
         break;
-      case 'img':
-        body = EMImageMessageBody.fromJson(map: map);
-        break;
       case 'loc':
         body = EMLocationMessageBody.fromJson(map: map);
-        break;
-      case 'video':
-        body = EMVideoMessageBody.fromJson(map: map);
-        break;
-      case 'voice':
-        body = EMVoiceMessageBody.fromJson(map: map);
-        break;
-      case 'file':
-        body = EMFileMessageBody.fromJson(map: map);
         break;
       case 'cmd':
         body = EMCmdMessageBody.fromJson(map: map);
         break;
       case 'custom':
         body = EMCustomMessageBody.fromJson(map: map);
+        break;
+      case 'file':
+        body = EMFileMessageBody.fromJson(map: map);
+        break;
+      case 'img':
+        body = EMImageMessageBody.fromJson(map: map);
+        break;
+      case 'video':
+        body = EMVideoMessageBody.fromJson(map: map);
+        break;
+      case 'voice':
+        body = EMVoiceMessageBody.fromJson(map: map);
         break;
       default:
     }
@@ -329,20 +340,20 @@ abstract class EMMessageBody{
     switch(this.type) {
       case EMMessageBodyType.TXT:
         return 'txt';
-      case EMMessageBodyType.IMAGE:
-        return 'img';
       case EMMessageBodyType.LOCATION:
         return 'loc';
-      case EMMessageBodyType.VIDEO:
-        return 'video';
-      case EMMessageBodyType.VOICE:
-        return 'voice';
-      case EMMessageBodyType.FILE:
-        return 'file';
       case EMMessageBodyType.CMD:
         return 'cmd';
       case EMMessageBodyType.CUSTOM:
         return 'custom';
+      case EMMessageBodyType.FILE:
+        return 'file';
+      case EMMessageBodyType.IMAGE:
+        return 'img';
+      case EMMessageBodyType.VIDEO:
+        return 'video';
+      case EMMessageBodyType.VOICE:
+        return 'voice';
     }
     return '';
   }
@@ -370,7 +381,7 @@ class EMTextMessageBody extends EMMessageBody {
     return data;
   }
 
-  String content;
+  String content = '';
 }
 
 //
@@ -397,11 +408,11 @@ class EMLocationMessageBody extends EMMessageBody {
   }
 
   // 地址
-  String address;
+  String address = '';
 
   // 经纬度
-  double latitude;
-  double longitude;
+  double latitude = 0;
+  double longitude = 0;
 }
 
 class EMFileMessageBody extends EMMessageBody {
@@ -427,28 +438,28 @@ class EMFileMessageBody extends EMMessageBody {
     data['remotePath'] = this.remotePath;
     data['fileSize'] = this.fileSize;
     data['localPath'] = this.localPath;
-    data['displayName'] = this.displayName;
+    data['displayName'] = this.displayName ?? '';
     data['fileStatus'] = EMFileMessageBody.downloadStatusToInt(this.fileStatus);
     return data;
   }
 
   // 本地路径
-  String localPath;
+  String localPath = '';
 
   // secret
-  String secret;
+  String secret = '';
 
   // 服务器路径
-  String remotePath;
+  String remotePath = '';
 
   // 附件状态
   EMDownloadStatus fileStatus = EMDownloadStatus.PENDING;
 
   // 文件大小
-  int fileSize;
+  int fileSize = 0;
 
   // 文件名称
-  String displayName;
+  String displayName = '';
 
   static EMDownloadStatus downloadStatusFromInt(int status) {
     if(status == 0) {
@@ -492,18 +503,16 @@ class EMImageMessageBody extends EMFileMessageBody {
     type: EMMessageBodyType.IMAGE,
   );
 
-
   EMImageMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.IMAGE)
   {
     this.thumbnailLocalPath =  map['thumbnailLocalPath'];
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
-    this.sendOriginalImage = map['sendOriginalImage'];
+    this.sendOriginalImage = map['sendOriginalImage'] == 0 ? false : true;
     this.height = map['height'];
     this.width = map['width'];
     this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(map['thumbnailStatus']);
   }
-
 
   @override
   Map<String, dynamic> toJson() {
@@ -522,22 +531,22 @@ class EMImageMessageBody extends EMFileMessageBody {
   bool sendOriginalImage = false;
 
   // 缩略图本地地址
-  String thumbnailLocalPath;
+  String thumbnailLocalPath = '';
 
   // 缩略图服务器地址
-  String thumbnailRemotePath;
+  String thumbnailRemotePath = '';
 
   // 缩略图 secret
-  String thumbnailSecret;
+  String thumbnailSecret = '';
 
   // 缩略图状态
   EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
 
   // 宽
-  int width;
+  int width = 0;
 
   // 高
-  int height;
+  int height = 0;
 
 }
 
@@ -582,25 +591,25 @@ class EMVideoMessageBody extends EMFileMessageBody {
   }
 
   // 时长。秒
-  int duration;
+  int duration = 0;
 
   // 缩略图本地地址
-  String thumbnailLocalPath;
+  String thumbnailLocalPath = '';
 
   // 缩略图服务器地址
-  String thumbnailRemotePath;
+  String thumbnailRemotePath = '';
 
   // 缩略图 secret
-  String thumbnailSecret;
+  String thumbnailSecret = '';
 
   // 缩略图状态
   EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
 
   // 宽
-  int width;
+  int width = 0;
 
   // 高
-  int height;
+  int height = 0;
 
 }
 
@@ -630,9 +639,8 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   }
 
   // 时长, 秒
-  int duration;
+  int duration = 0;
 }
-
 
 // cmd body
 class EMCmdMessageBody extends EMMessageBody {
@@ -644,7 +652,7 @@ class EMCmdMessageBody extends EMMessageBody {
   EMCmdMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.CMD)
   {
     this.action = map['action'];
-    this.deliverOnlineOnly = map['deliverOnlineOnly'];
+    this.deliverOnlineOnly = map['deliverOnlineOnly'] == 0 ? false : true;
   }
 
   @override
@@ -656,7 +664,8 @@ class EMCmdMessageBody extends EMMessageBody {
   }
 
   // cmd 标识
-  String action;
+  String action = '';
+
   // 是否只投在线
   bool deliverOnlineOnly = false;
 }
@@ -686,8 +695,8 @@ class EMCustomMessageBody extends EMMessageBody {
   }
 
   // 自定义事件key
-  String event;
+  String event = '';
 
   // 附加参数
-  Map params;
+  Map params = {};
 }

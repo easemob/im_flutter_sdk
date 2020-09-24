@@ -48,15 +48,15 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void _loadEMConversationList() async {
     sortMap.clear();
     conList.clear();
-    Map<String, EMConversation> map =
+    List<EMConversation> list =
         await EMClient.getInstance().chatManager().getAllConversations();
-    if (map.length == 0) {
+    if (list.length == 0) {
       _refreshUI();
     } else {
-      await Future.forEach(map.values, (EMConversation conversation) async {
-        EMMessage message = await conversation.getLastMessage();
+      await Future.forEach(list, (EMConversation conversation) async {
+        EMMessage message = await conversation.latestMessage;
         if (message != null) {
-          sortMap.putIfAbsent(message.msgTime, () => conversation);
+          sortMap.putIfAbsent(message.serverTime.toString(), () => conversation);
         }
       });
       setState(() {});
@@ -72,15 +72,9 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),
         scrollDirection: Axis.vertical,
-        itemCount: conList.length + 1,
+        itemCount: conList.length,
         itemBuilder: (BuildContext context, int index) {
-          if (index == 0) {
-            return _buildErrorItem();
-          }
-          if (conList.length <= 0) {
-            return WidgetUtil.buildEmptyWidget();
-          }
-          return EMConversationListItem(conList[index - 1], this);
+          return EMConversationListItem(conList[index], this);
         });
   }
 
@@ -234,7 +228,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void _deleteConversation(EMConversation conversation) async {
     bool result = await EMClient.getInstance()
         .chatManager()
-        .deleteConversation(conversation.conversationId, true);
+        .deleteConversation(conversation.id, true);
     if (result) {
       _loadEMConversationList();
     } else {
@@ -252,10 +246,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void onTapConversation(EMConversation conversation) {
     Navigator.push<bool>(context,
         new MaterialPageRoute(builder: (BuildContext context) {
-      return new ChatPage(arguments: {
-        'mType': getType(conversation.type),
-        'toChatUsername': conversation.conversationId
-      });
+      return new ChatPage(conversation: conversation);
     })).then((bool _isRefresh) {
       _loadEMConversationList();
     });

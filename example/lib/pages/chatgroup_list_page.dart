@@ -170,12 +170,13 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   }
 
   void onTapChatGroup(EMGroup group){
-    Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
-      return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
-    })).then((bool isRefresh){
-      if(isRefresh){
-        getJoinedGroups();
-      }
-    });
+    // TODO: conversation
+//    Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
+//      return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
+//    })).then((bool isRefresh){
+//      if(isRefresh){
+//        getJoinedGroups();
+//      }
+//    });
   }
 }

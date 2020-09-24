@@ -5,7 +5,7 @@ author: easemob <sdk@easemob.com>
 homepage: http://www.easemob.com/product/im
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.6.0 <3.0.0"
 
 dependencies:
   flutter:

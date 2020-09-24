@@ -126,7 +126,7 @@ class EMPushConfig {
     return this;
   }
 
-  EMPushConfig enableOppoPush({@required String appKey, @required String secret}) {
+  EMPushConfig enableOppPush({@required String appKey, @required String secret}) {
     _enableOppoPush = true;
     _oppoAppKey = appKey;
     _oppoAppSecret = secret;

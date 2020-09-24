@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk_example/ease_user_info.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
@@ -10,30 +9,33 @@ import 'group_details_page.dart';
 import 'items/chat_item.dart';
 
 
-// ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
-  var arguments;
-  ChatPage({Key key, this.arguments}) : super(key: key);
+
+  ChatPage({Key key, this.conversation}) : super(key: key);
+
+  final EMConversation conversation;
 
   @override
-  State<StatefulWidget> createState() =>
-      _ChatPageState(arguments: this.arguments);
+  State<StatefulWidget> createState() => _ChatPageState(conversation: conversation);
 }
 
-class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatItemDelegate,BottomInputBarDelegate,EMMessageStatus,EMCallStateChangeListener{
-  var arguments;
-  int mType;
-  String toChatUsername;
+class _ChatPageState extends State<ChatPage> implements
+    EMMessageListener,
+    ChatItemDelegate,
+    BottomInputBarDelegate,
+    EMMessageStatusListener,
+    EMCallStateChangeListener
+{
+
+  _ChatPageState({@required this.conversation});
+
   EMConversation conversation;
 
-  UserInfo user;
-  int _pageSize = 10;
-  bool isLoad = false;
-  bool isJoinRoom = false;
+  bool _isLoad = false;
   bool _isDark = false;
   bool _singleChat;
-  String msgStartId = '';
-  String afterLoadMessageId = '';
+  String _msgStartId = '';
+  String _afterLoadMessageId = '';
 
   List<EMMessage> messageTotalList = new List();//消息数组
   List<EMMessage> messageList = new List();//消息数组
@@ -45,14 +47,54 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   ScrollController _scrollController = ScrollController();
 
-  _ChatPageState({this.arguments});
+
+  @override
+  void initState() {
+    super.initState();
+
+    EMClient.getInstance().chatManager().addMessageListener(this);
+    EMClient.getInstance().chatManager().addMessageStatusListener(this);
+    EMClient.getInstance().callManager().addCallStateChangeListener(this);
+
+    currentStatus = ChatStatus.Normal;
+
+    messageTotalList.clear();
+
+    //增加加号扩展栏的 widget
+    _initExtWidgets();
+
+    if (conversation == null) {
+      return;
+    }
+
+
+    _singleChat = conversation.type == EMConversationType.Chat;
+
+    if(conversation.type == EMConversationType.ChatRoom) {
+      _joinChatRoom();
+    }
+
+    _scrollController.addListener(() {
+      //此处要用 == 而不是 >= 否则会触发多次
+      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+        _loadMessages();
+      }
+    });
+
+    // 设置全部已读
+    _markMessagesAsRead();
+
+    // load消息
+    _loadMessages(onEnd:(){
+      _listViewToEnd();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     _isDark = ThemeUtils.isDark(context);
     if(messageList.length > 0 ){
-      messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
-      if(!isLoad){
+      if(!_isLoad){
         messageTotalList.clear();
         messageTotalList.addAll(messageList);
         print(messageTotalList.length.toString() + 'after build true: ' + messageList.length.toString());
@@ -67,7 +109,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       onWillPop: _willPop,
       child: new Scaffold(
           appBar:AppBar(
-            title: Text(this.user.userId, style: TextStyle(color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
+            title: Text(conversation.id, style: TextStyle(color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
             centerTitle: true,
             backgroundColor:ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
             leading: Builder(builder:(BuildContext context){
@@ -83,12 +125,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
               new PopupMenuButton<String>(
                 icon: new Icon(Icons.more_vert,color: Colors.black,),
                 itemBuilder: _singleChat == true ?
-                    (BuildContext context) => <PopupMenuItem<String>>[
-                  this.SelectView(Icons.delete, '删除记录', 'A'),]
-                    :
-                    (BuildContext context) => <PopupMenuItem<String>>[
-                  this.SelectView(Icons.delete, '删除记录', 'A'),
-                  this.SelectView(Icons.people, '查看详情', 'B'),] ,
+                    (BuildContext context) => <PopupMenuItem<String>>[this.SelectView(Icons.delete, '删除记录', 'A'),] :
+                    (BuildContext context) => <PopupMenuItem<String>>[this.SelectView(Icons.delete, '删除记录', 'A'), this.SelectView(Icons.people, '查看详情', 'B'),] ,
                 onSelected: (String action) {
                   // 点击选项的时候
                   switch (action) {
@@ -155,7 +193,6 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         child: new Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            // ignore: non_constant_identifier_names
             new Icon(icon, color: Colors.blue),
             new Text(text),
           ],
@@ -163,46 +200,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    currentStatus = ChatStatus.Normal;
-
-    EMClient.getInstance().chatManager().addMessageListener(this);
-    EMClient.getInstance().chatManager().addMessageStatusListener(this);
-    EMClient.getInstance().callManager().addCallStateChangeListener(this);
-
-    messageTotalList.clear();
-
-    mType = arguments["mType"];
-    toChatUsername = arguments["toChatUsername"];
-
-    //增加加号扩展栏的 widget
-    _initExtWidgets();
-
-    if(fromChatType(mType) == ChatType.Chat){
-      _singleChat = true;
-    }
-
-    if(fromChatType(mType) == ChatType.ChatRoom && !isJoinRoom){
-      _joinChatRoom();
-    }
-
-
-    this.user = UserInfoDataSource.getUserInfo(toChatUsername);
-    _onConversationInit();
-
-    _scrollController.addListener(() {
-      //此处要用 == 而不是 >= 否则会触发多次
-      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-        _loadMessage();
-      }
-    });
-
-  }
 
   void _onConversationInit() async{
+    // TODO: conversation
+    /*
     messageList.clear();
     conversation = await EMClient.getInstance().chatManager().
     getConversation(toChatUsername, fromEMConversationType(mType), true );
@@ -214,71 +215,81 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
     if(msgListFromDB != null && msgListFromDB.length > 0){
       afterLoadMessageId = msgListFromDB.first.msgId;
-        messageList.addAll(msgListFromDB);
+      messageList.addAll(msgListFromDB);
     }
     isLoad = false;
     _refreshUI();
+
+     */
   }
 
 
-  void _loadMessage() async {
-    var loadlist = await conversation.loadMoreMsgFromDB(afterLoadMessageId , _pageSize);
-    if(loadlist.length > 0){
-      afterLoadMessageId = loadlist.first.msgId;
-      loadlist.sort((a, b) => b.msgTime.compareTo(a.msgTime));
-      await Future.delayed(Duration(seconds: 1), () {
-        setState(() {
-          messageTotalList.addAll(loadlist);
-        });
+  void _loadMessages({onEnd()}) async {
+    try{
+      List<EMMessage> loadList = await conversation.loadMessagesWithStartId(_afterLoadMessageId);
+      _afterLoadMessageId = loadList.first.msgId;
+      loadList.sort((a, b) => b.serverTime.compareTo(a.serverTime));
+      setState(() {
+        messageTotalList.addAll(loadList);
       });
+      if(onEnd != null){
+        onEnd();
+      }
+    }catch(e){
 
-      isLoad = true;
-    }else{
-      isLoad = true;
-      print('没有更多数据了');
     }
-    print(messageTotalList.length.toString() + '_loadMessage');
-    _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 2), curve: Curves.ease);
+  }
+
+  void _markMessagesAsRead({String messageId = ''}) async {
+    // 如果消息id是''，则表示全部已读
+    try{
+      if(messageId.length == 0) {
+        conversation.markAllMessagesAsRead();
+      }
+    } catch (e) {
+    }
+
+  }
+
+  void _listViewToEnd() {
+    _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 1), curve: Curves.ease);
   }
 
   ///如果是聊天室类型 先加入聊天室
   _joinChatRoom(){
-    EMClient.getInstance().chatRoomManager().joinChatRoom(toChatUsername ,
-        onSuccess: (){
-          isJoinRoom = true;
-        },
-        onError: (int errorCode,String errorString){
-          print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
+    EMClient.getInstance().chatRoomManager().joinChatRoom(
+        conversation.id ,
+        onError: (int errorCode,String errorString) {
+          //TODO: 弹出加入失败toast;
         });
   }
 
   ///清除记录
-  _cleanAllMessage(){
-     if(null != conversation){
-        conversation.clearAllMessages();
-        setState(() {
-          messageList = [];
-          messageTotalList = [];
-        });
-     }
+  _cleanAllMessage() async {
+    try {
+      conversation.deleteAllMessages();
+      setState(() {
+        messageList.clear();
+        messageTotalList.clear();
+      });
+    } catch (e) {
+
+    }
   }
 
   ///查看详情
-  _viewDetails() async{
-    switch(fromChatType(mType)){
-      case ChatType.GroupChat:
-        Navigator.push<bool>(context,
-            new MaterialPageRoute(builder: (BuildContext context) {
-              return EMGroupDetailsPage(this.toChatUsername);
-            })).then((bool _isRefresh){
-              if(_isRefresh){
-                Navigator.pop(context, true);
-              }
-        });
-        break;
-      case ChatType.ChatRoom:
-        break;
+  _viewDetails() async {
+
+    if(conversation.type == EMConversationType.GroupChat) {
+      Navigator.push<bool>(context, MaterialPageRoute(builder: (BuildContext context) {
+            return EMGroupDetailsPage(conversation.id);
+          })).then((bool _isRefresh){
+            if(_isRefresh){
+              Navigator.pop(context, true);
+            }
+      });
     }
+    // TODO: 查看聊天室详情
   }
 
   /// 禁止随意调用 setState 接口刷新 UI，必须调用该接口刷新 UI
@@ -310,7 +321,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   void checkOutRoom(){
-    EMClient.getInstance().chatRoomManager().leaveChatRoom(toChatUsername,
+    EMClient.getInstance().chatRoomManager().leaveChatRoom(conversation.id,
         onSuccess: (){
           print('退出聊天室成功');
         },
@@ -327,9 +338,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
 //      WidgetUtil.hintBoxWithDefault('视频通话待实现!');
 
-      EMClient.getInstance().callManager().startCall(EMCallType.Video, toChatUsername, true, true, "1323",
+      EMClient.getInstance().callManager().startCall(EMCallType.Video, conversation.id, true, true, "1323",
           onSuccess:() {
-
           } ,
           onError:(code, desc){
             print('拨打通话失败 --- $desc');
@@ -370,11 +380,12 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void onMessageReceived(List<EMMessage> messages) {
+    /* TODO: conversation
     // TODO: implement onMessageReceived
     for (var message in messages) {
       String username ;
       // group message
-      if (message.chatType == ChatType.GroupChat || message.chatType == ChatType.ChatRoom) {
+      if (message.chatType == EMMessageChatType.GroupChat || message.chatType == EMMessageChatType.ChatRoom) {
         username = message.to;
       } else {
         // single chat message
@@ -386,6 +397,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       }
     }
     _onConversationInit();
+
+     */
   }
 
   @override
@@ -394,7 +407,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     messageTotalList.clear();
     super.dispose();
     EMClient.getInstance().chatManager().removeMessageListener(this);
-    if(isJoinRoom){
+    if (conversation.type == EMConversationType.ChatRoom) {
       checkOutRoom();
     }
   }
@@ -423,28 +436,28 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapMessageItem(EMMessage message) {
     // TODO: implement didTapMessageItem
-    if (message.direction == Direction.RECEIVE) {
-      if (message.ext() != null) {
+    if (message.direction == EMMessageDirection.RECEIVE) {
+      if (message.attributes != null) {
         String conferenceId;
         String password;
-        if (message.ext()['conferenceId'] != null && message.ext()['conferenceId'].length > 0) {
-          conferenceId = message.ext()['conferenceId'];
-        } else if (message.ext()['em_conference_id'] != null) {
-          conferenceId = message.ext()['em_conference_id'];
+        if (message.attributes['conferenceId'] != null && message.attributes['conferenceId'].length > 0) {
+          conferenceId = message.attributes['conferenceId'];
+        } else if (message.attributes['em_conference_id'] != null) {
+          conferenceId = message.attributes['em_conference_id'];
         }
 
-        if (message.ext()['password'] != null) {
-          password = message.ext()['password'];
-        } else if(message.ext()['em_conference_password'] != null) {
-          password = message.ext()['em_conference_password'];
+        if (message.attributes['password'] != null) {
+          password = message.attributes['password'];
+        } else if(message.attributes['em_conference_password'] != null) {
+          password = message.attributes['em_conference_password'];
         }
 
         EMClient.getInstance().conferenceManager().joinConference(conferenceId, password,
             onSuccess:(EMConference conf) {
-          print('加入会议成功 --- ' + conf.getConferenceId());
+              print('加入会议成功 --- ' + conf.getConferenceId());
             }, onError:(code, desc) {
-          print('加入会议失败 --- $desc');
-        });
+              print('加入会议失败 --- $desc');
+            });
       }
     }
   }
@@ -474,11 +487,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onTapItemPicture(String imgPath){
     print('onTapItemPicture' + imgPath);
 
-    EMMessage imageMessage = EMMessage.createImageSendMessage(userName: toChatUsername, filePath: imgPath, sendOriginalImage: true);
-    imageMessage.chatType = fromChatType(mType);
+    EMMessage imageMessage = EMMessage.createImageSendMessage(userName: conversation.id, filePath: imgPath, sendOriginalImage: true);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
-       print('-----------success---------->' );
-       _onConversationInit();
+      _onConversationInit();
     });
     _onConversationInit();
   }
@@ -486,8 +497,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemCamera(String imgPath) {
     print('onTapItemCamera' + imgPath);
-    EMMessage imageMessage = EMMessage.createImageSendMessage(userName: toChatUsername, filePath: imgPath, sendOriginalImage: true);
-    imageMessage.chatType = fromChatType(mType);
+    EMMessage imageMessage = EMMessage.createImageSendMessage(userName: conversation.id, filePath: imgPath, sendOriginalImage: true);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
       print('-----------success---------->' );
       _onConversationInit();
@@ -505,7 +515,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    EMClient.getInstance().callManager().startCall(EMCallType.Video, toChatUsername, false, false, "123",
+    EMClient.getInstance().callManager().startCall(EMCallType.Video, conversation.id, false, false, "123",
         onSuccess:(){
           print('拨打通话成功 --- ');
         } ,
@@ -523,17 +533,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   @override
   void sendText(String text) {
-    // TODO: implement willSendText   发送文本消息
-    EMMessage message = EMMessage.createTxtSendMessage(userName: toChatUsername, content: text);
-    message.chatType = fromChatType(mType);
-
-    print('-----------LocalID---------->' + message.msgId);
-    EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
-      print('-----------ServerID---------->' + message.msgId);
-      print('-----------MessageStatus---------->' + message.status.toString());
+    EMMessage message = EMMessage.createTxtSendMessage(userName: conversation.id, content: text);
+    setState(() {
+      messageTotalList.insert(0, message);
     });
-    _onConversationInit();
+    EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
 
+    });
   }
 
   @override
@@ -573,13 +579,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     var getConnectType = await EMClient.getInstance().callManager().getConnectType();
     var getCallType = await EMClient.getInstance().callManager().getCallType();
     print(' onAcceptedinfo:  ' + ' callId: '
-      + callId.toString()  + ' getExt: '
-      + getExt.toString() + ' getLocalName: '
-      + getLocalName.toString() + ' getRemoteName: '
-      + getRemoteName.toString() + ' isRecordOnServer: '
-      + isRecordOnServer.toString() + ' getConnectType: '
-      + getConnectType.toString() + ' getCallType: '
-      + getCallType.toString()
+        + callId.toString()  + ' getExt: '
+        + getExt.toString() + ' getLocalName: '
+        + getLocalName.toString() + ' getRemoteName: '
+        + getRemoteName.toString() + ' isRecordOnServer: '
+        + isRecordOnServer.toString() + ' getConnectType: '
+        + getConnectType.toString() + ' getCallType: '
+        + getCallType.toString()
     );
     print('-----------EMCallStateChangeListener---------->'+ ': onAccepted');
   }

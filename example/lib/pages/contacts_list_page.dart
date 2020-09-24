@@ -148,9 +148,10 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
             WidgetUtil.hintBoxWithDefault('正在开发中...');
           }
         } else {
-          Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-            return new ChatPage(arguments: {'mType': Constant.chatTypeSingle,'toChatUsername':_getData(index - contactItemCount)});
-          }));
+          // TODO: conversation
+//          Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+//            return new ChatPage(arguments: {'mType': Constant.chatTypeSingle,'toChatUsername':_getData(index - contactItemCount)});
+//          }));
         }
       },
 

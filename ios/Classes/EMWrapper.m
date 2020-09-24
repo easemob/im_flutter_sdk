@@ -6,7 +6,7 @@
 //
 
 #import "EMWrapper.h"
-
+#import "EMError+Flutter.h"
 
 @implementation EMWrapper
 
@@ -26,7 +26,8 @@
 
 - (void)wrapperCallBack:(FlutterResult)result
                   error:(EMError *__nullable)error
-               userInfo:(NSDictionary *__nullable)userInfo {
+               userInfo:(NSDictionary *__nullable)userInfo
+{
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         if (!error) {
@@ -39,6 +40,19 @@
             dic[@"code"] = @(error.code);
             dic[@"desc"] = error.errorDescription;
         }
+        result(dic);
+    }
+}
+
+- (void)wrapperCallBack:(FlutterResult)result
+            channelName:(NSString *)aChannelName
+                  error:(EMError *)error
+                 object:(NSObject *)aObj
+{
+    if (result) {
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        dic[@"error"] = [error toJson];
+        dic[aChannelName] = aObj;
         result(dic);
     }
 }

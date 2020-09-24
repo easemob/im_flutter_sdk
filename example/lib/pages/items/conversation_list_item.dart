@@ -14,7 +14,6 @@ class EMConversationListItem extends StatefulWidget{
   const EMConversationListItem(this.con, this.delegate);
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _EMConversationListItemState(this.con, this.delegate);
   }
 }
@@ -36,45 +35,47 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getData();
   }
 
   void getData() async{
-    message = await con.getLastMessage();
+    message = await con.latestMessage;
     content = '';
-    switch(message.type){
-      case EMMessageType.TXT:
+    switch(message.body.type){
+      case EMMessageBodyType.TXT:
         var body = message.body as EMTextMessageBody;
-        content = body.message;
+        content = body.content;
         break;
-      case EMMessageType.IMAGE:
+      case EMMessageBodyType.IMAGE:
         content = '[图片]';
         break;
-      case EMMessageType.VIDEO:
+      case EMMessageBodyType.VIDEO:
         content = '[视频]';
         break;
-      case EMMessageType.FILE:
+      case EMMessageBodyType.FILE:
         content = '[文件]';
         break;
-      case EMMessageType.VOICE:
+      case EMMessageBodyType.VOICE:
         content = '[语音]';
         break;
-      case EMMessageType.LOCATION:
+      case EMMessageBodyType.LOCATION:
         content = '[位置]';
         break;
       default:
         content = '';
     }
-    underCount = await con.getUnreadMsgCount();
-    titleName = con.conversationId;
-    if(con.isGroup()){
-      EMGroup group = await EMClient.getInstance().groupManager().getGroup(con.conversationId);
+
+    underCount = await con.unreadCount;
+    titleName = con.id;
+    if(con.type != EMConversationType.Chat){
+      EMGroup group = await EMClient.getInstance().groupManager().getGroup(con.id);
       if(group != null){
         titleName = group.getGroupName();
       }
     }
+
+
     _refresh();
   }
 
@@ -104,9 +105,10 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   Widget _buildUserPortrait(){
     Widget protraitWidget = Image.asset('images/default_avatar.png');
-    if(con.isGroup()){
+    if(con.type != EMConversationType.Chat){
       protraitWidget = Image.asset('images/group_icon.png');
     }
+
     return ClipOval(
       child: Container(
         height: EMLayout.emConListPortraitSize,
@@ -208,7 +210,7 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
   }
 
   Widget _buildTime(){
-    var time = TimeUtil.convertTime(int.parse(message.msgTime));
+    var time = TimeUtil.convertTime(message.serverTime);
     return Container(
       width: EMLayout.emConListItemHeight,
       margin: EdgeInsets.only(right:10),

@@ -1,4 +1,5 @@
 import "em_domain_terms.dart";
+import 'models/em_message.dart';
 
 abstract class EMConnectionListener {
   /// 网络已连接
@@ -94,6 +95,13 @@ abstract class EMMessageListener {
 
   /// 消息[message]变化
   void onMessageChanged(EMMessage message);
+}
+
+
+// TODO: 会话列表变化回调，会话数量变化时回调
+abstract class EMConversationListener {
+  // TODO: 会话数量变化时回调
+  void onConversationUpdate();
 }
 
 /// @nodoc
