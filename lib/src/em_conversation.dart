@@ -19,7 +19,7 @@ class EMConversation {
   EMConversationType get type => _type;
 
   /// 会话扩展
-  String extField;
+  String _extField;
 
   /// @nodoc
   EMConversation(String conversationId) : _conversationId = conversationId;
@@ -28,7 +28,7 @@ class EMConversation {
   EMConversation.from(Map data)
       : _conversationId = data['id'],
         _type = fromEMConversationType(data['type']),
-        extField = data['ext'];
+        _extField = data['ext'];
 
   /// 获取此对话中未读取的消息数量.
   Future<int> getUnreadMsgCount() async {
@@ -38,6 +38,18 @@ class EMConversation {
       return result['count'];
     }
     return -1; //-1 means error/unknown
+  }
+
+  /// 给Conversation设置扩展.
+  void setExtField(String ext) {
+    _extField = ext;
+    _emConversationChannel.invokeMethod(
+        EMSDKMethod.setExtField , {"id": _conversationId , "ext":ext});
+  }
+
+  /// 给Conversation设置扩展.
+  String getExtField() {
+    return _extField;
   }
 
   /// 将所有未读消息设置为已读.

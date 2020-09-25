@@ -502,8 +502,6 @@ class EMMessage {
     return _attributes[attr];
   }
 
-  /// TODO: setMessageStatusCallback (EMCallBack callback)
-
   /// ext
   Map ext() {
     return _attributes;

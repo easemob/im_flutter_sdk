@@ -84,6 +84,7 @@ class EMSDKMethod {
   static const String appendMessage = 'appendMessage';
   static const String updateConversationMessage = 'updateConversationMessage';
   static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
+  static const String setExtField = 'setExtField';
 
 
   ///EMChatRoomManager methods
