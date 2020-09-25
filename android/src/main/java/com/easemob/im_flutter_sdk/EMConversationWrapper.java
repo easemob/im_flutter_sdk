@@ -67,11 +67,24 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             updateMessage(call.arguments, result);
         } else if (EMSDKMethod.getMessageAttachmentPath.equals(call.method)) {
             getMessageAttachmentPath(call.arguments, result);
+        }else if (EMSDKMethod.setExtField.equals(call.method)) {
+            setConversationExtField(call.arguments);
         }
     }
 
     private EMConversation getConversation(String id) {
         return manager.getConversation(id);
+    }
+
+    private void setConversationExtField(Object args){
+        try {
+            JSONObject argMap = (JSONObject) args;
+            String id = argMap.getString("id");
+            String ext = argMap.getString("ext");
+            getConversation(id).setExtField(ext);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void getUnreadMessageCount(Object args, Result result) {

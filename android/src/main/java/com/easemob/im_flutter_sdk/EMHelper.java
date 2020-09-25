@@ -68,7 +68,7 @@ class EMHelper {
             JSONObject data_body = args.getJSONObject("body");
 
             switch(data_type){
-                case 0:
+                case 1:
                     message = EMMessage.createSendMessage(EMMessage.Type.TXT);
                     String content = data_body.getString("message");
                     EMTextMessageBody body = new EMTextMessageBody(content);
@@ -76,7 +76,7 @@ class EMHelper {
                     setCurrency(message,emChatType,data_to);
                     setExt(args,message);
                     break;
-                case 1:
+                case 2:
                     message = EMMessage.createSendMessage(Type.IMAGE);
                     String localUrl = data_body.getString("localUrl");
                     File imageFile = new File(localUrl);
@@ -87,7 +87,7 @@ class EMHelper {
                     }
                     setExt(args,message);
                     break;
-                case 2:
+                case 3:
                     message = EMMessage.createSendMessage(Type.VIDEO);
                     String videoUrl = data_body.getString("localUrl");
                     int videoDuration = data_body.getInt("videoDuration");
@@ -100,7 +100,7 @@ class EMHelper {
                     }
                     setExt(args,message);
                     break;
-                case 3:
+                case 4:
                     message = EMMessage.createSendMessage(Type.LOCATION);
                     String address = data_body.getString("address");
                     double latitude = data_body.getDouble("latitude");
@@ -110,7 +110,7 @@ class EMHelper {
                     setCurrency(message,emChatType,data_to);
                     setExt(args,message);
                     break;
-                case 4:
+                case 5:
                     message = EMMessage.createSendMessage(Type.VOICE);
                     String voiceUrl = data_body.getString("localUrl");
                     int voiceDuration = data_body.getInt("voiceDuration");
@@ -122,7 +122,7 @@ class EMHelper {
                     }
                     setExt(args,message);
                     break;
-                case 5:
+                case 6:
                     message = EMMessage.createSendMessage(Type.FILE);
                     String fileUrl = data_body.getString("localUrl");
                     File file = new File(fileUrl);
@@ -133,7 +133,7 @@ class EMHelper {
                     }
                     setExt(args,message);
                     break;
-                case 6:
+                case 7:
                     message = EMMessage.createSendMessage(Type.CMD);
                     String action = data_body.getString("action");
                     EMCmdMessageBody cmdMessageBody = new EMCmdMessageBody(action);
@@ -536,19 +536,19 @@ class EMHelper {
     static int getType(EMMessage message){
         switch (message.getType()){
             case TXT:
-                return 0;
-            case IMAGE:
                 return 1;
-            case VIDEO:
+            case IMAGE:
                 return 2;
-            case LOCATION:
+            case VIDEO:
                 return 3;
-            case VOICE:
+            case LOCATION:
                 return 4;
-            case FILE:
+            case VOICE:
                 return 5;
-            case CMD:
+            case FILE:
                 return 6;
+            case CMD:
+                return 7;
             case CUSTOM:
                 return 8;
             default:
@@ -564,19 +564,19 @@ class EMHelper {
     static int enumMessageTypeToInt(EMMessage.Type type) {
         switch (type) {
             case TXT:
-                return 0;
-            case IMAGE:
                 return 1;
-            case VIDEO:
+            case IMAGE:
                 return 2;
-            case LOCATION:
+            case VIDEO:
                 return 3;
-            case VOICE:
+            case LOCATION:
                 return 4;
-            case FILE:
+            case VOICE:
                 return 5;
-            case CMD:
+            case FILE:
                 return 6;
+            case CMD:
+                return 7;
             case CUSTOM:
                 return 8;
             default:
@@ -690,25 +690,25 @@ class EMHelper {
 
     static int convertEMMessageTypeToInt(Type type){
         if(type == Type.TXT){
-            return 0;
-        }
-        if(type == Type.IMAGE){
             return 1;
         }
-        if(type == Type.VIDEO){
+        if(type == Type.IMAGE){
             return 2;
         }
-        if(type == Type.LOCATION){
+        if(type == Type.VIDEO){
             return 3;
         }
-        if(type == Type.VOICE){
+        if(type == Type.LOCATION){
             return 4;
         }
-        if(type == Type.FILE){
+        if(type == Type.VOICE){
             return 5;
         }
-        if(type == Type.CMD){
+        if(type == Type.FILE){
             return 6;
+        }
+        if(type == Type.CMD){
+            return 7;
         }
         if(type == Type.CUSTOM){
             return 8;
@@ -718,25 +718,25 @@ class EMHelper {
 
     static Type convertIntToEMMessageType(int type){
 
-        if(type == 0){
+        if(type == 1){
             return Type.TXT;
         }
-        if(type == 1){
+        if(type == 2){
             return Type.IMAGE;
         }
-        if(type == 2){
+        if(type == 3){
             return Type.VIDEO;
         }
-        if(type == 3){
+        if(type == 4){
             return Type.LOCATION;
         }
-        if(type == 4){
+        if(type == 5){
             return Type.VOICE;
         }
-        if(type == 5){
+        if(type == 6){
             return Type.FILE;
         }
-        if(type == 6){
+        if(type == 7){
             return Type.CMD;
         }
         if(type == 8){

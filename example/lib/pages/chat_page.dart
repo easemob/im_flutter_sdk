@@ -424,7 +424,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onTapMessageItem(EMMessage message) {
     // TODO: implement didTapMessageItem
     if (message.direction == Direction.RECEIVE) {
-      if (message.ext() != null) {
+      if (message.ext() != null && message.ext()['conferenceId'] != null) {
         String conferenceId;
         String password;
         if (message.ext()['conferenceId'] != null && message.ext()['conferenceId'].length > 0) {
@@ -474,7 +474,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onTapItemPicture(String imgPath){
     print('onTapItemPicture' + imgPath);
 
-    EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
+    EMMessage imageMessage = EMMessage.createImageSendMessage(userName: toChatUsername, filePath: imgPath, sendOriginalImage: true);
     imageMessage.chatType = fromChatType(mType);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
        print('-----------success---------->' );
@@ -486,7 +486,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemCamera(String imgPath) {
     print('onTapItemCamera' + imgPath);
-    EMMessage imageMessage = EMMessage.createImageSendMessage(imgPath, true, toChatUsername);
+    EMMessage imageMessage = EMMessage.createImageSendMessage(userName: toChatUsername, filePath: imgPath, sendOriginalImage: true);
     imageMessage.chatType = fromChatType(mType);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
       print('-----------success---------->' );
@@ -524,12 +524,10 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void sendText(String text) {
     // TODO: implement willSendText   发送文本消息
-    EMMessage message = EMMessage.createTxtSendMessage(text, toChatUsername);
+    EMMessage message = EMMessage.createTxtSendMessage(userName: toChatUsername, content: text);
     message.chatType = fromChatType(mType);
-    EMTextMessageBody body = EMTextMessageBody(text);
-    message.body = body;
+
     print('-----------LocalID---------->' + message.msgId);
-    message.setAttribute({"test1":"1111","test2":true});
     EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
       print('-----------ServerID---------->' + message.msgId);
       print('-----------MessageStatus---------->' + message.status.toString());
@@ -539,7 +537,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   @override
-  void sendVoice(String path, int duration) {
+  void sendVoice (String path, int duration) async{
     WidgetUtil.hintBoxWithDefault('语音消息待实现!');
   }
 
