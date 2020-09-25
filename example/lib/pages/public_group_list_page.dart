@@ -33,7 +33,7 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
   }
 
   void _getPublicGroups(){
-    EMClient.getInstance().groupManager().getPublicGroupsFromServer(20, '',
+    EMClient.getInstance().groupManager.getPublicGroupsFromServer(20, '',
     onSuccess: (result){
       groupList = result.getData();
       _loading = false;
@@ -144,10 +144,10 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
   }
 
   void _onTap(EMGroupInfo groupInfo){
-    EMClient.getInstance().groupManager().getGroupFromServer(groupInfo.getGroupId(),
+    EMClient.getInstance().groupManager.getGroupFromServer(groupInfo.getGroupId(),
         onSuccess: (group){
           if(group.isMemberOnly()) {
-            EMClient.getInstance().groupManager().applyJoinToGroup(group.getGroupId(), '',
+            EMClient.getInstance().groupManager.applyJoinToGroup(group.getGroupId(), '',
               onSuccess: (){
                 WidgetUtil.hintBoxWithDefault('申请加入公开群成功，等待群主同意');
               },
@@ -155,7 +155,7 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
                 WidgetUtil.hintBoxWithDefault('申请加入公开群失败：'+desc);
               });
           }else{
-            EMClient.getInstance().groupManager().joinGroup(group.getGroupId(),
+            EMClient.getInstance().groupManager.joinGroup(group.getGroupId(),
                 onSuccess: (){
               // TODO: conversation
 //              WidgetUtil.hintBoxWithDefault('加入公开群成功');

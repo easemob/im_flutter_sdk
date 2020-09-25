@@ -46,8 +46,8 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMClient.getInstance().init(options);
     EMClient.getInstance().addConnectionListener(this);
 
-    EMClient.getInstance().callManager().registerCallSharedManager();
-    EMClient.getInstance().conferenceManager().registerConferenceSharedManager();
+    EMClient.getInstance().callManager.registerCallSharedManager();
+    EMClient.getInstance().conferenceManager.registerConferenceSharedManager();
 
     super.initState();
   }
@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
   void onConnected() {
     // TODO: implement onConnected
     print("网络连接成功");
-    EMClient.getInstance().callManager().registerCallReceiver();
+    EMClient.getInstance().callManager.registerCallReceiver();
   }
 
   @override

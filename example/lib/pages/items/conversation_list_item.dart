@@ -41,6 +41,9 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   void getData() async{
     message = await con.latestMessage;
+    if(message == null) {
+      return;
+    }
     content = '';
     switch(message.body.type){
       case EMMessageBodyType.TXT:
@@ -69,13 +72,11 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
     underCount = await con.unreadCount;
     titleName = con.id;
     if(con.type != EMConversationType.Chat){
-      EMGroup group = await EMClient.getInstance().groupManager().getGroup(con.id);
+      EMGroup group = await EMClient.getInstance().groupManager.getGroup(con.id);
       if(group != null){
         titleName = group.getGroupName();
       }
     }
-
-
     _refresh();
   }
 

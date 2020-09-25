@@ -52,9 +52,9 @@ class _ChatPageState extends State<ChatPage> implements
   void initState() {
     super.initState();
 
-    EMClient.getInstance().chatManager().addMessageListener(this);
-    EMClient.getInstance().chatManager().addMessageStatusListener(this);
-    EMClient.getInstance().callManager().addCallStateChangeListener(this);
+    EMClient.getInstance().chatManager.addMessageListener(this);
+    EMClient.getInstance().chatManager.addMessageStatusListener(this);
+    EMClient.getInstance().callManager.addCallStateChangeListener(this);
 
     currentStatus = ChatStatus.Normal;
 
@@ -205,7 +205,7 @@ class _ChatPageState extends State<ChatPage> implements
     // TODO: conversation
     /*
     messageList.clear();
-    conversation = await EMClient.getInstance().chatManager().
+    conversation = await EMClient.getInstance().chatManager.
     getConversation(toChatUsername, fromEMConversationType(mType), true );
 
     if(conversation != null){
@@ -244,11 +244,21 @@ class _ChatPageState extends State<ChatPage> implements
     // 如果消息id是''，则表示全部已读
     try{
       if(messageId.length == 0) {
-        conversation.markAllMessagesAsRead();
+        try{
+          conversation.markAllMessagesAsRead();
+        }catch(e){
+
+        }
+      }else{
+        try{
+          conversation.markMessageAsRead(messageId: messageId);
+        }catch(e){
+
+        }
       }
     } catch (e) {
-    }
 
+    }
   }
 
   void _listViewToEnd() {
@@ -257,7 +267,7 @@ class _ChatPageState extends State<ChatPage> implements
 
   ///如果是聊天室类型 先加入聊天室
   _joinChatRoom(){
-    EMClient.getInstance().chatRoomManager().joinChatRoom(
+    EMClient.getInstance().chatRoomManager.joinChatRoom(
         conversation.id ,
         onError: (int errorCode,String errorString) {
           //TODO: 弹出加入失败toast;
@@ -321,7 +331,7 @@ class _ChatPageState extends State<ChatPage> implements
   }
 
   void checkOutRoom(){
-    EMClient.getInstance().chatRoomManager().leaveChatRoom(conversation.id,
+    EMClient.getInstance().chatRoomManager.leaveChatRoom(conversation.id,
         onSuccess: (){
           print('退出聊天室成功');
         },
@@ -338,7 +348,7 @@ class _ChatPageState extends State<ChatPage> implements
     Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
 //      WidgetUtil.hintBoxWithDefault('视频通话待实现!');
 
-      EMClient.getInstance().callManager().startCall(EMCallType.Video, conversation.id, true, true, "1323",
+      EMClient.getInstance().callManager.startCall(EMCallType.Video, conversation.id, true, true, "1323",
           onSuccess:() {
           } ,
           onError:(code, desc){
@@ -354,7 +364,7 @@ class _ChatPageState extends State<ChatPage> implements
 
 
   @override
-  void onCmdMessageReceived(List<EMMessage> messages) {
+  void onCmdMessagesReceived(List<EMMessage> messages) {
     // TODO: implement onCmdMessageReceived
   }
 
@@ -379,26 +389,10 @@ class _ChatPageState extends State<ChatPage> implements
   }
 
   @override
-  void onMessageReceived(List<EMMessage> messages) {
-    /* TODO: conversation
-    // TODO: implement onMessageReceived
-    for (var message in messages) {
-      String username ;
-      // group message
-      if (message.chatType == EMMessageChatType.GroupChat || message.chatType == EMMessageChatType.ChatRoom) {
-        username = message.to;
-      } else {
-        // single chat message
-        username = message.from;
-      }
-      // if the message is for current conversation
-      if(username == toChatUsername || message.to == toChatUsername || message.conversationId == toChatUsername) {
-        conversation.markMessageAsRead(message.msgId);
-      }
-    }
-    _onConversationInit();
-
-     */
+  void onMessagesReceived(List<EMMessage> messages) {
+    setState(() {
+      messageTotalList.insertAll(0, messages);
+    });
   }
 
   @override
@@ -406,7 +400,7 @@ class _ChatPageState extends State<ChatPage> implements
     _scrollController.dispose();
     messageTotalList.clear();
     super.dispose();
-    EMClient.getInstance().chatManager().removeMessageListener(this);
+    EMClient.getInstance().chatManager.removeMessageListener(this);
     if (conversation.type == EMConversationType.ChatRoom) {
       checkOutRoom();
     }
@@ -452,7 +446,7 @@ class _ChatPageState extends State<ChatPage> implements
           password = message.attributes['em_conference_password'];
         }
 
-        EMClient.getInstance().conferenceManager().joinConference(conferenceId, password,
+        EMClient.getInstance().conferenceManager.joinConference(conferenceId, password,
             onSuccess:(EMConference conf) {
               print('加入会议成功 --- ' + conf.getConferenceId());
             }, onError:(code, desc) {
@@ -488,7 +482,7 @@ class _ChatPageState extends State<ChatPage> implements
     print('onTapItemPicture' + imgPath);
 
     EMMessage imageMessage = EMMessage.createImageSendMessage(userName: conversation.id, filePath: imgPath, sendOriginalImage: true);
-    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
+    EMClient.getInstance().chatManager.sendMessage(imageMessage,onSuccess:(){
       _onConversationInit();
     });
     _onConversationInit();
@@ -498,7 +492,7 @@ class _ChatPageState extends State<ChatPage> implements
   void onTapItemCamera(String imgPath) {
     print('onTapItemCamera' + imgPath);
     EMMessage imageMessage = EMMessage.createImageSendMessage(userName: conversation.id, filePath: imgPath, sendOriginalImage: true);
-    EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
+    EMClient.getInstance().chatManager.sendMessage(imageMessage,onSuccess:(){
       print('-----------success---------->' );
       _onConversationInit();
     });
@@ -515,7 +509,7 @@ class _ChatPageState extends State<ChatPage> implements
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    EMClient.getInstance().callManager().startCall(EMCallType.Video, conversation.id, false, false, "123",
+    EMClient.getInstance().callManager.startCall(EMCallType.Video, conversation.id, false, false, "123",
         onSuccess:(){
           print('拨打通话成功 --- ');
         } ,
@@ -537,7 +531,7 @@ class _ChatPageState extends State<ChatPage> implements
     setState(() {
       messageTotalList.insert(0, message);
     });
-    EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
+    EMClient.getInstance().chatManager.sendMessage(message,onSuccess:(){
 
     });
   }
@@ -571,13 +565,13 @@ class _ChatPageState extends State<ChatPage> implements
   @override
   void onAccepted() async{
     // TODO: implement onAccepted
-    var callId = await EMClient.getInstance().callManager().getCallId();
-    var getExt = await EMClient.getInstance().callManager().getExt();
-    var getLocalName = await EMClient.getInstance().callManager().getLocalName();
-    var getRemoteName = await EMClient.getInstance().callManager().getRemoteName();
-    var isRecordOnServer = await EMClient.getInstance().callManager().isRecordOnServer();
-    var getConnectType = await EMClient.getInstance().callManager().getConnectType();
-    var getCallType = await EMClient.getInstance().callManager().getCallType();
+    var callId = await EMClient.getInstance().callManager.getCallId();
+    var getExt = await EMClient.getInstance().callManager.getExt();
+    var getLocalName = await EMClient.getInstance().callManager.getLocalName();
+    var getRemoteName = await EMClient.getInstance().callManager.getRemoteName();
+    var isRecordOnServer = await EMClient.getInstance().callManager.isRecordOnServer();
+    var getConnectType = await EMClient.getInstance().callManager.getConnectType();
+    var getCallType = await EMClient.getInstance().callManager.getCallType();
     print(' onAcceptedinfo:  ' + ' callId: '
         + callId.toString()  + ' getExt: '
         + getExt.toString() + ' getLocalName: '
@@ -609,7 +603,7 @@ class _ChatPageState extends State<ChatPage> implements
       messageTotalList.clear();
       _onConversationInit();
     });
-    var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();
+    var getServerRecordId = await EMClient.getInstance().callManager.getServerRecordId();
     print('-----------getServerRecordId----------> '+ getServerRecordId);
     print('-----------EMCallStateChangeListener---------->'+ ': onDisconnected' + reason.toString());
   }

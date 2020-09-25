@@ -79,10 +79,10 @@ class EMContactChangeEvent {
 abstract class EMMessageListener {
 
   /// 收到消息[messages]
-  void onMessageReceived(List<EMMessage> messages);
+  void onMessagesReceived(List<EMMessage> messages);
 
   /// 收到cmd消息[messages]
-  void onCmdMessageReceived(List<EMMessage> messages);
+  void onCmdMessagesReceived(List<EMMessage> messages);
 
   /// 收到[messages]消息已读
   void onMessageRead(List<EMMessage> messages);

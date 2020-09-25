@@ -42,7 +42,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   void initState() {
     // TODO: implement initState
     super.initState();
-    EMClient.getInstance().contactManager().addContactListener(this);
+    EMClient.getInstance().contactManager.addContactListener(this);
     loadEMContactsList();
   }
 
@@ -50,7 +50,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    EMClient.getInstance().contactManager().removeContactListener(this);
+    EMClient.getInstance().contactManager.removeContactListener(this);
   }
 
   String _getData(int index) {
@@ -139,7 +139,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
           } else if (index == 4) {
             Navigator.of(context).pushNamed(Constant.toChatRoomListPage);
           } else if (index == 6) {
-            EMClient.getInstance().conferenceManager().createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication, '123', false, false, onSuccess:(EMConference conf) {
+            EMClient.getInstance().conferenceManager.createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication, '123', false, false, onSuccess:(EMConference conf) {
               print('创建会议成功 --- ' + conf.getConferenceId());
               }, onError: (code, desc){
               print('创建会议失败 --- $desc');
@@ -148,10 +148,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
             WidgetUtil.hintBoxWithDefault('正在开发中...');
           }
         } else {
-          // TODO: conversation
-//          Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-//            return new ChatPage(arguments: {'mType': Constant.chatTypeSingle,'toChatUsername':_getData(index - contactItemCount)});
-//          }));
+          _pushToChatPage(_getData(index - contactItemCount));
         }
       },
 
@@ -197,8 +194,19 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
     );
   }
 
+  void _pushToChatPage(String chatter, [EMConversationType type = EMConversationType.Chat]) async {
+    Future result = EMClient.getInstance().chatManager.getConversation(id: chatter, type: type);
+    result.then((value) => {
+      Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+        return new ChatPage(conversation: value);
+      }))
+    }).catchError((error) {
+        print('create conversation error');
+    });
+  }
+
   void loadEMContactsList() {
-    EMClient.getInstance().contactManager().getAllContactsFromServer(
+    EMClient.getInstance().contactManager.getAllContactsFromServer(
         onSuccess: (contacts){
           this.contactsList = contacts.toList();
           _refreshUI();
@@ -231,7 +239,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
     loadEMContactsList();
   }
   void onContactInvited(String userName, String reason){
-    EMClient.getInstance().contactManager().acceptInvitation(userName,
+    EMClient.getInstance().contactManager.acceptInvitation(userName,
         onSuccess: (){
           Future.sync((){
             WidgetUtil.hintBoxWithDefault('自动同意$userName的好友请求!');

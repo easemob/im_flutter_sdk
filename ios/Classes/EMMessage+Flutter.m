@@ -219,6 +219,30 @@
     return ret;
 }
 
++ (EMMessageBodyType)typeFromString:(NSString *)aStrType {
+   
+    EMMessageBodyType ret = EMMessageBodyTypeText;
+    
+    if([aStrType isEqualToString:@"txt"]){
+        ret = EMMessageBodyTypeText;
+    } else if ([aStrType isEqualToString:@"loc"]) {
+        ret = EMMessageBodyTypeLocation;
+    } else if ([aStrType isEqualToString:@"cmd"]) {
+        ret = EMMessageBodyTypeCmd;
+    } else if ([aStrType isEqualToString:@"custom"]) {
+        ret = EMMessageBodyTypeCustom;
+    } else if ([aStrType isEqualToString:@"file"]) {
+        ret = EMMessageBodyTypeFile;
+    } else if ([aStrType isEqualToString:@"img"]) {
+        ret = EMMessageBodyTypeImage;
+    } else if ([aStrType isEqualToString:@"video"]) {
+        ret = EMMessageBodyTypeVideo;
+    } else if ([aStrType isEqualToString:@"voice"]) {
+        ret = EMMessageBodyTypeVoice;
+    }
+    return ret;
+}
+
 @end
 
 #pragma mark - txt

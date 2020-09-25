@@ -36,7 +36,7 @@ class _EMGroupAnnouncementPageState extends State<EMGroupAnnouncementPage>{
   }
 
   void _fetchGroupAnnouncement(){
-    EMClient.getInstance().groupManager().fetchGroupAnnouncement(_groupId,
+    EMClient.getInstance().groupManager.fetchGroupAnnouncement(_groupId,
     onSuccess: (announcement){
       _announcement = announcement;
       _editTextController = new TextEditingController(text: _announcement);

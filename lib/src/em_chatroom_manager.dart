@@ -567,8 +567,4 @@ class EMChatRoomManager{
       }
     });
   }
-
-  EMChatRoomManager chatRoomManager(){
-      return _instance;
-  }
 }

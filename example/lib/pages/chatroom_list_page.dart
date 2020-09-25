@@ -33,7 +33,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
   }
 
   void _loadChatRoomList(){
-    EMClient.getInstance().chatRoomManager().fetchPublicChatRoomsFromServer(1, 20,
+    EMClient.getInstance().chatRoomManager.fetchPublicChatRoomsFromServer(1, 20,
     onSuccess: (data){
       print(data);
       roomList = data.getData();
@@ -87,7 +87,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
     );
   }
 
-  void onTapChatRoom(EMChatRoom room){
+  void onTapChatRoom(EMChatRoom room) async{
     // TODO: conversation
 //    Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
 //      return new ChatPage(arguments: {'mType': Constant.chatTypeChatRoom,'toChatUsername':room.getId()});

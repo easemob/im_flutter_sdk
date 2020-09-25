@@ -363,36 +363,36 @@ class EMClient {
   }
 
   /// @nodoc chatManager - retrieve [EMChatManager] handle.
-  EMChatManager chatManager() {
+  get chatManager {
     return _chatManager;
   }
 
   /// @nodoc  contactManager - retrieve [EMContactManager] handle.
-  EMContactManager contactManager() {
+  get contactManager {
     return _contactManager;
   }
 
   /// @nodoc
-  EMChatRoomManager chatRoomManager() {
+  get chatRoomManager {
     return _chatRoomManager;
   }
 
   /// @nodoc  groupManager - retrieve [EMGroupManager] handle.
-  EMGroupManager groupManager() {
+  get groupManager {
     return _groupManager;
   }
 
   /// @nodoc  pushManager - retrieve [EMPushManager] handle.
-  EMPushManager pushManager() {
+  get pushManager {
     return _pushManager;
   }
 
   /// @nodoc  callManager - retrieve [EMCallManager] handle.
-  EMCallManager callManager() {
+  get callManager {
     return _callManager;
   }
 
-  EMConferenceManager conferenceManager() {
+  get conferenceManager {
     return _conferenceManager;
   }
 

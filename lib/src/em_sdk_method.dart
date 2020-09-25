@@ -54,8 +54,8 @@ class EMSDKMethod {
   static const String fetchHistoryMessages = "fetchHistoryMessages";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
   static const String getCursor = "getCursor";
-  static const String onMessageReceived = "onMessageReceived";
-  static const String onCmdMessageReceived = "onCmdMessageReceived";
+  static const String onMessagesReceived = "onMessagesReceived";
+  static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessageRead = "onMessageRead";
   static const String onMessageDelivered = "onMessageDelivered";
   static const String onMessageRecalled = "onMessageRecalled";
@@ -67,15 +67,9 @@ class EMSDKMethod {
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
-  static const String loadMoreMsgFromDB = 'loadMoreMsgFromDB';
-  static const String searchConversationMsgFromDB =
-      'searchConversationMsgFromDB';
-  static const String searchConversationMsgFromDBByType =
-      'searchConversationMsgFromDBByType';
-  static const String loadMessages = 'loadMessages';
   static const String markMessageAsRead = 'markMessageAsRead';
   static const String removeMessage = 'removeMessage';
-  static const String getLastMessage = 'getLastMessage';
+  static const String getLatestMessage = 'getLatestMessage';
   static const String getLatestMessageFromOthers = 'getLatestMessageFromOthers';
   static const String clear = 'clear';
   static const String clearAllMessages = 'clearAllMessages';
@@ -84,6 +78,16 @@ class EMSDKMethod {
   static const String updateConversationMessage = 'updateConversationMessage';
   static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
 
+  // 根据一组消息获取消息
+  static const String loadMsgWithId = 'loadMsgWithId';
+  // 根据起始消息id获取消息
+  static const String loadMsgWithStartId = 'loadMsgWithStartId';
+  // 根据关键字获取消息
+  static const String loadMsgWithKeywords = 'loadMsgWithKeywords';
+  // 根据消息类型获取消息
+  static const String loadMsgWithMsgType = 'loadMsgWithMsgType';
+  // 通过时间获取消息
+  static const String loadMsgWithTime = 'loadMsgWithTime';
 
   ///EMChatRoomManager methods
   static final String joinChatRoom = "joinChatRoom";

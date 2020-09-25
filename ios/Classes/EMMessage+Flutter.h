@@ -18,9 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface EMMessageBody (Flutter)
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
++ (EMMessageBodyType)typeFromString:(NSString *)aStrType;
 
-//- (EMDownloadStatus)downloadStatusFromInt:(int)aStatus;
-//- (int)downloadStatusToInt:(EMDownloadStatus)aStatus;
 @end
 
 
