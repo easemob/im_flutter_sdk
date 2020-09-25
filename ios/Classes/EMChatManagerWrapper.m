@@ -39,8 +39,6 @@
         [self ackMessageRead:call.arguments result:result];
     } else if ([EMMethodKeyRecallMessage isEqualToString:call.method]) {
         [self recallMessage:call.arguments result:result];
-    } else if ([EMMethodKeyGetMessage isEqualToString:call.method]) {
-        [self getMessage:call.arguments result:result];
     } else if ([EMMethodKeyGetConversation isEqualToString:call.method]) {
         [self getConversation:call.arguments result:result];
     } else if ([EMMethodKeyMarkAllChatMsgAsRead isEqualToString:call.method]) {
@@ -117,10 +115,6 @@
 }
 
 - (void)recallMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
-}
-
-- (void)getMessage:(NSDictionary *)param result:(FlutterResult)result {
     
 }
 
@@ -210,11 +204,23 @@
 
 - (void)getAllConversations:(NSDictionary *)param result:(FlutterResult)result {
     NSArray *conversations = [EMClient.sharedClient.chatManager getAllConversations];
-    NSMutableArray *conversationDictList = [NSMutableArray array];
-    for (EMConversation *conversation in conversations) {
-        [conversationDictList addObject:[conversation toJson]];
+    NSArray *sortedList = [conversations sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        if (((EMConversation *)obj1).latestMessage.timestamp > ((EMConversation *)obj2).latestMessage.timestamp) {
+            return NSOrderedAscending;
+        }else {
+            return NSOrderedDescending;
+        }
+    }];
+    NSMutableArray *conList = [NSMutableArray array];
+    for (EMConversation *conversation in sortedList) {
+        [conList addObject:[conversation toJson]];
     }
-    [self wrapperCallBack:result error:nil userInfo:@{@"conversations" : conversationDictList}];
+    
+    [self wrapperCallBack:result
+              channelName:EMMethodKeyGetAllConversations
+                    error:nil
+                   object:conList];
+
 }
 
 
@@ -224,15 +230,16 @@
 
 - (void)deleteConversation:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *conversationId = param[@"userName"];
-    BOOL deleteMessages = [param[@"deleteMessages"] boolValue];
+    NSString *conversationId = param[@"id"];
+    BOOL isDeleteMsgs = [param[@"deleteMessages"] boolValue];
     [EMClient.sharedClient.chatManager deleteConversation:conversationId
-                                         isDeleteMessages:deleteMessages
+                                         isDeleteMessages:isDeleteMsgs
                                                completion:^(NSString *aConversationId, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyDeleteConversation
                             error:aError
-                         userInfo:@{@"status" : [NSNumber numberWithBool:(aError == nil)]}];
+                           object:nil];
     }];
 }
 
@@ -314,9 +321,11 @@
 - (void)messagesDidReceive:(NSArray *)aMessages {
     NSMutableArray *msgList = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
-        [msgList addObject:[EMHelper messageToDictionary:msg]];
+        [msgList addObject:[msg toJson]];
     }
-    [self.channel invokeMethod:EMMethodKeyOnMessageReceived arguments:@{@"messages":msgList}];
+    [self.channel invokeMethod:EMMethodKeyOnMessagesReceived
+                     arguments:@{EMMethodKeyOnMessagesReceived:msgList}
+     ];
 }
 
 - (void)cmdMessagesDidReceive:(NSArray *)aCmdMessages {
@@ -325,7 +334,9 @@
         [cmdMsgList addObject:[EMHelper messageToDictionary:msg]];
     }
     
-    [self.channel invokeMethod:EMMethodKeyOnCmdMessageReceived arguments:@{@"messages":cmdMsgList}];
+    [self.channel invokeMethod:EMMethodKeyOnCmdMessagesReceived
+                     arguments:@{EMMethodKeyOnCmdMessagesReceived:cmdMsgList}
+     ];
 }
 
 - (void)messagesDidRead:(NSArray *)aMessages {

@@ -11,7 +11,7 @@
 @implementation EMConversation (Flutter)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-    ret[@"id"] = self.conversationId;
+    ret[@"con_id"] = self.conversationId;
     ret[@"type"] = @([self.class typeToInt:self.type]);
     ret[@"unreadCount"] = @(self.unreadMessagesCount);
     ret[@"ext"] = self.ext;

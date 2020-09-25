@@ -73,8 +73,8 @@ static NSString * const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages
 static NSString * const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString * const EMMethodKeyGetCursor = @"getCursor";
 
-static NSString * const EMMethodKeyOnMessageReceived = @"onMessageReceived";
-static NSString * const EMMethodKeyOnCmdMessageReceived = @"onCmdMessageReceived";
+static NSString * const EMMethodKeyOnMessagesReceived = @"onMessagesReceived";
+static NSString * const EMMethodKeyOnCmdMessagesReceived = @"onCmdMessagesReceived";
 static NSString * const EMMethodKeyOnMessageRead = @"onMessageRead";
 static NSString * const EMMethodKeyOnMessageDelivered = @"onMessageDelivered";
 static NSString * const EMMethodKeyOnMessageRecalled = @"onMessageRecalled";
@@ -88,21 +88,26 @@ static NSString * const EMMethodKeyAddMessageListener = @"addMessageListener";
 #pragma mark - EMConversationWrapper
 
 static NSString * const EMMethodKeyGetUnreadMsgCount = @"getUnreadMsgCount";
-static NSString * const EMMethodKeyMarkAllMessagesAsRead = @"markAllMessagesAsRead";
-static NSString * const EMMethodKeyLoadMoreMsgFromDB = @"loadMoreMsgFromDB";
-static NSString * const EMMethodKeySearchConversationMsgFromDB = @"searchConversationMsgFromDB";
-static NSString * const EMMethodKeySearchConversationMsgFromDBByType = @"searchConversationMsgFromDBByType";
-static NSString * const EMMethodKeyLoadMessages = @"loadMessages";
-static NSString * const EMMethodKeyMarkMessageAsRead = @"markMessageAsRead";
-static NSString * const EMMethodKeyRemoveMessage = @"removeMessage";
-static NSString * const EMMethodKeyGetLastMessage = @"getLastMessage";
-static NSString * const EMMethodKeyGetLatestMessageFromOthers = @"getLatestMessageFromOthers";
+static NSString * const EMMethodKeyMarkAllMsgsAsRead = @"markAllMessagesAsRead";
+
+static NSString * const EMMethodKeyMarkMsgAsRead = @"markMessageAsRead";
+static NSString * const EMMethodKeyRemoveMsg = @"removeMessage";
+static NSString * const EMMethodKeyGetLatestMsg = @"getLatestMessage";
+static NSString * const EMMethodKeyGetLatestMsgFromOthers = @"getLatestMessageFromOthers";
 static NSString * const EMMethodKeyClear = @"clear";
-static NSString * const EMMethodKeyClearAllMessages = @"clearAllMessages";
-static NSString * const EMMethodKeyInsertMessage = @"insertMessage";
-static NSString * const EMMethodKeyAppendMessage = @"appendMessage";
-static NSString * const EMMethodKeyUpdateConversationMessage = @"updateConversationMessage";
-static NSString * const EMMethodKeyGetMessageAttachmentPath = @"getMessageAttachmentPath";
+static NSString * const EMMethodKeyClearAllMsg = @"clearAllMessages";
+static NSString * const EMMethodKeyInsertMsg = @"insertMessage";
+static NSString * const EMMethodKeyAppendMsg = @"appendMessage";
+static NSString * const EMMethodKeyUpdateConversationMsg = @"updateConversationMessage";
+static NSString * const EMMethodKeyGetMsgAttachmentPath = @"getMessageAttachmentPath";
+
+static NSString * const EMMethodKeyLoadMsgWithId = @"loadMsgWithId";
+static NSString * const EMMethodKeyLoadMsgWithStartId = @"loadMsgWithStartId";
+static NSString * const EMMethodKeyLoadMsgWithKeywords = @"loadMsgWithKeywords";
+static NSString * const EMMethodKeyLoadMsgWithMsgType = @"loadMsgWithMsgType";
+static NSString * const EMMethodKeyLoadMsgWithTime = @"loadMsgWithTime";
+
+
 
 #pragma mark - EMChatroomManagerWrapper
 

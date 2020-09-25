@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/src/models/em_error.dart';
 
 import "models/em_conversation.dart";
 import 'em_domain_terms.dart';
@@ -55,10 +56,10 @@ class EMChatManager {
   void _addNativeMethodCallHandler() {
     _emChatManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onMessageReceived) {
-        return _onMessageReceived(argMap);
-      } else if (call.method == EMSDKMethod.onCmdMessageReceived) {
-        return _onCmdMessageReceived(argMap);
+      if (call.method == EMSDKMethod.onMessagesReceived) {
+        return _onMessagesReceived(argMap);
+      } else if (call.method == EMSDKMethod.onCmdMessagesReceived) {
+        return _onCmdMessagesReceived(argMap);
       } else if (call.method == EMSDKMethod.onMessageRead) {
         return _onMessageRead(argMap);
       } else if (call.method == EMSDKMethod.onMessageDelivered) {
@@ -239,18 +240,23 @@ class EMChatManager {
 
   /// 获取所有会话
   Future<List<EMConversation>> getAllConversations() async {
-    Map<String, dynamic> result = await _emChatManagerChannel
-        .invokeMethod(EMSDKMethod.getAllConversations);
-    if (result['success']) {
-      var conversationList = List<EMConversation>();
-      var conversations = result['conversations'] as List<dynamic>;
-      for (var conversation in conversations) {
-        conversationList.add(EMConversation.fromJson(conversation));
-      }
-      return conversationList;
-    } else {
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(EMSDKMethod.getAllConversations);
+
+    EMError.hasErrorFromResult(result);
+
+    List list = result[EMSDKMethod.getAllConversations];
+
+    if(list == null) {
       return null;
     }
+
+    var conversationList = List<EMConversation>();
+
+    list.forEach((element) {
+      conversationList.add(EMConversation.fromJson(element));
+    });
+
+    return conversationList;
   }
 
   /// 加载所有会话
@@ -259,18 +265,12 @@ class EMChatManager {
   }
 
   /// 删除与[userName] 的对话, 如果[deleteConversations]设置为true，则还会删除消息。
-  Future<bool> deleteConversation(
-    String userName,
-    bool deleteMessages
-  ) async {
-    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
-        EMSDKMethod.deleteConversation,
-        {"userName": userName, "deleteMessages": deleteMessages});
-    if (result['success']) {
-      return result['status'];
-    } else {
-      return false;
-    }
+  Future<Null> deleteConversation(String conId, [bool deleteMessages = true]) async {
+
+    Map request = {"id": conId, "deleteMessages": deleteMessages};
+
+    Map result = await _emChatManagerChannel.invokeMethod(EMSDKMethod.deleteConversation, request);
+    EMError.hasErrorFromResult(result);
   }
 
   /// 添加消息监听 [listener]
@@ -368,26 +368,26 @@ class EMChatManager {
   }
 
   /// @nodoc
-  Future<void> _onMessageReceived(Map map) async {
-    var list = map['messages'];
+  Future<void> _onMessagesReceived(Map map) async {
+    var list = map[EMSDKMethod.onMessagesReceived];
     var messageList = List<EMMessage>();
     for (var message in list) {
         messageList.add( EMMessage.fromJson(message) );
     }
     for (var listener in _messageListeners) {
-      listener.onMessageReceived(messageList);
+      listener.onMessagesReceived(messageList);
     }
   }
 
   /// @nodoc
-  Future<void> _onCmdMessageReceived(Map map) async {
-    var list = map['messages'];
+  Future<void> _onCmdMessagesReceived(Map map) async {
+    var list = map[EMSDKMethod.onCmdMessagesReceived];
     var messages = List<EMMessage>();
     for (var message in list) {
       messages.add(EMMessage.fromJson(message));
     }
     for (var listener in _messageListeners) {
-      listener.onCmdMessageReceived(messages);
+      listener.onCmdMessagesReceived(messages);
     }
   }
 

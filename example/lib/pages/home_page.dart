@@ -35,9 +35,9 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
   void initState() {
     // TODO: implement initState
     super.initState();
-    EMClient.getInstance().groupManager().loadAllGroups();
-    EMClient.getInstance().chatManager().loadAllConversations();
-    EMClient.getInstance().chatManager().addMessageListener(this);
+    EMClient.getInstance().groupManager.loadAllGroups();
+    EMClient.getInstance().chatManager.loadAllConversations();
+    EMClient.getInstance().chatManager.addMessageListener(this);
     if(Platform.isAndroid) {
       new ImDemoPlugin().loginComplete();
     }
@@ -77,10 +77,10 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
 
   }
 
-  void onMessageReceived(List<EMMessage> messages){
+  void onMessagesReceived(List<EMMessage> messages){
 
   }
-  void onCmdMessageReceived(List<EMMessage> messages){}
+  void onCmdMessagesReceived(List<EMMessage> messages){}
   void onMessageRead(List<EMMessage> messages){}
   void onMessageDelivered(List<EMMessage> messages){}
   void onMessageRecalled(List<EMMessage> messages){}

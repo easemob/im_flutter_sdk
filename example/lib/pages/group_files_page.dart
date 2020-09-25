@@ -34,7 +34,7 @@ class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
   }
 
   void _fetchGroupSharedFile(){
-    EMClient.getInstance().groupManager().fetchGroupSharedFileList(_groupId, 1, 20,
+    EMClient.getInstance().groupManager.fetchGroupSharedFileList(_groupId, 1, 20,
     onSuccess: (files){
       _fileList = files;
       _refreshUI(false);

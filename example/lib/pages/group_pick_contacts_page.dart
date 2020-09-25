@@ -37,12 +37,12 @@ class _EMGroupPickContactsPageState extends State<EMGroupPickContactsPage> imple
   }
 
   void _fetchContactData() async{
-    EMGroup emGroup = await EMClient.getInstance().groupManager().getGroup(_groupId);
+    EMGroup emGroup = await EMClient.getInstance().groupManager.getGroup(_groupId);
     _groupMemberList.add(emGroup.getOwner());
     emGroup.getAdminList().forEach((admin) => _groupMemberList.add(admin));
     emGroup.getMembers().forEach((member) => _groupMemberList.add(member));
     emGroup.getBlackList().forEach((member) => _groupMemberList.add(member));
-    EMClient.getInstance().contactManager().getAllContactsFromServer(
+    EMClient.getInstance().contactManager.getAllContactsFromServer(
       onSuccess: (contacts){
         _contactList = contacts;
         _groupMemberList.forEach((member){

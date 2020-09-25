@@ -24,7 +24,7 @@ class EMConversation {
   factory EMConversation.fromJson(Map <String, dynamic> map) {
       return EMConversation()
         ..type = typeFromInt(map['type'])
-        ..id = map['id']
+        ..id = map['con_id']
         .._unreadCount = map['unreadCount']
         .._ext = map['ext']
         .._latestMessage = EMMessage.fromJson(map['latestMessage'])
@@ -34,7 +34,7 @@ class EMConversation {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['type'] = typeToInt(this.type);
-    data['id'] = this.id;
+    data['con_id'] = this.id;
     return data;
   }
 
@@ -95,13 +95,22 @@ extension EMConversationExtension on EMConversation {
   }
 
    get latestMessage async {
-    // TODO: 去native 获取数据
+     Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.getLatestMessage, this.toJson());
+
+     EMError.hasErrorFromResult(result);
+
+     this._latestMessage = EMMessage.fromJson(result[EMSDKMethod.getLatestMessage]);
 
     return this._latestMessage;
   }
 
   get lastReceivedMessage async {
-    // TODO: 去native 获取数据
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.getLatestMessageFromOthers, this.toJson());
+
+    EMError.hasErrorFromResult(result);
+
+    this._lastReceivedMessage = EMMessage.fromJson(result[EMSDKMethod.getLatestMessageFromOthers]);
+
     return this._lastReceivedMessage;
   }
 
@@ -115,51 +124,92 @@ extension EMConversationExtension on EMConversation {
     // TODO: 同步到native
   }
 
-  void insertMessage(EMMessage message) {
-
+  // 插入消息，插入的消息会根据消息时间插入到对应的位置
+  Future<Null> insertMessage(EMMessage message) async {
+    Map req = this.toJson();
+    req['msg'] = message.toJson();
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.insertMessage, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  void appendMessage(EMMessage message) {
-
+  // 添加消息，添加的消息会添加到最后一条消息的位置
+  Future<Null> appendMessage(EMMessage message) async{
+    Map req = this.toJson();
+    req['msg'] = message.toJson();
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.appendMessage, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  void deleteMessageWithId(String messageId) {
-
+  // 根据消息id删除消息
+  Future<Null> deleteMessageWithId(String messageId) async{
+    Map req = this.toJson();
+    req['msgId'] = messageId;
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.removeMessage, req);
+    EMError.hasErrorFromResult(result);
   }
 
+  // 删除当前会话中所有消息
   Future<Null> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.clearAllMessages, this.toJson());
     EMError.hasErrorFromResult(result);
   }
 
-  void updateMessage(EMMessage message) {
-
+  Future<Null> updateMessage(EMMessage message) async {
+    Map req = this.toJson();
+    req['msg'] = message.toJson();
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.updateConversationMessage, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  void markMessageAsRead({@required String messageId}) async {
-
+  // 根据消息id设置消息已读，如果消息不属于当前会话则设置无效
+  Future<Null>  markMessageAsRead({@required String messageId}) async {
+    Map req = this.toJson();
+    req['msgId'] = messageId;
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.markMessageAsRead, req);
+    EMError.hasErrorFromResult(result);
   }
 
+  // 设置当前会话中所有消息为已读
   Future<Null> markAllMessagesAsRead() async {
     Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.markAllMessagesAsRead, this.toJson());
     EMError.hasErrorFromResult(result);
   }
 
-  EMMessage loadMessageFromId(String messageId) {
-
-    return null;
+  // 根据消息id获取消息，如果消息id不属于当前会话，则无法获取到
+  Future<EMMessage> loadMessageWithId(String messageId) async {
+    Map req = this.toJson();
+    req['msgId'] = messageId;
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.loadMsgWithId, req);
+    EMError.hasErrorFromResult(result);
+    return EMMessage.fromJson(result[EMSDKMethod.loadMsgWithId]);
   }
 
-  Future<List> loadMessagesWithType({
+  // 根据类型获取当前会话汇总的消息
+  Future<List> loadMessagesWithMsgType({
     @required EMMessageBodyType type,
     int timestamp = -1,
     int count = 20,
     String sender,
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
-  }) {
-    return null;
+  }) async {
+    Map req = this.toJson();
+    req['type'] = EMMessageBody.bodyTypeToTypeStr(type);
+    req['timestamp'] = timestamp;
+    req['count'] = count;
+    req['sender'] = sender;
+    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+
+    Map result = await _emConversationChannel.invokeMethod(EMSDKMethod.loadMsgWithMsgType, req);
+    EMError.hasErrorFromResult(result);
+
+    List<EMMessage> list = List();
+    (result[EMSDKMethod.loadMsgWithMsgType] as List).forEach((element) {
+        list.add(EMMessage.fromJson(element));
+    });
+    return list;
   }
 
+  // 根据起始消息id获取消息
   Future<List> loadMessagesWithStartId (
       String startMsgId,
       [int loadCount = 20, EMMessageSearchDirection direction = EMMessageSearchDirection.Up,]
@@ -168,34 +218,65 @@ extension EMConversationExtension on EMConversation {
     Map req = this.toJson();
     req["startId"] = startMsgId;
     req['count'] = loadCount;
+    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
 
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(EMSDKMethod.loadMoreMsgFromDB, req);
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(EMSDKMethod.loadMsgWithStartId, req);
 
     EMError.hasErrorFromResult(result);
 
     List<EMMessage> msgList = List();
-    (result[EMSDKMethod.loadMoreMsgFromDB] as List).forEach((element) {
+    (result[EMSDKMethod.loadMsgWithStartId] as List).forEach((element) {
       msgList.add(EMMessage.fromJson(element));
     });
     return msgList;
   }
 
+  // TODO: channel
   Future<List> loadMessagesWithKeyword({
-    @required String keyWord,
+    String keywords,
     int timestamp = -1,
     int count = 20,
     String sender,
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
-  }) {
-    return null;
+  }) async {
+    Map req = this.toJson();
+    req["keywords"] = keywords;
+    req['count'] = count;
+    req['sender'] = sender;
+    req['timestamp'] = timestamp;
+    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(EMSDKMethod.loadMsgWithKeywords, req);
+
+    EMError.hasErrorFromResult(result);
+
+    List<EMMessage> msgList = List();
+    (result[EMSDKMethod.loadMsgWithKeywords] as List).forEach((element) {
+      msgList.add(EMMessage.fromJson(element));
+    });
+    return msgList;
   }
 
   Future<List> loadMessagesFromTime({
     @required int startTime,
     @required int endTime,
     int count = 20,
-  }) {
-    return null;
+  }) async {
+
+    Map req = this.toJson();
+    req["startTime"] = startTime;
+    req['endTime'] = endTime;
+    req['count'] = count;
+
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(EMSDKMethod.loadMsgWithTime, req);
+
+    EMError.hasErrorFromResult(result);
+
+    List<EMMessage> msgList = List();
+    (result[EMSDKMethod.loadMsgWithTime] as List).forEach((element) {
+      msgList.add(EMMessage.fromJson(element));
+    });
+    return msgList;
   }
 
 }

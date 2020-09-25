@@ -32,7 +32,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void initState() {
     // TODO: implement initState
     super.initState();
-    EMClient.getInstance().chatManager().addMessageListener(this);
+    EMClient.getInstance().chatManager.addMessageListener(this);
     EMClient.getInstance().addConnectionListener(this);
     _loadEMConversationList();
   }
@@ -41,26 +41,18 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    EMClient.getInstance().chatManager().removeMessageListener(this);
+    EMClient.getInstance().chatManager.removeMessageListener(this);
     EMClient.getInstance().removeConnectionListener(this);
   }
 
   void _loadEMConversationList() async {
-    sortMap.clear();
-    conList.clear();
-    List<EMConversation> list =
-        await EMClient.getInstance().chatManager().getAllConversations();
-    if (list.length == 0) {
+    Future<List<EMConversation>> result = EMClient.getInstance().chatManager.getAllConversations();
+    result.then((value){
+      conList = value;
       _refreshUI();
-    } else {
-      await Future.forEach(list, (EMConversation conversation) async {
-        EMMessage message = await conversation.latestMessage;
-        if (message != null) {
-          sortMap.putIfAbsent(message.serverTime.toString(), () => conversation);
-        }
-      });
-      setState(() {});
-    }
+    }).catchError((e){
+
+    });
   }
 
   void _refreshUI() {
@@ -142,23 +134,9 @@ class _EMConversationListPageState extends State<EMConversationListPage>
     );
   }
 
-  void _sortConversation() {
-    if (sortMap.length > 0) {
-      conList.clear();
-      List sortKeys = sortMap.keys.toList();
-
-      /// key排序
-      sortKeys.sort((a, b) => b.compareTo(a));
-      sortKeys.forEach((k) {
-        var v = sortMap.putIfAbsent(k, null);
-        conList.add(v);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    _sortConversation();
+//    _sortConversation();
     // TODO: implement build
     return new Scaffold(
       appBar: AppBar(
@@ -211,11 +189,11 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   }
 
   /// 消息监听
-  void onMessageReceived(List<EMMessage> messages) {
+  void onMessagesReceived(List<EMMessage> messages) {
     _loadEMConversationList();
   }
 
-  void onCmdMessageReceived(List<EMMessage> messages) {}
+  void onCmdMessagesReceived(List<EMMessage> messages) {}
 
   void onMessageRead(List<EMMessage> messages) {}
 
@@ -226,13 +204,11 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void onMessageChanged(EMMessage message) {}
 
   void _deleteConversation(EMConversation conversation) async {
-    bool result = await EMClient.getInstance()
-        .chatManager()
-        .deleteConversation(conversation.id, true);
-    if (result) {
+    try{
+      await EMClient.getInstance().chatManager.deleteConversation(conversation.id);
       _loadEMConversationList();
-    } else {
-      print('deleteConversation failed');
+    }catch(e){
+      print(e.toString());
     }
   }
 

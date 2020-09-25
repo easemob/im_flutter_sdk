@@ -81,7 +81,7 @@ class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
                               Navigator.of(context).pop();
                               _refreshUI(true);
                               if(_type == Constant.blackList){
-                                EMClient.getInstance().groupManager().unblockUser(_groupId, _members[index],
+                                EMClient.getInstance().groupManager.unblockUser(_groupId, _members[index],
                                 onSuccess: (){
                                   WidgetUtil.hintBoxWithDefault(_members[index] + '解除黑名单成功');
                                   _members.removeAt(index);
@@ -93,7 +93,7 @@ class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
                                 });
                               }
                               if(_type == Constant.muteList){
-                                EMClient.getInstance().groupManager().unMuteGroupMembers(_groupId, [_members[index]],
+                                EMClient.getInstance().groupManager.unMuteGroupMembers(_groupId, [_members[index]],
                                 onSuccess: (group){
                                   WidgetUtil.hintBoxWithDefault(_members[index] + '解除禁言成功');
                                   _members.removeAt(index);
@@ -105,7 +105,7 @@ class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
                                 });
                               }
                               if(_type == Constant.adminList){
-                                EMClient.getInstance().groupManager().removeGroupAdmin(_groupId, _members[index],
+                                EMClient.getInstance().groupManager.removeGroupAdmin(_groupId, _members[index],
                                     onSuccess: (group){
                                       WidgetUtil.hintBoxWithDefault(_members[index] + '解除管理员成功');
                                       _members.removeAt(index);

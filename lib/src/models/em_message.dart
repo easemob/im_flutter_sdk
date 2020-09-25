@@ -327,7 +327,7 @@ abstract class EMMessageBody{
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = _bodyTypeToTypeStr();
+    data['type'] = EMMessageBody.bodyTypeToTypeStr(this.type);
     return data;
   }
 
@@ -336,8 +336,8 @@ abstract class EMMessageBody{
     return toJson().toString();
   }
 
-  String _bodyTypeToTypeStr() {
-    switch(this.type) {
+  static String bodyTypeToTypeStr(EMMessageBodyType type) {
+    switch(type) {
       case EMMessageBodyType.TXT:
         return 'txt';
       case EMMessageBodyType.LOCATION:
