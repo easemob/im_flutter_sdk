@@ -1,8 +1,11 @@
-import "dart:async";
+import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-import 'em_group.dart';
+
+import 'models/em_domain_terms.dart';
 import 'em_sdk_method.dart';
 import 'em_domain_terms.dart';
 import 'em_listeners.dart';
@@ -37,764 +40,371 @@ class EMGroupManager {
     });
   }
 
-  /// 获取当前(内存)用户的所有群组
-  Future<List<EMGroup>> getAllGroups() async {
-    Map<String, dynamic> result =
-        await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getAllGroups);
-    if (result['success']) {
-      var data = List<EMGroup>();
-      if (result['value'] != null) {
-        var groups = result['value'] as List<dynamic>;
-        for (var group in groups) {
-          data.add(EMGroup.from(group));
-        }
-        return data;
-      } else {
-        return data;
-      }
-    } else {
-      return null;
-    }
+  /// 根据群组id获取群实例
+  Future<EMGroup> getGroupWithId({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupWithId, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.getGroupWithId]);
   }
 
-  /// 根据群组ID，获得群组对象
-  Future<EMGroup> getGroup(String groupId) async {
-    Map<String, dynamic> result = await _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.getGroup, {"groupId": groupId});
-    if (result['success']) {
-      if (result['value'] != null) {
-        return EMGroup.from(result['value']);
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
+  /// 从本地缓存中获取已加入的群组列表
+  Future<List<EMGroup>> getJoinedGroups() async {
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getJoinedGroups);
+    EMError.hasErrorFromResult(result);
+    var list = List();
+    (result[EMSDKMethod.getJoinedGroups] as List).forEach((element) => list.add(EMGroup.fromJson(element)));
+    return list;
   }
 
-  /// 在IM服务器创建一个群组
-  void createGroup(
-      String groupName,
-      String desc,
-      List<String> members,
-      String reason,
-      EMGroupOptions options,
-      {onSuccess(EMGroup group),
-      onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result =
-        _emGroupManagerChannel.invokeMethod(EMSDKMethod.createGroup, {
-      "groupName": groupName,
-      "desc": desc,
-      "members": members,
-      "reason": reason,
-      "maxUsers": options.maxUsers,
-      "groupStyle": convertEMGroupStyleToInt(options.style)
-    });
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
+  /// 获取免打扰的群组列表id
+  Future<List<String>> getGroupsWithoutNotice() async {
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupsWithoutPushNotification);
+    EMError.hasErrorFromResult(result);
+    var list = List();
+    (result[EMSDKMethod.getGroupsWithoutPushNotification] as List).forEach((element) => list.add(element));
+    return list;
+  }
+
+  /// 从服务器获取已加入的群组列表
+  Future<List> getJoinedGroupsFromServer({int pageSize = 200, int pageNum = 1}) async {
+    Map req = {'pageSize': pageSize, 'pageNum': pageNum};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getJoinedGroupsFromServer, req);
+    EMError.hasErrorFromResult(result);
+    List<EMGroup> list = List();
+    (result[EMSDKMethod.getJoinedGroupsFromServer] as List).forEach((element) => list.add(EMGroup.fromJson(element)));
+    return list;
+  }
+
+  /// 从服务器获取公开群组列表
+  Future<EMCursorResult> getPublicGroupsFromServer({int pageSize = 200, String cursor = ''}) async {
+    Map req ={'pageSize': pageSize, 'cursor': cursor};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getPublicGroupsFromServer, req);
+    EMError.hasErrorFromResult(result);
+
+    return EMCursorResult.fromJson(result[EMSDKMethod.getPublicGroupsFromServer], dataItemCallback: (value) {
+      return EMGroup.fromJson(value);
     });
   }
 
-  /// 同步加载所有群组
-  void loadAllGroups() {
-    _emGroupManagerChannel.invokeMethod(EMSDKMethod.loadAllGroups);
+  /// 创建群组
+  Future<EMGroup> createGroup({@required String groupName, @required EMGroupOptions settings, String desc = '', List<String> inviteMembers, String inviteReason = ''}) async {
+    Map req = {'groupName': groupName, 'desc': desc, 'inviteMembers': inviteMembers ?? [], 'inviteReason': inviteReason, 'options': settings.toJson()};
+    Map result =  await _emGroupManagerChannel.invokeMethod(EMSDKMethod.createGroup, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.createGroup]);
   }
 
-  /// 解散群组
-  void destroyGroup(String groupId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.destroyGroup, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 向群组中添加新的成员
-  void addUsersToGroup(String groupId, List<String> members,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.addUsersToGroup, {"groupId": groupId, "members": members});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 从群组中删除成员
-  void removeUserFromGroup(String groupId, String userName,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.removeUserFromGroup,
-        {"groupId": groupId, "userName": userName});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 当前登录用户退出群组
-  void leaveGroup(String groupId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.leaveGroup, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 从服务器获取群组的详细信息
-  void getGroupFromServer(String groupId,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.getGroupFromServer, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            print(response['value']);
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 从服务器端获取当前用户的所有群组此操作只返回群组列表，并不获取群组的所有成员信息
-  void getJoinedGroupsFromServer(
-      {onSuccess(List<EMGroup> groups), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.getJoinedGroupsFromServer);
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          var data = List<EMGroup>();
-          if (response['value'] != null) {
-            var groups = response['value'] as List<dynamic>;
-            for (var group in groups) {
-              data.add(EMGroup.from(group));
-            }
-            onSuccess(data);
-          } else {
-            onSuccess(data);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 从服务器获取公开群组,EMCursorResult加泛型
-  void getPublicGroupsFromServer(int pageSize, String cursor,
-      {onSuccess(EMCursorResult<EMGroupInfo> result),
-      onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.getPublicGroupsFromServer,
-        {"pageSize": pageSize, "cursor": cursor});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            print(response['value']);
-            var data = List<EMGroupInfo>();
-            EMCursorResult emCursorResult =
-                EMCursorResult.from(response['value']);
-            emCursorResult
-                .getData()
-                .forEach((item) => data.add(EMGroupInfo.from(item)));
-
-            EMCursorResult<EMGroupInfo> cursorResult =
-                EMCursorResult.from(Map());
-            cursorResult.setCursor(emCursorResult.getCursor());
-            cursorResult.setData(data);
-            onSuccess(cursorResult);
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 当前登录用户加入公开群(如果是自由加入的公开群，直接进入群组)
-  void joinGroup(String groupId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.joinGroup, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 改变群组的名称
-  void changeGroupName(String groupId, String groupName,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.changeGroupName,
-        {"groupId": groupId, "groupName": groupName});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 修改群描述
-  void changeGroupDescription(String groupId, String desc,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.changeGroupDescription, {"groupId": groupId, "desc": desc});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 接受加入群的邀请
-  void acceptInvitation(String groupId, String inviter,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.acceptGroupInvitation,
-        {"groupId": groupId, "inviter": inviter});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response["value"]));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 拒绝加入群的邀请
-  void declineInvitation(
-      String groupId, String inviter, String reason,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.declineGroupInvitation,
-        {"groupId": groupId, "inviter": inviter, "reason": reason});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 同意加群申请
-  void acceptApplication(String userName, String groupId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.acceptApplication,
-        {"userName": userName, "groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 拒绝加群申请
-  void declineApplication(
-      String userName, String groupId, String reason,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.declineApplication,
-        {"userName": userName, "groupId": groupId, "reason": reason});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  ///  群成员邀请用户加入群组 （如果群组设置成开放群成员邀请，群组成员可以邀请其他用户加入）
-  void inviteUser(
-      String groupId, List<String> members, String reason,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.inviteUser,
-        {"groupId": groupId, "members": members, "reason": reason});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 申请加入某个群
-  void applyJoinToGroup(String groupId, String reason,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.applyJoinToGroup, {"groupId": groupId, "reason": reason});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 屏蔽群消息（还是群里面的成员，但不再接收群消息）
-  void blockGroupMessage(String groupId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.blockGroupMessage, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 取消屏蔽群消息
-  void unblockGroupMessage(String groupId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.unblockGroupMessage, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 将用户加到群组的黑名单，被加入黑名单的用户无法加入群，无法收发此群的消息
-  void blockUser(String groupId, String userName,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.blockUser, {"groupId": groupId, "userName": userName});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 将用户从群组的黑名单移除
-  void unblockUser(String groupId, String userName,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.unblockUser, {"groupId": groupId, "userName": userName});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 获取群组详情
+  Future<EMGroup> getGroupSpecificationFromServer({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupSpecificationFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.getGroupSpecificationFromServer]);
   }
 
   /// 获取群组成员列表
-  void fetchGroupMembers(
-      String groupId, String cursor, int pageSize,
-      {onSuccess(EMCursorResult result), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.fetchGroupMembers,
-        {"groupId": groupId, "cursor": cursor, "pageSize": pageSize});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            List<String> list = [];
-            var value = response['value'] as Map<String, dynamic>;
-            EMCursorResult emCursorResult = EMCursorResult.from(value);
-            emCursorResult.getData().forEach((item) => list.add(item));
-
-            EMCursorResult<String> cursorResult = EMCursorResult.from(Map());
-            cursorResult.setData(list);
-            cursorResult.setCursor(emCursorResult.getCursor());
-            onSuccess(cursorResult);
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  Future<EMCursorResult> getGroupMemberListFromServer({@required String groupId, int pageSize = 200, String cursor = ''}) async {
+    Map req = {'groupId': groupId, 'cursor': cursor, 'pageSize': pageSize};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupMemberListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return EMCursorResult.fromJson(result[EMSDKMethod.getGroupSpecificationFromServer], dataItemCallback: (value) => value);
   }
 
-  /// 转让群组，群组所有权给他人
-  void changeOwner(String groupId, String newOwner,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.changeOwner, {"groupId": groupId, "newOwner": newOwner});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 获取黑名单列表
+  Future<List> getGroupBlacklistFromServer({String groupId, int pageSize = 200, int pageNum = 1}) async {
+    Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupBlacklistFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return result[EMSDKMethod.getGroupBlacklistFromServer];
   }
 
-  /// 增加群组管理员，需要owner权限，admin无权限
-  void addGroupAdmin(String groupId, String admin,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.addGroupAdmin, {"groupId": groupId, "admin": admin});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 获取禁言列表
+  Future<List> getGroupMuteListFromServer({String groupId, int pageSize = 200, int pageNum = 1}) async {
+    Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupMuteListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return result[EMSDKMethod.getGroupMuteListFromServer];
   }
 
-  /// 删除群组管理员，需要owner权限
-  void removeGroupAdmin(String groupId, String admin,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.removeGroupAdmin, {"groupId": groupId, "admin": admin});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 获取白名单列表
+  Future<List> getGroupWhiteListFromServer({String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupWhiteListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return result[EMSDKMethod.getGroupWhiteListFromServer];
   }
 
-  /// 禁止某些群组成员发言
-  void muteGroupMembers(
-      String groupId, List<String> members, String duration,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.muteGroupMembers,
-        {"groupId": groupId, "members": members, "duration": duration});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 判断自己是否在白名单中
+  Future<bool> isMemberInWhiteListFromServer({String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.isMemberInWhiteListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return result[EMSDKMethod.isMemberInWhiteListFromServer] as bool;
   }
 
-  /// 解除禁言
-  void unMuteGroupMembers(String groupId, List<String> members,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.unMuteGroupMembers,
-        {"groupId": groupId, "members": members});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
+  /// 获取群共享文件列表
+  Future<List<EMGroupSharedFile>> getGroupFileListFromServer({String groupId, int pageSize = 200, int pageNum = 1}) async {
+    Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupFileListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    List<EMGroupSharedFile> list = List();
+    (result[EMSDKMethod.getGroupFileListFromServer] as List).forEach((element){
+      list.add(EMGroupSharedFile.fromJson(element));
     });
-  }
-
-  ///  获取群组的禁言列表
-  void fetchGroupMuteList(
-      String groupId, int pageNum, int pageSize,
-      {onSuccess(List list), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.fetchGroupMuteList,
-        {"groupId": groupId, "pageNum": pageNum, "pageSize": pageSize});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          var data = List<String>();
-          if (response['value'] != null) {
-            var list = response['value'] as List<dynamic>;
-            list.forEach((item) => data.add(item));
-            onSuccess(data);
-          } else {
-            onSuccess(data);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  /// 从服务器获分页获取群组黑名单
-  void fetchGroupBlackList(
-      String groupId, int pageNum, int pageSize,
-      {onSuccess(List list), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.fetchGroupBlackList,
-        {"groupId": groupId, "pageNum": pageNum, "pageSize": pageSize});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          var data = List<String>();
-          if (response['value'] != null) {
-            var users = response['value'] as List<dynamic>;
-            users.forEach((user) => data.add(user));
-            onSuccess(data);
-          } else {
-            onSuccess(data);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
-  }
-
-  ///  更新群公告
-  void updateGroupAnnouncement(String groupId, String announcement,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.updateGroupAnnouncement,
-        {"groupId": groupId, "announcement": announcement});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+    return list;
   }
 
   /// 从服务器获取群公告
-  void fetchGroupAnnouncement(String groupId,
-      {onSuccess(String announcement), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel
-        .invokeMethod(EMSDKMethod.fetchGroupAnnouncement, {"groupId": groupId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(response['value']);
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  Future<String> getGroupAnnouncementFromServer({String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.getGroupAnnouncementFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return result[EMSDKMethod.getGroupAnnouncementFromServer];
   }
 
-  /// 上传共享文件至群组
-  void uploadGroupSharedFile(String groupId, String filePath,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.uploadGroupSharedFile,
-        {"groupId": groupId, "filePath": filePath});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 邀请用户加入私有群， 用于私有群: PrivateOnlyOwnerInvite / PrivateMemberCanInvite
+  Future<Null> addMembers({@required String groupId, @required List<String> members, String welcome}) async {
+    Map req = {'welcome': welcome, 'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.addMembers, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  /// 从服务器获取群组的共享文件列表
-  void fetchGroupSharedFileList(
-      String groupId, int pageNum, int pageSize,
-      {onSuccess(List<EMMucSharedFile> files),
-      onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.fetchGroupSharedFileList,
-        {"groupId": groupId, "pageNum": pageNum, "pageSize": pageSize});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          var data = List<EMMucSharedFile>();
-          if (response['value'] != null) {
-            var value = response['value'] as List<dynamic>;
-            for (var file in value) {
-              data.add(EMMucSharedFile.from(file));
-            }
-            onSuccess(data);
-          } else {
-            onSuccess(data);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 从群组中移除用户
+  Future<Null> removeMembers({@required String groupId, @required List<String> members}) async {
+    Map req = {'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.removeMembers, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  /// 从群组里删除这个共享文件
-  void deleteGroupSharedFile(String groupId, String fileId,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.deleteGroupSharedFile,
-        {"groupId": groupId, "fileId": fileId});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 将用户加入到群组黑名单中
+  Future<Null> blockMembers({@required String groupId, @required List<String> members}) async {
+    Map req = {'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.blockMembers, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  /// 下载群里的某个共享文件
-  void downloadGroupSharedFile(
-      String groupId, String fileId, String savePath,
-      {onSuccess(), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.downloadGroupSharedFile,
-        {"groupId": groupId, "fileId": fileId, "savePath": savePath});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          onSuccess();
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 将用户从黑名单中移除
+  Future<Null> unblockMembers({@required String groupId, @required List<String> members}) async {
+    Map req = {'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.unblockMembers, req);
+    EMError.hasErrorFromResult(result);
   }
 
-  /// 更新群组扩展字段
-  void updateGroupExtension(String groupId, String extension,
-      {onSuccess(EMGroup group), onError(int errorCode, String desc)}) {
-    Future<Map<String, dynamic>> result = _emGroupManagerChannel.invokeMethod(
-        EMSDKMethod.updateGroupExtension,
-        {"groupId": groupId, "extension": extension});
-    result.then((response) {
-      if (response['success']) {
-        if (onSuccess != null) {
-          if (response['value'] != null) {
-            onSuccess(EMGroup.from(response['value']));
-          } else {
-            onSuccess(null);
-          }
-        }
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+  /// 更新群组名称
+  Future<EMGroup> changeGroupName({@required String groupId, @required String name}) async {
+    Map req = {'name': name, 'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.updateGroupSubject, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.updateGroupSubject]);
+  }
+
+  /// 更新群描述
+  Future<EMGroup> changeGroupDescription({@required String groupId, @required String desc}) async {
+    Map req = {'desc': desc, 'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.updateDescription, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.updateDescription]);
+  }
+
+  /// 退出群组
+  Future<Null> leaveGroup({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.leaveGroup, req);
+    EMError.hasErrorFromResult(result);
+  }
+
+  /// 解散群组
+  Future<Null> destroyGroup({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.destroyGroup, req);
+    EMError.hasErrorFromResult(result);
+  }
+
+  /// 不接收群消息
+  Future<Null> blockGroup({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.blockGroup, req);
+    EMError.hasErrorFromResult(result);
+  }
+
+  /// 恢复接收群消息
+  Future<Null> unblockGroup({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.unblockGroup, req);
+    EMError.hasErrorFromResult(result);
+  }
+
+  /// 将群转给其他人，需要群主调用
+  Future<EMGroup> changeGroupOwner({@required String groupId, @required String username}) async {
+    Map req = {'groupId': groupId, 'owner': username};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.updateGroupOwner, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.updateGroupOwner]);
+  }
+
+  /// 添加管理员
+  Future<EMGroup> addAdmin({@required String groupId, @required String username}) async {
+    Map req = {'groupId': groupId, 'admin': username};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.addAdmin, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.addAdmin]);
+  }
+
+  /// 移除管理员
+  Future<EMGroup> removeAdmin({@required String groupId, @required String username}) async {
+    Map req = {'groupId': groupId, 'admin': username};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.removeAdmin, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.removeAdmin]);
+  }
+
+  /// 对群成员禁言，白名单中的用户不会被限制
+  Future<EMGroup> muteMembers({@required String groupId, @required List<String> members, int duration = -1}) async {
+    Map req = {'groupId': groupId, 'members': members, 'duration': duration};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.addAdmin, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.addAdmin]);
+  }
+
+  /// 对群成员取消禁言
+  Future<EMGroup> unMuteMembers({@required String groupId, @required List<String> members}) async {
+    Map req = {'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.unMuteMembers, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.unMuteMembers]);
+  }
+
+  /// 对所有群成员禁言，白名单中的用户不会被限制
+  Future<Null> muteAllMembers({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.muteAllMembers, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.muteAllMembers]);
+  }
+
+  /// 取消对所有群成员禁言
+  Future<Null> unMuteAllMembers({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.unMuteAllMembers, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.unMuteAllMembers]);
+  }
+
+  /// 将用户添加到白名单
+  Future<EMGroup> addWhiteList({@required String groupId, @required List<String> members}) async {
+    Map req = {'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.addWhiteList, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.addWhiteList]);
+  }
+
+  /// 将用户移出白名单
+  Future<EMGroup> removeWhiteList({@required String groupId, @required List<String> members}) async {
+    Map req = {'groupId': groupId, 'members': members};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.removeWhiteList, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.removeWhiteList]);
+  }
+
+  /// 上传群共享文件
+  Future<EMGroupSharedFile> uploadGroupSharedFile({@required String groupId, @required String filePath}) async {
+    Map req = {'groupId': groupId, 'filePath': filePath};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.uploadGroupSharedFile, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroupSharedFile.fromJson(result[EMSDKMethod.uploadGroupSharedFile]);
+  }
+
+  /// 下载群共享文件
+  Future<bool> downloadGroupSharedFile({@required String groupId, @required String fileId, @required String savePath}) async {
+    Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.downloadGroupSharedFile, req);
+    EMError.hasErrorFromResult(result);
+    return true;
+  }
+
+  /// 删除群共享文件
+  Future<EMGroup> removeGroupSharedFile({@required String groupId, @required String fileId}) async {
+    Map req = {'groupId': groupId, 'fileId': fileId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.removeGroupSharedFile, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.removeGroupSharedFile]);
+  }
+
+  /// 更新群公告
+  Future<EMGroup> updateGroupAnnouncement({@required String groupId, @required String announcement}) async {
+    Map req = {'groupId': groupId, 'announcement': announcement};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.updateGroupAnnouncement, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.updateGroupAnnouncement]);
+  }
+
+  /// 更新群扩展
+  Future<EMGroup> updateGroupExt({@required String groupId, @required String ext}) async {
+    Map req = {'groupId': groupId, 'ext': ext};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.updateGroupExt, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.updateGroupExt]);
+  }
+
+  /// 加入公开群，用于加入不需要群主/管理员同意的公开群: EMGroupStyle.PublicOpenJoin
+  Future<EMGroup> joinPublicGroup({@required String groupId}) async {
+    Map req = {'groupId': groupId};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.joinPublicGroup, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.joinPublicGroup]);
+  }
+
+  /// 申请加入公开群，用于加入需要群主/管理员同意的公开群: EMGroupStyle.PublicJoinNeedApproval
+  Future<EMGroup> requestToJoinPublicGroup({@required String groupId, String reason = ''}) async {
+    Map req = {'groupId': groupId, 'reason': reason};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.requestToJoinPublicGroup, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.requestToJoinPublicGroup]);
+  }
+
+  /// 同意公开群组申请，当群类型是EMGroupStyle.PublicJoinNeedApproval，
+  /// 有人申请进群时，管理员和群主会收到申请，用该方法同意申请
+  Future<EMGroup> acceptJoinApplication({@required String groupId, @required String username}) async {
+    Map req = {'groupId': groupId, 'username': username};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.acceptJoinApplication, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.acceptJoinApplication]);
+  }
+
+  /// 拒绝公开群组申请，当群类型是EMGroupStyle.PublicJoinNeedApproval，
+  /// 有人申请进群时，管理员和群主会收到申请，用该方法拒绝申请
+  Future<EMGroup> declineJoinApplication({@required String groupId, @required String username, String reason = ''}) async {
+    Map req = {'groupId': groupId, 'username': username, 'reason': reason};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.declineJoinApplication, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.declineJoinApplication]);
+  }
+
+  /// 同意群邀请，当群组是PrivateOnlyOwnerInvite / PrivateMemberCanInvite时，
+  /// 有人添加您入群时您会收到群邀请，用该方法同意群邀请
+  Future<EMGroup> acceptInvitationFromGroup({@required String groupId, @required String inviter}) async {
+    Map req = {'groupId': groupId, 'inviter': inviter};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.acceptInvitationFromGroup, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.acceptInvitationFromGroup]);
+  }
+
+  /// 拒绝群邀请，当群组是PrivateOnlyOwnerInvite / PrivateMemberCanInvite时，
+  /// 有人添加您入群时您会收到群邀请，用该方法拒绝群邀请
+  Future<EMGroup> declineInvitationFromGroup({@required String groupId, @required String inviter, String reason = ''}) async {
+    Map req = {'groupId': groupId, 'inviter': inviter, 'reason': reason};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.declineInvitationFromGroup, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.acceptInvitationFromGroup]);
+  }
+
+  /// 设置群组免打扰，设置后，当您不在线时您不会收到群推送
+  Future<EMGroup> ignoreGroupPush({@required String groupId, bool enable = true}) async {
+    Map req = {'groupId': groupId, 'enable': enable};
+    Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.ignoreGroupPush, req);
+    EMError.hasErrorFromResult(result);
+    return EMGroup.fromJson(result[EMSDKMethod.ignoreGroupPush]);
   }
 
   /// @nodoc addGroupChangeListener - Adds [listener] to be aware of group change events.

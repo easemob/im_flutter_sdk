@@ -33,10 +33,9 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    EMClient.getInstance().groupManager.loadAllGroups();
-    EMClient.getInstance().chatManager.loadAllConversations();
+//    EMClient.getInstance().groupManager.loadAllGroups();
+//    EMClient.getInstance().chatManager.loadAllConversations();
     EMClient.getInstance().chatManager.addMessageListener(this);
     if(Platform.isAndroid) {
       new ImDemoPlugin().loginComplete();
@@ -59,6 +58,7 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
     return WillPopScope(
       onWillPop: () async{
         SystemNavigator.pop();
+        return true;
       },
       child: Scaffold(
         bottomNavigationBar: BottomNavigationBar(

@@ -14,7 +14,6 @@ class EMGroupPickContactsPage extends StatefulWidget{
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _EMGroupPickContactsPageState(this._groupId);
   }
 }
@@ -31,17 +30,16 @@ class _EMGroupPickContactsPageState extends State<EMGroupPickContactsPage> imple
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchContactData();
   }
 
   void _fetchContactData() async{
-    EMGroup emGroup = await EMClient.getInstance().groupManager.getGroup(_groupId);
-    _groupMemberList.add(emGroup.getOwner());
-    emGroup.getAdminList().forEach((admin) => _groupMemberList.add(admin));
-    emGroup.getMembers().forEach((member) => _groupMemberList.add(member));
-    emGroup.getBlackList().forEach((member) => _groupMemberList.add(member));
+    EMGroup emGroup = await EMClient.getInstance().groupManager.getGroupWithId(groupId: _groupId);
+    _groupMemberList.add(emGroup.owner);
+    emGroup.adminList.forEach((admin) => _groupMemberList.add(admin));
+    emGroup.memberList.forEach((member) => _groupMemberList.add(member));
+    emGroup.blackList.forEach((member) => _groupMemberList.add(member));
     EMClient.getInstance().contactManager.getAllContactsFromServer(
       onSuccess: (contacts){
         _contactList = contacts;

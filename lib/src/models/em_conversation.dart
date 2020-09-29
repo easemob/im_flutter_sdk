@@ -22,13 +22,14 @@ class EMConversation {
   EMConversation();
 
   factory EMConversation.fromJson(Map <String, dynamic> map) {
-      return EMConversation()
-        ..type = typeFromInt(map['type'])
-        ..id = map['con_id']
-        .._unreadCount = map['unreadCount']
-        .._ext = map['ext']
-        .._latestMessage = EMMessage.fromJson(map['latestMessage'])
-        .._lastReceivedMessage = EMMessage.fromJson(map['lastReceivedMessage']);
+    if(map == null) return null;
+    return EMConversation()
+      ..type = typeFromInt(map['type'])
+      ..id = map['con_id']
+      .._unreadCount = map['unreadCount']
+      .._ext = map['ext']
+      .._latestMessage = EMMessage.fromJson(map['latestMessage'])
+      .._lastReceivedMessage = EMMessage.fromJson(map['lastReceivedMessage']);
   }
 
   Map<String, dynamic> toJson() {
@@ -62,7 +63,7 @@ class EMConversation {
     return ret;
   }
 
-  static  EMConversationType typeFromInt(int type) {
+  static EMConversationType typeFromInt(int type) {
     EMConversationType ret = EMConversationType.Chat;
     switch (type) {
       case 0:

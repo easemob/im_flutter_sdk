@@ -295,7 +295,7 @@ class EMClient {
   List<EMContact> _convertContactList(contactList) {
     var result = List<EMContact>();
     for (var contact in contactList) {
-      var c = EMContact(userName: contact["userName"]);
+      var c = EMContact(contact["userName"]);
       c.nickName = contact["nickName"];
       result.add(c);
     }
@@ -362,23 +362,23 @@ class EMClient {
     }
   }
 
-  /// @nodoc chatManager - retrieve [EMChatManager] handle.
-  get chatManager {
+  /// @nodoc chatManager - retrieve [EMChat Manager] handle.
+  EMChatManager get chatManager {
     return _chatManager;
   }
 
   /// @nodoc  contactManager - retrieve [EMContactManager] handle.
-  get contactManager {
+  EMContactManager get contactManager {
     return _contactManager;
   }
 
   /// @nodoc
-  get chatRoomManager {
+  EMChatRoomManager get chatRoomManager {
     return _chatRoomManager;
   }
 
   /// @nodoc  groupManager - retrieve [EMGroupManager] handle.
-  get groupManager {
+  EMGroupManager get groupManager {
     return _groupManager;
   }
 

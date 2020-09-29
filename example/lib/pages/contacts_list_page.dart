@@ -195,7 +195,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   }
 
   void _pushToChatPage(String chatter, [EMConversationType type = EMConversationType.Chat]) async {
-    Future result = EMClient.getInstance().chatManager.getConversation(id: chatter, type: type);
+    Future result = EMClient.getInstance().chatManager.getConversation(chatter, type);
     result.then((value) => {
       Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
         return new ChatPage(conversation: value);
@@ -222,7 +222,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   }
 
   _deleteContact(int index) {
-    EMClient.getInstance().contactManager().deleteContact(_getData(index - contactItemCount), false,
+    EMClient.getInstance().contactManager.deleteContact(_getData(index - contactItemCount), false,
         onSuccess: (){
           this.contactsList.removeAt(index - contactItemCount);
           loadEMContactsList();

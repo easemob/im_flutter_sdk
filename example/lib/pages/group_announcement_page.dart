@@ -35,17 +35,15 @@ class _EMGroupAnnouncementPageState extends State<EMGroupAnnouncementPage>{
     _fetchGroupAnnouncement();
   }
 
-  void _fetchGroupAnnouncement(){
-    EMClient.getInstance().groupManager.fetchGroupAnnouncement(_groupId,
-    onSuccess: (announcement){
-      _announcement = announcement;
+  void _fetchGroupAnnouncement()async {
+    try{
+      _announcement = await EMClient.getInstance().groupManager.getGroupAnnouncementFromServer(groupId: _groupId);
       _editTextController = new TextEditingController(text: _announcement);
+    }catch(e){
+      WidgetUtil.hintBoxWithDefault(e.toString());
+    }finally{
       _refreshUI(false);
-    },
-    onError: (code, desc){
-      WidgetUtil.hintBoxWithDefault(code.toString()+':'+desc);
-      _refreshUI(false);
-    });
+    }
   }
 
   _refreshUI(bool loading) {

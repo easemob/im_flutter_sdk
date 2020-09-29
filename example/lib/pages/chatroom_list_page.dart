@@ -9,7 +9,6 @@ import 'items/chatroom_list_item.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
-import 'package:im_flutter_sdk_example/common/common.dart';
 
 class EMChatRoomListPage extends StatefulWidget{
 
@@ -22,7 +21,7 @@ class EMChatRoomListPage extends StatefulWidget{
 
 class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMChatRoomListItemDelegate{
 
-  var roomList = List<EMChatRoom>();
+  var roomList = List();
   bool _loading = true;
 
   @override
@@ -32,17 +31,15 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
     _loadChatRoomList();
   }
 
-  void _loadChatRoomList(){
-    EMClient.getInstance().chatRoomManager.fetchPublicChatRoomsFromServer(1, 20,
-    onSuccess: (data){
-      print(data);
-      roomList = data.getData();
+  void _loadChatRoomList() async{
+    try{
+      EMPageResult result = await EMClient.getInstance().chatRoomManager.fetchPublicChatRoomsFromServer(pageNum:1, pageSize: 20);
+      roomList = result.data;
       _loading = false;
       _refreshUI();
-    },
-    onError: (code ,desc){
-      WidgetUtil.hintBoxWithDefault(code.toString()+':'+desc);
-    });
+    }catch(e){
+      WidgetUtil.hintBoxWithDefault(e.code.toString() + ' : ' + e.description);
+    }
   }
 
   _refreshUI(){
@@ -87,10 +84,16 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
     );
   }
 
-  void onTapChatRoom(EMChatRoom room) async{
-    // TODO: conversation
-//    Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-//      return new ChatPage(arguments: {'mType': Constant.chatTypeChatRoom,'toChatUsername':room.getId()});
-//    }));
-    }
+  void onTapChatRoom(EMChatRoom room) async {
+    // TODO: dujiepeng need show toast for waiting.
+
+    Future<bool> result = EMClient.getInstance().chatRoomManager.joinChatRoom(room.roomId);
+    result.then((success) {
+      return EMClient.getInstance().chatManager.getConversation(room.roomId, EMConversationType.ChatRoom);
+    }).then((value){
+      Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => ChatPage(conversation: value)));
+    }).catchError((e){
+
+    });
+  }
 }

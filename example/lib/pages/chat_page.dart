@@ -11,7 +11,7 @@ import 'items/chat_item.dart';
 
 class ChatPage extends StatefulWidget {
 
-  ChatPage({Key key, this.conversation}) : super(key: key);
+  ChatPage({Key key, @required this.conversation}) : super(key: key);
 
   final EMConversation conversation;
 
@@ -70,9 +70,9 @@ class _ChatPageState extends State<ChatPage> implements
 
     _singleChat = conversation.type == EMConversationType.Chat;
 
-    if(conversation.type == EMConversationType.ChatRoom) {
-      _joinChatRoom();
-    }
+//    if(conversation.type == EMConversationType.ChatRoom) {
+//      _joinChatRoom();
+//    }
 
     _scrollController.addListener(() {
       //此处要用 == 而不是 >= 否则会触发多次
@@ -265,14 +265,14 @@ class _ChatPageState extends State<ChatPage> implements
     _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 1), curve: Curves.ease);
   }
 
-  ///如果是聊天室类型 先加入聊天室
-  _joinChatRoom(){
-    EMClient.getInstance().chatRoomManager.joinChatRoom(
-        conversation.id ,
-        onError: (int errorCode,String errorString) {
-          //TODO: 弹出加入失败toast;
-        });
-  }
+//  ///如果是聊天室类型 先加入聊天室
+//  _joinChatRoom(){
+//    EMClient.getInstance().chatRoomManager.joinChatRoom(
+//        conversation.id ,
+//        onError: (int errorCode,String errorString) {
+//          //TODO: 弹出加入失败toast;
+//        });
+//  }
 
   ///清除记录
   _cleanAllMessage() async {
@@ -330,14 +330,12 @@ class _ChatPageState extends State<ChatPage> implements
     _refreshUI();
   }
 
-  void checkOutRoom(){
-    EMClient.getInstance().chatRoomManager.leaveChatRoom(conversation.id,
-        onSuccess: (){
-          print('退出聊天室成功');
-        },
-        onError: (int errorCode,String errorString){
-          print('errorCode: ' + errorCode.toString() + ' errorString: ' + errorString);
-        });
+  void checkOutRoom() async{
+    try {
+      await EMClient.getInstance().chatRoomManager.leaveChatRoom(conversation.id);
+    }catch (e) {
+
+    }
   }
 
   void toStringInfo() async{

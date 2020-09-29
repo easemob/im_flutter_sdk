@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk_example/common/common.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
@@ -15,33 +14,31 @@ class PublicGroupListPage extends StatefulWidget{
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _PublicGroupListPageState();
   }
 }
 
 class _PublicGroupListPageState extends State<PublicGroupListPage>{
 
-  var groupList = List<EMGroupInfo>();
+  var groupList = List();
   bool _loading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getPublicGroups();
   }
 
-  void _getPublicGroups(){
-    EMClient.getInstance().groupManager.getPublicGroupsFromServer(20, '',
-    onSuccess: (result){
-      groupList = result.getData();
+  void _getPublicGroups() async{
+    try {
+      EMCursorResult result = await EMClient.getInstance().groupManager.getPublicGroupsFromServer();
+      groupList = result.data;
+    }catch(e){
+      WidgetUtil.hintBoxWithDefault(e.toString());
+    } finally {
       _loading = false;
       _refreshUI();
-    },
-    onError: (code, desc){
-      WidgetUtil.hintBoxWithDefault(code.toString()+':'+desc);
-    });
+    }
   }
 
   _refreshUI(){
@@ -52,7 +49,6 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
@@ -66,7 +62,7 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
           }
           return InkWell(
               onTap: (){
-                _onTap(groupList[index]);
+                _onTap(index);
             },
             child: Container(
               height: EMLayout.emContactListItemHeight,
@@ -105,7 +101,7 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
     );
   }
 
-  Widget _buildContent(groupInfo){
+  Widget _buildContent(EMGroup group){
     return Expanded(
       child: Container(
           height: EMLayout.emContactListItemHeight,
@@ -117,7 +113,7 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
           ),
           child: Row(
             children: <Widget>[
-              Text(groupInfo.getGroupName(), style: TextStyle(fontSize: EMFont.emConListTitleFont),),
+              Text(group.name, style: TextStyle(fontSize: EMFont.emConListTitleFont),),
             ],
           )
       ),
@@ -126,7 +122,6 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -143,35 +138,20 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
     );
   }
 
-  void _onTap(EMGroupInfo groupInfo){
-    EMClient.getInstance().groupManager.getGroupFromServer(groupInfo.getGroupId(),
-        onSuccess: (group){
-          if(group.isMemberOnly()) {
-            EMClient.getInstance().groupManager.applyJoinToGroup(group.getGroupId(), '',
-              onSuccess: (){
-                WidgetUtil.hintBoxWithDefault('申请加入公开群成功，等待群主同意');
-              },
-              onError: (code, desc){
-                WidgetUtil.hintBoxWithDefault('申请加入公开群失败：'+desc);
-              });
-          }else{
-            EMClient.getInstance().groupManager.joinGroup(group.getGroupId(),
-                onSuccess: (){
-              // TODO: conversation
-//              WidgetUtil.hintBoxWithDefault('加入公开群成功');
-//              Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-//                return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
-//              }));
-                },
-                onError: (code, desc){
-              WidgetUtil.hintBoxWithDefault('加入公开群失败：'+desc);
-            }
-            );
-          }
-        },
-        onError: (code, desc){
-          WidgetUtil.hintBoxWithDefault('获取群组详情失败：'+desc);
-        }
-    );
+  void _onTap(int index) async {
+    try{
+      EMGroup tapGroup = groupList[index];
+      EMGroup group = await EMClient.getInstance().groupManager.getGroupSpecificationFromServer(groupId: tapGroup.groupId);
+      groupList[index] = group;
+      if(group.settings.style == EMGroupStyle.PublicOpenJoin) {
+        EMClient.getInstance().groupManager.joinPublicGroup(groupId: group.groupId);
+        WidgetUtil.hintBoxWithDefault('加入成功');
+      }else {
+        EMClient.getInstance().groupManager.requestToJoinPublicGroup(groupId: group.groupId);
+        WidgetUtil.hintBoxWithDefault('申请加入公开群成功，等待群主同意');
+      }
+    }catch(e){
+        WidgetUtil.hintBoxWithDefault('请求失败' + e.toString());
+    }
   }
 }

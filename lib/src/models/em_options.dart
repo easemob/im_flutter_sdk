@@ -119,47 +119,40 @@ class EMPushConfig {
   bool _enableAPNS = false;
 
   /// 开启魅族推送 [appId]: 推送用AppId, [appKey]: 推送用AppKey
-  EMPushConfig enableMeiZuPush({@required String appId, @required String appKey}) {
+  void enableMeiZuPush({@required String appId, @required String appKey}) {
     _enableMeiZuPush = true;
     _mzAppId = appId;
     _mzAppKey = appKey;
-    return this;
   }
 
-  EMPushConfig enableOppPush({@required String appKey, @required String secret}) {
+  void enableOppPush({@required String appKey, @required String secret}) {
     _enableOppoPush = true;
     _oppoAppKey = appKey;
     _oppoAppSecret = secret;
-    return this;
   }
 
-  EMPushConfig enableMiPush({@required String appId, @required String appKey}) {
+  void enableMiPush({@required String appId, @required String appKey}) {
     _enableMiPush = true;
     _miAppId = appId;
     _miAppKey = appKey;
-    return this;
   }
 
-  EMPushConfig enableFCM({@required String appId}) {
+  void enableFCM({@required String appId}) {
     _enableFCM = true;
     _fcmId = appId;
-    return this;
   }
 
-  EMPushConfig enableVivoPush() {
+  void enableVivoPush() {
     _enableVivoPush = true;
-    return this;
   }
 
-  EMPushConfig enableHWPush() {
+  void enableHWPush() {
     _enableHWPush = true;
-    return this;
   }
 
-  EMPushConfig enableAPNs({@required String apnsCertName}) {
+  void enableAPNs({@required String apnsCertName}) {
     _enableAPNS = true;
     _apnsCertName = apnsCertName;
-    return this;
   }
 
   EMPushConfig();

@@ -9,6 +9,11 @@
 #import "EMSDKMethod.h"
 #import "EMHelper.h"
 
+#import "EMCursorResult+Flutter.h"
+#import "EMPageResult+Flutter.h"
+#import "EMChatroom+Flutter.h"
+
+
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>
 
 @end
@@ -39,21 +44,21 @@
         [self leaveChatroom:call.arguments result:result];
     } else if ([EMMethodKeyDestroyChatRoom isEqualToString:call.method]) {
         [self destroyChatRoom:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatroomSpecificationFromServer isEqualToString:call.method]) {
-        [self getChatroomSpecificationFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyFetchChatRoomFromServer isEqualToString:call.method]) {
+        [self fetchChatroomInfoFromServer:call.arguments result:result];
     } else if ([EMMethodKeyGetChatRoom isEqualToString:call.method]) {
         [self getChatroom:call.arguments result:result];
     } else if ([EMMethodKeyGetAllChatRooms isEqualToString:call.method]) {
         [self getAllChatrooms:call.arguments result:result];
     } else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
         [self getChatroomMemberListFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatroomBlacklistFromServer isEqualToString:call.method]) {
-        [self getChatroomBlacklistFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyFetchChatroomBlacklistFromServer isEqualToString:call.method]) {
+        [self fetchChatroomBlacklistFromServer:call.arguments result:result];
     } else if ([EMMethodKeyGetChatroomMuteListFromServer isEqualToString:call.method]) {
         [self getChatroomMuteListFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatroomAnnouncement isEqualToString:call.method]) {
-        [self getChatroomAnnouncement:call.arguments result:result];
-    } else if ([EMMethodKeyuChatRoomUpdateSubject isEqualToString:call.method]) {
+    } else if ([EMMethodKeyFetchChatroomAnnouncement isEqualToString:call.method]) {
+        [self fetchChatroomAnnouncement:call.arguments result:result];
+    } else if ([EMMethodKeyChatRoomUpdateSubject isEqualToString:call.method]) {
         [self chatRoomUpdateSubject:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomUpdateDescription isEqualToString:call.method]) {
         [self chatRoomUpdateDescription:call.arguments result:result];
@@ -64,7 +69,7 @@
     } else if ([EMMethodKeyChatRoomUnblockMembers isEqualToString:call.method]) {
         [self chatRoomUnblockMembers:call.arguments result:result];
     } else if ([EMMethodKeyChangeChatRoomOwner isEqualToString:call.method]) {
-        [self chatRoomUpdateChatroomOwner:call.arguments result:result];
+        [self chatRoomChangeOwner:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomAddAdmin isEqualToString:call.method]) {
         [self chatRoomAddAdmin:call.arguments result:result];
     } else if ([EMMethodKeyChatRoomRemoveAdmin isEqualToString:call.method]) {
@@ -85,22 +90,28 @@
 - (void)getChatroomsFromServer:(NSDictionary *)param result:(FlutterResult)result {
     NSInteger page = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
+    
+    __weak typeof(self) weakSelf = self;
+    
     [EMClient.sharedClient.roomManager getChatroomsFromServerWithPage:page
                                                              pageSize:pageSize
                                                            completion:^(EMPageResult *aResult, EMError *aError)
      {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper pageReslutToDictionary:aResult]}];
-        
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetChatroomsFromServer
+                            error:aError
+                           object:[aResult toJson]];
     }];
 }
 
 - (void)createChatroom:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *subject = param[@"subject"];
-    NSString *description = param[@"description"];
+    NSString *description = param[@"desc"];
     NSArray *invitees = param[@"members"];
-    NSString *message = param[@"welcomeMessage"];
+    NSString *message = param[@"welcomeMsg"];
     NSInteger maxMembersCount = [param[@"maxUserCount"] integerValue];
     [EMClient.sharedClient.roomManager createChatroomWithSubject:subject
                                                      description:description
@@ -109,74 +120,102 @@
                                                  maxMembersCount:maxMembersCount
                                                       completion:^(EMChatroom *aChatroom, EMError *aError)
      {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyCreateChatRoom
+                            error:aError
+                           object:[aChatroom toJson]];
     }];
 }
 
 - (void)joinChatroom:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager joinChatroom:chatroomId
                                          completion:^(EMChatroom *aChatroom, EMError *aError)
      {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:nil];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyJoinChatRoom
+                            error:aError
+                           object:@(!!aChatroom)];
     }];
 }
 
 - (void)leaveChatroom:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager leaveChatroom:chatroomId
                                           completion:^(EMError *aError)
      {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:nil];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyLeaveChatRoom
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)destroyChatRoom:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager destroyChatroom:chatroomId completion:^(EMError *aError) {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:nil];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyDestroyChatRoom
+                            error:aError
+                           object:nil];
     }];
 }
 
-- (void)getChatroomSpecificationFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)fetchChatroomInfoFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId
                                                                      completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyFetchChatRoomFromServer
+                            error:aError
+                           object:[aChatroom toJson]];
+        
     }];
 }
 
 - (void)getChatroom:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *chatroomId = param[@"roomId"];
-    EMChatroom *chatroom = [EMChatroom chatroomWithId:chatroomId];
-    [self wrapperCallBack:result
-                    error:nil
-                 userInfo:@{@"value":[EMHelper chatRoomToDictionary:chatroom]}];
+    
+    __weak typeof(self)weakSelf = self;
+    EMChatroom *chatroom = [EMChatroom chatroomWithId:param[@"roomId"]];
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyGetChatRoom
+                        error:nil
+                       object:[chatroom toJson]];
 }
 
 - (void)getAllChatrooms:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.roomManager getChatroomsFromServerWithPage:0
                                                              pageSize:-1
                                                            completion:^(EMPageResult *aResult, EMError *aError)
      {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aResult.list}];
+        NSMutableArray *list = [NSMutableArray array];
+        for (EMChatroom *room in aResult.list) {
+            [list addObject:[room toJson]];
+        }
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetAllChatRooms
+                            error:aError
+                           object:list];
     }];
 }
 
 - (void)getChatroomMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     NSString *cursor = param[@"cursor"];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
@@ -185,13 +224,18 @@
                                                                     pageSize:pageSize
                                                                   completion:^(EMCursorResult *aResult, EMError *aError)
      {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[self dictionaryWithCursorResult:aResult]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetChatroomMemberListFromServer
+                            error:aError
+                           object:[aResult toJson]];
+
     }];
 }
 
-- (void)getChatroomBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)fetchChatroomBlacklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     NSInteger pageNumber = [param[@"pageNum"] integerValue];;
     NSInteger pageSize = [param[@"pageSize"] integerValue];
@@ -200,13 +244,17 @@
                                                                    pageSize:pageSize
                                                                  completion:^(NSArray *aList, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aList}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyFetchChatroomBlacklistFromServer
+                            error:aError
+                           object:aList];
     }];
 }
 
 - (void)getChatroomMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     NSInteger pageNumber = [param[@"pageNum"] integerValue];
     NSInteger pageSize = [param[@"pageSize"] integerValue];
@@ -215,128 +263,165 @@
                                                                   pageSize:pageSize
                                                                 completion:^(NSArray *aList, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aList}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetChatroomMuteListFromServer
+                            error:aError
+                           object:aList];
     }];
 }
 
-- (void)getChatroomAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
+- (void)fetchChatroomAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager getChatroomAnnouncementWithId:chatroomId
                                                           completion:^(NSString *aAnnouncement, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aAnnouncement}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyFetchChatroomAnnouncement
+                            error:aError
+                           object:aAnnouncement];
     }];
 }
 
 - (void)chatRoomUpdateSubject:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *subject = param[@"newSubject"];
+    __weak typeof(self) weakSelf = self;
+    NSString *subject = param[@"subject"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager updateSubject:subject
                                          forChatroom:chatroomId
                                           completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomUpdateSubject
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomUpdateDescription:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *description = param[@"newDescription"];
+    __weak typeof(self) weakSelf = self;
+    NSString *description = param[@"description"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager updateDescription:description
                                              forChatroom:chatroomId
                                               completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomUpdateDescription
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomRemoveMembers:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSArray *members = param[@"members"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager removeMembers:members
                                         fromChatroom:chatroomId
                                           completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomRemoveMembers
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomBlockMembers:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSArray *members = param[@"members"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager blockMembers:members
                                        fromChatroom:chatroomId
                                          completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomBlockMembers
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomUnblockMembers:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSArray *members = param[@"members"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager unblockMembers:members
                                          fromChatroom:chatroomId
                                            completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomUnblockMembers
+                            error:aError
+                           object:nil];
     }];
 }
 
-- (void)chatRoomUpdateChatroomOwner:(NSDictionary *)param result:(FlutterResult)result {
+- (void)chatRoomChangeOwner:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     NSString *newOwner = param[@"newOwner"];
     [EMClient.sharedClient.roomManager updateChatroomOwner:chatroomId
                                                   newOwner:newOwner
                                                 completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChangeChatRoomOwner
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomAddAdmin:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *admin = param[@"admin"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager addAdmin:admin
                                      toChatroom:chatroomId
                                      completion:^(EMChatroom *aChatroomp, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroomp]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomAddAdmin
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomRemoveAdmin:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *admin = param[@"admin"];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager removeAdmin:admin
                                       fromChatroom:chatroomId
                                         completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomRemoveAdmin
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomMuteMembers:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSArray *muteMembers = param[@"muteMembers"];
     NSInteger muteMilliseconds = [param[@"duration"] integerValue];
     NSString *chatroomId = param[@"roomId"];
@@ -345,35 +430,44 @@
                                       fromChatroom:chatroomId
                                         completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomMuteMembers
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)chatRoomUnmuteMembers:(NSDictionary *)param result:(FlutterResult)result {
-    NSArray *muteMembers = param[@"muteMembers"];
+    
+    __weak typeof(self) weakSelf = self;
+    
+    NSArray *unMuteMembers = param[@"unMuteMembers"];
     NSString *chatroomId = param[@"roomId"];
-    [EMClient.sharedClient.roomManager unmuteMembers:muteMembers
+    [EMClient.sharedClient.roomManager unmuteMembers:unMuteMembers
                                         fromChatroom:chatroomId
                                           completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":[EMHelper chatRoomToDictionary:aChatroom]}];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyChatRoomUnmuteMembers
+                            error:aError
+                           object:nil];
     }];
 }
 
 - (void)updateChatroomAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     NSString *chatroomId = param[@"roomId"];
     NSString *announcement = param[@"announcement"];
     [EMClient.sharedClient.roomManager updateChatroomAnnouncementWithId:chatroomId
                                                            announcement:announcement
                                                              completion:^(EMChatroom *aChatroom, EMError *aError)
     {
-        [self wrapperCallBack:result
-                        error:aError
-                     userInfo:nil];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyUpdateChatRoomAnnouncement
+                            error:aError
+                           object:nil];
     }];
 }
 

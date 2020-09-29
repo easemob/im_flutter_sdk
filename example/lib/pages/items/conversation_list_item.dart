@@ -72,9 +72,9 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
     underCount = await con.unreadCount;
     titleName = con.id;
     if(con.type != EMConversationType.Chat){
-      EMGroup group = await EMClient.getInstance().groupManager.getGroup(con.id);
+      EMGroup group = await EMClient.getInstance().groupManager.getGroupWithId(groupId: con.id);
       if(group != null){
-        titleName = group.getGroupName();
+        titleName = group.name;
       }
     }
     _refresh();
@@ -227,7 +227,6 @@ class _EMConversationListItemState extends State<EMConversationListItem>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     _isDark = ThemeUtils.isDark(context);
     if(!(message == null)) {
       return Material(
