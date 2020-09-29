@@ -71,7 +71,7 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
             onTapDown: (TapDownDetails details) {
               tapPos = details.globalPosition;
             },
-            onLongPress: (){
+            onLongPress: () async {
               if(_type == Constant.defaultGroupMember && (_owner == _currentUser || _admins.contains(_currentUser))){
                 if(!(_members[index] == _owner)){
                   if(!(_admins.contains(_members[index]) && _admins.contains(_currentUser))){
@@ -104,46 +104,29 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                     }
 
                     WidgetUtil.showLongPressMenu(context, tapPos,actionMap,(String key){
-                      if(key == Constant.addBlackListKey) {
+                      try{
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager.blockUser(_groupId, _members[index],
-                        onSuccess: (){
+                        if(key == Constant.addBlackListKey) {
+                          EMClient.getInstance().groupManager.blockMembers(groupId: _groupId, members: [_members[index]]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '加入黑名单成功');
                           _members.removeAt(index);
-                          _isRefresh = true;
-                          _refreshUI(false);
-                        },
-                        onError: (code, desc){
-                          WidgetUtil.hintBoxWithDefault(code.toString() +':'+desc);
-                          _refreshUI(false);
-                        });
-                      }else if(key == Constant.addMuteListKey) {
-                        _refreshUI(true);
-                        EMClient.getInstance().groupManager.muteGroupMembers(_groupId, [_members[index]], '86400000',
-                        onSuccess: (group){
-                          _muteList.add(_members[index]);
-                          WidgetUtil.hintBoxWithDefault(_members[index].toString() + '禁言成功');
-                          _isRefresh = true;
-                          _refreshUI(false);
-                        },
-                        onError: (code, desc){
-                          WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
-                          _refreshUI(false);
-                        });
 
-                      }else if(key == Constant.addAdminListKey) {
-                        _refreshUI(true);
-                        EMClient.getInstance().groupManager.addGroupAdmin(_groupId, _members[index],
-                        onSuccess: (group){
-                          _admins.add(_members[index]);
+                        }else if(key == Constant.addMuteListKey) {
+                          EMClient.getInstance().groupManager.muteMembers(groupId: _groupId, members: [_members[index]]);
+                          WidgetUtil.hintBoxWithDefault(_members[index].toString() + '禁言成功');
+                          _muteList.add(_members[index]);
+
+                        }else if(key == Constant.addAdminListKey) {
+                          EMClient.getInstance().groupManager.addAdmin(groupId: _groupId, username: _members[index]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '添加管理员成功');
-                          _isRefresh = true;
-                          _refreshUI(false);
-                        },
-                        onError: (code, desc){
-                          WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
-                          _refreshUI(false);
-                        });
+                          _admins.add(_members[index]);
+
+                        }
+                        _isRefresh = true;
+                        _refreshUI(false);
+                      }catch(e){
+                        WidgetUtil.hintBoxWithDefault(e.toString());
+                        _refreshUI(false);
                       }
                     });
                   }
@@ -167,25 +150,19 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                           ),
                           FlatButton(
                             child: new Text('确定'),
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.of(context).pop();
-                              _refreshUI(true);
-                              EMClient.getInstance()
-                                  .groupManager
-                                  .removeUserFromGroup(
-                                      _groupId,
-                                      _members[index],
-                                      onSuccess: () {
-                                        _isRefresh = true;
-                                        WidgetUtil.hintBoxWithDefault('移除成员成功');
-                                        _members.removeAt(index);
-                                        _refreshUI(false);
-                                      },
-                                      onError: (code, desc) {
-                                        WidgetUtil.hintBoxWithDefault(
-                                            code.toString() + ':' + desc);
-                                        _refreshUI(false);
-                                      });
+                              try{
+                                _refreshUI(true);
+                                EMClient.getInstance().groupManager.removeMembers(groupId: _groupId,members: [_members[index]]);
+                                _isRefresh = true;
+                                WidgetUtil.hintBoxWithDefault('移除成员成功');
+                                _members.removeAt(index);
+                              }catch(e){
+                                WidgetUtil.hintBoxWithDefault(e.toString());
+                              }finally{
+                                _refreshUI(false);
+                              }
                             },
                           ),
                         ],

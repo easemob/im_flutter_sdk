@@ -14,7 +14,6 @@ class EMChatGroupListItem extends StatefulWidget{
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _EMChatGroupListItemState(this.emGroup, this.delegate);
   }
 }
@@ -80,7 +79,7 @@ class _EMChatGroupListItemState extends State<EMChatGroupListItem>{
           ),
           child: Row(
             children: <Widget>[
-              Text(emGroup.getGroupName(), style: TextStyle(fontSize: EMFont.emConListTitleFont),),
+              Text(emGroup.name, style: TextStyle(fontSize: EMFont.emConListTitleFont),),
             ],
           )
       ),

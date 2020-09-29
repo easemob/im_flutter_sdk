@@ -1,8 +1,8 @@
 //
-//  EMError+Flutter.h
+//  EMChatroom+Flutter.h
 //  im_flutter_sdk
 //
-//  Created by 杜洁鹏 on 2020/9/23.
+//  Created by 杜洁鹏 on 2020/9/27.
 //
 
 #import <Hyphenate/Hyphenate.h>
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMError (Flutter)<EaseToFlutterJson>
+@interface EMChatroom (Flutter) <EaseToFlutterJson>
 - (NSDictionary *)toJson;
 @end
 

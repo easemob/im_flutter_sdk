@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-
 class EMContact {
 
-  EMContact({@required this.userName});
+  EMContact(this.userName);
 
   /// 环信id
   final String userName;

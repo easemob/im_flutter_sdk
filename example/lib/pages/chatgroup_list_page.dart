@@ -14,7 +14,6 @@ import 'items/chatgroup_list_item.dart';
 class EMChatGroupListPage extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _EMChatGroupListPageState();
   }
 }
@@ -26,23 +25,19 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getJoinedGroups();
   }
 
   void getJoinedGroups() async{
     _loading = true;
-    EMClient.getInstance().groupManager.getJoinedGroupsFromServer(
-        onSuccess: (groups){
-          groupList = groups;
-          _refreshUI(false);
-        },
-        onError: (code, desc){
-          WidgetUtil.hintBoxWithDefault(code.toString()+':'+desc);
-          _refreshUI(false);
-        }
-    );
+    try{
+      groupList = await EMClient.getInstance().groupManager.getJoinedGroupsFromServer(pageSize: 200, pageNum: 1);
+    }catch(e) {
+      WidgetUtil.hintBoxWithDefault(e.toString());
+    }finally{
+      _refreshUI(false);
+    }
   }
 
   _refreshUI(bool loading){
@@ -53,24 +48,24 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
   Widget _buildCreateGroupItem(){
     return InkWell(
-      onTap: (){
+      onTap: () async {
         WidgetUtil.hintBoxWithDefault('默认创建可直接加入公开群');
         _refreshUI(true);
-        EMClient.getInstance().groupManager.createGroup('可直接加入的公开群' + DateTime.now().millisecondsSinceEpoch.toString(), '', [], '', EMGroupOptions(maxUsers : 2000, style: EMGroupStyle.EMGroupStylePublicOpenJoin),
-        onSuccess: (group){
+        String name = '可直接加入的公开群' + DateTime.now().millisecondsSinceEpoch.toString();
+        EMGroupOptions options = EMGroupOptions(style: EMGroupStyle.PublicOpenJoin);
+        try{
+          await EMClient.getInstance().groupManager.createGroup(groupName: name, settings: options);
           WidgetUtil.hintBoxWithDefault('创建群组成功');
           getJoinedGroups();
-        },
-        onError: (code, desc){
-          WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
+        }catch(e) {
+          WidgetUtil.hintBoxWithDefault(e.toString());
           _refreshUI(false);
-        });
+        }
       },
       child : Container(
         height: 67,
@@ -169,14 +164,16 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
     );
   }
 
-  void onTapChatGroup(EMGroup group){
-    // TODO: conversation
-//    Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
-//      return new ChatPage(arguments: {'mType': Constant.chatTypeGroup,'toChatUsername':group.getGroupId()});
-//    })).then((bool isRefresh){
-//      if(isRefresh){
-//        getJoinedGroups();
-//      }
-//    });
+  void onTapChatGroup(EMGroup group) async {
+
+    EMConversation con = await EMClient.getInstance().chatManager.getConversation(group.groupId, EMConversationType.GroupChat);
+
+    Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
+      return new ChatPage(conversation: con,);
+    })).then((bool isRefresh){
+      if(isRefresh){
+        getJoinedGroups();
+      }
+    });
   }
 }

@@ -1,460 +1,5 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
-
 import '../im_flutter_sdk.dart';
-import 'em_message_body.dart';
 
-/*
-/// EMMessage - various types of message
-class EMMessage {
-  EMMessage({
-    this.acked,
-    this.body,
-    this.delivered,
-    this.direction,
-    this.from,
-    this.listened,
-    this.msgTime = '',
-    this.status,
-    this.to,
-    this.type,
-    this.unread,
-    this.deliverAcked,
-  })  : _attributes = {},
-        _conversationId = '',
-        _userName = '',
-        chatType = ChatType.Chat,
-        msgId = currentTimeMillis(),
-        localTime = currentTimeMillis();
-
-  /// 用于创建各种消息的构造函数 - 发送方。
-  EMMessage.createSendMessage(EMMessageType type) : this (
-      type: type,
-      direction: Direction.SEND
-  );
-
-  /// 用于创建各种消息的构造函数 - 接收方。
-  EMMessage.createReceiveMessage(EMMessageType type) : this (
-      type: type,
-      direction: Direction.RECEIVE
-  );
-
-  /// 创建文本类型消息 [content]: 消息内容; [userName]: 接收方id
-  EMMessage.createTxtSendMessage({@required String userName, String content = ""}) : this (
-      direction: Direction.SEND,
-      to: userName,
-      type: EMMessageType.TXT,
-      body: EMTextMessageBody(content)
-  );
-
-  /// 创建语音类型消息 [filePath]: 语音片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
-  /// String filePath, int timeLength, String userName)
-  EMMessage.createVoiceSendMessage({@required String userName, @required String filePath, int timeLength = 0}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.VOICE,
-      body:EMVoiceMessageBody(File(filePath),timeLength),
-      to:userName
-  );
-
-  /// 创建图片类型消息 [filePath]: 图片路径; [sendOriginalImage]: 是否发送原图; [userName]: 接收方id.
-  EMMessage.createImageSendMessage({@required String userName, @required String filePath, bool sendOriginalImage = false}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.IMAGE,
-      body: EMImageMessageBody(File(filePath), sendOriginalImage),
-      to: userName
-  );
-
-  /// 创建视频类型消息 [filePath]: 视频片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
-  EMMessage.createVideoSendMessage({@required String userName, @required String filePath, int timeLength = 0}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.VIDEO,
-      body: EMVideoMessageBody(File(filePath), timeLength),
-      to: userName
-  );
-
-  /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
-  EMMessage.createLocationSendMessage({@required String userName, double latitude, double longitude, String locationAddress}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.LOCATION,
-      body: EMLocationMessageBody(locationAddress, latitude, longitude),
-      to: userName
-  );
-
-  /// 创建文件类型消息 [filePath]: 文件路径; [userName]: 接收方id
-  EMMessage.createFileSendMessage({@required String userName, @required String filePath}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.FILE,
-      body: EMNormalFileMessageBody(File(filePath)),
-      to: userName
-  );
-
-  /// 创建自定义类型消息 [event]: 自定义event; [userName]: 接收方id
-  EMMessage.createCustomSendMessage({@required String userName, @required String event, Map params}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.CUSTOM,
-      body: EMCustomMessageBody(event: event, params: params),
-      to: userName
-  );
-
-  /// @nodoc TODO:
-  set isDeliverAcked(bool acked) {
-    deliverAcked = acked;
-  }
-
-  final String _conversationId;
-
-  /// 会话id
-  String get conversationId => _conversationId;
-
-  final String _userName;
-
-  /// @nodoc TODO:
-  String get userName => _userName;
-
-  /// @nodoc TODO:
-  bool deliverAcked = false;
-
-  /// 是否已读
-  bool acked = false;
-
-  /// 消息body
-  EMMessageBody body;
-
-  /// 消息类型[单聊，群聊，聊天室]
-  ChatType chatType;
-
-  /// @nodoc TODO:
-  bool delivered;
-
-  /// 消息反向(发送，接收)
-  Direction direction;
-
-  /// 消息发送方
-  String from;
-
-  /// @nodoc TODO：
-  bool listened;
-
-  /// 本地时间
-  String localTime;
-
-  /// 消息id
-  String msgId;
-
-  /// 服务器时间
-  String msgTime;
-
-  /// 消息发送状态
-  Status status;
-
-  /// 消息接收方
-  String to;
-
-  /// 是否未读
-  bool unread;
-
-  /// 消息类型[文字，图片，语音...]
-  EMMessageType type;
-
-  /// 扩展属性 包含任意键/值对的属性
-  final Map _attributes;
-
-  /// @nodoc
-  void setAttribute(Map map) {
-    _attributes.addAll(map);
-  }
-
-  /// @nodoc
-  dynamic getAttribute(String attr) {
-    return _attributes[attr];
-  }
-
-  /// TODO: setMessageStatusCallback (EMCallBack callback)
-
-  /// ext
-  Map ext() {
-    return _attributes;
-  }
-
-  static String currentTimeMillis() {
-    return new DateTime.now().millisecondsSinceEpoch.toString();
-  }
-
-  /// @nodoc
-  Map toDataMap() {
-    var result = {};
-    result["acked"] = this.acked;
-    result['attributes'] = _attributes;
-    result['body'] = body.toDataMap();
-    result['chatType'] = toChatType(chatType);
-    result['conversationId'] = _conversationId;
-    result['deliverAcked'] = deliverAcked;
-    result['delivered'] = delivered;
-    result['direction'] = toDirect(direction);
-    result['from'] = from;
-    result['listened'] = listened;
-    result['localTime'] = localTime;
-    result['msgId'] = msgId;
-    result['msgTime'] = msgTime;
-    result['status'] = toEMMessageStatus(status);
-    result['to'] = to;
-    result['type'] = toType(type);
-    result['unread'] = unread;
-    result['userName'] = _userName;
-    return result;
-  }
-
-  /// @nodoc
-  EMMessage.from(Map data)
-      : _attributes = data['attributes'],
-        localTime = data['localTime'],
-        chatType = fromChatType(data['chatType']),
-        msgId = data['msgId'],
-        body = EMMessageBody.from(data['body']),
-        delivered = data['delivered'],
-        from = data['from'],
-        direction = fromDirect(data['direction']),
-        listened = data['listened'],
-        _conversationId = data['conversationId'],
-        status = fromEMMessageStatus(data['status']),
-        msgTime = data['msgTime'],
-        to = data['to'],
-        _userName = data['userName'],
-        acked = data['acked'],
-        type = fromType(data['type']),
-        unread = data['unread'];
-
-  /// @nodoc
-  String toString() {
-    return body.toString();
-  }
-}
-
-/// @nodoc 消息类型 int 类型数据转 EMMessageType
-fromType(int type) {
-  switch (type) {
-    case 1:
-      return EMMessageType.TXT;
-    case 2:
-      return EMMessageType.IMAGE;
-    case 3:
-      return EMMessageType.VIDEO;
-    case 4:
-      return EMMessageType.LOCATION;
-    case 5:
-      return EMMessageType.VOICE;
-    case 6:
-      return EMMessageType.FILE;
-    case 7:
-      return EMMessageType.CMD;
-    case 8:
-      return EMMessageType.CUSTOM;
-  }
-}
-
-/// @nodoc 消息类型 EMMessageType 类型数据转 int
-toType(EMMessageType type) {
-  if (type == EMMessageType.TXT) {
-    return 1;
-  } else if (type == EMMessageType.IMAGE) {
-    return 2;
-  } else if (type == EMMessageType.VIDEO) {
-    return 3;
-  } else if (type == EMMessageType.LOCATION) {
-    return 4;
-  } else if (type == EMMessageType.VOICE) {
-    return 5;
-  } else if (type == EMMessageType.FILE) {
-    return 6;
-  } else if (type == EMMessageType.CMD) {
-    return 7;
-  }else if (type == EMMessageType.CUSTOM) {
-    return 8;
-  }
-}
-
-/// @nodoc 聊天类型 int 类型数据转 ChatType
-fromChatType(int type) {
-  switch (type) {
-    case 0:
-      return ChatType.Chat;
-    case 1:
-      return ChatType.GroupChat;
-    case 2:
-      return ChatType.ChatRoom;
-  }
-}
-
-/// @nodoc 聊天类型 ChatType 类型数据转 int
-toChatType(ChatType type) {
-  if (type == ChatType.Chat) {
-    return 0;
-  } else if (type == ChatType.GroupChat) {
-    return 1;
-  } else if (type == ChatType.ChatRoom) {
-    return 2;
-  }
-}
-
-/// @nodoc 消息方向 int 类型数据转 Direction
-fromDirect(int type) {
-  switch (type) {
-    case 0:
-      return Direction.SEND;
-    case 1:
-      return Direction.RECEIVE;
-  }
-}
-
-/// @nodoc 消息方向 Direction 类型数据转 int
-toDirect(Direction direction) {
-  if (direction == Direction.SEND) {
-    return 0;
-  } else if (direction == Direction.RECEIVE) {
-    return 1;
-  }
-}
-
-/// @nodoc 消息状态 int 类型数据转 Status
-fromEMMessageStatus(int status) {
-  switch (status) {
-    case 0:
-      return Status.SUCCESS;
-    case 1:
-      return Status.FAIL;
-    case 2:
-      return Status.INPROGRESS;
-    case 3:
-      return Status.CREATE;
-  }
-}
-
-/// @nodoc 消息状态 Status 类型数据转 int
-toEMMessageStatus(Status status) {
-  if (status == Status.SUCCESS) {
-    return 0;
-  } else if (status == Status.FAIL) {
-    return 1;
-  } else if (status == Status.INPROGRESS) {
-    return 2;
-  } else if (status == Status.CREATE) {
-    return 3;
-  }
-}
-
-/// @nodoc 下载状态 int 类型数据转 EMDownloadStatus
-toEMDownloadStatus(EMDownloadStatus status) {
-  if (status == EMDownloadStatus.DOWNLOADING) {
-    return 0;
-  } else if (status == EMDownloadStatus.SUCCESSED) {
-    return 1;
-  } else if (status == EMDownloadStatus.FAILED) {
-    return 2;
-  } else if (status == EMDownloadStatus.PENDING) {
-    return 3;
-  }
-}
-
-/// @nodoc 下载状态 EMDownloadStatus 类型数据转 int
-fromEMDownloadStatus(int status) {
-  if (status == 0) {
-    return EMDownloadStatus.DOWNLOADING;
-  } else if (status == 1) {
-    return EMDownloadStatus.SUCCESSED;
-  } else if (status == 2) {
-    return EMDownloadStatus.FAILED;
-  } else if (status == 3) {
-    return EMDownloadStatus.PENDING;
-  }
-}
-
-
-/// @nodoc  EMMessageBody - body of message.
-abstract class EMMessageBody {
-  toDataMap();
-
-  static EMMessageBody from(Map data) {
-    switch (data['type']) {
-      case 1:
-        return EMTextMessageBody.fromData(data);
-      case 2:
-        return EMImageMessageBody.fromData(data);
-      case 3:
-        return EMVideoMessageBody.fromData(data);
-      case 4:
-        return EMLocationMessageBody.fromData(data);
-      case 5:
-        return EMVoiceMessageBody.fromData(data);
-      case 6:
-        return EMNormalFileMessageBody.fromData(data);
-      case 7:
-        return EMCmdMessageBody.fromData(data);
-      case 8:
-        return EMCustomMessageBody.fromData(data);
-      default:
-        return null;
-    }
-  }
-}
-
-/// 消息类型
-enum EMMessageType {
-  /// 文字消息
-  TXT,
-
-  /// 图片消息
-  IMAGE,
-
-  /// 视频消息
-  VIDEO,
-
-  /// 位置消息
-  LOCATION,
-
-  /// 音频消息
-  VOICE,
-
-  /// 文件消息
-  FILE,
-
-  /// CMD消息
-  CMD,
-
-  /// CUSTOM消息
-  CUSTOM,
-}
-
-/// @nodoc Status - EMMessage status enumeration.
-enum Status {
-  SUCCESS,
-  FAIL,
-  INPROGRESS,
-  CREATE,
-}
-
-/// @nodoc ChatType - EMMessage chat type enumeration.
-enum ChatType { Chat, GroupChat, ChatRoom }
-
-/// @nodoc Direction - EMMessage direction enumeration.
-enum Direction { SEND, RECEIVE }
-
-/// @nodoc EMDownloadStatus - download status enumeration.
-enum EMDownloadStatus { DOWNLOADING, SUCCESSED, FAILED, PENDING }
-
-
- */
-
-
-//class EMContact {
-//  /// 环信id
-//  final String userName;
-//
-//  /// @nodoc 昵称(暂未实现)
-//  String nickName;
-//
-//  EMContact({@required String userName}) : userName = userName;
-//}
 
 /// EMDeviceInfo - device info.
 class EMDeviceInfo {
@@ -487,111 +32,51 @@ enum EMCheckType {
 /// @nodoc EMSearchDirection - Search direction.
 enum EMSearchDirection { Up, Down }
 
-/// @nodoc EMCursorResult - Cursor result for iteration.
-abstract class EMCursorResults<T> {
-  /// 获取cursor
-  Future<T> getCursor();
-}
+//class EMGroupOptions {
+//  /// GroupOptions
+//  EMGroupOptions({
+//    this.maxUsers = 200,
+//    this.style = EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite,
+//  });
+//
+//  /// 群人数上限
+//  int maxUsers;
+//
+//  /// 群类型
+//  EMGroupStyle style;
+//}
 
-/// @nodoc
-class EMCursorResult<T> {
-  String _cursor;
-
-  List<T> _data;
-
-  String getCursor() {
-    return _cursor;
-  }
-
-  void setCursor(String cursor) {
-    _cursor = cursor;
-  }
-
-  List<T> getData() {
-    return _data;
-  }
-
-  void setData(List list) {
-    _data = list;
-  }
-
-  EMCursorResult.from(Map<String, dynamic> data)
-      : _cursor = data['cursor'],
-        _data = data['data'];
-}
-
-/// @nodoc
-class EMPageResult<T> {
-  int _pageCount;
-
-  List<T> _data;
-
-  int getPageCount() {
-    return _pageCount;
-  }
-
-  void setPageCount(int pageCount) {
-    _pageCount = pageCount;
-  }
-
-  List<T> getData() {
-    return _data;
-  }
-
-  void setData(List list) {
-    _data = list;
-  }
-
-  EMPageResult.from(Map<String, dynamic> data)
-      : _pageCount = data['pageCount'],
-        _data = data['data'];
-}
-
-class EMGroupOptions {
-  /// GroupOptions
-  EMGroupOptions({
-    this.maxUsers = 200,
-    this.style = EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite,
-  });
-
-  /// 群人数上限
-  int maxUsers;
-
-  /// 群类型
-  EMGroupStyle style;
-}
-
-/// 群组类型
-enum EMGroupStyle {
-  /// 私有群，只有群主可邀请
-  EMGroupStylePrivateOnlyOwnerInvite,
-
-  /// 私有群，成员都可邀请
-  EMGroupStylePrivateMemberCanInvite,
-
-  /// 共有群，加入需要申请
-  EMGroupStylePublicJoinNeedApproval,
-
-  /// 共有群，任何人可加入
-  EMGroupStylePublicOpenJoin,
-}
-
-/// @nodoc
-int convertEMGroupStyleToInt(EMGroupStyle style) {
-  if (style == EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite) {
-    return 0;
-  }
-  if (style == EMGroupStyle.EMGroupStylePrivateMemberCanInvite) {
-    return 1;
-  }
-  if (style == EMGroupStyle.EMGroupStylePublicJoinNeedApproval) {
-    return 2;
-  }
-  if (style == EMGroupStyle.EMGroupStylePublicOpenJoin) {
-    return 3;
-  }
-  return 0;
-}
+///// 群组类型
+//enum EMGroupStyle {
+//  /// 私有群，只有群主可邀请
+//  EMGroupStylePrivateOnlyOwnerInvite,
+//
+//  /// 私有群，成员都可邀请
+//  EMGroupStylePrivateMemberCanInvite,
+//
+//  /// 共有群，加入需要申请
+//  EMGroupStylePublicJoinNeedApproval,
+//
+//  /// 共有群，任何人可加入
+//  EMGroupStylePublicOpenJoin,
+//}
+//
+///// @nodoc
+//int convertEMGroupStyleToInt(EMGroupStyle style) {
+//  if (style == EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite) {
+//    return 0;
+//  }
+//  if (style == EMGroupStyle.EMGroupStylePrivateMemberCanInvite) {
+//    return 1;
+//  }
+//  if (style == EMGroupStyle.EMGroupStylePublicJoinNeedApproval) {
+//    return 2;
+//  }
+//  if (style == EMGroupStyle.EMGroupStylePublicOpenJoin) {
+//    return 3;
+//  }
+//  return 0;
+//}
 
 class EMMucSharedFile {
   String _fileId;
@@ -651,59 +136,59 @@ class EMMucSharedFile {
         _fileSize.toString();
   }
 }
+//
+///// 群组详情
+//class EMGroupInfo {
+//  String _groupId;
+//  String _groupName;
+//
+//  /// 获取群id
+//  String getGroupId() {
+//    return _groupId;
+//  }
+//
+//  /// 获取群名称
+//  String getGroupName() {
+//    return _groupName;
+//  }
+//
+//  /// @nodoc
+//  EMGroupInfo.from(Map<String, dynamic> data)
+//      : _groupId = data['groupId'],
+//        _groupName = data['groupName'];
+//}
 
-/// 群组详情
-class EMGroupInfo {
-  String _groupId;
-  String _groupName;
-
-  /// 获取群id
-  String getGroupId() {
-    return _groupId;
-  }
-
-  /// 获取群名称
-  String getGroupName() {
-    return _groupName;
-  }
-
-  /// @nodoc
-  EMGroupInfo.from(Map<String, dynamic> data)
-      : _groupId = data['groupId'],
-        _groupName = data['groupName'];
-}
-
-/// 群成员权限
-enum EMGroupPermissionType {
-  /// none
-  EMGroupPermissionTypeNone,
-
-  /// 群成员
-  EMGroupPermissionTypeMember,
-
-  /// 群管理员
-  EMGroupPermissionTypeAdmin,
-
-  /// 群拥有者
-  EMGroupPermissionTypeOwner,
-}
-
-/// @nodoc
-EMGroupPermissionType convertIntToEMGroupPermissionType(int i) {
-  if (i == -1) {
-    return EMGroupPermissionType.EMGroupPermissionTypeNone;
-  }
-  if (i == 0) {
-    return EMGroupPermissionType.EMGroupPermissionTypeMember;
-  }
-  if (i == 1) {
-    return EMGroupPermissionType.EMGroupPermissionTypeAdmin;
-  }
-  if (i == 2) {
-    return EMGroupPermissionType.EMGroupPermissionTypeOwner;
-  }
-  return EMGroupPermissionType.EMGroupPermissionTypeNone;
-}
+///// 群成员权限
+//enum EMGroupPermissionType {
+//  /// none
+//  EMGroupPermissionTypeNone,
+//
+//  /// 群成员
+//  EMGroupPermissionTypeMember,
+//
+//  /// 群管理员
+//  EMGroupPermissionTypeAdmin,
+//
+//  /// 群拥有者
+//  EMGroupPermissionTypeOwner,
+//}
+//
+///// @nodoc
+//EMGroupPermissionType convertIntToEMGroupPermissionType(int i) {
+//  if (i == -1) {
+//    return EMGroupPermissionType.EMGroupPermissionTypeNone;
+//  }
+//  if (i == 0) {
+//    return EMGroupPermissionType.EMGroupPermissionTypeMember;
+//  }
+//  if (i == 1) {
+//    return EMGroupPermissionType.EMGroupPermissionTypeAdmin;
+//  }
+//  if (i == 2) {
+//    return EMGroupPermissionType.EMGroupPermissionTypeOwner;
+//  }
+//  return EMGroupPermissionType.EMGroupPermissionTypeNone;
+//}
 
 /// @nodoc 会话类型 EMConversationType 数据类型转 int
 toEMConversationType(EMConversationType type) {
@@ -747,10 +232,10 @@ fromEMPushDisplayStyle(int type) {
   }
 }
 
-toEMPushDisplayStyle(EMPushDisplayStyle Style) {
-  if (Style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
+toEMPushDisplayStyle(EMPushDisplayStyle style) {
+  if (style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
     return 0;
-  } else if (Style == EMPushDisplayStyle.EMPushDisplayStyleMessageSummary) {
+  } else if (style == EMPushDisplayStyle.EMPushDisplayStyleMessageSummary) {
     return 1;
   }
 }

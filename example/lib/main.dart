@@ -35,14 +35,27 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
     EMPushConfig config = EMPushConfig();
     // 判断是否为debug模式
-    if(kReleaseMode){
-      config.enableAPNs(apnsCertName: "chatdemoui");
-    }else {
-      config.enableAPNs(apnsCertName: "chatdemoui_dev");
+    if(!kReleaseMode){
+      config
+        ..enableAPNs(apnsCertName: "chatdemoui_dev")
+        ..enableHWPush()
+        ..enableFCM(appId: '')
+        ..enableMeiZuPush(appId: '', appKey: '')
+        ..enableMiPush(appId: '', appKey: '');
       options.debugModel = true;
+    }else {
+      config
+        ..enableAPNs(apnsCertName: "chatdemoui")
+        ..enableHWPush()
+        ..enableFCM(appId: '')
+        ..enableMeiZuPush(appId: '', appKey: '')
+        ..enableMiPush(appId: '', appKey: '');
     }
+
+
     options.pushConfig = config;
-    
+
+
     EMClient.getInstance().init(options);
     EMClient.getInstance().addConnectionListener(this);
 

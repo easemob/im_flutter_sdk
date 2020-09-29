@@ -6,10 +6,11 @@
 //
 
 #import <Hyphenate/Hyphenate.h>
+#import "EaseToFlutterJson.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMConversation (Flutter)
+@interface EMConversation (Flutter) <EaseToFlutterJson>
 - (NSDictionary *)toJson;
 + (int)typeToInt:(EMConversationType)aType;
 + (EMConversationType)typeFromInt:(int)aType;

@@ -1,7 +1,5 @@
 import "dart:async";
-import 'dart:collection';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/models/em_error.dart';
 
@@ -120,19 +118,15 @@ class EMChatManager {
   }
 
   /// 通过[id] 获取会话
-  Future<EMConversation> getConversation({
-    @required String id,
-    @required EMConversationType type,
-    bool createIfNotExists = true
-  }) async {
-    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
-        EMSDKMethod.getConversation,
-        {"id": id, "type": EMConversation.typeToInt(type), "createIfNotExists": createIfNotExists});
-    if (result['success']) {
-      return EMConversation.fromJson(result['conversation']);
-    } else {
-      return null;
-    }
+  Future<EMConversation> getConversation(String id, EMConversationType type, [bool createIfNotExists = true]) async {
+
+    Map req = {"id": id, "type": EMConversation.typeToInt(type), "createIfNeed": createIfNotExists};
+
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(EMSDKMethod.getConversation, req);
+
+    EMError.hasErrorFromResult(result);
+
+    return EMConversation.fromJson(result[EMSDKMethod.getConversation]);
   }
 
   /// @nodoc 将所有对话标记为已读。
@@ -313,7 +307,7 @@ class EMChatManager {
 
   /// @nodoc 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// @nodoc 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
+  Future<EMCursorResult> fetchHistoryMessages(
       String conversationId,
       EMConversationType type,
       int pageSize,
@@ -330,7 +324,9 @@ class EMChatManager {
       "startMsgId": startMsgId
     });
     if (result['success']) {
-      return _EMCursorResults<EMMessage>(result['cursorId']);
+//      return _EMCursorResults<EMMessage>(result['cursorId']);
+    return null;
+
     } else {
       return null;
     }
@@ -443,32 +439,6 @@ class EMChatManager {
   Future<void>_messageStatus_onProgress(Map map) async{
     for (var listener in _messageStatusListeners) {
       listener.onProgress(map['progress'], map['status']);
-    }
-  }
-}
-
-/// _EMCursorResult - 内部EMCursorResult实现。
-class _EMCursorResults<T> extends EMCursorResults<T> {
-  static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _emChatManagerChannel =
-      MethodChannel('$_channelPrefix/em_chat_manager');
-  _EMCursorResults(String cursorId) : this._cursorId = cursorId;
-
-  final String _cursorId;
-
-  @override
-  Future<T> getCursor() async {
-    Map<String, Object> result = await _emChatManagerChannel
-        .invokeMethod(EMSDKMethod.getCursor, {"id": _cursorId});
-    if (result['success']) {
-      var list = [];
-      List messageList = result['message'] as List<dynamic>;
-      for (var value in messageList) {
-        list.add(EMMessage.fromJson(value)) ;
-      }
-      return list as T;
-    } else {
-      return null;
     }
   }
 }

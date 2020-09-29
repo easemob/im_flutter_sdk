@@ -21,7 +21,7 @@ class EMGroupFilesPage extends StatefulWidget{
 
 class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
   String _groupId;
-  List<EMMucSharedFile> _fileList = [];
+  List<EMGroupSharedFile> _fileList = [];
   bool _loading = true;
 
   _EMGroupFilesPageState(this._groupId);
@@ -33,16 +33,14 @@ class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
     _fetchGroupSharedFile();
   }
 
-  void _fetchGroupSharedFile(){
-    EMClient.getInstance().groupManager.fetchGroupSharedFileList(_groupId, 1, 20,
-    onSuccess: (files){
-      _fileList = files;
+  void _fetchGroupSharedFile() async {
+    try{
+      _fileList = await EMClient.getInstance().groupManager.getGroupFileListFromServer(groupId:_groupId, pageNum: 1, pageSize: 20);
       _refreshUI(false);
-    },
-    onError: (code, desc){
-      WidgetUtil.hintBoxWithDefault(code.toString() + ':' +desc);
+    }catch(e){
+      WidgetUtil.hintBoxWithDefault(e.toString());
       _refreshUI(false);
-    });
+    }
   }
 
   _refreshUI(bool loading) {
@@ -60,7 +58,7 @@ class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
         });
   }
 
-  Widget _buildFilesItem(EMMucSharedFile file){
+  Widget _buildFilesItem(EMGroupSharedFile file){
     return InkWell(
       onTap: (){
 //        WidgetUtil.hintBoxWithDefault('正在下载');
@@ -86,9 +84,9 @@ class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(file.getFileName(), style: TextStyle(fontSize: 16)),
-            Text((file.getFileSize()/1024/1024).toString().substring(0,4) + 'M',style: TextStyle(fontSize: 12)),
-            Text(TimeUtil.convertTime(file.getFileUpdateTime()),style: TextStyle(fontSize: 12)),
+            Text(file.fileName, style: TextStyle(fontSize: 16)),
+            Text((file.fileSize / 1024 / 1024).toString().substring(0,4) + 'M',style: TextStyle(fontSize: 12)),
+            Text(TimeUtil.convertTime(file.createTime),style: TextStyle(fontSize: 12)),
           ],
         ),
       ),

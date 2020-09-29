@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
@@ -19,10 +17,7 @@ class EMGroupBlackListPage extends StatefulWidget {
   const EMGroupBlackListPage(this._groupId, this._members, this._type);
 
   @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return _EMGroupBlackListPageState(this._groupId, this._members, this._type);
-  }
+  State<StatefulWidget> createState() => _EMGroupBlackListPageState(this._groupId, this._members, this._type);
 }
 
 class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
@@ -35,7 +30,6 @@ class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -77,44 +71,23 @@ class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
                           ),
                           FlatButton(
                             child: new Text('确定'),
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.of(context).pop();
-                              _refreshUI(true);
-                              if(_type == Constant.blackList){
-                                EMClient.getInstance().groupManager.unblockUser(_groupId, _members[index],
-                                onSuccess: (){
-                                  WidgetUtil.hintBoxWithDefault(_members[index] + '解除黑名单成功');
-                                  _members.removeAt(index);
-                                  _refreshUI(false);
-                                },
-                                onError: (code, desc){
-                                  _refreshUI(false);
-                                  WidgetUtil.hintBoxWithDefault(code.toString() +':'+desc);
-                                });
-                              }
-                              if(_type == Constant.muteList){
-                                EMClient.getInstance().groupManager.unMuteGroupMembers(_groupId, [_members[index]],
-                                onSuccess: (group){
-                                  WidgetUtil.hintBoxWithDefault(_members[index] + '解除禁言成功');
-                                  _members.removeAt(index);
-                                  _refreshUI(false);
-                                },
-                                onError: (code, desc){
-                                  _refreshUI(false);
-                                  WidgetUtil.hintBoxWithDefault(code.toString() +':'+desc);
-                                });
-                              }
-                              if(_type == Constant.adminList){
-                                EMClient.getInstance().groupManager.removeGroupAdmin(_groupId, _members[index],
-                                    onSuccess: (group){
-                                      WidgetUtil.hintBoxWithDefault(_members[index] + '解除管理员成功');
-                                      _members.removeAt(index);
-                                      _refreshUI(false);
-                                    },
-                                    onError: (code, desc){
-                                      _refreshUI(false);
-                                      WidgetUtil.hintBoxWithDefault(code.toString() +':'+desc);
-                                    });
+                              try{
+                                _refreshUI(true);
+                                if(_type == Constant.blackList){
+                                  EMClient.getInstance().groupManager.unblockMembers(groupId: _groupId, members:[_members[index]]);
+                                }else if(_type == Constant.muteList){
+                                  EMClient.getInstance().groupManager.unMuteMembers(groupId: _groupId, members:[_members[index]]);
+                                }else if(_type == Constant.adminList){
+                                  EMClient.getInstance().groupManager.removeAdmin(groupId: _groupId, username: _members[index]);
+                                }
+                                WidgetUtil.hintBoxWithDefault(_members[index] + '操作成功');
+                                _members.removeAt(index);
+                              }catch(e){
+                                WidgetUtil.hintBoxWithDefault(e.toString());
+                              }finally{
+                                _refreshUI(false);
                               }
                             },
                           ),

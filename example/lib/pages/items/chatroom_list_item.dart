@@ -80,7 +80,7 @@ class _EMChatRoomListItemState extends State<EMChatRoomListItem>{
         ),
         child: Row(
           children: <Widget>[
-            Text(emChatRoom.getName(), style: TextStyle(fontSize: EMFont.emConListTitleFont),),
+            Text(emChatRoom.name, style: TextStyle(fontSize: EMFont.emConListTitleFont),),
           ],
         )
       ),

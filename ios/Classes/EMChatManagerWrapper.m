@@ -119,21 +119,20 @@
 }
 
 - (void)getConversation:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *conversationId = param[@"id"];
-    EMConversationType type;
-    if ([param[@"type"] isKindOfClass:[NSNull class]]){
-        type = EMConversationTypeChat;
-    }else {
-        type = (EMConversationType)[param[@"type"] intValue];
-    }
-    BOOL isCreateIfNotExists = [param[@"createIfNotExists"] boolValue];
     
-    EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
-                                                                                 type:type
-                                                                     createIfNotExist:isCreateIfNotExists];
-    [self wrapperCallBack:result
-                    error:nil
-                 userInfo:@{@"conversation":[conversation toJson]}];
+    __weak typeof(self) weakSelf = self;
+    
+    EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    BOOL needCreate = [param[@"createIfNeed"] boolValue];
+    
+    EMConversation *con = [EMClient.sharedClient.chatManager getConversation:param[@"id"]
+                                                                        type:type
+                                                            createIfNotExist:needCreate];
+    
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyGetConversation
+                        error:nil
+                       object:[con toJson]];
 }
 
 // TODO: ios需调添加该实现
