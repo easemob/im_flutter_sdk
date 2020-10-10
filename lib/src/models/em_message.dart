@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/em_sdk_method.dart';
 
 // 消息类型
 enum EMMessageChatType {
@@ -42,25 +44,74 @@ enum EMMessageBodyType {
   CUSTOM, // CUSTOM消息
 }
 
+abstract class EMMessageStatusListener{
+  void onProgress(int progress);
+  void onError(EMError error);
+  void onSuccess();
+}
+
 class EMMessage {
 
-  EMMessage({this.body, this.to});
+  static const _channelPrefix = 'com.easemob.im';
+  static const MethodChannel _emMessageChannel = const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
+
+  EMMessage._instance();
 
   /// 构造接收的消息
-  EMMessage.createReceiveMessage({this.body, this.direction = EMMessageDirection.RECEIVE});
+  EMMessage.createReceiveMessage({@required this.body, this.direction = EMMessageDirection.RECEIVE});
 
   /// 构造发送的消息
-  EMMessage.createSendMessage({this.body, this.direction = EMMessageDirection.SEND, this.to});
+  EMMessage.createSendMessage({@required this.body, this.direction = EMMessageDirection.SEND, this.to}) {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) {
+      Map argMap = call.arguments;
+      int localTime = argMap['localTime'];
+      if(this.localTime != localTime) return null;
+      if (call.method == EMSDKMethod.onMessageProgressUpdate) {
+        return _onMessageProgressChanged(argMap);
+      } else if (call.method == EMSDKMethod.onMessageError) {
+        return _onMessageError(argMap);
+      } else if (call.method == EMSDKMethod.onMessageSuccess) {
+        return _onMessageSuccess(argMap);
+      }
+      return null;
+    });
+  }
+
+  Future<Null> _onMessageError(Map map) {
+    print('发送失败 --- ' + map.toString());
+    if (listener != null) {
+      listener.onError(EMError.fromJson(map));
+    }
+    return null;
+  }
+
+  Future<Null> _onMessageProgressChanged(Map map) {
+    print('发送 --- ' + map['progress'].toString());
+    if (listener != null) {
+      int progress = map['progress'];
+      listener.onProgress(progress);
+    }
+    return null;
+  }
+
+  Future<Null> _onMessageSuccess(Map map) {
+    print('发送成功');
+    if (listener != null) {
+      listener.onSuccess();
+    }
+    return null;
+  }
+
 
   /// 构造发送的文字消息
-  EMMessage.createTxtSendMessage({@required String userName, String content = ""}) : this.createSendMessage (
-      to:userName,
+  EMMessage.createTxtSendMessage({@required String username, String content = ""}) : this.createSendMessage (
+      to:username,
       body:EMTextMessageBody(content: content)
   );
 
   /// 构造发送的图片消息
   EMMessage.createImageSendMessage({
-    @required String userName,
+    @required String username,
     @required String filePath,
     String displayName = '',
     String thumbnailLocalPath = '',
@@ -68,7 +119,7 @@ class EMMessage {
     int width = 0,
     int height = 0,
   }) : this.createSendMessage (
-      to:userName,
+      to:username,
       body:EMImageMessageBody(
         localPath: filePath,
         displayName: displayName,
@@ -81,7 +132,7 @@ class EMMessage {
 
   /// 构造发送的视频消息
   EMMessage.createVideoSendMessage({
-    @required String userName,
+    @required String username,
     @required String filePath,
     String displayName = '',
     int duration = 0,
@@ -89,7 +140,7 @@ class EMMessage {
     int width = 0,
     int height = 0,
   }) : this.createSendMessage (
-      to: userName,
+      to: username,
       body: EMVideoMessageBody (
         localPath: filePath,
         displayName: displayName,
@@ -102,12 +153,12 @@ class EMMessage {
 
   /// 构造发送的音频消息
   EMMessage.createVoiceSendMessage({
-    @required String userName,
+    @required String username,
     @required String filePath,
     int duration = 0,
     String displayName = '',
   }) : this.createSendMessage (
-      to: userName,
+      to: username,
       body: EMVoiceMessageBody(
           localPath: filePath,
           duration: duration,
@@ -117,12 +168,12 @@ class EMMessage {
 
   /// 构造发送的位置消息
   EMMessage.createLocationSendMessage({
-    @required String userName,
+    @required String username,
     @required double latitude,
     @required double longitude,
     String address = '',
   }) : this.createSendMessage (
-      to:userName,
+      to:username,
       body:EMLocationMessageBody(
           latitude: latitude,
           longitude: longitude,
@@ -132,10 +183,10 @@ class EMMessage {
 
   /// 构造发送的cmd消息
   EMMessage.createCmdSendMessage({
-    @required String userName,
+    @required String username,
     @required action
   }) : this.createSendMessage (
-      to: userName,
+      to: username,
       body:EMCmdMessageBody(
           action: action
       )
@@ -143,15 +194,22 @@ class EMMessage {
 
   /// 构造发送的自定义消息
   EMMessage.createCustomSendMessage({
-    @required String userName,
+    @required String username,
     @required event, Map params
   }) : this.createSendMessage (
-      to:userName,
+      to:username,
       body: EMCustomMessageBody(
           event: event,
           params: params
       )
   );
+
+
+  EMMessageStatusListener listener;
+
+  void setMessageListener(EMMessageStatusListener listener) {
+    this.listener = listener;
+  }
 
   // 消息id
   String msgId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -218,7 +276,7 @@ class EMMessage {
   factory EMMessage.fromJson(Map <String, dynamic> map) {
     if(map == null)
       return null;
-    return EMMessage()
+    return EMMessage._instance()
       ..to = map['to']
       ..from = map['from']
       ..body = _bodyFromMap(map['body'])

@@ -62,8 +62,8 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
     _muteList.clear();
 
     try{
-      _currentUser = await EMClient.getInstance().getCurrentUser();
-      _emGroup = await EMClient.getInstance().groupManager.getGroupSpecificationFromServer(groupId: _groupId);
+      _currentUser = await EMClient.getInstance.currentUser();
+      _emGroup = await EMClient.getInstance.groupManager.getGroupSpecificationFromServer(groupId: _groupId);
       _owner = _emGroup.owner;
       _groupName = _emGroup.name;
       _membersCount = _emGroup.settings.maxCount;
@@ -71,13 +71,13 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
       _isOwner = _owner == _currentUser;
       _isAdmin = _admins.contains(_currentUser);
 
-      EMCursorResult result = await EMClient.getInstance().groupManager.getGroupMemberListFromServer(groupId:_groupId, cursor:_cursor);
+      EMCursorResult result = await EMClient.getInstance.groupManager.getGroupMemberListFromServer(groupId:_groupId, cursor:_cursor);
       _groupMembers = result.data;
       _cursor = result.cursor;
 
       if(_isAdmin || _isOwner) {
-        _blackList = await EMClient.getInstance().groupManager.getGroupBlacklistFromServer(groupId: _groupId, pageSize: 200, pageNum: 0);
-        _muteList = await EMClient.getInstance().groupManager.getGroupMuteListFromServer(groupId: _groupId, pageSize: 200, pageNum: 0);
+        _blackList = await EMClient.getInstance.groupManager.getGroupBlacklistFromServer(groupId: _groupId, pageSize: 200, pageNum: 0);
+        _muteList = await EMClient.getInstance.groupManager.getGroupMuteListFromServer(groupId: _groupId, pageSize: 200, pageNum: 0);
       }
     }catch(e){
       WidgetUtil.hintBoxWithDefault(e.toString());
@@ -231,7 +231,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                             })).then((List<String> contacts){
                               if(contacts.length > 0){
                                 try{
-                                  EMClient.getInstance().groupManager.addMembers(groupId:_groupId, members: contacts);
+                                  EMClient.getInstance.groupManager.addMembers(groupId:_groupId, members: contacts);
                                   WidgetUtil.hintBoxWithDefault('群组邀请发送成功');
                                   _refreshUI(false);
                                 }catch (e){
@@ -350,7 +350,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                         Navigator.of(context).pop();
                         _refreshUI(true);
                         try{
-                          EMClient.getInstance().groupManager.changeGroupName(groupId:_groupId, name:_groupNameController.text);
+                          EMClient.getInstance.groupManager.changeGroupName(groupId:_groupId, name:_groupNameController.text);
                           WidgetUtil.hintBoxWithDefault('修改群名称成功');
                           _fetchGroupDetails();
                         }catch(e){
@@ -438,7 +438,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
           if(_isOwner || _isAdmin){
             _loading = true;
             try{
-              EMClient.getInstance().groupManager.updateGroupAnnouncement(groupId: _groupId, announcement: announcement);
+              EMClient.getInstance.groupManager.updateGroupAnnouncement(groupId: _groupId, announcement: announcement);
               WidgetUtil.hintBoxWithDefault('群公告更新成功');
               _refreshUI(false);
             }catch(e){
@@ -545,11 +545,11 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
       onTap: () async {
         try{
           if(_isOwner) {
-            EMClient.getInstance().groupManager.destroyGroup(groupId: _groupId);
+            EMClient.getInstance.groupManager.destroyGroup(groupId: _groupId);
             WidgetUtil.hintBoxWithDefault('解散群组成功');
             Navigator.of(context).pop(true);
           } else {
-            EMClient.getInstance().groupManager.leaveGroup(groupId: _groupId);
+            EMClient.getInstance.groupManager.leaveGroup(groupId: _groupId);
             WidgetUtil.hintBoxWithDefault('退出群组成功');
             Navigator.of(context).pop(true);
           }

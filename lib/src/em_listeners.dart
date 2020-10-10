@@ -1,4 +1,4 @@
-import "em_domain_terms.dart";
+import "models/em_domain_terms.dart";
 import 'models/em_message.dart';
 
 abstract class EMConnectionListener {
@@ -65,15 +65,6 @@ abstract class EMContactEventListener {
 
   /// 发出的好友申请被[userName]拒绝
   void onFriendRequestDeclined(String userName);
-}
-
-/// @nodoc
-class EMContactChangeEvent {
-  static const String CONTACT_ADD = "onContactAdded";
-  static const String CONTACT_DELETE = "onContactDeleted";
-  static const String INVITED = "onContactInvited";
-  static const String INVITATION_ACCEPTED = "onFriendRequestAccepted";
-  static const String INVITATION_DECLINED = "onFriendRequestDeclined";
 }
 
 abstract class EMMessageListener {
@@ -227,7 +218,7 @@ abstract class EMGroupChangeListener {
   void onAnnouncementChanged(String groupId, String announcement);
 
   /// 群共享文件增加
-  void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile);
+  void onSharedFileAdded(String groupId, EMGroupSharedFile sharedFile);
 
   /// 群共享文件被删除
   void onSharedFileDeleted(String groupId, String fileId);

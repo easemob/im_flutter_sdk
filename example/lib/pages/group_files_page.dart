@@ -35,7 +35,7 @@ class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
 
   void _fetchGroupSharedFile() async {
     try{
-      _fileList = await EMClient.getInstance().groupManager.getGroupFileListFromServer(groupId:_groupId, pageNum: 1, pageSize: 20);
+      _fileList = await EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId:_groupId, pageNum: 1, pageSize: 20);
       _refreshUI(false);
     }catch(e){
       WidgetUtil.hintBoxWithDefault(e.toString());
@@ -62,7 +62,7 @@ class _EMGroupFilesPageState extends State<EMGroupFilesPage>{
     return InkWell(
       onTap: (){
 //        WidgetUtil.hintBoxWithDefault('正在下载');
-//        EMClient.getInstance().groupManager().downloadGroupSharedFile(groupId: _groupId, fileId: file.getFileId(), savePath: '/storage/emulated/0/DCIM/Camera/'+file.getFileName(),
+//        EMClient.getInstance.groupManager().downloadGroupSharedFile(groupId: _groupId, fileId: file.getFileId(), savePath: '/storage/emulated/0/DCIM/Camera/'+file.getFileName(),
 //        onSuccess: (){
 //          WidgetUtil.hintBoxWithDefault('下载成功');
 //        },

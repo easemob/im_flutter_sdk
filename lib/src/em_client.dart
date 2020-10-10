@@ -5,7 +5,7 @@ import 'package:im_flutter_sdk/src/em_push_manager.dart';
 import 'package:im_flutter_sdk/src/models/em_options.dart';
 
 import 'em_chat_manager.dart';
-import 'em_chatroom_manager.dart';
+import 'em_chat_room_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_domain_terms.dart';
 import 'em_group_manager.dart';
@@ -47,9 +47,10 @@ class EMClient {
   EMOptions _options;
   String _accessToken;
 
-  factory EMClient.getInstance() {
-    return _instance = _instance ?? EMClient._internal();
-  }
+  String get accessToken => _accessToken;
+  bool get connected => _connected;
+
+  static EMClient get getInstance => _instance = _instance ?? EMClient._internal();
 
   /// @nodoc private constructor
   EMClient._internal() {
@@ -100,7 +101,7 @@ class EMClient {
   void login(String userName, String password,
       {onSuccess(String username), onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.login, {"userName": userName, "password": password});
+        EMSDKMethod.loginWithUsername, {"userName": userName, "password": password});
     result.then((response) {
       print(response);
       if (response['success']) {
@@ -120,7 +121,7 @@ class EMClient {
   void loginWithToken(String userName, String token,
       {onSuccess(), onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.login, {"userName": userName, "token": token});
+        EMSDKMethod.loginWithUsername, {"userName": userName, "token": token});
     result.then((response) {
       if (response['success']) {
         if (onSuccess != null) onSuccess();
@@ -163,7 +164,7 @@ class EMClient {
   /// 更新当前用户的nickname 此方法主要为了在苹果推送时能够推送nick而不是userid [nickName].
   Future<bool> updateCurrentUserNick(String nickName) async {
     Map<String, dynamic> result = await _emClientChannel.invokeMethod(
-        EMSDKMethod.updateCurrentUserNick, {"nickName": nickName});
+        EMSDKMethod.setNickname, {"nickName": nickName});
     if (result['success']) {
       return result['status'] as bool;
     } else {
@@ -186,6 +187,14 @@ class EMClient {
       }
     });
   }
+
+  Future<String> currentUser() async {
+    Map result = await _emClientChannel.invokeMethod(EMSDKMethod.currentUser);
+    EMError.hasErrorFromResult(result);
+    _currentUser = result[EMSDKMethod.currentUser];
+    return result[EMSDKMethod.currentUser];
+  }
+
 
   /// @nodoc 获取配置信息[EMOptions].
   EMOptions getOptions() {
@@ -261,22 +270,6 @@ class EMClient {
     });
   }
 
-  /// @nodoc 获取AccessToken
-  String getAccessToken() {
-    return _accessToken;
-  }
-
-  /// 获取当前用户名
-  /// 如果尚未成功登录IM服务器，则返回null
-  Future<String> getCurrentUser() async {
-    Map<String, dynamic> result =
-        await _emClientChannel.invokeMethod(EMSDKMethod.getCurrentUser);
-    if (result['success']) {
-      return result['userName'];
-    }
-    return '';
-  }
-
   /// 判断当前是否登录 true 已登录  false 未登录
   Future<bool> isLoggedInBefore() async {
     Map<String, dynamic> result =
@@ -285,11 +278,6 @@ class EMClient {
       return result['isLogged'];
     }
     return false;
-  }
-
-  /// 检查是否连接到聊天服务器
-  bool isConnected() {
-    return _connected;
   }
 
   List<EMContact> _convertContactList(contactList) {

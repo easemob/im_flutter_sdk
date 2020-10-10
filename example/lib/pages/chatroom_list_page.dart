@@ -33,7 +33,7 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
 
   void _loadChatRoomList() async{
     try{
-      EMPageResult result = await EMClient.getInstance().chatRoomManager.fetchPublicChatRoomsFromServer(pageNum:1, pageSize: 20);
+      EMPageResult result = await EMClient.getInstance.chatRoomManager.fetchPublicChatRoomsFromServer(pageNum:1, pageSize: 20);
       roomList = result.data;
       _loading = false;
       _refreshUI();
@@ -87,9 +87,9 @@ class _EMChatRoomListPageState extends State<EMChatRoomListPage> implements EMCh
   void onTapChatRoom(EMChatRoom room) async {
     // TODO: dujiepeng need show toast for waiting.
 
-    Future<bool> result = EMClient.getInstance().chatRoomManager.joinChatRoom(room.roomId);
+    Future<bool> result = EMClient.getInstance.chatRoomManager.joinChatRoom(room.roomId);
     result.then((success) {
-      return EMClient.getInstance().chatManager.getConversation(room.roomId, EMConversationType.ChatRoom);
+      return EMClient.getInstance.chatManager.getConversation(room.roomId, EMConversationType.ChatRoom);
     }).then((value){
       Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => ChatPage(conversation: value)));
     }).catchError((e){

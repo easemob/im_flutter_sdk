@@ -25,15 +25,14 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         EMConversationListItemDelegate {
   var conList = List<EMConversation>();
   var sortMap = Map<String, EMConversation>();
-  bool _isConnected = EMClient.getInstance().isConnected();
+  bool _isConnected = EMClient.getInstance.connected;
   String errorText;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    EMClient.getInstance().chatManager.addMessageListener(this);
-    EMClient.getInstance().addConnectionListener(this);
+    EMClient.getInstance.chatManager.addMessageListener(this);
+    EMClient.getInstance.addConnectionListener(this);
     _loadEMConversationList();
   }
 
@@ -41,12 +40,12 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    EMClient.getInstance().chatManager.removeMessageListener(this);
-    EMClient.getInstance().removeConnectionListener(this);
+    EMClient.getInstance.chatManager.removeMessageListener(this);
+    EMClient.getInstance.removeConnectionListener(this);
   }
 
   void _loadEMConversationList() async {
-    Future<List<EMConversation>> result = EMClient.getInstance().chatManager.getAllConversations();
+    Future<List<EMConversation>> result = EMClient.getInstance.chatManager.getAllConversations();
     result.then((value){
       conList = value;
       _refreshUI();
@@ -205,7 +204,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   void _deleteConversation(EMConversation conversation) async {
     try{
-      await EMClient.getInstance().chatManager.deleteConversation(conversation.id);
+      await EMClient.getInstance.chatManager.deleteConversation(conversation.id);
       _loadEMConversationList();
     }catch(e){
       print(e.toString());

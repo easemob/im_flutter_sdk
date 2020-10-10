@@ -98,18 +98,12 @@ class _EMContactAddPageState extends State<EMContactAddPage>  {
   }
 
   _addContact(String username) {
-    EMClient.getInstance().contactManager.addContact(username, null ,
-        onSuccess: () {
-//          Navigator.of(context).pushNamed(Constant.toContactList);
-          Navigator.of(context).pop();
-//          Navigator.push(
-//              context, new MaterialPageRoute(builder: (BuildContext context) {
-//            return new ChatPage();
-//          }));
-        },
-        onError: (code, desc){
-          WidgetUtil.hintBoxWithDefault(desc);
-        });
+    try{
+      EMClient.getInstance.contactManager.addContact(username: username);
+      Navigator.of(context).pop();
+    }catch(e){
+      WidgetUtil.hintBoxWithDefault(e.toString());
+    }
   }
 
 }

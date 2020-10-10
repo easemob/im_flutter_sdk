@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface EMGroupSharedFile (Flutter) <EaseToFlutterJson>
 - (NSDictionary *)toJson;
+
 @end
 
 NS_ASSUME_NONNULL_END

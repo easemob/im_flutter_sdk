@@ -28,18 +28,22 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     {'imageName':'images/clearCache@2x.png','name':'清除缓存'}
   ];
 
-  String userName = 'name';
+  String userName = '';
   bool _loading = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getCurrentUser();
   }
 
-  void _getCurrentUser() async{
-    userName = await EMClient.getInstance().getCurrentUser();
-    _refreshUI(false);
+  void _getCurrentUser() async {
+    try{
+      userName = await EMClient.getInstance.currentUser();
+    }catch(e){
+
+    } finally {
+      _refreshUI(false);
+    }
   }
 
   _refreshUI(bool loading){
@@ -228,7 +232,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
 
   void logout (BuildContext context){
     _refreshUI(true);
-    EMClient.getInstance().logout(
+    EMClient.getInstance.logout(
       false,
       onSuccess: (){
         Navigator.of(context).pushNamed(Constant.toLoginPage);
