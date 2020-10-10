@@ -77,65 +77,65 @@ enum EMSearchDirection { Up, Down }
 //  }
 //  return 0;
 //}
-
-class EMMucSharedFile {
-  String _fileId;
-  String _fileName;
-  String _fileOwner;
-  int _updateTime;
-  int _fileSize;
-
-  /// 获取文件id
-  String getFileId() {
-    return _fileId;
-  }
-
-  /// 获取文件文件
-  String getFileName() {
-    return _fileName;
-  }
-
-  /// 获取文件上传者
-  String getFileOwner() {
-    return _fileOwner;
-  }
-
-  /// 获取文件更新时间
-  int getFileUpdateTime() {
-    return _updateTime;
-  }
-
-  /// 获取文件大小
-  int getFileSize() {
-    return _fileSize;
-  }
-
-  /// @nodoc
-  EMMucSharedFile.from(Map<String, dynamic> data)
-      : _fileId = data['fileId'],
-        _fileName = data['fileName'],
-        _fileOwner = data['fileOwner'],
-        _updateTime = data['updateTime'],
-        _fileSize = data['fileSize'];
-
-  /// @nodoc
-  String toString() {
-    return 'fileId:' +
-        _fileId +
-        "--" +
-        'fileName:' +
-        _fileName +
-        "--" +
-        'fileOwner:' +
-        _fileOwner +
-        "--" +
-        'updateTime:' +
-        _updateTime.toString() +
-        "--" +
-        'fileSize:' +
-        _fileSize.toString();
-  }
-}
+//
+//class EMMucSharedFile {
+//  String _fileId;
+//  String _fileName;
+//  String _fileOwner;
+//  int _updateTime;
+//  int _fileSize;
+//
+//  /// 获取文件id
+//  String getFileId() {
+//    return _fileId;
+//  }
+//
+//  /// 获取文件文件
+//  String getFileName() {
+//    return _fileName;
+//  }
+//
+//  /// 获取文件上传者
+//  String getFileOwner() {
+//    return _fileOwner;
+//  }
+//
+//  /// 获取文件更新时间
+//  int getFileUpdateTime() {
+//    return _updateTime;
+//  }
+//
+//  /// 获取文件大小
+//  int getFileSize() {
+//    return _fileSize;
+//  }
+//
+//  /// @nodoc
+//  EMMucSharedFile.from(Map<String, dynamic> data)
+//      : _fileId = data['fileId'],
+//        _fileName = data['fileName'],
+//        _fileOwner = data['fileOwner'],
+//        _updateTime = data['updateTime'],
+//        _fileSize = data['fileSize'];
+//
+//  /// @nodoc
+//  String toString() {
+//    return 'fileId:' +
+//        _fileId +
+//        "--" +
+//        'fileName:' +
+//        _fileName +
+//        "--" +
+//        'fileOwner:' +
+//        _fileOwner +
+//        "--" +
+//        'updateTime:' +
+//        _updateTime.toString() +
+//        "--" +
+//        'fileSize:' +
+//        _fileSize.toString();
+//  }
+//}
 //
 ///// 群组详情
 //class EMGroupInfo {
@@ -189,20 +189,20 @@ class EMMucSharedFile {
 //  }
 //  return EMGroupPermissionType.EMGroupPermissionTypeNone;
 //}
-
-/// @nodoc 会话类型 EMConversationType 数据类型转 int
-toEMConversationType(EMConversationType type) {
-  switch (type) {
-    case EMConversationType.Chat:
-      return 0;
-    case EMConversationType.GroupChat:
-      return 1;
-    case EMConversationType.ChatRoom:
-      return 2;
-    default:
-      return 0;
-  }
-}
+//
+///// @nodoc 会话类型 EMConversationType 数据类型转 int
+//toEMConversationType(EMConversationType type) {
+//  switch (type) {
+//    case EMConversationType.Chat:
+//      return 0;
+//    case EMConversationType.GroupChat:
+//      return 1;
+//    case EMConversationType.ChatRoom:
+//      return 2;
+//    default:
+//      return 0;
+//  }
+//}
 
 
 /// @nodoc 搜索方向 EMSearchDirection 数据类型转 int

@@ -7,7 +7,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'models/em_domain_terms.dart';
 import 'em_sdk_method.dart';
-import 'em_domain_terms.dart';
+//import 'em_domain_terms.dart';
 import 'em_listeners.dart';
 
 class EMGroupManager {
@@ -526,7 +526,7 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
           String groupId = map['groupId'];
-          EMMucSharedFile sharedFile = EMMucSharedFile.from(map['sharedFile']);
+          EMGroupSharedFile sharedFile = EMGroupSharedFile.fromJson(map['sharedFile']);
           listener.onSharedFileAdded(groupId, sharedFile);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:

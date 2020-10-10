@@ -32,7 +32,7 @@ class LoginPageState extends State<LoginPage> {
   }
 
   void isLoggedInBefore() async{
-    bool isLoggedInBefore = await EMClient.getInstance().isLoggedInBefore();
+    bool isLoggedInBefore = await EMClient.getInstance.isLoggedInBefore();
      print('是否登录$isLoggedInBefore');
     isLogged = isLoggedInBefore;
     if(isLoggedInBefore){
@@ -231,7 +231,7 @@ class LoginPageState extends State<LoginPage> {
 void login(String username , String password){
     print(username+':'+password);
     _refreshUI(true);
-      EMClient.getInstance().login(
+      EMClient.getInstance.login(
           username,
           password,
           onSuccess: (username) {

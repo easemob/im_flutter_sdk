@@ -32,7 +32,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   void getJoinedGroups() async{
     _loading = true;
     try{
-      groupList = await EMClient.getInstance().groupManager.getJoinedGroupsFromServer(pageSize: 200, pageNum: 1);
+      groupList = await EMClient.getInstance.groupManager.getJoinedGroupsFromServer(pageSize: 200, pageNum: 1);
     }catch(e) {
       WidgetUtil.hintBoxWithDefault(e.toString());
     }finally{
@@ -59,7 +59,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
         String name = '可直接加入的公开群' + DateTime.now().millisecondsSinceEpoch.toString();
         EMGroupOptions options = EMGroupOptions(style: EMGroupStyle.PublicOpenJoin);
         try{
-          await EMClient.getInstance().groupManager.createGroup(groupName: name, settings: options);
+          await EMClient.getInstance.groupManager.createGroup(groupName: name, settings: options);
           WidgetUtil.hintBoxWithDefault('创建群组成功');
           getJoinedGroups();
         }catch(e) {
@@ -166,7 +166,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
 
   void onTapChatGroup(EMGroup group) async {
 
-    EMConversation con = await EMClient.getInstance().chatManager.getConversation(group.groupId, EMConversationType.GroupChat);
+    EMConversation con = await EMClient.getInstance.chatManager.getConversation(group.groupId, EMConversationType.GroupChat);
 
     Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
       return new ChatPage(conversation: con,);

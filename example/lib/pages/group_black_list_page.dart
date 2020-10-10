@@ -76,11 +76,11 @@ class _EMGroupBlackListPageState extends State<EMGroupBlackListPage> {
                               try{
                                 _refreshUI(true);
                                 if(_type == Constant.blackList){
-                                  EMClient.getInstance().groupManager.unblockMembers(groupId: _groupId, members:[_members[index]]);
+                                  EMClient.getInstance.groupManager.unblockMembers(groupId: _groupId, members:[_members[index]]);
                                 }else if(_type == Constant.muteList){
-                                  EMClient.getInstance().groupManager.unMuteMembers(groupId: _groupId, members:[_members[index]]);
+                                  EMClient.getInstance.groupManager.unMuteMembers(groupId: _groupId, members:[_members[index]]);
                                 }else if(_type == Constant.adminList){
-                                  EMClient.getInstance().groupManager.removeAdmin(groupId: _groupId, username: _members[index]);
+                                  EMClient.getInstance.groupManager.removeAdmin(groupId: _groupId, username: _members[index]);
                                 }
                                 WidgetUtil.hintBoxWithDefault(_members[index] + '操作成功');
                                 _members.removeAt(index);

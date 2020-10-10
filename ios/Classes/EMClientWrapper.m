@@ -51,7 +51,7 @@
         [self logout:call.arguments result:result];
     } else if ([EMMethodKeyChangeAppKey isEqualToString:call.method]) {
         [self changeAppKey:call.arguments result:result];
-    } else if ([EMMethodKeyUpdateCurrentUserNick isEqualToString:call.method]) {
+    } else if ([EMMethodKeySetNickname isEqualToString:call.method]) {
         [self updateCurrentUserNick:call.arguments result:result];
     } else if ([EMMethodKeyUploadLog isEqualToString:call.method]) {
         [self uploadLog:call.arguments result:result];
@@ -65,7 +65,7 @@
         [self kickAllDevices:call.arguments result:result];
     } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
         [self isLoggedInBefore:call.arguments result:result];
-    } else if([EMMethodKeyGetCurrentUser isEqualToString:call.method]) {
+    } else if([EMMethodKeyCurrentUser isEqualToString:call.method]) {
         [self getCurrentUser:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
@@ -100,8 +100,10 @@
     
     EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager")
                                                                                                    registrar:self.flutterPluginRegister];
+    
     EMPushManagerWrapper * pushManagerWrapper =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_push_manager")
                                                                                        registrar:self.flutterPluginRegister];
+    
     
 #pragma clang diagnostic pop
     
@@ -172,10 +174,13 @@
 
 
 - (void)getCurrentUser:(NSDictionary *)param result:(FlutterResult)result {
-    NSString *username = EMClient.sharedClient.currentUsername;
-    [self wrapperCallBack:result
-                    error:nil
-                 userInfo:@{@"userName":username}];
+    __weak typeof(self) weakSelf = self;
+    NSString* username = EMClient.sharedClient.currentUsername;
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyCurrentUser
+                        error:nil
+                       object:username];
+
 }
 
 - (void)updateCurrentUserNick:(NSDictionary *)param result:(FlutterResult)result {

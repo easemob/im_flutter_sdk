@@ -2,21 +2,23 @@ class EMSDKMethod {
   /// EMClient methods
   static const String init = 'init';
   static const String createAccount = 'createAccount';
-  static const String login = 'login';
+  static const String loginWithUsername = 'loginWithUsername';
   static const String loginWithToken = 'loginWithToken';
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
   static const String isLoggedInBefore = 'isLoggedInBefore';
-  static const String updateCurrentUserNick = 'updateCurrentUserNick';
+  static const String setNickname = 'setNickname';
   static const String uploadLog = 'uploadLog';
   static const String compressLogs = 'compressLogs';
   static const String kickDevice = 'kickDevice';
   static const String kickAllDevices = 'kickAllDevices';
+  static const String currentUser =  "currentUser";
+  static const String getLoggedInDevicesFromServer = 'getLoggedInDevicesFromServer';
+
+  /// EMClient listener
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
-  static const String getLoggedInDevicesFromServer = 'getLoggedInDevicesFromServer';
-  static const String getCurrentUser =  "getCurrentUser";
 
   /// EMContactManager methods
   static const String addContact = 'addContact';
@@ -28,6 +30,8 @@ class EMSDKMethod {
   static const String acceptInvitation = 'acceptInvitation';
   static const String declineInvitation = 'declineInvitation';
   static const String getSelfIdsOnOtherPlatform = 'getSelfIdsOnOtherPlatform';
+
+  /// EMContactManager listener
   static const String onContactChanged = 'onContactChanged';
 
   /// EMChatManager methods
@@ -52,7 +56,10 @@ class EMSDKMethod {
   static const String updateParticipant = "updateParticipant";
   static const String fetchHistoryMessages = "fetchHistoryMessages";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
+  // 需确认安卓用法，是否可以去掉？
   static const String getCursor = "getCursor";
+
+  /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessageRead = "onMessageRead";
@@ -61,7 +68,10 @@ class EMSDKMethod {
   static const String onMessageChanged = "onMessageChanged";
   static const String onConversationUpdate = "onConversationUpdate";
 
-  static const String onMessageStatusOnProgress = "onMessageStatusOnProgress";
+  /// EMMessage listener
+  static const String onMessageProgressUpdate = "onMessageProgressUpdate";
+  static const String onMessageSuccess = "onMessageSuccess";
+  static const String onMessageError = "onMessageError";
 
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';

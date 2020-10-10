@@ -107,17 +107,17 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                       try{
                         _refreshUI(true);
                         if(key == Constant.addBlackListKey) {
-                          EMClient.getInstance().groupManager.blockMembers(groupId: _groupId, members: [_members[index]]);
+                          EMClient.getInstance.groupManager.blockMembers(groupId: _groupId, members: [_members[index]]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '加入黑名单成功');
                           _members.removeAt(index);
 
                         }else if(key == Constant.addMuteListKey) {
-                          EMClient.getInstance().groupManager.muteMembers(groupId: _groupId, members: [_members[index]]);
+                          EMClient.getInstance.groupManager.muteMembers(groupId: _groupId, members: [_members[index]]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '禁言成功');
                           _muteList.add(_members[index]);
 
                         }else if(key == Constant.addAdminListKey) {
-                          EMClient.getInstance().groupManager.addAdmin(groupId: _groupId, username: _members[index]);
+                          EMClient.getInstance.groupManager.addAdmin(groupId: _groupId, username: _members[index]);
                           WidgetUtil.hintBoxWithDefault(_members[index].toString() + '添加管理员成功');
                           _admins.add(_members[index]);
 
@@ -154,7 +154,7 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                               Navigator.of(context).pop();
                               try{
                                 _refreshUI(true);
-                                EMClient.getInstance().groupManager.removeMembers(groupId: _groupId,members: [_members[index]]);
+                                EMClient.getInstance.groupManager.removeMembers(groupId: _groupId,members: [_members[index]]);
                                 _isRefresh = true;
                                 WidgetUtil.hintBoxWithDefault('移除成员成功');
                                 _members.removeAt(index);

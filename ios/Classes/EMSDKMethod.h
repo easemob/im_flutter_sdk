@@ -13,29 +13,27 @@ static NSString * const EMMethodKeyErrorLog = @"errorLog";
 
 
 #pragma mark - EMClientWrapper
-
 static NSString * const EMMethodKeyInit = @"init";
 static NSString * const EMMethodKeyCreateAccount = @"createAccount";
-static NSString * const EMMethodKeyLogin = @"login";
+static NSString * const EMMethodKeyLogin = @"loginWithUsername";
 static NSString * const EMMethodKeyLoginWithToken = @"loginWithToken";
 static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
-static NSString * const EMMethodKeyUpdateCurrentUserNick = @"updateCurrentUserNick";
+static NSString * const EMMethodKeySetNickname = @"setNickname";
 static NSString * const EMMethodKeyUploadLog = @"uploadLog";
 static NSString * const EMMethodKeyCompressLogs = @"compressLogs";
 static NSString * const EMMethodKeyKickDevice = @"kickDevice";
 static NSString * const EMMethodKeyKickAllDevices = @"kickAllDevices";
+static NSString * const EMMethodKeyCurrentUser = @"currentUser";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
-static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
 
-
+#pragma mark - EMClientDelegate
 static NSString * const EMMethodKeyOnConnected = @"onConnected";
 static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 
 #pragma mark - EMContactManagerWrapper
-
 static NSString * const EMMethodKeyAddContact = @"addContact";
 static NSString * const EMMethodKeyDeleteContact = @"deleteContact";
 static NSString * const EMMethodKeyGetAllContactsFromServer = @"getAllContactsFromServer";
@@ -46,10 +44,10 @@ static NSString * const EMMethodKeyAcceptInvitation = @"acceptInvitation";
 static NSString * const EMMethodKeyDeclineInvitation = @"declineInvitation";
 static NSString * const EMMethodKeyGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatform";
 
+#pragma mark - EMContactDelegate
 static NSString * const EMMethodKeyOnContactChanged = @"onContactChanged";
 
 #pragma mark - EMChatManagerWrapper
-
 static NSString * const EMMethodKeySendMessage = @"sendMessage";
 static NSString * const EMMethodKeyAckMessageRead = @"ackMessageRead";
 static NSString * const EMMethodKeyRecallMessage = @"recallMessage";
@@ -73,6 +71,7 @@ static NSString * const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages
 static NSString * const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString * const EMMethodKeyGetCursor = @"getCursor";
 
+#pragma mark - EMChatManagerDelegate
 static NSString * const EMMethodKeyOnMessagesReceived = @"onMessagesReceived";
 static NSString * const EMMethodKeyOnCmdMessagesReceived = @"onCmdMessagesReceived";
 static NSString * const EMMethodKeyOnMessageRead = @"onMessageRead";
@@ -80,10 +79,12 @@ static NSString * const EMMethodKeyOnMessageDelivered = @"onMessageDelivered";
 static NSString * const EMMethodKeyOnMessageRecalled = @"onMessageRecalled";
 static NSString * const EMMethodKeyOnMessageChanged = @"onMessageChanged";
 static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate";
-
-static NSString * const EMMethodKeyOnMessageStatusOnProgress = @"onMessageStatusOnProgress";
-
 static NSString * const EMMethodKeyAddMessageListener = @"addMessageListener";
+
+#pragma mark - EMMessageListener
+static NSString * const EMMethodKeyOnMessageProgressUpdate = @"onMessageProgressUpdate";
+static NSString * const EMMethodKeyOnMessageSuccess = @"onMessageSuccess";
+static NSString * const EMMethodKeyOnMessageError = @"onMessageError";
 
 #pragma mark - EMConversationWrapper
 

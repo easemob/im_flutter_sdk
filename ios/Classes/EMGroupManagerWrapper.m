@@ -1032,7 +1032,7 @@
     NSDictionary *map = @{
         @"type":@"onSharedFileAdded",
         @"groupId":aGroup.groupId,
-        @"sharedFile":[EMHelper groupSharedFileToDictionary:aSharedFile]
+        @"sharedFile":[aSharedFile toJson]
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];

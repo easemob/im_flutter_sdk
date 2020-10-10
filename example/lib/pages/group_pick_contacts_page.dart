@@ -35,26 +35,24 @@ class _EMGroupPickContactsPageState extends State<EMGroupPickContactsPage> imple
   }
 
   void _fetchContactData() async{
-    EMGroup emGroup = await EMClient.getInstance().groupManager.getGroupWithId(groupId: _groupId);
+    EMGroup emGroup = await EMClient.getInstance.groupManager.getGroupWithId(groupId: _groupId);
     _groupMemberList.add(emGroup.owner);
     emGroup.adminList.forEach((admin) => _groupMemberList.add(admin));
     emGroup.memberList.forEach((member) => _groupMemberList.add(member));
     emGroup.blackList.forEach((member) => _groupMemberList.add(member));
-    EMClient.getInstance().contactManager.getAllContactsFromServer(
-      onSuccess: (contacts){
-        _contactList = contacts;
-        _groupMemberList.forEach((member){
-          if(_contactList.contains(member)){
-            _contactList.remove(member);
-          }
-        });
-        _refreshUI(false);
-      },
-      onError: (code, desc){
-        WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
-        _refreshUI(false);
-      }
-    );
+    try{
+      List contacts = await EMClient.getInstance.contactManager.getAllContactsFromServer();
+      _contactList = contacts;
+      _groupMemberList.forEach((member){
+        if(_contactList.contains(member)){
+          _contactList.remove(member);
+        }
+      });
+    }catch(e){
+      WidgetUtil.hintBoxWithDefault(e.toString());
+    }finally{
+      _refreshUI(false);
+    }
   }
 
   _refreshUI(bool loading) {

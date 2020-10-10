@@ -44,7 +44,7 @@
     } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
         [self acceptInvitation:call.arguments result:result];
     } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
-        [self deleteContact:call.arguments result:result];
+        [self declineInvitation:call.arguments result:result];
     } else if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
         [self getSelfIdsOnOtherPlatform:call.arguments result:result];
     } else {
@@ -56,29 +56,31 @@
 #pragma mark - Actions
 - (void)addContact:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
+    NSString *username = param[@"username"];
     NSString *reason = param[@"reason"];
-    [EMClient.sharedClient.contactManager addContact:userName
+    [EMClient.sharedClient.contactManager addContact:username
                                              message:reason
                                           completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                        error:aError
-                         userInfo:@{@"value":aUsername}];
+                      channelName:EMMethodKeyAddContact
+                            error:aError
+                           object:aUsername];
     }];
 }
 
 - (void)deleteContact:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
+    NSString *username = param[@"username"];
     BOOL keepConversation = [param[@"keepConversation"] boolValue];
-    [EMClient.sharedClient.contactManager deleteContact:userName
+    [EMClient.sharedClient.contactManager deleteContact:username
                                    isDeleteConversation:keepConversation
                                              completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aUsername}];
+                      channelName:EMMethodKeyDeleteContact
+                            error:aError
+                           object:aUsername];
     }];
 }
 
@@ -87,32 +89,35 @@
     [EMClient.sharedClient.contactManager getContactsFromServerWithCompletion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                        error:aError
-                         userInfo:@{@"value":aList ?: @[]}];
+                      channelName:EMMethodKeyGetAllContactsFromServer
+                            error:aError
+                           object:aList];
     }];
 }
 
 - (void)addUserToBlackList:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
-    [EMClient.sharedClient.contactManager addUserToBlackList:userName
+    NSString *username = param[@"username"];
+    [EMClient.sharedClient.contactManager addUserToBlackList:username
                                                   completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                        error:aError
-                         userInfo:@{@"value" : aUsername ?: @""}];
+                      channelName:EMMethodKeyAddUserToBlackList
+                            error:aError
+                           object:aUsername];
     }];
 }
 
 - (void)removeUserFromBlackList:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
-    [EMClient.sharedClient.contactManager removeUserFromBlackList:userName
+    NSString *username = param[@"username"];
+    [EMClient.sharedClient.contactManager removeUserFromBlackList:username
                                                        completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyRemoveUserFromBlackList
                             error:aError
-                         userInfo:@{@"value":aUsername ?: @""}];
+                           object:aUsername];
     }];
     
 }
@@ -122,32 +127,35 @@
     [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetBlackListFromServer
                             error:aError
-                         userInfo:@{@"value" : aList ?: @[]}];
+                           object:aList];
     }];
 }
 
 - (void)acceptInvitation:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
-    [EMClient.sharedClient.contactManager approveFriendRequestFromUser:userName
+    NSString *username = param[@"username"];
+    [EMClient.sharedClient.contactManager approveFriendRequestFromUser:username
                                                             completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyAcceptInvitation
                             error:aError
-                         userInfo:@{@"value": userName ?: @""}];
+                           object:aUsername];
     }];
 }
 
 - (void)declineInvitation:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
-    [EMClient.sharedClient.contactManager declineFriendRequestFromUser:userName
+    NSString *username = param[@"username"];
+    [EMClient.sharedClient.contactManager declineFriendRequestFromUser:username
                                                             completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyDeclineInvitation
                             error:aError
-                         userInfo:@{@"value":userName ?: @""}];
+                           object:aUsername];
     }];
 }
 
@@ -156,8 +164,9 @@
     [EMClient.sharedClient.contactManager getSelfIdsOnOtherPlatformWithCompletion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetSelfIdsOnOtherPlatform
                             error:aError
-                         userInfo:@{@"value":aList ?: @[]}];
+                           object:aList];
     }];
 }
 
@@ -167,7 +176,7 @@
 - (void)friendshipDidAddByUser:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@"onContactAdded",
-        @"userName":aUsername
+        @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
                      arguments:map];
@@ -176,7 +185,7 @@
 - (void)friendshipDidRemoveByUser:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@"onContactDeleted",
-        @"userName":aUsername
+        @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
                      arguments:map];
@@ -186,7 +195,7 @@
                                 message:(NSString *)aMessage {
     NSDictionary *map = @{
         @"type":@"onContactInvited",
-        @"userName":aUsername,
+        @"username":aUsername,
         @"reason":aMessage
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
@@ -196,7 +205,7 @@
 - (void)friendRequestDidApproveByUser:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@"onFriendRequestAccepted",
-        @"userName":aUsername
+        @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
                      arguments:map];
@@ -205,7 +214,7 @@
 - (void)friendRequestDidDeclineByUser:(NSString *)aUsername {
     NSDictionary *map = @{
         @"type":@"onFriendRequestDeclined",
-        @"userName":aUsername
+        @"username":aUsername
     };
     [self.channel invokeMethod:EMMethodKeyOnContactChanged
                      arguments:map];

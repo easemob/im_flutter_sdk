@@ -11,11 +11,12 @@
 
 #import "EMMessage+Flutter.h"
 #import "EMConversation+Flutter.h"
+#import "EMError+Flutter.h"
 
-@interface EMChatManagerWrapper () <EMChatManagerDelegate> {
-    FlutterEventSink _progressEventSink;
-    FlutterEventSink _resultEventSink;
-}
+@interface EMChatManagerWrapper () <EMChatManagerDelegate>
+
+@property (nonatomic, strong) NSMutableDictionary *needCallBackMsgDict;
+@property (nonatomic, strong) FlutterMethodChannel *messageChannel;
 
 @end
 
@@ -25,9 +26,16 @@
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
         [EMClient.sharedClient.chatManager addDelegate:self delegateQueue:nil];
+        
+        FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
+        self.messageChannel = [FlutterMethodChannel methodChannelWithName:@"com.easemob.im/em_message"
+                                                          binaryMessenger:[registrar messenger]
+                                                                    codec:codec];
+        
     }
     return self;
 }
+
 
 #pragma mark - FlutterPlugin
 
@@ -90,25 +98,44 @@
 #pragma mark - Actions
 
 - (void)sendMessage:(NSDictionary *)param result:(FlutterResult)result {
-
-    EMMessage *msg = [EMMessage fromJson:param];
+    
+    __weak typeof(self) weakSelf = self;
+    __block EMMessage *msg = [EMMessage fromJson:param];
+    
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeySendMessage
+                        error:nil
+                       object:[msg toJson]];
     
     __block void (^progress)(int progress) = ^(int progress) {
-        [self.channel invokeMethod:EMMethodKeyOnMessageStatusOnProgress
-                         arguments:@{@"progress":@(progress)}];
+        [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
+                                    arguments:@{
+                                        @"progress":@(progress),
+                                        @"localTime":@(msg.localTime)
+                                    }];
     };
     
     __block void (^completion)(EMMessage *message, EMError *error) = ^(EMMessage *message, EMError *error) {
-        [self wrapperCallBack:result
-                        error:error
-                     userInfo:@{@"message":[message toJson]}];
+        if (error) {
+            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
+                                        arguments:@{
+                                            @"error":[error toJson],
+                                            @"localTime":@(msg.localTime)
+                                        }];
+        }else {
+            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
+                                        arguments:@{
+                                            @"message":[message toJson],
+                                            @"localTime":@(msg.localTime)
+                                        }];
+        }
     };
-    
     
     [EMClient.sharedClient.chatManager sendMessage:msg
                                           progress:progress
                                         completion:completion];
 }
+
 
 - (void)ackMessageRead:(NSDictionary *)param result:(FlutterResult)result {
     
@@ -219,7 +246,7 @@
               channelName:EMMethodKeyGetAllConversations
                     error:nil
                    object:conList];
-
+    
 }
 
 
@@ -377,5 +404,13 @@
     
 }
 
+
+- (NSMutableDictionary *)needCallBackMsgDict {
+    if (!_needCallBackMsgDict) {
+        _needCallBackMsgDict = [NSMutableDictionary dictionary];
+    }
+    
+    return _needCallBackMsgDict;
+}
 
 @end

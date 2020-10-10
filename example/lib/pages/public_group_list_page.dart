@@ -31,7 +31,7 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
 
   void _getPublicGroups() async{
     try {
-      EMCursorResult result = await EMClient.getInstance().groupManager.getPublicGroupsFromServer();
+      EMCursorResult result = await EMClient.getInstance.groupManager.getPublicGroupsFromServer();
       groupList = result.data;
     }catch(e){
       WidgetUtil.hintBoxWithDefault(e.toString());
@@ -141,13 +141,13 @@ class _PublicGroupListPageState extends State<PublicGroupListPage>{
   void _onTap(int index) async {
     try{
       EMGroup tapGroup = groupList[index];
-      EMGroup group = await EMClient.getInstance().groupManager.getGroupSpecificationFromServer(groupId: tapGroup.groupId);
+      EMGroup group = await EMClient.getInstance.groupManager.getGroupSpecificationFromServer(groupId: tapGroup.groupId);
       groupList[index] = group;
       if(group.settings.style == EMGroupStyle.PublicOpenJoin) {
-        EMClient.getInstance().groupManager.joinPublicGroup(groupId: group.groupId);
+        EMClient.getInstance.groupManager.joinPublicGroup(groupId: group.groupId);
         WidgetUtil.hintBoxWithDefault('加入成功');
       }else {
-        EMClient.getInstance().groupManager.requestToJoinPublicGroup(groupId: group.groupId);
+        EMClient.getInstance.groupManager.requestToJoinPublicGroup(groupId: group.groupId);
         WidgetUtil.hintBoxWithDefault('申请加入公开群成功，等待群主同意');
       }
     }catch(e){
