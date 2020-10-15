@@ -10,20 +10,7 @@ class EMConferenceManager {
       '$_channelPrefix/em_conference_manager', JSONMethodCodec());
 
   /// @nodoc
-  static EMConferenceManager _instance;
-
-  /// @nodoc
-  factory EMConferenceManager.getInstance() {
-    return _instance = _instance ?? EMConferenceManager._internal();
-  }
-
-  /// @nodoc
-  EMConferenceManager._internal() {
-    _addNativeMethodCallHandler();
-  }
-
-  /// @nodoc
-  void _addNativeMethodCallHandler() {
+  EMConferenceManager() {
     _emConferenceManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onCallChanged) {

@@ -9,23 +9,11 @@ class EMChatManager {
   static const MethodChannel _emChatManagerChannel =
   const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
 
-  /// @nodoc
-  static EMChatManager _instance;
-
   final _messageListeners = List<EMChatManagerListener>();
 
   Function _conversationUpdateFunc;
 
-  EMChatManager._internal() {
-    _addNativeMethodCallHandler();
-  }
-
-  /// @nodoc
-  factory EMChatManager.getInstance() {
-    return _instance = _instance ?? EMChatManager._internal();
-  }
-
-  void _addNativeMethodCallHandler() {
+  EMChatManager() {
     _emChatManagerChannel.setMethodCallHandler((MethodCall call) {
       if (call.method == EMSDKMethod.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -43,7 +31,6 @@ class EMChatManager {
       return null;
     });
   }
-
   /// 发送消息 [message].
   Future<EMMessage> sendMessage(EMMessage message) async {
     Map result = await _emChatManagerChannel.invokeMethod(EMSDKMethod.sendMessage, message.toJson());

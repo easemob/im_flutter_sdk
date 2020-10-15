@@ -14,22 +14,8 @@ class EMGroupManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emGroupManagerChannel = const MethodChannel(
       '$_channelPrefix/em_group_manager', JSONMethodCodec());
-  static EMGroupManager _instance;
 
-  /// @nodoc
-  final _groupChangeListeners = List<EMGroupChangeListener>();
-
-  EMGroupManager._internal() {
-    _addNativeMethodCallHandler();
-  }
-
-  /// @nodoc
-  factory EMGroupManager.getInstance() {
-    return _instance = _instance ?? EMGroupManager._internal();
-  }
-
-  /// @nodoc
-  void _addNativeMethodCallHandler() {
+  EMGroupManager() {
     _emGroupManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       print('[EMGroupChange:]' + argMap.toString());
@@ -39,6 +25,8 @@ class EMGroupManager {
       return null;
     });
   }
+
+  final _groupChangeListeners = List<EMGroupChangeListener>();
 
   /// 根据群组id获取群实例
   Future<EMGroup> getGroupWithId({@required String groupId}) async {

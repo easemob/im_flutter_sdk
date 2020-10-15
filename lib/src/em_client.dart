@@ -22,13 +22,13 @@ class EMClient {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emClientChannel =
   const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
-  final EMChatManager _chatManager = EMChatManager.getInstance();
-  final EMContactManager _contactManager = EMContactManager.getInstance();
-  final EMChatRoomManager _chatRoomManager = EMChatRoomManager.getInstance();
-  final EMGroupManager _groupManager = EMGroupManager.getInstance();
+  final EMChatManager _chatManager = EMChatManager();
+  final EMContactManager _contactManager = EMContactManager();
+  final EMChatRoomManager _chatRoomManager = EMChatRoomManager();
+  final EMGroupManager _groupManager = EMGroupManager();
   final EMPushManager _pushManager = EMPushManager();
-  final EMCallManager _callManager = EMCallManager.getInstance();
-  final EMConferenceManager _conferenceManager = EMConferenceManager.getInstance();
+  final EMCallManager _callManager = EMCallManager();
+  final EMConferenceManager _conferenceManager = EMConferenceManager();
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
   static EMClient _instance;

@@ -9,13 +9,13 @@ enum EMChatRoomPermissionType {
 
 class EMChatRoom {
 
-  EMChatRoom();
+  EMChatRoom._private();
 
   String toString() => toJson().toString();
 
   factory EMChatRoom.fromJson(Map <String, dynamic> map) {
     if(map == null) return null;
-    return EMChatRoom()
+    return EMChatRoom._private()
     .._roomId = map['roomId'] as String
     .._name = map['name']
     .._description = map['desc']

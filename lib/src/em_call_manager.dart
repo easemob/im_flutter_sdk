@@ -9,21 +9,17 @@ class EMCallManager {
   static const MethodChannel _emCallManagerChannel =
   const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
 
-  /// @nodoc
-  static EMCallManager _instance;
+  EMCallManager(){
+    _emCallManagerChannel.setMethodCallHandler((MethodCall call) {
+      Map argMap = call.arguments;
+      if (call.method == EMSDKMethod.onCallChanged) {
+        _onCallChanged(argMap);
+      }
+      return null;
+    });
+  }
 
-  /// @nodoc
   final List<EMCallStateChangeListener> _callStateChangeListeners =  List<EMCallStateChangeListener>();
-
-  /// @nodoc
-  factory EMCallManager.getInstance() {
-    return _instance = _instance ?? EMCallManager._internal();
-  }
-
-  /// @nodoc
-  EMCallManager._internal(){
-    _addNativeMethodCallHandler();
-  }
 
   void addCallStateChangeListener(EMCallStateChangeListener listener){
     assert(listener != null);
@@ -35,16 +31,6 @@ class EMCallManager {
     _callStateChangeListeners.remove(listener);
   }
 
-  /// @nodoc
-  void _addNativeMethodCallHandler() {
-    _emCallManagerChannel.setMethodCallHandler((MethodCall call) {
-      Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onCallChanged) {
-         _onCallChanged(argMap);
-      }
-      return null;
-    });
-  }
 
   Future<void> _onCallChanged(Map event) async{
     String type = event['type'];
