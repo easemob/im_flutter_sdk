@@ -14,9 +14,9 @@
 #import "EMChatroomManagerWrapper.h"
 #import "EMPushManagerWrapper.h"
 #import "EMHelper.h"
+#import "EMDeviceConfig+Flutter.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
-@property (nonatomic, strong) NSMutableDictionary *deviceDict;
 @end
 
 @implementation EMClientWrapper
@@ -41,12 +41,10 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([EMMethodKeyInit isEqualToString:call.method]) {
         [self initSDKWithDict:call.arguments result:result];
-    } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
-        [self login:call.arguments result:result];
     } else if ([EMMethodKeyCreateAccount isEqualToString:call.method]) {
         [self createAccount:call.arguments result:result];
-    } else if ([EMMethodKeyLoginWithToken isEqualToString:call.method]) {
-        [self loginWithToken:call.arguments result:result];
+    } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
+        [self login:call.arguments result:result];
     } else if ([EMMethodKeyLogout isEqualToString:call.method]) {
         [self logout:call.arguments result:result];
     } else if ([EMMethodKeyChangeAppKey isEqualToString:call.method]) {
@@ -74,12 +72,23 @@
 
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    
     EMOptions *options = [EMHelper dictionaryToEMOptions:param];
     options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
+    
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyInit
+                        error:nil
+                       object:@{
+                           @"currentUsername": EMClient.sharedClient.currentUsername ?: @"",
+                           @"isLoginBefore": @(EMClient.sharedClient.isLoggedIn)
+                       }];
 }
 
 
@@ -111,44 +120,53 @@
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"userName"];
+    NSString *username = param[@"username"];
     NSString *password = param[@"password"];
     [EMClient.sharedClient registerWithUsername:username
                                          password:password
                                        completion:^(NSString *aUsername, EMError *aError)
     {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyCreateAccount
                             error:aError
-                         userInfo:@{@"value":aUsername}];
+                           object:aUsername];
     }];
 }
 
 - (void)login:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"userName"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient loginWithUsername:username
-                                    password:password
-                                  completion:^(NSString *aUsername, EMError *aError)
-    {
-        [weakSelf wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aUsername}];
-    }];
-}
-
-- (void)loginWithToken:(NSDictionary *)param result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"userName"];
-    NSString *token = param[@"token"];
-    [EMClient.sharedClient loginWithUsername:username
-                                       token:token
-                                  completion:^(NSString *aUsername, EMError *aError)
-    {
-        [weakSelf wrapperCallBack:result
-                        error:aError
-                     userInfo:@{@"value":aUsername}];
-    }];
+    NSString *username = param[@"username"];
+    NSString *pwdOrToken = param[@"pwdOrToken"];
+    BOOL isPwd = [param[@"isPassword"] boolValue];
+    
+    if (isPwd) {
+        [EMClient.sharedClient loginWithUsername:username
+                                        password:pwdOrToken
+                                      completion:^(NSString *aUsername, EMError *aError)
+        {
+            
+            [weakSelf wrapperCallBack:result
+                          channelName:EMMethodKeyLogin
+                                error:aError
+                               object:@{
+                @"username": aUsername,
+                @"token": EMClient.sharedClient.accessUserToken
+            }];
+        }];
+    }else {
+        [EMClient.sharedClient loginWithUsername:username
+                                           token:pwdOrToken
+                                      completion:^(NSString *aUsername, EMError *aError)
+        {
+            [weakSelf wrapperCallBack:result
+                          channelName:EMMethodKeyLogin
+                                error:aError
+                               object:@{
+                                   @"username": aUsername,
+                                   @"token": EMClient.sharedClient.accessUserToken
+                               }];
+        }];
+    }
 }
 
 - (void)logout:(NSDictionary *)param result:(FlutterResult)result {
@@ -156,20 +174,20 @@
     BOOL unbindToken = [param[@"unbindToken"] boolValue];
     [EMClient.sharedClient logout:unbindToken completion:^(EMError *aError) {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyLogout
                             error:aError
-                         userInfo:nil];
-        if (!aError) {
-            [weakSelf.deviceDict removeAllObjects];
-        }
+                           object:@(!aError)];
     }];
 }
 
 - (void)changeAppKey:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
     NSString *appKey = param[@"appKey"];
     EMError *aError = [EMClient.sharedClient changeAppkey:appKey];
-    [self wrapperCallBack:result
-                    error:aError
-                 userInfo:nil];
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyChangeAppKey
+                        error:aError
+                       object:@(!aError)];
 }
 
 
@@ -185,12 +203,13 @@
 
 - (void)updateCurrentUserNick:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *nickName = param[@"nickName"];
+    NSString *nickName = param[@"nickname"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         EMError *aError = [EMClient.sharedClient setApnsNickname:nickName];
         [weakSelf wrapperCallBack:result
-                        error:aError
-                     userInfo:nil];
+                      channelName:EMMethodKeySetNickname
+                            error:aError
+                           object:nil];
     });
 }
 
@@ -198,8 +217,9 @@
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient uploadDebugLogToServerWithCompletion:^(EMError *aError) {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyUploadLog
                             error:aError
-                         userInfo:nil];
+                           object:nil];
     }];
 }
 
@@ -207,46 +227,52 @@
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient getLogFilesPathWithCompletion:^(NSString *aPath, EMError *aError) {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyCompressLogs
                             error:aError
-                         userInfo:@{@"value":aPath}];
+                           object:aPath];
     }];
 }
 
 - (void)kickDevice:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
+    NSString *username = param[@"username"];
     NSString *password = param[@"password"];
     NSString *resource = param[@"resource"];
-    EMDeviceConfig *deviceConfig = self.deviceDict[resource];
-    [EMClient.sharedClient kickDevice:deviceConfig
-                             username:userName
-                             password:password
-                           completion:^(EMError *aError)
+    
+    [EMClient.sharedClient kickDeviceWithUsername:username
+                                         password:password
+                                         resource:resource
+                                       completion:^(EMError *aError)
     {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyKickDevice
                             error:aError
-                         userInfo:nil];
+                           object:nil];
     }];
 }
 
 - (void)kickAllDevices:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
+    NSString *username = param[@"username"];
     NSString *password = param[@"password"];
-    [EMClient.sharedClient kickAllDevicesWithUsername:userName
+    [EMClient.sharedClient kickAllDevicesWithUsername:username
                                              password:password
                                            completion:^(EMError *aError)
     {
         [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyKickAllDevices
                             error:aError
-                         userInfo:nil];
+                           object:nil];
     }];
 }
 
 - (void)isLoggedInBefore:(NSDictionary *)param result:(FlutterResult)result {
-    [self wrapperCallBack:result
-                    error:nil
-                 userInfo:@{@"isLogged":@(EMClient.sharedClient.isLoggedIn)}];
+    __weak typeof(self) weakSelf = self;
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyIsLoggedInBefore
+                        error:nil
+                       object:@(EMClient.sharedClient.isLoggedIn)];
+
 }
 
 - (void)onMultiDeviceEvent:(NSDictionary *)param result:(FlutterResult)result {
@@ -256,21 +282,23 @@
 
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *userName = param[@"userName"];
+    NSString *username = param[@"username"];
     NSString *password = param[@"password"];
-    [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:userName
+    [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
                                                            password:password
                                                          completion:^(NSArray *aList, EMError *aError)
     {
-        [weakSelf wrapperCallBack:result
-                            error:aError
-                         userInfo:@{@"value":[weakSelf deviceConfigsToDictionaryList:aList]}];
-        if (!aError) {
-            [self.deviceDict removeAllObjects];
-            for (EMDeviceConfig * deviceConfig in aList) {
-                self.deviceDict[deviceConfig.resource] = deviceConfig;
-            }
+        
+        NSMutableArray *list = [NSMutableArray array];
+        for (EMDeviceConfig *deviceInfo in aList) {
+            [list addObject:[deviceInfo toJson]];
         }
+        
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyGetLoggedInDevicesFromServer
+                            error:aError
+                           object:nil];
     }];
 }
 
@@ -332,28 +360,6 @@
 - (void)onDisconnected:(int)errorCode {
     [self.channel invokeMethod:EMMethodKeyOnDisconnected
                      arguments:@{@"errorCode" : @(errorCode)}];
-}
-
-
-#pragma mark - Private
-- (NSArray *)deviceConfigsToDictionaryList:(NSArray *)aList {
-    NSMutableArray *ret = [NSMutableArray array];
-    for (EMDeviceConfig *config in aList) {
-        [ret addObject:@{@"resource":config.resource,
-                         @"UUID":config.deviceUUID,
-                         @"name":config.deviceName}];
-    }
-    
-    return ret;
-}
-
-#pragma mark - Getter
-- (NSMutableDictionary *)deviceDict {
-    if (!_deviceDict) {
-        _deviceDict = [NSMutableDictionary dictionary];
-    }
-    
-    return _deviceDict;
 }
 
 @end

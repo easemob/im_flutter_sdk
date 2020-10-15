@@ -30,39 +30,45 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> implements EMConnectionListener{
   @override
-  void initState() {
 
+  bool isLogin = false;
+
+  void initState() {
+    super.initState();
+    initEaseMobSDK();
+  }
+
+  void initEaseMobSDK() async {
     EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
     EMPushConfig config = EMPushConfig();
     // 判断是否为debug模式
     if(!kReleaseMode){
       config
-        ..enableAPNs(apnsCertName: "chatdemoui_dev")
+        ..enableAPNs("chatdemoui_dev")
         ..enableHWPush()
-        ..enableFCM(appId: '')
-        ..enableMeiZuPush(appId: '', appKey: '')
-        ..enableMiPush(appId: '', appKey: '');
-      options.debugModel = true;
+        ..enableFCM('')
+        ..enableMeiZuPush('', '')
+        ..enableMiPush('', '');
     }else {
       config
-        ..enableAPNs(apnsCertName: "chatdemoui")
+        ..enableAPNs('chatdemoui')
         ..enableHWPush()
-        ..enableFCM(appId: '')
-        ..enableMeiZuPush(appId: '', appKey: '')
-        ..enableMiPush(appId: '', appKey: '');
+        ..enableFCM('')
+        ..enableMeiZuPush('', '')
+        ..enableMiPush('', '');
     }
 
-
+    options.debugModel = true;
     options.pushConfig = config;
 
-
-    EMClient.getInstance.init(options);
+    await EMClient.getInstance.init(options);
     EMClient.getInstance.addConnectionListener(this);
 
     EMClient.getInstance.callManager.registerCallSharedManager();
     EMClient.getInstance.conferenceManager.registerConferenceSharedManager();
-
-    super.initState();
+    setState(() {
+      isLogin = EMClient.getInstance.isLoginBefore;
+    });
   }
 
   @override
@@ -121,22 +127,17 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         primaryColor: EMColor.darkAppMain,
         scaffoldBackgroundColor: EMColor.darkBgColor,
       ),
-      home: LoginPage(),
+      home: isLogin ? HomePage() : LoginPage(),
     );
   }
 
   /// EMConnectionListener
   @override
   void onConnected() {
-    // TODO: implement onConnected
-    print("网络连接成功");
     EMClient.getInstance.callManager.registerCallReceiver();
   }
 
   @override
   void onDisconnected(int errorCode) {
-    // TODO: implement onDisconnected
-    print("网络连接断开 ");
   }
-
 }

@@ -140,7 +140,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId};
     Map result = await _emGroupManagerChannel.invokeMethod(EMSDKMethod.isMemberInWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.isMemberInWhiteListFromServer] as bool;
+    return result.boolValue(EMSDKMethod.isMemberInWhiteListFromServer);
   }
 
   /// 获取群共享文件列表

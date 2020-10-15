@@ -15,8 +15,7 @@ static NSString * const EMMethodKeyErrorLog = @"errorLog";
 #pragma mark - EMClientWrapper
 static NSString * const EMMethodKeyInit = @"init";
 static NSString * const EMMethodKeyCreateAccount = @"createAccount";
-static NSString * const EMMethodKeyLogin = @"loginWithUsername";
-static NSString * const EMMethodKeyLoginWithToken = @"loginWithToken";
+static NSString * const EMMethodKeyLogin = @"login";
 static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
@@ -51,18 +50,13 @@ static NSString * const EMMethodKeyOnContactChanged = @"onContactChanged";
 static NSString * const EMMethodKeySendMessage = @"sendMessage";
 static NSString * const EMMethodKeyAckMessageRead = @"ackMessageRead";
 static NSString * const EMMethodKeyRecallMessage = @"recallMessage";
-static NSString * const EMMethodKeyGetMessage = @"getMessage";
 static NSString * const EMMethodKeyGetConversation = @"getConversation";
 static NSString * const EMMethodKeyMarkAllChatMsgAsRead = @"markAllChatMsgAsRead";
 static NSString * const EMMethodKeyGetUnreadMessageCount = @"getUnreadMessageCount";
-static NSString * const EMMethodKeySaveMessage = @"saveMessage";
 static NSString * const EMMethodKeyUpdateChatMessage = @"updateChatMessage";
 static NSString * const EMMethodKeyDownloadAttachment = @"downloadAttachment";
 static NSString * const EMMethodKeyDownloadThumbnail = @"downloadThumbnail";
 static NSString * const EMMethodKeyImportMessages = @"importMessages";
-static NSString * const EMMethodKeyGetConversationsByType = @"getConversationsByType";
-static NSString * const EMMethodKeyDownloadFile = @"downloadFile";
-static NSString * const EMMethodKeyGetAllConversations = @"getAllConversations";
 static NSString * const EMMethodKeyLoadAllConversations = @"loadAllConversations";
 static NSString * const EMMethodKeyDeleteConversation = @"deleteConversation";
 static NSString * const EMMethodKeySetVoiceMessageListened = @"setVoiceMessageListened";
@@ -70,21 +64,25 @@ static NSString * const EMMethodKeyUpdateParticipant = @"updateParticipant";
 static NSString * const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString * const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString * const EMMethodKeyGetCursor = @"getCursor";
+static NSString * const EMMethodKeyGetMessage = @"getMessage";
 
 #pragma mark - EMChatManagerDelegate
 static NSString * const EMMethodKeyOnMessagesReceived = @"onMessagesReceived";
 static NSString * const EMMethodKeyOnCmdMessagesReceived = @"onCmdMessagesReceived";
-static NSString * const EMMethodKeyOnMessageRead = @"onMessageRead";
-static NSString * const EMMethodKeyOnMessageDelivered = @"onMessageDelivered";
-static NSString * const EMMethodKeyOnMessageRecalled = @"onMessageRecalled";
-static NSString * const EMMethodKeyOnMessageChanged = @"onMessageChanged";
+static NSString * const EMMethodKeyOnMessagesRead = @"onMessagesRead";
+static NSString * const EMMethodKeyOnMessagesDelivered = @"onMessagesDelivered";
+static NSString * const EMMethodKeyOnMessagesRecalled = @"onMessagesRecalled";
 static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate";
-static NSString * const EMMethodKeyAddMessageListener = @"addMessageListener";
+
+static NSString * const EMMethodKeyAddMessageListener = @"addEMChatManagerListener";
 
 #pragma mark - EMMessageListener
 static NSString * const EMMethodKeyOnMessageProgressUpdate = @"onMessageProgressUpdate";
 static NSString * const EMMethodKeyOnMessageSuccess = @"onMessageSuccess";
 static NSString * const EMMethodKeyOnMessageError = @"onMessageError";
+static NSString * const EMMethodKeyOnMessageReadAck = @"onMessageReadAck";
+static NSString * const EMMethodKeyOnMessageDeliveryAck = @"onMessageDeliveryAck";
+static NSString * const EMMethodKeyOnMessageStatusChanged = @"onMessageStatusChanged";
 
 #pragma mark - EMConversationWrapper
 
@@ -95,12 +93,10 @@ static NSString * const EMMethodKeyMarkMsgAsRead = @"markMessageAsRead";
 static NSString * const EMMethodKeyRemoveMsg = @"removeMessage";
 static NSString * const EMMethodKeyGetLatestMsg = @"getLatestMessage";
 static NSString * const EMMethodKeyGetLatestMsgFromOthers = @"getLatestMessageFromOthers";
-static NSString * const EMMethodKeyClear = @"clear";
 static NSString * const EMMethodKeyClearAllMsg = @"clearAllMessages";
 static NSString * const EMMethodKeyInsertMsg = @"insertMessage";
 static NSString * const EMMethodKeyAppendMsg = @"appendMessage";
 static NSString * const EMMethodKeyUpdateConversationMsg = @"updateConversationMessage";
-static NSString * const EMMethodKeyGetMsgAttachmentPath = @"getMessageAttachmentPath";
 
 static NSString * const EMMethodKeyLoadMsgWithId = @"loadMsgWithId";
 static NSString * const EMMethodKeyLoadMsgWithStartId = @"loadMsgWithStartId";
@@ -213,13 +209,15 @@ static NSString * const EMMethodKeyJoinConference = @"joinConference";
 static NSString * const EMMethodKeyRegisterConferenceSharedManager = @"registerConferenceSharedManager";
 
 #pragma mark - EMPushManagerWrapper
-static NSString * const EMMethodKeyEnableOfflinePush = @"enableOfflinePush";
-static NSString * const EMMethodKeyDisableOfflinePush = @"disableOfflinePush";
-static NSString * const EMMethodKeyGetPushConfigs = @"getPushConfigs";
-static NSString * const EMMethodKeyGetPushConfigsFromServer = @"getPushConfigsFromServer";
-static NSString * const EMMethodKeyUpdatePushOptionServiceForGroup = @"updatePushServiceForGroup";
-static NSString * const EMMethodKeyGetNoPushGroups = @"getNoPushGroups";
+static NSString * const EMMethodKeyGetImPushConfigs = @"getImPushConfigs";
+static NSString * const EMMethodKeyGetImPushConfigsFromServer = @"getImPushConfigsFromServer";
 static NSString * const EMMethodKeyUpdatePushNickname = @"updatePushNickname";
-static NSString * const EMMethodKeyUpdatePushDisplayStyle = @"updatePushDisplayStyle";
+
+
+static NSString * const EMMethodKeyImPushNoDisturb = @"imPushNoDisturb";
+static NSString * const EMMethodKeyUpdateImPushStyle = @"updateImPushStyle";
+static NSString * const EMMethodKeyUpdateGroupPushService = @"updateGroupPushService";
+static NSString * const EMMethodKeyGetNoDisturbGroups = @"getNoDisturbGroups";
+
 
 

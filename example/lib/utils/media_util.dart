@@ -44,7 +44,6 @@ class MediaUtil {
       return null;
     }
     String imgPath = imgfile.path;
-    print('-------->imgUrl: ' + imgPath);
     return imgPath;
   }
 

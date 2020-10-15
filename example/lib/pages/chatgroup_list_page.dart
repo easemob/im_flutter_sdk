@@ -165,9 +165,7 @@ class _EMChatGroupListPageState extends State<EMChatGroupListPage> implements EM
   }
 
   void onTapChatGroup(EMGroup group) async {
-
     EMConversation con = await EMClient.getInstance.chatManager.getConversation(group.groupId, EMConversationType.GroupChat);
-
     Navigator.push<bool>(context, new MaterialPageRoute(builder: (BuildContext context){
       return new ChatPage(conversation: con,);
     })).then((bool isRefresh){

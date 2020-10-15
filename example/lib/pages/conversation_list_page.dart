@@ -20,7 +20,7 @@ class EMConversationListPage extends StatefulWidget {
 
 class _EMConversationListPageState extends State<EMConversationListPage>
     implements
-        EMMessageListener,
+        EMChatManagerListener,
         EMConnectionListener,
         EMConversationListItemDelegate {
   var conList = List<EMConversation>();
@@ -31,31 +31,37 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   @override
   void initState() {
     super.initState();
-    EMClient.getInstance.chatManager.addMessageListener(this);
+    EMClient.getInstance.chatManager.addListener(this);
     EMClient.getInstance.addConnectionListener(this);
-    _loadEMConversationList();
+    _loadConversationList();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
-    EMClient.getInstance.chatManager.removeMessageListener(this);
+    EMClient.getInstance.chatManager.removeListener(this);
     EMClient.getInstance.removeConnectionListener(this);
   }
 
-  void _loadEMConversationList() async {
-    Future<List<EMConversation>> result = EMClient.getInstance.chatManager.getAllConversations();
-    result.then((value){
-      conList = value;
-      _refreshUI();
-    }).catchError((e){
+  void _loadConversationList() async {
+    try{
+      conList = await EMClient.getInstance.chatManager.loadAllConversations();
 
-    });
+      EMImPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getImPushConfigs();
+      await pushConfigs.setNoDisturb(true);
+      await pushConfigs.setPushStyle(EMImPushStyle.Simple);
+
+    }on EMError catch(e) {
+
+    }finally {
+      _refreshUI();
+    }
   }
 
   void _refreshUI() {
     setState(() {});
+
+
   }
 
   Widget _buildConversationListView() {
@@ -175,37 +181,36 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   /// 连接监听
   void onConnected() {
-    print('onConnected');
+    debugPrint('onConnected');
     _isConnected = true;
     _refreshUI();
   }
 
   void onDisconnected(int errorCode) {
-    print('onDisconnected');
-
+    debugPrint('onDisconnected');
     _isConnected = false;
     _refreshUI();
   }
 
   /// 消息监听
   void onMessagesReceived(List<EMMessage> messages) {
-    _loadEMConversationList();
+    _loadConversationList();
   }
 
   void onCmdMessagesReceived(List<EMMessage> messages) {}
 
-  void onMessageRead(List<EMMessage> messages) {}
+  void onMessagesRead(List<EMMessage> messages) {}
 
-  void onMessageDelivered(List<EMMessage> messages) {}
+  void onMessagesDelivered(List<EMMessage> messages) {}
 
-  void onMessageRecalled(List<EMMessage> messages) {}
+  void onMessagesRecalled(List<EMMessage> messages) {}
 
   void onMessageChanged(EMMessage message) {}
 
   void _deleteConversation(EMConversation conversation) async {
     try{
       await EMClient.getInstance.chatManager.deleteConversation(conversation.id);
-      _loadEMConversationList();
+      _loadConversationList();
     }catch(e){
       print(e.toString());
     }
@@ -213,7 +218,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   void _clearConversationUnread(EMConversation conversation) {
     conversation.markAllMessagesAsRead();
-    _loadEMConversationList();
+    _loadConversationList();
   }
 
   /// 点击事件
@@ -223,7 +228,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
         new MaterialPageRoute(builder: (BuildContext context) {
       return new ChatPage(conversation: conversation);
     })).then((bool _isRefresh) {
-      _loadEMConversationList();
+      _loadConversationList();
     });
   }
 
@@ -245,7 +250,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void onLongPressConversation(EMConversation conversation, Offset tapPos) {
     Map<String, String> actionMap = {
       Constant.deleteConversationKey:
-          DemoLocalizations.of(context).deleteConversation,
+      DemoLocalizations.of(context).deleteConversation,
       Constant.clearUnreadKey: DemoLocalizations.of(context).clearUnread,
     };
     WidgetUtil.showLongPressMenu(context, tapPos, actionMap, (String key) {

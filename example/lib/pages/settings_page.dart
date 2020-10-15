@@ -33,17 +33,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   @override
   void initState() {
     super.initState();
-    _getCurrentUser();
-  }
-
-  void _getCurrentUser() async {
-    try{
-      userName = await EMClient.getInstance.currentUser();
-    }catch(e){
-
-    } finally {
-      _refreshUI(false);
-    }
+    userName = EMClient.getInstance.currentUsername ?? '';
   }
 
   _refreshUI(bool loading){
@@ -55,7 +45,6 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return
       Stack(
         children: <Widget>[
@@ -217,9 +206,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
           shape: StadiumBorder(),
           child: Text(
             '退出登录',
-//              DemoLocalizations.of(context).logout,
             style: TextStyle(color: Colors.white, fontSize: 16.0),
-
           ),
 //          color: Color.fromRGBO(0, 0, 0, 0.1),
           onPressed: () {
@@ -230,17 +217,16 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     );
   }
 
-  void logout (BuildContext context){
-    _refreshUI(true);
-    EMClient.getInstance.logout(
-      false,
-      onSuccess: (){
-        Navigator.of(context).pushNamed(Constant.toLoginPage);
-      },
-      onError: (code, desc) {
-        _refreshUI(false);
-        WidgetUtil.hintBoxWithDefault(desc);
-      },
-    );
+  void logout (BuildContext context) async {
+    try{
+      _refreshUI(true);
+      await EMClient.getInstance.logout();
+      Navigator.of(context).pushNamedAndRemoveUntil(Constant.toLoginPage, (route) => false,);
+
+    }on EMError catch(error){
+      WidgetUtil.hintBoxWithDefault(error.description);
+    }finally {
+      _refreshUI(false);
+    }
   }
 }

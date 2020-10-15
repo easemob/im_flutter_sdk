@@ -28,7 +28,7 @@ class EMChatRoom {
     .._muteList = map['muteList']
     .._announcement = map['announcement']
     .._permissionType = EMChatRoom.permissionTypeFromInt(map['permissionType'])
-    .._isAllMemberMuted = map['isAllMemberMuted'] as bool;
+    .._isAllMemberMuted =  map.boolValue('isAllMemberMuted');
   }
 
   Map<String, dynamic> toJson() {

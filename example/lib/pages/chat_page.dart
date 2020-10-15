@@ -20,10 +20,9 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> implements
-    EMMessageListener,
+    EMChatManagerListener,
     ChatItemDelegate,
     BottomInputBarDelegate,
-//    EMMessageStatusListener,
     EMCallStateChangeListener
 {
 
@@ -52,8 +51,7 @@ class _ChatPageState extends State<ChatPage> implements
   void initState() {
     super.initState();
 
-    EMClient.getInstance.chatManager.addMessageListener(this);
-//    EMClient.getInstance.chatManager.addMessageStatusListener(this);
+    EMClient.getInstance.chatManager.addListener(this);
     EMClient.getInstance.callManager.addCallStateChangeListener(this);
 
     currentStatus = ChatStatus.Normal;
@@ -66,13 +64,7 @@ class _ChatPageState extends State<ChatPage> implements
     if (conversation == null) {
       return;
     }
-
-
     _singleChat = conversation.type == EMConversationType.Chat;
-
-//    if(conversation.type == EMConversationType.ChatRoom) {
-//      _joinChatRoom();
-//    }
 
     _scrollController.addListener(() {
       //此处要用 == 而不是 >= 否则会触发多次
@@ -200,30 +192,6 @@ class _ChatPageState extends State<ChatPage> implements
     );
   }
 
-
-  void _onConversationInit() async{
-    // TODO: conversation
-    /*
-    messageList.clear();
-    conversation = await EMClient.getInstance.chatManager.
-    getConversation(toChatUsername, fromEMConversationType(mType), true );
-
-    if(conversation != null){
-      conversation.markAllMessagesAsRead();
-      msgListFromDB = await conversation.loadMoreMsgFromDB('', 20);
-    }
-
-    if(msgListFromDB != null && msgListFromDB.length > 0){
-      afterLoadMessageId = msgListFromDB.first.msgId;
-      messageList.addAll(msgListFromDB);
-    }
-    isLoad = false;
-    _refreshUI();
-
-     */
-  }
-
-
   void _loadMessages({onEnd()}) async {
     try{
       List<EMMessage> loadList = await conversation.loadMessagesWithStartId(_afterLoadMessageId);
@@ -241,22 +209,13 @@ class _ChatPageState extends State<ChatPage> implements
   }
 
   void _markMessagesAsRead({String messageId = ''}) async {
-    // 如果消息id是''，则表示全部已读
     try{
       if(messageId.length == 0) {
-        try{
-          conversation.markAllMessagesAsRead();
-        }catch(e){
-
-        }
+        await conversation.markAllMessagesAsRead();
       }else{
-        try{
-          conversation.markMessageAsRead(messageId: messageId);
-        }catch(e){
-
-        }
+        await conversation.markMessageAsRead(messageId);
       }
-    } catch (e) {
+    } on EMError catch (e) {
 
     }
   }
@@ -372,17 +331,17 @@ class _ChatPageState extends State<ChatPage> implements
   }
 
   @override
-  void onMessageDelivered(List<EMMessage> messages) {
+  void onMessagesDelivered(List<EMMessage> messages) {
     // TODO: implement onMessageDelivered
   }
 
   @override
-  void onMessageRead(List<EMMessage> messages) {
+  void onMessagesRead(List<EMMessage> messages) {
     // TODO: implement onMessageRead
   }
 
   @override
-  void onMessageRecalled(List<EMMessage> messages) {
+  void onMessagesRecalled(List<EMMessage> messages) {
     // TODO: implement onMessageRecalled
   }
 
@@ -398,7 +357,7 @@ class _ChatPageState extends State<ChatPage> implements
     _scrollController.dispose();
     messageTotalList.clear();
     super.dispose();
-    EMClient.getInstance.chatManager.removeMessageListener(this);
+    EMClient.getInstance.chatManager.removeListener(this);
     if (conversation.type == EMConversationType.ChatRoom) {
       checkOutRoom();
     }
@@ -427,7 +386,7 @@ class _ChatPageState extends State<ChatPage> implements
 
   @override
   void onTapMessageItem(EMMessage message) {
-    // TODO: implement didTapMessageItem
+    // TODO: 消息点击
     if (message.direction == EMMessageDirection.RECEIVE) {
       if (message.attributes != null) {
         String conferenceId;
@@ -438,18 +397,22 @@ class _ChatPageState extends State<ChatPage> implements
           conferenceId = message.attributes['em_conference_id'];
         }
 
-        if (message.attributes['password'] != null) {
-          password = message.attributes['password'];
-        } else if(message.attributes['em_conference_password'] != null) {
-          password = message.attributes['em_conference_password'];
-        }
+        if(conferenceId != null) {
+          if (message.attributes['password'] != null) {
+            password = message.attributes['password'];
+          } else if(message.attributes['em_conference_password'] != null) {
+            password = message.attributes['em_conference_password'];
+          }
 
-        EMClient.getInstance.conferenceManager.joinConference(conferenceId, password,
-            onSuccess:(EMConference conf) {
-              print('加入会议成功 --- ' + conf.getConferenceId());
-            }, onError:(code, desc) {
-              print('加入会议失败 --- $desc');
-            });
+          EMClient.getInstance.conferenceManager.joinConference(
+              conferenceId, password,
+              onSuccess:(EMConference conf) {
+                print('加入会议成功 --- ' + conf.getConferenceId());
+                },
+              onError:(code, desc) {
+                print('加入会议失败 --- $desc');
+              });
+        }
       }
     }
   }
@@ -477,23 +440,17 @@ class _ChatPageState extends State<ChatPage> implements
 
   @override
   void onTapItemPicture(String imgPath) async{
-    print('onTapItemPicture' + imgPath);
+    debugPrint('onTapItemPicture' + imgPath);
     EMMessage imageMessage = EMMessage.createImageSendMessage(username: conversation.id, filePath: imgPath, sendOriginalImage: true);
-
-    setState(() {
-      messageTotalList.insert(0, imageMessage);
-    });
-
     sendMessage(imageMessage);
   }
 
   @override
   void onTapItemCamera(String imgPath) {
-    print('onTapItemCamera' + imgPath);
+    debugPrint('onTapItemCamera' + imgPath);
     EMMessage imageMessage = EMMessage.createImageSendMessage(username: conversation.id, filePath: imgPath, sendOriginalImage: true);
     sendMessage(imageMessage);
   }
-
 
   @override
   void onTapItemEmojicon() {
@@ -521,22 +478,20 @@ class _ChatPageState extends State<ChatPage> implements
   }
 
   @override
-  void sendText(String text) async {
+  void sendText(String text) {
     EMMessage message = EMMessage.createTxtSendMessage(username: conversation.id, content: text);
-    setState(() {
-      messageTotalList.insert(0, message);
-    });
     sendMessage(message);
   }
 
+  void sendMessage(EMMessage message) async {
+    setState(() {
+      messageTotalList.insert(0, message);
+    });
 
-  void sendMessage(EMMessage message) {
     try{
-      EMClient.getInstance.chatManager.sendMessage(message: message);
-    }catch(e){
+      await EMClient.getInstance.chatManager.sendMessage(message);
+    } on EMError catch(e) {
 
-    }finally {
-      _loadMessages();
     }
   }
 
@@ -605,7 +560,6 @@ class _ChatPageState extends State<ChatPage> implements
     // TODO: implement onDisconnected
     Future.delayed(Duration(milliseconds: 500), () {
       messageTotalList.clear();
-      _onConversationInit();
     });
     var getServerRecordId = await EMClient.getInstance.callManager.getServerRecordId();
     print('-----------getServerRecordId----------> '+ getServerRecordId);

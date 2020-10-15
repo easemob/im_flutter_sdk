@@ -45,9 +45,22 @@ enum EMMessageBodyType {
 }
 
 abstract class EMMessageStatusListener{
-  void onProgress(int progress);
-  void onError(EMError error);
-  void onSuccess();
+  /// 消息进度
+  void onProgress(int progress){}
+
+  /// 消息发送失败
+  void onError(EMError error){}
+
+  /// 消息发送成功
+  void onSuccess(){}
+
+  /// 消息已读
+  void onReadAck(){}
+
+  /// 消息已送达
+  void onDeliveryAck(){}
+
+  void onStatusChanged(){}
 }
 
 class EMMessage {
@@ -55,7 +68,7 @@ class EMMessage {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emMessageChannel = const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
 
-  EMMessage._instance();
+  EMMessage._private();
 
   /// 构造接收的消息
   EMMessage.createReceiveMessage({@required this.body, this.direction = EMMessageDirection.RECEIVE});
@@ -72,13 +85,23 @@ class EMMessage {
         return _onMessageError(argMap);
       } else if (call.method == EMSDKMethod.onMessageSuccess) {
         return _onMessageSuccess(argMap);
+      } else if (call.method == EMSDKMethod.onMessageReadAck) {
+        return _onMessageReadAck(argMap);
+      } else if (call.method == EMSDKMethod.onMessageDeliveryAck) {
+        return _onMessageDeliveryAck(argMap);
+      } else if (call.method == EMSDKMethod.onMessageStatusChanged) {
+        return _onMessageStatusChanged(argMap);
       }
       return null;
     });
   }
 
   Future<Null> _onMessageError(Map map) {
-    print('发送失败 --- ' + map.toString());
+    EMLog.v('发送失败 -- ' + map.toString());
+    EMMessage msg = EMMessage.fromJson(map);
+    this.msgId = msg.msgId;
+    this.status = msg.status;
+
     if (listener != null) {
       listener.onError(EMError.fromJson(map));
     }
@@ -86,7 +109,7 @@ class EMMessage {
   }
 
   Future<Null> _onMessageProgressChanged(Map map) {
-    print('发送 --- ' + map['progress'].toString());
+    EMLog.v('发送 -- ' + map['progress'].toString());
     if (listener != null) {
       int progress = map['progress'];
       listener.onProgress(progress);
@@ -95,13 +118,48 @@ class EMMessage {
   }
 
   Future<Null> _onMessageSuccess(Map map) {
-    print('发送成功');
+    EMLog.v('发送成功 -- ' + map.toString());
+    EMMessage msg = EMMessage.fromJson(map['message']);
+    this.msgId = msg.msgId;
+    this.status = msg.status;
     if (listener != null) {
       listener.onSuccess();
     }
     return null;
   }
 
+  Future<Null> _onMessageReadAck(Map map) {
+    EMLog.v('消息已读 -- ' + map.toString());
+    EMMessage msg = EMMessage.fromJson(map['message']);
+    this.hasReadAck = msg.hasReadAck;
+
+    if (listener != null) {
+      listener.onReadAck();
+    }
+    return null;
+  }
+
+  Future<Null> _onMessageDeliveryAck(Map map) {
+    EMLog.v('消息已送达 -- ' + map.toString());
+    EMMessage msg = EMMessage.fromJson(map['message']);
+    this.hasDeliverAck = msg.hasDeliverAck;
+
+    if (listener != null) {
+      listener.onDeliveryAck();
+    }
+    return null;
+  }
+
+  Future<Null> _onMessageStatusChanged(Map map) {
+    EMLog.v('消息状态变更 -- ' + map.toString());
+    EMMessage msg = EMMessage.fromJson(map['message']);
+    this.status = msg.status;
+
+    if (listener != null) {
+      listener.onStatusChanged();
+    }
+    return null;
+  }
 
   /// 构造发送的文字消息
   EMMessage.createTxtSendMessage({@required String username, String content = ""}) : this.createSendMessage (
@@ -195,7 +253,8 @@ class EMMessage {
   /// 构造发送的自定义消息
   EMMessage.createCustomSendMessage({
     @required String username,
-    @required event, Map params
+    @required event,
+    Map params
   }) : this.createSendMessage (
       to:username,
       body: EMCustomMessageBody(
@@ -276,15 +335,15 @@ class EMMessage {
   factory EMMessage.fromJson(Map <String, dynamic> map) {
     if(map == null)
       return null;
-    return EMMessage._instance()
+    return EMMessage._private()
       ..to = map['to']
       ..from = map['from']
       ..body = _bodyFromMap(map['body'])
       ..attributes = map['attributes'] ?? {}
       ..direction = map['direction'] == 'send' ? EMMessageDirection.SEND : EMMessageDirection.RECEIVE
-      ..hasReadAck = map['hasReadAck'] == 0 ? false : true
-      ..hasDeliverAck = map['hasDeliverAck'] == 0 ? false : true
-      ..hasRead = map['hasRead'] == 0 ? false : true
+      ..hasReadAck = map.boolValue('hasReadAck')
+      ..hasDeliverAck = map.boolValue('hasDeliverAck')
+      ..hasRead = map.boolValue('hasRead')
       ..msgId = map['msgId']
       ..conversationId = map['conversationId']
       ..chatType = chatTypeFromInt(map['chatType'])
@@ -374,6 +433,7 @@ class EMMessage {
   String toString() {
     return toJson().toString();
   }
+
 }
 
 // message body
@@ -566,7 +626,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     this.thumbnailLocalPath =  map['thumbnailLocalPath'];
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
-    this.sendOriginalImage = map['sendOriginalImage'] == 0 ? false : true;
+    this.sendOriginalImage = map.boolValue('sendOriginalImage');
     this.height = map['height'];
     this.width = map['width'];
     this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(map['thumbnailStatus']);
@@ -721,10 +781,10 @@ class EMCmdMessageBody extends EMMessageBody {
     return data;
   }
 
-  // cmd 标识
+  /// cmd 标识
   String action = '';
 
-  // 是否只投在线
+  /// 只投在线
   bool deliverOnlineOnly = false;
 }
 
