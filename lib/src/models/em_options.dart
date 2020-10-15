@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'em_domain_terms.dart';
 
 class EMOptions {
 
@@ -12,6 +13,7 @@ class EMOptions {
   bool requireAck = true;
   bool requireDeliveryAck = false;
   bool deleteMessagesAsExitGroup = true;
+  bool deleteMessagesAsExitChatRoom = true;
   bool isChatRoomOwnerLeaveAllowed = true;
   bool sortMessageByServerTime = true;
 
@@ -43,22 +45,23 @@ class EMOptions {
   }
 
   factory EMOptions.fromJson(Map<String, dynamic> json) {
-
     return EMOptions(appKey: json['appKey'])
-      ..autoLogin = json['autoLogin']
-      ..debugModel = json['debugModel']
-      ..requireAck = json['requireAck']
-      ..requireDeliveryAck = json['requireDeliveryAck']
-      ..sortMessageByServerTime = json['sortMessageByServerTime']
-      ..acceptInvitationAlways = json['acceptInvitationAlways']
-      ..autoAcceptGroupInvitation = json['autoAcceptGroupInvitation']
-      ..deleteMessagesAsExitGroup = json['deleteMessagesAsExitGroup']
-      ..isAutoDownload = json['isAutoDownload']
-      ..isChatRoomOwnerLeaveAllowed = json['isChatRoomOwnerLeaveAllowed']
-      ..serverTransfer = json['serverTransfer']
-      ..usingHttpsOnly = json['usingHttpsOnly']
+      ..autoLogin = json.boolValue('autoLogin')
+      ..debugModel = json.boolValue('debugModel')
+      ..requireAck = json.boolValue('requireAck')
+      ..requireDeliveryAck = json.boolValue('requireDeliveryAck')
+      ..sortMessageByServerTime = json.boolValue('sortMessageByServerTime')
+      ..acceptInvitationAlways = json.boolValue('acceptInvitationAlways')
+      ..autoAcceptGroupInvitation = json.boolValue('autoAcceptGroupInvitation')
+      ..deleteMessagesAsExitGroup = json.boolValue('deleteMessagesAsExitGroup')
+      ..deleteMessagesAsExitChatRoom = json.boolValue('deleteMessagesAsExitChatRoom')
+      ..isAutoDownload = json.boolValue('isAutoDownload')
+      ..isChatRoomOwnerLeaveAllowed = json.boolValue('isChatRoomOwnerLeaveAllowed')
+      ..serverTransfer = json.boolValue('serverTransfer')
+      ..usingHttpsOnly = json.boolValue('usingHttpsOnly')
       ..pushConfig = json['pushConfig'] != null ? EMPushConfig.fromJson(json['pushConfig']) : null
-      ..enableDNSConfig = json['enableDNSConfig']
+
+      ..enableDNSConfig = json.boolValue('enableDNSConfig')
       ..imPort = json['imPort']
       ..imServer = json['imServer']
       ..restServer = json['restServer']
@@ -73,6 +76,7 @@ class EMOptions {
     data['acceptInvitationAlways'] = this.acceptInvitationAlways;
     data['autoAcceptGroupInvitation'] = this.autoAcceptGroupInvitation;
     data['deleteMessagesAsExitGroup'] = this.deleteMessagesAsExitGroup;
+    data['deleteMessagesAsExitChatRoom'] = this.deleteMessagesAsExitChatRoom;
     data['dnsUrl'] = this.dnsUrl;
     data['enableDNSConfig'] = this.enableDNSConfig;
     data['imPort'] = this.imPort;
@@ -89,6 +93,11 @@ class EMOptions {
       data['pushConfig'] = this.pushConfig.toJson();
     }
     return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }
 
@@ -119,25 +128,25 @@ class EMPushConfig {
   bool _enableAPNS = false;
 
   /// 开启魅族推送 [appId]: 推送用AppId, [appKey]: 推送用AppKey
-  void enableMeiZuPush({@required String appId, @required String appKey}) {
+  void enableMeiZuPush(String appId, String appKey) {
     _enableMeiZuPush = true;
     _mzAppId = appId;
     _mzAppKey = appKey;
   }
 
-  void enableOppPush({@required String appKey, @required String secret}) {
+  void enableOppPush(String appKey, String secret) {
     _enableOppoPush = true;
     _oppoAppKey = appKey;
     _oppoAppSecret = secret;
   }
 
-  void enableMiPush({@required String appId, @required String appKey}) {
+  void enableMiPush(String appId, String appKey) {
     _enableMiPush = true;
     _miAppId = appId;
     _miAppKey = appKey;
   }
 
-  void enableFCM({@required String appId}) {
+  void enableFCM(String appId) {
     _enableFCM = true;
     _fcmId = appId;
   }
@@ -150,16 +159,19 @@ class EMPushConfig {
     _enableHWPush = true;
   }
 
-  void enableAPNs({@required String apnsCertName}) {
+  void enableAPNs(String certName) {
     _enableAPNS = true;
-    _apnsCertName = apnsCertName;
+    _apnsCertName = certName;
   }
 
   EMPushConfig();
 
+  EMPushConfig._private();
+
   factory EMPushConfig.fromJson(Map<String, dynamic> json) {
 
-    return EMPushConfig().._mzAppId = json['mzAppId']
+    return EMPushConfig._private()
+      .._mzAppId = json['mzAppId']
       .._mzAppKey = json['mzAppKey']
       .._oppoAppKey = json['oppoAppKey']
       .._oppoAppSecret = json['oppoAppSecret']
@@ -167,13 +179,14 @@ class EMPushConfig {
       .._miAppKey = json['miAppKey']
       .._fcmId = json['fcmId']
       .._apnsCertName = json['apnsCertName']
-      .._enableMeiZuPush = json['enableMeiZuPush']
-      .._enableOppoPush = json['enableOppoPush']
-      .._enableMiPush = json['enableMiPush']
-      .._enableFCM = json['enableFCM']
-      .._enableVivoPush = json['enableVivoPush']
-      .._enableHWPush = json['enableHWPush']
-      .._enableAPNS = json['enableAPNS'];
+
+      .._enableMeiZuPush = json.boolValue('enableMeiZuPush')
+      .._enableOppoPush = json.boolValue('enableOppoPush')
+      .._enableMiPush = json.boolValue('enableMiPush')
+      .._enableFCM = json.boolValue('enableFCM')
+      .._enableVivoPush = json.boolValue('enableVivoPush')
+      .._enableHWPush = json.boolValue('enableHWPush')
+      .._enableAPNS = json.boolValue('enableAPNS');
   }
 
   Map<String, dynamic> toJson() {
@@ -204,5 +217,10 @@ class EMPushConfig {
     data['enableAPNS'] = this._enableAPNS;
 
     return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }

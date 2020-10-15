@@ -67,31 +67,8 @@ abstract class EMContactEventListener {
   void onFriendRequestDeclined(String userName);
 }
 
-abstract class EMMessageListener {
-
-  /// 收到消息[messages]
-  void onMessagesReceived(List<EMMessage> messages);
-
-  /// 收到cmd消息[messages]
-  void onCmdMessagesReceived(List<EMMessage> messages);
-
-  /// 收到[messages]消息已读
-  void onMessageRead(List<EMMessage> messages);
-
-  /// 收到[messages]消息已送达
-  void onMessageDelivered(List<EMMessage> messages);
-
-  /// 收到[messages]消息被撤回
-  void onMessageRecalled(List<EMMessage> messages);
-
-  /// 消息[message]变化
-  void onMessageChanged(EMMessage message);
-}
-
-
 // TODO: 会话列表变化回调，会话数量变化时回调
 abstract class EMConversationListener {
-  // TODO: 会话数量变化时回调
   void onConversationUpdate();
 }
 

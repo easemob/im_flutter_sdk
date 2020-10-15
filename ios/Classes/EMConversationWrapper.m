@@ -52,8 +52,6 @@
         [self getLatestMessage:call.arguments result:result];
     } else if ([EMMethodKeyGetLatestMsgFromOthers isEqualToString:call.method]) {
         [self getLatestMessageFromOthers:call.arguments result:result];
-    } else if ([EMMethodKeyClear isEqualToString:call.method]) {
-        [self clear:call.arguments result:result];
     } else if ([EMMethodKeyClearAllMsg isEqualToString:call.method]) {
         [self clearAllMessages:call.arguments result:result];
     } else if ([EMMethodKeyInsertMsg isEqualToString:call.method]) {
@@ -62,10 +60,6 @@
         [self appendMessage:call.arguments result:result];
     } else if ([EMMethodKeyUpdateConversationMsg isEqualToString:call.method]) {
         [self updateConversationMessage:call.arguments result:result];
-    } else if ([EMMethodKeyGetMsgAttachmentPath isEqualToString:call.method]) {
-        [self getMessageAttachmentPath:call.arguments result:result];
-    } else if ([EMMethodKeyGetMessage isEqualToString:call.method]) {
-        [self getMessage:call.arguments result:result];
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -99,55 +93,6 @@
     }];
 }
 
-- (void)markAllMessagesAsRead:(NSDictionary *)param result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation) {
-        EMError *error = nil;
-        [conversation markAllMessagesAsRead:&error];
-        [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyMarkAllMsgsAsRead
-                            error:error
-                           object:nil];
-    }];
-}
-
-
-- (void)markMessageAsRead:(NSDictionary *)param result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation)
-    {
-        NSString *msgId = param[@"msgId"];
-        EMError *error = nil;
-        [conversation markMessageAsReadWithId:msgId error:&error];
-        
-        [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyMarkMsgAsRead
-                            error:error
-                           object:nil];
-    }];
-}
-
-- (void)removeMessage:(NSDictionary *)param result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation)
-    {
-        NSString *msgId = param[@"msgId"];
-        EMError *error = nil;
-        [conversation deleteMessageWithId:msgId error:&error];
-        
-        [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyRemoveMsg
-                            error:error
-                           object:nil];
-    }];
-}
-
 - (void)getLatestMessage:(NSDictionary *)param result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
@@ -176,20 +121,34 @@
     }];
 }
 
-- (void)clear:(NSDictionary *)param result:(FlutterResult)result
-{
-    
-}
+// TODO: EXT
 
-- (void)clearAllMessages:(NSDictionary *)param result:(FlutterResult)result
+- (void)markMessageAsRead:(NSDictionary *)param result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation){
+                        completion:^(EMConversation *conversation)
+    {
+        NSString *msgId = param[@"msg_id"];
         EMError *error = nil;
-        [conversation deleteAllMessages:&error];
+        [conversation markMessageAsReadWithId:msgId error:&error];
+        
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyClearAllMsg
+                      channelName:EMMethodKeyMarkMsgAsRead
+                            error:error
+                           object:nil];
+    }];
+}
+
+- (void)markAllMessagesAsRead:(NSDictionary *)param result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        EMError *error = nil;
+        [conversation markAllMessagesAsRead:&error];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyMarkAllMsgsAsRead
                             error:error
                            object:nil];
     }];
@@ -210,7 +169,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyInsertMsg
                             error:error
-                           object:nil];
+                           object:@(!error)];
     }];
 }
 
@@ -229,7 +188,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyAppendMsg
                             error:error
-                           object:nil];
+                           object:@(!error)];
     }];
 }
 
@@ -248,49 +207,51 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUpdateConversationMsg
                             error:error
-                           object:nil];
+                           object:@(!error)];
     }];
 }
 
-- (void)getMessage:(NSDictionary *)param result:(FlutterResult)result {
+- (void)removeMessage:(NSDictionary *)param result:(FlutterResult)result
+{
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
     {
+        NSString *msgId = param[@"msg_id"];
         EMError *error = nil;
-        EMMessage *msg = [conversation loadMessageWithId:param[@"msgId"] error:&error];
+        [conversation deleteMessageWithId:msgId error:&error];
         
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetMessage
+                      channelName:EMMethodKeyRemoveMsg
                             error:error
-                           object:[msg toJson]];
+                           object:@(!error)];
     }];
 }
 
-// TODO: ?
-- (void)getMessageAttachmentPath:(NSDictionary *)param
-                          result:(FlutterResult)result
+- (void)clearAllMessages:(NSDictionary *)param result:(FlutterResult)result
 {
+    __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation)
-    {
-
+                        completion:^(EMConversation *conversation){
+        EMError *error = nil;
+        [conversation deleteAllMessages:&error];
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyClearAllMsg
+                            error:error
+                           object:@(!error)];
     }];
 }
-
-
 
 #pragma mark - load messages
-
-
 - (void)loadMsgWithId:(NSDictionary *)param result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
+    NSString *msgId = param[@"msg_id"];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
         EMError *error = nil;
-        EMMessage *msg = [conversation loadMessageWithId:param[@"msgId"] error:&error];
+        EMMessage *msg = [conversation loadMessageWithId:msgId error:&error];
         
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyLoadMsgWithId
@@ -300,14 +261,50 @@
     }];
 }
 
+- (void)loadMsgWithMsgType:(NSDictionary *)param result:(FlutterResult)result{
+    __weak typeof(self) weakSelf = self;
+    
+    EMMessageBodyType type = [EMMessageBody typeFromString:param[@"type"]];
+    long long timeStamp = [param[@"timeStamp"] longLongValue];
+    int count = [param[@"count"] intValue];
+    NSString *sender = param[@"sender"];
+    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
+    
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        
+        [conversation loadMessagesWithType:type
+                                 timestamp:timeStamp
+                                     count:count
+                                  fromUser:sender
+                           searchDirection:direction
+                                completion:^(NSArray *aMessages, EMError *aError)
+        {
+            NSMutableArray *msgJsonAry = [NSMutableArray array];
+            for (EMMessage *msg in aMessages) {
+                [msgJsonAry addObject:[msg toJson]];
+            }
+            [weakSelf wrapperCallBack:result
+                          channelName:EMMethodKeyLoadMsgWithMsgType
+                                error:aError
+                               object:msgJsonAry];
+        }];
+    }];
+}
+
 - (void)loadMsgWithStartId:(NSDictionary *)param result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
+    NSString *startId = param[@"startId"];
+    int count = [param[@"count"] intValue];
+    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
+    
     [self getConversationWithParam:param
                          completion:^(EMConversation *conversation) {
-        [conversation loadMessagesStartFromId:param[@"startId"]
-                                        count:[param[@"count"] intValue]
-                              searchDirection:[self searchDirectionFromString:param[@"direction"]]
+        [conversation loadMessagesStartFromId:startId
+                                        count:count
+                              searchDirection:direction
                                    completion:^(NSArray *aMessages, EMError *aError)
         {
             NSMutableArray *jsonMsgs = [NSMutableArray array];
@@ -326,15 +323,20 @@
 - (void)loadMsgWithKeywords:(NSDictionary *)param result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
+    NSString * keywords = param[@"keywords"];
+    long long timestamp = [param[@"timestamp"] longLongValue];
+    int count = [param[@"count"] intValue];
+    NSString *sender = param[@"sender"];
+    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
     {
         
-        [conversation loadMessagesWithKeyword:param[@"keywords"]
-                                    timestamp:[param[@"timestamp"] longLongValue]
-                                        count:[param[@"count"] intValue]
-                                     fromUser:param[@"sender"]
-                              searchDirection:[self searchDirectionFromString:param[@"direction"]]
+        [conversation loadMessagesWithKeyword:keywords
+                                    timestamp:timestamp
+                                        count:count
+                                     fromUser:sender
+                              searchDirection:direction
                                    completion:^(NSArray *aMessages, EMError *aError)
         {
             NSMutableArray *msgJsonAry = [NSMutableArray array];
@@ -349,40 +351,18 @@
     }];
 }
 
-- (void)loadMsgWithMsgType:(NSDictionary *)param result:(FlutterResult)result{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation)
-    {
-        
-        [conversation loadMessagesWithType:[EMMessageBody typeFromString:param[@"type"]]
-                                 timestamp:[param[@"timeStamp"] longLongValue]
-                                     count:[param[@"count"] intValue]
-                                  fromUser:param[@"sender"]
-                           searchDirection:[self searchDirectionFromString:param[@"direction"]]
-                                completion:^(NSArray *aMessages, EMError *aError)
-        {
-            NSMutableArray *msgJsonAry = [NSMutableArray array];
-            for (EMMessage *msg in aMessages) {
-                [msgJsonAry addObject:[msg toJson]];
-            }
-            [weakSelf wrapperCallBack:result
-                          channelName:EMMethodKeyLoadMsgWithMsgType
-                                error:aError
-                               object:msgJsonAry];
-        }];
-    }];
-}
-
 - (void)loadMsgWithTime:(NSDictionary *)param result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
+    long long startTime = [param[@"startTime"] longLongValue];
+    long long entTime = [param[@"endTime"] longLongValue];
+    int count = [param[@"count"] intValue];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
     {
         
-        [conversation loadMessagesFrom:[param[@"startTime"] longLongValue]
-                                    to:[param[@"endTime"] longLongValue]
-                                 count:[param[@"count"] intValue]
+        [conversation loadMessagesFrom:startTime
+                                    to:entTime
+                                 count:count
                             completion:^(NSArray *aMessages, EMError *aError)
         {
             NSMutableArray *msgJsonAry = [NSMutableArray array];
@@ -396,8 +376,6 @@
         }];
     }];
 }
-
-
 
 - (EMMessageSearchDirection)searchDirectionFromString:(NSString *)aDirection {
     return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;

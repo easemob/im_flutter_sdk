@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'em_listeners.dart';
 import 'em_sdk_method.dart';
+import 'models/em_domain_terms.dart';
 
 class EMContactManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -37,31 +38,31 @@ class EMContactManager {
   /// @nodoc
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
-    String userName = event['userName'];
+    String username = event['username'];
     String reason = event['reason'];
     for (var listener in _contactChangeEventListeners) {
       switch (type) {
         case EMContactChangeEvent.CONTACT_ADD:
-          listener.onContactAdded(userName);
+          listener.onContactAdded(username);
           break;
         case EMContactChangeEvent.CONTACT_DELETE:
-          listener.onContactDeleted(userName);
+          listener.onContactDeleted(username);
           break;
         case EMContactChangeEvent.INVITED:
-          listener.onContactInvited(userName, reason);
+          listener.onContactInvited(username, reason);
           break;
         case EMContactChangeEvent.INVITATION_ACCEPTED:
-          listener.onFriendRequestAccepted(userName);
+          listener.onFriendRequestAccepted(username);
           break;
         case EMContactChangeEvent.INVITATION_DECLINED:
-          listener.onFriendRequestDeclined(userName);
+          listener.onFriendRequestDeclined(username);
           break;
         default:
       }
     }
   }
 
-  /// 添加联系人[userName] with [reason].
+  /// 添加联系人[username] with [reason].
   Future<String> addContact({@required String username, String reason = ''}) async {
     Map req = {'username': username, 'reason': reason};
     Map result = await _emContactManagerChannel.invokeMethod(EMSDKMethod.addContact, req);
@@ -69,7 +70,7 @@ class EMContactManager {
     return result[EMSDKMethod.addContact];
   }
 
-  /// 删除联系人 [userName]
+  /// 删除联系人 [username]
   /// [keepConversation] true 保留会话和消息  false 不保留, 默认为false
   Future<String> deleteContact({@required String username, bool keepConversation = false}) async {
     Map req = {'username': username, 'keepConversation': keepConversation};
@@ -79,10 +80,15 @@ class EMContactManager {
   }
 
   /// 从服务器获取所有的好友
-  Future<List> getAllContactsFromServer() async {
+  Future<List<EMContact>> getAllContactsFromServer() async {
     Map result = await _emContactManagerChannel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
     EMError.hasErrorFromResult(result);
-    List contacts = result[EMSDKMethod.getAllContactsFromServer];
+    List<EMContact> contacts = List();
+    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+      // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
+      contacts.add(EMContact.fromJson({'eid':element}));
+    });
+
     return contacts;
   }
 
@@ -94,7 +100,7 @@ class EMContactManager {
     return result[EMSDKMethod.addUserToBlackList];
   }
 
-  /// 把用户从黑名单中移除 [userName].
+  /// 把用户从黑名单中移除 [username].
   Future<String> removeUserFromBlackList({@required String username}) async {
     Map req = {'username': username};
     Map result = await _emContactManagerChannel.invokeMethod(EMSDKMethod.removeUserFromBlackList, req);
@@ -103,11 +109,14 @@ class EMContactManager {
   }
 
   /// 从服务器获取黑名单中的用户的ID
-  Future<List> getBlackListFromServer() async {
+  Future<List<EMContact>> getBlackListFromServer() async {
     Map result = await _emContactManagerChannel.invokeMethod(EMSDKMethod.getBlackListFromServer);
     EMError.hasErrorFromResult(result);
-    List<String> blackList = result[EMSDKMethod.getBlackListFromServer];
-    _blackList = blackList;
+    List<EMContact> blackList = List();
+    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+      // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
+      blackList.add(EMContact.fromJson({'eid':element}));
+    });
     return blackList;
   }
 
@@ -146,8 +155,6 @@ class EMContactManager {
   }
 }
 
-
-/// @nodoc
 class EMContactChangeEvent {
   static const String CONTACT_ADD = 'onContactAdded';
   static const String CONTACT_DELETE = 'onContactDeleted';

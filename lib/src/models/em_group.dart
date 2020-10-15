@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'em_domain_terms.dart';
 
 enum EMGroupStyle{
   PrivateOnlyOwnerInvite, // 私有群，只有群主能邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
@@ -66,9 +67,9 @@ class EMGroup {
       .._blackList = map['blackList']
       .._muteList = map['muteList']
       .._sharedFileList = map['sharedFileList']
-      .._noticeEnable = map['noticeEnable'] as bool
-      .._messageBlocked = map['messageBlocked'] as bool
-      .._isAllMemberMuted = map['isAllMemberMuted'] as bool
+      .._noticeEnable = map.boolValue('noticeEnable')
+      .._messageBlocked = map.boolValue('messageBlocked')
+      .._isAllMemberMuted = map.boolValue('isAllMemberMuted')
       .._options = EMGroupOptions.fromJson(map['options'])
       .._permissionType = EMGroup.permissionTypeFromInt(map['permissionType']);
   }
@@ -173,7 +174,7 @@ class EMGroupOptions {
       .._style = EMGroupOptions.styleTypeFromInt(map['style'])
       .._maxCount = map['maxCount']
       .._ext = map['ext']
-      .._inviteNeedConfirm = map['inviteNeedConfirm']  as bool;
+      .._inviteNeedConfirm = map.boolValue('inviteNeedConfirm');
   }
 
   Map toJson() {

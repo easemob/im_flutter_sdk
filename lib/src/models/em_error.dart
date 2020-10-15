@@ -1,8 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-class EMError {
+class EMError implements Exception {
 
-  EMError();
+  @pragma("vm:entry-point")
+  EMError([this._code, this._description]);
 
   int _code;
   String _description;
@@ -22,11 +23,21 @@ class EMError {
       .._description = map['description'];
   }
 
-  static bool hasErrorFromResult(Map map) {
+//  static EMError hasErrorFromResult(Map map) {
+//    EMError error = EMError.fromJson(map['error']);
+//    return error;
+//  }
+
+  static hasErrorFromResult(Map map) {
     EMError error = EMError.fromJson(map['error']);
-    if(error == null) {
-      return false;
+    if(error != null) {
+      EMLog.v('error - ' + error.toString());
+      throw (error);
+//      try{
+//
+//      }catch(e) {
+//
+//      }
     }
-    throw(error);
   }
 }

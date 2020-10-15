@@ -2,8 +2,7 @@ class EMSDKMethod {
   /// EMClient methods
   static const String init = 'init';
   static const String createAccount = 'createAccount';
-  static const String loginWithUsername = 'loginWithUsername';
-  static const String loginWithToken = 'loginWithToken';
+  static const String login = 'login';
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
   static const String isLoggedInBefore = 'isLoggedInBefore';
@@ -38,40 +37,42 @@ class EMSDKMethod {
   static const String sendMessage = 'sendMessage';
   static const String ackMessageRead = 'ackMessageRead';
   static const String recallMessage = 'recallMessage';
-  static const String getMessage = 'getMessage';
   static const String getConversation = "getConversation";
   static const String markAllChatMsgAsRead = "markAllChatMsgAsRead";
   static const String getUnreadMessageCount = "getUnreadMessageCount";
-  static const String saveMessage = "saveMessage";
   static const String updateChatMessage = "updateChatMessage";
   static const String downloadAttachment = "downloadAttachment";
   static const String downloadThumbnail = "downloadThumbnail";
   static const String importMessages = "importMessages";
-  static const String getConversationsByType = "getConversationsByType";
-  static const String downloadFile = "downloadFile";
-  static const String getAllConversations = "getAllConversations";
   static const String loadAllConversations = "loadAllConversations";
   static const String deleteConversation = "deleteConversation";
-  static const String setVoiceMessageListened = "setVoiceMessageListened";
-  static const String updateParticipant = "updateParticipant";
+//  static const String setVoiceMessageListened = "setVoiceMessageListened";
+//  static const String updateParticipant = "updateParticipant";
   static const String fetchHistoryMessages = "fetchHistoryMessages";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
+  static const String getMessage = 'getMessage';
+
   // 需确认安卓用法，是否可以去掉？
   static const String getCursor = "getCursor";
+
 
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
-  static const String onMessageRead = "onMessageRead";
-  static const String onMessageDelivered = "onMessageDelivered";
-  static const String onMessageRecalled = "onMessageRecalled";
+  static const String onMessagesRead = "onMessagesRead";
+  static const String onMessagesDelivered = "onMessagesDelivered";
+  static const String onMessagesRecalled = "onMessagesRecalled";
   static const String onMessageChanged = "onMessageChanged";
+
   static const String onConversationUpdate = "onConversationUpdate";
 
   /// EMMessage listener
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";
-  static const String onMessageSuccess = "onMessageSuccess";
   static const String onMessageError = "onMessageError";
+  static const String onMessageSuccess = "onMessageSuccess";
+  static const String onMessageReadAck = "onMessageReadAck";
+  static const String onMessageDeliveryAck = "onMessageDeliveryAck";
+  static const String onMessageStatusChanged = "onMessageStatusChanged";
 
   /// EMConversation
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
@@ -80,14 +81,12 @@ class EMSDKMethod {
   static const String removeMessage = 'removeMessage';
   static const String getLatestMessage = 'getLatestMessage';
   static const String getLatestMessageFromOthers = 'getLatestMessageFromOthers';
-  static const String clear = 'clear';
   static const String clearAllMessages = 'clearAllMessages';
   static const String insertMessage = 'insertMessage';
   static const String appendMessage = 'appendMessage';
   static const String updateConversationMessage = 'updateConversationMessage';
-  static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
 
-  // 根据一组消息获取消息
+  // 根据消息id获取消息
   static const String loadMsgWithId = 'loadMsgWithId';
   // 根据起始消息id获取消息
   static const String loadMsgWithStartId = 'loadMsgWithStartId';
@@ -178,14 +177,15 @@ class EMSDKMethod {
   static const String onGroupChanged = "onGroupChanged";
 
   /// EMPushManager
-  static const String enableOfflinePush = "enableOfflinePush";
-  static const String disableOfflinePush = "disableOfflinePush";
-  static const String getPushConfigs = "getPushConfigs";
-  static const String getPushConfigsFromServer = "getPushConfigsFromServer";
-  static const String updatePushServiceForGroup = "updatePushServiceForGroup";
-  static const String getNoPushGroups = "getNoPushGroups";
+  static const String getImPushConfigs = "getImPushConfigs";
+  static const String getImPushConfigsFromServer = "getImPushConfigsFromServer";
   static const String updatePushNickname = "updatePushNickname";
-  static const String updatePushDisplayStyle = "updatePushDisplayStyle";
+
+  /// ImPushConfigs
+  static const String imPushNoDisturb = "imPushNoDisturb";
+  static const String updateImPushStyle = "updateImPushStyle";
+  static const String updateGroupPushService = "updateGroupPushService";
+  static const String getNoDisturbGroups = "getNoDisturbGroups";
 
   /// EMCallManager
   static const String startCall = "startCall";

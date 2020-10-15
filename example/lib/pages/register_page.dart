@@ -22,7 +22,6 @@ class RegisterPageState extends State<RegisterPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -210,41 +209,43 @@ class RegisterPageState extends State<RegisterPage> {
     ),
   );
 
-  void register(String username, String password){
-    _refreshUI(true);
-    EMClient.getInstance.createAccount(username, password,
-        onSuccess: (){
-          Navigator.of(context).pushNamed(Constant.toLoginPage ,arguments:{'username':this._usernameController.text, 'password':this._pwdController.text});
-        },
-        onError: (code, desc){
-          _refreshUI(false);
-          switch(code) {
-            case 101: {
-              WidgetUtil.hintBoxWithDefault('用户ID不合法!');
-            }
-            break;
+  void register(String username, String password) async {
 
-            case 102: {
-              WidgetUtil.hintBoxWithDefault('用户密码不合法!');
-            }
-            break;
+    try{
+      _refreshUI(true);
+      EMClient.getInstance.createAccount(username: username, password: password);
+      Navigator.of(context).pushNamed(Constant.toLoginPage ,arguments:{'username':this._usernameController.text, 'password':this._pwdController.text});
+    }catch(e){
+      EMError error = e as EMError;
+      switch(error.code) {
+        case 101: {
+          WidgetUtil.hintBoxWithDefault('用户ID不合法!');
+        }
+        break;
 
-            case 203: {
-              WidgetUtil.hintBoxWithDefault('用户ID已存在!');
-            }
-            break;
+        case 102: {
+          WidgetUtil.hintBoxWithDefault('用户密码不合法!');
+        }
+        break;
 
-            case 300: {
-              WidgetUtil.hintBoxWithDefault('无法连接服务器!');
-            }
-            break;
+        case 203: {
+          WidgetUtil.hintBoxWithDefault('用户ID已存在!');
+        }
+        break;
 
-            default: {
-              WidgetUtil.hintBoxWithDefault(desc);
-            }
-            break;
-          }
-        });
+        case 300: {
+          WidgetUtil.hintBoxWithDefault('无法连接服务器!');
+        }
+        break;
+
+        default: {
+          WidgetUtil.hintBoxWithDefault(error.description);
+        }
+        break;
+      }
+    }finally {
+      _refreshUI(false);
+    }
   }
 
   void _refreshUI(bool loading){

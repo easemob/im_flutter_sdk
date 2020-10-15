@@ -6,7 +6,6 @@ import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
-import 'package:image_picker/image_picker.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -26,19 +25,7 @@ class LoginPageState extends State<LoginPage> {
   bool isLogged;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    isLoggedInBefore();
-  }
-
-  void isLoggedInBefore() async{
-    bool isLoggedInBefore = await EMClient.getInstance.isLoggedInBefore();
-     print('是否登录$isLoggedInBefore');
-    isLogged = isLoggedInBefore;
-    if(isLoggedInBefore){
-      Navigator.of(context).pop();
-      Navigator.of(context).pushNamed(Constant.toHomePage);
-    }
   }
 
   @override
@@ -49,8 +36,9 @@ class LoginPageState extends State<LoginPage> {
       _pwdController.text = arguments['password'];
     }
     return WillPopScope(
-      onWillPop: () async{
+      onWillPop: () async {
         SystemNavigator.pop();
+        return;
       },
       child: Stack(
         children: <Widget>[
@@ -125,8 +113,6 @@ class LoginPageState extends State<LoginPage> {
         ],
       ),
     );
-
-
   }
 
   loginBody() => SingleChildScrollView(
@@ -212,15 +198,14 @@ class LoginPageState extends State<LoginPage> {
             ),
             color: Color.fromRGBO(0, 0, 0, 0.1),
             onPressed: () {
-                if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
-                  WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
-                  return ;
-                } else if(WidgetUtil.isChinese(this._usernameController.text)) {
-                  WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
-                  return ;
-                }
-
-                login(this._usernameController.text,this._pwdController.text);
+              if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
+                WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
+                return ;
+              } else if(WidgetUtil.isChinese(this._usernameController.text)) {
+                WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
+                return ;
+              }
+              login(this._usernameController.text,this._pwdController.text);
             },
           ),
         ),
@@ -228,52 +213,38 @@ class LoginPageState extends State<LoginPage> {
     ),
   );
 
-void login(String username , String password){
-    print(username+':'+password);
-    _refreshUI(true);
-      EMClient.getInstance.login(
-          username,
-          password,
-          onSuccess: (username) {
-            print("login succes");
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(Constant.toHomePage);
-
-          },
-          onError: (code, desc) {
-            _refreshUI(false);
-            switch(code) {
-              case 2: {
-                WidgetUtil.hintBoxWithDefault('网络未连接!');
-              }
-              break;
-
-              case 202: {
-                WidgetUtil.hintBoxWithDefault('密码错误!');
-              }
-              break;
-
-              case 204: {
-                WidgetUtil.hintBoxWithDefault('用户ID不存在!');
-              }
-              break;
-
-              case 300: {
-                WidgetUtil.hintBoxWithDefault('无法连接服务器!');
-              }
-              break;
-
-              default: {
-                WidgetUtil.hintBoxWithDefault(desc);
-              }
-              break;
-            }
-
-            print("login error:" +
-                code.toString() +
-                "//" +
-                desc.toString());
-          });
+  void login(String username , String password) async {
+    try{
+      _refreshUI(true);
+      await EMClient.getInstance.login(username, password);
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed(Constant.toHomePage);
+    }on EMError catch(error){
+      switch(error.code) {
+        case 2: {
+          WidgetUtil.hintBoxWithDefault('网络未连接!');
+        }
+        break;
+        case 202: {
+          WidgetUtil.hintBoxWithDefault('密码错误!');
+        }
+        break;
+        case 204: {
+          WidgetUtil.hintBoxWithDefault('用户ID不存在!');
+        }
+        break;
+        case 300: {
+          WidgetUtil.hintBoxWithDefault('无法连接服务器!');
+        }
+        break;
+        default: {
+          WidgetUtil.hintBoxWithDefault(error.description);
+        }
+        break;
+      }
+    }finally{
+      _refreshUI(false);
+    }
   }
 
   void _refreshUI(bool loading){

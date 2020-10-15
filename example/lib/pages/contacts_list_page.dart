@@ -25,7 +25,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
 
 
 
-  var contactsList = new List();
+  List<EMContact> contactsList = new List();
 
   var imageNameList = [
     {'imageName':'images/newFriend@2x.png','name':'新的好友'},
@@ -48,18 +48,16 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     EMClient.getInstance.contactManager.removeContactListener(this);
   }
 
-  String _getData(int index) {
+  EMContact _getData(int index) {
     return this.contactsList[index];
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     // 允许子控件滑动
     return Scaffold(
       appBar: AppBar(
@@ -124,7 +122,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
       );
     } else {
       this._imageName = 'images/default_avatar.png';
-      this._name = _getData(index - contactItemCount);
+      this._name = _getData(index - contactItemCount).markName;
     }
 
     return InkWell(
@@ -148,7 +146,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
             WidgetUtil.hintBoxWithDefault('正在开发中...');
           }
         } else {
-          _pushToChatPage(_getData(index - contactItemCount));
+          _pushToChatPage(_getData(index - contactItemCount).eid);
         }
       },
 
@@ -207,8 +205,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
 
   void loadEMContactsList() async {
     try{
-      List contacts = await EMClient.getInstance.contactManager.getAllContactsFromServer();
-      this.contactsList = contacts;
+      this.contactsList = await EMClient.getInstance.contactManager.getAllContactsFromServer();
       _refreshUI();
     }catch(e){
       WidgetUtil.hintBoxWithDefault(e.toString());
@@ -222,7 +219,7 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
   _deleteContact(int index) async {
 
     try{
-      EMClient.getInstance.contactManager.deleteContact(username: _getData(index - contactItemCount));
+      EMClient.getInstance.contactManager.deleteContact(username: _getData(index - contactItemCount).eid);
       this.contactsList.removeAt(index - contactItemCount);
       loadEMContactsList();
     }catch(e){

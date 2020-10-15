@@ -21,7 +21,7 @@ class HomePage extends StatefulWidget{
   }
 }
 
-class _HomePageState extends State<HomePage> implements EMMessageListener{
+class _HomePageState extends State<HomePage> {
 
   var tabbarList = [
     BottomNavigationBarItem(icon: new Icon(null)),
@@ -34,9 +34,6 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
   @override
   void initState() {
     super.initState();
-//    EMClient.getInstance.groupManager.loadAllGroups();
-//    EMClient.getInstance.chatManager.loadAllConversations();
-    EMClient.getInstance.chatManager.addMessageListener(this);
     if(Platform.isAndroid) {
       new ImDemoPlugin().loginComplete();
     }
@@ -76,14 +73,4 @@ class _HomePageState extends State<HomePage> implements EMMessageListener{
       ),);
 
   }
-
-  void onMessagesReceived(List<EMMessage> messages){
-
-  }
-  void onCmdMessagesReceived(List<EMMessage> messages){}
-  void onMessageRead(List<EMMessage> messages){}
-  void onMessageDelivered(List<EMMessage> messages){}
-  void onMessageRecalled(List<EMMessage> messages){}
-  void onMessageChanged(EMMessage message){}
-
 }

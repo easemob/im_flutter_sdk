@@ -62,7 +62,7 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
     _muteList.clear();
 
     try{
-      _currentUser = await EMClient.getInstance.currentUser();
+      _currentUser = EMClient.getInstance.currentUsername ?? '';
       _emGroup = await EMClient.getInstance.groupManager.getGroupSpecificationFromServer(groupId: _groupId);
       _owner = _emGroup.owner;
       _groupName = _emGroup.name;

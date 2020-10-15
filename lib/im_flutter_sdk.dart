@@ -12,6 +12,8 @@ export 'src/em_conference_manager.dart';
 export 'src/models/em_domain_terms.dart';
 export 'src/models/em_message.dart';
 
+export 'src/em_log.dart';
+
 //EaseMob IM domain terms
 export 'src/em_domain_terms.dart';
 export 'src/em_listeners.dart';
