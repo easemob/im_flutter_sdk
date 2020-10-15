@@ -1,13 +1,10 @@
-import 'package:flutter/services.dart';
-import 'em_client.dart';
-
-
+import 'package:flutter/foundation.dart';
 
 class EMLog{
 
   static String TAG = 'EaseMob';
 
-  static bool debuggable = EMClient.getInstance.options.debugModel;
+  static bool debuggable = kReleaseMode ? false : true ;
 
   static void e(Object object, {String tag}) {
     _printLog(tag, ' | E | ', object);

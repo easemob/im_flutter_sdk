@@ -2,7 +2,8 @@
 class EMContact {
 
   factory EMContact.fromJson(Map map) {
-    return EMContact._private(map['eid'])
+    return EMContact._private()
+      .._eid = map['eid']
       .._nickname = map['nickname']
       .._avatarURL = map['avatarURL']
       .._markName = map['markName'];
@@ -17,7 +18,7 @@ class EMContact {
     return data;
   }
 
-  EMContact._private(this._eid);
+  EMContact._private([this._eid]);
 
   String _eid;
   String _nickname;

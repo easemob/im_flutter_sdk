@@ -149,8 +149,8 @@
                           channelName:EMMethodKeyLogin
                                 error:aError
                                object:@{
-                @"username": aUsername,
-                @"token": EMClient.sharedClient.accessUserToken
+                                   @"username": aUsername,
+                                   @"token": EMClient.sharedClient.accessUserToken
             }];
         }];
     }else {

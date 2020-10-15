@@ -2,10 +2,10 @@ typedef cursorResultCallback = Object Function(dynamic obj);
 
 class EMCursorResult {
 
-  EMCursorResult();
+  EMCursorResult._private();
 
   factory EMCursorResult.fromJson(Map<String, dynamic> map, {dataItemCallback: cursorResultCallback}) {
-    var result = EMCursorResult()
+    var result = EMCursorResult._private()
       .._cursor = map['cursor']
       .._data = List();
 

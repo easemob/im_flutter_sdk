@@ -9,20 +9,12 @@ import 'em_sdk_method.dart';
 import 'models/em_domain_terms.dart';
 
 class EMContactManager {
+
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emContactManagerChannel = const MethodChannel('$_channelPrefix/em_contact_manager', JSONMethodCodec());
 
-
-  static EMContactManager _instance;
-
-  final List<EMContactEventListener> _contactChangeEventListeners = List<EMContactEventListener>();
-  List<String> _blackList;
-
-  /// 本地缓存的黑名单列表，在从服务器获取黑名单后有值
-  List<String> get blackList => _blackList;
-
   /// @nodoc
-  EMContactManager._internal() {
+  EMContactManager() {
     _emContactManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onContactChanged) {
@@ -32,8 +24,12 @@ class EMContactManager {
     });
   }
 
-  /// @nodoc
-  factory EMContactManager.getInstance() => _instance = _instance ?? EMContactManager._internal();
+  final List<EMContactEventListener> _contactChangeEventListeners = List<EMContactEventListener>();
+  List<String> _blackList;
+
+  /// 本地缓存的黑名单列表，在从服务器获取黑名单后有值
+  List<String> get blackList => _blackList;
+
 
   /// @nodoc
   Future<void> _onContactChanged(Map event) async {

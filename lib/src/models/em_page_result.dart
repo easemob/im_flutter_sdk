@@ -2,10 +2,10 @@ typedef pageResultCallback = Object Function(dynamic obj);
 
 class EMPageResult{
 
-  EMPageResult();
+  EMPageResult._private();
 
   factory EMPageResult.fromJson(Map map, {dataItemCallback: pageResultCallback}) {
-    var result= EMPageResult();
+    var result= EMPageResult._private();
     result.._pageCount = map['count'];
     result.._data = List();
 

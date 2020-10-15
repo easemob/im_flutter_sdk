@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 
+import '../em_log.dart';
 import '../tools/em_extension.dart';
 
 import 'em_domain_terms.dart';
@@ -45,6 +46,7 @@ class EMImPushConfigs {
 
   /// 设置消息推送显示样式[pushStyle]
   Future<bool> setPushStyle(EMImPushStyle pushStyle) async {
+    EMLog.v('setPushStyle: ' + pushStyle.toString());
     Map req = {'pushStyle': pushStyle == EMImPushStyle.Simple ? 0 : 1};
     Map result = await _emPushManagerChannel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
     EMError.hasErrorFromResult(result);
@@ -56,6 +58,7 @@ class EMImPushConfigs {
   /// 通过群id[groupId]设置群组是否免打扰[isNoDisturb]
   Future<EMGroup>setGroupToDisturb(String groupId, bool isNoDisturb) async {
     Map req = {'noDisturb': isNoDisturb, 'group_id': groupId};
+    EMLog.v('setGroupToDisturb: ' + req.toString());
     Map result = await _emPushManagerChannel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
     EMError.hasErrorFromResult(result);
     EMGroup group = EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);

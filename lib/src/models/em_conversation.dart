@@ -16,11 +16,11 @@ enum EMMessageSearchDirection { Up, Down }
 
 class EMConversation {
 
-  EMConversation();
+  EMConversation._private();
 
   factory EMConversation.fromJson(Map <String, dynamic> map) {
     if(map == null) return null;
-    return EMConversation()
+    return EMConversation._private()
       ..type = typeFromInt(map['type'])
       ..id = map['con_id']
       .._unreadCount = map['unreadCount']

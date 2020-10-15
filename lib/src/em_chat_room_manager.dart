@@ -14,24 +14,7 @@ class EMChatRoomManager{
   static const MethodChannel _emChatRoomManagerChannel =
   const MethodChannel('$_channelPrefix/em_chat_room_manager', JSONMethodCodec());
 
-  /// @nodoc
-  static EMChatRoomManager _instance;
-
-  /// @nodoc
-  final List<EMChatRoomEventListener> _chatRoomEventListeners =  List<EMChatRoomEventListener>();
-
-  /// @nodoc
-  factory EMChatRoomManager.getInstance() {
-    return _instance = _instance ?? EMChatRoomManager._internal();
-  }
-
-  /// @nodoc
-  EMChatRoomManager._internal(){
-    _addNativeMethodCallHandler();
-  }
-
-  /// @nodoc
-  void _addNativeMethodCallHandler() {
+  EMChatRoomManager(){
     _emChatRoomManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.chatRoomChange) {
@@ -40,6 +23,8 @@ class EMChatRoomManager{
       return null;
     });
   }
+
+  final List<EMChatRoomEventListener> _chatRoomEventListeners =  List<EMChatRoomEventListener>();
 
   /// 添加聊天室监听器
   void addChatRoomChangeListener(EMChatRoomEventListener listener) {
