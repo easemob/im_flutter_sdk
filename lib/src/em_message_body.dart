@@ -416,9 +416,11 @@ class EMVideoMessageBody extends EMFileMessageBody {
 
 class EMCustomMessageBody extends EMMessageBody {
   /// 初始化方法，[message]: 消息内容
+
   EMCustomMessageBody({@required this.event, this.params});
 
   String event;
+
   Map params;
 
   @override
@@ -436,7 +438,9 @@ class EMCustomMessageBody extends EMMessageBody {
 
   /// @nodoc
   static EMMessageBody fromData(Map data) {
+
     var message = new EMCustomMessageBody(event: data['event'], params: data['params']);
+
     return message;
   }
 }

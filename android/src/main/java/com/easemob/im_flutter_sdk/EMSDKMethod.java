@@ -85,6 +85,7 @@ public class EMSDKMethod {
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
     static final String getMessageAttachmentPath = "getMessageAttachmentPath";
+    static final String setExtField = "setExtField";
 
 
     //EMChatRoomManager

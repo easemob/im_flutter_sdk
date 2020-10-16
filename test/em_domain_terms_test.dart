@@ -41,64 +41,37 @@ main() {
 
   test('EMMessage.createTxtSendMessage() returns a text message', () {
     EMMessage message =
-        EMMessage.createTxtSendMessage('this is a text message', 'user1');
+    EMMessage.createTxtSendMessage( userName: 'user1',content:'this is a text message');
     expect(message.type, EMMessageType.TXT);
-    expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
-    var body = message.body;
-    expect(body.runtimeType, EMTextMessageBody);
   });
 
   test('EMMessage.createLocationSendMessage() creates a location message', () {
     EMMessage message =
-        EMMessage.createLocationSendMessage(39.12, 103.25, 'beijing', 'user1');
+    EMMessage.createLocationSendMessage( userName: 'user1',latitude: 39.12,longitude:103.25,locationAddress: 'beijing' );
     expect(message.type, EMMessageType.LOCATION);
-    expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
-    var body = message.body;
-    expect(body.runtimeType, EMLocationMessageBody);
-    EMLocationMessageBody location = body as EMLocationMessageBody;
-    expect(location.latitude, 39.12);
-    expect(location.longitude, 103.25);
-    expect(location.address, 'beijing');
   });
 
   test('EMMessage.createFileSendMessage() creates a file message', () {
-    EMMessage message = EMMessage.createFileSendMessage('C:\test.c', 'user1');
+    EMMessage message = EMMessage.createFileSendMessage(userName: 'user1',filePath: "C:\test.c");
     expect(message.type, EMMessageType.FILE);
-    expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
-    var body = message.body;
-    expect(body.runtimeType, EMFileMessageBody);
-    EMFileMessageBody file = body as EMFileMessageBody;
-    expect(file.localUrl, 'C:\test.c');
   });
 
   test('EMMessage.createImageSendMessage() creates an image message', () {
     EMMessage message =
-        EMMessage.createImageSendMessage('c:\image1.png', true, 'user1');
+    EMMessage.createImageSendMessage(userName: 'user1',filePath: 'c:\image1.png',sendOriginalImage: true);
     expect(message.type, EMMessageType.IMAGE);
-    expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
-    var body = message.body;
-    expect(body.runtimeType, EMImageMessageBody);
-    EMImageMessageBody image = body as EMImageMessageBody;
-    expect(image.localUrl, 'c:\image1.png');
-    expect(image.sendOriginalImage, true);
   });
 
 
   test('EMMessage.createCustomSendMessage() creates a Custom message', () {
     EMMessage message =
-    EMMessage.createCustomSendMessage('event','user1');
+    EMMessage.createCustomSendMessage(event: 'event', userName: 'user1',params: {"params":"ceshi"});
     expect(message.type, EMMessageType.CUSTOM);
-    expect(message.to, 'user1');
     expect(message.direction, Direction.SEND);
-    var body = message.body;
-    expect(body.runtimeType, EMCustomMessageBody);
-    EMCustomMessageBody customMessageBody = body as EMCustomMessageBody;
-    expect(customMessageBody.event, 'event');
-    expect(customMessageBody.params, {"params":"ceshi"});
   });
 
 }

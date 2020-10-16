@@ -424,7 +424,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onTapMessageItem(EMMessage message) {
     // TODO: implement didTapMessageItem
     if (message.direction == Direction.RECEIVE) {
-      if (message.ext() != null) {
+      if (message.ext() != null && message.ext()['conferenceId'] != null) {
         String conferenceId;
         String password;
         if (message.ext()['conferenceId'] != null && message.ext()['conferenceId'].length > 0) {
@@ -537,7 +537,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
   @override
-  void sendVoice(String path, int duration) {
+  void sendVoice (String path, int duration) async{
     WidgetUtil.hintBoxWithDefault('语音消息待实现!');
   }
 
