@@ -3,25 +3,26 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'call/em_call_manager.dart';
+
 import 'em_chat_manager.dart';
-import 'em_call_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_chat_room_manager.dart';
 import 'em_conference_manager.dart';
 import 'em_group_manager.dart';
 import 'em_listeners.dart';
-import 'em_log.dart';
 import 'em_push_manager.dart';
 import 'em_sdk_method.dart';
 
 import 'models/em_domain_terms.dart';
 import 'models/em_options.dart';
+import 'tools/em_log.dart';
 
 
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _emClientChannel =
-  const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
+  static const MethodChannel _emClientChannel = const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
+  static EMClient _instance;
   final EMChatManager _chatManager = EMChatManager();
   final EMContactManager _contactManager = EMContactManager();
   final EMChatRoomManager _chatRoomManager = EMChatRoomManager();
@@ -31,7 +32,6 @@ class EMClient {
   final EMConferenceManager _conferenceManager = EMConferenceManager();
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
-  static EMClient _instance;
 
   /// instance fields
   bool _connected = false;

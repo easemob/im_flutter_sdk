@@ -155,7 +155,6 @@ class _BottomInputBarState extends State<BottomInputBar> {
 
   ///点击音频item
   void  _makeVoiceCall() async{
-    print("_makeVoiceCall_");
     this.delegate.onTapItemPhone();
   }
 

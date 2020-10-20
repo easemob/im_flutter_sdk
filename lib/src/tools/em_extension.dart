@@ -2,6 +2,6 @@
 
 extension MapExtension on Map {
   bool boolValue(String key) {
-    return (this[key] != 0);
+    return (this[key] == null ) || (this[key] != 0);
   }
 }

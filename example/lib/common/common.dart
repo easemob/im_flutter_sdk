@@ -10,6 +10,8 @@ class Constant{
   static const String toChatGroupListPage = "chatGroupListPage";
   static const String toPublicGroupListPage = "publicGroupListPage";
 
+  static const String toCallPage = 'callPage';
+
   static const String deleteConversationKey = "DeleteConversationKey";
   static const String clearUnreadKey = "ClearUnreadKey";
   static const String addBlackListKey = "AddBlackListKey";

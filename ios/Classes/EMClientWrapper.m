@@ -13,8 +13,12 @@
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
 #import "EMPushManagerWrapper.h"
+#import "EMCallManagerWrapper.h"
+#import "EMConferenceManagerWrapper.h"
+
 #import "EMHelper.h"
 #import "EMDeviceConfig+Flutter.h"
+#import "EMOptions+Flutter.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
 @end
@@ -75,7 +79,7 @@
     
     __weak typeof(self) weakSelf = self;
     
-    EMOptions *options = [EMHelper dictionaryToEMOptions:param];
+    EMOptions *options = [EMOptions fromJson:param];
     options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
@@ -95,24 +99,21 @@
 - (void)registerManagers {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
-    EMChatManagerWrapper * chatManagerWrapper = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_manager")
-                                                                                        registrar:self.flutterPluginRegister];
+    EMChatManagerWrapper * chatManagerWrapper = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_manager")registrar:self.flutterPluginRegister];
     
-    EMContactManagerWrapper * contactManagerWrapper = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_contact_manager")
-                                                                                                 registrar:self.flutterPluginRegister];
+    EMContactManagerWrapper * contactManagerWrapper = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_contact_manager") registrar:self.flutterPluginRegister];
     
-    EMConversationWrapper *conversationWrapper = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_conversation")
-                                                                                          registrar:self.flutterPluginRegister];
+    EMConversationWrapper *conversationWrapper = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"em_conversation") registrar:self.flutterPluginRegister];
     
-    EMGroupManagerWrapper * groupManagerWrapper = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_group_manager")
-                                                                                           registrar:self.flutterPluginRegister];
+    EMGroupManagerWrapper * groupManagerWrapper = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_group_manager") registrar:self.flutterPluginRegister];
     
-    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager")
-                                                                                                   registrar:self.flutterPluginRegister];
+    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager") registrar:self.flutterPluginRegister];
     
-    EMPushManagerWrapper * pushManagerWrapper =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_push_manager")
-                                                                                       registrar:self.flutterPluginRegister];
+    EMPushManagerWrapper * pushManagerWrapper =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_push_manager") registrar:self.flutterPluginRegister];
+
+    EMCallManagerWrapper * callManagerWrapper =[[EMCallManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_call_manager") registrar:self.flutterPluginRegister];
     
+    EMConferenceManagerWrapper * conferenceManager = [[EMConferenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_conference_manager")  registrar:self.flutterPluginRegister];
     
 #pragma clang diagnostic pop
     

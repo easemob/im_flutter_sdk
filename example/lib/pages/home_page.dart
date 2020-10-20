@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk_example/pages/call_page.dart';
 import 'package:im_flutter_sdk_example/plugin/im_demo_plugin.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
@@ -16,12 +17,11 @@ import 'settings_page.dart';
 class HomePage extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _HomePageState();
   }
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> implements EMCallManagerListener{
 
   var tabbarList = [
     BottomNavigationBarItem(icon: new Icon(null)),
@@ -37,6 +37,7 @@ class _HomePageState extends State<HomePage> {
     if(Platform.isAndroid) {
       new ImDemoPlugin().loginComplete();
     }
+    EMClient.getInstance.callManager.addCallManagerListener(this);
   }
 
   void refreshUI(bool visible){
@@ -72,5 +73,27 @@ class _HomePageState extends State<HomePage> {
         body: vcList[curIndex],
       ),);
 
+  }
+
+  void _pushCallPage(EMCallSession session) async {
+    try{
+      Navigator.push(context, new MaterialPageRoute(
+          builder: (BuildContext context){
+            return CallPage(session: session);
+          },
+          fullscreenDialog: true));
+    }catch(e){
+      print('create conversation error');
+    }
+  }
+
+  @override
+  void onCallDidEnd(EMCallSession session, EMCallEndReason reason, [EMError error]) {
+    Navigator.pop(context);
+  }
+
+  @override
+  void onCallReceived(EMCallSession session) {
+    _pushCallPage(session);
   }
 }

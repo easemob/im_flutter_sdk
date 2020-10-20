@@ -11,13 +11,13 @@ class EMConferenceManager {
 
   /// @nodoc
   EMConferenceManager() {
-    _emConferenceManagerChannel.setMethodCallHandler((MethodCall call) {
-      Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onCallChanged) {
-        return _onConferenceChanged(argMap);
-      }
-      return null;
-    });
+//    _emConferenceManagerChannel.setMethodCallHandler((MethodCall call) {
+//      Map argMap = call.arguments;
+//      if (call.method == EMSDKMethod.onCallChanged) {
+//        return _onConferenceChanged(argMap);
+//      }
+//      return null;
+//    });
   }
 
   Future<void> _onConferenceChanged(Map event) async {}

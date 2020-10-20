@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-import '../em_log.dart';
+import '../tools/em_log.dart';
 import '../tools/em_extension.dart';
 
 import 'em_domain_terms.dart';
