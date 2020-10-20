@@ -502,7 +502,6 @@ class EMTextMessageBody extends EMMessageBody {
   String content = '';
 }
 
-//
 // location body
 class EMLocationMessageBody extends EMMessageBody {
 
@@ -816,5 +815,5 @@ class EMCustomMessageBody extends EMMessageBody {
   String event = '';
 
   // 附加参数
-  Map params = {};
+  Map<String, String> params = {};
 }

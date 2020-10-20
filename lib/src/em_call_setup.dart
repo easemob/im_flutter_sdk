@@ -1,75 +1,5 @@
 
 
-class EMCallOptions{
-
-  EMCallOptions({
-    this.pingInterval = 30,
-    this.maxVideoKbps = 0,
-    this.minVideoKbps = 0,
-    this.maxVideoFrameRate = 0,
-    this.maxAudioKbps = 32,
-    this.isSendPushIfOffline = false,
-    this.userSetAutoResizing = true
-  });
-
-  /// 开启或关闭自动调节分辨率
-  bool userSetAutoResizing;
-  /// 被叫方不在线时，是否推送来电通知
-  bool isSendPushIfOffline;
-  /// 发送ping包的时间间隔，单位秒，默认30s，最小10s
-  int pingInterval;
-  /// 最大视频码率
-  int maxVideoKbps;
-  /// 最小视频码率
-  int minVideoKbps;
-  /// 最大的视频帧率
-  int maxVideoFrameRate;
-  /// 最大音频比特率
-  int maxAudioKbps;
-
-
-  /// 设置最小的网络带宽
-  void setMinVideoKbps(int minVideoKbps){
-    this.minVideoKbps = minVideoKbps;
-  }
-  /// 设置最大的网络带宽
-  void setMaxVideoKbps(int maxVideoKbps){
-    this.maxAudioKbps = maxVideoKbps;
-  }
-
-  /// 设置最大的视频帧率
-  void setMaxVideoFrameRate(int frameRate){
-    this.maxVideoFrameRate = frameRate;
-  }
-
-
-  /// 设置ping 间隔，默认为30s，最小为10s
-  void setPingInterval(int interval){
-    this.pingInterval = interval;
-  }
-
-}
-
-Map convertToMap(EMCallOptions options) {
-  var map = Map();
-  map.putIfAbsent("userSetAutoResizing", () => options.userSetAutoResizing);
-  map.putIfAbsent("isSendPushIfOffline", () => options.isSendPushIfOffline);
-  map.putIfAbsent("pingInterval", () => options.pingInterval);
-  map.putIfAbsent("maxVideoKbps", () => options.maxVideoKbps);
-  map.putIfAbsent("minVideoKbps", () => options.minVideoKbps);
-  map.putIfAbsent("maxVideoFrameRate", () => options.maxVideoFrameRate);
-  map.putIfAbsent("maxAudioKbps", () => options.maxAudioKbps);
-  return map;
-}
-
-toEMCallType(EMCallType type) {
-  if(type == EMCallType.Voice) {
-    return 0;
-  } else {
-    return 1;
-  }
-}
-
 enum callStatus {
   DISCONNECTED,               //Disconnected, initial value
   CONNECTING,                 //Connecting
@@ -96,21 +26,6 @@ fromConnectTypes(int type){
   }
 }
 
-/// @nodoc EMCallType -  通话枚举的类型。
-enum EMCallType {
-  Voice,
-  Video
-}
-
-fromCallType(int type){
-  switch(type){
-    case 0:
-      return EMCallType.Voice;
-    case 1:
-      return EMCallType.Video;
-  }
-}
-
 class EMCallEvent{
   static const String ON_CONNECTING  = "connecting";
   static const String ON_CONNECTED  = "connected";
@@ -124,21 +39,6 @@ class EMCallEvent{
   static const String ON_NET_VOICE_RESUME  = "netVoiceResume";
   static const String ON_DISCONNECTED  = "disconnected";
 }
-
-abstract class EMCallStateChangeListener{
-  void onConnecting();
-  void onConnected();
-  void onAccepted();
-  void onNetWorkDisconnected();
-  void onNetworkUnstable();
-  void onNetWorkNormal();
-  void onNetVideoPause();
-  void onNetVideoResume();
-  void onNetVoicePause();
-  void onNetVoiceResume();
-  void onDisconnected(CallReason reason);
-}
-
 
  fromEndReason(int type){
   switch(type){

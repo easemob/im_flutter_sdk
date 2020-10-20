@@ -3,7 +3,6 @@
 
 #import <im_flutter_sdk/ImFlutterSdkPlugin.h>
 
-#import "EMCallPlugin.h"
 
 @implementation AppDelegate
 
@@ -11,8 +10,6 @@
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [GeneratedPluginRegistrant registerWithRegistry:self];
     // Override point for customization after application launch.
-    
-    [EMCallPlugin registerWithRegistrar:[self registrarForPlugin:@"EMCallPlugin"]];
     
     UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge |
                                                                                          UIUserNotificationTypeSound |

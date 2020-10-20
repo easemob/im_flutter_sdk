@@ -154,26 +154,6 @@ class EMChatManager {
     _conversationUpdateFunc = onConversationUpdate;
   }
 
-//  // TODO: dujiepeng
-//  /// @nodoc 设置语音消息监听 [message].
-//  void setVoiceMessageListened(EMMessage message) {
-//    _emChatManagerChannel.invokeMethod(
-//        EMSDKMethod.setVoiceMessageListened, {"message": message.toJson()});
-//  }
-//
-//  // TODO: dujiepeng
-//  /// @nodoc 将某个联系人相关信息[from]更新为另外一个联系人[changeTo]。
-//  Future<bool> updateParticipant(String from,
-//      String changeTo) async {
-//    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
-//        EMSDKMethod.updateParticipant, {"from": from, "changeTo": changeTo});
-//    if (result['success']) {
-//      return result['status'];
-//    } else {
-//      return false;
-//    }
-//  }
-
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// 结果按每页[pageSize]分页，从[startMsgId]开始。
   Future<EMCursorResult> fetchHistoryMessages(String conversationId, [EMConversationType type = EMConversationType.Chat, int pageSize = 20, String startMsgId = ''])async {

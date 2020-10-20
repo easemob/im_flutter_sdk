@@ -46,11 +46,6 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void _loadConversationList() async {
     try{
       conList = await EMClient.getInstance.chatManager.loadAllConversations();
-
-      EMImPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getImPushConfigs();
-      await pushConfigs.setNoDisturb(true);
-      await pushConfigs.setPushStyle(EMImPushStyle.Simple);
-
     }on EMError catch(e) {
 
     }finally {

@@ -8,6 +8,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/pages/chatgroup_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/chatroom_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/public_group_list_page.dart';
+import 'package:im_flutter_sdk_example/pages/call_page.dart';
 
 
 
@@ -64,7 +65,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     await EMClient.getInstance.init(options);
     EMClient.getInstance.addConnectionListener(this);
 
-    EMClient.getInstance.callManager.registerCallSharedManager();
+//    EMClient.getInstance.callManager.registerCallSharedManager();
     EMClient.getInstance.conferenceManager.registerConferenceSharedManager();
     setState(() {
       isLogin = EMClient.getInstance.isLoginBefore;
@@ -85,6 +86,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         Constant.toContactList: (BuildContext context) => new EMContactsListPage(),
         Constant.toChatGroupListPage: (BuildContext context) => new EMChatGroupListPage(),
         Constant.toPublicGroupListPage: (BuildContext context) => new PublicGroupListPage(),
+        Constant.toCallPage: (BuildContext context) => new CallPage(),
       },
       /// 配置国际化语言
       localizationsDelegates: [
@@ -133,11 +135,8 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
 
   /// EMConnectionListener
   @override
-  void onConnected() {
-    EMClient.getInstance.callManager.registerCallReceiver();
-  }
+  void onConnected() {}
 
   @override
-  void onDisconnected(int errorCode) {
-  }
+  void onDisconnected(int errorCode) {}
 }
