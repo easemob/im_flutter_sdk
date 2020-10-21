@@ -13,7 +13,4 @@ export 'em_options.dart';
 export 'em_push_configs.dart';
 export 'em_page_result.dart';
 
-// rtc
-export '../call/em_call_setups.dart';
-
 

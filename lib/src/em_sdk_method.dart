@@ -200,10 +200,11 @@ class EMSDKMethod {
   static const String onCallDidEnd = 'onCallDidEnd';
 
   /// EMCallSessionListener
-  static const String onCallDidAccept = 'onCallDidAccept';
-  static const String onDidConnected = 'onDidConnected';
-  static const String onCallStateDidChange = 'onCallStateDidChange';
-  static const String onCallNetworkDidChange = 'onCallNetworkDidChange';
+  static const String onCallSessionDidAccept = 'onCallSessionDidAccept';
+  static const String onCallSessionDidConnected = 'onCallSessionDidConnected';
+  static const String onCallSessionStateDidChange = 'onCallSessionStateDidChange';
+  static const String onCallSessionNetworkDidChange = 'onCallSessionNetworkDidChange';
+  static const String onCallSessionDidEnd = 'onCallSessionDidEnd';
 
   /// ICallSession
   static const String pauseVoice = 'pauseVoice';
@@ -211,6 +212,8 @@ class EMSDKMethod {
   static const String switchCameraPosition = 'switchCameraPosition';
   static const String setLocalView = 'setLocalView';
   static const String setRemoteView = 'setRemoteView';
+
+  static const String fetchCallSessionInfo = 'fetchCallSessionInfo';
 
   /// EMConferenceManager
   static const String createAndJoinConference = 'createAndJoinConference';

@@ -5,6 +5,7 @@ import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/widgets/bottom_input_bar.dart';
 
+import 'call_page.dart';
 import 'group_details_page.dart';
 import 'items/chat_item.dart';
 
@@ -455,7 +456,15 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   @override
   void onTapItemPhone() async {
     try{
-      await EMClient.getInstance.callManager.startCall(EMCallType.Video, conversation.id);
+      EMCallSession session = await EMClient.getInstance.callManager.startCall(EMCallType.Video, conversation.id);
+      try{
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => CallPage(session: session), fullscreenDialog: true));
+      }catch(e){
+      }
+
+
     }on EMError catch(error) {
       print('拨打通话失败 --- ' + error.description);
     }
@@ -512,8 +521,8 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   }
 
   @override
-  void onCallDidEnd(EMCallSession session, EMCallEndReason reason, [EMError error]) {
-    print(session.toString());
+  void onCallDidEnd(String sessionId, int reason, [EMError error]) {
+    print(sessionId);
   }
 }
 

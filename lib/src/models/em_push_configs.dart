@@ -15,7 +15,7 @@ class EMImPushConfigs {
   EMImPushConfigs._private();
   static const _channelPrefix = 'com.easemob.im';
   // channel的命名与pushManager中的channel一致，本质上还是一个channel。
-  static const MethodChannel _emPushManagerChannel = const MethodChannel('$_channelPrefix/em_push_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_push_manager', JSONMethodCodec());
   EMImPushStyle _pushStyle;
   bool _noDisturb;
   int _noDisturbStartHour;
@@ -33,7 +33,7 @@ class EMImPushConfigs {
     if(startTime < 0) startTime = 0;
     if(endTime > 24) endTime = 24;
     Map req = {'noDisturb': isNoDisturb, 'startTime': startTime, 'endTime': endTime};
-    Map result = await _emPushManagerChannel.invokeMethod(EMSDKMethod.imPushNoDisturb, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.imPushNoDisturb, req);
     EMError.hasErrorFromResult(result);
     bool success = result.boolValue(EMSDKMethod.imPushNoDisturb);
     if(success) {
@@ -48,7 +48,7 @@ class EMImPushConfigs {
   Future<bool> setPushStyle(EMImPushStyle pushStyle) async {
     EMLog.v('setPushStyle: ' + pushStyle.toString());
     Map req = {'pushStyle': pushStyle == EMImPushStyle.Simple ? 0 : 1};
-    Map result = await _emPushManagerChannel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
     EMError.hasErrorFromResult(result);
     bool success = result.boolValue(EMSDKMethod.updateImPushStyle);
     if(success) _pushStyle = pushStyle;
@@ -59,7 +59,7 @@ class EMImPushConfigs {
   Future<EMGroup>setGroupToDisturb(String groupId, bool isNoDisturb) async {
     Map req = {'noDisturb': isNoDisturb, 'group_id': groupId};
     EMLog.v('setGroupToDisturb: ' + req.toString());
-    Map result = await _emPushManagerChannel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
     EMError.hasErrorFromResult(result);
     EMGroup group = EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
     _noDisturbGroups.removeWhere((e) => e.groupId == group.groupId);
@@ -69,7 +69,7 @@ class EMImPushConfigs {
 
   /// 获取免打扰群组列表
   Future<List> noDisturbGroupsFromServer() async {
-    Map result = await _emPushManagerChannel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
     List list = List();
     (result[EMSDKMethod.getNoDisturbGroups] as List)?.forEach((element) {

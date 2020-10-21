@@ -55,7 +55,7 @@
                arguments:(id)args
 {
     EMCallRemoteView *remoteView = [[EMCallRemoteView alloc] initWithFrame:frame];
-    remoteView.backgroundColor = UIColor.redColor;
+    remoteView.backgroundColor = UIColor.blueColor;
     remoteView.scaleMode = EMCallViewScaleModeAspectFill;
     _iOSView = remoteView;
 }

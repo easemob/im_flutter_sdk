@@ -33,11 +33,6 @@ class EMError implements Exception {
     if(error != null) {
       EMLog.v('error - ' + error.toString());
       throw (error);
-//      try{
-//
-//      }catch(e) {
-//
-//      }
     }
   }
 }
