@@ -1,173 +1,29 @@
+import 'dart:ui';
+
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/call/views/em_call_view.dart';
 
-import '../tools/em_extension.dart';
-
-/// 当前通话连接类型
-enum EMCallConnectType {
-  /// 无连接
-  None,
-  /// P2P直连
-  Direct,
-  /// 通过媒体服务器连接
-  Relay,
-}
-
-/// 通话状态
-enum EMCallSessionStatus {
-  /// 未开始或已断开
-  Disconnected,
-  /// 正在连接
-  Connecting,
-  /// 已经连接，等待接听
-  Connected,
-  /// 双方同意协商，准备接通
-  Accepted
-}
-
-/// 通话类型。
-enum EMCallType {
-  /// 语音通话
-  Voice,
-  /// 视频通话
-  Video
-}
-
-/// 视频分辨率
-enum EMCallVideoResolution{
-  /// 默认分辨率
-  ResolutionDefault,
-  /// 默认分辨率
-  Resolution352x288,
-  /// 默认分辨率
-  Resolution640x480,
-  /// 默认分辨率
-  Resolution1280x720,
-  /// 自定义分辨率
-  ResolutionCustom,
-}
-
-/// 视频通话结束原因
-enum EMCallEndReason {
-  Hangup,
-  NoResponse,
-  Decline,
-  Busy,
-  Failed,
-  Unsupported,
-  RemoteOffline,
-  LoginOtherDevice,
-  Destroy,
-  BeenKicked,
-  ServiceArrearages,
-  ServiceForbidden,
-}
-
-enum EMCallStreamingStatus {
-  VoicePause, VoiceResume, VideoPause, VideoResume
-}
-
-enum EMCallNetworkStatus {
-  Normal, Unstable, NoData
-}
-
-class EMCallOptions {
-  EMCallOptions.private();
-
-  /// 接收方不在线时是否发送推送提醒
-  bool sendPushWhenOffline = true;
-
-  /// 提醒的内容
-  String offlineMessageText;
-
-  /// 发送ping包的时间间隔，单位秒，默认30s，最小10s
-  int pingInterval = 30;
-
-  /// 是否监听通话质量
-  bool isReportQuality;
-
-  /// 视频传输场景，是否清晰度优先
-  bool isClarityFirst = false;
-
-  /// 视频分辨率, 默认是自适应
-  EMCallVideoResolution videoResolution = EMCallVideoResolution.ResolutionDefault;
-
-  /// [maxVideoKbps]，最大视频码率, 范围 50 < videoKbps < 5000, 默认0, 0为自适应;
-  /// [minVideoKbps]，最小视频码率;
-  /// [maxVideoFrameRate], 最大视频帧率;
-  int maxVideoKbps = 0, minVideoKbps, maxVideoFrameRate;
-
-  /// 是否自定义视频数据
-  bool isCustomizeVideoData = false;
-
-  /// maxAudioKbps, 最大音频码率;
-  int maxAudioKbps;
-
-  /// 是否自定义音频数据
-  bool isCustomAudioData = false;
-
-  /// audioCustomSamples, 自定义音频数据的采样率，默认48000;
-  int audioCustomSamples = 48000;
-
-  /// audioCustomChannels, 自定义音频数据的通道数，当前只支持单通道，必须为1
-  final int audioCustomChannels = 1;
-
-  factory EMCallOptions.fromJson(Map map ){
-    return EMCallOptions.private()
-      ..pingInterval = map['pingInterval']
-      ..isClarityFirst = map.boolValue('isClarityFirst')
-      ..isReportQuality = map.boolValue('isReportQuality')
-      ..videoResolution = EMCallVideoResolution.values[map['videoResolution']]
-      ..maxVideoKbps = map['maxVideoKbps']
-      ..minVideoKbps = map['minVideoKbps']
-      ..maxVideoFrameRate = map['maxVideoFrameRate']
-      ..isCustomizeVideoData = map.boolValue('isCustomizeVideoData')
-      ..maxAudioKbps = map['maxAudioKbps']
-      ..isCustomAudioData = map.boolValue('isCustomAudioData')
-      ..audioCustomSamples = map['audioCustomSamples'];
-  }
-
-  Map toJson() {
-    Map data = Map();
-    data['pingInterval'] = pingInterval;
-    data['isClarityFirst'] = isClarityFirst;
-    data['isReportQuality'] = isReportQuality;
-    data['videoResolution'] = videoResolution.index;
-    data['maxVideoKbps'] = maxVideoKbps;
-    data['minVideoKbps'] = minVideoKbps;
-    data['maxVideoFrameRate'] = maxVideoFrameRate;
-    data['isCustomizeVideoData'] = isCustomizeVideoData;
-    data['maxAudioKbps'] = maxAudioKbps;
-    data['isCustomAudioData'] = isCustomAudioData;
-    data['audioCustomSamples'] = audioCustomSamples;
-    return data;
-  }
-
-  @override
-  String toString() {
-    return toJson().toString();
-  }
-}
 
 class EMCallSession {
 
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _emCallSessionChannel = const MethodChannel('$_channelPrefix/em_call_session', JSONMethodCodec());
-  static const MethodChannel _emCallManagerChannel = const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
+  static const MethodChannel _sessionChannel = const MethodChannel('$_channelPrefix/em_call_session', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
   EMCallSession._private() {
-    _emCallSessionChannel.setMethodCallHandler((MethodCall call) {
+    _sessionChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (argMap['callId'] == _callId) {
-        if(call.method == EMSDKMethod.onCallDidAccept) {
-          listener?.onCallDidAccept();
-        }else if(call.method == EMSDKMethod.onCallDidAccept) {
-          listener?.callDidConnect();
-        }else if(call.method == EMSDKMethod.onCallStateDidChange) {
-          listener?.onCallStateDidChange(EMCallStreamingStatus.values[argMap['status']]);
-        }else if(call.method == EMSDKMethod.onCallNetworkDidChange) {
-          listener?.onCallNetworkDidChange(EMCallNetworkStatus.values[argMap['status']]);
+        if(call.method == EMSDKMethod.onCallSessionDidAccept) {
+          listener?.onCallSessionDidAccept();
+        }else if(call.method == EMSDKMethod.onCallSessionDidAccept) {
+          listener?.onCallSessionDidAccept();
+        }else if(call.method == EMSDKMethod.onCallSessionStateDidChange) {
+          listener?.onCallSessionStateDidChange(EMCallStreamingStatus.values[argMap['status']]);
+        }else if(call.method == EMSDKMethod.onCallSessionNetworkDidChange) {
+          listener?.onCallSessionNetworkDidChange(argMap['status']);
+        }else if(call.method == EMSDKMethod.onCallSessionDidEnd) {
+          // 挂断时还需要释放持有view
+          listener?.onCallSessionDidEnd(argMap['reason'], EMError.fromJson(argMap['error']));
         }
       }
       return null;
@@ -290,7 +146,7 @@ class EMCallSession {
   /// 暂停/恢复 音频传输
   Future<bool> pauseVoice(bool isPause) async {
     Map req = {'pause': isPause};
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.pauseVoice, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.pauseVoice, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.pauseVoice);
   }
@@ -298,7 +154,7 @@ class EMCallSession {
   /// 暂停/恢复 视频传输
   Future<bool> pauseVideo(bool isPause) async {
     Map req = {'pause': isPause};
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.pauseVideo, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.pauseVideo, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.pauseVideo);
   }
@@ -306,45 +162,59 @@ class EMCallSession {
   /// 切换前置摄像头
   Future<bool> switchCameraPosition(bool isFrontCamera) async {
     Map req = {'isFront': isFrontCamera};
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.switchCameraPosition, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.switchCameraPosition, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.switchCameraPosition);
   }
 
+  /// 设置本地view
   Future<bool> setLocalView(EMRTCView view) async {
     Map req = {'viewId': view.id, 'callId': _callId, 'type': view.viewType.index};
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.setLocalView, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.setLocalView, req);
     EMError.hasErrorFromResult(result);
     _localView = view;
     return result.boolValue(EMSDKMethod.setLocalView);
   }
 
+  /// 设置对方view
   Future<bool> setRemoteView(EMRTCView view) async {
     Map req = {'viewId': view.id, 'callId': _callId, 'type': view.viewType.index};
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.setRemoteView, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.setRemoteView, req);
     EMError.hasErrorFromResult(result);
     _remoteView = view;
     return result.boolValue(EMSDKMethod.setRemoteView);
+  }
+
+  /// 更新session详情
+  Future<EMCallSession>fetchInfo() async {
+    Map req = {'callId': _callId};
+    Map result = await _channel.invokeMethod(EMSDKMethod.fetchCallSessionInfo, req);
+    EMError.hasErrorFromResult(result);
+
+    var session = EMCallSession.fromJson(result[EMSDKMethod.fetchCallSessionInfo]);
+    _localName = session.localName;
+    _ext = session.ext;
+    _callType = session.callType;
+    _isCaller = session.isCaller;
+    _remoteName = session.remoteName;
+    _status = session.status;
+    _connectType = session.connectType;
+    _videoLatency = session.videoLatency;
+    _localVideoFrameRate = session.localVideoFrameRate;
+    _remoteVideoFrameRate = session.remoteVideoFrameRate;
+    _localVideoBitrate = session.localVideoBitrate;
+    _remoteVideoBitrate = session.remoteVideoBitrate;
+    _localVideoLostRateInPercent = session.localVideoLostRateInPercent;
+    _remoteVideoLostRateInPercent = session.remoteVideoLostRateInPercent;
+    _serverVideoId = session.serverVideoId;
+    _remoteVideoResolution = session.remoteVideoResolution;
+    _willRecord = session.willRecord;
+
+    return this;
   }
 
   @override
   String toString() {
     return toJson().toString();
   }
-}
-
-/// CallSession listener
-abstract class EMCallSessionListener{
-
-  /// 对方已同意
-  void onCallDidAccept();
-
-  /// 呼叫已连接
-  void callDidConnect();
-
-  /// 收到通话状态变化
-  void onCallStateDidChange(EMCallStreamingStatus status);
-
-  /// 通话网络状态变化
-  void onCallNetworkDidChange(EMCallNetworkStatus status);
 }

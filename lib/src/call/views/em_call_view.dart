@@ -59,6 +59,7 @@ class _EMRTCViewStatus extends State<EMRTCView> {
   @override
   void dispose() {
     EMClient.getInstance.callManager.releaseVideoView(id);
+    EMLog.v('RTCView release');
     super.dispose();
   }
 

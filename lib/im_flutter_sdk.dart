@@ -1,7 +1,6 @@
 library im_flutter_sdk;
 
-export 'src/call/em_call_manager.dart';
-export 'src/call/views/em_call_view.dart';
+export 'src/call/em_call_headers.dart';
 
 export 'src/em_client.dart';
 export 'src/em_contact_manager.dart';

@@ -83,12 +83,11 @@ class _HomePageState extends State<HomePage> implements EMCallManagerListener{
           },
           fullscreenDialog: true));
     }catch(e){
-      print('create conversation error');
     }
   }
 
   @override
-  void onCallDidEnd(EMCallSession session, EMCallEndReason reason, [EMError error]) {
+  void onCallDidEnd(String callId, int reason, [EMError error]) {
     Navigator.pop(context);
   }
 

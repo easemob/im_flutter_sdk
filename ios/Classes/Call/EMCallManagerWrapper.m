@@ -15,11 +15,11 @@
 
 @interface EMCallManagerWrapper () <EMCallManagerDelegate>
 {
-    NSMutableDictionary *_sessionDict;
     EMFlutterRenderViewFactory *_factory;
 }
 @property (nonatomic, strong) EMCallSession *callSession;
 @property (nonatomic, strong) FlutterMethodChannel *callSessionChannel;
+@property (nonatomic, strong) NSMutableDictionary *sessionDict;
 @end
 
 @implementation EMCallManagerWrapper
@@ -35,7 +35,6 @@
         self.callSessionChannel = [FlutterMethodChannel methodChannelWithName:@"com.easemob.im/em_call_session"
                                                               binaryMessenger:[registrar messenger]
                                                                     codec:codec];
-        _sessionDict = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -44,29 +43,54 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if ([EMMethodKeySetCallOptions isEqualToString:call.method]) {
+    if ([EMMethodKeySetCallOptions isEqualToString:call.method])
+    {
         [self setCallOptions:call.arguments channelName:EMMethodKeySetCallOptions result:result];
-    } else if ([EMMethodKeyGetCallOptions isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetCallOptions isEqualToString:call.method])
+    {
         [self getCallOptions:call.arguments channelName:EMMethodKeyGetCallOptions result:result];
-    } else if ([EMMethodKeyStartCall isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyStartCall isEqualToString:call.method])
+    {
         [self startCall:call.arguments channelName:EMMethodKeyStartCall result:result];
-    } else if ([EMMethodKeyAnswerComingCall isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyAnswerComingCall isEqualToString:call.method])
+    {
         [self answerIncomingCall:call.arguments channelName:EMMethodKeyAnswerComingCall result:result];
-    } else if ([EMMethodKeyEndCall isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyEndCall isEqualToString:call.method])
+    {
         [self endCall:call.arguments channelName:EMMethodKeyEndCall result:result];
-    } else if ([EMMethodKeyCallSessionPauseVoice isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCallSessionPauseVoice isEqualToString:call.method])
+    {
         [self pauseVoice:call.arguments channelName:EMMethodKeyCallSessionPauseVoice result:result];
-    } else if ([EMMethodKeyCallSessionPauseVideo isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCallSessionPauseVideo isEqualToString:call.method])
+    {
         [self pauseVideo:call.arguments channelName:EMMethodKeyCallSessionPauseVideo result:result];
-    } else if ([EMMethodKeyCallSessionSwitchCameraPosition isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCallSessionSwitchCameraPosition isEqualToString:call.method])
+    {
         [self switchCameraPosition:call.arguments channelName:EMMethodKeyCallSessionSwitchCameraPosition result:result];
-    } else if ([EMMethodKeyCallSessionSetLocalView isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCallSessionSetLocalView isEqualToString:call.method])
+    {
         [self setLocalView:call.arguments channelName:EMMethodKeyCallSessionSetLocalView result:result];
-    } else if ([EMMethodKeyCallSessionSetRemoteView isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCallSessionSetRemoteView isEqualToString:call.method])
+    {
         [self setRemoteView:call.arguments channelName:EMMethodKeyCallSessionSetRemoteView result:result];
-    } else if ([EMMethodKeyReleaseView isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyReleaseView isEqualToString:call.method]) {
         [self releaseVideoView:call.arguments channelName:EMMethodKeyReleaseView result:result];
-    } else {
+    }
+    else if ([EMMethodKeyFetchCallSessionInfo isEqualToString:call.method]){
+        [self fetchCallSessionInfo:call.arguments channelName:EMMethodKeyReleaseView result:result];
+    }
+    else
+    {
         [super handleMethodCall:call result:result];
     }
 }
@@ -109,6 +133,7 @@
                                              ext:ext
                                       completion:^(EMCallSession *aCallSession, EMError *aError)
     {
+        weakSelf.sessionDict[aCallSession.callId] = aCallSession;
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -158,7 +183,7 @@
     BOOL pauseVoice = [param[@"pause"] boolValue];
     
     EMError *aError = nil;
-    EMCallSession *session = _sessionDict[callId];
+    EMCallSession *session = weakSelf.sessionDict[callId];
     if (pauseVoice) {
         aError = [session pauseVoice];
     }else {
@@ -181,7 +206,7 @@
     BOOL pauseVoice = [param[@"pause"] boolValue];
 
     EMError *aError = nil;
-    EMCallSession *session = _sessionDict[callId];
+    EMCallSession *session = weakSelf.sessionDict[callId];
     if (pauseVoice) {
         aError = [session pauseVideo];
     }else {
@@ -202,7 +227,7 @@
     NSString *callId = param[@"callId"];
     BOOL isFront = [param[@"isFront"] intValue];
     
-    EMCallSession *session = _sessionDict[callId];
+    EMCallSession *session = weakSelf.sessionDict[callId];
     [session switchCameraPosition:isFront];
     
     [weakSelf wrapperCallBack:result
@@ -219,7 +244,7 @@
     NSString *callId = param[@"callId"];
     int viewId = [param[@"viewId"] intValue];
     int type = [param[@"type"] intValue];
-    EMCallSession *session = _sessionDict[callId];
+    EMCallSession *session = weakSelf.sessionDict[callId];
     EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
     session.localVideoView = (EMCallLocalVideoView *)renderView.previewView;
     [weakSelf wrapperCallBack:result
@@ -236,7 +261,7 @@
     NSString *callId = param[@"callId"];
     int viewId = [param[@"viewId"] intValue];
     int type = [param[@"type"] intValue];
-    EMCallSession *session = _sessionDict[callId];
+    EMCallSession *session = weakSelf.sessionDict[callId];
     EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
     session.remoteVideoView = (EMCallRemoteVideoView *)renderView.previewView;
     [weakSelf wrapperCallBack:result
@@ -257,21 +282,35 @@
                        object:@(YES)];
 }
 
+- (void)fetchCallSessionInfo:(NSDictionary *)param
+                 channelName:(NSString *)aChannelName
+                      result:(FlutterResult)result{
+    __weak typeof(self) weakSelf = self;
+    NSString *callId = param[@"callId"];
+    EMCallSession *session = weakSelf.sessionDict[callId];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:[session toJson]];
+}
+
 #pragma mark - EMCallManagerDelegate
 
 - (void)callDidReceive:(EMCallSession *)aSession {
     [self.channel invokeMethod:EMMethodKeyOnCallReceived
                      arguments:@{@"callSession": [aSession toJson]}];
-    _sessionDict[aSession.callId] = aSession;
+    self.sessionDict[aSession.callId] = aSession;
 }
 
+
+// 该方法不论是主动话短还是对方挂断都会回调，所以可以只依赖这个方法来清理sessionDict
 - (void)callDidEnd:(EMCallSession *)aSession
             reason:(EMCallEndReason)aReason
              error:(EMError *)aError {
     
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     if (aSession) {
-        dict[@"callSession"] = [aSession toJson];
+        dict[@"callId"] = aSession.callId;
     }
     
     if (aReason) {
@@ -285,22 +324,25 @@
     [self.channel invokeMethod:EMMethodKeyOnCallDidEnd
                      arguments:dict];
     
-    [_sessionDict removeObjectForKey:aSession.callId];
+    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionEnd
+                                arguments:dict];
+    
+    [self.sessionDict removeObjectForKey:aSession.callId];
 }
 
 - (void)callDidAccept:(EMCallSession *)aSession {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallDidAccept
+    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionDidAccept
                                 arguments:@{@"callId": (aSession.callId ?: @"")}];
 }
 
 - (void)callDidConnect:(EMCallSession *)aSession {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnDidConnected
+    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionDidConnected
                                 arguments:@{@"callId": (aSession.callId ?: @"")}];
 }
 
 - (void)callStateDidChange:(EMCallSession *)aSession
                       type:(EMCallStreamingStatus)aType {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallStateDidChange
+    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionStateDidChange
                                 arguments:@{
                                     @"callId": (aSession.callId ?: @""),
                                     @"status": @(aType)
@@ -309,38 +351,20 @@
 
 - (void)callNetworkDidChange:(EMCallSession *)aSession
                       status:(EMCallNetworkStatus)aStatus {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallNetworkDidChange
+    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionNetworkDidChange
                                 arguments:@{
                                     @"callId": (aSession.callId ?: @""),
                                     @"status": @(aStatus)
                                 }];
 }
 
-// 通话结束原因
-- (int)callEndReasonToInt:(EMCallEndReason)aReason {
-    int reason;
-    if (aReason == EMCallEndReasonHangup) {
-        reason = 0;
-    } else if (aReason == EMCallEndReasonNoResponse) {
-        reason = 1;
-    } else if (aReason == EMCallEndReasonDecline) {
-        reason = 2;
-    } else if (aReason == EMCallEndReasonBusy) {
-        reason = 3;
-    } else if (aReason == EMCallEndReasonFailed) {
-        reason = 4;
-    } else if (aReason == EMCallEndReasonRemoteOffline) {
-        reason = 5;
-    } else if (aReason == EMCallEndReasonNotEnable) {
-        reason = 101;
-    } else if (aReason == EMCallEndReasonServiceArrearages) {
-        reason = 102;
-    } else if (aReason == EMCallEndReasonServiceForbidden) {
-        reason = 103;
-    } else {
-        reason = -1;
+- (NSMutableDictionary *)sessionDict{
+    if (!_sessionDict) {
+        _sessionDict = [NSMutableDictionary dictionary];
     }
-    return reason;
+    
+    return _sessionDict;
 }
+
 
 @end
