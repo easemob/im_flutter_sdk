@@ -69,3 +69,20 @@ class EMCallEndReason {
   /// 服务被拒绝
   static const int ServiceForbidden = 103;
 }
+
+enum EMConferenceType {
+  Communication,
+  LargeCommunication,
+  Live
+}
+
+class EMConferenceRole {
+  static const int None = 0;
+  static const int Audience = 1;
+  static const int Speaker = 3;
+  static const int Admin = 7;
+}
+
+enum EMConferenceStreamType{
+  Normal, Desktop
+}

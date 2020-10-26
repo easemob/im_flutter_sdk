@@ -52,7 +52,9 @@
     if (result) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         dic[@"error"] = [error toJson];
-        dic[aChannelName] = aObj;
+        if (aObj) {
+            dic[aChannelName] = aObj;
+        }
         result(dic);
     }
 }

@@ -641,15 +641,15 @@
 }
 
 - (void)removeWhiteList:(NSDictionary *)param result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager removeWhiteListMembers:param[@"members"]
-                                                     fromGroup:param[@"groupId"]
-                                                    completion:^(EMGroup *aGroup, EMError *aError) {
-        [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAddWhiteList
-                            error:aError
-                           object:[aGroup toJson]];
-    }];
+//    __weak typeof(self) weakSelf = self;
+//    [EMClient.sharedClient.groupManager removeWhiteListMembers:param[@"members"]
+//                                                     fromGroup:param[@"groupId"]
+//                                                    completion:^(EMGroup *aGroup, EMError *aError) {
+//        [weakSelf wrapperCallBack:result
+//                      channelName:EMMethodKeyAddWhiteList
+//                            error:aError
+//                           object:[aGroup toJson]];
+//    }];
 }
 
 // TODO: dujiepeng.

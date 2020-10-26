@@ -137,11 +137,11 @@ class _EMContactsListPageState extends State<EMContactsListPage> implements EMCo
           } else if (index == 4) {
             Navigator.of(context).pushNamed(Constant.toChatRoomListPage);
           } else if (index == 6) {
-            EMClient.getInstance.conferenceManager.createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication, '123', false, false, onSuccess:(EMConference conf) {
-              print('创建会议成功 --- ' + conf.getConferenceId());
-              }, onError: (code, desc){
-              print('创建会议失败 --- $desc');
-            });
+//            EMClient.getInstance.conferenceManager.createAndJoinConference(EMConferenceType.EMConferenceTypeCommunication, '123', false, false, onSuccess:(EMConference conf) {
+//              print('创建会议成功 --- ' + conf.getConferenceId());
+//              }, onError: (code, desc){
+//              print('创建会议失败 --- $desc');
+//            });
           } else {
             WidgetUtil.hintBoxWithDefault('正在开发中...');
           }

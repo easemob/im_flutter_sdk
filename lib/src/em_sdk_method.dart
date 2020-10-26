@@ -216,10 +216,49 @@ class EMSDKMethod {
   static const String fetchCallSessionInfo = 'fetchCallSessionInfo';
 
   /// EMConferenceManager
-  static const String createAndJoinConference = 'createAndJoinConference';
+  static const String setConferenceAppKey = 'setConferenceAppKey';
+  static const String conferenceHasExists = 'conferenceHasExists';
   static const String joinConference = 'joinConference';
-  static const String registerConferenceSharedManager = 'registerConferenceSharedManager';
+  static const String joinRoom = 'joinRoom';
 
+  static const String createWhiteboardRoom = 'createWhiteboardRoom';
+  static const String destroyWhiteboardRoom = 'destroyWhiteboardRoom';
+  static const String joinWhiteboardRoom = 'joinWhiteboardRoom';
 
+  /// EMConference
+  static const String publishConference = 'publishConference';
+  static const String unPublishConference = 'unPublishConference';
+  static const String subscribeConference = 'subscribeConference';
+  static const String unSubscribeConference = 'unSubscribeConference';
 
+  static const String changeMemberRoleWithMemberName = 'changeMemberRoleWithMemberName';
+  static const String kickConferenceMember = 'kickConferenceMember';
+  static const String destroyConference = 'destroyConference';
+  static const String leaveConference = 'leaveConference';
+
+  static const String startMonitorSpeaker = 'startMonitorSpeaker';
+  static const String stopMonitorSpeaker = 'stopMonitorSpeaker';
+
+  static const String requestTobeConferenceSpeaker = 'requestTobeConferenceSpeaker';
+  static const String requestTobeConferenceAdmin = 'requestTobeConferenceAdmin';
+  static const String muteConferenceMember = 'muteConferenceMember';
+
+  static const String responseReqSpeaker = 'responseReqSpeaker';
+  static const String responseReqAdmin = 'responseReqAdmin';
+  static const String updateConferenceWithSwitchCamera = 'updateConferenceWithSwitchCamera';
+  static const String updateConferenceMute = 'updateConferenceMute';
+  static const String updateConferenceVideo = 'updateConferenceVideo';
+
+  static const String updateRemoteView = 'updateRemoteView';
+  static const String updateMaxVideoKbps = 'updateMaxVideoKbps';
+
+  static const String setConferenceAttribute = 'setConferenceAttribute';
+  static const String deleteAttributeWithKey = 'deleteAttributeWithKey';
+
+  static const String muteConferenceRemoteAudio = 'muteConferenceRemoteAudio';
+  static const String muteConferenceRemoteVideo = 'muteConferenceRemoteVideo';
+  static const String muteConferenceAll = 'muteConferenceAll';
+
+  static const String addVideoWatermark = 'addVideoWatermark';
+  static const String clearVideoWatermark = 'clearVideoWatermark';
 }
