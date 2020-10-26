@@ -66,7 +66,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMClient.getInstance.addConnectionListener(this);
 
 //    EMClient.getInstance.callManager.registerCallSharedManager();
-    EMClient.getInstance.conferenceManager.registerConferenceSharedManager();
+//    EMClient.getInstance.conferenceManager.registerConferenceSharedManager();
     setState(() {
       isLogin = EMClient.getInstance.isLoginBefore;
     });

@@ -399,14 +399,14 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
             password = message.attributes['em_conference_password'];
           }
 
-          EMClient.getInstance.conferenceManager.joinConference(
-              conferenceId, password,
-              onSuccess:(EMConference conf) {
-                print('加入会议成功 --- ' + conf.getConferenceId());
-                },
-              onError:(code, desc) {
-                print('加入会议失败 --- $desc');
-              });
+//          EMClient.getInstance.conferenceManager.joinConference(
+//              conferenceId, password,
+//              onSuccess:(EMConference conf) {
+//                print('加入会议成功 --- ' + conf.getConferenceId());
+//                },
+//              onError:(code, desc) {
+//                print('加入会议失败 --- $desc');
+//              });
         }
       }
     }
