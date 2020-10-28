@@ -34,4 +34,15 @@ public interface EMWrapper {
         result.success(data);     }
     });
   }
+
+  default void wrapperCallBack(MethodChannel.Result result, String channelName, EMError error, Object object) {
+    if (result != null) {
+      Map<String, Object> data = new HashMap<String, Object>();
+      data.put(channelName, object);
+      if (error != null) {
+        data.put("error", "error");
+      }
+      result.success(data);
+    }
+  }
 }

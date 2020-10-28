@@ -42,37 +42,13 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         if (EMSDKMethod.init.equals(call.method)) {
-            init(call.arguments, result);
-        } else if (EMSDKMethod.login.equals(call.method)) {
-            login(call.arguments, result);
-        } else if (EMSDKMethod.createAccount.equals(call.method)) {
-            createAccount(call.arguments, result);
-        } else if (EMSDKMethod.loginWithToken.equals(call.method)) {
-            loginWithToken(call.arguments, result);
-        } else if (EMSDKMethod.logout.equals(call.method)) {
-            logout(call.arguments, result);
-        } else if (EMSDKMethod.changeAppKey.equals(call.method)) {
-            changeAppKey(call.arguments, result);
-        } else if (EMSDKMethod.updateCurrentUserNick.equals(call.method)) {
-            updateCurrentUserNick(call.arguments, result);
-        } else if (EMSDKMethod.uploadLog.equals(call.method)) {
-            uploadLog(call.arguments, result);
-        } else if (EMSDKMethod.compressLogs.equals(call.method)) {
-            compressLogs(call.arguments, result);
-        } else if (EMSDKMethod.getLoggedInDevicesFromServer.equals(call.method)) {
-            getLoggedInDevicesFromServer(call.arguments, result);
-        } else if (EMSDKMethod.kickDevice.equals(call.method)) {
-            kickDevice(call.arguments, result);
-        } else if (EMSDKMethod.kickAllDevices.equals(call.method)) {
-            kickAllDevices(call.arguments, result);
-        } else if (EMSDKMethod.isLoggedInBefore.equals(call.method)) {
-            isLoggedInBefore(call.arguments, result);
-        } else if (EMSDKMethod.getCurrentUser.equals(call.method)) {
+            init(call.arguments, EMSDKMethod.init, result);
+        }else if (EMSDKMethod.getCurrentUser.equals(call.method)) {
             getCurrentUser(call.arguments, result);
         }
     }
 
-    private void init(Object args, Result result) {
+    private void init(Object args, String channelName, Result result) {
         JSONObject argMap = (JSONObject) args;
         EMOptions options = EMHelper.convertStringMapToEMOptions(argMap, context);
         EMClient client = EMClient.getInstance();
