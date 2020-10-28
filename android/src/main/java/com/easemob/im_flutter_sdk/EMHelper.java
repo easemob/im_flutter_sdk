@@ -16,6 +16,7 @@ import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -25,38 +26,35 @@ import java.util.Map;
 
 class EMOptionsHelper {
 
-    static EMOptions fromJson(JSONObject json){
-        try{
-            EMOptions options = new EMOptions();
-            options.setAppKey(json.getString("appKey"));
-            options.setAutoLogin(json.getBoolean(""));
-            options.setRequireAck(json.getBoolean("requireAck"));
-            options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
-            options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
-            options.setAcceptInvitationAlways(json.getBoolean("acceptInvitationAlways"));
-            options.setAutoAcceptGroupInvitation(json.getBoolean("autoAcceptGroupInvitation"));
-            options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
-            options.setDeleteMessagesAsExitChatRoom(json.getBoolean("deleteMessagesAsExitChatRoom"));
-            options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
+    static EMOptions fromJson(JSONObject json) throws JSONException {
+        EMOptions options = new EMOptions();
+        options.setAppKey(json.getString("appKey"));
+        options.setAutoLogin(json.getBoolean(""));
+        options.setRequireAck(json.getBoolean("requireAck"));
+        options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
+        options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
+        options.setAcceptInvitationAlways(json.getBoolean("acceptInvitationAlways"));
+        options.setAutoAcceptGroupInvitation(json.getBoolean("autoAcceptGroupInvitation"));
+        options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
+        options.setDeleteMessagesAsExitChatRoom(json.getBoolean("deleteMessagesAsExitChatRoom"));
+        options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
 //            options.setAutoLogin(json.getBoolean(""));  isChatRoomOwnerLeaveAllowed
 //            options.setAutoLogin(json.getBoolean(""));  debugModel
 //            options.setAutoLogin(json.getBoolean(""));  serverTransfer
-            options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
+        options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
 //            options.setAutoLogin(json.getBoolean(""));  EMPushConfig
 //            options.setAutoLogin(json.getBoolean(""));  enableDNSConfig
-            options.setImPort(json.getInt("imPort"));
-            options.setIMServer(json.getString("imServer"));
-            options.setRestServer(json.getString("restServer"));
-            options.setDnsUrl(json.getString("dnsUrl"));
+        options.setImPort(json.getInt("imPort"));
+        options.setIMServer(json.getString("imServer"));
+        options.setRestServer(json.getString("restServer"));
+        options.setDnsUrl(json.getString("dnsUrl"));
 
-            return options;
-        }catch(Exception e) {
+        return options;
 
-        }
     }
 
     static Map<String, Object> toJson(EMOptions options) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put("appKey", options.getAppKey());
         data.put("autoLogin", options.getAutoLogin());
         data.put("requireAck", options.getRequireAck());
@@ -85,18 +83,14 @@ class EMOptionsHelper {
 
 
 class EMContactHelper {
-    static EMContact fromJson(JSONObject json) {
-        try{
-            EMContact contact = new EMContact(json.getString("eid"));
-            contact.setNickname(json.getString("nickname"));
-            return contact;
-        }catch (Exception e) {
-
-        }
+    static EMContact fromJson(JSONObject json) throws JSONException {
+        EMContact contact = new EMContact(json.getString("eid"));
+        contact.setNickname(json.getString("nickname"));
+        return contact;
     }
 
     static Map<String, Object> toJson(EMContact contact) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put("eid", contact.getUsername());
         data.put("nickname", contact.getNickname());
         return data;
@@ -106,7 +100,7 @@ class EMContactHelper {
 class EMChatRoomHelper{
 
     static Map<String, Object> toJson(EMChatRoom chatRoom) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put("roomId", chatRoom.getId());
         data.put("name", chatRoom.getName());
         data.put("desc", chatRoom.getDescription());
@@ -129,37 +123,54 @@ class EMChatRoomHelper{
 
 class EMMessageHelper {
 
-    static EMMessage fromJson(JSONObject json) {
-        try{
-            EMMessage message = null;
-            JSONObject bodyJson = json.getJSONObject("body");
-            String type = bodyJson.getString("type");
-            if (type.equals("txt")) {
+    static EMMessage fromJson(JSONObject json) throws JSONException {
+        EMMessage message = null;
+        JSONObject bodyJson = json.getJSONObject("body");
+        String type = bodyJson.getString("type");
+        switch (type){
+            case "txt": {
                 message = EMMessage.createReceiveMessage(Type.TXT);
                 message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
-            } else if(type.equals("img")) {
+            }
+            break;
+            case "img": {
                 message = EMMessage.createSendMessage(Type.IMAGE);
                 message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
-            } else if(type.equals("loc")) {
+            }
+            break;
+            case "loc": {
                 message = EMMessage.createSendMessage(Type.LOCATION);
                 message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
-            } else if(type.equals("video")) {
+            }
+            break;
+            case "video": {
                 message = EMMessage.createSendMessage(Type.VIDEO);
                 message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
-            } else if(type.equals("voice")) {
+            }
+            break;
+            case "voice": {
                 message = EMMessage.createSendMessage(Type.VOICE);
                 message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
-            } else if(type.equals("file")) {
+            }
+            break;
+            case "file": {
                 message = EMMessage.createSendMessage(Type.FILE);
                 message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
-            } else if(type.equals("cmd")) {
+            }
+            break;
+            case "cmd": {
                 message = EMMessage.createSendMessage(Type.CMD);
                 message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
-            } else if(type.equals("custom")) {
+            }
+            break;
+            case "custom": {
                 message = EMMessage.createSendMessage(Type.CUSTOM);
                 message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
             }
+            break;
+        }
 
+        if (message != null) {
             message.setFrom(json.getString("from"));
             message.setTo(json.getString("to"));
             message.setAcked(json.getBoolean("hasReadAck"));
@@ -169,19 +180,17 @@ class EMMessageHelper {
             message.setStatus(statusFromInt(json.getInt("status")));
             message.setChatType(chatTypeFromInt(json.getInt("chatType")));
             message.setDirection(json.getString("direction").equals("send") ? EMMessage.Direct.SEND : EMMessage.Direct.RECEIVE);
-            return message;
-
-        }catch (Exception e) {
-
         }
+
+        return message;
     }
 
-    static Map<String, Object> toJson(EMMessage message) {
-        Map<String, Object> data = new HashMap<String, Object>();
+    private static Map<String, Object> toJson(EMMessage message) {
+        Map<String, Object> data = new HashMap<>();
         return data;
     }
 
-    static EMMessage.ChatType chatTypeFromInt(int type) {
+    private static EMMessage.ChatType chatTypeFromInt(int type) {
         switch (type){
             case 0: return EMMessage.ChatType.Chat;
             case 1: return EMMessage.ChatType.GroupChat;
@@ -190,7 +199,7 @@ class EMMessageHelper {
         return EMMessage.ChatType.Chat;
     }
 
-    static int chatTypeToInt(EMMessage.ChatType type) {
+    private static int chatTypeToInt(EMMessage.ChatType type) {
         switch (type) {
             case Chat: return 0;
             case GroupChat: return 1;
@@ -199,7 +208,7 @@ class EMMessageHelper {
         return 0;
     }
 
-    static EMMessage.Status statusFromInt(int status) {
+    private static EMMessage.Status statusFromInt(int status) {
         switch (status) {
             case 0: return EMMessage.Status.CREATE;
             case 1: return EMMessage.Status.INPROGRESS;
@@ -209,7 +218,7 @@ class EMMessageHelper {
         return EMMessage.Status.CREATE;
     }
 
-    static int statusToInt(EMMessage.Status status) {
+    private static int statusToInt(EMMessage.Status status) {
         switch (status) {
             case CREATE: return 0;
             case INPROGRESS: return 1;
@@ -224,146 +233,111 @@ class EMMessageHelper {
 class EMMessageBodyHelper {
 
 
-    static EMTextMessageBody textBodyFromJson(JSONObject json) {
-        try{
-            String content = json.getString("content");
-
-            EMTextMessageBody body = new EMTextMessageBody(content);
-            return body;
-
-        }catch (Exception e) {
-
-        }
+    static EMTextMessageBody textBodyFromJson(JSONObject json) throws JSONException {
+        String content = json.getString("content");
+        EMTextMessageBody body = new EMTextMessageBody(content);
+        return body;
     }
 
-    static EMLocationMessageBody localBodyFromJson(JSONObject json) {
-        try{
-            double latitude = json.getDouble("latitude");
-            double longitude = json.getDouble("longitude");
-            String address = json.getString("address");
+    static EMLocationMessageBody localBodyFromJson(JSONObject json) throws JSONException {
+        double latitude = json.getDouble("latitude");
+        double longitude = json.getDouble("longitude");
+        String address = json.getString("address");
 
-            EMLocationMessageBody body = new EMLocationMessageBody(address, latitude, longitude);
-            return body;
-
-        }catch (Exception e) {
-
-        }
+        EMLocationMessageBody body = new EMLocationMessageBody(address, latitude, longitude);
+        return body;
     }
 
-    static EMCmdMessageBody cmdBodyFromJson(JSONObject json) {
-        try{
-            String action = json.getString("action");
-            boolean deliverOnlineOnly = json.getBoolean("deliverOnlineOnly");
+    static EMCmdMessageBody cmdBodyFromJson(JSONObject json) throws JSONException  {
+        String action = json.getString("action");
+        boolean deliverOnlineOnly = json.getBoolean("deliverOnlineOnly");
 
-            EMCmdMessageBody body = new EMCmdMessageBody(action);
-            body.deliverOnlineOnly(deliverOnlineOnly);
+        EMCmdMessageBody body = new EMCmdMessageBody(action);
+        body.deliverOnlineOnly(deliverOnlineOnly);
 
-            return body;
-        }catch (Exception e) {
-
-        }
+        return body;
     }
 
-    static EMCustomMessageBody customBodyFromJson(JSONObject json) {
-        try{
-            String event = json.getString("event");
-            JSONObject jsonObject = json.getJSONObject("params");
-            Map<String, String> params =new HashMap<>();
-            Iterator iterator = params.keys();
-            while (iterator.hasNext()){
-                String key = iterator.next().toString();
-                params.put(key, params.getString(key));
-            }
-
-            EMCustomMessageBody body = new EMCustomMessageBody(event);
-            body.setParams(params);
-
-            return body;
-        }catch (Exception e) {
-
+    static EMCustomMessageBody customBodyFromJson(JSONObject json) throws JSONException  {
+        String event = json.getString("event");
+        JSONObject jsonObject = json.getJSONObject("params");
+        Map<String, String> params =new HashMap<>();
+        Iterator iterator = jsonObject.keys();
+        while (iterator.hasNext()){
+            String key = iterator.next().toString();
+            params.put(key, jsonObject.getString(key));
         }
+
+        EMCustomMessageBody body = new EMCustomMessageBody(event);
+        body.setParams(params);
+
+        return body;
     }
 
-    static EMFileMessageBody fileBodyFromJson(JSONObject json) {
-        try{
-            String localPath = json.getString("localPath");
-            File file = new File(localPath);
+    static EMFileMessageBody fileBodyFromJson(JSONObject json) throws JSONException  {
+        String localPath = json.getString("localPath");
+        File file = new File(localPath);
 
-            EMNormalFileMessageBody body = new EMNormalFileMessageBody(file);
-            body.setFileLength(json.getLong("fileSize"));
-            body.setFileName(json.getString("displayName"));
-            body.setRemoteUrl(json.getString("remotePath"));
-            body.setSecret(json.getString("secret"));
-            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-            return body;
-        }catch (Exception e) {
-
-        }
+        EMNormalFileMessageBody body = new EMNormalFileMessageBody(file);
+        body.setFileLength(json.getLong("fileSize"));
+        body.setFileName(json.getString("displayName"));
+        body.setRemoteUrl(json.getString("remotePath"));
+        body.setSecret(json.getString("secret"));
+        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        return body;
     }
 
-    static EMImageMessageBody imageBodyFromJson(JSONObject json) {
-        try{
-            String localPath = json.getString("localPath");
-            File file = new File(localPath);
+    static EMImageMessageBody imageBodyFromJson(JSONObject json) throws JSONException  {
+        String localPath = json.getString("localPath");
+        File file = new File(localPath);
 
-            EMImageMessageBody body = new EMImageMessageBody(file);
-            body.setFileLength(json.getLong("fileSize"));
-            body.setFileName(json.getString("displayName"));
-            body.setRemoteUrl(json.getString("remotePath"));
-            body.setSecret(json.getString("secret"));
-            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        EMImageMessageBody body = new EMImageMessageBody(file);
+        body.setFileLength(json.getLong("fileSize"));
+        body.setFileName(json.getString("displayName"));
+        body.setRemoteUrl(json.getString("remotePath"));
+        body.setSecret(json.getString("secret"));
+        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
 
-            body.setThumbnailLocalPath(json.getString("thumbnailLocalPath"));
-            body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
-            body.setThumbnailSecret(json.getString("thumbnailSecret"));
+        body.setThumbnailLocalPath(json.getString("thumbnailLocalPath"));
+        body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
+        body.setThumbnailSecret(json.getString("thumbnailSecret"));
 
-            int width = json.getInt("height");
-            int height = json.getInt("width");
-            body.setThumbnailSize(width, height);
-            body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
+        int width = json.getInt("height");
+        int height = json.getInt("width");
+        body.setThumbnailSize(width, height);
+        body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
 
-            return body;
-        }catch (Exception e) {
-
-        }
+        return body;
     }
 
-    static EMVideoMessageBody videoBodyFromJson(JSONObject json) {
-        try{
-            String localPath = json.getString("localPath");
-            String thumbnailLocalPath = json.getString("thumbnailLocalPath");
-            int duration = json.getInt("duration");
-            int fileSize = json.getInt("fileSize");
-            EMVideoMessageBody body = new EMVideoMessageBody(localPath, thumbnailLocalPath, duration, fileSize);
-            body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
-            body.setThumbnailSecret(json.getString("thumbnailSecret"));
-            body.setFileName(json.getString("displayName"));
-            int width = json.getInt("height");
-            int height = json.getInt("width");
-            body.setThumbnailSize(width, height);
-            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-            return body;
-        }catch (Exception e) {
-
-        }
+    static EMVideoMessageBody videoBodyFromJson(JSONObject json) throws JSONException  {
+        String localPath = json.getString("localPath");
+        String thumbnailLocalPath = json.getString("thumbnailLocalPath");
+        int duration = json.getInt("duration");
+        int fileSize = json.getInt("fileSize");
+        EMVideoMessageBody body = new EMVideoMessageBody(localPath, thumbnailLocalPath, duration, fileSize);
+        body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
+        body.setThumbnailSecret(json.getString("thumbnailSecret"));
+        body.setFileName(json.getString("displayName"));
+        int width = json.getInt("height");
+        int height = json.getInt("width");
+        body.setThumbnailSize(width, height);
+        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        return body;
     }
 
-    static EMVoiceMessageBody voiceBodyFromJson(JSONObject json) {
-        try{
-            String localPath = json.getString("localPath");
-            File file = new File(localPath);
-            int duration = json.getInt("duration");
-            EMVoiceMessageBody body = new EMVoiceMessageBody(file, duration);
-            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-            body.setFileName(json.getString("displayName"));
-            body.setFileLength(json.getLong("fileSize"));
-            return null;
-        }catch (Exception e) {
-
-        }
+    static EMVoiceMessageBody voiceBodyFromJson(JSONObject json) throws JSONException  {
+        String localPath = json.getString("localPath");
+        File file = new File(localPath);
+        int duration = json.getInt("duration");
+        EMVoiceMessageBody body = new EMVoiceMessageBody(file, duration);
+        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        body.setFileName(json.getString("displayName"));
+        body.setFileLength(json.getLong("fileSize"));
+        return body;
     }
 
-    static EMFileMessageBody.EMDownloadStatus downloadStatusFromInt(int downloadStatus) {
+    private static EMFileMessageBody.EMDownloadStatus downloadStatusFromInt(int downloadStatus) {
         switch (downloadStatus) {
             case 0: return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
             case 1: return EMFileMessageBody.EMDownloadStatus.SUCCESSED;
@@ -386,7 +360,7 @@ class EMMessageBodyHelper {
 
 class EMConversationHelper {
     static Map<String, Object> toJson(EMConversation conversation) {
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.put("con_id", conversation.conversationId());
         data.put("unreadCount", conversation.getUnreadMsgCount());
         data.put("ext", conversation.getExtField());
