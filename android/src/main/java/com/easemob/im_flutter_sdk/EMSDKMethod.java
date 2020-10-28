@@ -21,6 +21,7 @@ public class EMSDKMethod {
     static final String onDisconnected = "onDisconnected";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
 
+
     /// EMContactManager methods
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
