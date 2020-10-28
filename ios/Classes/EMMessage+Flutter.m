@@ -454,10 +454,16 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
-    ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
+    ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
     ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
+    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);
     ret[@"width"] = @(self.size.width);
     ret[@"height"] = @(self.size.height);
+    ret[@"fileSize"] = @(self.fileLength);
+    ret[@"remotePath"] = self.remotePath;
+    ret[@"secret"] = self.secretKey;
+    ret[@"displayName"] = self.displayName;
+    ret[@"localPath"] = self.localPath;
     ret[@"sendOriginalImage"] = self.compressionRatio == 1.0 ? @(true) : @(false);
     return ret;
 }
@@ -476,6 +482,7 @@
     NSString *displayName = aJson[@"displayName"];
     EMVideoMessageBody *ret = [[EMVideoMessageBody alloc] initWithLocalPath:path displayName:displayName];
     ret.duration = [aJson[@"duration"] intValue];
+    ret.fileLength = [aJson[@"fileSize"] longLongValue];
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
@@ -493,6 +500,9 @@
     ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
     ret[@"width"] = @(self.thumbnailSize.width);
     ret[@"height"] = @(self.thumbnailSize.height);
+    ret[@"fileSize"] = @(self.fileLength);
+    ret[@"displayName"] = self.displayName;
+    ret[@"duration"] = @(self.duration);
     return ret;
 }
 @end
@@ -510,12 +520,17 @@
     NSString *displayName = aJson[@"displayName"];
     EMVoiceMessageBody *ret = [[EMVoiceMessageBody alloc] initWithLocalPath:path displayName:displayName];
     ret.duration = [aJson[@"duration"] intValue];
+    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
 }
 
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"duration"] = @(self.duration);
+    ret[@"displayName"] = self.displayName;
+    ret[@"localPath"] = self.localPath;
+    ret[@"fileSize"] = @(self.fileLength);
+    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);;
     return ret;
 }
 
