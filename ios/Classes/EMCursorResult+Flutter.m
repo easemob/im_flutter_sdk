@@ -10,12 +10,12 @@
 @implementation EMCursorResult (Flutter)
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
-    NSMutableArray *dataLst = [NSMutableArray array];
+    NSMutableArray *dataList = [NSMutableArray array];
     for (id<EaseToFlutterJson> obj in self.list) {
-        [dataLst addObject:[obj toJson]];
+        [dataList addObject:[obj toJson]];
     }
     
-    data[@"list"] = dataLst;
+    data[@"list"] = dataList;
     data[@"cursor"] = self.cursor;
     
     return data;
