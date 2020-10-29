@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMError;
 import com.hyphenate.exceptions.HyphenateException;
 
 import java.util.HashMap;
@@ -13,36 +14,19 @@ public interface EMWrapper {
     ImFlutterSdkPlugin.handler.post(runnable);
   }
 
-  default void onSuccess(MethodChannel.Result result) {
-    post(new Runnable() {
-      @Override
-      public void run() {
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        result.success(data);      }
+  default void onSuccess(MethodChannel.Result result, String channelName, Object object) {
+    post(()-> {
+      Map<String, Object> data = new HashMap<>();
+      data.put(channelName, object);
+      result.success(data);
     });
   }
 
   default void onError(MethodChannel.Result result, HyphenateException e) {
-    post(new Runnable() {
-      @Override
-      public void run() {
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.FALSE);
-        data.put("code", e.getErrorCode());
-        data.put("desc", e.getDescription());
-        result.success(data);     }
-    });
-  }
-
-  default void wrapperCallBack(MethodChannel.Result result, String channelName, EMError error, Object object) {
-    if (result != null) {
+    post(()-> {
       Map<String, Object> data = new HashMap<String, Object>();
-      data.put(channelName, object);
-      if (error != null) {
-        data.put("error", "error");
-      }
-      result.success(data);
-    }
+        data.put("error", HyphenateExceptionHelper.toJson(e));
+        result.success(data);
+    });
   }
 }

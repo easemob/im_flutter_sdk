@@ -1,35 +1,52 @@
 package com.easemob.im_flutter_sdk;
 
+import android.os.Build;
+
+import com.hyphenate.EMError;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
+import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.chat.EMFileMessageBody;
+import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupManager;
+import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
+import com.hyphenate.chat.EMPageResult;
+import com.hyphenate.chat.EMPushConfigs;
+import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
+import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import androidx.annotation.RequiresApi;
+
 
 class EMOptionsHelper {
 
     static EMOptions fromJson(JSONObject json) throws JSONException {
         EMOptions options = new EMOptions();
         options.setAppKey(json.getString("appKey"));
-        options.setAutoLogin(json.getBoolean(""));
+        options.setAutoLogin(json.getBoolean("autoLogin"));
         options.setRequireAck(json.getBoolean("requireAck"));
         options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
         options.setSortMessageByServerTime(json.getBoolean("sortMessageByServerTime"));
@@ -97,7 +114,91 @@ class EMContactHelper {
     }
 }
 
+
+class EMGroupHelper {
+    static Map<String, Object> toJson(EMGroup group) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("groupId", group.getGroupId());
+        data.put("name", group.getGroupName());
+        data.put("desc", group.getDescription());
+        data.put("owner", group.getOwner());
+        data.put("announcement", group.getAnnouncement());
+        data.put("memberCount", group.getMemberCount());
+        data.put("memberList", group.getMembers());
+        data.put("adminList", group.getAdminList());
+        data.put("blacklist", group.getBlackList());
+        data.put("muteList", group.getMuteList());
+        data.put("sharedFileList", group.getShareFileList());
+//        data.put("", group.getnoticeEnable);
+        data.put("messageBlocked", group.isMsgBlocked());
+        data.put("isAllMemberMuted", group.isAllMemberMuted());
+//        data.put("", group.getOptions());
+//        data.put("", group.getPermissionType());
+
+        EMGroupOptions options = new EMGroupOptions();
+        options.extField = group.getExtension();
+        options.maxUsers = group.getMaxUserCount();
+
+        if (group.isPublic()) {
+            if (group.isMemberOnly()) {
+                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
+            }else {
+                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
+            }
+        }else {
+            if (group.isMemberAllowToInvite()) {
+                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
+            }else {
+                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
+            }
+        }
+
+        data.put("options", EMGroupOptionsHelper.toJson(options));
+
+        return data;
+    }
+}
+
+class EMGroupOptionsHelper {
+
+    static Map<String, Object> toJson(EMGroupOptions options) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("maxCount", options.maxUsers);
+        data.put("inviteNeedConfirm", options.inviteNeedConfirm);
+        data.put("ext", options.extField);
+        data.put("style", styleToInt(options.style));
+        return data;
+    }
+
+    private static EMGroupManager.EMGroupStyle styleFromInt(int style) {
+        switch (style){
+            case 0: return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
+            case 1: return EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
+            case 2: return EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
+            case 3: return EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
+        }
+
+        return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
+    }
+
+    private static int styleToInt(EMGroupManager.EMGroupStyle style) {
+        switch (style) {
+            case EMGroupStylePrivateOnlyOwnerInvite: return 0;
+            case EMGroupStylePrivateMemberCanInvite: return 1;
+            case EMGroupStylePublicJoinNeedApproval: return 2;
+            case EMGroupStylePublicOpenJoin: return 3;
+        }
+
+        return 0;
+    }
+}
+
 class EMChatRoomHelper{
+
+//   chatroom 都是native -> flutter, 不需要fromJson
+//    static EMChatRoom fromJson(JSONObject json) throws JSONException {
+//        EMChatRoom chatRoom = new EMChatRoom();
+//    }
 
     static Map<String, Object> toJson(EMChatRoom chatRoom) {
         Map<String, Object> data = new HashMap<>();
@@ -174,6 +275,7 @@ class EMMessageHelper {
             message.setFrom(json.getString("from"));
             message.setTo(json.getString("to"));
             message.setAcked(json.getBoolean("hasReadAck"));
+            message.setUnread(!json.getBoolean("hasRead"));
             message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
             message.setLocalTime(json.getLong("localTime"));
             message.setMsgTime(json.getLong("serverTime"));
@@ -185,8 +287,57 @@ class EMMessageHelper {
         return message;
     }
 
-    private static Map<String, Object> toJson(EMMessage message) {
+    static Map<String, Object> toJson(EMMessage message) {
         Map<String, Object> data = new HashMap<>();
+        String type = "";
+        switch (message.getType()){
+            case TXT: {
+                type = "txt";
+                data.put("body", EMMessageBodyHelper.textBodyToJson((EMTextMessageBody) message.getBody()));
+            } break;
+            case IMAGE: {
+                type = "img";
+                data.put("body", EMMessageBodyHelper.imageBodyToJson((EMImageMessageBody) message.getBody()));
+            } break;
+            case LOCATION: {
+                type = "loc";
+                data.put("body", EMMessageBodyHelper.localBodyToJson((EMLocationMessageBody) message.getBody()));
+            } break;
+            case CMD: {
+                type = "cmd";
+                data.put("body", EMMessageBodyHelper.cmdBodyToJson((EMCmdMessageBody) message.getBody()));
+            } break;
+            case CUSTOM: {
+                type = "custom";
+                data.put("body", EMMessageBodyHelper.customBodyToJson((EMCustomMessageBody) message.getBody()));
+            } break;
+            case FILE: {
+                type = "file";
+                data.put("body", EMMessageBodyHelper.fileBodyToJson((EMNormalFileMessageBody) message.getBody()));
+            } break;
+            case VIDEO: {
+                type = "video";
+                data.put("body", EMMessageBodyHelper.videoBodyToJson((EMVideoMessageBody) message.getBody()));
+            } break;
+            case VOICE: {
+                type = "voice";
+                data.put("body", EMMessageBodyHelper.voiceBodyToJson((EMVoiceMessageBody) message.getBody()));
+            } break;
+        }
+
+        data.put("type", type);
+        data.put("to", message.getTo());
+        data.put("hasReadAck", message.isAcked());
+        data.put("hasDeliverAck", message.isDelivered());
+        data.put("localTime", message.localTime());
+        data.put("serverTime", message.getMsgTime());
+        data.put("status", statusToInt(message.status()));
+        data.put("chatType", chatTypeToInt(message.getChatType()));
+        data.put("direction", message.direct() == EMMessage.Direct.SEND ? "send" : "rec");
+        data.put("conversationId", message.conversationId());
+        data.put("msgId", message.getMsgId());
+        data.put("hasRead", !message.isUnread());
+
         return data;
     }
 
@@ -239,6 +390,14 @@ class EMMessageBodyHelper {
         return body;
     }
 
+
+    static Map<String, Object> textBodyToJson(EMTextMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("content", body.getMessage());
+        return data;
+    }
+
+
     static EMLocationMessageBody localBodyFromJson(JSONObject json) throws JSONException {
         double latitude = json.getDouble("latitude");
         double longitude = json.getDouble("longitude");
@@ -246,6 +405,14 @@ class EMMessageBodyHelper {
 
         EMLocationMessageBody body = new EMLocationMessageBody(address, latitude, longitude);
         return body;
+    }
+
+    static Map<String, Object> localBodyToJson(EMLocationMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("latitude", body.getLatitude());
+        data.put("longitude", body.getLongitude());
+        data.put("address", body.getAddress());
+        return data;
     }
 
     static EMCmdMessageBody cmdBodyFromJson(JSONObject json) throws JSONException  {
@@ -256,6 +423,13 @@ class EMMessageBodyHelper {
         body.deliverOnlineOnly(deliverOnlineOnly);
 
         return body;
+    }
+
+    static Map<String, Object> cmdBodyToJson(EMCmdMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("deliverOnlineOnly", body.isDeliverOnlineOnly());
+        data.put("action", body.action());
+        return data;
     }
 
     static EMCustomMessageBody customBodyFromJson(JSONObject json) throws JSONException  {
@@ -274,6 +448,13 @@ class EMMessageBodyHelper {
         return body;
     }
 
+    static Map<String, Object> customBodyToJson(EMCustomMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("event", body.event());
+        data.put("params", body.getParams());
+        return data;
+    }
+
     static EMFileMessageBody fileBodyFromJson(JSONObject json) throws JSONException  {
         String localPath = json.getString("localPath");
         File file = new File(localPath);
@@ -285,6 +466,17 @@ class EMMessageBodyHelper {
         body.setSecret(json.getString("secret"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
         return body;
+    }
+
+    static Map<String, Object> fileBodyToJson(EMNormalFileMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("localPath", body.getLocalUrl());
+        data.put("fileSize", body.getFileSize());
+        data.put("displayName", body.getFileName());
+        data.put("remotePath", body.getRemoteUrl());
+        data.put("secret", body.getSecret());
+        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        return data;
     }
 
     static EMImageMessageBody imageBodyFromJson(JSONObject json) throws JSONException  {
@@ -310,6 +502,23 @@ class EMMessageBodyHelper {
         return body;
     }
 
+    static Map<String, Object> imageBodyToJson(EMImageMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("localPath", body.getLocalUrl());
+//        data.put("fileSize", body.get());
+        data.put("displayName", body.getFileName());
+        data.put("remotePath", body.getRemoteUrl());
+        data.put("secret", body.getSecret());
+        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("thumbnailLocalPath", body.thumbnailLocalPath());
+        data.put("thumbnailRemotePath", body.getThumbnailUrl());
+        data.put("thumbnailSecret", body.getThumbnailSecret());
+        data.put("height", body.getHeight());
+        data.put("width", body.getWidth());
+        data.put("sendOriginalImage", body.isSendOriginalImage());
+        return data;
+    }
+
     static EMVideoMessageBody videoBodyFromJson(JSONObject json) throws JSONException  {
         String localPath = json.getString("localPath");
         String thumbnailLocalPath = json.getString("thumbnailLocalPath");
@@ -322,8 +531,29 @@ class EMMessageBodyHelper {
         int width = json.getInt("height");
         int height = json.getInt("width");
         body.setThumbnailSize(width, height);
+        body.setRemoteUrl(json.getString("remotePath"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        body.setSecret(json.getString("secret"));
+
         return body;
+    }
+
+    static Map<String, Object> videoBodyToJson(EMVideoMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("localPath", body.getLocalUrl());
+//        data.put("thumbnailLocalPath", body.getLocalThumbUri());
+        data.put("duration", body.getDuration());
+        data.put("fileSize", body.getVideoFileLength());
+        data.put("thumbnailRemotePath", body.getThumbnailUrl());
+        data.put("thumbnailSecret", body.getThumbnailSecret());
+        data.put("displayName", body.getFileName());
+        data.put("height", body.getThumbnailHeight());
+        data.put("width", body.getThumbnailWidth());
+        data.put("remotePath", body.getRemoteUrl());
+        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("secret", body.getSecret());
+
+        return data;
     }
 
     static EMVoiceMessageBody voiceBodyFromJson(JSONObject json) throws JSONException  {
@@ -334,7 +564,20 @@ class EMMessageBodyHelper {
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
         body.setFileName(json.getString("displayName"));
         body.setFileLength(json.getLong("fileSize"));
+        body.setSecret(json.getString("secret"));
         return body;
+    }
+
+    static Map<String, Object> voiceBodyToJson(EMVoiceMessageBody body) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("localPath", body.getLocalUrl());
+        data.put("duration", body.getLength());
+        data.put("displayName", body.getFileName());
+        data.put("remotePath", body.getRemoteUrl());
+        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("secret", body.getSecret());
+
+        return data;
     }
 
     private static EMFileMessageBody.EMDownloadStatus downloadStatusFromInt(int downloadStatus) {
@@ -347,7 +590,7 @@ class EMMessageBodyHelper {
         return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
     }
 
-    static int downloadStatusToInt(EMFileMessageBody.EMDownloadStatus downloadStatus) {
+    private static int downloadStatusToInt(EMFileMessageBody.EMDownloadStatus downloadStatus) {
         switch (downloadStatus){
             case DOWNLOADING: return 0;
             case SUCCESSED: return 1;
@@ -359,13 +602,136 @@ class EMMessageBodyHelper {
 }
 
 class EMConversationHelper {
+
+//    EMConversation 都是native -> flutter, 不需要fromJson
+//    static EMConversation fromJson(JSONObject json) throws JSONException {
+//        EMConversation conv = new EMConversation();
+//        return conv;
+//    }
+
     static Map<String, Object> toJson(EMConversation conversation) {
         Map<String, Object> data = new HashMap<>();
         data.put("con_id", conversation.conversationId());
+        data.put("type", typeToInt(conversation.getType()));
         data.put("unreadCount", conversation.getUnreadMsgCount());
         data.put("ext", conversation.getExtField());
-        data.put("latestMessage", conversation.getLastMessage());
-        data.put("lastReceivedMessage", conversation.getLatestMessageFromOthers());
+        data.put("latestMessage", EMMessageHelper.toJson(conversation.getLastMessage()));
+        data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));
+        return data;
+    }
+
+
+    private static EMConversation.EMConversationType typeFromInt(int type) {
+        switch (type) {
+            case 0: return EMConversation.EMConversationType.Chat;
+            case 1: return EMConversation.EMConversationType.GroupChat;
+            case 2: return EMConversation.EMConversationType.ChatRoom;
+        }
+
+        return EMConversation.EMConversationType.Chat;
+    }
+
+    private static int typeToInt(EMConversation.EMConversationType type) {
+        switch (type) {
+            case Chat: return 0;
+            case GroupChat: return 1;
+            case ChatRoom: return 2;
+        }
+
+        return 0;
+    }
+}
+
+class EMDeviceInfoHelper {
+
+    static Map<String, Object> toJson(EMDeviceInfo device) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("resource", device.getResource());
+        data.put("deviceUUID", device.getDeviceUUID());
+        data.put("deviceName", device.getDeviceName());
+
+        return data;
+    }
+}
+
+class EMCursorResultHelper {
+
+    static Map<String, Object> toJson(EMCursorResult result) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("cursor",result.getCursor());
+        List list = (List) result.getData();
+        List<Map> jsonList = new ArrayList<>();
+        for (Object obj: list) {
+            if (obj instanceof EMMessage) {
+                jsonList.add(EMMessageHelper.toJson((EMMessage)obj));
+            }
+
+            if (obj instanceof EMGroup) {
+                jsonList.add(EMGroupHelper.toJson((EMGroup)obj));
+            }
+
+            if (obj instanceof EMChatRoom) {
+                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom)obj));
+            }
+        }
+        data.put("list",jsonList);
+
+        return data;
+    }
+}
+
+class EMPageResultHelper {
+
+    static Map<String, Object> toJson(EMPageResult result) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("count",result.getPageCount());
+        List list = (List) result.getData();
+        List<Map> jsonList = new ArrayList<>();
+        for (Object obj: list) {
+            if (obj instanceof EMMessage) {
+                jsonList.add(EMMessageHelper.toJson((EMMessage)obj));
+            }
+
+            if (obj instanceof EMGroup) {
+                jsonList.add(EMGroupHelper.toJson((EMGroup)obj));
+            }
+
+            if (obj instanceof EMChatRoom) {
+                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom)obj));
+            }
+        }
+        data.put("list",jsonList);
+        return data;
+    }
+}
+
+class EMErrorHelper {
+    static Map<String, Object> toJson(int errorCode, String desc) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("code", errorCode);
+        data.put("description", desc);
+        return data;
+    }
+}
+
+
+class EMPushConfigsHelper {
+    static Map<String, Object> toJson(EMPushConfigs pushConfigs) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("", pushConfigs.getDisplayNickname());
+        data.put("noDisturb", pushConfigs.isNoDisturbOn());
+        data.put("noDisturbEndHour", pushConfigs.getNoDisturbEndHour());
+        data.put("noDisturbStartHour", pushConfigs.getNoDisturbStartHour());
+        data.put("pushStyle", pushConfigs.getDisplayStyle() != EMPushManager.DisplayStyle.SimpleBanner);
+        return data;
+    }
+}
+
+class HyphenateExceptionHelper {
+    static Map<String, Object> toJson(HyphenateException e) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("code", e.getErrorCode());
+        data.put("description", e.getDescription());
         return data;
     }
 }

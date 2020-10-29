@@ -22,9 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar;
 
-- (void)wrapperCallBack:(FlutterResult)result
-                    error:(EMError *__nullable)error
-                 userInfo:(NSDictionary *__nullable)userInfo;
+//- (void)wrapperCallBack:(FlutterResult)result
+//                    error:(EMError *__nullable)error
+//                 userInfo:(NSDictionary *__nullable)userInfo;
 
 
 - (void)wrapperCallBack:(FlutterResult)result

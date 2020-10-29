@@ -80,7 +80,7 @@
     __weak typeof(self) weakSelf = self;
     
     EMOptions *options = [EMOptions fromJson:param];
-    options.enableConsoleLog = YES;
+//    options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];

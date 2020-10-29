@@ -5,7 +5,6 @@ public class EMSDKMethod {
     static final String init = "init";
     static final String createAccount = "createAccount";
     static final String login = "login";
-    static final String loginWithToken = "loginWithToken";
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
     static final String isLoggedInBefore = "isLoggedInBefore";
