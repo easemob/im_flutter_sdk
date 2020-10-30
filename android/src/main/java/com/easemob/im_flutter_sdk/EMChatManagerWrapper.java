@@ -25,10 +25,11 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 
 
 @SuppressWarnings("unchecked")
-public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
+public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler{
     // delegates all methods call to this manager
     private EMChatManager manager = null;
     // method channel for event broadcast back to flutter
@@ -36,8 +37,8 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     // cursor result map for call back getCursor()
     private Map<String, EMCursorResult<EMMessage>> cursorResultList = new HashMap<String, EMCursorResult<EMMessage>>();
 
-    EMChatManagerWrapper(MethodChannel channel) {
-        this.channel = channel;
+    EMChatManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
+        super(registrar, channelName);
     }
 
     private void init() {

@@ -21,7 +21,7 @@ import java.util.Map;
  * ImFlutterSdkPlugin
  */
 public class ImFlutterSdkPlugin {
-    private static final String CHANNEL_PREFIX = "com.easemob.im";
+
     static final Handler handler = new Handler(Looper.getMainLooper());
 
     private ImFlutterSdkPlugin() {
@@ -31,20 +31,10 @@ public class ImFlutterSdkPlugin {
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
-        registerClientWith(registrar);
-        registerChatManagerWith(registrar);
-        registerContactManagerWith(registrar);
-        registerConversationWith(registrar);
-        registerEMChatRoomManagerWrapper(registrar);
-        registerGroupManagerWith(registrar);
-        registerPushManagerWith(registrar);
+        new EMClientWrapper(registrar, "em_client");
     }
 
-    private static void registerClientWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_client", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMClientWrapper(registrar.context(), channel));
-    }
-
+    /*
     private static void registerChatManagerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_manager", JSONMethodCodec.INSTANCE);
         channel.setMethodCallHandler(new EMChatManagerWrapper(channel));
@@ -74,7 +64,7 @@ public class ImFlutterSdkPlugin {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_push_manager", JSONMethodCodec.INSTANCE);
         channel.setMethodCallHandler(new EMPushManagerWrapper());
     }
-
+    */
 }
 
 
@@ -86,11 +76,11 @@ class EMWrapperCallBack implements EMCallBack {
         this.object = object;
     }
 
-    private Result result;
-    private String channelName;
-    private Object object;
+    Result result;
+    String channelName;
+    Object object;
 
-    private void post(Runnable runnable) {
+    void post(Runnable runnable) {
         ImFlutterSdkPlugin.handler.post(runnable);
     }
 
