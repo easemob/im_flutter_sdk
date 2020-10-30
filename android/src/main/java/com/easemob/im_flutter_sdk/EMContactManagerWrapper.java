@@ -7,7 +7,6 @@ import java.util.Map;
 import com.hyphenate.EMContactListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.util.EMLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;

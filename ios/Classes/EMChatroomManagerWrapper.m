@@ -34,53 +34,77 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([EMMethodKeyGetChatroomsFromServer isEqualToString:call.method]) {
-        [self getChatroomsFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyCreateChatRoom isEqualToString:call.method]) {
-        [self createChatroom:call.arguments result:result];
-    } else if ([EMMethodKeyJoinChatRoom isEqualToString:call.method]) {
+    if ([EMMethodKeyJoinChatRoom isEqualToString:call.method])
+    {
         [self joinChatroom:call.arguments result:result];
-    } else if ([EMMethodKeyLeaveChatRoom isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyLeaveChatRoom isEqualToString:call.method]) {
         [self leaveChatroom:call.arguments result:result];
-    } else if ([EMMethodKeyDestroyChatRoom isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetChatroomsFromServer isEqualToString:call.method]) {
+        [self getChatroomsFromServer:call.arguments result:result];
+    }
+    else if ([EMMethodKeyCreateChatRoom isEqualToString:call.method]) {
+        [self createChatroom:call.arguments result:result];
+    }
+    else if ([EMMethodKeyDestroyChatRoom isEqualToString:call.method]) {
         [self destroyChatRoom:call.arguments result:result];
-    } else if ([EMMethodKeyFetchChatRoomFromServer isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyFetchChatRoomFromServer isEqualToString:call.method]) {
         [self fetchChatroomInfoFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatRoom isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetChatRoom isEqualToString:call.method]) {
         [self getChatroom:call.arguments result:result];
-    } else if ([EMMethodKeyGetAllChatRooms isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetAllChatRooms isEqualToString:call.method]) {
         [self getAllChatrooms:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
         [self getChatroomMemberListFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyFetchChatroomBlacklistFromServer isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyFetchChatroomBlacklistFromServer isEqualToString:call.method]) {
         [self fetchChatroomBlacklistFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyGetChatroomMuteListFromServer isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetChatroomMuteListFromServer isEqualToString:call.method]) {
         [self getChatroomMuteListFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyFetchChatroomAnnouncement isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyFetchChatroomAnnouncement isEqualToString:call.method]) {
         [self fetchChatroomAnnouncement:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomUpdateSubject isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomUpdateSubject isEqualToString:call.method]) {
         [self chatRoomUpdateSubject:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomUpdateDescription isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomUpdateDescription isEqualToString:call.method]) {
         [self chatRoomUpdateDescription:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomRemoveMembers isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomRemoveMembers isEqualToString:call.method]) {
         [self chatRoomRemoveMembers:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomBlockMembers isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomBlockMembers isEqualToString:call.method]) {
         [self chatRoomBlockMembers:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomUnblockMembers isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomUnblockMembers isEqualToString:call.method]) {
         [self chatRoomUnblockMembers:call.arguments result:result];
-    } else if ([EMMethodKeyChangeChatRoomOwner isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChangeChatRoomOwner isEqualToString:call.method]) {
         [self chatRoomChangeOwner:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomAddAdmin isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomAddAdmin isEqualToString:call.method]) {
         [self chatRoomAddAdmin:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomRemoveAdmin isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomRemoveAdmin isEqualToString:call.method]) {
         [self chatRoomRemoveAdmin:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomMuteMembers isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomMuteMembers isEqualToString:call.method]) {
         [self chatRoomMuteMembers:call.arguments result:result];
-    } else if ([EMMethodKeyChatRoomUnmuteMembers isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChatRoomUnmuteMembers isEqualToString:call.method]) {
         [self chatRoomUnmuteMembers:call.arguments result:result];
-    } else if ([EMMethodKeyUpdateChatRoomAnnouncement isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyUpdateChatRoomAnnouncement isEqualToString:call.method]) {
         [self updateChatroomAnnouncement:call.arguments result:result];
-    } else {
+    }
+    else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -467,7 +491,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUpdateChatRoomAnnouncement
                             error:aError
-                           object:nil];
+                           object:@(!aError)];
     }];
 }
 
