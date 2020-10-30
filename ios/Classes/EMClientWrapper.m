@@ -43,33 +43,59 @@
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([EMMethodKeyInit isEqualToString:call.method]) {
+    if ([EMMethodKeyInit isEqualToString:call.method])
+    {
         [self initSDKWithDict:call.arguments result:result];
-    } else if ([EMMethodKeyCreateAccount isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCreateAccount isEqualToString:call.method])
+    {
         [self createAccount:call.arguments result:result];
-    } else if ([EMMethodKeyLogin isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyLogin isEqualToString:call.method])
+    {
         [self login:call.arguments result:result];
-    } else if ([EMMethodKeyLogout isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyLogout isEqualToString:call.method])
+    {
         [self logout:call.arguments result:result];
-    } else if ([EMMethodKeyChangeAppKey isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyChangeAppKey isEqualToString:call.method])
+    {
         [self changeAppKey:call.arguments result:result];
-    } else if ([EMMethodKeySetNickname isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeySetNickname isEqualToString:call.method])
+    {
         [self updateCurrentUserNick:call.arguments result:result];
-    } else if ([EMMethodKeyUploadLog isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyUploadLog isEqualToString:call.method])
+    {
         [self uploadLog:call.arguments result:result];
-    } else if ([EMMethodKeyCompressLogs isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyCompressLogs isEqualToString:call.method])
+    {
         [self compressLogs:call.arguments result:result];
-    } else if ([EMMethodKeyGetLoggedInDevicesFromServer isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyGetLoggedInDevicesFromServer isEqualToString:call.method])
+    {
         [self getLoggedInDevicesFromServer:call.arguments result:result];
-    } else if ([EMMethodKeyKickDevice isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyKickDevice isEqualToString:call.method])
+    {
         [self kickDevice:call.arguments result:result];
-    } else if ([EMMethodKeyKickAllDevices isEqualToString:call.method]) {
+    }
+    else if ([EMMethodKeyKickAllDevices isEqualToString:call.method])
+    {
         [self kickAllDevices:call.arguments result:result];
-    } else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method]) {
+    }
+    else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method])
+    {
         [self isLoggedInBefore:call.arguments result:result];
-    } else if([EMMethodKeyCurrentUser isEqualToString:call.method]) {
+    }
+    else if([EMMethodKeyCurrentUser isEqualToString:call.method])
+    {
         [self getCurrentUser:call.arguments result:result];
-    } else {
+    }
+    else {
         [super handleMethodCall:call result:result];
     }
 }

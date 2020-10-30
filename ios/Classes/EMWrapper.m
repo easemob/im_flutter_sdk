@@ -24,25 +24,6 @@
     return self;
 }
 
-- (void)wrapperCallBack:(FlutterResult)result
-                  error:(EMError *__nullable)error
-               userInfo:(NSDictionary *__nullable)userInfo
-{
-    if (result) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        if (!error) {
-            dic[@"success"] = @YES;
-            if (userInfo) {
-                [dic addEntriesFromDictionary:userInfo];
-            }
-        }else {
-            dic[@"success"] = @NO;
-            dic[@"code"] = @(error.code);
-            dic[@"desc"] = error.errorDescription;
-        }
-        result(dic);
-    }
-}
 
 - (void)wrapperCallBack:(FlutterResult)result
             channelName:(NSString *)aChannelName
