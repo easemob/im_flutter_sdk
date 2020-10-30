@@ -114,84 +114,28 @@ class EMWrapperCallBack implements EMCallBack {
 
 class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
-    EMValueWrapperCallBack(MethodChannel.Result result)
+    EMValueWrapperCallBack(MethodChannel.Result result, String channelName)
     {
         this.result = result;
+        this.channelName = channelName;
     }
 
     private MethodChannel.Result result;
+    private String channelName;
 
     private void post(Runnable runnable) {
         ImFlutterSdkPlugin.handler.post(runnable);
     }
 
     @Override
-    public void onSuccess(Object value) {
-//        post(new Runnable() {
-//                 @Override
-//                 public void run() {
-//                     Map<String, Object> data = new HashMap<String, Object>();
-//                     data.put("success", Boolean.TRUE);
-//                     if (value.getClass().getSimpleName().equals("ArrayList")) {
-//                         if (((List) value).size() > 0) {
-//                             Object o = ((List) value).get(0);
-//                             if (o.getClass().getSimpleName().equals("EMGroup")) {
-//                                 List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
-//                                 for (EMGroup emGroup : (List<EMGroup>) value) {
-//                                     list.add(EMHelper.convertEMGroupToStringMap(emGroup));
-//                                 }
-//                                 data.put("value", list);
-//                             }
-//
-//                             if (o.getClass().getSimpleName().equals("String")) {
-//                                 data.put("value", value);
-//                             }
-//
-//                             if (o.getClass().getSimpleName().equals("EMMucSharedFile")) {
-//                                 List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
-//                                 for (EMMucSharedFile file : (List<EMMucSharedFile>) value) {
-//                                     list.add(EMHelper.convertEMMucSharedFileToStringMap(file));
-//                                 }
-//                                 data.put("value", list);
-//                             }
-//                         }
-//                     }
-//
-//                     if (value.getClass().getSimpleName().equals("EMGroup")) {
-//                         data.put("value", EMHelper.convertEMGroupToStringMap((EMGroup) value));
-//                     }
-//
-//                     if (value.getClass().getSimpleName().equals("EMCursorResult")) {
-//                         data.put("value", EMHelper.convertEMCursorResultToStringMap((EMCursorResult) value));
-//                     }
-//
-//                     if (value.getClass().getSimpleName().equals("EMPageResult")) {
-//                         EMPageResult result = (EMPageResult) value;
-//                         if (((List) (result.getData())).get(0).getClass().getSimpleName().equals("EMChatRoom")) {
-//                             data.put("value", EMHelper.convertEMPageResultToStringMap(result));
-//                         }
-//                     }
-//
-//                     if (value.getClass().getSimpleName().equals("EMChatRoom")) {
-//                         data.put("value", EMHelper.convertEMChatRoomToStringMap((EMChatRoom) value));
-//                     }
-//
-//                     if (value.getClass().getSimpleName().equals("HashMap")) {
-//                         List<String> dataList = new LinkedList<String>();
-//                         for (Map.Entry<String, Long> m : ((Map<String, Long>) value).entrySet()) {
-//                             dataList.add(m.getKey());
-//                         }
-//                         data.put("value", dataList);
-//                     }
-//
-//                     if (value.getClass().getSimpleName().equals("String")) {
-//                         data.put("value", value);
-//                     }
-//
-//                     result.success(data);
-//                 }
-//             }
-//        );
+    public void onSuccess(T object) {
+        post(()-> {
+            Map<String, Object> data = new HashMap<>();
+            if (object != null) {
+                data.put(channelName, object);
+            }
+            result.success(data);
+        });
     }
 
     @Override

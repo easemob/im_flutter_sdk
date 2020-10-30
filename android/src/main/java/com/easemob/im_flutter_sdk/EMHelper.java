@@ -1,8 +1,5 @@
 package com.easemob.im_flutter_sdk;
 
-import android.os.Build;
-
-import com.hyphenate.EMError;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMContact;
@@ -37,9 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import androidx.annotation.RequiresApi;
-
 
 class EMOptionsHelper {
 
@@ -660,7 +654,7 @@ class EMCursorResultHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("cursor",result.getCursor());
         List list = (List) result.getData();
-        List<Map> jsonList = new ArrayList<>();
+        List<Object> jsonList = new ArrayList<>();
         for (Object obj: list) {
             if (obj instanceof EMMessage) {
                 jsonList.add(EMMessageHelper.toJson((EMMessage)obj));
@@ -672,6 +666,10 @@ class EMCursorResultHelper {
 
             if (obj instanceof EMChatRoom) {
                 jsonList.add(EMChatRoomHelper.toJson((EMChatRoom)obj));
+            }
+
+            if (obj instanceof String) {
+                jsonList.add(obj);
             }
         }
         data.put("list",jsonList);

@@ -102,64 +102,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }
     }
 
-    private void registerManagers() {
-        new EMChatManagerWrapper(registrar, "em_chat_manager");
-        new EMContactManagerWrapper(registrar, "em_contact_manager");
-    }
-
-    private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        EMOptions options = EMOptionsHelper.fromJson(param);
-        EMClient.getInstance().init(this.registrar.context(), options);
-        EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
-        registerManagers();
-        addEMListener();
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("isLoginBefore", EMClient.getInstance().isLoggedInBefore());
-        data.put("currentUsername", EMClient.getInstance().getCurrentUser());
-        onSuccess(result, channelName,data);
-    }
-
-
-    private void addEMListener() {
-        EMClient.getInstance().addMultiDeviceListener(new EMMultiDeviceListener() {
-            @Override
-            public void onContactEvent(int event, String target, String ext) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("event", Integer.valueOf(event));
-                data.put("target", target);
-                data.put("ext", ext);
-                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
-            }
-
-            @Override
-            public void onGroupEvent(int event, String target, List<String> userNames) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("event", Integer.valueOf(event));
-                data.put("target", target);
-                data.put("userNames", userNames);
-                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
-            }
-        });
-
-        //setup connection listener
-        EMClient.getInstance().addConnectionListener(new EMConnectionListener() {
-            @Override
-            public void onConnected() {
-                Map<String, Object> data = new HashMap<>();
-                data.put("connected", Boolean.TRUE);
-                post(()-> channel.invokeMethod(EMSDKMethod.onConnected, data));
-            }
-
-            @Override
-            public void onDisconnected(int errorCode) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("errorCode", errorCode);
-                post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, data));
-            }
-        });
-    }
-
     private void createAccount(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
@@ -303,5 +245,64 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         });
     }
 
+
+    private void registerManagers() {
+        new EMChatManagerWrapper(registrar, "em_chat_manager");
+        new EMContactManagerWrapper(registrar, "em_contact_manager");
+        new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
+    }
+
+    private void init(JSONObject param, String channelName, Result result) throws JSONException {
+        EMOptions options = EMOptionsHelper.fromJson(param);
+        EMClient.getInstance().init(this.registrar.context(), options);
+        EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
+        registerManagers();
+        addEMListener();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("isLoginBefore", EMClient.getInstance().isLoggedInBefore());
+        data.put("currentUsername", EMClient.getInstance().getCurrentUser());
+        onSuccess(result, channelName,data);
+    }
+
+
+    private void addEMListener() {
+        EMClient.getInstance().addMultiDeviceListener(new EMMultiDeviceListener() {
+            @Override
+            public void onContactEvent(int event, String target, String ext) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("ext", ext);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
+            }
+
+            @Override
+            public void onGroupEvent(int event, String target, List<String> userNames) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("userNames", userNames);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
+            }
+        });
+
+        //setup connection listener
+        EMClient.getInstance().addConnectionListener(new EMConnectionListener() {
+            @Override
+            public void onConnected() {
+                Map<String, Object> data = new HashMap<>();
+                data.put("connected", Boolean.TRUE);
+                post(()-> channel.invokeMethod(EMSDKMethod.onConnected, data));
+            }
+
+            @Override
+            public void onDisconnected(int errorCode) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("errorCode", errorCode);
+                post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, data));
+            }
+        });
+    }
 }
 

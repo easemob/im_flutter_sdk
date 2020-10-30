@@ -90,7 +90,7 @@ public class EMSDKMethod {
     static final String joinChatRoom = "joinChatRoom";
     static final String leaveChatRoom = "leaveChatRoom";
     static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
-    static final String fetchChatRoomFromServer = "fetchChatRoomFromServer";
+    static final String fetchChatRoomInfoFromServer = "fetchChatRoomInfoFromServer";
     static final String getChatRoom = "getChatRoom";
     static final String getAllChatRooms = "getAllChatRooms";
     static final String createChatRoom = "createChatRoom";
