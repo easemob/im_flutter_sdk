@@ -4,6 +4,8 @@ import com.hyphenate.exceptions.HyphenateException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import io.flutter.plugin.common.JSONMethodCodec;
@@ -17,8 +19,9 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
 
   private static final String CHANNEL_PREFIX = "com.easemob.im/";
 
-  EMWrapper(PluginRegistry.Registrar registrar, String channelName) {
+  private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
+  EMWrapper(PluginRegistry.Registrar registrar, String channelName) {
     this.registrar = registrar;
     this.channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + channelName, JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(this);
@@ -29,6 +32,10 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
 
   void post(Runnable runnable) {
     ImFlutterSdkPlugin.handler.post(runnable);
+  }
+
+  void asyncRunnable(Runnable runnable) {
+    cachedThreadPool.execute(runnable);
   }
 
   void onSuccess(MethodChannel.Result result, String channelName, Object object) {

@@ -296,11 +296,11 @@ class EMGroupManager {
   }
 
   /// 上传群共享文件
-  Future<EMGroupSharedFile> uploadGroupSharedFile({@required String groupId, @required String filePath}) async {
+  Future<bool> uploadGroupSharedFile({@required String groupId, @required String filePath}) async {
     Map req = {'groupId': groupId, 'filePath': filePath};
     Map result = await _channel.invokeMethod(EMSDKMethod.uploadGroupSharedFile, req);
     EMError.hasErrorFromResult(result);
-    return EMGroupSharedFile.fromJson(result[EMSDKMethod.uploadGroupSharedFile]);
+    return result.boolValue(EMSDKMethod.uploadGroupSharedFile);
   }
 
   /// 下载群共享文件
@@ -308,7 +308,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
     Map result = await _channel.invokeMethod(EMSDKMethod.downloadGroupSharedFile, req);
     EMError.hasErrorFromResult(result);
-    return true;
+    return result.boolValue(EMSDKMethod.downloadGroupSharedFile);
   }
 
   /// 删除群共享文件

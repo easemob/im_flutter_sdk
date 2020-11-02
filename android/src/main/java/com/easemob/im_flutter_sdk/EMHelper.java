@@ -1,6 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.chat.EMChatRoom;
+import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
@@ -9,12 +10,14 @@ import com.hyphenate.chat.EMCustomMessageBody;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMGroupManager;
 import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
+import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMPageResult;
@@ -153,7 +156,29 @@ class EMGroupHelper {
     }
 }
 
+class EMMucSharedFileHelper {
+    static Map<String, Object> toJson(EMMucSharedFile file) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("fileId", file.getFileId());
+        data.put("name", file.getFileName());
+        data.put("owner", file.getFileOwner());
+        data.put("createTime", file.getFileUpdateTime());
+        data.put("fileSize", file.getFileSize());
+
+        return data;
+    }
+}
+
 class EMGroupOptionsHelper {
+
+    static EMGroupOptions fromJson(JSONObject json) throws JSONException {
+        EMGroupOptions options = new EMGroupOptions();
+        options.maxUsers = json.getInt("maxCount");
+        options.inviteNeedConfirm = json.getBoolean("inviteNeedConfirm");
+        options.extField = json.getString("ext");
+        options.style = styleFromInt(json.getInt("style"));
+        return options;
+    }
 
     static Map<String, Object> toJson(EMGroupOptions options) {
         Map<String, Object> data = new HashMap<>();
@@ -186,6 +211,8 @@ class EMGroupOptionsHelper {
         return 0;
     }
 }
+
+
 
 class EMChatRoomHelper{
 
@@ -615,7 +642,7 @@ class EMConversationHelper {
     }
 
 
-    private static EMConversation.EMConversationType typeFromInt(int type) {
+    static EMConversation.EMConversationType typeFromInt(int type) {
         switch (type) {
             case 0: return EMConversation.EMConversationType.Chat;
             case 1: return EMConversation.EMConversationType.GroupChat;
@@ -670,6 +697,10 @@ class EMCursorResultHelper {
 
             if (obj instanceof String) {
                 jsonList.add(obj);
+            }
+
+            if (obj instanceof EMGroupInfo) {
+                jsonList.add(EMGroupHelper.toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
             }
         }
         data.put("list",jsonList);

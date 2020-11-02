@@ -665,7 +665,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUploadGroupSharedFile
                             error:aError
-                           object:[aSharedFile toJson]];
+                           object:@(!Error)];
     }];
 }
 
@@ -682,7 +682,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyDownloadGroupSharedFile
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(!Error)];
     }];
 }
 
@@ -695,7 +695,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyRemoveGroupSharedFile
                             error:aError
-                           object:[aGroup toJson]];
+                           object:@(!Error)];
     }];
 }
 
@@ -747,7 +747,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyRequestToJoinPublicGroup
                             error:aError
-                           object:nil];
+                           object:[aGroup toJson]];
     }];
 }
 
@@ -760,7 +760,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyAcceptJoinApplication
                             error:aError
-                           object:nil];
+                           object:[aGroup toJson]];
     }];
 }
 
@@ -774,7 +774,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyDeclineJoinApplication
                             error:aError
-                           object:nil];
+                           object:[aGroup toJson]];
     }];
 }
 
@@ -787,7 +787,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyAcceptInvitationFromGroup
                             error:aError
-                           object:nil];
+                           object:[aGroup toJson]];
     }];
 }
 
