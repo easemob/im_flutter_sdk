@@ -13,7 +13,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
@@ -105,7 +104,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private void createAccount(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
-        new Thread(()-> {
+        asyncRunnable(()->{
             try {
                 EMClient.getInstance().createAccount(username, password);
                 onSuccess(result, channelName, username);
@@ -152,13 +151,15 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void changeAppKey(JSONObject param, String channelName, Result result) throws JSONException{
-        try {
-            String appKey = param.getString("appKey");
-            EMClient.getInstance().changeAppkey(appKey);
-            onSuccess(result, channelName, true);
-        } catch (HyphenateException e) {
-            onError(result, e);
-        }
+        String appKey = param.getString("appKey");
+        asyncRunnable(()-> {
+            try {
+                EMClient.getInstance().changeAppkey(appKey);
+                onSuccess(result, channelName, true);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
@@ -167,7 +168,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void updateCurrentUserNick(JSONObject param, String channelName, Result result) throws JSONException {
         String nickName = param.getString("nickname");
-        new Thread(()-> {
+        asyncRunnable(()->{
             try {
                 boolean status = EMClient.getInstance().pushManager().updatePushNickname(nickName);
                 onSuccess(result, channelName, status);
@@ -183,12 +184,14 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void compressLogs(JSONObject param, String channelName, Result result) throws JSONException {
-        try {
-            String path = EMClient.getInstance().compressLogs();
-            onSuccess(result, channelName, path);
-        } catch (HyphenateException e) {
-            onError(result, e);
-        }
+        asyncRunnable(()->{
+            try {
+                String path = EMClient.getInstance().compressLogs();
+                onSuccess(result, channelName, path);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
     private void kickDevice(JSONObject param, String channelName, Result result) throws JSONException {
@@ -196,7 +199,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         String username = param.getString("username");
         String password = param.getString("password");
         String resource = param.getString("resource");
-        new Thread(() -> {
+        asyncRunnable(()->{
             try {
                 EMClient.getInstance().kickDevice(username, password, resource);
                 onSuccess(result, channelName, true);
@@ -210,7 +213,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         String username = param.getString("username");
         String password = param.getString("password");
 
-        new Thread(() -> {
+        asyncRunnable(()->{
             try {
                 EMClient.getInstance().kickAllDevices(username, password);
                 onSuccess(result, channelName, true);
@@ -218,6 +221,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 onError(result, e);
             }
         });
+
     }
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
@@ -250,6 +254,8 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMChatManagerWrapper(registrar, "em_chat_manager");
         new EMContactManagerWrapper(registrar, "em_contact_manager");
         new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
+        new EMGroupManagerWrapper(registrar, "em_group_room_manager");
+        new EMConversationWrapper(registrar, "em_conversation");
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {

@@ -109,6 +109,7 @@ class EMWrapperCallBack implements EMCallBack {
     public void onProgress(int progress, String status) {
         // no need
     }
+
 }
 
 
@@ -129,13 +130,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
 
     @Override
     public void onSuccess(T object) {
-        post(()-> {
-            Map<String, Object> data = new HashMap<>();
-            if (object != null) {
-                data.put(channelName, object);
-            }
-            result.success(data);
-        });
+        updateObject(object);
     }
 
     @Override
@@ -144,6 +139,16 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
             Map<String, Object> data = new HashMap<>();
             data.put("error", EMErrorHelper.toJson(code, desc));
             EMLog.e("callback", "onError");
+            result.success(data);
+        });
+    }
+
+    public void updateObject(Object object) {
+        post(()-> {
+            Map<String, Object> data = new HashMap<>();
+            if (object != null) {
+                data.put(channelName, object);
+            }
             result.success(data);
         });
     }

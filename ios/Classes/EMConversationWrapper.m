@@ -136,7 +136,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyMarkMsgAsRead
                             error:error
-                           object:nil];
+                           object:@(!error)];
     }];
 }
 
@@ -150,7 +150,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyMarkAllMsgsAsRead
                             error:error
-                           object:nil];
+                           object:@(!error)];
     }];
 }
 

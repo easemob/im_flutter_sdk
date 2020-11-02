@@ -38,7 +38,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private Map<String, EMCursorResult<EMMessage>> cursorResultList = new HashMap<String, EMCursorResult<EMMessage>>();
 
     EMChatManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
+        super(registrar, channelName)；
     }
 
     private void init() {

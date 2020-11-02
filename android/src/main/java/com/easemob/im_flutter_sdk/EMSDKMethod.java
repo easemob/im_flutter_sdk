@@ -67,23 +67,28 @@ public class EMSDKMethod {
     static final String onConversationUpdate = "onConversationUpdate";
     static final String onMessageStatusOnProgress = "onMessageStatusOnProgress";
 
-    /// EMConversation
+/// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
-    static final String loadMoreMsgFromDB = "loadMoreMsgFromDB";
-    static final String searchConversationMsgFromDB = "searchConversationMsgFromDB";
-    static final String searchConversationMsgFromDBByType = "searchConversationMsgFromDBByType";
-    static final String loadMessages = "loadMessages";
     static final String markMessageAsRead = "markMessageAsRead";
     static final String removeMessage = "removeMessage";
-    static final String getLastMessage = "getLastMessage";
+    static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";
-    static final String clear = "clear";
     static final String clearAllMessages = "clearAllMessages";
     static final String insertMessage = "insertMessage";
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
-    static final String getMessageAttachmentPath = "getMessageAttachmentPath";
+
+    // 根据消息id获取消息
+    static final String loadMsgWithId = "loadMsgWithId";
+    // 根据起始消息id获取消息
+    static final String loadMsgWithStartId = "loadMsgWithStartId";
+    // 根据关键字获取消息
+    static final String loadMsgWithKeywords = "loadMsgWithKeywords";
+    // 根据消息类型获取消息
+    static final String loadMsgWithMsgType = "loadMsgWithMsgType";
+    // 通过时间获取消息
+    static final String loadMsgWithTime = "loadMsgWithTime";
 
 
     //EMChatRoomManager
@@ -115,46 +120,53 @@ public class EMSDKMethod {
     static final String chatRoomChange = "onChatRoomChange";
 
     /// EMGroupManager
-    static final String getAllGroups = "getAllGroups";
-    static final String getGroup = "getGroup";
-    static final String createGroup = "createGroup";
-    static final String loadAllGroups = "loadAllGroups";
-    static final String destroyGroup = "destroyGroup";
-    static final String addUsersToGroup = "addUsersToGroup";
-    static final String removeUserFromGroup = "removeUserFromGroup";
-    static final String leaveGroup = "leaveGroup";
-    static final String getGroupFromServer = "getGroupFromServer";
+    static final String getGroupWithId = "getGroupWithId";
+    static final String getJoinedGroups = "getJoinedGroups";
+    static final String getGroupsWithoutPushNotification = "getGroupsWithoutPushNotification";
     static final String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
     static final String getPublicGroupsFromServer = "getPublicGroupsFromServer";
-    static final String joinGroup = "joinGroup";
-    static final String changeGroupName = "changeGroupName";
-    static final String changeGroupDescription = "changeGroupDescription";
-    static final String acceptGroupInvitation = "acceptGroupInvitation";
-    static final String declineGroupInvitation = "declineGroupInvitation";
-    static final String acceptApplication = "acceptApplication";
-    static final String declineApplication = "declineApplication";
-    static final String inviteUser = "inviteUser";
-    static final String applyJoinToGroup = "applyJoinToGroup";
-    static final String blockGroupMessage = "blockGroupMessage";
-    static final String unblockGroupMessage = "unblockGroupMessage";
-    static final String blockUser = "blockUser";
-    static final String unblockUser = "unblockUser";
-    static final String fetchGroupBlackList = "fetchGroupBlackList";
-    static final String fetchGroupMembers = "fetchGroupMembers";
-    static final String changeOwner = "changeOwner";
-    static final String addGroupAdmin = "addGroupAdmin";
-    static final String removeGroupAdmin = "removeGroupAdmin";
-    static final String muteGroupMembers = "muteGroupMembers";
-    static final String unMuteGroupMembers = "unMuteGroupMembers";
-    static final String fetchGroupMuteList = "fetchGroupMuteList";
-    static final String updateGroupAnnouncement = "updateGroupAnnouncement";
-    static final String fetchGroupAnnouncement = "fetchGroupAnnouncement";
+    static final String createGroup = "createGroup";
+    static final String getGroupSpecificationFromServer = "getGroupSpecificationFromServer";
+    static final String getGroupMemberListFromServer = "getGroupMemberListFromServer";
+    static final String getGroupBlacklistFromServer = "getGroupBlacklistFromServer";
+    static final String getGroupMuteListFromServer = "getGroupMuteListFromServer";
+    static final String getGroupWhiteListFromServer = "getGroupWhiteListFromServer";
+    static final String isMemberInWhiteListFromServer = "isMemberInWhiteListFromServer";
+    static final String getGroupFileListFromServer = "getGroupFileList";
+    static final String getGroupAnnouncementFromServer = "getGroupAnnouncementFromServer";
+    static final String addMembers = "addMembers";
+    static final String removeMembers = "removeMembers";
+    static final String blockMembers = "blockMembers";
+    static final String unblockMembers = "unblockMembers";
+    static final String updateGroupSubject = "updateGroupSubject";
+    static final String updateDescription = "updateDescription";
+    static final String leaveGroup = "leaveGroup";
+    static final String destroyGroup = "destroyGroup";
+    static final String blockGroup = "blockGroup";
+    static final String unblockGroup = "unblockGroup";
+    static final String updateGroupOwner = "updateGroupOwner";
+    static final String addAdmin = "addAdmin";
+    static final String removeAdmin = "removeAdmin";
+    static final String muteMembers = "muteMembers";
+    static final String unMuteMembers = "unMuteMembers";
+    static final String muteAllMembers = "muteAllMembers";
+    static final String unMuteAllMembers = "unMuteAllMembers";
+    static final String addWhiteList = "addWhiteList";
+    static final String removeWhiteList = "removeWhiteList";
     static final String uploadGroupSharedFile = "uploadGroupSharedFile";
-    static final String fetchGroupSharedFileList = "fetchGroupSharedFileList";
-    static final String deleteGroupSharedFile = "deleteGroupSharedFile";
     static final String downloadGroupSharedFile = "downloadGroupSharedFile";
-    static final String updateGroupExtension = "updateGroupExtension";
+    static final String removeGroupSharedFile = "removeGroupSharedFile";
+    static final String updateGroupAnnouncement = "updateGroupAnnouncement";
+    static final String updateGroupExt = "updateGroupExt";
+    static final String joinPublicGroup = "joinPublicGroup";
+    static final String requestToJoinPublicGroup = "requestToJoinPublicGroup";
+    static final String acceptJoinApplication = "acceptJoinApplication";
+    static final String declineJoinApplication = "declineJoinApplication";
+    static final String acceptInvitationFromGroup = "acceptInvitationFromGroup";
+    static final String declineInvitationFromGroup = "declineInvitationFromGroup";
+    static final String ignoreGroupPush = "ignoreGroupPush";
 
+    /// EMGroupManagerListener
     static final String onGroupChanged = "onGroupChanged";
 
     //EMPushManager
