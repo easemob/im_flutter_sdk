@@ -59,11 +59,10 @@ static NSString * const EMMethodKeyDownloadThumbnail = @"downloadThumbnail";
 static NSString * const EMMethodKeyImportMessages = @"importMessages";
 static NSString * const EMMethodKeyLoadAllConversations = @"loadAllConversations";
 static NSString * const EMMethodKeyDeleteConversation = @"deleteConversation";
-static NSString * const EMMethodKeySetVoiceMessageListened = @"setVoiceMessageListened";
-static NSString * const EMMethodKeyUpdateParticipant = @"updateParticipant";
+//static NSString * const EMMethodKeySetVoiceMessageListened = @"setVoiceMessageListened";
+//static NSString * const EMMethodKeyUpdateParticipant = @"updateParticipant";
 static NSString * const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString * const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
-static NSString * const EMMethodKeyGetCursor = @"getCursor";
 static NSString * const EMMethodKeyGetMessage = @"getMessage";
 
 #pragma mark - EMChatManagerDelegate
@@ -73,8 +72,6 @@ static NSString * const EMMethodKeyOnMessagesRead = @"onMessagesRead";
 static NSString * const EMMethodKeyOnMessagesDelivered = @"onMessagesDelivered";
 static NSString * const EMMethodKeyOnMessagesRecalled = @"onMessagesRecalled";
 static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate";
-
-static NSString * const EMMethodKeyAddMessageListener = @"addEMChatManagerListener";
 
 #pragma mark - EMMessageListener
 static NSString * const EMMethodKeyOnMessageProgressUpdate = @"onMessageProgressUpdate";

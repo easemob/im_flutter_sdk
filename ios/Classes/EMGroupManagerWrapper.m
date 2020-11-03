@@ -665,7 +665,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUploadGroupSharedFile
                             error:aError
-                           object:@(!Error)];
+                           object:@(!aError)];
     }];
 }
 
@@ -682,7 +682,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyDownloadGroupSharedFile
                             error:aError
-                           object:@(!Error)];
+                           object:@(!aError)];
     }];
 }
 
@@ -695,7 +695,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyRemoveGroupSharedFile
                             error:aError
-                           object:@(!Error)];
+                           object:@(!aError)];
     }];
 }
 

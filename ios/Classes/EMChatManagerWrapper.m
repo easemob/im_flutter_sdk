@@ -92,14 +92,6 @@
         [self deleteConversation:call.arguments
                      channelName:EMMethodKeyDeleteConversation
                           result:result];
-    } else if ([EMMethodKeySetVoiceMessageListened isEqualToString:call.method]) {
-        [self setVoiceMessageListened:call.arguments
-                          channelName:EMMethodKeySetVoiceMessageListened
-                               result:result];
-    } else if ([EMMethodKeyUpdateParticipant isEqualToString:call.method]) {
-        [self updateParticipant:call.arguments
-                    channelName:EMMethodKeyUpdateParticipant
-                         result:result];
     } else if ([EMMethodKeyFetchHistoryMessages isEqualToString:call.method]) {
         [self fetchHistoryMessages:call.arguments
                        channelName:EMMethodKeyFetchHistoryMessages
@@ -108,10 +100,6 @@
         [self searchChatMsgFromDB:call.arguments
                       channelName:EMMethodKeySearchChatMsgFromDB
                            result:result];
-    } else if ([EMMethodKeyGetCursor isEqualToString:call.method]) {
-        
-    } else if ([EMMethodKeyAddMessageListener isEqualToString:call.method]) {
-        
     } else {
         [super handleMethodCall:call result:result];
     }
@@ -408,26 +396,11 @@
     }];
 }
 
-// ??
-- (void)setVoiceMessageListened:(NSDictionary *)param
-                    channelName:(NSString *)aChannelName
-                         result:(FlutterResult)result {
-    
-}
-
-// ??
-- (void)updateParticipant:(NSDictionary *)param
-              channelName:(NSString *)aChannelName
-                   result:(FlutterResult)result {
-    
-}
-
-
 - (void)fetchHistoryMessages:(NSDictionary *)param
                  channelName:(NSString *)aChannelName
                       result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *conversationId = param[@"id"];
+    NSString *conversationId = param[@"con_id"];
     EMConversationType type = (EMConversationType)[param[@"type"] intValue];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *startMsgId = param[@"startMsgId"];

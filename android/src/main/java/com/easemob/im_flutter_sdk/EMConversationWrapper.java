@@ -241,8 +241,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             case "voice" : type = EMMessage.Type.VOICE; break;
         }
 
+        EMMessage.Type finalType = type;
         asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.searchMsgFromDB(type, timestamp, count, sender, direction);
+            List<EMMessage> msgList = conversation.searchMsgFromDB(finalType, timestamp, count, sender, direction);
             List<Map> messages = new ArrayList<>();
             for(EMMessage msg: msgList) {
                 messages.add(EMMessageHelper.toJson(msg));
@@ -271,8 +272,8 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
         String con_id = params.getString("con_id");
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
-        EMConversation conv = EMClient.getInstance().chatManager().getConversation(con_id, type);
-        return conv;
+        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(con_id, type);
+        return conversation;
     }
 
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {

@@ -34,38 +34,40 @@ public class EMSDKMethod {
 
     static final String onContactChanged = "onContactChanged";
 
-    /// EMChatManager methods
+/// EMChatManager methods
     static final String sendMessage = "sendMessage";
     static final String ackMessageRead = "ackMessageRead";
     static final String recallMessage = "recallMessage";
-    static final String getMessage = "getMessage";
     static final String getConversation = "getConversation";
     static final String markAllChatMsgAsRead = "markAllChatMsgAsRead";
     static final String getUnreadMessageCount = "getUnreadMessageCount";
-    static final String saveMessage = "saveMessage";
     static final String updateChatMessage = "updateChatMessage";
     static final String downloadAttachment = "downloadAttachment";
     static final String downloadThumbnail = "downloadThumbnail";
     static final String importMessages = "importMessages";
-    static final String getConversationsByType = "getConversationsByType";
-    static final String downloadFile = "downloadFile";
-    static final String getAllConversations = "getAllConversations";
     static final String loadAllConversations = "loadAllConversations";
     static final String deleteConversation = "deleteConversation";
-    static final String setVoiceMessageListened = "setVoiceMessageListened";
-    static final String updateParticipant = "updateParticipant";
     static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
-    static final String getCursor = "getCursor";
+    static final String getMessage = "getMessage";
 
-    static final String onMessageReceived = "onMessageReceived";
-    static final String onCmdMessageReceived = "onCmdMessageReceived";
-    static final String onMessageRead = "onMessageRead";
-    static final String onMessageDelivered = "onMessageDelivered";
-    static final String onMessageRecalled = "onMessageRecalled";
+    /// EMChatManager listener
+    static final String onMessagesReceived = "onMessagesReceived";
+    static final String onCmdMessagesReceived = "onCmdMessagesReceived";
+    static final String onMessagesRead = "onMessagesRead";
+    static final String onMessagesDelivered = "onMessagesDelivered";
+    static final String onMessagesRecalled = "onMessagesRecalled";
     static final String onMessageChanged = "onMessageChanged";
+    
     static final String onConversationUpdate = "onConversationUpdate";
-    static final String onMessageStatusOnProgress = "onMessageStatusOnProgress";
+
+    /// EMMessage listener
+    static final String onMessageProgressUpdate = "onMessageProgressUpdate";
+    static final String onMessageError = "onMessageError";
+    static final String onMessageSuccess = "onMessageSuccess";
+    static final String onMessageReadAck = "onMessageReadAck";
+    static final String onMessageDeliveryAck = "onMessageDeliveryAck";
+    static final String onMessageStatusChanged = "onMessageStatusChanged";
 
 /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
