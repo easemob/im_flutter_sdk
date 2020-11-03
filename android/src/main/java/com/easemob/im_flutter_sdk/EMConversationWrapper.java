@@ -8,9 +8,14 @@ import io.flutter.plugin.common.PluginRegistry;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessageBody;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 public class EMConversationWrapper extends EMWrapper implements MethodCallHandler{
@@ -56,6 +61,22 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.updateConversationMessage.equals(call.method)) {
                 updateConversationMessage(param, EMSDKMethod.updateConversationMessage, result);
             }
+            else if (EMSDKMethod.loadMsgWithId.equals(call.method)) {
+                loadMsgWithId(param, EMSDKMethod.loadMsgWithId, result);
+            }
+            else if (EMSDKMethod.loadMsgWithStartId.equals(call.method)) {
+                loadMsgWithStartId(param, EMSDKMethod.loadMsgWithStartId, result);
+            }
+            else if (EMSDKMethod.loadMsgWithKeywords.equals(call.method)) {
+                loadMsgWithKeywords(param, EMSDKMethod.loadMsgWithKeywords, result);
+            }
+            else if (EMSDKMethod.loadMsgWithMsgType.equals(call.method)) {
+                loadMsgWithMsgType(param, EMSDKMethod.loadMsgWithMsgType, result);
+            }
+            else if (EMSDKMethod.loadMsgWithTime.equals(call.method)) {
+                loadMsgWithTime(param, EMSDKMethod.loadMsgWithTime, result);
+            }
+
             else
             {
                 super.onMethodCall(call, result);
@@ -162,6 +183,89 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         });
     }
 
+    private void loadMsgWithId(JSONObject params, String channelName, Result result) throws JSONException {
+        String msgId = params.getString("msg_id");
+        asyncRunnable(()->{
+            EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
+            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+        });
+    }
+
+    private void loadMsgWithStartId(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        String startId = params.getString("startId");
+        int pageSize = params.getInt("count");
+        asyncRunnable(()->{
+            List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(EMMessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void loadMsgWithKeywords(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        String keywords = params.getString("keywords");
+        String sender = params.getString("sender");
+        int count = params.getInt("count");
+        long timestamp = params.getLong("timestamp");
+        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
+        asyncRunnable(()->{
+            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, sender, direction);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(EMMessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void loadMsgWithMsgType(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        long timestamp = params.getLong("timestamp");
+        String sender = params.getString("sender");
+        int count = params.getInt("count");
+        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
+        String typeStr = params.getString("type");
+        EMMessage.Type type = EMMessage.Type.TXT;
+        switch (typeStr) {
+            case "txt" : type = EMMessage.Type.TXT; break;
+            case "loc" : type = EMMessage.Type.LOCATION; break;
+            case "cmd" : type = EMMessage.Type.CMD; break;
+            case "custom" : type = EMMessage.Type.CUSTOM; break;
+            case "file" : type = EMMessage.Type.FILE; break;
+            case "img" : type = EMMessage.Type.IMAGE; break;
+            case "video" : type = EMMessage.Type.VIDEO; break;
+            case "voice" : type = EMMessage.Type.VOICE; break;
+        }
+
+        asyncRunnable(()->{
+            List<EMMessage> msgList = conversation.searchMsgFromDB(type, timestamp, count, sender, direction);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(EMMessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void loadMsgWithTime(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        long startTime = params.getLong("startTime");
+        long endTime = params.getLong("endTime");
+        int count = params.getInt("count");
+
+        asyncRunnable(()->{
+            List<EMMessage> msgList = conversation.searchMsgFromDB(startTime, endTime, count);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(EMMessageHelper.toJson(msg));
+            }
+            onSuccess(result, channelName, messages);
+        });
+    }
 
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
@@ -169,5 +273,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
         EMConversation conv = EMClient.getInstance().chatManager().getConversation(con_id, type);
         return conv;
+    }
+
+    private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
+        return direction == "up" ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
     }
 }

@@ -79,6 +79,7 @@ public class EMSDKMethod {
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
 
+
     // 根据消息id获取消息
     static final String loadMsgWithId = "loadMsgWithId";
     // 根据起始消息id获取消息
