@@ -76,7 +76,8 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     private void addContact(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String reason = param.getString("reason");
-        new Thread(() -> {
+
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().addContact(username, reason);
                 onSuccess(result, channelName, username);
@@ -89,7 +90,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     private void deleteContact(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         boolean keepConversation = param.getBoolean("keepConversation");
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().deleteContact(username, keepConversation);
                 onSuccess(result, channelName, username);
@@ -100,7 +101,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     }
 
     private void getAllContactsFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 List contacts =  EMClient.getInstance().contactManager().getAllContactsFromServer();
                 onSuccess(result, channelName, contacts);
@@ -112,7 +113,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
     private void addUserToBlackList(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = params.getString("username");
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().addUserToBlackList(username, false);
                 onSuccess(result, channelName, username);
@@ -124,7 +125,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
     private void removeUserFromBlackList(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = params.getString("username");
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().removeUserFromBlackList(username);
                 onSuccess(result, channelName, username);
@@ -135,7 +136,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     }
 
     private void getBlackListFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 List contacts = EMClient.getInstance().contactManager().getBlackListFromServer();
                 onSuccess(result, channelName, contacts);
@@ -147,7 +148,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
     private void acceptInvitation(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = params.getString("username");
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().acceptInvitation(username);
                 onSuccess(result, channelName, username);
@@ -159,7 +160,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
     private void declineInvitation(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = params.getString("username");
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().declineInvitation(username);
                 onSuccess(result, channelName, username);
@@ -170,7 +171,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     }
 
     private void getSelfIdsOnOtherPlatform(JSONObject params, String channelName,  Result result) throws JSONException {
-        new Thread(() -> {
+        asyncRunnable(() -> {
             try {
                 List platforms = EMClient.getInstance().contactManager().getSelfIdsOnOtherPlatform();
                 onSuccess(result, channelName, platforms);

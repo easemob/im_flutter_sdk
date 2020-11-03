@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-
 /**
  * ImFlutterSdkPlugin
  */
@@ -33,38 +32,6 @@ public class ImFlutterSdkPlugin {
     public static void registerWith(Registrar registrar) {
         new EMClientWrapper(registrar, "em_client");
     }
-
-    /*
-    private static void registerChatManagerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_manager", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMChatManagerWrapper(channel));
-    }
-
-    private static void registerContactManagerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_contact_manager", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMContactManagerWrapper(channel));
-    }
-
-    private static void registerConversationWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_conversation", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMConversationWrapper());
-    }
-
-    private static void registerEMChatRoomManagerWrapper(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_chat_room_manager", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMChatRoomManagerWrapper(channel));
-    }
-
-    private static void registerGroupManagerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_group_manager", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMGroupManagerWrapper(channel));
-    }
-
-    private static void registerPushManagerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + "/em_push_manager", JSONMethodCodec.INSTANCE);
-        channel.setMethodCallHandler(new EMPushManagerWrapper());
-    }
-    */
 }
 
 

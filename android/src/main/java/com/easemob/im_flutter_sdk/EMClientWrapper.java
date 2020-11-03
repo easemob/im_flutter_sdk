@@ -256,6 +256,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
         new EMGroupManagerWrapper(registrar, "em_group_room_manager");
         new EMConversationWrapper(registrar, "em_conversation");
+        new EMPushManagerWrapper(registrar, "em_push_manager");
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {

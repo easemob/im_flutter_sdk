@@ -50,10 +50,6 @@ class EMSDKMethod {
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
   static const String getMessage = 'getMessage';
 
-  // 需确认安卓用法，是否可以去掉？
-  static const String getCursor = 'getCursor';
-
-
   /// EMChatManager listener
   static const String onMessagesReceived = 'onMessagesReceived';
   static const String onCmdMessagesReceived = 'onCmdMessagesReceived';
@@ -95,7 +91,7 @@ class EMSDKMethod {
   // 通过时间获取消息
   static const String loadMsgWithTime = 'loadMsgWithTime';
 
-  ///EMChatRoomManager methods
+  /// EMChatRoomManager methods
   static final String joinChatRoom = 'joinChatRoom';
   static final String leaveChatRoom = 'leaveChatRoom';
   static final String fetchPublicChatRoomsFromServer = 'fetchPublicChatRoomsFromServer';

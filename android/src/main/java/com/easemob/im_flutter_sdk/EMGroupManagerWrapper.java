@@ -17,10 +17,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -255,8 +253,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private void getGroupsWithoutPushNotification(JSONObject param, String channelName,  Result result) throws JSONException {
-        List<String> groups = EMClient.getInstance().pushManager().getNoPushGroups();
-        onSuccess(result, channelName, groups);
+        asyncRunnable(()->{
+            List<String> groups = EMClient.getInstance().pushManager().getNoPushGroups();
+            onSuccess(result, channelName, groups);
+        });
     }
 
     private void getJoinedGroupsFromServer(JSONObject param, String channelName,  Result result) throws JSONException {

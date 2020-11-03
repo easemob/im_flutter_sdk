@@ -19,10 +19,15 @@ import java.util.Map;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 
 import static com.easemob.im_flutter_sdk.EMHelper.convertEMPushConfigsToStringMap;
 
-public class EMPushManagerWrapper  implements MethodCallHandler, EMWrapper {
+public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler {
+
+    EMPushManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
+        super(registrar, channelName);
+    }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
