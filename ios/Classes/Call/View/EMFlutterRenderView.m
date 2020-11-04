@@ -6,6 +6,7 @@
 //
 
 #import "EMFlutterRenderView.h"
+#import <Hyphenate/Hyphenate.h>
 
 @interface EMFlutterRenderView ()
 {

@@ -13,20 +13,43 @@ enum EMImPushStyle{
 class EMImPushConfigs {
 
   EMImPushConfigs._private();
-  static const _channelPrefix = 'com.easemob.im';
-  // channel的命名与pushManager中的channel一致，本质上还是一个channel。
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_push_manager', JSONMethodCodec());
+
   EMImPushStyle _pushStyle;
   bool _noDisturb;
   int _noDisturbStartHour;
   int _noDisturbEndHour;
-  List<EMGroup> _noDisturbGroups = List();
+  List<String> _noDisturbGroups = List();
 
   EMImPushStyle get pushStyle => _pushStyle;
   bool get noDisturb => _noDisturb;
   int get noDisturbStartHour => _noDisturbStartHour;
   int get noDisturbEndHour => _noDisturbEndHour;
-  List<EMGroup> get noDisturbGroups => _noDisturbGroups;
+  List<String> get noDisturbGroups => _noDisturbGroups;
+
+
+  factory EMImPushConfigs.fromJson(Map map) {
+    if(map == null) return null;
+    return EMImPushConfigs._private()
+      .._pushStyle = map['pushStyle'] == 0 ? EMImPushStyle.Simple : EMImPushStyle.Summary
+      .._noDisturb = map.boolValue('noDisturb')
+      .._noDisturbStartHour = map['noDisturbStartHour']
+      .._noDisturbEndHour = map['noDisturbEndHour'];
+  }
+
+  Map toJson() {
+    Map data = Map();
+    data['pushStyle'] = _pushStyle == EMImPushStyle.Simple;
+    data['noDisturb'] = _noDisturb;
+    data['noDisturbStartHour'] = _noDisturbStartHour;
+    data['noDisturbEndHour'] = _noDisturbEndHour;
+    return data;
+  }
+}
+
+extension EMPushConfigExtension on EMImPushConfigs {
+
+  // channel的命名与pushManager中的channel一致，本质上还是一个channel。
+  static const MethodChannel _channel = const MethodChannel('com.easemob.im/em_push_manager', JSONMethodCodec());
 
   /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
   Future<bool> setNoDisturb(bool isNoDisturb, [int startTime = 0, int endTime = 24]) async {
@@ -62,8 +85,8 @@ class EMImPushConfigs {
     Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
     EMError.hasErrorFromResult(result);
     EMGroup group = EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
-    _noDisturbGroups.removeWhere((e) => e.groupId == group.groupId);
-    if(isNoDisturb) _noDisturbGroups.add(group);
+    _noDisturbGroups.removeWhere((e) => e == group.groupId);
+    if(isNoDisturb) _noDisturbGroups.add(group.groupId);
     return group;
   }
 
@@ -71,29 +94,7 @@ class EMImPushConfigs {
   Future<List> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
-    List list = List();
-    (result[EMSDKMethod.getNoDisturbGroups] as List)?.forEach((element) {
-      list.add(EMGroup.fromJson(element));
-    });
-    _noDisturbGroups = list;
-    return list;
-  }
-
-  factory EMImPushConfigs.fromJson(Map map) {
-    if(map == null) return null;
-    return EMImPushConfigs._private()
-      .._pushStyle = map['pushStyle'] == 0 ? EMImPushStyle.Simple : EMImPushStyle.Summary
-      .._noDisturb = map.boolValue('noDisturb')
-      .._noDisturbStartHour = map['noDisturbStartHour']
-      .._noDisturbEndHour = map['noDisturbEndHour'];
-  }
-
-  Map toJson() {
-    Map data = Map();
-    data['pushStyle'] = _pushStyle == EMImPushStyle.Simple;
-    data['noDisturb'] = _noDisturb;
-    data['noDisturbStartHour'] = _noDisturbStartHour;
-    data['noDisturbEndHour'] = _noDisturbEndHour;
-    return data;
+    _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups];
+    return _noDisturbGroups;
   }
 }

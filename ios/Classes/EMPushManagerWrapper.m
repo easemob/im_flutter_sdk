@@ -160,10 +160,10 @@
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         EMError *aError = nil;
-        NSArray *list = [EMClient.sharedClient.groupManager  getGroupsWithoutPushNotification:&aError];
+        NSArray *list = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
         NSMutableArray *groups = [NSMutableArray array];
         for (EMGroup *group in list) {
-            [groups addObject:[group toJson]];
+            [groups addObject:group.groupId];
         }
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf wrapperCallBack:result

@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 #import <Flutter/Flutter.h>
-#import "EMHelper.h"
 
 typedef NS_ENUM(NSUInteger, EMFlutterRenderViewType) {
     Local,

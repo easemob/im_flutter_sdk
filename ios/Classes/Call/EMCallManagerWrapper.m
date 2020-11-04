@@ -7,7 +7,6 @@
 
 #import "EMCallManagerWrapper.h"
 #import "EMSDKMethod.h"
-#import "EMHelper.h"
 #import "EMCallOptions+Flutter.h"
 #import "EMCallSession+Flutter.h"
 #import "EMError+Flutter.h"
@@ -28,9 +27,8 @@
     if(self = [super initWithChannelName:aChannelName
                            registrar:registrar]) {
         [EMClient.sharedClient.callManager addDelegate:self delegateQueue:nil];
-        _factory = [[EMFlutterRenderViewFactory alloc] initWithMessenger:registrar.messenger];
-        [registrar registerViewFactory:_factory withId:@"com.easemob.rtc/CallView"];
-        
+        _factory = [EMFlutterRenderViewFactory factoryWithRegistrar:registrar withId:@"com.easemob.rtc/CallView"];
+
         FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
         self.callSessionChannel = [FlutterMethodChannel methodChannelWithName:@"com.easemob.im/em_call_session"
                                                               binaryMessenger:[registrar messenger]

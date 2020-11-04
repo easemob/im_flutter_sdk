@@ -12,7 +12,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EMFlutterRenderViewFactory : NSObject <FlutterPlatformViewFactory>
-- (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger>*)messager;
+
++ (EMFlutterRenderViewFactory *)factoryWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar withId:(NSString *)aFactoryId;
 
 - (EMFlutterRenderView *)getViewWithId:(int)viewId
                                andType:(EMFlutterRenderViewType)type;

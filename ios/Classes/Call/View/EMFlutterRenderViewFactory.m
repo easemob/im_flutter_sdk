@@ -17,6 +17,18 @@
 
 @implementation EMFlutterRenderViewFactory
 
+static EMFlutterRenderViewFactory *factory;
+
++ (EMFlutterRenderViewFactory *)factoryWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar withId:(NSString *)aFactoryId
+{
+    if (!factory) {
+        factory = [[EMFlutterRenderViewFactory alloc] initWithMessenger:registrar.messenger];
+        [registrar registerViewFactory:factory withId:aFactoryId];
+    }
+    
+    return factory;
+}
+
 - (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger> *)messenger{
     self = [super init];
     if (self) {

@@ -7,7 +7,6 @@
 
 #import "EMChatroomManagerWrapper.h"
 #import "EMSDKMethod.h"
-#import "EMHelper.h"
 
 #import "EMCursorResult+Flutter.h"
 #import "EMPageResult+Flutter.h"

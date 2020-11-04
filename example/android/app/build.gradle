@@ -8,7 +8,7 @@ if (localPropertiesFile.exists()) {
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+    throw new Exception("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
@@ -44,6 +44,8 @@ android {
         ndk {
             abiFilters 'x86','arm64-v8a', 'armeabi-v7a'
         }
+
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -78,4 +80,6 @@ dependencies {
     implementation files('libs/mi_push_v3.6.12.jar')
     implementation files('libs/oppo_push_v2.0.2.jar')
     implementation files('libs/vivo_push_v2.3.1.jar')
+
+    implementation 'com.android.support:multidex:1.0.3'
 }
