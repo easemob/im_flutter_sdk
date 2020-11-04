@@ -747,7 +747,6 @@ class EMErrorHelper {
 class EMPushConfigsHelper {
     static Map<String, Object> toJson(EMPushConfigs pushConfigs) {
         Map<String, Object> data = new HashMap<>();
-        data.put("", pushConfigs.getDisplayNickname());
         data.put("noDisturb", pushConfigs.isNoDisturbOn());
         data.put("noDisturbEndHour", pushConfigs.getNoDisturbEndHour());
         data.put("noDisturbStartHour", pushConfigs.getNoDisturbStartHour());

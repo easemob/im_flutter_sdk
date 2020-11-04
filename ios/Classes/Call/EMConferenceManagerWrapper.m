@@ -7,7 +7,6 @@
 
 #import "EMConferenceManagerWrapper.h"
 #import "EMSDKMethod.h"
-#import "EMHelper.h"
 #import "EMCallConference+Flutter.h"
 #import "EMStreamParam+Flutter.h"
 #import "EMFlutterRenderViewFactory.h"
@@ -25,9 +24,7 @@
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
         [EMClient.sharedClient.conferenceManager addDelegate:self delegateQueue:nil];
-        
-        _factory = [[EMFlutterRenderViewFactory alloc] initWithMessenger:registrar.messenger];
-        [registrar registerViewFactory:_factory withId:@"com.easemob.rtc/CallView"];
+        _factory = [EMFlutterRenderViewFactory factoryWithRegistrar:registrar withId:@"com.easemob.rtc/CallView"];
     }
     return self;
 }

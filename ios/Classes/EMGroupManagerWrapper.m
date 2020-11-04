@@ -12,7 +12,6 @@
 #import "EMCursorResult+Flutter.h"
 
 #import "EMSDKMethod.h"
-#import "EMHelper.h"
 
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
 
@@ -1049,23 +1048,5 @@
                      arguments:map];
 }
 
-// 群组搜索结果转字典,EMCursorResult的list有群组列表和群组成员列表的区分，所以做判断区分
-- (NSDictionary *)dictionaryWithCursorResult:(EMCursorResult *)cursorResult isGroupList:(BOOL)isGroupList
-{
-    NSDictionary *resultDict = nil;
-    if (isGroupList) {
-        resultDict= @{
-            @"data":[EMHelper groupsToDictionaries:cursorResult.list],
-            @"cursor":cursorResult.cursor
-        };
-    } else {
-        resultDict= @{
-            @"data":cursorResult.list,
-            @"cursor":cursorResult.cursor
-        };
-    }
-    
-    return resultDict;
-}
 
 @end

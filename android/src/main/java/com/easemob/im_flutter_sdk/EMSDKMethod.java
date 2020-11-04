@@ -173,40 +173,14 @@ public class EMSDKMethod {
     static final String onGroupChanged = "onGroupChanged";
 
     //EMPushManager
-    static final String enableOfflinePush = "enableOfflinePush";
-    static final String disableOfflinePush = "disableOfflinePush";
-    static final String getPushConfigs = "getPushConfigs";
-    static final String getPushConfigsFromServer = "getPushConfigsFromServer";
-    static final String updatePushServiceForGroup = "updatePushServiceForGroup";
-    static final String getNoPushGroups = "getNoPushGroups";
+    static final String getImPushConfigs = "getImPushConfigs";
+    static final String getImPushConfigsFromServer = "getImPushConfigsFromServer";
     static final String updatePushNickname = "updatePushNickname";
-    static final String updatePushDisplayStyle = "updatePushDisplayStyle";
 
-    //EMCallStatusListener
-    public static final String callStatusConnecting = "connecting";
-    public static final String callStatusConnected = "connected";
-    public static final String callStatusAccepted  = "accepted";
-    public static final String callStatusDisconnected  = "disconnected";
-    public static final String netWorkDisconnected = "netWorkDisconnected";
-    public static final String netWorkUnstable = "networkUnstable";
-    public static final String netWorkNormal = "netWorkNormal";
-    public static final String netVideoPause= "netVideoPause";
-    public static final String netVideoResume = "netVideoResume";
-    public static final String netVoicePause = "netVoicePause";
-    public static final String netVoiceResume = "netVoiceResume";
+    static final String imPushNoDisturb = "imPushNoDisturb";
+    static final String updateImPushStyle = "updateImPushStyle";
+    static final String updateGroupPushService = "updateGroupPushService";
+    static final String getNoDisturbGroups = "getNoDisturbGroups";
 
-    public static final String onCallChanged = "onCallChanged";
-    public static final String startCall = "startCall";
-    public static final String registerCallReceiver = "registerCallReceiver";
-    public static final String setCallOptions = "setCallOptions";
-
-    public static String getCallId = "getCallId";
-    public static String getConnectType = "getConnectType";
-    public static String getExt = "getExt";
-    public static String getLocalName = "getLocalName";
-    public static String getRemoteName = "getRemoteName";
-    public static String getServerRecordId = "getServerRecordId";
-    public static String getCallType = "getCallType";
-    public static String isRecordOnServer = "isRecordOnServer";
 
 }

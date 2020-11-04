@@ -7,7 +7,6 @@
 
 #import "EMConversationWrapper.h"
 #import "EMSDKMethod.h"
-#import "EMHelper.h"
 
 #import "EMMessage+Flutter.h"
 #import "EMConversation+Flutter.h"

@@ -3,25 +3,22 @@ package com.easemob.im_flutter_sdk;
 import android.content.Context;
 
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMPushConfigs;
+import com.hyphenate.chat.EMPushManager.DisplayStyle;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.util.EMLog;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
-import static com.easemob.im_flutter_sdk.EMHelper.convertEMPushConfigsToStringMap;
 
 public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler {
 
@@ -31,163 +28,106 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
-        if (EMSDKMethod.enableOfflinePush.equals(call.method)) {
-            enableOfflinePush(call.arguments, result);
-        } else if(EMSDKMethod.disableOfflinePush.equals(call.method)){
-            disableOfflinePush(call.arguments, result);
-        }else if(EMSDKMethod.getPushConfigs.equals(call.method)){
-            getPushConfigs(call.arguments, result);
-        }else if(EMSDKMethod.getPushConfigsFromServer.equals(call.method)){
-            getPushConfigsFromServer(call.arguments, result);
-        }else if(EMSDKMethod.updatePushServiceForGroup.equals(call.method)){
-            updatePushServiceForGroup(call.arguments, result);
-        }else if(EMSDKMethod.getNoPushGroups.equals(call.method)){
-            getNoPushGroups(call.arguments, result);
-        }else if(EMSDKMethod.updatePushNickname.equals(call.method)){
-            updatePushNickname(call.arguments, result);
-        }else if(EMSDKMethod.updatePushDisplayStyle.equals(call.method)){
-            updatePushDisplayStyle(call.arguments, result);
+        JSONObject param = (JSONObject)call.arguments;
+        try {
+            if (EMSDKMethod.getImPushConfigs.equals(call.method)) {
+                getImPushConfigs(param, EMSDKMethod.getImPushConfigs, result);
+            }
+            else if(EMSDKMethod.getImPushConfigsFromServer.equals(call.method)){
+                getImPushConfigsFromServer(param, EMSDKMethod.getImPushConfigsFromServer, result);
+            }
+            else if(EMSDKMethod.updatePushNickname.equals(call.method)){
+                updatePushNickname(param, EMSDKMethod.updatePushNickname, result);
+            }
+            else if(EMSDKMethod.imPushNoDisturb.equals(call.method)){
+                imPushNoDisturb(param, EMSDKMethod.imPushNoDisturb, result);
+            }
+            else if(EMSDKMethod.updateImPushStyle.equals(call.method)){
+                updateImPushStyle(param, EMSDKMethod.updateImPushStyle, result);
+            }
+            else if(EMSDKMethod.updateGroupPushService.equals(call.method)){
+                updateGroupPushService(param, EMSDKMethod.updateGroupPushService, result);
+            }
+            else if(EMSDKMethod.getNoDisturbGroups.equals(call.method)){
+                getNoDisturbGroups(param, EMSDKMethod.getNoDisturbGroups, result);
+            }
+            else {
+                super.onMethodCall(call, result);
+            }
+        }catch (JSONException e) {
+
         }
     }
 
-    private void enableOfflinePush(Object args, Result result){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    EMClient.getInstance().pushManager().enableOfflinePush();
-                    onSuccess(result);
-                }catch (HyphenateException e){
-                    EMLog.e("HyphenateException", e.getMessage());
-                    onError(result, e);
-                }
-            }
-        }).start();
-    }
-
-    private void disableOfflinePush(Object args, Result result){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject argMap = (JSONObject) args;
-                    int startTime = argMap.getInt("startTime");
-                    int endTime = argMap.getInt("endTime");
-                    try {
-                        EMClient.getInstance().pushManager().disableOfflinePush(startTime, endTime);
-                        onSuccess(result);
-                    } catch (HyphenateException e) {
-                        EMLog.e("HyphenateException", e.getMessage());
-                        onError(result, e);
-                    }
-                }catch (JSONException e){
-                    EMLog.e("JSONException", e.getMessage());
-                }
-            }
-        }).start();
-    }
-
-    private void getPushConfigs(Object args, Result result){
+    private void getImPushConfigs(JSONObject params, String channelName,  Result result) throws JSONException {
         EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigs();
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", convertEMPushConfigsToStringMap(configs));
-        post(new Runnable() {
-            @Override
-            public void run() {
-                result.success(data);
-            }});
+        onSuccess(result, channelName, EMPushConfigsHelper.toJson(configs));
     }
 
-    private void getPushConfigsFromServer(Object args, Result result){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigsFromServer();
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.TRUE);
-                    data.put("value", convertEMPushConfigsToStringMap(configs));
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            result.success(data);
-                        }});
-                }catch (HyphenateException e){
-                    EMLog.e("HyphenateException", e.getMessage());
-                    onError(result, e);
-                }
+    private void getImPushConfigsFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
+        asyncRunnable(()->{
+            try {
+                EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigsFromServer();
+                onSuccess(result, channelName, EMPushConfigsHelper.toJson(configs));
+            } catch (HyphenateException e) {
+                onError(result, e);
             }
-        }).start();
+        });
     }
 
-    private void updatePushServiceForGroup(Object args, Result result){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject argMap = (JSONObject) args;
-                    JSONArray groupIds = argMap.getJSONArray("groupIds");
-                    boolean noPush = argMap.getBoolean("noPush");
-                    List<String> groupIdList = new ArrayList<String>();
-                    for(int i = 0; i < groupIds.length(); i++){
-                        groupIdList.add(groupIds.get(i).toString());
-                    }
-                    try {
-                        EMClient.getInstance().pushManager().updatePushServiceForGroup(groupIdList, noPush);
-                        onSuccess(result);
-                    } catch (HyphenateException e) {
-                        EMLog.e("HyphenateException", e.getMessage());
-                        onError(result, e);
-                    }
-                }catch (JSONException e){
-                    EMLog.e("JSONException", e.getMessage());
-                }
+    private void updatePushNickname(JSONObject params, String channelName,  Result result) throws JSONException {
+        String nickname = params.getString("nickname");
+
+        asyncRunnable(()->{
+            try {
+                EMClient.getInstance().pushManager().updatePushNickname(nickname);
+                onSuccess(result, channelName, nickname);
+            } catch (HyphenateException e) {
+                onError(result, e);
             }
-        }).start();
+        });
     }
 
-    private void getNoPushGroups(Object args, Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", EMClient.getInstance().pushManager().getNoPushGroups());
-        post(new Runnable() {
-            @Override
-            public void run() {
-                result.success(data);
-            }});
-    }
-
-    private void updatePushNickname(Object args, Result result){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    JSONObject argMap = (JSONObject) args;
-                    String nickname = argMap.getString("nickname");
-                    boolean updatenick = EMClient.getInstance().pushManager().updatePushNickname(nickname);
-                    Map<String, Object> data = new HashMap<String, Object>();
-                    data.put("success", Boolean.TRUE);
-                    data.put("value", updatenick);
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            result.success(data);
-                        }});
-                }catch (JSONException | HyphenateException e){
-                    EMLog.e("updatePushNickname", e.getMessage());
+    private void imPushNoDisturb(JSONObject params, String channelName,  Result result) throws JSONException {
+        boolean noDisturb = params.getBoolean("noDisturb");
+        int startTime = params.getInt("startTime");
+        int endTime = params.getInt("endTime");
+        asyncRunnable(()-> {
+            try {
+                if (noDisturb) {
+                    EMClient.getInstance().pushManager().disableOfflinePush(startTime, endTime);
+                }else{
+                    EMClient.getInstance().pushManager().enableOfflinePush();
                 }
+            } catch (HyphenateException e) {
+
             }
-        }).start();
+        });
     }
 
-    private void updatePushDisplayStyle(Object args, Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        post(new Runnable() {
-            @Override
-            public void run() {
-                result.success(data);
-            }});
+    private void updateImPushStyle(JSONObject params, String channelName,  Result result) throws JSONException {
+        DisplayStyle style = params.getInt("pushStyle") == 0 ? DisplayStyle.SimpleBanner : DisplayStyle.MessageSummary;
+        EMClient.getInstance().pushManager().asyncUpdatePushDisplayStyle(style, new EMWrapperCallBack(result, channelName, true));
+    }
+
+    private void updateGroupPushService(JSONObject params, String channelName,  Result result) throws JSONException {
+        String groupId = params.getString("group_id");
+        boolean noDisturb = params.getBoolean("noDisturb");
+        List<String> groupList = new ArrayList<>();
+        groupList.add(groupId);
+        asyncRunnable(()-> {
+            try {
+                EMClient.getInstance().pushManager().updatePushServiceForGroup(groupList, noDisturb);
+                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
+                onSuccess(result, channelName, EMGroupHelper.toJson(group));
+            } catch(HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void getNoDisturbGroups(JSONObject params, String channelName,  Result result) throws JSONException {
+        List<String> groupIds = EMClient.getInstance().pushManager().getNoPushGroups();
+        onSuccess(result, channelName, groupIds);
     }
 }

@@ -16,7 +16,6 @@
 #import "EMCallManagerWrapper.h"
 #import "EMConferenceManagerWrapper.h"
 
-#import "EMHelper.h"
 #import "EMDeviceConfig+Flutter.h"
 #import "EMOptions+Flutter.h"
 

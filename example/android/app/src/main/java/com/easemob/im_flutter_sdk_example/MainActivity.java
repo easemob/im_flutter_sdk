@@ -5,8 +5,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
-import com.easemob.im_flutter_sdk_example.call.EMCallPlugin;
-import com.easemob.im_flutter_sdk_example.conference.EMConferencePlugin;
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsManager;
 import com.easemob.im_flutter_sdk_example.runtimepermissions.PermissionsResultAction;
 
@@ -28,9 +26,6 @@ public class MainActivity extends FlutterActivity {
   }
 
   private void registerCustomPlugin(FlutterEngine flutterEngine) {
-    flutterEngine.getPlugins().add(new ImDemoPlugin());
-    flutterEngine.getPlugins().add(new EMCallPlugin());
-    flutterEngine.getPlugins().add(new EMConferencePlugin());
   }
 
   @TargetApi(23)
