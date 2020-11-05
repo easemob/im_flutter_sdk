@@ -67,7 +67,7 @@ class EMWrapperCallBack implements EMCallBack {
         post(() -> {
             Map<String, Object> data = new HashMap<>();
             data.put("error", EMErrorHelper.toJson(code, desc));
-            EMLog.e("callback", "onError");
+            EMLog.e("callback", desc);
             result.success(data);
         });
     }

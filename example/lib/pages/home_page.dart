@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/pages/call_page.dart';
-import 'package:im_flutter_sdk_example/plugin/im_demo_plugin.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 import 'conversation_list_page.dart';
@@ -34,9 +33,6 @@ class _HomePageState extends State<HomePage> implements EMCallManagerListener{
   @override
   void initState() {
     super.initState();
-    if(Platform.isAndroid) {
-      new ImDemoPlugin().loginComplete();
-    }
     EMClient.getInstance.callManager.addCallManagerListener(this);
   }
 

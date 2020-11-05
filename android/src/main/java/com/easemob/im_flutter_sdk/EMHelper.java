@@ -28,6 +28,7 @@ import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -58,10 +59,13 @@ class EMOptionsHelper {
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
 //            options.setAutoLogin(json.getBoolean(""));  EMPushConfig
 //            options.setAutoLogin(json.getBoolean(""));  enableDNSConfig
-        options.setImPort(json.getInt("imPort"));
-        options.setIMServer(json.getString("imServer"));
-        options.setRestServer(json.getString("restServer"));
-        options.setDnsUrl(json.getString("dnsUrl"));
+        options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+        if (!json.getBoolean("enableDNSConfig")) {
+            options.setImPort(json.getInt("imPort"));
+            options.setIMServer(json.getString("imServer"));
+            options.setRestServer(json.getString("restServer"));
+            options.setDnsUrl(json.getString("dnsUrl"));
+        }
 
         return options;
 
@@ -293,7 +297,11 @@ class EMMessageHelper {
         }
 
         if (message != null) {
-            message.setFrom(json.getString("from"));
+            String from = json.getString("from");
+            if (from == null || from.length() == 0) {
+                from = EMClient.getInstance().getCurrentUser();
+            }
+            message.setFrom(from);
             message.setTo(json.getString("to"));
             message.setAcked(json.getBoolean("hasReadAck"));
             message.setUnread(!json.getBoolean("hasRead"));
@@ -309,6 +317,7 @@ class EMMessageHelper {
     }
 
     static Map<String, Object> toJson(EMMessage message) {
+        if (message == null) return null;
         Map<String, Object> data = new HashMap<>();
         String type = "";
         switch (message.getType()){
@@ -346,7 +355,7 @@ class EMMessageHelper {
             } break;
         }
 
-        data.put("type", type);
+        data.put("from", message.getFrom());
         data.put("to", message.getTo());
         data.put("hasReadAck", message.isAcked());
         data.put("hasDeliverAck", message.isDelivered());
@@ -415,6 +424,7 @@ class EMMessageBodyHelper {
     static Map<String, Object> textBodyToJson(EMTextMessageBody body) {
         Map<String, Object> data = new HashMap<>();
         data.put("content", body.getMessage());
+        data.put("type", "txt");
         return data;
     }
 
@@ -433,6 +443,7 @@ class EMMessageBodyHelper {
         data.put("latitude", body.getLatitude());
         data.put("longitude", body.getLongitude());
         data.put("address", body.getAddress());
+        data.put("type", "loc");
         return data;
     }
 
@@ -450,6 +461,7 @@ class EMMessageBodyHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("deliverOnlineOnly", body.isDeliverOnlineOnly());
         data.put("action", body.action());
+        data.put("type", "cmd");
         return data;
     }
 
@@ -473,6 +485,7 @@ class EMMessageBodyHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("event", body.event());
         data.put("params", body.getParams());
+        data.put("type", "custom");
         return data;
     }
 
@@ -497,6 +510,7 @@ class EMMessageBodyHelper {
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("type", "file");
         return data;
     }
 
@@ -537,6 +551,7 @@ class EMMessageBodyHelper {
         data.put("height", body.getHeight());
         data.put("width", body.getWidth());
         data.put("sendOriginalImage", body.isSendOriginalImage());
+        data.put("type", "img");
         return data;
     }
 
@@ -573,6 +588,7 @@ class EMMessageBodyHelper {
         data.put("remotePath", body.getRemoteUrl());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
+        data.put("type", "video");
 
         return data;
     }
@@ -597,6 +613,7 @@ class EMMessageBodyHelper {
         data.put("remotePath", body.getRemoteUrl());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
+        data.put("type", "voice");
 
         return data;
     }
@@ -635,10 +652,15 @@ class EMConversationHelper {
         data.put("con_id", conversation.conversationId());
         data.put("type", typeToInt(conversation.getType()));
         data.put("unreadCount", conversation.getUnreadMsgCount());
-        data.put("ext", conversation.getExtField());
-        data.put("latestMessage", EMMessageHelper.toJson(conversation.getLastMessage()));
-        data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));
-        return data;
+        try {
+            data.put("ext", jsonStringToMap(conversation.getExtField()));
+        } catch (JSONException e) {
+
+        } finally {
+            data.put("latestMessage", EMMessageHelper.toJson(conversation.getLastMessage()));
+            data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));
+            return data;
+        }
     }
 
 
@@ -660,6 +682,42 @@ class EMConversationHelper {
         }
 
         return 0;
+    }
+
+    private static Map<String, Object> jsonStringToMap(String content) throws JSONException{
+        if (content == null) return null;
+        content = content.trim();
+        Map<String, Object> result = new HashMap<>();
+        try {
+            if (content.charAt(0) == '[') {
+                JSONArray jsonArray = new JSONArray(content);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    Object value = jsonArray.get(i);
+                    if (value instanceof JSONArray || value instanceof JSONObject) {
+                        result.put(i + "", jsonStringToMap(value.toString().trim()));
+                    } else {
+                        result.put(i + "", jsonArray.getString(i));
+                    }
+                }
+            } else if (content.charAt(0) == '{'){
+                JSONObject jsonObject = new JSONObject(content);
+                Iterator<String> iterator = jsonObject.keys();
+                while (iterator.hasNext()) {
+                    String key = iterator.next();
+                    Object value = jsonObject.get(key);
+                    if (value instanceof JSONArray || value instanceof JSONObject) {
+                        result.put(key, jsonStringToMap(value.toString().trim()));
+                    } else {
+                        result.put(key, value.toString().trim());
+                    }
+                }
+            }else {
+               throw new JSONException("");
+            }
+        } catch (JSONException e) {
+            throw new JSONException("");
+        }
+        return result;
     }
 }
 
