@@ -320,11 +320,6 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   }
 
   @override
-  void onMessageChanged(EMMessage message) {
-    // TODO: implement onMessageChanged
-  }
-
-  @override
   void onMessagesDelivered(List<EMMessage> messages) {
     // TODO: implement onMessageDelivered
   }

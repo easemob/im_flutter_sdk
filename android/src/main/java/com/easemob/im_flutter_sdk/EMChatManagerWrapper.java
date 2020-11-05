@@ -31,11 +31,11 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler{
 
-    private MethodChannel channel;
+    private MethodChannel messageChannel;
 
     EMChatManagerWrapper(Registrar registrar, String channelName) {
         super(registrar, channelName);
-        channel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
+        messageChannel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
 
@@ -115,26 +115,32 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
-                Map<String, Object> map = new HashMap<>();
-                map.put("message", EMMessageHelper.toJson(msg));
-                map.put("localTime", msg.localTime());
-                channel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
+                post(()->{
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("localTime", msg.localTime());
+                    channel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
+                });
             }
 
             @Override
             public void onProgress(int progress, String status) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("progress", progress);
-                map.put("localTime", msg.localTime());
-                channel.invokeMethod(EMSDKMethod.onMessageProgressUpdate, map);
+                post(()->{
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("progress", progress);
+                    map.put("localTime", msg.localTime());
+                    channel.invokeMethod(EMSDKMethod.onMessageProgressUpdate, map);
+                });
             }
 
             @Override
             public void onError(int code, String desc) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("code", code);
-                map.put("description", desc);
-                channel.invokeMethod(EMSDKMethod.onMessageError, map);
+                post(()->{
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("code", code);
+                    map.put("description", desc);
+                    channel.invokeMethod(EMSDKMethod.onMessageError, map);
+                });
             }
         });
         asyncRunnable(()->{
@@ -185,7 +191,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
 
         asyncRunnable(()->{
-            EMConversation conversation =  EMClient.getInstance().chatManager().getConversation(conId, type);
+            EMConversation conversation =  EMClient.getInstance().chatManager().getConversation(conId, type, true);
             onSuccess(result, channelName, EMConversationHelper.toJson(conversation));
         });
     }
@@ -295,19 +301,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
     }
 
-
-
     private void registerEaseListener(){
         EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
             @Override
             public void onMessageReceived(List<EMMessage> messages) {
-                Map<String, Object> data = new HashMap<>();
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for(EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
                 }
-                data.put("messages", msgList);
-                post(() -> channel.invokeMethod(EMSDKMethod.onMessagesReceived, data));
+                post(() -> channel.invokeMethod(EMSDKMethod.onMessagesReceived, msgList));
             }
 
             @Override
