@@ -3,11 +3,9 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 
 import 'package:im_flutter_sdk_example/utils/style.dart';
-import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
 import 'package:im_flutter_sdk_example/pages/chat_page.dart';
-import 'chatroom_list_page.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 
 class EMContactsListPage extends StatefulWidget {

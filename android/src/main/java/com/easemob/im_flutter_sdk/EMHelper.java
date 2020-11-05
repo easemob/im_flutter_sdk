@@ -236,7 +236,7 @@ class EMChatRoomHelper{
         data.put("adminList", chatRoom.getAdminList());
         data.put("memberList", chatRoom.getMemberList());
         data.put("blacklist", chatRoom.getBlackList());
-        data.put("muteList", chatRoom.getMuteList());
+        data.put("muteList", chatRoom.getMuteList().values());
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
 //        data.put("permissionType", chatRoom);
