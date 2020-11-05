@@ -254,7 +254,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMChatManagerWrapper(registrar, "em_chat_manager");
         new EMContactManagerWrapper(registrar, "em_contact_manager");
         new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
-        new EMGroupManagerWrapper(registrar, "em_group_room_manager");
+        new EMGroupManagerWrapper(registrar, "em_group_manager");
         new EMConversationWrapper(registrar, "em_conversation");
         new EMPushManagerWrapper(registrar, "em_push_manager");
     }
