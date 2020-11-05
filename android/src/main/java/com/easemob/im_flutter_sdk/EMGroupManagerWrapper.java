@@ -3,6 +3,8 @@ package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.EMGroupChangeListener;
 import com.hyphenate.chat.EMClient;
+
+import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import com.hyphenate.chat.EMCursorResult;
