@@ -191,7 +191,10 @@ class EMSDKMethod {
   static const String createAndJoinConference = "createAndJoinConference";
   static const String joinConference = "joinConference";
   static const String registerConferenceSharedManager = "registerConferenceSharedManager";
-
+  static const String openVideoTransfer = "openVideoTransfer";
+  static const String openVoiceTransfer = "openVoiceTransfer";
+  static const String closeVideoTransfer = "closeVideoTransfer";
+  static const String closeVoiceTransfer = "closeVoiceTransfer";
 
 
 }
