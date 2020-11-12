@@ -39,22 +39,16 @@ static EMFlutterRenderViewFactory *factory;
     return self;
 }
 
-- (EMFlutterRenderView *)getViewWithId:(int)viewId andType:(EMFlutterRenderViewType)type {
+- (EMFlutterRenderView *)getLocalViewWithId:(int)viewId {
     NSString *key = [NSString stringWithFormat:@"%d", viewId];
-    EMFlutterRenderView *ret = nil;
-    switch (type) {
-        case Local:
-            ret = _localViewMap[key];;
-            break;;
-        case Remote:
-            ret = _remoteViewMap[key];;
-            break;;
-        default:
-            break;
-    }
-    
-    return ret;
+    return _localViewMap[key];
 }
+
+- (EMFlutterRenderView *)getRemoteViewWithId:(int)viewId {
+    NSString *key = [NSString stringWithFormat:@"%d", viewId];
+    return _remoteViewMap[key];
+}
+
 
 - (void)releaseVideoView:(int)viewId {
     NSString *key = [NSString stringWithFormat:@"%d", viewId];

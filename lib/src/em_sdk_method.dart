@@ -191,8 +191,6 @@ class EMSDKMethod {
   static const String rejectCall = 'rejectCall';
   static const String endCall = 'endCall';
 
-  static const String releaseView = 'releaseView';
-
   static const String enableVoiceTransfer = 'enableVoiceTransfer';
   static const String enableVideoTransfer = 'enableVideoTransfer';
 
@@ -201,6 +199,7 @@ class EMSDKMethod {
 
   static const String switchCamera = 'switchCamera';
   static const String setSurfaceView = 'setSurfaceView';
+  static const String releaseView = 'releaseView';
 
   /// EMCallManager Listener
   static const String onCallReceived = 'onCallReceived';
@@ -216,15 +215,6 @@ class EMSDKMethod {
   static const String onCallNetworkNormal = 'onCallNetworkNormal';
   static const String onCallNetworkDisconnect = 'onCallNetworkDisconnect';
 
-
-  /// ICallSession
-  static const String pauseVoice = 'pauseVoice';
-  static const String pauseVideo = 'pauseVideo';
-  static const String switchCameraPosition = 'switchCameraPosition';
-  static const String setLocalView = 'setLocalView';
-  static const String setRemoteView = 'setRemoteView';
-
-  static const String fetchCallSessionInfo = 'fetchCallSessionInfo';
 
   /// EMConferenceManager
   static const String setConferenceAppKey = 'setConferenceAppKey';

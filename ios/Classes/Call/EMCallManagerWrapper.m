@@ -8,17 +8,15 @@
 #import "EMCallManagerWrapper.h"
 #import "EMSDKMethod.h"
 #import "EMCallOptions+Flutter.h"
-#import "EMCallSession+Flutter.h"
 #import "EMError+Flutter.h"
 #import "EMFlutterRenderViewFactory.h"
 
 @interface EMCallManagerWrapper () <EMCallManagerDelegate>
 {
     EMFlutterRenderViewFactory *_factory;
+    BOOL _isFront;
 }
 @property (nonatomic, strong) EMCallSession *callSession;
-@property (nonatomic, strong) FlutterMethodChannel *callSessionChannel;
-@property (nonatomic, strong) NSMutableDictionary *sessionDict;
 @end
 
 @implementation EMCallManagerWrapper
@@ -28,11 +26,6 @@
                            registrar:registrar]) {
         [EMClient.sharedClient.callManager addDelegate:self delegateQueue:nil];
         _factory = [EMFlutterRenderViewFactory factoryWithRegistrar:registrar withId:@"com.easemob.rtc/CallView"];
-
-        FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
-        self.callSessionChannel = [FlutterMethodChannel methodChannelWithName:@"com.easemob.im/em_call_session"
-                                                              binaryMessenger:[registrar messenger]
-                                                                    codec:codec];
     }
     return self;
 }
@@ -49,43 +42,46 @@
     {
         [self getCallOptions:call.arguments channelName:EMMethodKeyGetCallOptions result:result];
     }
-    else if ([EMMethodKeyStartCall isEqualToString:call.method])
+    else if ([EMMethodKeyMakeCall isEqualToString:call.method])
     {
-        [self startCall:call.arguments channelName:EMMethodKeyStartCall result:result];
+        [self makeCall:call.arguments channelName:EMMethodKeyMakeCall result:result];
     }
-    else if ([EMMethodKeyAnswerComingCall isEqualToString:call.method])
+    else if ([EMMethodKeyAnswerCall isEqualToString:call.method])
     {
-        [self answerIncomingCall:call.arguments channelName:EMMethodKeyAnswerComingCall result:result];
+        [self answerCall:call.arguments channelName:EMMethodKeyAnswerCall result:result];
+    }
+    else if ([EMMethodKeyRejectCall isEqualToString:call.method])
+    {
+        [self rejectCall:call.arguments channelName:EMMethodKeyRejectCall result:result];
     }
     else if ([EMMethodKeyEndCall isEqualToString:call.method])
     {
         [self endCall:call.arguments channelName:EMMethodKeyEndCall result:result];
     }
-    else if ([EMMethodKeyCallSessionPauseVoice isEqualToString:call.method])
+    else if ([EMMethodKeyEnableVoiceTransfer isEqualToString:call.method])
     {
-        [self pauseVoice:call.arguments channelName:EMMethodKeyCallSessionPauseVoice result:result];
+        [self enableVoiceTransfer:call.arguments channelName:EMMethodKeyEnableVoiceTransfer result:result];
     }
-    else if ([EMMethodKeyCallSessionPauseVideo isEqualToString:call.method])
+    else if ([EMMethodKeyEnableVideoTransfer isEqualToString:call.method])
     {
-        [self pauseVideo:call.arguments channelName:EMMethodKeyCallSessionPauseVideo result:result];
+        [self enableVideoTransfer:call.arguments channelName:EMMethodKeyEnableVideoTransfer result:result];
     }
-    else if ([EMMethodKeyCallSessionSwitchCameraPosition isEqualToString:call.method])
+    else if ([EMMethodKeyMuteRemoteAudio isEqualToString:call.method])
     {
-        [self switchCameraPosition:call.arguments channelName:EMMethodKeyCallSessionSwitchCameraPosition result:result];
+        [self muteRemoteAudio:call.arguments channelName:EMMethodKeyMuteRemoteAudio result:result];
     }
-    else if ([EMMethodKeyCallSessionSetLocalView isEqualToString:call.method])
+    else if ([EMMethodKeyMuteRemoteVideo isEqualToString:call.method])
     {
-        [self setLocalView:call.arguments channelName:EMMethodKeyCallSessionSetLocalView result:result];
+        [self muteRemoteVideo:call.arguments channelName:EMMethodKeyMuteRemoteVideo result:result];
     }
-    else if ([EMMethodKeyCallSessionSetRemoteView isEqualToString:call.method])
-    {
-        [self setRemoteView:call.arguments channelName:EMMethodKeyCallSessionSetRemoteView result:result];
+    else if ([EMMethodKeySwitchCamera isEqualToString:call.method]) {
+        [self switchCamera:call.arguments channelName:EMMethodKeySwitchCamera result:result];
     }
-    else if ([EMMethodKeyReleaseView isEqualToString:call.method]) {
-        [self releaseVideoView:call.arguments channelName:EMMethodKeyReleaseView result:result];
+    else if ([EMMethodKeySetSurfaceView isEqualToString:call.method]){
+        [self setSurfaceView:call.arguments channelName:EMMethodKeySetSurfaceView result:result];
     }
-    else if ([EMMethodKeyFetchCallSessionInfo isEqualToString:call.method]){
-        [self fetchCallSessionInfo:call.arguments channelName:EMMethodKeyReleaseView result:result];
+    else if ([EMMethodKeyReleaseView isEqualToString:call.method]){
+        [self releaseView:call.arguments channelName:EMMethodKeyReleaseView result:result];
     }
     else
     {
@@ -115,37 +111,47 @@
                        object:@(YES)];
 }
 
-- (void)startCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
-{
+- (void)makeCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
-    EMCallType callType = [param[@"type"] intValue];
-    NSString *remoteName = param[@"remote"];
-    BOOL isRecord = [param[@"record"] boolValue];
-    BOOL isMerge = [param[@"merge"] boolValue];
-    NSString *ext = param[@"ext"];
-    
-    [EMClient.sharedClient.callManager startCall:callType
-                                      remoteName:remoteName
-                                          record:isRecord
-                                     mergeStream:isMerge
-                                             ext:ext
-                                      completion:^(EMCallSession *aCallSession, EMError *aError)
-    {
-        weakSelf.sessionDict[aCallSession.callId] = aCallSession;
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aCallSession toJson]];
-    }];
+       EMCallType callType = [param[@"type"] intValue];
+       NSString *remoteName = param[@"remote"];
+       BOOL isRecord = [param[@"record"] boolValue];
+       BOOL isMerge = [param[@"merge"] boolValue];
+       NSString *ext = param[@"ext"];
+       
+       [EMClient.sharedClient.callManager startCall:callType
+                                         remoteName:remoteName
+                                             record:isRecord
+                                        mergeStream:isMerge
+                                                ext:ext
+                                         completion:^(EMCallSession *aCallSession, EMError *aError)
+       {
+           weakSelf.callSession = aCallSession;
+           [weakSelf wrapperCallBack:result
+                         channelName:aChannelName
+                               error:aError
+                              object:@(!aError)];
+       }];
 }
 
+- (void)answerCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+        __weak typeof(self) weakSelf = self;
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            EMError *aError = [EMClient.sharedClient.callManager answerIncomingCall:[weakSelf currentCallId]];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf wrapperCallBack:result
+                              channelName:aChannelName
+                                    error:aError
+                                   object:@(!aError)];
+            });
+        });
+}
 
-- (void)answerIncomingCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
-{
+- (void)rejectCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *aError = [EMClient.sharedClient.callManager answerIncomingCall:callId];
+        EMError *aError = [EMClient.sharedClient.callManager endCall:[weakSelf currentCallId] reason:EMCallEndReasonDecline];
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
@@ -155,14 +161,10 @@
     });
 }
 
-- (void)endCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
-{
+- (void)endCall:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    EMCallEndReason reason = [param[@"reason"] intValue];
-    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *aError = [EMClient.sharedClient.callManager endCall:callId reason:reason];
+        EMError *aError = [EMClient.sharedClient.callManager endCall:[weakSelf currentCallId] reason:EMCallEndReasonHangup];
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
@@ -172,132 +174,96 @@
     });
 }
 
-- (void)pauseVoice:(NSDictionary *)param
-       channelName:(NSString *)aChannelName
-            result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    BOOL pauseVoice = [param[@"pause"] boolValue];
-    
+- (void)enableVoiceTransfer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    BOOL enable = [param[@"enable"] boolValue];
     EMError *aError = nil;
-    EMCallSession *session = weakSelf.sessionDict[callId];
-    if (pauseVoice) {
-        aError = [session pauseVoice];
-    }else {
-        aError = [session resumeVoice];
+    if (enable) {
+        aError = [self.callSession pauseVoice];
+    }else{
+        aError = [self.callSession resumeVoice];
     }
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:aError
+                   object:@(!aError)];
     
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:aError
-                       object:@(!aError)];
-
 }
 
-- (void)pauseVideo:(NSDictionary *)param
-       channelName:(NSString *)aChannelName
-            result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    BOOL pauseVoice = [param[@"pause"] boolValue];
-
+- (void)enableVideoTransfer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    BOOL enable = [param[@"enable"] boolValue];
     EMError *aError = nil;
-    EMCallSession *session = weakSelf.sessionDict[callId];
-    if (pauseVoice) {
-        aError = [session pauseVideo];
-    }else {
-        aError = [session resumeVideo];
+    if (enable) {
+        aError = [self.callSession pauseVideo];
+    }else{
+        aError = [self.callSession resumeVideo];
     }
-    
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:aError
-                       object:@(!aError)];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:aError
+                   object:@(!aError)];
 }
 
-- (void)switchCameraPosition:(NSDictionary *)param
-                 channelName:(NSString *)aChannelName
-                      result:(FlutterResult)result
-{
+- (void)muteRemoteAudio:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+//    BOOL enable = [param[@"mute"] boolValue];
+   
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:[EMError errorWithDescription:@"unsupport" code:-1]
+                   object:@(NO)];
+}
+
+- (void)muteRemoteVideo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+//     BOOL enable = [param[@"mute"] boolValue];
+    
+     [self wrapperCallBack:result
+               channelName:aChannelName
+                     error:[EMError errorWithDescription:@"unsupport" code:-1]
+                    object:@(NO)];
+}
+
+- (void)switchCamera:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    _isFront = !_isFront;
+    [self.callSession switchCameraPosition:_isFront];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:@(YES)];
+}
+
+- (void)setSurfaceView:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    BOOL isFront = [param[@"isFront"] intValue];
+    int viewId = [param[@"view_id"] intValue];
+    int isLocal = [param[@"isLocal"] boolValue];
     
-    EMCallSession *session = weakSelf.sessionDict[callId];
-    [session switchCameraPosition:isFront];
-    
+    if (isLocal) {
+        EMFlutterRenderView *renderView = [_factory getLocalViewWithId:viewId];
+        _callSession.localVideoView = (EMCallLocalVideoView *)renderView.previewView;
+    }else {
+        EMFlutterRenderView *renderView = [_factory getRemoteViewWithId:viewId];
+        _callSession.remoteVideoView = (EMCallRemoteVideoView *)renderView.previewView;
+    }
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
                        object:@(YES)];
 }
 
-- (void)setLocalView:(NSDictionary *)param
-         channelName:(NSString *)aChannelName
-              result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    int viewId = [param[@"viewId"] intValue];
-    int type = [param[@"type"] intValue];
-    EMCallSession *session = weakSelf.sessionDict[callId];
-    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
-    session.localVideoView = (EMCallLocalVideoView *)renderView.previewView;
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:@(YES)];
-}
-
-- (void)setRemoteView:(NSDictionary *)param
-          channelName:(NSString *)aChannelName
-               result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    int viewId = [param[@"viewId"] intValue];
-    int type = [param[@"type"] intValue];
-    EMCallSession *session = weakSelf.sessionDict[callId];
-    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
-    session.remoteVideoView = (EMCallRemoteVideoView *)renderView.previewView;
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:@(YES)];
-}
-
-- (void)releaseVideoView:(NSDictionary *)param
-             channelName:(NSString *)aChannelName
-                  result:(FlutterResult)result{
-    __weak typeof(self) weakSelf = self;
-    int viewId = [param[@"viewId"] intValue];
+- (void)releaseView:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    int viewId = [param[@"view_id"] intValue];
     [_factory releaseVideoView:viewId];
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:@(YES)];
 }
 
-- (void)fetchCallSessionInfo:(NSDictionary *)param
-                 channelName:(NSString *)aChannelName
-                      result:(FlutterResult)result{
-    __weak typeof(self) weakSelf = self;
-    NSString *callId = param[@"callId"];
-    EMCallSession *session = weakSelf.sessionDict[callId];
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:[session toJson]];
-}
 
 #pragma mark - EMCallManagerDelegate
 
 - (void)callDidReceive:(EMCallSession *)aSession {
     [self.channel invokeMethod:EMMethodKeyOnCallReceived
-                     arguments:@{@"callSession": [aSession toJson]}];
-    self.sessionDict[aSession.callId] = aSession;
+                     arguments:
+     @{
+         @"type":aSession.type == EMCallTypeVoice ? @0 : @1 ,
+         @"from":aSession.remoteName
+     }];
+    self.callSession = aSession;
 }
 
 
@@ -305,64 +271,69 @@
 - (void)callDidEnd:(EMCallSession *)aSession
             reason:(EMCallEndReason)aReason
              error:(EMError *)aError {
-    
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    if (aSession) {
-        dict[@"callId"] = aSession.callId;
+    self.callSession = nil;
+    if (aReason == EMCallEndReasonBusy) {
+        [self.channel invokeMethod:EMMethodKeyOnCallBusy arguments:nil];
     }
-    
-    if (aReason) {
-        dict[@"reason"] = @(aReason);
+    else if (aReason == EMCallEndReasonDecline) {
+        [self.channel invokeMethod:EMMethodKeyRejectCall arguments:nil];
     }
-    
-    if (aError) {
-        dict[@"error"] = [aError toJson];
+    else {
+         [self.channel invokeMethod:EMMethodKeyOnCallHangup arguments:nil];
     }
-    
-    [self.channel invokeMethod:EMMethodKeyOnCallDidEnd
-                     arguments:dict];
-    
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionEnd
-                                arguments:dict];
-    
-    [self.sessionDict removeObjectForKey:aSession.callId];
 }
 
 - (void)callDidAccept:(EMCallSession *)aSession {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionDidAccept
-                                arguments:@{@"callId": (aSession.callId ?: @"")}];
+    [self.channel invokeMethod:EMMethodKeyOnCallAccepted arguments:nil];
 }
 
 - (void)callDidConnect:(EMCallSession *)aSession {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionDidConnected
-                                arguments:@{@"callId": (aSession.callId ?: @"")}];
+    
 }
 
 - (void)callStateDidChange:(EMCallSession *)aSession
-                      type:(EMCallStreamingStatus)aType {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionStateDidChange
-                                arguments:@{
-                                    @"callId": (aSession.callId ?: @""),
-                                    @"status": @(aType)
-                                }];
+                      type:(EMCallStreamingStatus)aType
+{
+    switch (aType) {
+        case EMCallStreamStatusVoicePause:
+        {
+            [self.channel invokeMethod:EMMethodKeyOnCallVoicePause arguments:nil];
+            return;
+        }
+        case EMCallStreamStatusVoiceResume:
+        {
+            [self.channel invokeMethod:EMMethodKeyOnCallVoiceResume arguments:nil];
+            return;
+        }
+        case EMCallStreamStatusVideoPause:
+        {
+            [self.channel invokeMethod:EMMethodKeyOnCallVideoPause arguments:nil];
+            return;
+        }
+        case EMCallStreamStatusVideoResume:
+        {
+            [self.channel invokeMethod:EMMethodKeyOnCallVideoResume arguments:nil];
+            return;
+        }
+            
+    }
 }
 
 - (void)callNetworkDidChange:(EMCallSession *)aSession
-                      status:(EMCallNetworkStatus)aStatus {
-    [self.callSessionChannel invokeMethod:EMMethodKeyOnCallSessionNetworkDidChange
-                                arguments:@{
-                                    @"callId": (aSession.callId ?: @""),
-                                    @"status": @(aStatus)
-                                }];
-}
-
-- (NSMutableDictionary *)sessionDict{
-    if (!_sessionDict) {
-        _sessionDict = [NSMutableDictionary dictionary];
+                      status:(EMCallNetworkStatus)aStatus
+{
+    if (aStatus == EMCallNetworkStatusNormal) {
+        [self.channel invokeMethod:EMMethodKeyOnCallNetworkNormal arguments:nil];
     }
     
-    return _sessionDict;
+    if (aStatus == EMCallNetworkStatusUnstable) {
+        [self.channel invokeMethod:EMMethodKeyOnCallNetworkUnStable arguments:nil];
+    }
 }
 
+- (NSString *)currentCallId {
+    NSString *callId = self.callSession.callId ?: nil;
+    return callId;
+}
 
 @end

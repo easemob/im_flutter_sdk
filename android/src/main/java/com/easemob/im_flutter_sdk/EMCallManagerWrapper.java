@@ -147,20 +147,6 @@ public class EMCallManagerWrapper extends EMWrapper implements MethodChannel.Met
         });
     }
 
-    private void releaseView(JSONObject param, String channelName, Result result) throws JSONException {
-        int viewId = param.getInt("view_Id");
-        int viewType = param.getInt("viewType");
-        if (viewType == 0) {
-            _currentLocalViewId = -1;
-        }else {
-            _currentRemoteViewId = -1;
-        }
-        asyncRunnable(()->{
-            factory.releaseView(viewId);
-            onSuccess(result, channelName, true);
-        });
-    }
-
 
     private void enableVoiceTransfer(JSONObject param, String channelName, Result result) throws JSONException {
         boolean enable = param.getBoolean("enable");
@@ -234,6 +220,14 @@ public class EMCallManagerWrapper extends EMWrapper implements MethodChannel.Met
 
         asyncRunnable(()->{
             EMClient.getInstance().callManager().setSurfaceView(finalLocalView, finalRemoteView);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void releaseView(JSONObject param, String channelName, Result result) throws JSONException {
+        int viewId = param.getInt("view_Id");
+        asyncRunnable(()->{
+            factory.releaseView(viewId);
             onSuccess(result, channelName, true);
         });
     }

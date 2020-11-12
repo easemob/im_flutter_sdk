@@ -266,23 +266,23 @@
               channelName:(NSString *)aChannelName
                    result:(FlutterResult)result
 {
-    __weak typeof(self)weakSelf = self;
-    NSString *confereceId = param[@"conference_id"];
-    EMCallConference *conf = self.conferenceDict[confereceId];
-    EMStreamParam *steamParam = [EMStreamParam fromJson:param[@"stream"]];
-    int type = [param[@"type"] intValue];
-    int viewId = [param[@"view_id"] intValue];
-    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
-    steamParam.localView = (EMCallLocalVideoView *)renderView.previewView;
-    [EMClient.sharedClient.conferenceManager publishConference:conf
-                                                   streamParam:steamParam
-                                                    completion:^(NSString *aPubStreamId, EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:aPubStreamId];
-    }];
+//    __weak typeof(self)weakSelf = self;
+//    NSString *confereceId = param[@"conference_id"];
+//    EMCallConference *conf = self.conferenceDict[confereceId];
+//    EMStreamParam *steamParam = [EMStreamParam fromJson:param[@"stream"]];
+//    int type = [param[@"type"] intValue];
+//    int viewId = [param[@"view_id"] intValue];
+//    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
+//    steamParam.localView = (EMCallLocalVideoView *)renderView.previewView;
+//    [EMClient.sharedClient.conferenceManager publishConference:conf
+//                                                   streamParam:steamParam
+//                                                    completion:^(NSString *aPubStreamId, EMError *aError)
+//     {
+//        [weakSelf wrapperCallBack:result
+//                      channelName:aChannelName
+//                            error:aError
+//                           object:aPubStreamId];
+//    }];
     
 }
 
@@ -306,24 +306,24 @@
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result
 {
-    __weak typeof(self)weakSelf = self;
-    
-    NSString *confereceId = param[@"conference_id"];
-    EMCallConference *conf = self.conferenceDict[confereceId];
-    NSString *streamId = param[@"stream_id"];
-    int type = [param[@"type"] intValue];
-    int viewId = [param[@"view_id"] intValue];
-    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
-    
-    [EMClient.sharedClient.conferenceManager subscribeConference:conf
-                                                        streamId:streamId
-                                                 remoteVideoView:(EMCallRemoteVideoView *)renderView.previewView completion:^(EMError *aError)
-    {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:@(!aError)];
-    }];
+//    __weak typeof(self)weakSelf = self;
+//    
+//    NSString *confereceId = param[@"conference_id"];
+//    EMCallConference *conf = self.conferenceDict[confereceId];
+//    NSString *streamId = param[@"stream_id"];
+//    int type = [param[@"type"] intValue];
+//    int viewId = [param[@"view_id"] intValue];
+//    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
+//    
+//    [EMClient.sharedClient.conferenceManager subscribeConference:conf
+//                                                        streamId:streamId
+//                                                 remoteVideoView:(EMCallRemoteVideoView *)renderView.previewView completion:^(EMError *aError)
+//    {
+//        [weakSelf wrapperCallBack:result
+//                      channelName:aChannelName
+//                            error:aError
+//                           object:@(!aError)];
+//    }];
 }
 
 - (void)unSubscribeConference:(NSDictionary *)param

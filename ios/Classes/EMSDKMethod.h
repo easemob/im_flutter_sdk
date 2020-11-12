@@ -181,33 +181,39 @@ static NSString * const EMMethodKeyIgnoreGroupPush = @"ignoreGroupPush";
 
 static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
 
-#pragma mark - EMCallManagerWrapper
+/// EMCallManager
 static NSString * const EMMethodKeySetCallOptions = @"setCallOptions";
 static NSString * const EMMethodKeyGetCallOptions = @"getCallOptions";
-static NSString * const EMMethodKeyStartCall = @"startCall";
-static NSString * const EMMethodKeyAnswerComingCall = @"answerComingCall";
+
+
+static NSString * const EMMethodKeyMakeCall = @"makeCall";
+static NSString * const EMMethodKeyAnswerCall = @"answerCall";
+static NSString * const EMMethodKeyRejectCall = @"rejectCall";
 static NSString * const EMMethodKeyEndCall = @"endCall";
+
+static NSString * const EMMethodKeyEnableVoiceTransfer = @"enableVoiceTransfer";
+static NSString * const EMMethodKeyEnableVideoTransfer = @"enableVideoTransfer";
+
+static NSString * const EMMethodKeyMuteRemoteAudio = @"muteRemoteAudio";
+static NSString * const EMMethodKeyMuteRemoteVideo = @"muteRemoteVideo";
+
+static NSString * const EMMethodKeySwitchCamera = @"switchCamera";
+static NSString * const EMMethodKeySetSurfaceView = @"setSurfaceView";
 static NSString * const EMMethodKeyReleaseView = @"releaseView";
 
-#pragma mark - ICallSession
-static NSString * const EMMethodKeyCallSessionPauseVoice = @"pauseVoice";
-static NSString * const EMMethodKeyCallSessionPauseVideo = @"pauseVideo";
-static NSString * const EMMethodKeyCallSessionSwitchCameraPosition = @"switchCameraPosition";
-static NSString * const EMMethodKeyCallSessionSetLocalView = @"setLocalView";
-static NSString * const EMMethodKeyCallSessionSetRemoteView = @"setRemoteView";
-
-static NSString * const EMMethodKeyFetchCallSessionInfo = @"fetchCallSessionInfo";
-
-#pragma mark - EMCallManagerDelegate
+/// EMCallManager Listener
 static NSString * const EMMethodKeyOnCallReceived = @"onCallReceived";
-static NSString * const EMMethodKeyOnCallDidEnd = @"onCallDidEnd";
-
-#pragma mark - EMCallSessionListener
-static NSString * const EMMethodKeyOnCallSessionDidAccept = @"onCallSessionDidAccept";
-static NSString * const EMMethodKeyOnCallSessionEnd = @"onCallSessionDidEnd";
-static NSString * const EMMethodKeyOnCallSessionDidConnected = @"onCallSessionDidConnected";
-static NSString * const EMMethodKeyOnCallSessionStateDidChange = @"onCallSessionStateDidChange";
-static NSString * const EMMethodKeyOnCallSessionNetworkDidChange = @"onCallSessionNetworkDidChange";
+static NSString * const EMMethodKeyOnCallAccepted = @"onCallAccepted";
+static NSString * const EMMethodKeyOnCallRejected = @"onCallRejected";
+static NSString * const EMMethodKeyOnCallHangup = @"onCallHangup";
+static NSString * const EMMethodKeyOnCallBusy = @"onCallBusy";
+static NSString * const EMMethodKeyOnCallVideoPause = @"onCallVideoPause";
+static NSString * const EMMethodKeyOnCallVideoResume = @"onCallVideoResume";
+static NSString * const EMMethodKeyOnCallVoicePause = @"onCallVoicePause";
+static NSString * const EMMethodKeyOnCallVoiceResume = @"onCallVoiceResume";
+static NSString * const EMMethodKeyOnCallNetworkUnStable = @"onCallNetworkUnStable";
+static NSString * const EMMethodKeyOnCallNetworkNormal = @"onCallNetworkNormal";
+static NSString * const EMMethodKeyOnCallNetworkDisconnect = @"onCallNetworkDisconnect";
 
 #pragma mark - EMConferenceManagerWrapper
 static NSString * const EMMethodKeySetConferenceAppKey = @"setConferenceAppKey";
