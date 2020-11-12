@@ -4,25 +4,30 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class CallPage extends StatefulWidget {
 
-  CallPage({Key key, @required this.session}) : super(key: key);
+  CallPage({Key key, this.callType, this.otherUser, this.isCaller = false}) : super(key: key);
 
-  final EMCallSession session;
+  final EMCallType callType;
+  final String otherUser;
+  bool isCaller;
 
   @override
-  State<StatefulWidget> createState() => _CallPageStatus(session: session);
+  State<StatefulWidget> createState() => _CallPageStatus(callType, otherUser, isCaller);
 }
 
 class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
 
   bool _hasAnswer = false;
+  Widget _localView;
+  Widget _remoteView;
 
-  _CallPageStatus({@required this.session});
+  _CallPageStatus(this.callType, this.otherUser, this.isCaller);
 
-  final EMCallSession session;
+  final EMCallType callType;
+  final String otherUser;
+  bool isCaller;
 
   @override
   void initState() {
-    session.listener = this;
     super.initState();
   }
 
@@ -37,11 +42,11 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
         child: Center(
           child: Column(
             children: <Widget>[
-              Text(session.callType == EMCallType.Video ? '视频' : '语音'),
+              Text(callType == EMCallType.Video ? '视频' : '语音'),
               RaisedButton(
                 onPressed: (){
                   try{
-                    if(!_hasAnswer && !session.isCaller) { // 还没接听，并且当前账户不是主叫
+                    if(!_hasAnswer && !isCaller) { // 还没接听，并且当前账户不是主叫
                       _answerCall();
                     }else {
                       _hangupCall();
@@ -52,15 +57,15 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
 
                   }
                 },
-                child: Text(!_hasAnswer && !session.isCaller ? "接听" : "挂断"),
+                child: Text(!_hasAnswer && !isCaller ? "接听" : "挂断"),
               ),
               Container(
                 height: 200,
-                child:  !_hasAnswer ? Text("remote占位") : EMRTCView(onCreated:(view, viewId) => session.setRemoteView(view), streamId: session.callId, viewType: EMRTCViewType.remote),
+                child:  !_hasAnswer ? Text("local占位") : EMRTCLocalView((view, viewId) => EMClient.getInstance.callManager.setLocalSurfaceView(view)),
               ),
               Container(
                 height: 200,
-                child:  !_hasAnswer ? Text("local占位") : EMRTCView(onCreated:(view, viewId) => session.setLocalView(view), streamId: session.callId, viewType: EMRTCViewType.local),
+                child:  !_hasAnswer ? Text("remote占位") : EMRTCRemoteView((view, viewId) => EMClient.getInstance.callManager.setRemoteSurfaceView(view)),
               )
             ],
           ),
@@ -71,7 +76,7 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
 
   void _answerCall() async {
     try{
-      await EMClient.getInstance.callManager.answerIncomingCall(session.callId);
+      await EMClient.getInstance.callManager.answerCall();
       setState(() {
         _hasAnswer = true;
       });
@@ -82,7 +87,7 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
 
   void _hangupCall() async {
     try{
-      await EMClient.getInstance.callManager.endCall(session.callId);
+      await EMClient.getInstance.callManager.endCall();
     }on EMError catch (e) {
 
     }
@@ -90,7 +95,6 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
 
   void dispose() {
     print('call view disposed');
-    session.listener = null;
     super.dispose();
   }
 

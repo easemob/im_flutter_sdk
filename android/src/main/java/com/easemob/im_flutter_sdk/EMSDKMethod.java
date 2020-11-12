@@ -172,15 +172,57 @@ public class EMSDKMethod {
     /// EMGroupManagerListener
     static final String onGroupChanged = "onGroupChanged";
 
-    //EMPushManager
+    /// EMPushManager
     static final String getImPushConfigs = "getImPushConfigs";
     static final String getImPushConfigsFromServer = "getImPushConfigsFromServer";
     static final String updatePushNickname = "updatePushNickname";
 
+    /// ImPushConfigs
     static final String imPushNoDisturb = "imPushNoDisturb";
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updateGroupPushService = "updateGroupPushService";
     static final String getNoDisturbGroups = "getNoDisturbGroups";
+
+    /// EMCallManager
+    static final String makeCall = "makeCall";
+
+    static final String answerCall = "answerCall";
+    static final String rejectCall = "rejectCall";
+    static final String endCall = "endCall";
+
+    static final String releaseView = "releaseView";
+
+    static final String enableVoiceTransfer = "enableVoiceTransfer";
+    static final String enableVideoTransfer = "enableVideoTransfer";
+
+    static final String muteRemoteAudio = "muteRemoteAudio";
+    static final String muteRemoteVideo = "muteRemoteVideo";
+
+    static final String switchCamera = "switchCamera";
+    static final String setSurfaceView = "setSurfaceView";
+
+
+    /// EMCallManager Listener
+    static final String onCallReceived = "onCallReceived";
+    static final String onCallAccepted = "onCallAccepted";
+    static final String onCallRejected = "onCallRejected";
+    static final String onCallHangup = "onCallHangup";
+    static final String onCallBusy = "onCallBusy";
+    static final String onCallVideoPause = "onCallVideoPause";
+    static final String onCallVideoResume = "onCallVideoResume";
+    static final String onCallVoicePause = "onCallVoicePause";
+    static final String onCallVoiceResume = "onCallVoiceResume";
+    static final String onCallNetworkUnStable = "onCallNetworkUnStable";
+    static final String onCallNetworkNormal = "onCallNetworkNormal";
+    static final String onCallNetworkDisconnect = "onCallNetworkDisconnect";
+
+
+    /// EMCallSessionListener
+    static final String onCallSessionDidAccept = "onCallSessionDidAccept";
+    static final String onCallSessionDidConnected = "onCallSessionDidConnected";
+    static final String onCallSessionStateDidChange = "onCallSessionStateDidChange";
+    static final String onCallSessionNetworkDidChange = "onCallSessionNetworkDidChange";
+    static final String onCallSessionDidEnd = "onCallSessionDidEnd";
 
 
 }

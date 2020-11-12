@@ -35,4 +35,9 @@ class EMError implements Exception {
       throw (error);
     }
   }
+
+  @override
+  String toString() {
+    return "code: " + _code.toString() + " desc: " + _description;
+  }
 }

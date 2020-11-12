@@ -71,24 +71,75 @@ class _HomePageState extends State<HomePage> implements EMCallManagerListener{
 
   }
 
-  void _pushCallPage(EMCallSession session) async {
+  void _pushCallPage(EMCallType type, String from) async {
     try{
       Navigator.push(context, new MaterialPageRoute(
           builder: (BuildContext context){
-            return CallPage(session: session);
+            return CallPage(callType: type, otherUser: from);
           },
           fullscreenDialog: true));
     }catch(e){
     }
   }
 
+
   @override
-  void onCallDidEnd(String callId, int reason, [EMError error]) {
+  void onCallReceived(EMCallType type, String from) {
+    _pushCallPage(type, from);
+  }
+
+  @override
+  void onCallAccepted() {
+    // TODO: implement onCallAccepted
+  }
+
+  @override
+  void onCallBusy() {
     Navigator.pop(context);
   }
 
   @override
-  void onCallReceived(EMCallSession session) {
-    _pushCallPage(session);
+  void onCallHangup() {
+    Navigator.pop(context);
+  }
+
+  @override
+  void onCallNetworkDisconnect() {
+    // TODO: implement onCallNetworkDisconnect
+  }
+
+  @override
+  void onCallNetworkNormal() {
+    // TODO: implement onCallNetworkNormal
+  }
+
+  @override
+  void onCallNetworkUnStable() {
+    // TODO: implement onCallNetworkUnStable
+  }
+
+  @override
+  void onCallRejected() {
+    Navigator.pop(context);
+  }
+
+  @override
+  void onCallVideoPause() {
+    // TODO: implement onCallVideoPause
+  }
+
+  @override
+  void onCallVideoResume() {
+    // TODO: implement onCallVideoResume
+  }
+
+  @override
+  void onCallVoicePause() {
+    // TODO: implement onCallVoicePause
+  }
+
+  @override
+  void onCallVoiceResume() {
+    // TODO: implement onCallVoiceResume
   }
 }

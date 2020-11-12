@@ -13,10 +13,10 @@ class EMRTCView extends StatefulWidget {
   static const String viewTypeId = 'com.easemob.rtc/CallView';
   final CreatedCallback onCreated;
   final EMRTCViewType viewType;
-  final String streamId;
   final _EMRTCViewStatus state = _EMRTCViewStatus();
 
-  EMRTCView({@required this.onCreated, @required this.viewType, this.streamId}) : super(key: Key('EMRTCView$streamId[${DateTime.now().millisecondsSinceEpoch}]'));
+  EMRTCView({this.onCreated, this.viewType})
+      : super(key: Key('EMRTCView[${DateTime.now().millisecondsSinceEpoch}]'));
 
   @override
   State<StatefulWidget> createState() => state;
@@ -33,7 +33,7 @@ class _EMRTCViewStatus extends State<EMRTCView> {
   }
 
   Widget _platformView() {
-    final Map<String, dynamic> viewMap = {"tag": widget.viewType.index};
+    final Map<String, dynamic> viewMap = {"tag": widget.viewType == EMRTCViewType.local ? 0 : 1};
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return AndroidView(
@@ -58,7 +58,7 @@ class _EMRTCViewStatus extends State<EMRTCView> {
 
   @override
   void dispose() {
-    EMClient.getInstance.callManager.releaseVideoView(id);
+    EMClient.getInstance.callManager.releaseVideoView(id, widget.viewType);
     EMLog.v('RTCView release');
     super.dispose();
   }
@@ -69,4 +69,12 @@ class _EMRTCViewStatus extends State<EMRTCView> {
       widget.onCreated(widget, widget.id);
     }
   }
+}
+
+class EMRTCRemoteView extends EMRTCView {
+    EMRTCRemoteView(CreatedCallback callback): super(onCreated: callback, viewType: EMRTCViewType.remote);
+}
+
+class EMRTCLocalView extends EMRTCView {
+  EMRTCLocalView(CreatedCallback callback): super(onCreated: callback, viewType: EMRTCViewType.local);
 }

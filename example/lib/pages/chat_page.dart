@@ -20,7 +20,7 @@ class ChatPage extends StatefulWidget {
   State<StatefulWidget> createState() => _ChatPageState(conversation: conversation);
 }
 
-class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, ChatItemDelegate, BottomInputBarDelegate, EMCallManagerListener
+class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, ChatItemDelegate, BottomInputBarDelegate
 {
 
   _ChatPageState({@required this.conversation});
@@ -49,7 +49,6 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
     super.initState();
 
     EMClient.getInstance.chatManager.addListener(this);
-    EMClient.getInstance.callManager.addCallManagerListener(this);
 
     currentStatus = ChatStatus.Normal;
 
@@ -301,7 +300,7 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   void _initExtWidgets(){
     Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
       try{
-        EMClient.getInstance.callManager.startCall(EMCallType.Video, conversation.id);
+        EMClient.getInstance.callManager.makeCall(EMCallType.Video, conversation.id);
       }on EMError catch(error) {
 
       }
@@ -347,7 +346,6 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
     messageTotalList.clear();
     super.dispose();
     EMClient.getInstance.chatManager.removeListener(this);
-    EMClient.getInstance.callManager.removeCallManagerListener(this);
     if (conversation.type == EMConversationType.ChatRoom) {
       checkOutRoom();
     }
@@ -451,14 +449,13 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   @override
   void onTapItemPhone() async {
     try{
-      EMCallSession session = await EMClient.getInstance.callManager.startCall(EMCallType.Video, conversation.id);
+      await EMClient.getInstance.callManager.makeCall(EMCallType.Video, conversation.id);
       try{
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (BuildContext context) => CallPage(session: session), fullscreenDialog: true));
+            MaterialPageRoute(builder: (BuildContext context) => CallPage(callType: EMCallType.Video, otherUser: conversation.id), fullscreenDialog: true));
       }catch(e){
       }
-
 
     }on EMError catch(error) {
       print('拨打通话失败 --- ' + error.description);
@@ -507,17 +504,6 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   Future<bool> _willPop () { // 返回值必须是Future<bool>
     Navigator.of(context).pop(false);
     return Future.value(false);
-  }
-
-  // EMCallManagerListener
-  @override
-  void onCallReceived(EMCallSession session) {
-    print(session.toString());
-  }
-
-  @override
-  void onCallDidEnd(String sessionId, int reason, [EMError error]) {
-    print(sessionId);
   }
 }
 
