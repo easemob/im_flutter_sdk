@@ -92,33 +92,33 @@ class EMSDKMethod {
   static const String loadMsgWithTime = 'loadMsgWithTime';
 
   /// EMChatRoomManager methods
-  static final String joinChatRoom = 'joinChatRoom';
-  static final String leaveChatRoom = 'leaveChatRoom';
-  static final String fetchPublicChatRoomsFromServer = 'fetchPublicChatRoomsFromServer';
-  static final String fetchChatRoomInfoFromServer = 'fetchChatRoomInfoFromServer';
-  static final String getChatRoom = 'getChatRoom';
-  static final String getAllChatRooms = 'getAllChatRooms';
-  static final String createChatRoom = 'createChatRoom';
-  static final String destroyChatRoom = 'destroyChatRoom';
-  static final String changeChatRoomSubject = 'changeChatRoomSubject';
-  static final String changeChatRoomDescription = 'changeChatRoomDescription';
-  static final String fetchChatRoomMembers = 'fetchChatRoomMembers';
-  static final String muteChatRoomMembers = 'muteChatRoomMembers';
-  static final String unMuteChatRoomMembers = 'unMuteChatRoomMembers';
-  static final String changeChatRoomOwner = 'changeChatRoomOwner';
-  static final String addChatRoomAdmin = 'addChatRoomAdmin';
-  static final String removeChatRoomAdmin = 'removeChatRoomAdmin';
-  static final String fetchChatRoomMuteList = 'fetchChatRoomMuteList';
-  static final String removeChatRoomMembers = 'removeChatRoomMembers';
-  static final String blockChatRoomMembers = 'blockChatRoomMembers';
-  static final String unBlockChatRoomMembers = 'unBlockChatRoomMembers';
-  static final String fetchChatRoomBlackList = 'fetchChatRoomBlackList';
-  static final String updateChatRoomAnnouncement = 'updateChatRoomAnnouncement';
-  static final String fetchChatRoomAnnouncement = 'fetchChatRoomAnnouncement';
+  static const String joinChatRoom = 'joinChatRoom';
+  static const String leaveChatRoom = 'leaveChatRoom';
+  static const String fetchPublicChatRoomsFromServer = 'fetchPublicChatRoomsFromServer';
+  static const String fetchChatRoomInfoFromServer = 'fetchChatRoomInfoFromServer';
+  static const String getChatRoom = 'getChatRoom';
+  static const String getAllChatRooms = 'getAllChatRooms';
+  static const String createChatRoom = 'createChatRoom';
+  static const String destroyChatRoom = 'destroyChatRoom';
+  static const String changeChatRoomSubject = 'changeChatRoomSubject';
+  static const String changeChatRoomDescription = 'changeChatRoomDescription';
+  static const String fetchChatRoomMembers = 'fetchChatRoomMembers';
+  static const String muteChatRoomMembers = 'muteChatRoomMembers';
+  static const String unMuteChatRoomMembers = 'unMuteChatRoomMembers';
+  static const String changeChatRoomOwner = 'changeChatRoomOwner';
+  static const String addChatRoomAdmin = 'addChatRoomAdmin';
+  static const String removeChatRoomAdmin = 'removeChatRoomAdmin';
+  static const String fetchChatRoomMuteList = 'fetchChatRoomMuteList';
+  static const String removeChatRoomMembers = 'removeChatRoomMembers';
+  static const String blockChatRoomMembers = 'blockChatRoomMembers';
+  static const String unBlockChatRoomMembers = 'unBlockChatRoomMembers';
+  static const String fetchChatRoomBlackList = 'fetchChatRoomBlackList';
+  static const String updateChatRoomAnnouncement = 'updateChatRoomAnnouncement';
+  static const String fetchChatRoomAnnouncement = 'fetchChatRoomAnnouncement';
 
 
   /// EMChatRoomManagerListener
-  static final String chatRoomChange = 'onChatRoomChanged';
+  static const String chatRoomChange = 'onChatRoomChanged';
 
   /// EMGroupManager
   static const String getGroupWithId = 'getGroupWithId';
@@ -184,21 +184,38 @@ class EMSDKMethod {
   /// EMCallManager
   static const String setCallOptions = 'setCallOptions';
   static const String getCallOptions = 'getCallOptions';
-  static const String startCall = 'startCall';
-  static const String answerComingCall = 'answerComingCall';
+
+
+  static const String makeCall = 'makeCall';
+  static const String answerCall = 'answerCall';
+  static const String rejectCall = 'rejectCall';
   static const String endCall = 'endCall';
+
   static const String releaseView = 'releaseView';
-  
+
+  static const String enableVoiceTransfer = 'enableVoiceTransfer';
+  static const String enableVideoTransfer = 'enableVideoTransfer';
+
+  static const String muteRemoteAudio = 'muteRemoteAudio';
+  static const String muteRemoteVideo = 'muteRemoteVideo';
+
+  static const String switchCamera = 'switchCamera';
+  static const String setSurfaceView = 'setSurfaceView';
+
   /// EMCallManager Listener
   static const String onCallReceived = 'onCallReceived';
-  static const String onCallDidEnd = 'onCallDidEnd';
+  static const String onCallAccepted = 'onCallAccepted';
+  static const String onCallRejected = 'onCallRejected';
+  static const String onCallHangup = 'onCallHangup';
+  static const String onCallBusy = 'onCallBusy';
+  static const String onCallVideoPause = 'onCallVideoPause';
+  static const String onCallVideoResume = 'onCallVideoResume';
+  static const String onCallVoicePause = 'onCallVoicePause';
+  static const String onCallVoiceResume = 'onCallVoiceResume';
+  static const String onCallNetworkUnStable = 'onCallNetworkUnStable';
+  static const String onCallNetworkNormal = 'onCallNetworkNormal';
+  static const String onCallNetworkDisconnect = 'onCallNetworkDisconnect';
 
-  /// EMCallSessionListener
-  static const String onCallSessionDidAccept = 'onCallSessionDidAccept';
-  static const String onCallSessionDidConnected = 'onCallSessionDidConnected';
-  static const String onCallSessionStateDidChange = 'onCallSessionStateDidChange';
-  static const String onCallSessionNetworkDidChange = 'onCallSessionNetworkDidChange';
-  static const String onCallSessionDidEnd = 'onCallSessionDidEnd';
 
   /// ICallSession
   static const String pauseVoice = 'pauseVoice';

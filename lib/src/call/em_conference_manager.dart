@@ -1,8 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-
-
 class EMConferenceManager {
 
   static const _channelPrefix = 'com.easemob.im';

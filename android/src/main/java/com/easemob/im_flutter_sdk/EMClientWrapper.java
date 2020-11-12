@@ -249,7 +249,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         });
     }
 
-
     private void registerManagers() {
         new EMChatManagerWrapper(registrar, "em_chat_manager");
         new EMContactManagerWrapper(registrar, "em_contact_manager");
@@ -257,6 +256,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMGroupManagerWrapper(registrar, "em_group_manager");
         new EMConversationWrapper(registrar, "em_conversation");
         new EMPushManagerWrapper(registrar, "em_push_manager");
+        new EMCallManagerWrapper(registrar, "em_call_manager");
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
@@ -269,9 +269,8 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         Map<String, Object> data = new HashMap<>();
         data.put("isLoginBefore", EMClient.getInstance().isLoggedInBefore());
         data.put("currentUsername", EMClient.getInstance().getCurrentUser());
-        onSuccess(result, channelName,data);
+        onSuccess(result, channelName, data);
     }
-
 
     private void addEMListener() {
         EMClient.getInstance().addMultiDeviceListener(new EMMultiDeviceListener() {

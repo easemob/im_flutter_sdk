@@ -46,7 +46,6 @@
               arguments:(id)args
 {
     EMCallLocalVideoView *localView = [[EMCallLocalVideoView alloc] initWithFrame:frame];
-    localView.backgroundColor = UIColor.redColor;
     localView.scaleMode = EMCallViewScaleModeAspectFill;
     _iOSView = localView;
 }
@@ -56,7 +55,6 @@
                arguments:(id)args
 {
     EMCallRemoteVideoView *remoteView = [[EMCallRemoteVideoView alloc] initWithFrame:frame];
-    remoteView.backgroundColor = UIColor.blueColor;
     remoteView.scaleMode = EMCallViewScaleModeAspectFill;
     _iOSView = remoteView;
 }

@@ -76,7 +76,6 @@ class EMWrapperCallBack implements EMCallBack {
     public void onProgress(int progress, String status) {
         // no need
     }
-
 }
 
 
