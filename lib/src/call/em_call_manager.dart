@@ -94,14 +94,6 @@ class EMCallManager {
     return result.boolValue(EMSDKMethod.endCall);
   }
 
-  /// 删除再使用的view[viewId]
-  Future<bool> releaseVideoView(int viewId, EMRTCViewType type) async {
-    Map req = {"view_Id": viewId, "viewType": type.index};
-    Map result = await _channel.invokeMethod(EMSDKMethod.releaseView, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.releaseView);
-  }
-
   /// 打开/关闭音频传输
   Future<bool> enableVoiceTransfer(bool enable) async {
     Map req = {"enable": enable};
@@ -119,16 +111,16 @@ class EMCallManager {
   }
 
   /// 接收/不接收 对方音频
-  Future<bool> muteRemoteAudio(bool enable) async {
-    Map req = {"enable": enable};
+  Future<bool> muteRemoteAudio(bool mute) async {
+    Map req = {"mute": mute};
     Map result = await _channel.invokeMethod(EMSDKMethod.muteRemoteAudio, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.muteRemoteAudio);
   }
 
   /// 接收/不接收 对方视频
-  Future<bool> muteRemoteVideo(bool enable) async {
-    Map req = {"enable": enable};
+  Future<bool> muteRemoteVideo(bool mute) async {
+    Map req = {"mute": mute};
     Map result = await _channel.invokeMethod(EMSDKMethod.muteRemoteVideo, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.muteRemoteVideo);
@@ -155,6 +147,14 @@ class EMCallManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.setSurfaceView, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.setSurfaceView);
+  }
+
+  /// 删除再使用的view[viewId]
+  Future<bool> releaseVideoView(int viewId, EMRTCViewType type) async {
+    Map req = {"view_Id": viewId, "viewType": type.index};
+    Map result = await _channel.invokeMethod(EMSDKMethod.releaseView, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.releaseView);
   }
 
   Future<Null> _onCallReceived(Map event) async {

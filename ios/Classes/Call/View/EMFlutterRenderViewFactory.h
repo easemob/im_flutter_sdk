@@ -15,8 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (EMFlutterRenderViewFactory *)factoryWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar withId:(NSString *)aFactoryId;
 
-- (EMFlutterRenderView *)getViewWithId:(int)viewId
-                               andType:(EMFlutterRenderViewType)type;
+- (EMFlutterRenderView *)getLocalViewWithId:(int)viewId;
+
+- (EMFlutterRenderView *)getRemoteViewWithId:(int)viewId;
 
 - (void)releaseVideoView:(int)viewId;
 @end
