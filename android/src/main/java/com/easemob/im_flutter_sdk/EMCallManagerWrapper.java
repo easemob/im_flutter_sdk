@@ -4,9 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 
-import com.easemob.im_flutter_sdk.view.EMFlutterReaderViewFactory;
+import com.easemob.im_flutter_sdk.call.view.EMFlutterReaderViewFactory;
 import com.hyphenate.chat.EMCallSession;
 import com.hyphenate.chat.EMCallStateChangeListener;
 import com.hyphenate.chat.EMClient;
@@ -21,7 +20,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -29,21 +27,19 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMCallManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler, EMCallReceiverListener{
 
-    private MethodChannel callSessionChannel;
     private EMCallReceiver callReceiver;
     private EMFlutterReaderViewFactory factory;
 
     private int _currentLocalViewId;
     private int _currentRemoteViewId;
 
-    EMCallManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
+    public EMCallManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
         registrar.context().registerReceiver(
                 new EMCallReceiver(this),
                 new IntentFilter(EMClient.getInstance().callManager().getIncomingCallBroadcastAction())
         );
         factory = EMFlutterReaderViewFactory.factoryWithRegistrar(registrar, "com.easemob.rtc/CallView");
-        callSessionChannel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_call_session", JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
 

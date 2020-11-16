@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 
-import android.content.Context;
-
-
 import androidx.annotation.NonNull;
 
 import io.flutter.plugin.common.MethodCall;
@@ -257,6 +254,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMConversationWrapper(registrar, "em_conversation");
         new EMPushManagerWrapper(registrar, "em_push_manager");
         new EMCallManagerWrapper(registrar, "em_call_manager");
+        new EMConferenceManagerWrapper(registrar, "em_conference_manager");
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {

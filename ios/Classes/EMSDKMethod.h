@@ -190,13 +190,10 @@ static NSString * const EMMethodKeyMakeCall = @"makeCall";
 static NSString * const EMMethodKeyAnswerCall = @"answerCall";
 static NSString * const EMMethodKeyRejectCall = @"rejectCall";
 static NSString * const EMMethodKeyEndCall = @"endCall";
-
 static NSString * const EMMethodKeyEnableVoiceTransfer = @"enableVoiceTransfer";
 static NSString * const EMMethodKeyEnableVideoTransfer = @"enableVideoTransfer";
-
 static NSString * const EMMethodKeyMuteRemoteAudio = @"muteRemoteAudio";
 static NSString * const EMMethodKeyMuteRemoteVideo = @"muteRemoteVideo";
-
 static NSString * const EMMethodKeySwitchCamera = @"switchCamera";
 static NSString * const EMMethodKeySetSurfaceView = @"setSurfaceView";
 static NSString * const EMMethodKeyReleaseView = @"releaseView";

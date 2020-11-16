@@ -184,45 +184,70 @@ public class EMSDKMethod {
     static final String getNoDisturbGroups = "getNoDisturbGroups";
 
     /// EMCallManager
-    static final String makeCall = "makeCall";
-
-    static final String answerCall = "answerCall";
-    static final String rejectCall = "rejectCall";
-    static final String endCall = "endCall";
-
-    static final String releaseView = "releaseView";
-
-    static final String enableVoiceTransfer = "enableVoiceTransfer";
-    static final String enableVideoTransfer = "enableVideoTransfer";
-
-    static final String muteRemoteAudio = "muteRemoteAudio";
-    static final String muteRemoteVideo = "muteRemoteVideo";
-
-    static final String switchCamera = "switchCamera";
-    static final String setSurfaceView = "setSurfaceView";
-
+    public static final String makeCall = "makeCall";
+    public static final String answerCall = "answerCall";
+    public static final String rejectCall = "rejectCall";
+    public static final String endCall = "endCall";
+    public static final String enableVoiceTransfer = "enableVoiceTransfer";
+    public static final String enableVideoTransfer = "enableVideoTransfer";
+    public static final String muteRemoteAudio = "muteRemoteAudio";
+    public static final String muteRemoteVideo = "muteRemoteVideo";
+    public static final String switchCamera = "switchCamera";
+    public static final String setSurfaceView = "setSurfaceView";
+    public static final String releaseView = "releaseView";
 
     /// EMCallManager Listener
-    static final String onCallReceived = "onCallReceived";
-    static final String onCallAccepted = "onCallAccepted";
-    static final String onCallRejected = "onCallRejected";
-    static final String onCallHangup = "onCallHangup";
-    static final String onCallBusy = "onCallBusy";
-    static final String onCallVideoPause = "onCallVideoPause";
-    static final String onCallVideoResume = "onCallVideoResume";
-    static final String onCallVoicePause = "onCallVoicePause";
-    static final String onCallVoiceResume = "onCallVoiceResume";
-    static final String onCallNetworkUnStable = "onCallNetworkUnStable";
-    static final String onCallNetworkNormal = "onCallNetworkNormal";
-    static final String onCallNetworkDisconnect = "onCallNetworkDisconnect";
+    public static final String onCallReceived = "onCallReceived";
+    public static final String onCallAccepted = "onCallAccepted";
+    public static final String onCallRejected = "onCallRejected";
+    public static final String onCallHangup = "onCallHangup";
+    public static final String onCallBusy = "onCallBusy";
+    public static final String onCallVideoPause = "onCallVideoPause";
+    public static final String onCallVideoResume = "onCallVideoResume";
+    public static final String onCallVoicePause = "onCallVoicePause";
+    public static final String onCallVoiceResume = "onCallVoiceResume";
+    public static final String onCallNetworkUnStable = "onCallNetworkUnStable";
+    public static final String onCallNetworkNormal = "onCallNetworkNormal";
+    public static final String onCallNetworkDisconnect = "onCallNetworkDisconnect";
 
 
-    /// EMCallSessionListener
-    static final String onCallSessionDidAccept = "onCallSessionDidAccept";
-    static final String onCallSessionDidConnected = "onCallSessionDidConnected";
-    static final String onCallSessionStateDidChange = "onCallSessionStateDidChange";
-    static final String onCallSessionNetworkDidChange = "onCallSessionNetworkDidChange";
-    static final String onCallSessionDidEnd = "onCallSessionDidEnd";
+    /// EMConferenceManager
+    public static final String setConferenceAppKey = "setConferenceAppKey";
+    public static final String conferenceHasExists = "conferenceHasExists";
+    public static final String joinConference = "joinConference";
+    public static final String joinRoom = "joinRoom";
 
+    public static final String createWhiteboardRoom = "createWhiteboardRoom";
+    public static final String destroyWhiteboardRoom = "destroyWhiteboardRoom";
+    public static final String joinWhiteboardRoom = "joinWhiteboardRoom";
 
+    /// EMConference
+    public static final String publishConference = "publishConference";
+    public static final String unPublishConference = "unPublishConference";
+    public static final String subscribeConference = "subscribeConference";
+    public static final String unSubscribeConference = "unSubscribeConference";
+    public static final String changeMemberRoleWithMemberName = "changeMemberRoleWithMemberName";
+    public static final String kickConferenceMember = "kickConferenceMember";
+    public static final String destroyConference = "destroyConference";
+    public static final String leaveConference = "leaveConference";
+    public static final String startMonitorSpeaker = "startMonitorSpeaker";
+    public static final String stopMonitorSpeaker = "stopMonitorSpeaker";
+    public static final String requestTobeConferenceSpeaker = "requestTobeConferenceSpeaker";
+    public static final String requestTobeConferenceAdmin = "requestTobeConferenceAdmin";
+    public static final String muteConferenceMember = "muteConferenceMember";
+    public static final String responseReqSpeaker = "responseReqSpeaker";
+    public static final String responseReqAdmin = "responseReqAdmin";
+    public static final String updateConferenceWithSwitchCamera = "updateConferenceWithSwitchCamera";
+    public static final String updateConferenceMute = "updateConferenceMute";
+    public static final String updateConferenceVideo = "updateConferenceVideo";
+    public static final String updateRemoteView = "updateRemoteView";
+    public static final String updateMaxVideoKbps = "updateMaxVideoKbps";
+    public static final String setConferenceAttribute = "setConferenceAttribute";
+    public static final String deleteAttributeWithKey = "deleteAttributeWithKey";
+
+    public static final String muteConferenceRemoteAudio = "muteConferenceRemoteAudio";
+    public static final String muteConferenceRemoteVideo = "muteConferenceRemoteVideo";
+    public static final String muteConferenceAll = "muteConferenceAll";
+    public static final String addVideoWatermark = "addVideoWatermark";
+    public static final String clearVideoWatermark = "clearVideoWatermark";
 }

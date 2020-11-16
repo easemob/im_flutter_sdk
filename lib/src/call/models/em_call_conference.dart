@@ -76,7 +76,7 @@ extension ConferenceManager on EMConference {
 
   /// 向会议中发送流
   Future<String> publishConference(EMConferenceStream stream, EMRTCView view) async {
-    Map req = {'conference_id':this.callId, 'stream': stream.toJson(), 'view_id': view.id, 'type': view.viewType.index};
+    Map req = {'conf_id':this.callId, 'stream': stream.toJson(), 'view_id': view.id, 'type': view.viewType.index};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.publishConference, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.publishConference];
@@ -84,7 +84,7 @@ extension ConferenceManager on EMConference {
 
   /// 停止向会议中发送流
   Future<bool> unPublishConference() async {
-    Map req = {'conference_id':this.callId};
+    Map req = {'conf_id':this.callId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.unPublishConference, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.unPublishConference);
@@ -92,7 +92,7 @@ extension ConferenceManager on EMConference {
 
   /// 订阅会议中的流[steamId], 并在[remoteView] 上显示
   Future<bool> subscribeConference(String steamId, EMRTCView remoteView) async {
-    Map req = {'conference_id':this.callId, 'stream_id': steamId, 'view_id': remoteView.id};
+    Map req = {'conf_id':this.callId, 'stream_id': steamId, 'view_id': remoteView.id};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.unPublishConference, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.unPublishConference);
@@ -100,7 +100,7 @@ extension ConferenceManager on EMConference {
 
   /// 取消订阅会议中的流[steamId]
   Future<bool> unSubscribeConference(String steamId) async {
-    Map req = {'conference_id':this.callId, 'stream_id': steamId};
+    Map req = {'conf_id':this.callId, 'stream_id': steamId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.unSubscribeConference, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.unSubscribeConference);
@@ -108,7 +108,7 @@ extension ConferenceManager on EMConference {
 
   /// 改变会议中的成员[member]角色, 改变其他成员角色，需要管理员权限，也可以改变自己的角色
   Future<bool> changeMemberRole(String memberName, int role) async {
-    Map req = {'conference_id': this.callId, 'memberName': memberName, 'role': role};
+    Map req = {'conf_id': this.callId, 'memberName': memberName, 'role': role};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.changeMemberRoleWithMemberName, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.changeMemberRoleWithMemberName);
@@ -116,7 +116,7 @@ extension ConferenceManager on EMConference {
 
   /// 从会议中踢出用户[memberNames], 需要管理员以上权限
   Future<bool> kickMember(List<String>memberNames) async {
-    Map req = {'conference_id': this.callId, 'memberNames': memberNames};
+    Map req = {'conf_id': this.callId, 'memberNames': memberNames};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.kickConferenceMember, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.kickConferenceMember);
@@ -124,7 +124,7 @@ extension ConferenceManager on EMConference {
 
   /// 销毁会议，需要管理员权限
   Future<bool> destroy() async {
-    Map req = {'conference_id': this.callId};
+    Map req = {'conf_id': this.callId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.destroyConference, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.destroyConference);
@@ -132,7 +132,7 @@ extension ConferenceManager on EMConference {
 
   /// 离开会议，最后一人离开后会议会被销毁
   Future<bool> leave() async {
-    Map req = {'conference_id': this.callId};
+    Map req = {'conf_id': this.callId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.leaveConference, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.leaveConference);
@@ -140,7 +140,7 @@ extension ConferenceManager on EMConference {
 
   /// 监听会议中谁在说话，TODO: 完整描述
   Future<bool> startMonitorSpeaker([int timeMillisecond = 0]) async {
-    Map req = {'conference_id': this.callId, 'time': timeMillisecond};
+    Map req = {'conf_id': this.callId, 'time': timeMillisecond};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.startMonitorSpeaker, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.startMonitorSpeaker);
@@ -148,7 +148,7 @@ extension ConferenceManager on EMConference {
 
   /// 停止监听会议中谁在说话
   Future<bool> stopMonitorSpeaker() async {
-    Map req = {'conference_id': this.callId};
+    Map req = {'conf_id': this.callId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.stopMonitorSpeaker, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.stopMonitorSpeaker);
@@ -156,7 +156,7 @@ extension ConferenceManager on EMConference {
 
   /// 观众[EMConferenceRole.Audience]向管理员[adminId]申请连麦成为会议主播[EMConferenceRole.Speaker]
   Future<bool> requestTobeSpeaker(String adminId) async {
-    Map req = {'conference_id': this.callId, 'admin_id': adminId};
+    Map req = {'conf_id': this.callId, 'admin_id': adminId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.requestTobeConferenceSpeaker, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.requestTobeConferenceSpeaker);
@@ -164,7 +164,7 @@ extension ConferenceManager on EMConference {
 
   /// 主播[EMConferenceRole.Speaker]向管理员[adminId]申请连麦成为会议管理员[EMConferenceRole.Admin]
   Future<bool> requestTobeAdmin(String adminId) async {
-    Map req = {'conference_id': this.callId, 'admin_id': adminId};
+    Map req = {'conf_id': this.callId, 'admin_id': adminId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.requestTobeConferenceAdmin, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.requestTobeConferenceAdmin);
@@ -172,7 +172,7 @@ extension ConferenceManager on EMConference {
 
   /// 管理员[EMConferenceRole.Admin]让会议中的指定成员[memberId]闭嘴
   Future<bool> muteMember(String memberId, bool isMute) async {
-    Map req = {'conference_id': this.callId, 'member_id': memberId, 'isMute': isMute};
+    Map req = {'conf_id': this.callId, 'member_id': memberId, 'isMute': isMute};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.muteConferenceMember, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.muteConferenceMember);
@@ -180,7 +180,7 @@ extension ConferenceManager on EMConference {
 
   /// 管理员同意/拒绝观众的上麦申请，管理员调用
   Future<bool> responseReqSpeaker(String aMemberId, bool agree) async {
-    Map req = {'conference_id': this.callId, 'member_id': aMemberId, 'agree': agree};
+    Map req = {'conf_id': this.callId, 'member_id': aMemberId, 'agree': agree};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.responseReqSpeaker, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.responseReqSpeaker);
@@ -188,7 +188,7 @@ extension ConferenceManager on EMConference {
 
   /// 管理员同意/拒绝主播的申请管理员请求，管理员调用
   Future<bool> responseReqAdmin(String aMemberId, bool agree) async {
-    Map req = {'conference_id': this.callId, 'member_id': aMemberId, 'agree': agree};
+    Map req = {'conf_id': this.callId, 'member_id': aMemberId, 'agree': agree};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.responseReqAdmin, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.responseReqAdmin);
@@ -196,7 +196,7 @@ extension ConferenceManager on EMConference {
 
   /// 切换前后摄像头
   Future<bool> updateConferenceWithSwitchCamera() async {
-    Map req = {'conference_id': this.callId};
+    Map req = {'conf_id': this.callId};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.updateConferenceWithSwitchCamera, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.updateConferenceWithSwitchCamera);
@@ -204,7 +204,7 @@ extension ConferenceManager on EMConference {
 
   /// 设置是否关闭麦克风
   Future<bool> updateToMute(bool mute) async {
-    Map req = {'conference_id': this.callId, 'mute': mute};
+    Map req = {'conf_id': this.callId, 'mute': mute};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.updateConferenceMute, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.updateConferenceMute);
@@ -212,7 +212,7 @@ extension ConferenceManager on EMConference {
 
   /// 设置是否开启摄像头
   Future<bool> updateToEnableVideo(bool enable) async {
-    Map req = {'conference_id': this.callId, 'enable': enable};
+    Map req = {'conf_id': this.callId, 'enable': enable};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.updateConferenceVideo, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.updateConferenceVideo);
@@ -220,7 +220,7 @@ extension ConferenceManager on EMConference {
 
   /// 设置会议属性
   Future<bool> setConferenceAttribute(String key, String value) async {
-    Map req = {'conference_id': this.callId, 'key': key, 'value': value};
+    Map req = {'conf_id': this.callId, 'key': key, 'value': value};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.setConferenceAttribute, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.setConferenceAttribute);
@@ -228,7 +228,7 @@ extension ConferenceManager on EMConference {
 
   /// 删除会议属性
   Future<bool> deleteAttributeWithKey(String key) async {
-    Map req = {'conference_id': this.callId, 'key': key};
+    Map req = {'conf_id': this.callId, 'key': key};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.deleteAttributeWithKey, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.deleteAttributeWithKey);
@@ -244,7 +244,7 @@ extension ConferenceManager on EMConference {
 
   /// mute远端视频
   Future<bool> muteRemoteVideo(String steamId,bool isMute) async {
-    Map req = {'conference_id': this.callId, 'isMute': isMute};
+    Map req = {'conf_id': this.callId, 'isMute': isMute};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.muteConferenceRemoteVideo, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.muteConferenceRemoteVideo);
@@ -252,7 +252,7 @@ extension ConferenceManager on EMConference {
 
   /// 全部禁言
   Future<bool>muteAll(bool isMute) async {
-    Map req = {'conference_id': this.callId, 'isMute': isMute};
+    Map req = {'conf_id': this.callId, 'isMute': isMute};
     Map result = await EMConference._channel.invokeMethod(EMSDKMethod.muteConferenceAll, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.muteConferenceAll);

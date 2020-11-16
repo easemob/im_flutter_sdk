@@ -19,7 +19,7 @@ class EMConferenceManager {
   }
 
   /// 设置会议使用的[appKey], [username], [token]
-  Future<bool>setConference(String appKey, String username, String token) async {
+  Future<bool>setConferenceAppKey(String appKey, String username, String token) async {
     Map req = {'appKey': appKey, 'username': username, 'token': token};
     Map result = await _channel.invokeMethod(EMSDKMethod.setConferenceAppKey, req);
     EMError.hasErrorFromResult(result);
@@ -49,5 +49,4 @@ class EMConferenceManager {
     EMError.hasErrorFromResult(result);
     return EMConference.fromJson(result[EMSDKMethod.joinRoom]);
   }
-
 }
