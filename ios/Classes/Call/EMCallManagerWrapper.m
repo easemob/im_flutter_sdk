@@ -276,7 +276,7 @@
         [self.channel invokeMethod:EMMethodKeyOnCallBusy arguments:nil];
     }
     else if (aReason == EMCallEndReasonDecline) {
-        [self.channel invokeMethod:EMMethodKeyRejectCall arguments:nil];
+        [self.channel invokeMethod:EMMethodKeyOnCallRejected arguments:nil];
     }
     else {
          [self.channel invokeMethod:EMMethodKeyOnCallHangup arguments:nil];

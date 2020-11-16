@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (EMFlutterRenderView *)getRemoteViewWithId:(int)viewId;
 
+- (EMFlutterRenderView *)getViewWithId:(int)viewId andType:(int)type;
+
 - (void)releaseVideoView:(int)viewId;
 @end
 

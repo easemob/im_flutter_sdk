@@ -1,11 +1,8 @@
-package com.easemob.im_flutter_sdk.view;
+package com.easemob.im_flutter_sdk.call.view;
 
 import android.content.Context;
 
 import com.hyphenate.media.EMCallSurfaceView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +42,17 @@ public class EMFlutterReaderViewFactory extends PlatformViewFactory {
         EMFlutterRenderView view = remoteViewMap.get(key);
 
         return (EMCallSurfaceView)view.getView();
+    }
+
+    public EMCallSurfaceView getViewWithId(int viewId, int intType) {
+        EMFlutterRenderViewType type = intType == 0 ? EMFlutterRenderViewType.Local : EMFlutterRenderViewType.Remote;
+        if (type == EMFlutterRenderViewType.Local) {
+            return getLocalViewWithId(viewId);
+        }else if (type == EMFlutterRenderViewType.Remote) {
+            return getRemoteViewWithId(viewId);
+        }
+
+        return null;
     }
 
     public void releaseView(int viewId) {

@@ -90,7 +90,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
     private MethodChannel.Result result;
     private String channelName;
 
-    private void post(Runnable runnable) {
+    public void post(Runnable runnable) {
         ImFlutterSdkPlugin.handler.post(runnable);
     }
 

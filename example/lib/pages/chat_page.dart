@@ -453,7 +453,7 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
       try{
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (BuildContext context) => CallPage(callType: EMCallType.Video, otherUser: conversation.id), fullscreenDialog: true));
+            MaterialPageRoute(builder: (BuildContext context) => CallPage(callType: EMCallType.Video, otherUser: conversation.id, isCaller: true), fullscreenDialog: true));
       }catch(e){
       }
 

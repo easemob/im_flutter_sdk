@@ -1,4 +1,4 @@
-package com.easemob.im_flutter_sdk.view;
+package com.easemob.im_flutter_sdk.call.view;
 
 import android.content.Context;
 import android.view.View;

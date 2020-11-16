@@ -266,23 +266,23 @@
               channelName:(NSString *)aChannelName
                    result:(FlutterResult)result
 {
-//    __weak typeof(self)weakSelf = self;
-//    NSString *confereceId = param[@"conference_id"];
-//    EMCallConference *conf = self.conferenceDict[confereceId];
-//    EMStreamParam *steamParam = [EMStreamParam fromJson:param[@"stream"]];
-//    int type = [param[@"type"] intValue];
-//    int viewId = [param[@"view_id"] intValue];
-//    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
-//    steamParam.localView = (EMCallLocalVideoView *)renderView.previewView;
-//    [EMClient.sharedClient.conferenceManager publishConference:conf
-//                                                   streamParam:steamParam
-//                                                    completion:^(NSString *aPubStreamId, EMError *aError)
-//     {
-//        [weakSelf wrapperCallBack:result
-//                      channelName:aChannelName
-//                            error:aError
-//                           object:aPubStreamId];
-//    }];
+    __weak typeof(self)weakSelf = self;
+    NSString *confereceId = param[@"conf_id"];
+    EMCallConference *conf = self.conferenceDict[confereceId];
+    EMStreamParam *steamParam = [EMStreamParam fromJson:param[@"stream"]];
+    int type = [param[@"type"] intValue];
+    int viewId = [param[@"view_id"] intValue];
+    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
+    steamParam.localView = (EMCallLocalVideoView *)renderView.previewView;
+    [EMClient.sharedClient.conferenceManager publishConference:conf
+                                                   streamParam:steamParam
+                                                    completion:^(NSString *aPubStreamId, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:aPubStreamId];
+    }];
     
 }
 
@@ -291,7 +291,7 @@
                      result:(FlutterResult)result
 {
     __weak typeof(self)weakSelf = self;
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     NSString *streamId = param[@"stream_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     [EMClient.sharedClient.conferenceManager unpublishConference:conf streamId:streamId completion:^(EMError *aError) {
@@ -306,24 +306,24 @@
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result
 {
-//    __weak typeof(self)weakSelf = self;
-//    
-//    NSString *confereceId = param[@"conference_id"];
-//    EMCallConference *conf = self.conferenceDict[confereceId];
-//    NSString *streamId = param[@"stream_id"];
-//    int type = [param[@"type"] intValue];
-//    int viewId = [param[@"view_id"] intValue];
-//    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
-//    
-//    [EMClient.sharedClient.conferenceManager subscribeConference:conf
-//                                                        streamId:streamId
-//                                                 remoteVideoView:(EMCallRemoteVideoView *)renderView.previewView completion:^(EMError *aError)
-//    {
-//        [weakSelf wrapperCallBack:result
-//                      channelName:aChannelName
-//                            error:aError
-//                           object:@(!aError)];
-//    }];
+    __weak typeof(self)weakSelf = self;
+    
+    NSString *confereceId = param[@"conf_id"];
+    EMCallConference *conf = self.conferenceDict[confereceId];
+    NSString *streamId = param[@"stream_id"];
+    int type = [param[@"type"] intValue];
+    int viewId = [param[@"view_id"] intValue];
+    EMFlutterRenderView *renderView = [_factory getViewWithId:viewId andType:type];
+    
+    [EMClient.sharedClient.conferenceManager subscribeConference:conf
+                                                        streamId:streamId
+                                                 remoteVideoView:(EMCallRemoteVideoView *)renderView.previewView completion:^(EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(!aError)];
+    }];
 }
 
 - (void)unSubscribeConference:(NSDictionary *)param
@@ -332,7 +332,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     NSString *streamId = param[@"stream_id"];
     
@@ -353,7 +353,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     NSString *memberName = param[@"memberName"];
     int role = [param[@"role"] intValue];
@@ -376,7 +376,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     NSArray *memberNames = param[@"memberNames"];
@@ -398,7 +398,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     [EMClient.sharedClient.conferenceManager destroyConferenceWithId:conf.confId
@@ -417,7 +417,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     [EMClient.sharedClient.conferenceManager leaveConference:conf
@@ -436,7 +436,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     int time = [param[@"time"] intValue];
     
@@ -457,7 +457,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     [EMClient.sharedClient.conferenceManager stopMonitorSpeaker:conf];
@@ -474,7 +474,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     NSString *adminId = param[@"admin_id"];
@@ -496,7 +496,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     NSString *adminId = param[@"admin_id"];
@@ -518,7 +518,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     NSString *memberId = param[@"member_id"];
@@ -542,7 +542,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     NSString *memberId = param[@"member_id"];
@@ -566,7 +566,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     NSString *memberId = param[@"member_id"];
@@ -590,7 +590,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     [EMClient.sharedClient.conferenceManager updateConferenceWithSwitchCamera:conf];
@@ -607,7 +607,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     BOOL mute = [param[@"mute"] boolValue];
@@ -626,7 +626,7 @@
 {
     __weak typeof(self)weakSelf = self;
     
-    NSString *confereceId = param[@"conference_id"];
+    NSString *confereceId = param[@"conf_id"];
     EMCallConference *conf = self.conferenceDict[confereceId];
     
     BOOL enable = [param[@"enable"] boolValue];

@@ -3,6 +3,7 @@ package com.easemob.im_flutter_sdk;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
+import com.hyphenate.chat.EMConference;
 import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
@@ -23,6 +24,8 @@ import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
+import com.hyphenate.chat.EMStreamParam;
+import com.hyphenate.chat.EMStreamStatistics;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -819,5 +822,23 @@ class HyphenateExceptionHelper {
         data.put("code", e.getErrorCode());
         data.put("description", e.getDescription());
         return data;
+    }
+}
+
+class EMConferenceHelper {
+    static Map<String, Object> toJson(EMConference conference) {
+        Map<String, Object> data = new HashMap<>();
+        return data;
+    }
+}
+
+class EMStreamParamHelper {
+    static Map<String, Object> toJson(EMStreamParam stream) {
+        Map<String, Object> data = new HashMap<>();
+        return data;
+    }
+
+    static EMStreamParam fromJson(JSONObject json) {
+        return null;
     }
 }

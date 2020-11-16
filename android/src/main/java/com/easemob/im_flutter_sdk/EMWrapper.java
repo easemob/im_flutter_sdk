@@ -21,7 +21,7 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
 
   private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
-  EMWrapper(PluginRegistry.Registrar registrar, String channelName) {
+  public EMWrapper(PluginRegistry.Registrar registrar, String channelName) {
     this.registrar = registrar;
     this.channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + channelName, JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(this);
@@ -30,15 +30,15 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
   public PluginRegistry.Registrar registrar;
   public MethodChannel channel;
 
-  void post(Runnable runnable) {
+  public void post(Runnable runnable) {
     ImFlutterSdkPlugin.handler.post(runnable);
   }
 
-  void asyncRunnable(Runnable runnable) {
+  public void asyncRunnable(Runnable runnable) {
     cachedThreadPool.execute(runnable);
   }
 
-  void onSuccess(MethodChannel.Result result, String channelName, Object object) {
+  public void onSuccess(MethodChannel.Result result, String channelName, Object object) {
     post(()-> {
       Map<String, Object> data = new HashMap<>();
       if (object != null) {
@@ -48,7 +48,7 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
     });
   }
 
-  void onError(MethodChannel.Result result, HyphenateException e) {
+  public void onError(MethodChannel.Result result, HyphenateException e) {
     post(()-> {
       Map<String, Object> data = new HashMap<>();
         data.put("error", HyphenateExceptionHelper.toJson(e));

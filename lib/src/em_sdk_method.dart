@@ -250,8 +250,8 @@ class EMSDKMethod {
   static const String updateConferenceMute = 'updateConferenceMute';
   static const String updateConferenceVideo = 'updateConferenceVideo';
 
-  static const String updateRemoteView = 'updateRemoteView';
-  static const String updateMaxVideoKbps = 'updateMaxVideoKbps';
+//  static const String updateRemoteView = 'updateRemoteView';
+//  static const String updateMaxVideoKbps = 'updateMaxVideoKbps';
 
   static const String setConferenceAttribute = 'setConferenceAttribute';
   static const String deleteAttributeWithKey = 'deleteAttributeWithKey';

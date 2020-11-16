@@ -17,8 +17,6 @@ class CallPage extends StatefulWidget {
 class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
 
   bool _hasAnswer = false;
-  Widget _localView;
-  Widget _remoteView;
 
   _CallPageStatus(this.callType, this.otherUser, this.isCaller);
 
@@ -61,11 +59,11 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
               ),
               Container(
                 height: 200,
-                child:  !_hasAnswer ? Text("local占位") : EMRTCLocalView((view, viewId) => EMClient.getInstance.callManager.setLocalSurfaceView(view)),
+                child:  !_hasAnswer && !isCaller ? Text("local占位") : EMRTCLocalView((view, viewId) => EMClient.getInstance.callManager.setLocalSurfaceView(view)),
               ),
               Container(
                 height: 200,
-                child:  !_hasAnswer ? Text("remote占位") : EMRTCRemoteView((view, viewId) => EMClient.getInstance.callManager.setRemoteSurfaceView(view)),
+                child:  !_hasAnswer && !isCaller ? Text("remote占位") : EMRTCRemoteView((view, viewId) => EMClient.getInstance.callManager.setRemoteSurfaceView(view)),
               )
             ],
           ),
