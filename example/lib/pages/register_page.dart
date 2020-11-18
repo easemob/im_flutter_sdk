@@ -213,7 +213,7 @@ class RegisterPageState extends State<RegisterPage> {
 
     try{
       _refreshUI(true);
-      EMClient.getInstance.createAccount(username: username, password: password);
+      EMClient.getInstance.createAccount(username, password);
       Navigator.of(context).pushNamed(Constant.toLoginPage ,arguments:{'username':this._usernameController.text, 'password':this._pwdController.text});
     }catch(e){
       EMError error = e as EMError;

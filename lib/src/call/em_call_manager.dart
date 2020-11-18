@@ -74,20 +74,21 @@ class EMCallManager {
     return result.boolValue(EMSDKMethod.makeCall);
   }
 
-  /// 根据通话id[callId] 接听1v1通话，
+  /// 接听1v1通话，
   Future<bool> answerCall() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.answerCall);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.answerCall);
   }
 
+  /// 拒绝接听
   Future<bool> rejectCall() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.rejectCall);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.rejectCall);
   }
 
-  /// 根据通话id[callId], [reason] 结束1v1通话，
+  /// 结束1v1通话，
   Future<bool> endCall() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.endCall);
     EMError.hasErrorFromResult(result);

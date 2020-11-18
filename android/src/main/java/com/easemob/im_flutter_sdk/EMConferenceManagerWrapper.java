@@ -9,6 +9,7 @@ import com.hyphenate.chat.EMConferenceMember;
 import com.hyphenate.chat.EMConferenceStream;
 import com.hyphenate.chat.EMStreamParam;
 import com.hyphenate.chat.EMStreamStatistics;
+import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.media.EMCallSurfaceView;
 
 import org.json.JSONArray;
@@ -27,7 +28,7 @@ import io.flutter.plugin.common.PluginRegistry;
 public class EMConferenceManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler {
 
     private EMFlutterReaderViewFactory _factory;
-    private Map<String, EMConferenceStream> _confereceMap = new HashMap<>();
+    private Map<String, EMConferenceStream> _confereneMap = new HashMap<>();
 
     public EMConferenceManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
@@ -234,14 +235,14 @@ public class EMConferenceManagerWrapper extends EMWrapper implements MethodChann
     }
 
     private void subscribeConference(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        EMConferenceStream stream = _confereceMap.get(param.getString("conf_id"));
+        EMConferenceStream stream = _confereneMap.get(param.getString("conf_id"));
         int viewId = param.getInt("view_id");
         EMCallSurfaceView view = _factory.getRemoteViewWithId(viewId);
         EMClient.getInstance().conferenceManager().subscribe(stream, view, new EMValueWrapperCallBack<>(result, channelName));
     }
 
     private void unSubscribeConference(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        EMConferenceStream stream = _confereceMap.get(param.getString("conf_id"));
+        EMConferenceStream stream = _confereneMap.get(param.getString("conf_id"));
         EMClient.getInstance().conferenceManager().unsubscribe(stream, new EMValueWrapperCallBack<>(result, channelName));
     }
 
@@ -390,6 +391,7 @@ public class EMConferenceManagerWrapper extends EMWrapper implements MethodChann
         EMClient.getInstance().conferenceManager().muteRemoteVideo(streamId, isMute);
         onSuccess(result, channelName, true);
     }
+
     private void muteConferenceAll(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String confId = param.getString("conf_id");
         boolean isMute = param.getBoolean("isMute");
@@ -415,63 +417,139 @@ public class EMConferenceManagerWrapper extends EMWrapper implements MethodChann
         EMClient.getInstance().conferenceManager().addConferenceListener(new EMConferenceListener() {
             @Override
             public void onMemberJoined(EMConferenceMember member) {
-
+                channel.invokeMethod(EMSDKMethod.onMemberJoined, EMConferenceMemberHelper.toJson(member));
             }
 
             @Override
             public void onMemberExited(EMConferenceMember member) {
-
+                channel.invokeMethod(EMSDKMethod.onMemberExited, EMConferenceMemberHelper.toJson(member));
             }
 
             @Override
             public void onStreamAdded(EMConferenceStream stream) {
-
+                channel.invokeMethod(EMSDKMethod.onStreamAdded, EMConferenceStreamHelper.toJson(stream));
             }
 
             @Override
             public void onStreamRemoved(EMConferenceStream stream) {
-
+                channel.invokeMethod(EMSDKMethod.onStreamRemoved, EMConferenceStreamHelper.toJson(stream));
             }
 
             @Override
             public void onStreamUpdate(EMConferenceStream stream) {
-
+                channel.invokeMethod(EMSDKMethod.onStreamUpdate, EMConferenceStreamHelper.toJson(stream));
             }
 
             @Override
             public void onPassiveLeave(int error, String message) {
-
+                channel.invokeMethod(EMSDKMethod.onPassiveLeave, new HyphenateException(error, message));
             }
 
             @Override
-            public void onConferenceState(ConferenceState state) {
-
+            public void onAdminAdded(String memName) {
+                channel.invokeMethod(EMSDKMethod.onAdminAdded, memName);
             }
 
             @Override
-            public void onStreamStatistics(EMStreamStatistics statistics) {
+            public void onAdminRemoved(String memName) {
+                channel.invokeMethod(EMSDKMethod.onAdminRemoved, memName);
+            }
 
+            @Override
+            public void onPubStreamFailed(int error, String message) {
+                channel.invokeMethod(EMSDKMethod.onPubStreamFailed, new HyphenateException(error, message));
             }
 
             @Override
             public void onStreamSetup(String streamId) {
+                channel.invokeMethod(EMSDKMethod.onStreamSetup, streamId);
+            }
 
+            @Override
+            public void onUpdateStreamFailed(int error, String message) {
+                channel.invokeMethod(EMSDKMethod.onUpdateStreamFailed, new HyphenateException(error, message));
             }
 
             @Override
             public void onSpeakers(List<String> speakers) {
-
+                channel.invokeMethod(EMSDKMethod.onSpeakers, speakers);
             }
 
             @Override
             public void onReceiveInvite(String confId, String password, String extension) {
-
+                Map<String, String> map = new HashMap<>();
+                map.put("conf_id", confId);
+                map.put("pwd", password);
+                map.put("ext", extension);
+                channel.invokeMethod(EMSDKMethod.onReceiveInvite, map);
             }
 
             @Override
             public void onRoleChanged(EMConferenceManager.EMConferenceRole role) {
-
+                channel.invokeMethod(EMSDKMethod.onRoleChanged, role.code);
             }
+
+            @Override
+            public void onReqSpeaker(String memId, String memName, String nickname) {
+                Map<String, String> map = new HashMap<>();
+                map.put("mem_id", memId);
+                map.put("memName", memName);
+                map.put("nickname", nickname);
+                channel.invokeMethod(EMSDKMethod.onReqSpeaker, map);
+            }
+
+            @Override
+            public void onReqAdmin(String memId, String memName, String nickname) {
+                Map<String, String> map = new HashMap<>();
+                map.put("mem_id", memId);
+                map.put("memName", memName);
+                map.put("nickname", nickname);
+                channel.invokeMethod(EMSDKMethod.onReqAdmin, map);
+            }
+
+            @Override
+            public void onMute(String adminId, String memId) {
+                channel.invokeMethod(EMSDKMethod.onMute, true);
+            }
+
+            @Override
+            public void onUnMute(String adminId, String memId) {
+                channel.invokeMethod(EMSDKMethod.onMute, false);
+            }
+
+            @Override
+            public void onMuteAll(boolean mute) {
+                channel.invokeMethod(EMSDKMethod.onMute, mute);
+            }
+
+            @Override
+            public void onApplySpeakerRefused(String memId, String adminId) {
+                channel.invokeMethod(EMSDKMethod.onApplySpeakerRefused, adminId);
+            }
+
+            @Override
+            public void onApplyAdminRefused(String memId, String adminId) {
+                channel.invokeMethod(EMSDKMethod.onApplyAdminRefused, adminId);
+            }
+
+            @Override
+            public void onStreamStateUpdated(String streamId, StreamState state) {
+//                Map<String, Object> map = new HashMap<>();
+//                map.put("stream_id", streamId);
+//                map.put("state", state);
+//                channel.invokeMethod(EMSDKMethod.onApplyAdminRefused, map);
+            }
+
+            @Override
+            public void onConferenceState(ConferenceState state) {
+//                channel.invokeMethod(EMSDKMethod.onConferenceState, EMConferenceMemberHelper.toJson(member));
+            }
+
+            @Override
+            public void onStreamStatistics(EMStreamStatistics statistics) {
+//                channel.invokeMethod(EMSDKMethod.onStreamStatistics, EMConferenceMemberHelper.toJson(member));
+            }
+
         });
     }
 
