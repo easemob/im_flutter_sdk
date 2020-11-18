@@ -15,9 +15,9 @@ class EMConferenceMember {
   factory EMConferenceMember.fromJson(Map map) {
     return EMConferenceMember._private()
       .._memberId = map['memberId']
-      .._memberName = map['']
-      .._ext = map['']
-      .._nickname = map[''];
+      .._memberName = map['memberName']
+      .._ext = map['ext']
+      .._nickname = map['nickname'];
   }
 
   Map toJson() {

@@ -9,6 +9,9 @@
 #import "EMSDKMethod.h"
 #import "EMCallConference+Flutter.h"
 #import "EMStreamParam+Flutter.h"
+#import "EMCallMember+Flutter.h"
+#import "EMCallStream+Flutter.h"
+#import "EMError+Flutter.h"
 #import "EMFlutterRenderViewFactory.h"
 
 @interface EMConferenceManagerWrapper ()<EMConferenceManagerDelegate> {
@@ -55,7 +58,7 @@
         [self joinWhiteboardRoom:call.arguments channelName:EMMethodKeyJoinWhiteboardRoom result:result];
     }
     else if ([EMMethodKeyPublishConference isEqualToString:call.method]) {
-        [self publishConference:call.arguments channelName:EMMethodKeyPublishConference result:result];
+        [self _managerListener:call.arguments channelName:EMMethodKeyPublishConference result:result];
     }
     else if ([EMMethodKeyUnPublishConference isEqualToString:call.method]) {
         [self unPublishConference:call.arguments channelName:EMMethodKeyUnPublishConference result:result];
@@ -108,12 +111,12 @@
     else if ([EMMethodKeyUpdateConferenceVideo isEqualToString:call.method]) {
         [self updateConferenceVideo:call.arguments channelName:EMMethodKeyUpdateConferenceVideo result:result];
     }
-    else if ([EMMethodKeyUpdateRemoteView isEqualToString:call.method]) {
-        [self updateRemoteView:call.arguments channelName:EMMethodKeyUpdateRemoteView result:result];
-    }
-    else if ([EMMethodKeyUpdateMaxVideoKbps isEqualToString:call.method]) {
-        [self updateMaxVideoKbps:call.arguments channelName:EMMethodKeyUpdateMaxVideoKbps result:result];
-    }
+//    else if ([EMMethodKeyUpdateRemoteView isEqualToString:call.method]) {
+//        [self updateRemoteView:call.arguments channelName:EMMethodKeyUpdateRemoteView result:result];
+//    }
+//    else if ([EMMethodKeyUpdateMaxVideoKbps isEqualToString:call.method]) {
+//        [self updateMaxVideoKbps:call.arguments channelName:EMMethodKeyUpdateMaxVideoKbps result:result];
+//    }
     else if ([EMMethodKeySetConferenceAttribute isEqualToString:call.method]) {
         [self setConferenceAttribute:call.arguments channelName:EMMethodKeySetConferenceAttribute result:result];
     }
@@ -779,6 +782,92 @@
                   channelName:aChannelName
                         error:nil
                        object:nil];
+}
+
+
+#pragma mark - EMConferenceManagerDelegate
+- (void)memberDidJoin:(EMCallConference *)aConference member:(EMCallMember *)aMember {
+    [self.channel invokeMethod:EMMethodKeyOnMemberJoined arguments:aMember.toJson];
+}
+
+- (void)memberDidLeave:(EMCallConference *)aConference member:(EMCallMember *)aMember {
+    [self.channel invokeMethod:EMMethodKeyOnMemberExited arguments:aMember.toJson];
+}
+
+- (void)streamDidUpdate:(EMCallConference *)aConference addStream:(EMCallStream *)aStream {
+    [self.channel invokeMethod:EMMethodKeyOnStreamAdded arguments:aStream.toJson];
+}
+
+- (void)streamDidUpdate:(EMCallConference *)aConference removeStream:(EMCallStream *)aStream {
+    [self.channel invokeMethod:EMMethodKeyOnStreamRemoved arguments:aStream.toJson];
+}
+
+- (void)streamDidUpdate:(EMCallConference *)aConference stream:(EMCallStream *)aStream {
+    [self.channel invokeMethod:EMMethodKeyOnStreamUpdate arguments:aStream.toJson];
+}
+
+// onPassiveLeave
+
+- (void)adminDidChanged:(EMCallConference *)aConference newAdmin:(NSString *)adminmemid {
+    [self.channel invokeMethod:EMMethodKeyOnAdminAdd arguments:adminmemid];
+}
+
+- (void)adminDidChanged:(EMCallConference *)aConference removeAdmin:(NSString *)adminmemid {
+    [self.channel invokeMethod:EMMethodKeyOnAdminRemoved arguments:adminmemid];
+}
+
+- (void)streamPubDidFailed:(EMCallConference *)aConference error:(EMError *)aError {
+    [self.channel invokeMethod:EMMethodKeyOnPubStreamFailed arguments:aError.toJson];
+}
+
+// onConferenceStateChanged
+
+- (void)conferenceSpeakerDidChange:(EMCallConference *)aConference speakingStreamIds:(NSArray *)aStreamIds {
+    [self.channel invokeMethod:EMMethodKeyOnSpeakers arguments:aStreamIds];
+}
+
+// onReceiveInvite
+
+- (void)roleDidChanged:(EMCallConference *)aConference {
+    [self.channel invokeMethod:EMMethodKeyOnRoleChanged arguments:@(aConference.role)];
+}
+
+- (void)conferenceReqSpeaker:(EMCallConference *)aConference
+                       memId:(NSString *)aMemId
+                    nickName:(NSString *)aNickName
+                     memName:(NSString *)aMemName {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"mem_id"] = aMemId;
+    data[@"memName"] = aMemName;
+    data[@"nickname"] = aNickName;
+    [self.channel invokeMethod:EMMethodKeyOnReqSpeaker arguments:data];
+}
+
+- (void)conferenceReqAdmin:(EMCallConference *)aConference
+                     memId:(NSString *)aMemId
+                  nickName:(NSString *)aNickName
+                   memName:(NSString *)aMemName {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"mem_id"] = aMemId;
+    data[@"memName"] = aMemName;
+    data[@"nickname"] = aNickName;
+    [self.channel invokeMethod:EMMethodKeyOnReqAdmin arguments:data];
+}
+    
+- (void)conferenceDidUpdated:(EMCallConference *)aConference mute:(BOOL)aMute {
+    [self.channel invokeMethod:EMMethodKeyOnMute arguments:@(aMute)];
+}
+
+- (void)conferenceDidUpdated:(EMCallConference *)aConference muteAll:(BOOL)aMuteAll {
+    [self.channel invokeMethod:EMMethodKeyOnMuteAll arguments:@(aMuteAll)];
+}
+
+- (void)conferenceReqSpeakerRefused:(EMCallConference *)aConference adminId:(NSString *)aAdminId {
+    [self.channel invokeMethod:EMMethodKeyOnApplySpeakerRefused arguments:aAdminId];
+}
+
+- (void)conferenceReqAdminRefused:(EMCallConference *)aConference adminId:(NSString *)aAdminId {
+    [self.channel invokeMethod:EMMethodKeyOnApplyAdminRefused arguments:aAdminId];
 }
 
 - (NSMutableDictionary *)conferenceDict {

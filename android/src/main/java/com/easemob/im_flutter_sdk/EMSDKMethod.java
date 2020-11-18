@@ -250,4 +250,28 @@ public class EMSDKMethod {
     public static final String muteConferenceAll = "muteConferenceAll";
     public static final String addVideoWatermark = "addVideoWatermark";
     public static final String clearVideoWatermark = "clearVideoWatermark";
+
+    /// EMConferenceManager Listener
+    public static final String onMemberJoined = "onMemberJoined";
+    public static final String onMemberExited = "onMemberExited";
+    public static final String onStreamAdded = "onStreamAdded";
+    public static final String onStreamRemoved = "onStreamRemoved";
+    public static final String onStreamUpdate = "onStreamUpdate";
+    public static final String onPassiveLeave = "onPassiveLeave";
+    public static final String onAdminAdded = "onAdminAdded";
+    public static final String onAdminRemoved = "onAdminRemoved";
+    public static final String onPubStreamFailed = "onPubStreamFailed";
+    public static final String onStreamSetup = "onStreamSetup";
+    public static final String onUpdateStreamFailed = "onUpdateStreamFailed";
+    public static final String onConferenceStateChanged = "onConferenceStateChanged";
+    public static final String onStreamStateUpdated = "onStreamStateUpdated";
+    public static final String onSpeakers = "onSpeakers";
+    public static final String onReceiveInvite = "onReceiveInvite";
+    public static final String onRoleChanged = "onRoleChanged";
+    public static final String onReqSpeaker = "onReqSpeaker";
+    public static final String onReqAdmin = "onReqAdmin";
+    public static final String onMute = "onMute";
+    public static final String onMuteAll = "onMuteAll";
+    public static final String onApplySpeakerRefused = "onApplySpeakerRefused";
+    public static final String onApplyAdminRefused = "onApplyAdminRefused";
 }

@@ -94,7 +94,7 @@ class EMClient {
   /// 注册环信id，[username],[password],
   /// 需要在环信后台的console中设置为开放注册才能通过sdk注册，否则只能使用rest api注册。
   /// 返回注册成功的环信id
-  Future<String> createAccount({@required String username, @required String password}) async {
+  Future<String> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(EMSDKMethod.createAccount, req);

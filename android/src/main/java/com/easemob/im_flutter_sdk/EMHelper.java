@@ -4,6 +4,8 @@ import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConference;
+import com.hyphenate.chat.EMConferenceMember;
+import com.hyphenate.chat.EMConferenceStream;
 import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
@@ -825,13 +827,6 @@ class HyphenateExceptionHelper {
     }
 }
 
-class EMConferenceHelper {
-    static Map<String, Object> toJson(EMConference conference) {
-        Map<String, Object> data = new HashMap<>();
-        return data;
-    }
-}
-
 class EMStreamParamHelper {
     static Map<String, Object> toJson(EMStreamParam stream) {
         Map<String, Object> data = new HashMap<>();
@@ -840,5 +835,39 @@ class EMStreamParamHelper {
 
     static EMStreamParam fromJson(JSONObject json) {
         return null;
+    }
+}
+
+class EMConferenceHelper {
+    static Map<String, Object> toJson(EMConference conference) {
+        Map<String, Object> data = new HashMap<>();
+        return data;
+    }
+}
+
+class EMConferenceMemberHelper {
+    static Map<String, Object> toJson(EMConferenceMember member) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("memberId", member.memberId);
+        data.put("memberName", member.memberName);
+        data.put("ext", member.extension);
+        data.put("nickname", member.nickName);
+
+        return data;
+    }
+}
+
+class EMConferenceStreamHelper {
+    static Map<String, Object> toJson(EMConferenceStream stream) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("streamId", stream.getStreamId());
+        data.put("memberName", stream.getMemberName());
+        data.put("enableVoice", !stream.isAudioOff());
+        data.put("enableVideo", !stream.isVideoOff());
+        data.put("ext", stream.getExtension());
+        data.put("type", stream.getStreamType());
+        data.put("streamId", stream.getStreamId());
+
+        return data;
     }
 }

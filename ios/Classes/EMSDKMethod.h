@@ -2,7 +2,7 @@
 //  EMSDKMethod.h
 //  
 //
-//  Created by 杜洁鹏 on 2019/10/8.
+//  Created by 杜洁鹏 EMMethodKeyOn 2019/10/8.
 //
 
 #import <Foundation/Foundation.h>
@@ -241,16 +241,39 @@ static NSString * const EMMethodKeyResponseReqAdmin = @"responseReqAdmin";
 static NSString * const EMMethodKeyUpdateConferenceWithSwitchCamera = @"updateConferenceWithSwitchCamera";
 static NSString * const EMMethodKeyUpdateConferenceMute = @"updateConferenceMute";
 static NSString * const EMMethodKeyUpdateConferenceVideo = @"updateConferenceVideo";
-static NSString * const EMMethodKeyUpdateRemoteView = @"updateRemoteView";
-static NSString * const EMMethodKeyUpdateMaxVideoKbps = @"updateMaxVideoKbps";
+//static NSString * const EMMethodKeyUpdateRemoteView = @"updateRemoteView";
+//static NSString * const EMMethodKeyUpdateMaxVideoKbps = @"updateMaxVideoKbps";
 static NSString * const EMMethodKeySetConferenceAttribute = @"setConferenceAttribute";
 static NSString * const EMMethodKeyDeleteAttributeWithKey = @"deleteAttributeWithKey";
-
 static NSString * const EMMethodKeyMuteConferenceRemoteAudio = @"muteConferenceRemoteAudio";
 static NSString * const EMMethodKeyMuteConferenceRemoteVideo = @"muteConferenceRemoteVideo";
 static NSString * const EMMethodKeyMuteConferenceAll = @"muteConferenceAll";
 static NSString * const EMMethodKeyAddVideoWatermark = @"addVideoWatermark";
 static NSString * const EMMethodKeyClearVideoWatermark = @"clearVideoWatermark";
+
+#pragma mark - EMConferenceManager Listener
+static NSString * const EMMethodKeyOnMemberJoined = @"onMemberJoined";
+static NSString * const EMMethodKeyOnMemberExited = @"onMemberExited";
+static NSString * const EMMethodKeyOnStreamAdded = @"onStreamAdded";
+static NSString * const EMMethodKeyOnStreamRemoved = @"onStreamRemoved";
+static NSString * const EMMethodKeyOnStreamUpdate = @"onStreamUpdate";
+static NSString * const EMMethodKeyOnPassiveLeave = @"onPassiveLeave";
+static NSString * const EMMethodKeyOnAdminAdd = @"onMemberAdminAdd";
+static NSString * const EMMethodKeyOnAdminRemoved = @"onMemberAdminRemoved";
+static NSString * const EMMethodKeyOnPubStreamFailed = @"onPubStreamFailed";
+static NSString * const EMMethodKeyOnStreamSetup = @"onStreamSetup";
+static NSString * const EMMethodKeyOnUpdateStreamFailed = @"onUpdateStreamFailed";
+static NSString * const EMMethodKeyOnConferenceStateChanged = @"onConferenceStateChanged";
+static NSString * const EMMethodKeyOnStreamStateUpdated = @"onStreamStateUpdated";
+static NSString * const EMMethodKeyOnSpeakers = @"onSpeakers";
+static NSString * const EMMethodKeyOnReceiveInvite = @"onReceiveInvite";
+static NSString * const EMMethodKeyOnRoleChanged = @"onRoleChanged";
+static NSString * const EMMethodKeyOnReqSpeaker = @"onReqSpeaker";
+static NSString * const EMMethodKeyOnReqAdmin = @"onReqAdmin";
+static NSString * const EMMethodKeyOnMute = @"onMute";
+static NSString * const EMMethodKeyOnMuteAll = @"onMuteAll";
+static NSString * const EMMethodKeyOnApplySpeakerRefused = @"onApplySpeakerRefused";
+static NSString * const EMMethodKeyOnApplyAdminRefused = @"onApplyAdminRefused";
 
 
 #pragma mark - EMPushManagerWrapper
