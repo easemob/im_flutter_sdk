@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import android.util.Log;
+
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMChatManager;
@@ -261,11 +263,18 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
     }
 
     private void recallMessage(Object args, Result result) {
-        JSONObject argMap = (JSONObject)args;
-        EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         try{
-            manager.recallMessage(message);
-            onSuccess(result);
+            JSONObject argMap = (JSONObject)args;
+            try {
+                String msgId = argMap.getString("msgId");
+                Log.e("recallMessage---> msgId: ", msgId);
+                EMMessage message = EMClient.getInstance().chatManager().getMessage(msgId);
+                manager.recallMessage(message);
+                onSuccess(result);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+//        EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         }catch(HyphenateException e) {
             onError(result, e);
         }

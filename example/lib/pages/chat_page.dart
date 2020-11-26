@@ -47,14 +47,18 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   _ChatPageState({this.arguments});
 
+  final ValueNotifier<List<EMMessage>> _counterList = ValueNotifier<List<EMMessage>>([]);
+
   @override
   Widget build(BuildContext context) {
     _isDark = ThemeUtils.isDark(context);
     if(messageList.length > 0 ){
       messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
       if(!isLoad){
-        messageTotalList.clear();
-        messageTotalList.addAll(messageList);
+//        messageTotalList.clear();
+//        messageTotalList.addAll(messageList);
+        _counterList.value.clear();
+        _counterList.value.addAll(messageList);
         print(messageTotalList.length.toString() + 'after build true: ' + messageList.length.toString());
       }else{
         print( '_scrollController: ' + _scrollController.offset.toString());
@@ -113,22 +117,48 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
                       Flexible(
                         child: Column(
                           children: <Widget>[
-                            Flexible(
-                              child: ListView.builder(
-                                key: UniqueKey(),
-                                shrinkWrap: true,
-                                reverse: true,
-                                controller: _scrollController,
-                                itemCount: messageTotalList.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  if (messageTotalList.length != null && messageTotalList.length > 0) {
-                                    return ChatItem(this,messageTotalList[index],_isShowTime(index));
-                                  } else {
-                                    return WidgetUtil.buildEmptyWidget();
-                                  }
+                            ValueListenableBuilder(
+                                valueListenable: _counterList,
+                                builder: (BuildContext context, List<EMMessage> value, Widget child) {
+                                  return Flexible(
+                                    child: ListView.builder(
+                                      key: UniqueKey(),
+                                      shrinkWrap: true,
+                                      reverse: true,
+                                      controller: _scrollController,
+                                      itemCount: value.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        if (value.length != null && value.length > 0) {
+  //                                    return ChatItem(this,messageTotalList[index],_isShowTime(index));
+                                          value.forEach((element) {
+                                            print(" 000>>"  + element.toString() + " -- " + element.msgId);
+                                          });
+                                          return ChatItem(this,value[index],_isShowTime(index));
+                                        } else {
+                                          return WidgetUtil.buildEmptyWidget();
+                                        }
+                                      },
+                                    ),
+                                  );
                                 },
-                              ),
-                            )
+                            ),
+//                            Flexible(
+//                              child: ListView.builder(
+//                                key: UniqueKey(),
+//                                shrinkWrap: true,
+//                                reverse: true,
+//                                controller: _scrollController,
+//                                itemCount: messageTotalList.length,
+//                                itemBuilder: (BuildContext context, int index) {
+//                                  if (messageTotalList.length != null && messageTotalList.length > 0) {
+////                                    return ChatItem(this,messageTotalList[index],_isShowTime(index));
+//                                    return _listItems(context , index ,_isShowTime(index));
+//                                  } else {
+//                                    return WidgetUtil.buildEmptyWidget();
+//                                  }
+//                                },
+//                              ),
+//                            )
                           ],
                         ),
                       ),
@@ -204,6 +234,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   void _onConversationInit() async{
     messageList.clear();
+    _counterList.value.clear();
     conversation = await EMClient.getInstance().chatManager().
     getConversation(toChatUsername, fromEMConversationType(mType), true );
 
@@ -216,8 +247,16 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       afterLoadMessageId = msgListFromDB.first.msgId;
         messageList.addAll(msgListFromDB);
     }
+    _counterList.value.addAll(messageList);
     isLoad = false;
     _refreshUI();
+  }
+
+  void addMessage() async{
+    conversation = await EMClient.getInstance().chatManager().
+    getConversation(toChatUsername, fromEMConversationType(mType), true );
+    EMMessage message = await conversation.getLastMessage();
+    _counterList.value.add(message);
   }
 
 
@@ -228,7 +267,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       loadlist.sort((a, b) => b.msgTime.compareTo(a.msgTime));
       await Future.delayed(Duration(seconds: 1), () {
         setState(() {
-          messageTotalList.addAll(loadlist);
+//          messageTotalList.addAll(loadlist);
+          _counterList.value.addAll(loadlist);
         });
       });
 
@@ -258,7 +298,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         conversation.clearAllMessages();
         setState(() {
           messageList = [];
-          messageTotalList = [];
+//          messageTotalList = [];
+          _counterList.value = [];
         });
      }
   }
@@ -384,14 +425,16 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       if(username == toChatUsername || message.to == toChatUsername || message.conversationId == toChatUsername) {
         conversation.markMessageAsRead(message.msgId);
       }
+      _counterList.value.add(message);
     }
-    _onConversationInit();
+//    _onConversationInit();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    messageTotalList.clear();
+//    messageTotalList.clear();
+    _counterList.value.clear();
     super.dispose();
     EMClient.getInstance().chatManager().removeMessageListener(this);
     if(isJoinRoom){
@@ -423,30 +466,37 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapMessageItem(EMMessage message) {
     // TODO: implement didTapMessageItem
-    if (message.direction == Direction.RECEIVE) {
-      if (message.ext() != null && message.ext()['conferenceId'] != null) {
-        String conferenceId;
-        String password;
-        if (message.ext()['conferenceId'] != null && message.ext()['conferenceId'].length > 0) {
-          conferenceId = message.ext()['conferenceId'];
-        } else if (message.ext()['em_conference_id'] != null) {
-          conferenceId = message.ext()['em_conference_id'];
-        }
-
-        if (message.ext()['password'] != null) {
-          password = message.ext()['password'];
-        } else if(message.ext()['em_conference_password'] != null) {
-          password = message.ext()['em_conference_password'];
-        }
-
-        EMClient.getInstance().conferenceManager().joinConference(conferenceId, password,
-            onSuccess:(EMConference conf) {
-          print('加入会议成功 --- ' + conf.getConferenceId());
-            }, onError:(code, desc) {
-          print('加入会议失败 --- $desc');
-        });
-      }
-    }
+    EMClient.getInstance().chatManager().recallMessage(message ,
+        onSuccess: (){
+          print("消息撤回成功 ");
+          _onConversationInit();
+        },onError: (code,desc){
+          print("消息撤回失败 " + " code : " +code.toString() +"   " + desc);
+    });
+//    if (message.direction == Direction.RECEIVE) {
+//      if (message.ext() != null && message.ext()['conferenceId'] != null) {
+//        String conferenceId;
+//        String password;
+//        if (message.ext()['conferenceId'] != null && message.ext()['conferenceId'].length > 0) {
+//          conferenceId = message.ext()['conferenceId'];
+//        } else if (message.ext()['em_conference_id'] != null) {
+//          conferenceId = message.ext()['em_conference_id'];
+//        }
+//
+//        if (message.ext()['password'] != null) {
+//          password = message.ext()['password'];
+//        } else if(message.ext()['em_conference_password'] != null) {
+//          password = message.ext()['em_conference_password'];
+//        }
+//
+//        EMClient.getInstance().conferenceManager().joinConference(conferenceId, password,
+//            onSuccess:(EMConference conf) {
+//          print('加入会议成功 --- ' + conf.getConferenceId());
+//            }, onError:(code, desc) {
+//          print('加入会议失败 --- $desc');
+//        });
+//      }
+//    }
   }
 
   @override
@@ -478,9 +528,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     imageMessage.chatType = fromChatType(mType);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
        print('-----------success---------->' );
-       _onConversationInit();
+       _counterList.value.add(imageMessage);
     });
-    _onConversationInit();
+//    _onConversationInit();
   }
 
   @override
@@ -490,9 +540,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     imageMessage.chatType = fromChatType(mType);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
       print('-----------success---------->' );
-      _onConversationInit();
+      _counterList.value.add(imageMessage);
     });
-    _onConversationInit();
+//    _onConversationInit();
   }
 
 
@@ -525,14 +575,16 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void sendText(String text) {
     // TODO: implement willSendText   发送文本消息
     EMMessage message = EMMessage.createTxtSendMessage(userName: toChatUsername, content: text);
+//    EMMessage message = EMMessage.createCustomSendMessage(event: 'event', userName: toChatUsername ,params: {"params":"ceshi"});
     message.chatType = fromChatType(mType);
 
     print('-----------LocalID---------->' + message.msgId);
     EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
       print('-----------ServerID---------->' + message.msgId);
       print('-----------MessageStatus---------->' + message.status.toString());
+      _counterList.value.add(message);
     });
-    _onConversationInit();
+//    _onConversationInit();
 
   }
 
@@ -600,7 +652,7 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   void onDisconnected(CallReason reason) async{
     // TODO: implement onDisconnected
     Future.delayed(Duration(milliseconds: 500), () {
-      messageTotalList.clear();
+//      messageTotalList.clear();
       _onConversationInit();
     });
     var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();

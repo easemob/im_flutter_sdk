@@ -115,7 +115,7 @@ class EMClient {
   void loginWithToken(String userName, String token,
       {onSuccess(), onError(int errorCode, String desc)}) {
     Future<Map> result = _emClientChannel.invokeMethod(
-        EMSDKMethod.login, {"userName": userName, "token": token});
+        EMSDKMethod.loginWithToken, {"userName": userName, "token": token});
     result.then((response) {
       if (response['success']) {
         if (onSuccess != null) onSuccess();
