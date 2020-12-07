@@ -58,7 +58,7 @@
         [self joinWhiteboardRoom:call.arguments channelName:EMMethodKeyJoinWhiteboardRoom result:result];
     }
     else if ([EMMethodKeyPublishConference isEqualToString:call.method]) {
-        [self _managerListener:call.arguments channelName:EMMethodKeyPublishConference result:result];
+        [self publishConference:call.arguments channelName:EMMethodKeyPublishConference result:result];
     }
     else if ([EMMethodKeyUnPublishConference isEqualToString:call.method]) {
         [self unPublishConference:call.arguments channelName:EMMethodKeyUnPublishConference result:result];
