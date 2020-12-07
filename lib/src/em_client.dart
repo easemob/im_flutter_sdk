@@ -343,6 +343,10 @@ class EMClient {
     }
   }
 
+  String flutterSDKVersion(){
+    return "1.0";
+  }
+
   void _clearAllInfo(){
     _isLoginBefore = false;
     _connected = false;
