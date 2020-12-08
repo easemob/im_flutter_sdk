@@ -382,7 +382,7 @@
 - (void)userDidJoinChatroom:(EMChatroom *)aChatroom
                        user:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@"onMemberJoined",
+        @"chatRoomChange":@"onMemberJoined",
         @"roomId":aChatroom.chatroomId,
         @"participant":aUsername
     };
@@ -394,7 +394,7 @@
 - (void)userDidLeaveChatroom:(EMChatroom *)aChatroom
                         user:(NSString *)aUsername {
     NSDictionary *map = @{
-        @"type":@"onMemberExited",
+        @"chatRoomChange":@"onMemberExited",
         @"roomId":aChatroom.chatroomId,
         @"roomName":aChatroom.subject,
         @"participant":aUsername
@@ -410,14 +410,14 @@
     if (aReason == EMChatroomBeKickedReasonBeRemoved) {
         type = @"onChatRoomDestroyed";
         map = @{
-            @"type":type,
+            @"chatRoomChange":type,
             @"roomId":aChatroom.chatroomId,
             @"roomName":aChatroom.subject
         };
     } else if (aReason == EMChatroomBeKickedReasonDestroyed) {
         type = @"onRemovedFromChatRoom";
         map = @{
-            @"type":type,
+            @"chatRoomChange":type,
             @"reason":[NSNumber numberWithInt:0],
             @"roomId":aChatroom.chatroomId,
             @"roomName":aChatroom.subject,
@@ -433,7 +433,7 @@
                 addedMutedMembers:(NSArray *)aMutes
                        muteExpire:(NSInteger)aMuteExpire {
     NSDictionary *map = @{
-        @"type":@"onMuteListAdded",
+        @"chatRoomChange":@"onMuteListAdded",
         @"roomId":aChatroom.chatroomId,
         @"mutes":aMutes,
         @"expireTime":[NSString stringWithFormat:@"%ld", aMuteExpire]
@@ -445,7 +445,7 @@
 - (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
               removedMutedMembers:(NSArray *)aMutes {
     NSDictionary *map = @{
-        @"type":@"onMuteListRemoved",
+        @"chatRoomChange":@"onMuteListRemoved",
         @"roomId":aChatroom.chatroomId,
         @"mutes":aMutes
     };
@@ -456,7 +456,7 @@
 - (void)chatroomAdminListDidUpdate:(EMChatroom *)aChatroom
                         addedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
-        @"type":@"onAdminAdded",
+        @"chatRoomChange":@"onAdminAdded",
         @"roomId":aChatroom.chatroomId,
         @"admin":aAdmin
     };
@@ -467,7 +467,7 @@
 - (void)chatroomAdminListDidUpdate:(EMChatroom *)aChatroom
                       removedAdmin:(NSString *)aAdmin {
     NSDictionary *map = @{
-        @"type":@"onAdminRemoved",
+        @"chatRoomChange":@"onAdminRemoved",
         @"roomId":aChatroom.chatroomId,
         @"admin":aAdmin
     };
@@ -479,7 +479,7 @@
                       newOwner:(NSString *)aNewOwner
                       oldOwner:(NSString *)aOldOwner {
     NSDictionary *map = @{
-        @"type":@"onOwnerChanged",
+        @"chatRoomChange":@"onOwnerChanged",
         @"roomId":aChatroom.chatroomId,
         @"newOwner":aNewOwner,
         @"oldOwner":aOldOwner
@@ -491,7 +491,7 @@
 - (void)chatroomAnnouncementDidUpdate:(EMChatroom *)aChatroom
                          announcement:(NSString *)aAnnouncement {
     NSDictionary *map = @{
-        @"type":@"onAnnouncementChanged",
+        @"chatRoomChange":@"onAnnouncementChanged",
         @"roomId":aChatroom.chatroomId,
         @"announcement":aAnnouncement
     };

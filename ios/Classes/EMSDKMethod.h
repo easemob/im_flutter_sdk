@@ -131,7 +131,7 @@ static NSString * const EMMethodKeyGetChatroomBlacklistFromServer = @"fetchChatR
 static NSString * const EMMethodKeyUpdateChatRoomAnnouncement = @"updateChatRoomAnnouncement";
 static NSString * const EMMethodKeyGetChatroomAnnouncement = @"fetchChatRoomAnnouncement";
 
-static NSString * const EMMethodKeyChatroomChanged = @"onChatroomChanged";
+static NSString * const EMMethodKeyChatroomChanged = @"onChatRoomChanged";
 
 #pragma mark - EMGroupManagerWrapper
 

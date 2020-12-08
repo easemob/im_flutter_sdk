@@ -114,7 +114,7 @@ public class EMSDKMethod {
     static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
 
     //EMChatRoomManagerListener
-    static final String chatRoomChange = "onChatRoomChange";
+    static final String chatRoomChange = "onChatRoomChanged";
 
     /// EMGroupManager
     static final String getAllGroups = "getAllGroups";
