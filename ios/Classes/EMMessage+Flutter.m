@@ -58,6 +58,7 @@
     ret[@"hasDeliverAck"] = @(self.isDeliverAcked);
     ret[@"hasReadAck"] = @(self.isReadAcked);
     ret[@"serverTime"] = @(self.timestamp);
+    ret[@"attributes"] = self.ext ?: @{};
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = @([self statusToInt:self.status]);
     ret[@"chatType"] = @([self chatTypeToInt:self.chatType]);
