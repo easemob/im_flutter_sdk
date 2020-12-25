@@ -302,6 +302,7 @@ class EMMessageHelper {
         }
 
         if (message != null) {
+            
             String from = json.getString("from");
             if (from == null || from.length() == 0) {
                 from = EMClient.getInstance().getCurrentUser();
@@ -316,6 +317,28 @@ class EMMessageHelper {
             message.setStatus(statusFromInt(json.getInt("status")));
             message.setChatType(chatTypeFromInt(json.getInt("chatType")));
             message.setDirection(json.getString("direction").equals("send") ? EMMessage.Direct.SEND : EMMessage.Direct.RECEIVE);
+
+            if (null != json.getJSONObject("attributes")){
+                JSONObject data = json.getJSONObject("attributes");
+                Iterator iterator = data.keys();
+                while (iterator.hasNext()){
+                    String key = iterator.next().toString();
+                    Object result = data.get(key);
+                    if (result.getClass().getSimpleName().equals("Integer")) {
+                        message.setAttribute(key, (Integer) result);
+                    } else if (result.getClass().getSimpleName().equals("Boolean")) {
+                        message.setAttribute(key, (Boolean) result);
+                    } else if (result.getClass().getSimpleName().equals("Long")) {
+                        message.setAttribute(key, (Long) result);
+                    } else if (result.getClass().getSimpleName().equals("JSONObject")) {
+                        message.setAttribute(key, (JSONObject) result);
+                    } else if (result.getClass().getSimpleName().equals("JSONArray")) {
+                        message.setAttribute(key, (JSONArray) result);
+                    } else {
+                        message.setAttribute(key, data.getString(key));
+                    }
+                }
+            }
         }
 
         return message;
@@ -360,6 +383,9 @@ class EMMessageHelper {
             } break;
         }
 
+        if (message.ext().size() > 0 && null != message.ext()){
+            data.put("attributes", message.ext());
+        }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
         data.put("hasReadAck", message.isAcked());

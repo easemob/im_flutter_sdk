@@ -19,10 +19,10 @@ import 'models/em_domain_terms.dart';
 import 'models/em_options.dart';
 import 'tools/em_log.dart';
 
-
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
+  static const MethodChannel _channel =
+      const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
   static EMClient _instance;
   final EMChatManager _chatManager = EMChatManager();
   final EMContactManager _contactManager = EMContactManager();
@@ -57,7 +57,8 @@ class EMClient {
   /// 获取是否登录
   bool get isLoginBefore => _isLoginBefore;
 
-  static EMClient get getInstance => _instance = _instance ?? EMClient._internal();
+  static EMClient get getInstance =>
+      _instance = _instance ?? EMClient._internal();
 
   /// @nodoc private constructor
   EMClient._internal() {
@@ -82,8 +83,9 @@ class EMClient {
   Future<Null> init(EMOptions options) async {
     _options = options;
     EMLog.v('init: $options');
-    // 这里返回可以返回currentUsername和isLoginBefore
-    Map result = await _channel.invokeMethod(EMSDKMethod.init, options.toJson());
+    // 直接返回当前登录账号和是否登陆过
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.init, options.toJson());
     Map map = result[EMSDKMethod.init];
     _currentUsername = map['currentUsername'];
     _isLoginBefore = map['isLoginBefore'] as bool;
@@ -104,9 +106,14 @@ class EMClient {
 
   /// 使用用户名(环信id)和密码(或token)登录，[username], [pwdOrToken]
   /// 返回登录成功的id(环信id)
-  Future<String> login(String username, String pwdOrToken ,[bool isPassword = true]) async {
+  Future<String> login(String username, String pwdOrToken,
+      [bool isPassword = true]) async {
     EMLog.v('login: $username : $pwdOrToken, isPassword: $isPassword');
-    Map req = {'username': username, 'pwdOrToken': pwdOrToken, 'isPassword': isPassword};
+    Map req = {
+      'username': username,
+      'pwdOrToken': pwdOrToken,
+      'isPassword': isPassword
+    };
     Map result = await _channel.invokeMethod(EMSDKMethod.login, req);
     EMError.hasErrorFromResult(result);
     _currentUsername = result['username'];
@@ -141,7 +148,7 @@ class EMClient {
     Map req = {'nickname': nickname};
     Map result = await _channel.invokeMethod(EMSDKMethod.setNickname, req);
     EMError.hasErrorFromResult(result);
-    return  result.boolValue(EMSDKMethod.setNickname);
+    return result.boolValue(EMSDKMethod.setNickname);
   }
 
   /// @nodoc 上传日志到环信, 不对外暴露
@@ -155,17 +162,19 @@ class EMClient {
   /// 返回日志路径
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
-    Map result =  await _channel.invokeMethod(EMSDKMethod.compressLogs);
+    Map result = await _channel.invokeMethod(EMSDKMethod.compressLogs);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.compressLogs];
   }
 
   /// 获取账号名下登陆的在线设备列表
   /// 当前登录账号和密码 [username]/[password].
-  Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer({@required String username, @required String password}) async {
+  Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
+      {@required String username, @required String password}) async {
     EMLog.v('getLoggedInDevicesFromServer: $username, "******"');
     Map req = {'username': username, 'password': password};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getLoggedInDevicesFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getLoggedInDevicesFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMDeviceInfo> list = List();
     (result[EMSDKMethod.getLoggedInDevicesFromServer] as List).forEach((info) {
@@ -176,9 +185,16 @@ class EMClient {
 
   /// 根据设备ID，将该设备下线,
   /// 账号和密码 [username]/[password] 设备ID[resource].
-  Future<bool> kickDevice({@required String username, @required String password, @required String resource}) async {
+  Future<bool> kickDevice(
+      {@required String username,
+      @required String password,
+      @required String resource}) async {
     EMLog.v('kickDevice: $username, "******"');
-    Map req = {'username': username, 'password': password, 'resource': resource};
+    Map req = {
+      'username': username,
+      'password': password,
+      'resource': resource
+    };
     Map result = await _channel.invokeMethod(EMSDKMethod.kickDevice, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.kickDevice);
@@ -186,7 +202,8 @@ class EMClient {
 
   /// 将该账号下的所有设备都踢下线
   /// 账号和密码 [username]/[password].
-  Future<bool> kickAllDevices({@required String username, @required String password}) async {
+  Future<bool> kickAllDevices(
+      {@required String username, @required String password}) async {
     EMLog.v('kickAllDevices: $username, "******"');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(EMSDKMethod.kickAllDevices, req);
@@ -343,11 +360,11 @@ class EMClient {
     }
   }
 
-  String flutterSDKVersion(){
+  String flutterSDKVersion() {
     return "1.0";
   }
 
-  void _clearAllInfo(){
+  void _clearAllInfo() {
     _isLoginBefore = false;
     _connected = false;
     _accessToken = '';
