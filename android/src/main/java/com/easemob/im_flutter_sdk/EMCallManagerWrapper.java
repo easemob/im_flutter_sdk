@@ -90,10 +90,10 @@ public class EMCallManagerWrapper extends EMWrapper implements MethodChannel.Met
 
     private void makeCall(JSONObject param, String channelName, Result result) throws JSONException {
         int callType = param.getInt("type");
-        String username = param.getString("username");
+        String username = param.getString("remote");
         String ext = param.getString("ext");
-        boolean recordOnServer = param.getBoolean("recordOnServer");
-        boolean mergeStream = param.getBoolean("mergeStream");
+        boolean recordOnServer = param.getBoolean("record");
+        boolean mergeStream = param.getBoolean("merge");
 
         asyncRunnable(()->{
             try {
