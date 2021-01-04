@@ -69,7 +69,7 @@
 - (void)getConversationWithParam:(NSDictionary *)param
                   completion:(void(^)(EMConversation *conversation))aCompletion
 {
-    NSString *conversationId = param[@"con_id"];
+    __weak NSString *conversationId = param[@"con_id"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
@@ -134,8 +134,8 @@
         
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyMarkMsgAsRead
-                            error:error
-                           object:@(!error)];
+                            error:nil
+                           object:@(YES)];
     }];
 }
 

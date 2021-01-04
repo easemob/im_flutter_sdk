@@ -11,8 +11,6 @@ class EMChatManager {
 
   final _messageListeners = List<EMChatManagerListener>();
 
-  Function _conversationUpdateFunc;
-
   EMChatManager() {
     _channel.setMethodCallHandler((MethodCall call) {
       if (call.method == EMSDKMethod.onMessagesReceived) {
@@ -26,7 +24,7 @@ class EMChatManager {
       } else if (call.method == EMSDKMethod.onMessagesRecalled) {
         return _onMessagesRecalled(call.arguments);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
-        return _conversationUpdateFunc();
+        return _onConversationsUpdate(call.arguments);
       }
       return null;
     });
@@ -163,11 +161,6 @@ class EMChatManager {
     _messageListeners.remove(listener);
   }
 
-  ///  设置会话更新回调函数[onConversationUpdate].
-  void onConversationUpdate(onConversationUpdate()) {
-    _conversationUpdateFunc = onConversationUpdate;
-  }
-
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// 结果按每页[pageSize]分页，从[startMsgId]开始。
   Future<EMCursorResult> fetchHistoryMessages(String conversationId,
@@ -268,6 +261,12 @@ class EMChatManager {
       listener.onMessagesRecalled(list);
     }
   }
+
+  Future<void> _onConversationsUpdate(dynamic obj) async {
+    for (var listener in _messageListeners) {
+      listener.onConversationsUpdate();
+    }
+  }
 }
 
 abstract class EMChatManagerListener {
@@ -285,4 +284,7 @@ abstract class EMChatManagerListener {
 
   /// 收到[messages]消息被撤回
   onMessagesRecalled(List<EMMessage> messages) {}
+
+  /// 会话列表变化
+  onConversationsUpdate() {}
 }
