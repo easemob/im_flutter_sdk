@@ -1,7 +1,6 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class EMError implements Exception {
-
   @pragma("vm:entry-point")
   EMError._private([this._code, this._description]);
 
@@ -17,7 +16,7 @@ class EMError implements Exception {
   }
 
   factory EMError.fromJson(Map map) {
-    if(map == null) return null;
+    if (map == null) return null;
     return EMError._private()
       .._code = map['code']
       .._description = map['description'];
@@ -30,7 +29,7 @@ class EMError implements Exception {
 
   static hasErrorFromResult(Map map) {
     EMError error = EMError.fromJson(map['error']);
-    if(error != null) {
+    if (error != null) {
       EMLog.v('error - ' + error.toString());
       throw (error);
     }
