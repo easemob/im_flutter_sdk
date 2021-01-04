@@ -2,6 +2,14 @@
 
 extension MapExtension on Map {
   bool boolValue(String key) {
-    return (this[key] == null ) || (this[key] == 0);
+    if ((this[key] == null) || (this[key] == 0)) {
+      return false;
+    } else if (this[key] is int) {
+      return this[key] == 0 ? false : true;
+    } else if (this[key] is String) {
+      return this[key].toString().length == 0 ? false : true;
+    } else {
+      return this[key] as bool;
+    }
   }
 }
