@@ -102,7 +102,7 @@ class EMMessage {
 
   Future<Null> _onMessageError(Map map) {
     EMLog.v('发送失败 -- ' + map.toString());
-    EMMessage msg = EMMessage.fromJson(map);
+    EMMessage msg = EMMessage.fromJson(map['message']);
     this.msgId = msg.msgId;
     this.status = msg.status;
 
@@ -135,7 +135,7 @@ class EMMessage {
 
   Future<Null> _onMessageReadAck(Map map) {
     EMLog.v('消息已读 -- ' + ' msg_id: ' + this.msgId);
-    EMMessage msg = EMMessage.fromJson(map['message']);
+    EMMessage msg = EMMessage.fromJson(map);
     this.hasReadAck = msg.hasReadAck;
 
     if (listener != null) {
@@ -146,7 +146,7 @@ class EMMessage {
 
   Future<Null> _onMessageDeliveryAck(Map map) {
     EMLog.v('消息已送达 -- ' + ' msg_id: ' + this.msgId);
-    EMMessage msg = EMMessage.fromJson(map['message']);
+    EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
 
     if (listener != null) {
@@ -157,7 +157,7 @@ class EMMessage {
 
   Future<Null> _onMessageStatusChanged(Map map) {
     EMLog.v('消息状态变更 -- ' + ' msg_id: ' + this.msgId);
-    EMMessage msg = EMMessage.fromJson(map['message']);
+    EMMessage msg = EMMessage.fromJson(map);
     this.status = msg.status;
 
     if (listener != null) {
@@ -179,8 +179,8 @@ class EMMessage {
     String displayName = '',
     String thumbnailLocalPath = '',
     bool sendOriginalImage = false,
-    int width = 0,
-    int height = 0,
+    double width = 0,
+    double height = 0,
   }) : this.createSendMessage(
             to: username,
             body: EMImageMessageBody(
@@ -199,8 +199,8 @@ class EMMessage {
     String displayName = '',
     int duration = 0,
     String thumbnailLocalPath = '',
-    int width = 0,
-    int height = 0,
+    double width = 0,
+    double height = 0,
   }) : this.createSendMessage(
             to: username,
             body: EMVideoMessageBody(
@@ -275,7 +275,7 @@ class EMMessage {
   // 消息是否收到已送达回执
   bool hasDeliverAck = false;
 
-  // 消息是否收到已读回执
+  // 消息是否发送/收到已读回执
   bool hasReadAck = false;
 
   // 是否已读
@@ -304,9 +304,9 @@ class EMMessage {
     data['attributes'] = this.attributes;
     data['direction'] =
         this.direction == EMMessageDirection.SEND ? 'send' : 'rec';
+    data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
-    data['hasRead'] = this.hasRead;
     data['msgId'] = this.msgId;
     data['conversationId'] = this.conversationId ?? this.to;
     data['chatType'] = chatTypeToInt(this.chatType);
@@ -327,9 +327,9 @@ class EMMessage {
       ..direction = map['direction'] == 'send'
           ? EMMessageDirection.SEND
           : EMMessageDirection.RECEIVE
+      ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
-      ..hasRead = map.boolValue('hasRead')
       ..msgId = map['msgId']
       ..conversationId = map['conversationId']
       ..chatType = chatTypeFromInt(map['chatType'])
@@ -609,8 +609,8 @@ class EMImageMessageBody extends EMFileMessageBody {
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
     this.sendOriginalImage = map.boolValue('sendOriginalImage');
-    this.height = map['height'];
-    this.width = map['width'];
+    this.height = map['height'].toDouble();
+    this.width = map['width'].toDouble();
     this.thumbnailStatus =
         EMFileMessageBody.downloadStatusFromInt(map['thumbnailStatus']);
   }
@@ -645,10 +645,10 @@ class EMImageMessageBody extends EMFileMessageBody {
   EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
 
   // 宽
-  int width = 0;
+  double width = 0;
 
   // 高
-  int height = 0;
+  double height = 0;
 }
 
 // video body
@@ -672,8 +672,8 @@ class EMVideoMessageBody extends EMFileMessageBody {
     this.thumbnailLocalPath = map['thumbnailLocalPath'];
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
-    this.height = map['height'];
-    this.width = map['width'];
+    this.height = map['height'].toDouble();
+    this.width = map['width'].toDouble();
     this.thumbnailStatus =
         EMFileMessageBody.downloadStatusFromInt(map['thumbnailStatus']);
   }
@@ -708,10 +708,10 @@ class EMVideoMessageBody extends EMFileMessageBody {
   EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
 
   // 宽
-  int width = 0;
+  double width = 0;
 
   // 高
-  int height = 0;
+  double height = 0;
 }
 
 // voice body

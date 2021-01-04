@@ -5,34 +5,35 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class EMCallManager {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
+  static const MethodChannel _channel =
+      const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
 
-  EMCallManager(){
+  EMCallManager() {
     _channel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
-      if(call.method == EMSDKMethod.onCallReceived) {
+      if (call.method == EMSDKMethod.onCallReceived) {
         _onCallReceived(argMap);
-      }else if(call.method == EMSDKMethod.onCallAccepted) {
+      } else if (call.method == EMSDKMethod.onCallAccepted) {
         _onCallAccepted(argMap);
-      }else if(call.method == EMSDKMethod.onCallBusy) {
+      } else if (call.method == EMSDKMethod.onCallBusy) {
         _onCallBusy(argMap);
-      }else if(call.method == EMSDKMethod.onCallHangup) {
+      } else if (call.method == EMSDKMethod.onCallHangup) {
         _onCallHangup(argMap);
-      }else if(call.method == EMSDKMethod.onCallRejected) {
+      } else if (call.method == EMSDKMethod.onCallRejected) {
         _onCallRejected(argMap);
-      }else if(call.method == EMSDKMethod.onCallNetworkDisconnect) {
+      } else if (call.method == EMSDKMethod.onCallNetworkDisconnect) {
         _onCallNetworkDisconnect(argMap);
-      }else if(call.method == EMSDKMethod.onCallNetworkNormal) {
+      } else if (call.method == EMSDKMethod.onCallNetworkNormal) {
         _onCallNetworkNormal(argMap);
-      }else if(call.method == EMSDKMethod.onCallNetworkUnStable) {
+      } else if (call.method == EMSDKMethod.onCallNetworkUnStable) {
         _onCallNetworkUnStable(argMap);
-      }else if(call.method == EMSDKMethod.onCallVideoPause) {
+      } else if (call.method == EMSDKMethod.onCallVideoPause) {
         _onCallVideoPause(argMap);
-      }else if(call.method == EMSDKMethod.onCallVideoResume) {
+      } else if (call.method == EMSDKMethod.onCallVideoResume) {
         _onCallVideoResume(argMap);
-      }else if(call.method == EMSDKMethod.onCallVoicePause) {
+      } else if (call.method == EMSDKMethod.onCallVoicePause) {
         _onCallVoicePause(argMap);
-      }else if(call.method == EMSDKMethod.onCallVoiceResume) {
+      } else if (call.method == EMSDKMethod.onCallVoiceResume) {
         _onCallVoiceResume(argMap);
       }
 
@@ -40,35 +41,44 @@ class EMCallManager {
     });
   }
 
-  final List<EMCallManagerListener> _callManagerListener =  List<EMCallManagerListener>();
+  final List<EMCallManagerListener> _callManagerListener =
+      List<EMCallManagerListener>();
 
   void addCallManagerListener(EMCallManagerListener listener) {
-    if(!_callManagerListener.contains(listener)) {
+    if (!_callManagerListener.contains(listener)) {
       _callManagerListener.add(listener);
     }
   }
 
-  void removeCallManagerListener(EMCallManagerListener listener) => _callManagerListener.remove(listener);
+  void removeCallManagerListener(EMCallManagerListener listener) =>
+      _callManagerListener.remove(listener);
 
   /// 获取EMCallOptions;
-  Future<EMCallOptions>getCallOptions() async {
+  Future<EMCallOptions> getCallOptions() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getCallOptions);
     EMError.hasErrorFromResult(result);
     return EMCallOptions.fromJson(result[EMSDKMethod.getCallOptions]);
   }
 
   /// 设置EMCallOptions;
-  Future<bool>setCallOptions(EMCallOptions options) async {
+  Future<bool> setCallOptions(EMCallOptions options) async {
     Map req = options.toJson();
-    Map result = await _channel.invokeMethod(EMSDKMethod.setCallOptions,req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.setCallOptions, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(result[EMSDKMethod.setCallOptions]);
   }
 
   /// 发起1v1实时会话
   /// 通话类型[type], 被叫方环信id[remote], 是否开启服务器录制[isRecord], 服务器端是否合并流[isMerge], 带给对方的其他信息[ext]
-  Future<bool> makeCall(EMCallType type, String remote, [bool isRecord = false, isMerge = false, String ext = '']) async {
-    Map req = {"type": type.index ,"remote": remote ,"record": isRecord ,"merge": isMerge ,"ext": ext};
+  Future<bool> makeCall(EMCallType type, String remote,
+      [bool isRecord = false, isMerge = false, String ext = '']) async {
+    Map req = {
+      "type": type.index,
+      "remote": remote,
+      "record": isRecord,
+      "merge": isMerge,
+      "ext": ext,
+    };
     Map result = await _channel.invokeMethod(EMSDKMethod.makeCall, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.makeCall);
@@ -98,7 +108,8 @@ class EMCallManager {
   /// 打开/关闭音频传输
   Future<bool> enableVoiceTransfer(bool enable) async {
     Map req = {"enable": enable};
-    Map result = await _channel.invokeMethod(EMSDKMethod.enableVoiceTransfer, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.enableVoiceTransfer, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.enableVoiceTransfer);
   }
@@ -106,7 +117,8 @@ class EMCallManager {
   /// 打开/关闭视频传输
   Future<bool> enableVideoTransfer(bool enable) async {
     Map req = {"enable": enable};
-    Map result = await _channel.invokeMethod(EMSDKMethod.enableVideoTransfer, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.enableVideoTransfer, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.enableVideoTransfer);
   }
@@ -161,7 +173,8 @@ class EMCallManager {
   Future<Null> _onCallReceived(Map event) async {
     _callManagerListener.forEach((element) {
       String from = event['from'];
-      EMCallType type = event['type'] == 0 ? EMCallType.Voice : EMCallType.Video;
+      EMCallType type =
+          event['type'] == 0 ? EMCallType.Voice : EMCallType.Video;
       element.onCallReceived(type, from);
     });
   }
@@ -232,4 +245,3 @@ class EMCallManager {
     });
   }
 }
-
