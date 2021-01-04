@@ -52,7 +52,7 @@
     options.pushKitCertName = aJson[@"pushConfig"][@"apnsCertName"];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
     options.chatPort = [aJson[@"imPort"] intValue];
-    options.chatServer = aJson[@"usingHttpsOnly"];
+    options.chatServer = aJson[@"imServer"];
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
     
