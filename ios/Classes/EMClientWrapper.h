@@ -10,7 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EMClientWrapper : EMWrapper
-+ (void)setDeviceToken:(NSData *)aDeviceToken;
+
 @end
 
 NS_ASSUME_NONNULL_END
