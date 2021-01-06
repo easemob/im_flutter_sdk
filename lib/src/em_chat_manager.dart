@@ -35,7 +35,11 @@ class EMChatManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.sendMessage, message.toJson());
     EMError.hasErrorFromResult(result);
-    return EMMessage.fromJson(result[EMSDKMethod.sendMessage]);
+    EMMessage msg = EMMessage.fromJson(result[EMSDKMethod.sendMessage]);
+    message.from = msg.from;
+    message.to = msg.to;
+    message.status = msg.status;
+    return message;
   }
 
   /// 发送消息 [message].
