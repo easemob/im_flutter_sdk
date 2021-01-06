@@ -10,7 +10,5 @@ export 'em_error.dart';
 export 'em_group.dart';
 export 'em_message.dart';
 export 'em_options.dart';
-export 'em_push_configs.dart';
+export 'em_push_config.dart';
 export 'em_page_result.dart';
-
-
