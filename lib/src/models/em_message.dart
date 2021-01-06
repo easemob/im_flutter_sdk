@@ -60,6 +60,7 @@ abstract class EMMessageStatusListener {
   /// 消息已送达
   void onDeliveryAck() {}
 
+  /// 消息状态发生改变
   void onStatusChanged() {}
 }
 
@@ -71,14 +72,18 @@ class EMMessage {
   EMMessage._private();
 
   /// 构造接收的消息
-  EMMessage.createReceiveMessage(
-      {@required this.body, this.direction = EMMessageDirection.RECEIVE});
+  EMMessage.createReceiveMessage({
+    @required this.body,
+    this.direction = EMMessageDirection.RECEIVE,
+  });
 
   /// 构造发送的消息
-  EMMessage.createSendMessage(
-      {@required this.body,
-      this.direction = EMMessageDirection.SEND,
-      this.to}) {
+  EMMessage.createSendMessage({
+    @required this.body,
+    this.direction = EMMessageDirection.SEND,
+    this.to,
+  })  : this.from = EMClient.getInstance.currentUsername,
+        this.conversationId = to {
     _emMessageChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       int localTime = argMap['localTime'];
@@ -114,8 +119,9 @@ class EMMessage {
 
   Future<Null> _onMessageProgressChanged(Map map) {
     EMLog.v(
-        '发送 -- ' + ' msg_id: ' + this.msgId + ' ' + map['progress'].toString());
-    if (listener != null) {
+      '发送 -- ' + ' msg_id: ' + this.msgId + ' ' + map['progress'].toString(),
+    );
+    if (this.listener != null) {
       int progress = map['progress'];
       listener.onProgress(progress);
     }
@@ -127,6 +133,7 @@ class EMMessage {
     EMMessage msg = EMMessage.fromJson(map['message']);
     this.msgId = msg.msgId;
     this.status = msg.status;
+    this.body = msg.body;
     if (listener != null) {
       listener.onSuccess();
     }
@@ -320,8 +327,8 @@ class EMMessage {
   factory EMMessage.fromJson(Map<String, dynamic> map) {
     if (map == null) return null;
     return EMMessage._private()
-      ..to = map['to']
-      ..from = map['from']
+      ..to = map['to'] as String
+      ..from = map['from'] as String
       ..body = _bodyFromMap(map['body'])
       ..attributes = map['attributes'] ?? {}
       ..direction = map['direction'] == 'send'
@@ -330,12 +337,12 @@ class EMMessage {
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
-      ..msgId = map['msgId']
-      ..conversationId = map['conversationId']
-      ..chatType = chatTypeFromInt(map['chatType'])
-      ..localTime = map['localTime']
-      ..serverTime = map['serverTime']
-      ..status = _chatStatusFromInt(map['status']);
+      ..msgId = map['msgId'] as String
+      ..conversationId = map['conversationId'] as String
+      ..chatType = chatTypeFromInt(map['chatType'] as int)
+      ..localTime = map['localTime'] as int
+      ..serverTime = map['serverTime'] as int
+      ..status = _chatStatusFromInt(map['status'] as int);
   }
 
   static int chatTypeToInt(EMMessageChatType type) {
@@ -668,10 +675,10 @@ class EMVideoMessageBody extends EMFileMessageBody {
 
   EMVideoMessageBody.fromJson({Map map})
       : super.fromJson(map: map, type: EMMessageBodyType.VIDEO) {
-    this.duration = map['duration'];
-    this.thumbnailLocalPath = map['thumbnailLocalPath'];
-    this.thumbnailRemotePath = map['thumbnailRemotePath'];
-    this.thumbnailSecret = map['thumbnailSecret'];
+    this.duration = map['duration'] as int;
+    this.thumbnailLocalPath = map['thumbnailLocalPath'] as String;
+    this.thumbnailRemotePath = map['thumbnailRemotePath'] as String;
+    this.thumbnailSecret = map['thumbnailSecret'] as String;
     this.height = map['height'].toDouble();
     this.width = map['width'].toDouble();
     this.thumbnailStatus =
