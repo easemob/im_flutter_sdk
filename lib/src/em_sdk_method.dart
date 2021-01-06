@@ -11,8 +11,9 @@ class EMSDKMethod {
   static const String compressLogs = 'compressLogs';
   static const String kickDevice = 'kickDevice';
   static const String kickAllDevices = 'kickAllDevices';
-  static const String currentUser =  'currentUser';
-  static const String getLoggedInDevicesFromServer = 'getLoggedInDevicesFromServer';
+  static const String currentUser = 'currentUser';
+  static const String getLoggedInDevicesFromServer =
+      'getLoggedInDevicesFromServer';
 
   /// EMClient listener
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
@@ -94,8 +95,10 @@ class EMSDKMethod {
   /// EMChatRoomManager methods
   static const String joinChatRoom = 'joinChatRoom';
   static const String leaveChatRoom = 'leaveChatRoom';
-  static const String fetchPublicChatRoomsFromServer = 'fetchPublicChatRoomsFromServer';
-  static const String fetchChatRoomInfoFromServer = 'fetchChatRoomInfoFromServer';
+  static const String fetchPublicChatRoomsFromServer =
+      'fetchPublicChatRoomsFromServer';
+  static const String fetchChatRoomInfoFromServer =
+      'fetchChatRoomInfoFromServer';
   static const String getChatRoom = 'getChatRoom';
   static const String getAllChatRooms = 'getAllChatRooms';
   static const String createChatRoom = 'createChatRoom';
@@ -116,25 +119,31 @@ class EMSDKMethod {
   static const String updateChatRoomAnnouncement = 'updateChatRoomAnnouncement';
   static const String fetchChatRoomAnnouncement = 'fetchChatRoomAnnouncement';
 
-
   /// EMChatRoomManagerListener
   static const String chatRoomChange = 'onChatRoomChanged';
 
   /// EMGroupManager
   static const String getGroupWithId = 'getGroupWithId';
   static const String getJoinedGroups = 'getJoinedGroups';
-  static const String getGroupsWithoutPushNotification = 'getGroupsWithoutPushNotification';
+  static const String getGroupsWithoutPushNotification =
+      'getGroupsWithoutPushNotification';
   static const String getJoinedGroupsFromServer = 'getJoinedGroupsFromServer';
   static const String getPublicGroupsFromServer = 'getPublicGroupsFromServer';
   static const String createGroup = 'createGroup';
-  static const String getGroupSpecificationFromServer = 'getGroupSpecificationFromServer';
-  static const String getGroupMemberListFromServer = 'getGroupMemberListFromServer';
-  static const String getGroupBlacklistFromServer = 'getGroupBlacklistFromServer';
+  static const String getGroupSpecificationFromServer =
+      'getGroupSpecificationFromServer';
+  static const String getGroupMemberListFromServer =
+      'getGroupMemberListFromServer';
+  static const String getGroupBlacklistFromServer =
+      'getGroupBlacklistFromServer';
   static const String getGroupMuteListFromServer = 'getGroupMuteListFromServer';
-  static const String getGroupWhiteListFromServer = 'getGroupWhiteListFromServer';
-  static const String isMemberInWhiteListFromServer = 'isMemberInWhiteListFromServer';
+  static const String getGroupWhiteListFromServer =
+      'getGroupWhiteListFromServer';
+  static const String isMemberInWhiteListFromServer =
+      'isMemberInWhiteListFromServer';
   static const String getGroupFileListFromServer = 'getGroupFileList';
-  static const String getGroupAnnouncementFromServer = 'getGroupAnnouncementFromServer';
+  static const String getGroupAnnouncementFromServer =
+      'getGroupAnnouncementFromServer';
   static const String addMembers = 'addMembers';
   static const String removeMembers = 'removeMembers';
   static const String blockMembers = 'blockMembers';
@@ -171,11 +180,11 @@ class EMSDKMethod {
   static const String onGroupChanged = 'onGroupChanged';
 
   /// EMPushManager
-  static const String getImPushConfigs = 'getImPushConfigs';
-  static const String getImPushConfigsFromServer = 'getImPushConfigsFromServer';
+  static const String getImPushConfig = 'getImPushConfig';
+  static const String getImPushConfigFromServer = 'getImPushConfigFromServer';
   static const String updatePushNickname = 'updatePushNickname';
 
-  /// ImPushConfigs
+  /// ImPushConfig
   static const String imPushNoDisturb = 'imPushNoDisturb';
   static const String updateImPushStyle = 'updateImPushStyle';
   static const String updateGroupPushService = 'updateGroupPushService';
@@ -184,7 +193,6 @@ class EMSDKMethod {
   /// EMCallManager
   static const String setCallOptions = 'setCallOptions';
   static const String getCallOptions = 'getCallOptions';
-
 
   static const String makeCall = 'makeCall';
   static const String answerCall = 'answerCall';
@@ -215,7 +223,6 @@ class EMSDKMethod {
   static const String onCallNetworkNormal = 'onCallNetworkNormal';
   static const String onCallNetworkDisconnect = 'onCallNetworkDisconnect';
 
-
   /// EMConferenceManager
   static const String setConferenceAppKey = 'setConferenceAppKey';
   static const String conferenceHasExists = 'conferenceHasExists';
@@ -231,18 +238,21 @@ class EMSDKMethod {
   static const String unPublishConference = 'unPublishConference';
   static const String subscribeConference = 'subscribeConference';
   static const String unSubscribeConference = 'unSubscribeConference';
-  static const String changeMemberRoleWithMemberName = 'changeMemberRoleWithMemberName';
+  static const String changeMemberRoleWithMemberName =
+      'changeMemberRoleWithMemberName';
   static const String kickConferenceMember = 'kickConferenceMember';
   static const String destroyConference = 'destroyConference';
   static const String leaveConference = 'leaveConference';
   static const String startMonitorSpeaker = 'startMonitorSpeaker';
   static const String stopMonitorSpeaker = 'stopMonitorSpeaker';
-  static const String requestTobeConferenceSpeaker = 'requestTobeConferenceSpeaker';
+  static const String requestTobeConferenceSpeaker =
+      'requestTobeConferenceSpeaker';
   static const String requestTobeConferenceAdmin = 'requestTobeConferenceAdmin';
   static const String muteConferenceMember = 'muteConferenceMember';
   static const String responseReqSpeaker = 'responseReqSpeaker';
   static const String responseReqAdmin = 'responseReqAdmin';
-  static const String updateConferenceWithSwitchCamera = 'updateConferenceWithSwitchCamera';
+  static const String updateConferenceWithSwitchCamera =
+      'updateConferenceWithSwitchCamera';
   static const String updateConferenceMute = 'updateConferenceMute';
   static const String updateConferenceVideo = 'updateConferenceVideo';
 //  static const String updateRemoteView = 'updateRemoteView';
