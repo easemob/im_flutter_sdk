@@ -124,7 +124,7 @@ class EMGroupManager {
         EMSDKMethod.getGroupMemberListFromServer, req);
     EMError.hasErrorFromResult(result);
     return EMCursorResult.fromJson(
-        result[EMSDKMethod.getGroupSpecificationFromServer],
+        result[EMSDKMethod.getGroupMemberListFromServer],
         dataItemCallback: (value) => value);
   }
 
