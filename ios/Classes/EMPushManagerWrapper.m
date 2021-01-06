@@ -24,13 +24,13 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if ([EMMethodKeyGetImPushConfigs isEqualToString:call.method]) {
-        [self getImPushConfigs:call.arguments
-                   channelName:EMMethodKeyGetImPushConfigs
+    if ([EMMethodKeyGetImPushConfig isEqualToString:call.method]) {
+        [self getImPushConfig:call.arguments
+                   channelName:EMMethodKeyGetImPushConfig
                         result:result];
-    } else if ([EMMethodKeyGetImPushConfigsFromServer isEqualToString:call.method]) {
-        [self getImPushConfigsFromServer:call.arguments
-                             channelName:EMMethodKeyGetImPushConfigsFromServer
+    } else if ([EMMethodKeyGetImPushConfigFromServer isEqualToString:call.method]) {
+        [self getImPushConfigFromServer:call.arguments
+                             channelName:EMMethodKeyGetImPushConfigFromServer
                                   result:result];
     } else if ([EMMethodKeyUpdatePushNickname isEqualToString:call.method]) {
         [self updatePushNickname:call.arguments
@@ -57,7 +57,7 @@
     }
 }
 
-- (void)getImPushConfigs:(NSDictionary *)param
+- (void)getImPushConfig:(NSDictionary *)param
              channelName:(NSString *)aChannelName
                   result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
@@ -68,7 +68,7 @@
                        object:[options toJson]];
 }
 
-- (void)getImPushConfigsFromServer:(NSDictionary *)param
+- (void)getImPushConfigFromServer:(NSDictionary *)param
                        channelName:(NSString *)aChannelName
                             result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
@@ -104,6 +104,8 @@
     bool noDisturb = [param[@"noDisturb"] boolValue];
     int startTime = [param[@"startTime"] intValue];
     int endTime = [param[@"endTime"] intValue];
+    
+    
     
     EMPushOptions *options = EMClient.sharedClient.pushOptions;
     if (noDisturb) {

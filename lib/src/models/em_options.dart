@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'em_domain_terms.dart';
 
 class EMOptions {
-
   /// 环信 appKey
   String appKey = '';
   bool autoLogin = true;
@@ -29,17 +28,16 @@ class EMOptions {
   String imServer = '';
   int imPort = 0;
 
-  EMOptions({
-    @required this.appKey
-  });
+  EMOptions({@required this.appKey});
 
   /// 设置自定义server地址
   void customServerInfo({
     @required String customRestServer,
     @required String customImServer,
-    @required int customImPort,}) {
+    @required int customImPort,
+  }) {
     restServer = customRestServer;
-    imServer= customImServer;
+    imServer = customImServer;
     imPort = customImPort;
     enableDNSConfig = false;
   }
@@ -54,13 +52,16 @@ class EMOptions {
       ..acceptInvitationAlways = json.boolValue('acceptInvitationAlways')
       ..autoAcceptGroupInvitation = json.boolValue('autoAcceptGroupInvitation')
       ..deleteMessagesAsExitGroup = json.boolValue('deleteMessagesAsExitGroup')
-      ..deleteMessagesAsExitChatRoom = json.boolValue('deleteMessagesAsExitChatRoom')
+      ..deleteMessagesAsExitChatRoom =
+          json.boolValue('deleteMessagesAsExitChatRoom')
       ..isAutoDownload = json.boolValue('isAutoDownload')
-      ..isChatRoomOwnerLeaveAllowed = json.boolValue('isChatRoomOwnerLeaveAllowed')
+      ..isChatRoomOwnerLeaveAllowed =
+          json.boolValue('isChatRoomOwnerLeaveAllowed')
       ..serverTransfer = json.boolValue('serverTransfer')
       ..usingHttpsOnly = json.boolValue('usingHttpsOnly')
-      ..pushConfig = json['pushConfig'] != null ? EMPushConfig.fromJson(json['pushConfig']) : null
-
+      ..pushConfig = json['pushConfig'] != null
+          ? EMPushConfig.fromJson(json['pushConfig'])
+          : null
       ..enableDNSConfig = json.boolValue('enableDNSConfig')
       ..imPort = json['imPort']
       ..imServer = json['imServer']
@@ -102,7 +103,6 @@ class EMOptions {
 }
 
 class EMPushConfig {
-
   String _mzAppId = '';
   String _mzAppKey = '';
 
@@ -169,7 +169,6 @@ class EMPushConfig {
   EMPushConfig._private();
 
   factory EMPushConfig.fromJson(Map<String, dynamic> json) {
-
     return EMPushConfig._private()
       .._mzAppId = json['mzAppId']
       .._mzAppKey = json['mzAppKey']
@@ -179,7 +178,6 @@ class EMPushConfig {
       .._miAppKey = json['miAppKey']
       .._fcmId = json['fcmId']
       .._apnsCertName = json['apnsCertName']
-
       .._enableMeiZuPush = json.boolValue('enableMeiZuPush')
       .._enableOppoPush = json.boolValue('enableOppoPush')
       .._enableMiPush = json.boolValue('enableMiPush')
