@@ -24,13 +24,13 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if ([EMMethodKeyGetImPushConfigs isEqualToString:call.method]) {
-        [self getImPushConfigs:call.arguments
-                   channelName:EMMethodKeyGetImPushConfigs
+    if ([EMMethodKeyGetImPushConfig isEqualToString:call.method]) {
+        [self getImPushConfig:call.arguments
+                   channelName:EMMethodKeyGetImPushConfig
                         result:result];
-    } else if ([EMMethodKeyGetImPushConfigsFromServer isEqualToString:call.method]) {
-        [self getImPushConfigsFromServer:call.arguments
-                             channelName:EMMethodKeyGetImPushConfigsFromServer
+    } else if ([EMMethodKeyGetImPushConfigFromServer isEqualToString:call.method]) {
+        [self getImPushConfigFromServer:call.arguments
+                             channelName:EMMethodKeyGetImPushConfigFromServer
                                   result:result];
     } else if ([EMMethodKeyUpdatePushNickname isEqualToString:call.method]) {
         [self updatePushNickname:call.arguments
@@ -57,22 +57,23 @@
     }
 }
 
-- (void)getImPushConfigs:(NSDictionary *)param
+- (void)getImPushConfig:(NSDictionary *)param
              channelName:(NSString *)aChannelName
                   result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    EMPushOptions *options = EMClient.sharedClient.pushOptions;
+    EMPushOptions *options = EMClient.sharedClient.pushManager.pushOptions;
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
                        object:[options toJson]];
 }
 
-- (void)getImPushConfigsFromServer:(NSDictionary *)param
+- (void)getImPushConfigFromServer:(NSDictionary *)param
                        channelName:(NSString *)aChannelName
                             result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient getPushNotificationOptionsFromServerWithCompletion:^(EMPushOptions *aOptions, EMError *aError) {
+    [EMClient.sharedClient.pushManager getPushNotificationOptionsFromServerWithCompletion:^(EMPushOptions *aOptions, EMError *aError)
+    {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -86,14 +87,15 @@
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *nickname = param[@"nickname"];
-    [EMClient.sharedClient updatePushNotifiationDisplayName:nickname
-                                                 completion:^(NSString *aDisplayName, EMError *aError)
-     {
+    [EMClient.sharedClient.pushManager updatePushDisplayName:nickname
+                                                  completion:^(NSString * _Nonnull aDisplayName, EMError * _Nonnull aError)
+    {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
                            object:aDisplayName];
     }];
+    
 }
 
 - (void)setImPushNoDisturb:(NSDictionary *)param
@@ -105,20 +107,23 @@
     int startTime = [param[@"startTime"] intValue];
     int endTime = [param[@"endTime"] intValue];
     
-    EMPushOptions *options = EMClient.sharedClient.pushOptions;
-    if (noDisturb) {
-        options.noDisturbStatus = EMPushNoDisturbStatusCustom;
-    }else {
-        options.noDisturbStatus = EMPushNoDisturbStatusClose;
-    }
-    options.noDisturbingStartH = startTime;
-    options.noDisturbingEndH = endTime;
-    [EMClient.sharedClient updatePushNotificationOptionsToServerWithCompletion:^(EMError *aError) {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:@(!aError)];
-    }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        EMError *aError = nil;
+        if (noDisturb) {
+            aError = [EMClient.sharedClient.pushManager disableOfflinePushStart:startTime end:endTime];
+        }else {
+            aError = [EMClient.sharedClient.pushManager enableOfflinePush];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:@(!aError)];
+        });
+    });
+    
+    
 }
 
 - (void)updateImPushStyle:(NSDictionary *)param
@@ -127,15 +132,16 @@
     __weak typeof(self) weakSelf = self;
     
     EMPushDisplayStyle pushStyle = [param[@"pushStyle"] intValue];
-    EMPushOptions *options = EMClient.sharedClient.pushOptions;
-    options.displayStyle = pushStyle;
-    
-    [EMClient.sharedClient updatePushNotificationOptionsToServerWithCompletion:^(EMError *aError) {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:@(!aError)];
-    }];
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        EMError *aError = [EMClient.sharedClient.pushManager updatePushDisplayStyle:pushStyle];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:@(!aError)];
+        });
+    });
 }
 
 - (void)updateGroupPushService:(NSDictionary *)param
