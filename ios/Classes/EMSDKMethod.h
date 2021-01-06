@@ -277,8 +277,8 @@ static NSString * const EMMethodKeyOnApplyAdminRefused = @"onApplyAdminRefused";
 
 
 #pragma mark - EMPushManagerWrapper
-static NSString * const EMMethodKeyGetImPushConfigs = @"getImPushConfigs";
-static NSString * const EMMethodKeyGetImPushConfigsFromServer = @"getImPushConfigsFromServer";
+static NSString * const EMMethodKeyGetImPushConfig = @"getImPushConfig";
+static NSString * const EMMethodKeyGetImPushConfigFromServer = @"getImPushConfigFromServer";
 static NSString * const EMMethodKeyUpdatePushNickname = @"updatePushNickname";
 
 
