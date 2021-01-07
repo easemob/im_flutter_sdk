@@ -173,11 +173,11 @@ public class EMSDKMethod {
     static final String onGroupChanged = "onGroupChanged";
 
     /// EMPushManager
-    static final String getImPushConfigs = "getImPushConfigs";
-    static final String getImPushConfigsFromServer = "getImPushConfigsFromServer";
+    static final String getImPushConfig = "getImPushConfig";
+    static final String getImPushConfigFromServer = "getImPushConfigFromServer";
     static final String updatePushNickname = "updatePushNickname";
 
-    /// ImPushConfigs
+    /// ImPushConfig
     static final String imPushNoDisturb = "imPushNoDisturb";
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updateGroupPushService = "updateGroupPushService";
