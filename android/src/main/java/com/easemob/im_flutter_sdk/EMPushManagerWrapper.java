@@ -30,11 +30,11 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     public void onMethodCall(MethodCall call, Result result) {
         JSONObject param = (JSONObject)call.arguments;
         try {
-            if (EMSDKMethod.getImPushConfigs.equals(call.method)) {
-                getImPushConfigs(param, EMSDKMethod.getImPushConfigs, result);
+            if (EMSDKMethod.getImPushConfig.equals(call.method)) {
+                getImPushConfig(param, EMSDKMethod.getImPushConfig, result);
             }
-            else if(EMSDKMethod.getImPushConfigsFromServer.equals(call.method)){
-                getImPushConfigsFromServer(param, EMSDKMethod.getImPushConfigsFromServer, result);
+            else if(EMSDKMethod.getImPushConfigFromServer.equals(call.method)){
+                getImPushConfigFromServer(param, EMSDKMethod.getImPushConfigFromServer, result);
             }
             else if(EMSDKMethod.updatePushNickname.equals(call.method)){
                 updatePushNickname(param, EMSDKMethod.updatePushNickname, result);
@@ -59,12 +59,12 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
         }
     }
 
-    private void getImPushConfigs(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void getImPushConfig(JSONObject params, String channelName,  Result result) throws JSONException {
         EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigs();
         onSuccess(result, channelName, EMPushConfigsHelper.toJson(configs));
     }
 
-    private void getImPushConfigsFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void getImPushConfigFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
         asyncRunnable(()->{
             try {
                 EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigsFromServer();
