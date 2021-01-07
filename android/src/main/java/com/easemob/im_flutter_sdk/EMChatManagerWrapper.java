@@ -138,6 +138,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             public void onError(int code, String desc) {
                 post(()->{
                     Map<String, Object> map = new HashMap<>();
+                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("localTime", msg.localTime());
                     map.put("code", code);
                     map.put("description", desc);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
