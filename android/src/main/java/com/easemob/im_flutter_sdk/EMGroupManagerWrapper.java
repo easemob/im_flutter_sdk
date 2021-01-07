@@ -684,7 +684,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().updateGroupAnnouncement(groupId, announcement, callBack);
+        EMClient.getInstance().groupManager().asyncUpdateGroupAnnouncement(groupId, announcement, callBack);
     }
 
     private void updateGroupExt(JSONObject param, String channelName, Result result) throws JSONException {
