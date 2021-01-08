@@ -119,9 +119,15 @@ class EMGroupManager {
       {@required String groupId,
       int pageSize = 200,
       String cursor = ''}) async {
-    Map req = {'groupId': groupId, 'cursor': cursor, 'pageSize': pageSize};
+    Map req = {
+      'groupId': groupId,
+      'cursor': cursor,
+      'pageSize': pageSize,
+    };
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupMemberListFromServer, req);
+      EMSDKMethod.getGroupMemberListFromServer,
+      req,
+    );
     EMError.hasErrorFromResult(result);
     return EMCursorResult.fromJson(
         result[EMSDKMethod.getGroupMemberListFromServer],

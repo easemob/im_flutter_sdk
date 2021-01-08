@@ -11,8 +11,13 @@
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     NSMutableArray *dataList = [NSMutableArray array];
-    for (id<EaseToFlutterJson> obj in self.list) {
-        [dataList addObject:[obj toJson]];
+    
+    for (id obj in self.list) {
+        if ([obj respondsToSelector:@selector(toJson)]) {
+            [dataList addObject:[obj toJson]];
+        }else if ([obj isKindOfClass:[NSString class]]){
+            [dataList addObject:obj]; 
+        }
     }
     
     data[@"list"] = dataList;
