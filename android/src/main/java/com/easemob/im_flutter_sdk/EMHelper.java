@@ -141,7 +141,7 @@ class EMHelper {
                     setCurrency(message,emChatType,data_to);
                     setExt(args,message);
                     break;
-                case 8:
+                case 7:
                     message = EMMessage.createSendMessage(Type.CUSTOM);
                     String contents = data_body.getString("event");
                     EMCustomMessageBody customMessageBody = new EMCustomMessageBody(contents);

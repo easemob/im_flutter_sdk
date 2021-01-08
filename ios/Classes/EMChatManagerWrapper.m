@@ -114,7 +114,13 @@
 }
 
 - (void)recallMessage:(NSDictionary *)param result:(FlutterResult)result {
-    
+    EMMessage *msg = [EMHelper dictionaryToMessage:param];
+    [EMClient.sharedClient.chatManager recallMessageWithMessageId:msg.messageId
+                                                       completion:^(EMError *aError) {
+        [self wrapperCallBack:result
+                        error:aError
+                     userInfo:@{}];
+    }];
 }
 
 - (void)getMessage:(NSDictionary *)param result:(FlutterResult)result {
