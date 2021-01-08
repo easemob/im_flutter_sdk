@@ -79,4 +79,20 @@ class EMConferenceManager {
   void registerConferenceSharedManager(){
     _emConferenceManagerChannel.invokeMethod(EMSDKMethod.registerConferenceSharedManager);
   }
+
+  void openVideoTransfer(){
+    _emConferenceManagerChannel.invokeMethod(EMSDKMethod.openVideoTransfer);
+  }
+
+  void openVoiceTransfer(){
+    _emConferenceManagerChannel.invokeMethod(EMSDKMethod.openVoiceTransfer);
+  }
+
+  void closeVideoTransfer(){
+    _emConferenceManagerChannel.invokeMethod(EMSDKMethod.closeVideoTransfer);
+  }
+
+  void closeVoiceTransfer(){
+    _emConferenceManagerChannel.invokeMethod(EMSDKMethod.closeVoiceTransfer);
+  }
 }
