@@ -116,8 +116,9 @@ class EMClient {
     };
     Map result = await _channel.invokeMethod(EMSDKMethod.login, req);
     EMError.hasErrorFromResult(result);
-    _currentUsername = result['username'];
-    _accessToken = result['token'];
+
+    _currentUsername = result[EMSDKMethod.login]['username'];
+    _accessToken = result[EMSDKMethod.login]['token'];
     _isLoginBefore = true;
     return _currentUsername;
   }
