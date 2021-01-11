@@ -783,7 +783,7 @@ class EMCustomMessageBody extends EMMessageBody {
   EMCustomMessageBody.fromJson({Map map})
       : super.fromJson(map: map, type: EMMessageBodyType.CUSTOM) {
     this.event = map['event'];
-    this.params = map['params'];
+    this.params = map['params'].cast<String, String>();
   }
 
   @override
