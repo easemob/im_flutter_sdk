@@ -9,20 +9,18 @@ import 'call_page.dart';
 import 'group_details_page.dart';
 import 'items/chat_item.dart';
 
-
 class ChatPage extends StatefulWidget {
-
   ChatPage({Key key, @required this.conversation}) : super(key: key);
 
   final EMConversation conversation;
 
   @override
-  State<StatefulWidget> createState() => _ChatPageState(conversation: conversation);
+  State<StatefulWidget> createState() =>
+      _ChatPageState(conversation: conversation);
 }
 
-class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, ChatItemDelegate, BottomInputBarDelegate
-{
-
+class _ChatPageState extends State<ChatPage>
+    implements EMChatManagerListener, ChatItemDelegate, BottomInputBarDelegate {
   _ChatPageState({@required this.conversation});
 
   EMConversation conversation;
@@ -33,16 +31,15 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   String _msgStartId = '';
   String _afterLoadMessageId = '';
 
-  List<EMMessage> messageTotalList = new List();//消息数组
-  List<EMMessage> messageList = new List();//消息数组
-  List<EMMessage>  msgListFromDB = new List();
-  List<Widget> extWidgetList = new List();//加号扩展栏的 widget 列表
-  bool showExtWidget = false;//是否显示加号扩展栏内容
+  List<EMMessage> messageTotalList = new List(); //消息数组
+  List<EMMessage> messageList = new List(); //消息数组
+  List<EMMessage> msgListFromDB = new List();
+  List<Widget> extWidgetList = new List(); //加号扩展栏的 widget 列表
+  bool showExtWidget = false; //是否显示加号扩展栏内容
 
-  ChatStatus currentStatus;//当前输入工具栏的状态
+  ChatStatus currentStatus; //当前输入工具栏的状态
 
   ScrollController _scrollController = ScrollController();
-
 
   @override
   void initState() {
@@ -64,7 +61,8 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
 
     _scrollController.addListener(() {
       //此处要用 == 而不是 >= 否则会触发多次
-      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
         _loadMessages();
       }
     });
@@ -73,7 +71,7 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
     _markMessagesAsRead();
 
     // load消息
-    _loadMessages(onEnd:(){
+    _loadMessages(onEnd: () {
       _listViewToEnd();
     });
   }
@@ -81,14 +79,17 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   @override
   Widget build(BuildContext context) {
     _isDark = ThemeUtils.isDark(context);
-    if(messageList.length > 0 ){
-      if(!_isLoad){
+    if (messageList.length > 0) {
+      if (!_isLoad) {
         messageTotalList.clear();
         messageTotalList.addAll(messageList);
-        print(messageTotalList.length.toString() + 'after build true: ' + messageList.length.toString());
-      }else{
-        print( '_scrollController: ' + _scrollController.offset.toString());
-        _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 2), curve: Curves.ease);
+        print(messageTotalList.length.toString() +
+            'after build true: ' +
+            messageList.length.toString());
+      } else {
+        print('_scrollController: ' + _scrollController.offset.toString());
+        _scrollController.animateTo(_scrollController.offset,
+            duration: new Duration(seconds: 2), curve: Curves.ease);
       }
       print(messageTotalList.length.toString() + 'build');
     }
@@ -96,25 +97,38 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
     return WillPopScope(
       onWillPop: _willPop,
       child: new Scaffold(
-          appBar:AppBar(
-            title: Text(conversation.id, style: TextStyle(color: ThemeUtils.isDark(context) ? EMColor.darkText : EMColor.text)),
+          appBar: AppBar(
+            title: Text(conversation.id,
+                style: TextStyle(
+                    color: ThemeUtils.isDark(context)
+                        ? EMColor.darkText
+                        : EMColor.text)),
             centerTitle: true,
-            backgroundColor:ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
-            leading: Builder(builder:(BuildContext context){
+            backgroundColor: ThemeUtils.isDark(context)
+                ? EMColor.darkAppMain
+                : EMColor.appMain,
+            leading: Builder(builder: (BuildContext context) {
               return IconButton(
-                  icon: new Icon(Icons.arrow_back,color: Colors.black),
-                  onPressed: (){
-                    Navigator.pop(context,true);
-                  }
-              );
+                  icon: new Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  });
             }),
             actions: <Widget>[
               // 隐藏的菜单
               new PopupMenuButton<String>(
-                icon: new Icon(Icons.more_vert,color: Colors.black,),
-                itemBuilder: _singleChat == true ?
-                    (BuildContext context) => <PopupMenuItem<String>>[this.SelectView(Icons.delete, '删除记录', 'A'),] :
-                    (BuildContext context) => <PopupMenuItem<String>>[this.SelectView(Icons.delete, '删除记录', 'A'), this.SelectView(Icons.people, '查看详情', 'B'),] ,
+                icon: new Icon(
+                  Icons.more_vert,
+                  color: Colors.black,
+                ),
+                itemBuilder: _singleChat == true
+                    ? (BuildContext context) => <PopupMenuItem<String>>[
+                          this.SelectView(Icons.delete, '删除记录', 'A'),
+                        ]
+                    : (BuildContext context) => <PopupMenuItem<String>>[
+                          this.SelectView(Icons.delete, '删除记录', 'A'),
+                          this.SelectView(Icons.people, '查看详情', 'B'),
+                        ],
                 onSelected: (String action) {
                   // 点击选项的时候
                   switch (action) {
@@ -147,8 +161,12 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
                                 controller: _scrollController,
                                 itemCount: messageTotalList.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  if (messageTotalList.length != null && messageTotalList.length > 0) {
-                                    return ChatItem(this,messageTotalList[index],_isShowTime(index));
+                                  if (messageTotalList.length != null &&
+                                      messageTotalList.length > 0) {
+                                    return ChatItem(
+                                        this,
+                                        messageTotalList[index],
+                                        _isShowTime(index));
                                   } else {
                                     return WidgetUtil.buildEmptyWidget();
                                   }
@@ -169,8 +187,7 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
 //              _buildActionWidget(),
               ],
             ),
-          )
-      ),
+          )),
     );
   }
 
@@ -184,40 +201,37 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
             new Icon(icon, color: Colors.blue),
             new Text(text),
           ],
-        )
-    );
+        ));
   }
 
   void _loadMessages({onEnd()}) async {
-    try{
-      List<EMMessage> loadList = await conversation.loadMessagesWithStartId(_afterLoadMessageId);
+    try {
+      List<EMMessage> loadList =
+          await conversation.loadMessagesWithStartId(_afterLoadMessageId);
       _afterLoadMessageId = loadList.first.msgId;
       loadList.sort((a, b) => b.serverTime.compareTo(a.serverTime));
       setState(() {
         messageTotalList.addAll(loadList);
       });
-      if(onEnd != null){
+      if (onEnd != null) {
         onEnd();
       }
-    }catch(e){
-
-    }
+    } catch (e) {}
   }
 
   void _markMessagesAsRead({String messageId = ''}) async {
-    try{
-      if(messageId.length == 0) {
+    try {
+      if (messageId.length == 0) {
         await conversation.markAllMessagesAsRead();
-      }else{
+      } else {
         await conversation.markMessageAsRead(messageId);
       }
-    } on EMError catch (e) {
-
-    }
+    } on EMError catch (e) {}
   }
 
   void _listViewToEnd() {
-    _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 1), curve: Curves.ease);
+    _scrollController.animateTo(_scrollController.offset,
+        duration: new Duration(seconds: 1), curve: Curves.ease);
   }
 
 //  ///如果是聊天室类型 先加入聊天室
@@ -237,21 +251,19 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
         messageList.clear();
         messageTotalList.clear();
       });
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }
 
   ///查看详情
   _viewDetails() async {
-
-    if(conversation.type == EMConversationType.GroupChat) {
-      Navigator.push<bool>(context, MaterialPageRoute(builder: (BuildContext context) {
-            return EMGroupDetailsPage(conversation.id);
-          })).then((bool _isRefresh){
-            if(_isRefresh){
-              Navigator.pop(context, true);
-            }
+    if (conversation.type == EMConversationType.GroupChat) {
+      Navigator.push<bool>(context,
+          MaterialPageRoute(builder: (BuildContext context) {
+        return EMGroupDetailsPage(conversation.id);
+      })).then((bool _isRefresh) {
+        if (_isRefresh) {
+          Navigator.pop(context, true);
+        }
       });
     }
     // TODO: 查看聊天室详情
@@ -259,12 +271,11 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
 
   /// 禁止随意调用 setState 接口刷新 UI，必须调用该接口刷新 UI
   void _refreshUI() {
-    setState(() {
-    });
+    setState(() {});
   }
 
   Widget _getExtWidgets() {
-    if(showExtWidget) {
+    if (showExtWidget) {
       return Container(
           height: 110,
           color: _isDark ? EMColor.darkBorderLine : EMColor.unreadCount,
@@ -273,9 +284,8 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
             crossAxisCount: 4,
             padding: EdgeInsets.all(10),
             children: extWidgetList,
-          )
-      );
-    }else {
+          ));
+    } else {
       return WidgetUtil.buildEmptyWidget();
     }
   }
@@ -285,33 +295,29 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
     _refreshUI();
   }
 
-  void checkOutRoom() async{
+  void checkOutRoom() async {
     try {
       await EMClient.getInstance.chatRoomManager.leaveChatRoom(conversation.id);
-    }catch (e) {
-
-    }
+    } catch (e) {}
   }
 
-  void toStringInfo() async{
+  void toStringInfo() async {}
 
-  }
-
-  void _initExtWidgets(){
-    Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
-      try{
-        EMClient.getInstance.callManager.makeCall(EMCallType.Video, conversation.id);
-      }on EMError catch(error) {
-
-      }
+  void _initExtWidgets() {
+    Widget videoWidget = WidgetUtil.buildExtentionWidget(
+        'images/video_item.png', '视频', _isDark, () async {
+      try {
+        EMClient.getInstance.callManager
+            .makeCall(EMCallType.Video, conversation.id);
+      } on EMError catch (error) {}
     });
-    Widget locationWidget = WidgetUtil.buildExtentionWidget('images/location.png','位置',_isDark,() async {
+    Widget locationWidget = WidgetUtil.buildExtentionWidget(
+        'images/location.png', '位置', _isDark, () async {
       WidgetUtil.hintBoxWithDefault('发送位置消息待实现!');
     });
     extWidgetList.add(videoWidget);
     extWidgetList.add(locationWidget);
   }
-
 
   @override
   void onCmdMessagesReceived(List<EMMessage> messages) {
@@ -339,6 +345,8 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
       messageTotalList.insertAll(0, messages);
     });
   }
+
+  void onConversationsUpdate() {}
 
   @override
   void dispose() {
@@ -379,16 +387,17 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
       if (message.attributes != null) {
         String conferenceId;
         String password;
-        if (message.attributes['conferenceId'] != null && message.attributes['conferenceId'].length > 0) {
+        if (message.attributes['conferenceId'] != null &&
+            message.attributes['conferenceId'].length > 0) {
           conferenceId = message.attributes['conferenceId'];
         } else if (message.attributes['em_conference_id'] != null) {
           conferenceId = message.attributes['em_conference_id'];
         }
 
-        if(conferenceId != null) {
+        if (conferenceId != null) {
           if (message.attributes['password'] != null) {
             password = message.attributes['password'];
-          } else if(message.attributes['em_conference_password'] != null) {
+          } else if (message.attributes['em_conference_password'] != null) {
             password = message.attributes['em_conference_password'];
           }
 
@@ -407,7 +416,7 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
 
   @override
   void onTapUserPortrait(String userId) {
-    print("点击了用户头像 "+userId);
+    print("点击了用户头像 " + userId);
   }
 
   @override
@@ -418,25 +427,27 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
   @override
   void inputStatusChanged(InputBarStatus status) {
     // TODO: implement inputStatusDidChange  输入工具栏状态发生变更
-    if(status == InputBarStatus.Ext) {
+    if (status == InputBarStatus.Ext) {
       showExtWidget = true;
-    }else {
+    } else {
       showExtWidget = false;
     }
     _refreshUI();
   }
 
   @override
-  void onTapItemPicture(String imgPath) async{
+  void onTapItemPicture(String imgPath) async {
     debugPrint('onTapItemPicture' + imgPath);
-    EMMessage imageMessage = EMMessage.createImageSendMessage(username: conversation.id, filePath: imgPath, sendOriginalImage: true);
+    EMMessage imageMessage = EMMessage.createImageSendMessage(
+        username: conversation.id, filePath: imgPath, sendOriginalImage: true);
     sendMessage(imageMessage);
   }
 
   @override
   void onTapItemCamera(String imgPath) {
     debugPrint('onTapItemCamera' + imgPath);
-    EMMessage imageMessage = EMMessage.createImageSendMessage(username: conversation.id, filePath: imgPath, sendOriginalImage: true);
+    EMMessage imageMessage = EMMessage.createImageSendMessage(
+        username: conversation.id, filePath: imgPath, sendOriginalImage: true);
     sendMessage(imageMessage);
   }
 
@@ -448,16 +459,20 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
 
   @override
   void onTapItemPhone() async {
-    try{
-      await EMClient.getInstance.callManager.makeCall(EMCallType.Video, conversation.id);
-      try{
+    try {
+      await EMClient.getInstance.callManager
+          .makeCall(EMCallType.Video, conversation.id);
+      try {
         Navigator.push(
             context,
-            MaterialPageRoute(builder: (BuildContext context) => CallPage(callType: EMCallType.Video, otherUser: conversation.id, isCaller: true), fullscreenDialog: true));
-      }catch(e){
-      }
-
-    }on EMError catch(error) {
+            MaterialPageRoute(
+                builder: (BuildContext context) => CallPage(
+                    callType: EMCallType.Video,
+                    otherUser: conversation.id,
+                    isCaller: true),
+                fullscreenDialog: true));
+      } catch (e) {}
+    } on EMError catch (error) {
       print('拨打通话失败 --- ' + error.description);
     }
   }
@@ -470,7 +485,8 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
 
   @override
   void sendText(String text) {
-    EMMessage message = EMMessage.createTxtSendMessage(username: conversation.id, content: text);
+    EMMessage message = EMMessage.createTxtSendMessage(
+        username: conversation.id, content: text);
     sendMessage(message);
   }
 
@@ -479,11 +495,9 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
       messageTotalList.insert(0, message);
     });
 
-    try{
+    try {
       await EMClient.getInstance.chatManager.sendMessage(message);
-    } on EMError catch(e) {
-
-    }
+    } on EMError catch (e) {}
   }
 
   @override
@@ -501,14 +515,14 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener, C
     _showExtraCenterWidget(ChatStatus.Normal);
   }
 
-  Future<bool> _willPop () { // 返回值必须是Future<bool>
+  Future<bool> _willPop() {
+    // 返回值必须是Future<bool>
     Navigator.of(context).pop(false);
     return Future.value(false);
   }
 }
 
-enum ChatStatus{
-  Normal,//正常
-  VoiceRecorder,//语音输入，页面中间回弹出录音的 gif
+enum ChatStatus {
+  Normal, //正常
+  VoiceRecorder, //语音输入，页面中间回弹出录音的 gif
 }
-

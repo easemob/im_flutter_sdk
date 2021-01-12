@@ -22,6 +22,6 @@ A new flutter plugin project.
   
 
   s.ios.deployment_target = '9.0'
-
+  
 end
 

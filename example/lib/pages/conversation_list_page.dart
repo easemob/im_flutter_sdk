@@ -44,19 +44,15 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   }
 
   void _loadConversationList() async {
-    try{
+    try {
       conList = await EMClient.getInstance.chatManager.loadAllConversations();
-    }on EMError catch(e) {
-
-    }finally {
+    } on EMError catch (e) {} finally {
       _refreshUI();
     }
   }
 
   void _refreshUI() {
     setState(() {});
-
-
   }
 
   Widget _buildConversationListView() {
@@ -202,11 +198,14 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   void onMessageChanged(EMMessage message) {}
 
+  void onConversationsUpdate() {}
+
   void _deleteConversation(EMConversation conversation) async {
-    try{
-      await EMClient.getInstance.chatManager.deleteConversation(conversation.id);
+    try {
+      await EMClient.getInstance.chatManager
+          .deleteConversation(conversation.id);
       _loadConversationList();
-    }catch(e){
+    } catch (e) {
       print(e.toString());
     }
   }
@@ -245,7 +244,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   void onLongPressConversation(EMConversation conversation, Offset tapPos) {
     Map<String, String> actionMap = {
       Constant.deleteConversationKey:
-      DemoLocalizations.of(context).deleteConversation,
+          DemoLocalizations.of(context).deleteConversation,
       Constant.clearUnreadKey: DemoLocalizations.of(context).clearUnread,
     };
     WidgetUtil.showLongPressMenu(context, tapPos, actionMap, (String key) {
