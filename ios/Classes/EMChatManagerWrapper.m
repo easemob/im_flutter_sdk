@@ -119,7 +119,7 @@
                                                        completion:^(EMError *aError) {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{}];
+                     userInfo:nil];
     }];
 }
 
