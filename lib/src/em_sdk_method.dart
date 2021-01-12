@@ -18,7 +18,10 @@ class EMSDKMethod {
   static const String onDisconnected = "onDisconnected";
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
-  static const String getCurrentUser =  "getCurrentUser";
+  static const String getCurrentUser = "getCurrentUser";
+  static const String sendCustomData = "sendCustomData";
+
+  static const String onReceiveCustomData = "onReceiveCustomData";
 
   /// EMContactManager methods
   static const String addContact = 'addContact';
@@ -86,11 +89,11 @@ class EMSDKMethod {
   static const String getMessageAttachmentPath = 'getMessageAttachmentPath';
   static const String setExtField = 'setExtField';
 
-
   ///EMChatRoomManager methods
   static final String joinChatRoom = "joinChatRoom";
   static final String leaveChatRoom = "leaveChatRoom";
-  static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
+  static final String fetchPublicChatRoomsFromServer =
+      "fetchPublicChatRoomsFromServer";
   static final String fetchChatRoomFromServer = "fetchChatRoomFromServer";
   static final String getChatRoom = "getChatRoom";
   static final String getAllChatRooms = "getAllChatRooms";
@@ -111,7 +114,6 @@ class EMSDKMethod {
   static final String fetchChatRoomBlackList = "fetchChatRoomBlackList";
   static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
   static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
-
 
   /// EMChatRoomManagerListener
   static final String chatRoomChange = "onChatRoomChanged";
@@ -160,7 +162,6 @@ class EMSDKMethod {
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
 
-
   /// EMPushManager
   static const String enableOfflinePush = "enableOfflinePush";
   static const String disableOfflinePush = "disableOfflinePush";
@@ -190,11 +191,10 @@ class EMSDKMethod {
   /// EMConferenceManager
   static const String createAndJoinConference = "createAndJoinConference";
   static const String joinConference = "joinConference";
-  static const String registerConferenceSharedManager = "registerConferenceSharedManager";
+  static const String registerConferenceSharedManager =
+      "registerConferenceSharedManager";
   static const String openVideoTransfer = "openVideoTransfer";
   static const String openVoiceTransfer = "openVoiceTransfer";
   static const String closeVideoTransfer = "closeVideoTransfer";
   static const String closeVoiceTransfer = "closeVoiceTransfer";
-
-
 }

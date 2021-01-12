@@ -30,10 +30,12 @@ class EMClient {
 
   final EMCallManager _callManager = EMCallManager.getInstance();
 
-  final EMConferenceManager _conferenceManager = EMConferenceManager.getInstance();
+  final EMConferenceManager _conferenceManager =
+      EMConferenceManager.getInstance();
 
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
+  final _customDataListeners = List<EMCustomDataListener>();
   static EMClient _instance;
 
   /// instance fields
@@ -61,6 +63,8 @@ class EMClient {
         return _onDisconnected(argMap);
       } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
         return _onMultiDeviceEvent(argMap);
+      } else if (call.method == EMSDKMethod.onReceiveCustomData) {
+        return _onReceiveCustomData(argMap);
       }
       return null;
     });
@@ -288,6 +292,17 @@ class EMClient {
     return false;
   }
 
+  /// send custom data to native.
+  Future<bool> sendCustomDataToNative(Map<String, dynamic> map) async {
+    Map<String, dynamic> result =
+        await _emClientChannel.invokeMethod(EMSDKMethod.sendCustomData, map);
+    if (result['success']) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   /// 检查是否连接到聊天服务器
   bool isConnected() {
     return _connected;
@@ -346,6 +361,12 @@ class EMClient {
     for (var listener in _connectionListeners) {
       int errorCode = map["errorCode"];
       listener.onDisconnected(errorCode);
+    }
+  }
+
+  Future<Null> _onReceiveCustomData(Map<String, dynamic> map) async {
+    for (var listener in _customDataListeners) {
+      listener.onReceiveCustomData(map);
     }
   }
 
