@@ -10,7 +10,7 @@
 @implementation EMPushOptions (Flutter)
 - (NSDictionary *)toJson{
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
-    data[@"noDisturb"] = @(self.noDisturbStatus != EMPushNoDisturbStatusClose);
+    data[@"noDisturb"] = @(self.isNoDisturbEnable);
     data[@"pushStyle"] = @(self.displayStyle != EMPushDisplayStyleSimpleBanner);
     data[@"noDisturbStartHour"] = @(self.noDisturbingStartH);
     data[@"noDisturbEndHour"] = @(self.noDisturbingEndH);
