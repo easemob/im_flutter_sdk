@@ -29,11 +29,12 @@ static NSString * const EMMethodKeyKickDevice = @"kickDevice";
 static NSString * const EMMethodKeyKickAllDevices = @"kickAllDevices";
 static NSString * const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
 static NSString * const EMMethodKeyGetCurrentUser = @"getCurrentUser";
-
+static NSString * const EMMethodKeySendCustomData = @"sendCustomData";
 
 static NSString * const EMMethodKeyOnConnected = @"onConnected";
 static NSString * const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
+static NSString * const EMMethodKeyOnReceiveCustomData = @"onReceiveCustomData";
 
 #pragma mark - EMContactManagerWrapper
 
