@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-
 class CallPage extends StatefulWidget {
-
-  CallPage({Key key, this.callType, this.otherUser, this.isCaller = false}) : super(key: key);
+  CallPage({Key key, this.callType, this.otherUser, this.isCaller = false})
+      : super(key: key);
 
   final EMCallType callType;
   final String otherUser;
   bool isCaller;
 
   @override
-  State<StatefulWidget> createState() => _CallPageStatus(callType, otherUser, isCaller);
+  State<StatefulWidget> createState() =>
+      _CallPageStatus(callType, otherUser, isCaller);
 }
 
-class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
-
+class _CallPageStatus extends State<CallPage> implements EMCallSessionListener {
   bool _hasAnswer = false;
 
   _CallPageStatus(this.callType, this.otherUser, this.isCaller);
@@ -42,28 +41,33 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
             children: <Widget>[
               Text(callType == EMCallType.Video ? '视频' : '语音'),
               RaisedButton(
-                onPressed: (){
-                  try{
-                    if(!_hasAnswer && !isCaller) { // 还没接听，并且当前账户不是主叫
+                onPressed: () {
+                  try {
+                    if (!_hasAnswer && !isCaller) {
+                      // 还没接听，并且当前账户不是主叫
                       _answerCall();
-                    }else {
+                    } else {
                       _hangupCall();
                     }
-                  }on EMError catch(e){
-
-                  }finally {
-
-                  }
+                  } on EMError catch (e) {} finally {}
                 },
                 child: Text(!_hasAnswer && !isCaller ? "接听" : "挂断"),
               ),
               Container(
                 height: 200,
-                child:  !_hasAnswer && !isCaller ? Text("local占位") : EMRTCLocalView((view, viewId) => EMClient.getInstance.callManager.setLocalSurfaceView(view)),
+                child: !_hasAnswer && !isCaller
+                    ? Text("local占位")
+                    : EMRTCLocalView((view, viewId) => EMClient
+                        .getInstance.callManager
+                        .setLocalSurfaceView(view)),
               ),
               Container(
                 height: 200,
-                child:  !_hasAnswer && !isCaller ? Text("remote占位") : EMRTCRemoteView((view, viewId) => EMClient.getInstance.callManager.setRemoteSurfaceView(view)),
+                child: !_hasAnswer && !isCaller
+                    ? Text("remote占位")
+                    : EMRTCRemoteView((view, viewId) => EMClient
+                        .getInstance.callManager
+                        .setRemoteSurfaceView(view)),
               )
             ],
           ),
@@ -73,22 +77,18 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
   }
 
   void _answerCall() async {
-    try{
+    try {
       await EMClient.getInstance.callManager.answerCall();
       setState(() {
         _hasAnswer = true;
       });
-    }on EMError catch(e) {
-
-    }
+    } on EMError catch (e) {}
   }
 
   void _hangupCall() async {
-    try{
+    try {
       await EMClient.getInstance.callManager.endCall();
-    }on EMError catch (e) {
-
-    }
+    } on EMError catch (e) {}
   }
 
   void dispose() {
@@ -97,9 +97,7 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
   }
 
   @override
-  void onCallSessionDidConnect() {
-
-  }
+  void onCallSessionDidConnect() {}
 
   @override
   void onCallSessionDidAccept() {
@@ -109,17 +107,11 @@ class _CallPageStatus extends State<CallPage> implements EMCallSessionListener{
   }
 
   @override
-  void onCallSessionNetworkDidChange(EMCallNetworkStatus status) {
-
-  }
+  void onCallSessionNetworkDidChange(EMCallNetworkStatus status) {}
 
   @override
-  void onCallSessionStateDidChange(EMCallStreamingStatus status) {
-
-  }
+  void onCallSessionStateDidChange(EMCallStreamingStatus status) {}
 
   @override
-  void onCallSessionDidEnd(int reason, [EMError error]) {
-
-  }
+  void onCallSessionDidEnd(int reason, [EMError error]) {}
 }
