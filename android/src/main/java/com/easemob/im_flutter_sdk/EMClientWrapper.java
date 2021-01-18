@@ -71,7 +71,9 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
             isLoggedInBefore(call.arguments, result);
         } else if (EMSDKMethod.getCurrentUser.equals(call.method)) {
             getCurrentUser(call.arguments, result);
-        }
+        } else if (EMSDKMethod.sendCustomData.equals(call.method)) {
+            sendCustomDataToNative(call.arguments, result);
+        } 
     }
 
     private void init(Object args, Result result) {
@@ -165,6 +167,15 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
             }
         }).start();
 
+    }
+
+
+    public void sendCustomDataToFlutter(JSONObject object) {
+        channel.invokeMethod(EMSDKMethod.onReceiveCustomData, object);
+    }
+
+    private void sendCustomDataToNative(Object args, Result result) {
+        onSuccess(result);
     }
 
     private void login(Object args, Result result) {

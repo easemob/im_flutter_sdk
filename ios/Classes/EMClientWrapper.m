@@ -69,7 +69,10 @@
         [self isLoggedInBefore:call.arguments result:result];
     } else if([EMMethodKeyGetCurrentUser isEqualToString:call.method]) {
         [self getCurrentUser:call.arguments result:result];
-    } else {
+    } else if([EMMethodKeyGetCurrentUser isEqualToString:call.method]) {
+        [self sendCustomDataToNative:call.arguments result:result];
+    } 
+    else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -107,6 +110,20 @@
     
 #pragma clang diagnostic pop
     
+}
+
+
+- (void)sendCustomDataToFlutter:(NSDictionary *)param {
+    [self.channel invokeMethod:EMMethodKeyOnReceiveCustomData
+                     arguments:param];
+}
+
+
+- (void)sendCustomDataToNative:(NSDictionary *)param result:(FlutterResult)result {
+
+    [self wrapperCallBack:result
+                            error:nil
+                         userInfo:nil];
 }
 
 - (void)createAccount:(NSDictionary *)param result:(FlutterResult)result {
