@@ -136,6 +136,13 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
                 });
             }
         });
+        if (EMClient.getInstance().isLoggedInBefore()){
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("success", Boolean.TRUE);
+            data.put("currentUser", EMClient.getInstance().getCurrentUser());
+            result.success(data);
+        }
+
     }
 
     private void createAccount(Object args, Result result) {

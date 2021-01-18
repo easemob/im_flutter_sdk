@@ -11,6 +11,7 @@ import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
+import com.hyphenate.chatuidemo.HMSPushHelper;
 
 public class
 ImDemoPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler, EMWrapper {
@@ -46,6 +47,7 @@ ImDemoPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler, EMWrappe
              * EMClient.getInstance().sendHMSPushTokenToServer(token)
              * 去上传推送token
              */
+//            HMSPushHelper.getHMSToken(context);
             post(new Runnable() {
                 @Override
                 public void run() {

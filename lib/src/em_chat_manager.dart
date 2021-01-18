@@ -39,10 +39,16 @@ class EMChatManager {
         EMSDKMethod.sendMessage, message.toDataMap());
     result.then((response){
       if (response["success"]) {
-//        message.msgId = response['ServerMsgId'];
          message.msgId = EMMessage.from(response['message']).msgId;
          message.status = EMMessage.from(response['message']).status;
+         message.acked = EMMessage.from(response['message']).acked;
+         message.deliverAcked = EMMessage.from(response['message']).deliverAcked;
+         message.delivered = EMMessage.from(response['message']).delivered;
+         message.listened = EMMessage.from(response['message']).listened;
+         message.unread = EMMessage.from(response['message']).unread;
         if (onSuccess != null) onSuccess();
+      } else{
+        if (onError != null) onError(response['code'], response['desc']);
       }
     });
   }

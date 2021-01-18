@@ -9,9 +9,12 @@ class EMCallOptions{
     this.maxVideoFrameRate = 0,
     this.maxAudioKbps = 32,
     this.isSendPushIfOffline = false,
-    this.userSetAutoResizing = true
+    this.userSetAutoResizing = true,
+    this.isClarityFirst = false
   });
 
+  /// 清晰度优先
+  bool isClarityFirst;
   /// 开启或关闭自动调节分辨率
   bool userSetAutoResizing;
   /// 被叫方不在线时，是否推送来电通知
@@ -59,6 +62,7 @@ Map convertToMap(EMCallOptions options) {
   map.putIfAbsent("minVideoKbps", () => options.minVideoKbps);
   map.putIfAbsent("maxVideoFrameRate", () => options.maxVideoFrameRate);
   map.putIfAbsent("maxAudioKbps", () => options.maxAudioKbps);
+  map.putIfAbsent("isClarityFirst", () => options.isClarityFirst);
   return map;
 }
 
@@ -205,4 +209,53 @@ enum CallReason {
   REASON_SERVICE_ARREARAGES,
   /// 禁用  103
   REASON_SERVICE_FORBIDDEN,
+}
+
+class EMCallSession{
+  String _callID;
+  String _ext;
+  String _serverRecordId;
+  bool _isRecordOnServer;
+  int _connectType;
+
+  void setCallID(String id){
+    this._callID = id;
+  }
+
+  String getCallID(){
+    return _callID;
+  }
+
+  void setExt(String ext){
+    this._ext = ext;
+  }
+
+  String getExt(){
+    return _ext;
+  }
+
+  void setServerRecordId(String recordId){
+    this._serverRecordId = recordId;
+  }
+
+  String getServerRecordId(){
+    return _serverRecordId;
+  }
+
+  void setIsRecordOnServer(bool isRecord){
+    this._isRecordOnServer = isRecord;
+  }
+
+  bool getIsRecordOnServer(){
+    return _isRecordOnServer;
+  }
+
+  void setConnectType(int type){
+    this._connectType = type;
+  }
+
+  int getConnectType(){
+    return _connectType;
+  }
+
 }

@@ -266,15 +266,15 @@ public class EMChatManagerWrapper implements MethodCallHandler, EMWrapper{
         try{
             JSONObject argMap = (JSONObject)args;
             try {
+                Log.e("recallMessage", "argMap: " + argMap.toString());
                 String msgId = argMap.getString("msgId");
-                Log.e("recallMessage---> msgId: ", msgId);
                 EMMessage message = EMClient.getInstance().chatManager().getMessage(msgId);
+                Log.e("recallMessage",message.toString());
                 manager.recallMessage(message);
                 onSuccess(result);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-//        EMMessage message = EMHelper.convertDataMapToMessage(argMap);
         }catch(HyphenateException e) {
             onError(result, e);
         }

@@ -69,7 +69,12 @@ class EMClient {
   /// 初始化SDK 指定[options] .
   void init(EMOptions options) {
     _options = options;
-    _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
+    Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
+    result.then((response) {
+      if (response['success']) {
+          _currentUser = response['currentUser'];
+      }
+    });
   }
 
   /// 注册环信账号[userName]/[password].
@@ -276,6 +281,10 @@ class EMClient {
       return result['userName'];
     }
     return '';
+  }
+
+   String getUser(){
+    return _currentUser;
   }
 
   /// 判断当前是否登录 true 已登录  false 未登录

@@ -7,6 +7,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 
 import com.easemob.im_flutter_sdk.EMWrapper;
+import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConference;
 import com.hyphenate.chat.EMConferenceManager;
 import com.hyphenate.util.EMLog;
@@ -58,6 +59,14 @@ public class EMConferencePlugin implements FlutterPlugin, MethodChannel.MethodCa
             createAndJoinConference(methodCall.arguments, result);
         }else if(methodCall.method.equals("joinConference")){
             joinConference(methodCall.arguments, result);
+        }else if(methodCall.method.equals("openVideoTransfer")){
+            openVideoTransfer(methodCall.arguments, result);
+        }else if(methodCall.method.equals("openVoiceTransfer")){
+            openVoiceTransfer(methodCall.arguments, result);
+        }else if(methodCall.method.equals("closeVideoTransfer")){
+            closeVideoTransfer(methodCall.arguments, result);
+        }else if(methodCall.method.equals("closeVoiceTransfer")){
+            closeVoiceTransfer(methodCall.arguments, result);
         }
     }
 
@@ -143,5 +152,21 @@ public class EMConferencePlugin implements FlutterPlugin, MethodChannel.MethodCa
                 }
             }
         });
+    }
+
+    private void openVoiceTransfer(Object arguments, MethodChannel.Result result) {
+        EMClient.getInstance().conferenceManager().openVoiceTransfer();
+    }
+
+    private void openVideoTransfer(Object arguments, MethodChannel.Result result) {
+        EMClient.getInstance().conferenceManager().openVideoTransfer();
+    }
+
+    private void closeVoiceTransfer(Object arguments, MethodChannel.Result result) {
+        EMClient.getInstance().conferenceManager().closeVideoTransfer();
+    }
+
+    private void closeVideoTransfer(Object arguments, MethodChannel.Result result) {
+        EMClient.getInstance().conferenceManager().closeVideoTransfer();
     }
 }

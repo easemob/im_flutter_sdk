@@ -25,6 +25,7 @@ apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.huawei.agconnect'
 
 android {
     compileSdkVersion 28
@@ -44,6 +45,8 @@ android {
         ndk {
             abiFilters 'x86','arm64-v8a', 'armeabi-v7a'
         }
+
+        multiDexEnabled true
     }
 
     repositories {
@@ -85,10 +88,13 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.multidex:multidex:2.0.0'
     // meizu push
     implementation 'com.meizu.flyme.internet:push-internal:3.7.0@aar'
     //配置集成sdk
     implementation files('libs/mi_push_v3.6.12.jar')
     implementation (name:'oppo_push_v2.1.0',ext:'aar')
     implementation files('libs/vivo_push_v2.3.1.jar')
+    // hms push
+    implementation 'com.huawei.hms:push:4.0.2.300'
 }
