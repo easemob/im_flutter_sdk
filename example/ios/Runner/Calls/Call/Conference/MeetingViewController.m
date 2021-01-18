@@ -84,14 +84,23 @@ typedef void(^MyBlock)(UIColor *, BOOL);
     };
     if (self.isCreater) {
         // 创建
-        [[EMClient sharedClient].conferenceManager createAndJoinConferenceWithType:self.type password:self.password record:self.isRecord mergeStream:self.isMerge isSupportWechatMiniProgram:YES completion:^(EMCallConference *aCall, NSString *aPassword, EMError *aError) {
+        [[EMClient sharedClient].conferenceManager createAndJoinConferenceWithType:self.type
+                                                                          password:self.password
+                                                                            record:self.isRecord
+                                                                       mergeStream:self.isMerge
+                                                        isSupportWechatMiniProgram:YES
+                                                                        completion:^(EMCallConference *aCall, NSString *aPassword, EMError *aError)
+        {
             weakself.confResultBlock(aCall, aError);
             block(aCall, weakself.password, aError);
         }];
         
     } else {
         // 加入
-        [[EMClient sharedClient].conferenceManager joinConferenceWithConfId:self.joinConfId password:self.password completion:^(EMCallConference *aCall, EMError *aError) {
+        [[EMClient sharedClient].conferenceManager joinConferenceWithConfId:self.joinConfId
+                                                                   password:self.password
+                                                                 completion:^(EMCallConference *aCall, EMError *aError)
+        {
             weakself.confResultBlock(aCall, aError);
             block(aCall, weakself.password, aError);
         }];

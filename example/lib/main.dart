@@ -24,20 +24,22 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> implements EMConnectionListener{
+class _MyAppState extends State<MyApp> implements EMConnectionListener {
   @override
   void initState() {
     //TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
-//    EMPushConfig config = new EMPushConfig();
-//    config.enableAPNS('证书名称');
-//    options.setPushConfig(config);
+    EMPushConfig config = new EMPushConfig();
+    config.enableAPNS('chatdemoui');
+    options.setPushConfig(config);
     EMClient.getInstance().init(options);
     EMClient.getInstance().setDebugMode(true);
     EMClient.getInstance().addConnectionListener(this);
 
     EMClient.getInstance().callManager().registerCallSharedManager();
-    EMClient.getInstance().conferenceManager().registerConferenceSharedManager();
+    EMClient.getInstance()
+        .conferenceManager()
+        .registerConferenceSharedManager();
 
     super.initState();
   }
@@ -47,16 +49,21 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     return MaterialApp(
       /// 配置跳转路由
       routes: <String, WidgetBuilder>{
-        Constant.toRegisterPage:(BuildContext context)=>new RegisterPage(),
-        Constant.toLoginPage:(BuildContext context)=>new LoginPage(),
+        Constant.toRegisterPage: (BuildContext context) => new RegisterPage(),
+        Constant.toLoginPage: (BuildContext context) => new LoginPage(),
         Constant.toHomePage: (BuildContext context) => new HomePage(),
-        Constant.toChatRoomListPage: (BuildContext context) => new EMChatRoomListPage(),
+        Constant.toChatRoomListPage: (BuildContext context) =>
+            new EMChatRoomListPage(),
         Constant.toChatPage: (BuildContext context) => new ChatPage(),
         Constant.toAddContact: (BuildContext context) => new EMContactAddPage(),
-        Constant.toContactList: (BuildContext context) => new EMContactsListPage(),
-        Constant.toChatGroupListPage: (BuildContext context) => new EMChatGroupListPage(),
-        Constant.toPublicGroupListPage: (BuildContext context) => new PublicGroupListPage(),
+        Constant.toContactList: (BuildContext context) =>
+            new EMContactsListPage(),
+        Constant.toChatGroupListPage: (BuildContext context) =>
+            new EMChatGroupListPage(),
+        Constant.toPublicGroupListPage: (BuildContext context) =>
+            new PublicGroupListPage(),
       },
+
       /// 配置国际化语言
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -68,7 +75,6 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         const Locale('zh', 'CH'), // 中文简体
         // ... other locales the app supports
       ],
-
 
       title: '环信即时通讯云',
 
@@ -85,6 +91,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         primaryColor: EMColor.buttonDisabled,
         scaffoldBackgroundColor: EMColor.bgColor,
       ),
+
       ///深色模式
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -115,5 +122,4 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     // TODO: implement onDisconnected
     print("网络连接断开 ");
   }
-
 }

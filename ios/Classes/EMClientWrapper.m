@@ -84,7 +84,7 @@
     [EMClient.sharedClient initializeSDKWithOptions:options];
     
     // 如果有证书名，说明要使用Apns
-    if (options.pushKitCertName.length > 0) {
+    if (options.apnsCertName.length > 0) {
         [self _registerAPNs];
     }
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
