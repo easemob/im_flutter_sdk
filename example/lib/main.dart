@@ -27,19 +27,21 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> implements EMConnectionListener {
   @override
   void initState() {
-    //TODO: init sdk;
+    // TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMPushConfig config = new EMPushConfig();
     config.enableAPNS('chatdemoui');
     options.setPushConfig(config);
-    EMClient.getInstance().init(options);
-    EMClient.getInstance().setDebugMode(true);
-    EMClient.getInstance().addConnectionListener(this);
+    EMClient.getInstance().init(options).then((value){
+      EMClient.getInstance().setDebugMode(true);
+      EMClient.getInstance().addConnectionListener(this);
 
-    EMClient.getInstance().callManager().registerCallSharedManager();
-    EMClient.getInstance()
-        .conferenceManager()
-        .registerConferenceSharedManager();
+      EMClient.getInstance().callManager().registerCallSharedManager();
+      EMClient.getInstance()
+          .conferenceManager()
+          .registerConferenceSharedManager();
+    });
+
 
     super.initState();
   }

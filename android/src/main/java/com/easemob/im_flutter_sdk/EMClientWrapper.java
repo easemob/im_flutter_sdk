@@ -138,6 +138,7 @@ public class EMClientWrapper implements MethodCallHandler, EMWrapper {
                 });
             }
         });
+        onSuccess(result);
     }
 
     private void createAccount(Object args, Result result) {
