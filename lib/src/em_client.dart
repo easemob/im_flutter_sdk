@@ -71,9 +71,12 @@ class EMClient {
   }
 
   /// 初始化SDK 指定[options] .
-  void init(EMOptions options) {
+  Future<bool> init(EMOptions options) async {
     _options = options;
-    _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
+    Map result = await _emClientChannel.invokeMethod(
+        EMSDKMethod.init, options.convertToMap());
+    bool ret = result['success'];
+    return ret;
   }
 
   /// 注册环信账号[userName]/[password].

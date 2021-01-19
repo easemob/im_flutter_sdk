@@ -318,7 +318,7 @@
 - (void)messagesDidReceive:(NSArray *)aMessages {
     NSMutableArray *msgList = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
-        [EMRemindManager remindMessage:msg];
+        // [EMRemindManager remindMessage:msg];
         [msgList addObject:[EMHelper messageToDictionary:msg]];
     }
     [self.channel invokeMethod:EMMethodKeyOnMessageReceived arguments:@{@"messages":msgList}];

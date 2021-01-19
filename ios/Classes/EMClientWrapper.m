@@ -90,6 +90,7 @@
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
+    [self wrapperCallBack:result error:nil userInfo:nil];
 }
 
 
