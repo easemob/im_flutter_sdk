@@ -8,6 +8,7 @@
 #import "EMChatManagerWrapper.h"
 #import "EMSDKMethod.h"
 #import "EMHelper.h"
+#import "EMRemindManager.h"
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate> {
     FlutterEventSink _progressEventSink;
@@ -317,6 +318,7 @@
 - (void)messagesDidReceive:(NSArray *)aMessages {
     NSMutableArray *msgList = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
+        // [EMRemindManager remindMessage:msg];
         [msgList addObject:[EMHelper messageToDictionary:msg]];
     }
     [self.channel invokeMethod:EMMethodKeyOnMessageReceived arguments:@{@"messages":msgList}];

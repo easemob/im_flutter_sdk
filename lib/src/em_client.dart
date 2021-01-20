@@ -71,7 +71,7 @@ class EMClient {
   }
 
   /// 初始化SDK 指定[options] .
-  void init(EMOptions options) {
+  Future<bool> init(EMOptions options) async {
     _options = options;
     Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
     result.then((response) {

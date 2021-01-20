@@ -82,9 +82,15 @@
     EMOptions *options = [EMHelper dictionaryToEMOptions:param];
     options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
+    
+    // 如果有证书名，说明要使用Apns
+    if (options.apnsCertName.length > 0) {
+        [self _registerAPNs];
+    }
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
+    [self wrapperCallBack:result error:nil userInfo:nil];
 }
 
 
@@ -374,6 +380,40 @@
     }
     
     return _deviceDict;
+}
+
+
+
+#pragma mark - register APNs
+- (void)_registerAPNs {
+    UIApplication *application = [UIApplication sharedApplication];
+    application.applicationIconBadgeNumber = 0;
+    
+    if (NSClassFromString(@"UNUserNotificationCenter")) {
+        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
+        [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert completionHandler:^(BOOL granted, NSError *error) {
+            if (granted) {
+#if !TARGET_IPHONE_SIMULATOR
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [application registerForRemoteNotifications];
+                });
+#endif
+            }
+        }];
+        return;
+    }
+    
+    if([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        UIUserNotificationType notificationTypes = UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationTypes categories:nil];
+        [application registerUserNotificationSettings:settings];
+    }
+    
+#if !TARGET_IPHONE_SIMULATOR
+    if ([application respondsToSelector:@selector(registerForRemoteNotifications)]) {
+        [application registerForRemoteNotifications];
+    }
+#endif
 }
 
 @end
