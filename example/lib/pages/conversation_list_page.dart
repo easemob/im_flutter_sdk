@@ -13,7 +13,6 @@ import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 class EMConversationListPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _EMConversationListPageState();
   }
 }
@@ -30,7 +29,6 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     EMClient.getInstance().chatManager().addMessageListener(this);
     EMClient.getInstance().addConnectionListener(this);
@@ -39,7 +37,6 @@ class _EMConversationListPageState extends State<EMConversationListPage>
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     EMClient.getInstance().chatManager().removeMessageListener(this);
     EMClient.getInstance().removeConnectionListener(this);
@@ -165,7 +162,7 @@ class _EMConversationListPageState extends State<EMConversationListPage>
   @override
   Widget build(BuildContext context) {
     _sortConversation();
-    // TODO: implement build
+
     return new Scaffold(
       appBar: AppBar(
         centerTitle: true,

@@ -4,17 +4,49 @@ import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/em_call_setup.dart';
 import 'em_sdk_method.dart';
 
+typedef SuccessCallBack  = Function();
+typedef ErrorCallBack = Function(int code, String desc);
+
 class EMCallManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emCallManagerChannel =
-  const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
-  EMCallSession session;
+      const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
+
+  EMCallType _callType;
+  EMCallConnectType _connectType;
+  bool _isRecordOnServer;
+  String _callExt, _callId, _localName, _remoteName, _serverRecordId;
+
+  /// 获取通话状态
+  EMCallConnectType get connectType => _connectType;
+
+  /// 获取CallExt内容
+  String get callExt => _callExt;
+
+  /// 当前通话id
+  String get callId => _callId;
+
+  /// 获取本地username
+  String get localName => _localName;
+
+  /// 获取对方username
+  String get remoteName => _remoteName;
+
+  /// 获取当前通话服务器录制id
+  String get serverRecordId => _serverRecordId;
+
+  /// 是否开启服务器录制
+  bool get isRecordOnServer => _isRecordOnServer;
+
+  /// 获取当前通话类型
+  EMCallType get callType => _callType;
 
   /// @nodoc
   static EMCallManager _instance;
 
   /// @nodoc
-  final List<EMCallStateChangeListener> _callStateChangeListeners =  List<EMCallStateChangeListener>();
+  final List<EMCallStateChangeListener> _callStateChangeListeners =
+      List<EMCallStateChangeListener>();
 
   /// @nodoc
   factory EMCallManager.getInstance() {
@@ -22,18 +54,16 @@ class EMCallManager {
   }
 
   /// @nodoc
-  EMCallManager._internal(){
+  EMCallManager._internal() {
     _addNativeMethodCallHandler();
-   if(session != null)
-    session = new EMCallSession();
   }
 
-  void addCallStateChangeListener(EMCallStateChangeListener listener){
+  void addCallStateChangeListener(EMCallStateChangeListener listener) {
     assert(listener != null);
     _callStateChangeListeners.add(listener);
   }
 
-  void removeCallStateChangeListener(EMCallStateChangeListener listener){
+  void removeCallStateChangeListener(EMCallStateChangeListener listener) {
     assert(listener != null);
     _callStateChangeListeners.remove(listener);
   }
@@ -43,18 +73,16 @@ class EMCallManager {
     _emCallManagerChannel.setMethodCallHandler((MethodCall call) {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onCallChanged) {
-         _onCallChanged(argMap);
-      }else if(call.method == EMSDKMethod.getResult){
-        _fromDataResult(argMap);
+        _onCallChanged(argMap);
       }
       return null;
     });
   }
 
-  Future<void> _onCallChanged(Map event) async{
+  Future<void> _onCallChanged(Map event) async {
     String type = event['type'];
     for (var listener in _callStateChangeListeners) {
-      switch(type){
+      switch (type) {
         case EMCallEvent.ON_CONNECTING:
           listener.onConnecting();
           break;
@@ -92,19 +120,31 @@ class EMCallManager {
     }
   }
 
-  /// @nodoc 发起实时会话
-  /// @nodoc [type] 通话类型，[remoteName] 被呼叫的用户（不能与自己通话），[isRecord] 是否开启服务端录制，[isMerge] 录制时是否合并数据流，[ext] 通话扩展信息，会传给被呼叫方
-  /// @nodoc 如果发起实时会话成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void startCall(
-      EMCallType callType,
-      String remoteName,
-      bool isRecord,
-      bool isMerge,
-      String ext,
-      {onSuccess(),
-        onError(int code, String desc)}) {
+  /// 发起实时会话
+  /// [type] 通话类型，
+  /// [remoteName] 被呼叫的用户（不能与自己通话），
+  /// [isRecord] 是否开启服务端录制，
+  /// [isMerge] 录制时是否合并数据流，
+  /// [ext] 通话扩展信息，会传给被呼叫方
+  /// 如果发起实时会话成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  void startCall(String remoteName,{
+    EMCallType callType = EMCallType.Voice,
+    bool isRecord = false,
+    bool isMerge = false,
+    String ext = '', 
+    SuccessCallBack onSuccess,
+    ErrorCallBack onError,
+  }) {
     Future<Map> result = _emCallManagerChannel.invokeMethod(
-        EMSDKMethod.startCall, {"callType": toEMCallType(callType),"remoteName": remoteName ,"record": isRecord ,"mergeStream": isMerge ,"ext": ext});
+      EMSDKMethod.startCall,
+      {
+        "callType": toEMCallType(callType),
+        "remoteName": remoteName,
+        "record": isRecord,
+        "mergeStream": isMerge,
+        "ext": ext
+      },
+    );
     result.then((response) {
       if (response["success"]) {
         if (onSuccess != null) onSuccess();
@@ -114,86 +154,47 @@ class EMCallManager {
     });
   }
 
-  ///设置通话配置
-  void setCallOptions(EMCallOptions options){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.setCallOptions,convertToMap(options));
-  }
-
-  Future<void> _fromDataResult(Map map){
-    print('_fromDataResult： '+map.toString());
-    session.setCallID(map['callid']);
-    session.setExt(map['ext']);
-    session.setServerRecordId(map['serverRecordId']);
-    session.setIsRecordOnServer(map['isRecordOnServer']);
-    session.setConnectType(fromConnectTypes(map['connectType']));
-  }
-
-  /// 获取通话ID
-  Future<String> getCallId() async {
-      return session.getCallID();
-  }
-
-  /// 获取通话状态
-  Future<ConnectTypes> getConnectType() async {
-      return fromConnectTypes(session.getConnectType());
-  }
-
-  /// 获取通话扩展
-  Future<String> getExt() async {
-      return session.getExt();
-  }
-
-  /// 获取本地通话userName
-//  Future<String> getLocalName() async{
-//    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getLocalName);
-//    if (result['success']) {
-//      return result['value'];
-//    }
-//  }
-
-  /// 获取远程通话userName
-//  Future<String> getRemoteName() async{
-//    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getRemoteName);
-//    if (result['success']) {
-//      return result['value'];
-//    }
-//  }
-
-  /// 获取服务端录制ID
-  Future<String> getServerRecordId() async{
-    return session.getServerRecordId();
-  }
-
-  /// 是否开启录制
-  Future<bool> isRecordOnServer() async{
-      return session.getIsRecordOnServer();
+  /// 设置通话配置
+  Future<void> setCallOptions(EMCallOptions options) async {
+    await _emCallManagerChannel.invokeMethod(
+        EMSDKMethod.setCallOptions, convertToMap(options));
   }
 
   /// Android端用来注册广播服务调起音视频通话界面
-  void registerCallReceiver(){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallReceiver);
+  Future<void> registerCallReceiver() async {
+    await _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallReceiver);
   }
 
   ///iOS端用来初始化1v1通话单例，监听相关回调
-  void registerCallSharedManager(){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallSharedManager);
+  Future<void> registerCallSharedManager() async {
+    await _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallSharedManager);
   }
 
 
-  void openVideoTransfer(){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVideoTransfer);
+  _clearData {
+    _callExt = null;
+    _callType = null;
+    _connectType = null;
+    _localName = null;
+    _remoteName = null;
+    _callId = null;
+    _serverRecordId = null;
+    _isRecordOnServer = null;
   }
 
-  void openVoiceTransfer(){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVoiceTransfer);
-  }
+  // void openVideoTransfer() async {
+  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVideoTransfer);
+  // }
 
-  void closeVideoTransfer(){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVideoTransfer);
-  }
+  // void openVoiceTransfer() async {
+  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVoiceTransfer);
+  // }
 
-  void closeVoiceTransfer(){
-    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVoiceTransfer);
-  }
+  // void closeVideoTransfer() async {
+  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVideoTransfer);
+  // }
 
+  // void closeVoiceTransfer() async {
+  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVoiceTransfer);
+  // }
 }

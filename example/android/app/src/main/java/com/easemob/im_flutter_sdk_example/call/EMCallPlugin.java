@@ -330,11 +330,7 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if(result_status == 0) {
-                    channel.invokeMethod(EMSDKMethod.getResult,map);
-                }else{
-                    channel.invokeMethod(EMSDKMethod.getResult,map);
-                }
+                channel.invokeMethod(EMSDKMethod.getResult,map);
             }
         });
     }

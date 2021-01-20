@@ -27,14 +27,13 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> implements EMConnectionListener {
   @override
   void initState() {
-    // TODO: init sdk;
     EMOptions options = new EMOptions(appKey: "easemob-demo#chatdemoui");
     EMCallOptions callOptions = new EMCallOptions();
     callOptions.isSendPushIfOffline = false;
     EMPushConfig config = new EMPushConfig();
     config.enableAPNS('chatdemoui');
     options.setPushConfig(config);
-    EMClient.getInstance().init(options).then((value){
+    EMClient.getInstance().init(options).then((value) {
       EMClient.getInstance().setDebugMode(true);
       EMClient.getInstance().addConnectionListener(this);
       EMClient.getInstance().callManager().setCallOptions(callOptions);
@@ -115,14 +114,12 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener {
   /// EMConnectionListener
   @override
   void onConnected() {
-    // TODO: implement onConnected
     print("网络连接成功");
     EMClient.getInstance().callManager().registerCallReceiver();
   }
 
   @override
   void onDisconnected(int errorCode) {
-    // TODO: implement onDisconnected
     print("网络连接断开 ");
   }
 }

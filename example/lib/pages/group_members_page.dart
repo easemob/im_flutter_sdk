@@ -9,13 +9,10 @@ import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
 class EMGroupMembersPage extends StatefulWidget {
   final String _groupId;
-//  var _members = List<String>();
+
   final List<String> _members;
   final String _cursor;
-  final String _currentUser;
-//  var _blackList = List<String>();
-//  var _muteList = List<String>();
-//  var _admins = List<String>();
+
   final List<String> _blackList;
   final List<String> _muteList;
   final List<String> _admins;
@@ -23,20 +20,27 @@ class EMGroupMembersPage extends StatefulWidget {
   final int _type;
 
   const EMGroupMembersPage(this._groupId, this._members, this._cursor,
-      this._currentUser, this._blackList, this._muteList, this._admins, this._owner, this._type);
+      this._blackList, this._muteList, this._admins, this._owner, this._type);
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return _EMGroupMembersPageState(this._groupId, this._members, this._cursor,
-        this._currentUser, this._blackList, this._muteList, this._admins, this._owner, this._type);
+    return _EMGroupMembersPageState(
+      this._groupId,
+      this._members,
+      this._cursor,
+      this._blackList,
+      this._muteList,
+      this._admins,
+      this._owner,
+      this._type,
+    );
   }
 }
 
 class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
   String _groupId;
   var _members = List<String>();
-  String _cursor;
+
   var _blackList = List<String>();
   var _muteList = List<String>();
   var _admins = List<String>();
@@ -46,12 +50,11 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
   bool _loading = false;
   bool _isRefresh = false;
 
-  _EMGroupMembersPageState(this._groupId, this._members, this._cursor,
-      this._currentUser, this._blackList, this._muteList, this._admins, this._owner, this._type);
+  _EMGroupMembersPageState(this._groupId, this._members, this._currentUser,
+      this._blackList, this._muteList, this._admins, this._owner, this._type);
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -71,77 +74,88 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
             onTapDown: (TapDownDetails details) {
               tapPos = details.globalPosition;
             },
-            onLongPress: (){
-              if(_type == Constant.defaultGroupMember && (_owner == _currentUser || _admins.contains(_currentUser))){
-                if(!(_members[index] == _owner)){
-                  if(!(_admins.contains(_members[index]) && _admins.contains(_currentUser))){
-                    Map<String,String>  actionMap = {
-                      Constant.addBlackListKey:DemoLocalizations.of(context).addBlackList,
-                      Constant.addMuteListKey:DemoLocalizations.of(context).addMuteList,
+            onLongPress: () {
+              if (_type == Constant.defaultGroupMember &&
+                  (_owner == _currentUser || _admins.contains(_currentUser))) {
+                if (!(_members[index] == _owner)) {
+                  if (!(_admins.contains(_members[index]) &&
+                      _admins.contains(_currentUser))) {
+                    Map<String, String> actionMap = {
+                      Constant.addBlackListKey:
+                          DemoLocalizations.of(context).addBlackList,
+                      Constant.addMuteListKey:
+                          DemoLocalizations.of(context).addMuteList,
                     };
-                    if(_owner == _currentUser){
+                    if (_owner == _currentUser) {
                       actionMap = {
-                        Constant.addBlackListKey:DemoLocalizations.of(context).addBlackList,
-                        Constant.addMuteListKey:DemoLocalizations.of(context).addMuteList,
-                        Constant.addAdminListKey:DemoLocalizations.of(context).addAdminList,
+                        Constant.addBlackListKey:
+                            DemoLocalizations.of(context).addBlackList,
+                        Constant.addMuteListKey:
+                            DemoLocalizations.of(context).addMuteList,
+                        Constant.addAdminListKey:
+                            DemoLocalizations.of(context).addAdminList,
                       };
-                      if(_blackList.contains(_members[index])){
+                      if (_blackList.contains(_members[index])) {
                         actionMap.remove(Constant.addBlackListKey);
                       }
-                      if(_muteList.contains(_members[index])){
+                      if (_muteList.contains(_members[index])) {
                         actionMap.remove(Constant.addMuteListKey);
                       }
-                      if(_admins.contains(_members[index])){
+                      if (_admins.contains(_members[index])) {
                         actionMap.remove(Constant.addAdminListKey);
                       }
-                    }else{
-                      if(_blackList.contains(_members[index])){
+                    } else {
+                      if (_blackList.contains(_members[index])) {
                         actionMap.remove(Constant.addBlackListKey);
                       }
-                      if(_muteList.contains(_members[index])){
+                      if (_muteList.contains(_members[index])) {
                         actionMap.remove(Constant.addMuteListKey);
                       }
                     }
 
-                    WidgetUtil.showLongPressMenu(context, tapPos,actionMap,(String key){
-                      if(key == Constant.addBlackListKey) {
+                    WidgetUtil.showLongPressMenu(context, tapPos, actionMap,
+                        (String key) {
+                      if (key == Constant.addBlackListKey) {
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager().blockUser(_groupId, _members[index],
-                        onSuccess: (){
-                          WidgetUtil.hintBoxWithDefault(_members[index].toString() + '加入黑名单成功');
+                        EMClient.getInstance().groupManager().blockUser(
+                            _groupId, _members[index], onSuccess: () {
+                          WidgetUtil.hintBoxWithDefault(
+                              _members[index].toString() + '加入黑名单成功');
                           _members.removeAt(index);
                           _isRefresh = true;
                           _refreshUI(false);
-                        },
-                        onError: (code, desc){
-                          WidgetUtil.hintBoxWithDefault(code.toString() +':'+desc);
+                        }, onError: (code, desc) {
+                          WidgetUtil.hintBoxWithDefault(
+                              code.toString() + ':' + desc);
                           _refreshUI(false);
                         });
-                      }else if(key == Constant.addMuteListKey) {
+                      } else if (key == Constant.addMuteListKey) {
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager().muteGroupMembers(_groupId, [_members[index]], '86400000',
-                        onSuccess: (group){
+                        EMClient.getInstance().groupManager().muteGroupMembers(
+                            _groupId, [_members[index]], '86400000',
+                            onSuccess: (group) {
                           _muteList.add(_members[index]);
-                          WidgetUtil.hintBoxWithDefault(_members[index].toString() + '禁言成功');
+                          WidgetUtil.hintBoxWithDefault(
+                              _members[index].toString() + '禁言成功');
                           _isRefresh = true;
                           _refreshUI(false);
-                        },
-                        onError: (code, desc){
-                          WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
+                        }, onError: (code, desc) {
+                          WidgetUtil.hintBoxWithDefault(
+                              code.toString() + ':' + desc);
                           _refreshUI(false);
                         });
-
-                      }else if(key == Constant.addAdminListKey) {
+                      } else if (key == Constant.addAdminListKey) {
                         _refreshUI(true);
-                        EMClient.getInstance().groupManager().addGroupAdmin(_groupId, _members[index],
-                        onSuccess: (group){
+                        EMClient.getInstance().groupManager().addGroupAdmin(
+                            _groupId, _members[index], onSuccess: (group) {
                           _admins.add(_members[index]);
-                          WidgetUtil.hintBoxWithDefault(_members[index].toString() + '添加管理员成功');
+                          WidgetUtil.hintBoxWithDefault(
+                              _members[index].toString() + '添加管理员成功');
                           _isRefresh = true;
                           _refreshUI(false);
-                        },
-                        onError: (code, desc){
-                          WidgetUtil.hintBoxWithDefault(code.toString() +':'+ desc);
+                        }, onError: (code, desc) {
+                          WidgetUtil.hintBoxWithDefault(
+                              code.toString() + ':' + desc);
                           _refreshUI(false);
                         });
                       }
@@ -173,19 +187,16 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                               EMClient.getInstance()
                                   .groupManager()
                                   .removeUserFromGroup(
-                                      _groupId,
-                                      _members[index],
-                                      onSuccess: () {
-                                        _isRefresh = true;
-                                        WidgetUtil.hintBoxWithDefault('移除成员成功');
-                                        _members.removeAt(index);
-                                        _refreshUI(false);
-                                      },
-                                      onError: (code, desc) {
-                                        WidgetUtil.hintBoxWithDefault(
-                                            code.toString() + ':' + desc);
-                                        _refreshUI(false);
-                                      });
+                                      _groupId, _members[index], onSuccess: () {
+                                _isRefresh = true;
+                                WidgetUtil.hintBoxWithDefault('移除成员成功');
+                                _members.removeAt(index);
+                                _refreshUI(false);
+                              }, onError: (code, desc) {
+                                WidgetUtil.hintBoxWithDefault(
+                                    code.toString() + ':' + desc);
+                                _refreshUI(false);
+                              });
                             },
                           ),
                         ],
@@ -219,30 +230,38 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
                                         : EMColor.borderLine))),
                         child: Row(
                           children: <Widget>[
-                            Expanded(child:
-                            Text(
-                              _members[index],
-                              style: TextStyle(
-                                  fontSize: EMFont.emConListTitleFont),
-                            ),),
+                            Expanded(
+                              child: Text(
+                                _members[index],
+                                style: TextStyle(
+                                    fontSize: EMFont.emConListTitleFont),
+                              ),
+                            ),
                             Visibility(
                               visible: _type == Constant.defaultGroupMember,
-                              child:
-                              Row(children: <Widget>[
-                                Visibility(
-                                  visible: _members[index] == _owner,
-                                  child: Text('群主'),),
-                                Visibility(
-                                  visible: _admins.contains(_members[index]),
-                                  child: Text('管理员'),),
-                                Visibility(
-                                  visible: _blackList.contains(_members[index]),
-                                  child: Text('黑名单'),),
-                                Visibility(
-                                  visible: _muteList.contains(_members[index]),
-                                  child: Text('禁言'),),
-                              ],),),
-
+                              child: Row(
+                                children: <Widget>[
+                                  Visibility(
+                                    visible: _members[index] == _owner,
+                                    child: Text('群主'),
+                                  ),
+                                  Visibility(
+                                    visible: _admins.contains(_members[index]),
+                                    child: Text('管理员'),
+                                  ),
+                                  Visibility(
+                                    visible:
+                                        _blackList.contains(_members[index]),
+                                    child: Text('黑名单'),
+                                  ),
+                                  Visibility(
+                                    visible:
+                                        _muteList.contains(_members[index]),
+                                    child: Text('禁言'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         )),
                   ),
@@ -255,7 +274,6 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     String title;
     if (_type == Constant.defaultGroupMember) {
       title = DemoLocalizations.of(context).groupMembers;
@@ -282,7 +300,8 @@ class _EMGroupMembersPageState extends State<EMGroupMembersPage> {
     );
   }
 
-  Future<bool> _willPop () { //返回值必须是Future<bool>
+  Future<bool> _willPop() {
+    //返回值必须是Future<bool>
     Navigator.of(context).pop(_isRefresh);
     return Future.value(false);
   }

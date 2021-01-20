@@ -18,7 +18,7 @@
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
-                           registrar:registrar]) {
+                               registrar:registrar]) {
         [EMClient.sharedClient.callManager addDelegate:self delegateQueue:nil];
     }
     return self;
@@ -67,7 +67,14 @@
     NSString *ext = param[@"ext"];
     
     __weak typeof(self) weakSelf = self;
-    [[DemoCallManager sharedManager] _makeCallWithUsername:remoteName type:callType record:isRecord mergeStream:isMerge ext:ext isCustomVideoData:NO completion:^(EMCallSession *aCallSession, EMError *aError) {
+    [[DemoCallManager sharedManager] _makeCallWithUsername:remoteName
+                                                      type:callType
+                                                    record:isRecord
+                                               mergeStream:isMerge
+                                                       ext:ext
+                                         isCustomVideoData:NO
+                                                completion:^(EMCallSession *aCallSession, EMError *aError)
+     {
         weakSelf.callSession = aCallSession;
     }];
 }
@@ -81,117 +88,158 @@
 }
 
 - (void)getCallId:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        NSString *callId = self.callSession.callId;
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":callId}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    NSString *callId = self.callSession.callId;
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":callId}];
 }
 
 - (void)getConnectType:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        EMCallConnectType connectType = self.callSession.connectType;
-        int type;
-        if (connectType == EMCallConnectTypeNone) {
-            type = 0;
-        } else if (connectType == EMCallConnectTypeDirect) {
-            type = 1;
-        } else {
-            type = 2;
-        }
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":[NSNumber numberWithInt:type]}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    EMCallConnectType connectType = self.callSession.connectType;
+    int type;
+    if (connectType == EMCallConnectTypeNone) {
+        type = 0;
+    } else if (connectType == EMCallConnectTypeDirect) {
+        type = 1;
+    } else {
+        type = 2;
+    }
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":[NSNumber numberWithInt:type]}];
 }
 
 - (void)getExt:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        NSString *ext = self.callSession.ext;
+    
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":ext}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    NSString *ext = self.callSession.ext;
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":ext}];
 }
 
 - (void)getLocalName:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        NSString *localName = self.callSession.localName;
+    
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":localName}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    NSString *localName = self.callSession.localName;
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":localName}];
 }
 
 - (void)getRemoteName:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        NSString *remoteName = self.callSession.remoteName;
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":remoteName}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    NSString *remoteName = self.callSession.remoteName;
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":remoteName}];
 }
 
 - (void)getServerRecordId:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        NSString *serverVideoId = self.callSession.serverVideoId;
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":serverVideoId}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    NSString *serverVideoId = self.callSession.serverVideoId;
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":serverVideoId}];
 }
 
 - (void)getCallType:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        EMCallType callType = self.callSession.type;
-        int type;
-        if (callType == EMCallTypeVoice) {
-            type = 0;
-        } else {
-            type = 1;
-        }
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":[NSNumber numberWithInt:type]}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    EMCallType callType = self.callSession.type;
+    int type;
+    if (callType == EMCallTypeVoice) {
+        type = 0;
+    } else {
+        type = 1;
+    }
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":[NSNumber numberWithInt:type]}];
 }
 
 - (void)isRecordOnServer:(NSDictionary *)param result:(FlutterResult)result {
-    if (self.callSession) {
-        BOOL willRecord = self.callSession.willRecord;
+    if (!self.callSession) {
         [self wrapperCallBack:result
-                        error:nil
-                     userInfo:@{@"value":[NSNumber numberWithBool:willRecord]}];
+                        error:[self noSessionError]
+                     userInfo:nil];
+        return;
     }
+    
+    BOOL willRecord = self.callSession.willRecord;
+    [self wrapperCallBack:result
+                    error:nil
+                 userInfo:@{@"value":[NSNumber numberWithBool:willRecord]}];
 }
 
 - (void)registerCallSharedManager:(NSDictionary *)param result:(FlutterResult)result {
     [DemoCallManager sharedManager];
 }
 
+- (EMError *)noSessionError {
+    return [EMError errorWithDescription:@"no call session" code:EMErrorGeneral];
+}
+
 #pragma mark - EMCallManagerDelegate
 
 - (void)callDidReceive:(EMCallSession *)aSession {
-    NSDictionary *map = @{
-        @"type":@"connecting"
-    };
+    self.callSession = aSession;
+    NSDictionary *map = @{@"type":@"connecting"};
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
 
 - (void)callDidConnect:(EMCallSession *)aSession {
-    NSDictionary *map = @{
-        @"type":@"connected"
-    };
+    NSDictionary *map = @{@"type":@"connected"};
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
 
 - (void)callDidAccept:(EMCallSession *)aSession {
-    NSDictionary *map = @{
-        @"type":@"accepted"
-    };
+    NSDictionary *map = @{@"type":@"accepted"};
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
@@ -205,6 +253,7 @@
     };
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
+    self.callSession = nil;
 }
 
 - (void)callStateDidChange:(EMCallSession *)aSession
@@ -219,9 +268,7 @@
     } else {
         type = @"netVideoResume";
     }
-    NSDictionary *map = @{
-        @"type":type
-    };
+    NSDictionary *map = @{@"type":type};
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
@@ -237,9 +284,7 @@
         type = @"netWorkDisconnected";
     }
     
-    NSDictionary *map = @{
-        @"type":type
-    };
+    NSDictionary *map = @{@"type":type};
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }

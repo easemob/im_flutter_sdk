@@ -1,29 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
 import 'package:im_flutter_sdk_example/pages/group_black_list_page.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
-import 'package:im_flutter_sdk_example/widgets/progress_dialog.dart';
 
-class EMGroupManagementPage extends StatefulWidget{
-
+class EMGroupManagementPage extends StatefulWidget {
   final String _groupId;
   final bool _isOwner;
-//  var _blackList = List<String>();
-//  var _muteList = List<String>();
+
   final List<String> _blackList;
   final List<String> _muteList;
   final List<String> _adminList;
 
-  const EMGroupManagementPage(this._groupId, this._isOwner, this._blackList, this._muteList, this._adminList);
+  const EMGroupManagementPage(this._groupId, this._isOwner, this._blackList,
+      this._muteList, this._adminList);
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return _EMGroupManagementPageState(this._groupId, this._isOwner, this._blackList, this._muteList, this._adminList);
+    return _EMGroupManagementPageState(this._groupId, this._isOwner,
+        this._blackList, this._muteList, this._adminList);
   }
 }
 
@@ -35,32 +32,30 @@ class _EMGroupManagementPageState extends State<EMGroupManagementPage> {
   var _adminList = List<String>();
   bool _isRefresh = false;
 
-  _EMGroupManagementPageState(this._groupId, this._isOwner, this._blackList, this._muteList, this._adminList);
+  _EMGroupManagementPageState(this._groupId, this._isOwner, this._blackList,
+      this._muteList, this._adminList);
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
-  _refreshUI(){
-    setState(() {
-
-    });
+  _refreshUI() {
+    setState(() {});
   }
 
-  Widget _buildBlackManagement(){
-
+  Widget _buildBlackManagement() {
     return InkWell(
-      onTap: (){
+      onTap: () {
         Navigator.push<List<String>>(context,
             new MaterialPageRoute(builder: (BuildContext context) {
-              return EMGroupBlackListPage(this._groupId, this._blackList, Constant.blackList);
-            })).then((List<String> _members){
-              _blackList = _members;
-              _isRefresh = true;
-              _refreshUI();
-              });
+          return EMGroupBlackListPage(
+              this._groupId, this._blackList, Constant.blackList);
+        })).then((List<String> _members) {
+          _blackList = _members;
+          _isRefresh = true;
+          _refreshUI();
+        });
       },
       child: Container(
         margin: EdgeInsets.only(left: 20.0, right: 20.0),
@@ -98,16 +93,18 @@ class _EMGroupManagementPageState extends State<EMGroupManagementPage> {
     );
   }
 
-  Widget _buildMuteManagement(){
+  Widget _buildMuteManagement() {
     return InkWell(
-      onTap: (){
+      onTap: () {
         Navigator.push<List<String>>(context,
             new MaterialPageRoute(builder: (BuildContext context) {
-              return EMGroupBlackListPage(this._groupId, this._muteList, Constant.muteList);
-            })).then((List<String> _members){
-              _muteList = _members;
-              _isRefresh = true;
-              _refreshUI();});
+          return EMGroupBlackListPage(
+              this._groupId, this._muteList, Constant.muteList);
+        })).then((List<String> _members) {
+          _muteList = _members;
+          _isRefresh = true;
+          _refreshUI();
+        });
       },
       child: Container(
         margin: EdgeInsets.only(left: 20.0, right: 20.0),
@@ -145,18 +142,20 @@ class _EMGroupManagementPageState extends State<EMGroupManagementPage> {
     );
   }
 
-  Widget _buildAdminManagement(){
+  Widget _buildAdminManagement() {
     return Visibility(
       visible: _isOwner,
       child: InkWell(
-        onTap: (){
+        onTap: () {
           Navigator.push<List<String>>(context,
               new MaterialPageRoute(builder: (BuildContext context) {
-                return EMGroupBlackListPage(this._groupId, this._adminList, Constant.adminList);
-              })).then((List<String> _members){
-                _adminList = _members;
-                _isRefresh = true;
-                _refreshUI();});
+            return EMGroupBlackListPage(
+                this._groupId, this._adminList, Constant.adminList);
+          })).then((List<String> _members) {
+            _adminList = _members;
+            _isRefresh = true;
+            _refreshUI();
+          });
         },
         child: Container(
           margin: EdgeInsets.only(left: 20.0, right: 20.0),
@@ -193,28 +192,28 @@ class _EMGroupManagementPageState extends State<EMGroupManagementPage> {
         ),
       ),
     );
-
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return WillPopScope(
       onWillPop: _willPop,
       child: Scaffold(
-        appBar: WidgetUtil.buildAppBar(context, DemoLocalizations.of(context).groupManagement),
+        appBar: WidgetUtil.buildAppBar(
+            context, DemoLocalizations.of(context).groupManagement),
         body: Column(
-            children: <Widget>[
-              _buildBlackManagement(),
-              _buildMuteManagement(),
-              _buildAdminManagement(),
-            ],
-          ),
+          children: <Widget>[
+            _buildBlackManagement(),
+            _buildMuteManagement(),
+            _buildAdminManagement(),
+          ],
+        ),
       ),
     );
   }
 
-  Future<bool> _willPop () { //返回值必须是Future<bool>
+  Future<bool> _willPop() {
+    //返回值必须是Future<bool>
     Navigator.of(context).pop(_isRefresh);
     return Future.value(false);
   }

@@ -8,7 +8,6 @@ import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
 import 'package:image_picker/image_picker.dart';
 
-
 class LoginPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -22,7 +21,6 @@ class LoginPageState extends State<LoginPage> {
 
   bool _loading = false;
 
-
   bool isLogged;
   @override
   void initState() {
@@ -31,11 +29,11 @@ class LoginPageState extends State<LoginPage> {
     isLoggedInBefore();
   }
 
-  void isLoggedInBefore() async{
+  void isLoggedInBefore() async {
     bool isLoggedInBefore = await EMClient.getInstance().isLoggedInBefore();
-     print('是否登录$isLoggedInBefore');
+    print('是否登录$isLoggedInBefore');
     isLogged = isLoggedInBefore;
-    if(isLoggedInBefore){
+    if (isLoggedInBefore) {
       Navigator.of(context).pop();
       Navigator.of(context).pushNamed(Constant.toHomePage);
     }
@@ -44,12 +42,12 @@ class LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     Map arguments = ModalRoute.of(context).settings.arguments;
-    if(arguments != null) {
+    if (arguments != null) {
       _usernameController.text = arguments['username'];
       _pwdController.text = arguments['password'];
     }
     return WillPopScope(
-      onWillPop: () async{
+      onWillPop: () async {
         SystemNavigator.pop();
       },
       child: Stack(
@@ -68,8 +66,7 @@ class LoginPageState extends State<LoginPage> {
                   alignment: Alignment(0, -0.4),
                   child: loginBody(),
                 ),
-              )
-          ),
+              )),
 
           /// 注册账号
           Positioned(
@@ -89,10 +86,9 @@ class LoginPageState extends State<LoginPage> {
                 ),
                 textAlign: TextAlign.left,
               ),
-              onPressed: (){
+              onPressed: () {
                 Navigator.of(context).pushNamed(Constant.toRegisterPage);
               },
-
             ),
           ),
 
@@ -114,172 +110,167 @@ class LoginPageState extends State<LoginPage> {
                 ),
                 textAlign: TextAlign.right,
               ),
-              onPressed: (){
-
-              },
-
+              onPressed: () {},
             ),
           ),
 
-          ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inLogin,),
+          ProgressDialog(
+            loading: _loading,
+            msg: DemoLocalizations.of(context).inLogin,
+          ),
         ],
       ),
     );
-
-
   }
 
   loginBody() => SingleChildScrollView(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: <Widget>[loginHeader(), loginFields()],
-    ),
-  );
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[loginHeader(), loginFields()],
+        ),
+      );
 
   /// logo图标
   loginHeader() => Container(
-    width: 76,
-    height: 76,
-    decoration: BoxDecoration(
+        width: 76,
+        height: 76,
+        decoration: BoxDecoration(
 //      borderRadius: BorderRadius.circular(150),
-      image: DecorationImage(
-        image: AssetImage('images/logo@2x.png'),
-        fit: BoxFit.cover,
-      ),
-    ),
-  );
+          image: DecorationImage(
+            image: AssetImage('images/logo@2x.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
 
   loginFields() => Container(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            SizedBox(height: 20),
 
-        SizedBox(height: 20),
-
-        /// 用户名输入框
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
-          child: TextField(
-            controller: _usernameController,
-            maxLines: 1,
-            decoration: InputDecoration(
-              hintText: "用户名",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(57),
-                borderSide: BorderSide.none,
+            /// 用户名输入框
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
+              child: TextField(
+                controller: _usernameController,
+                maxLines: 1,
+                decoration: InputDecoration(
+                  hintText: "用户名",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(57),
+                    borderSide: BorderSide.none,
+                  ),
+                  fillColor: Colors.white,
+                  filled: true,
+                ),
               ),
-              fillColor: Colors.white,
-              filled: true,
             ),
-          ),
-        ),
 
-        /// 密码输入框
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
-          child: TextField(
-            obscureText : true,
-            controller: _pwdController,
-            maxLines: 1,
-            decoration: InputDecoration(
-              hintText: "密码",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(57),
-                borderSide: BorderSide.none,
+            /// 密码输入框
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
+              child: TextField(
+                obscureText: true,
+                controller: _pwdController,
+                maxLines: 1,
+                decoration: InputDecoration(
+                  hintText: "密码",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(57),
+                    borderSide: BorderSide.none,
+                  ),
+                  fillColor: Colors.white,
+                  filled: true,
+                ),
               ),
-              fillColor: Colors.white,
-              filled: true,
             ),
-          ),
-        ),
 
-        SizedBox(
-          height: 10.0,
-        ),
-
-        /// 登录按钮
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
-          width: double.infinity,
-          height: 50.0,
-          child: RaisedButton(
-            padding: EdgeInsets.all(12.0),
-            shape: StadiumBorder(),
-            child: Text(
-              DemoLocalizations.of(context).login,
-              style: TextStyle(color: Colors.white, fontSize: 16.0),
+            SizedBox(
+              height: 10.0,
             ),
-            color: Color.fromRGBO(0, 0, 0, 0.1),
-            onPressed: () {
-                if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty) {
-                  WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
-                  return ;
-                } else if(WidgetUtil.isChinese(this._usernameController.text)) {
-                  WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
-                  return ;
-                }
 
-                login(this._usernameController.text,this._pwdController.text);
-            },
-          ),
+            /// 登录按钮
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
+              width: double.infinity,
+              height: 50.0,
+              child: RaisedButton(
+                padding: EdgeInsets.all(12.0),
+                shape: StadiumBorder(),
+                child: Text(
+                  DemoLocalizations.of(context).login,
+                  style: TextStyle(color: Colors.white, fontSize: 16.0),
+                ),
+                color: Color.fromRGBO(0, 0, 0, 0.1),
+                onPressed: () {
+                  if (this._usernameController.text.isEmpty ||
+                      this._pwdController.text.isEmpty) {
+                    WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
+                    return;
+                  } else if (WidgetUtil.isChinese(
+                      this._usernameController.text)) {
+                    WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
+                    return;
+                  }
+
+                  login(
+                      this._usernameController.text, this._pwdController.text);
+                },
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 
-void login(String username , String password){
-    print(username+':'+password);
+  void login(String username, String password) {
+    print(username + ':' + password);
     _refreshUI(true);
-      EMClient.getInstance().login(
-          username,
-          password,
-          onSuccess: (username) {
-            print("login succes");
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(Constant.toHomePage);
+    EMClient.getInstance().login(username, password, onSuccess: (username) {
+      print("login succes");
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed(Constant.toHomePage);
+    }, onError: (code, desc) {
+      _refreshUI(false);
+      switch (code) {
+        case 2:
+          {
+            WidgetUtil.hintBoxWithDefault('网络未连接!');
+          }
+          break;
 
-          },
-          onError: (code, desc) {
-            _refreshUI(false);
-            switch(code) {
-              case 2: {
-                WidgetUtil.hintBoxWithDefault('网络未连接!');
-              }
-              break;
+        case 202:
+          {
+            WidgetUtil.hintBoxWithDefault('密码错误!');
+          }
+          break;
 
-              case 202: {
-                WidgetUtil.hintBoxWithDefault('密码错误!');
-              }
-              break;
+        case 204:
+          {
+            WidgetUtil.hintBoxWithDefault('用户ID不存在!');
+          }
+          break;
 
-              case 204: {
-                WidgetUtil.hintBoxWithDefault('用户ID不存在!');
-              }
-              break;
+        case 300:
+          {
+            WidgetUtil.hintBoxWithDefault('无法连接服务器!');
+          }
+          break;
 
-              case 300: {
-                WidgetUtil.hintBoxWithDefault('无法连接服务器!');
-              }
-              break;
+        default:
+          {
+            WidgetUtil.hintBoxWithDefault(desc);
+          }
+          break;
+      }
 
-              default: {
-                WidgetUtil.hintBoxWithDefault(desc);
-              }
-              break;
-            }
-
-            print("login error:" +
-                code.toString() +
-                "//" +
-                desc.toString());
-          });
+      print("login error:" + code.toString() + "//" + desc.toString());
+    });
   }
 
-  void _refreshUI(bool loading){
+  void _refreshUI(bool loading) {
     _loading = loading;
-    setState(() {
-
-    });
+    setState(() {});
   }
 }
