@@ -3,7 +3,7 @@ import 'package:im_flutter_sdk_example/utils/media_util.dart';
 import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/widgets/ease_button_widget.dart';
-
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 // ignore: must_be_immutable
 class BottomInputBar extends StatefulWidget {
@@ -57,9 +57,16 @@ class _BottomInputBarState extends State<BottomInputBar> {
   @override
   void initState() {
     super.initState();
+
+    global.on(GlobalEvent.HindInput, (arg) {
+      focusNode.unfocus(); // 失去焦点
+    });
+
     focusNode.addListener(() {
       if(focusNode.hasFocus) {
-        _notifyInputStatusChanged(InputBarStatus.Normal);
+        _notifyInputStatusChanged(InputBarStatus.GetFocus);
+      }else{
+        _notifyInputStatusChanged(InputBarStatus.LoseFocus);
       }
     });
 
@@ -299,6 +306,8 @@ enum InputBarStatus{
   Normal,//正常
   Voice,//语音输入
   Ext,//扩展栏
+  LoseFocus,//失去焦点
+  GetFocus,//获取焦点
 }
 
 abstract class BottomInputBarDelegate {

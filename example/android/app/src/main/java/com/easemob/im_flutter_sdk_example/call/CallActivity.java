@@ -27,6 +27,9 @@ import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.exceptions.EMServiceNotReadyException;
 import com.hyphenate.util.EMLog;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressLint("Registered")
 public class CallActivity extends BaseActivity {
     public final static String TAG = "CallActivity";
@@ -58,8 +61,8 @@ public class CallActivity extends BaseActivity {
     protected int streamID = -1;
     
     EMCallManager.EMCallPushProvider pushProvider;
-    protected boolean isFirst;
-    
+    private  Map<String, Object> data = new HashMap<String, Object>();
+
     /**
      * 0：voice call，1：video call
      */
@@ -133,7 +136,6 @@ public class CallActivity extends BaseActivity {
             pushProvider = null;
         }
         releaseHandler();
-        isFirst = false;
         super.onDestroy();
     }
     
@@ -186,8 +188,9 @@ public class CallActivity extends BaseActivity {
                                 st2 = getResources().getString(R.string.can_not_connect_chat_server_connection);
                             }
                             Toast.makeText(CallActivity.this, st2, Toast.LENGTH_SHORT).show();
-                            Log.e("call--->","callactivity");
-                            EMCallPlugin.onResult(1, e.getErrorCode() , st2);
+                            data.put("error_code", e.getErrorCode());
+                            data.put("desc",st2);
+                            EMCallPlugin.onResult(1, data);
                             finish();
                         }
                     });

@@ -197,5 +197,10 @@ public class EMSDKMethod {
     public static String getServerRecordId = "getServerRecordId";
     public static String getCallType = "getCallType";
     public static String isRecordOnServer = "isRecordOnServer";
+    public static String getResult = "getResult";
+    public static String singleOpenVideoTransfer = "singleOpenVideoTransfer";
+    public static String singleOpenVoiceTransfer = "singleOpenVoiceTransfer";
+    public static String singleCloseVideoTransfer = "singleCloseVideoTransfer";
+    public static String singleCloseVoiceTransfer = "singleCloseVoiceTransfer";
 
 }

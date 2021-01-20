@@ -49,6 +49,8 @@ import com.hyphenate.media.EMCallSurfaceView;
 import com.hyphenate.util.EMLog;
 import com.superrtc.sdk.VideoView;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -90,6 +92,8 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 
     private String CallErrorDesc = "未知异常";
     private int CallErrorCode = -1;
+    private EMCallSession callSession;
+    private Map<String, Object> data = new HashMap<String, Object>();
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -243,11 +247,6 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
 
                         @Override
                         public void run() {
-                            if(!isFirst){
-                                Log.e("call--->","isFirst");
-                                EMCallPlugin.onResult(0, 0 , "success");
-                                isFirst = true;
-                            }
 //                            callStateTextView.setText(R.string.have_connected_with);
                         }
 
@@ -281,9 +280,26 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
                             callStateTextView.setText("通话中……");
 //                            recordBtn.setVisibility(View.VISIBLE);
                             callingState = CallingState.NORMAL;
-//                            startMonitor();
+                            startMonitor();
                             // Start to watch the phone call state.
                             PhoneStateManager.get(VideoCallActivity.this).addStateCallback(phoneStateCallback);
+
+                            data.put("callid",callSession.getCallId());
+                            data.put("ext",callSession.getExt());
+                            data.put("serverRecordId",callSession.getServerRecordId());
+                            data.put("isRecordOnServer",callSession.isRecordOnServer());
+                            data.put("getLocalName",callSession.getLocalName());
+                            data.put("getRemoteName",callSession.getRemoteName());
+                            data.put("getCallType",callSession.getType() == EMCallSession.Type.VOICE ? 0 : 1);
+
+                            if (callSession.getConnectType() == EMCallSession.ConnectType.NONE){
+                                data.put("connectType", 0);
+                            }else if (callSession.getConnectType() == EMCallSession.ConnectType.DIRECT){
+                                data.put("connectType", 1);
+                            }else if (callSession.getConnectType() == EMCallSession.ConnectType.RELAY){
+                                data.put("connectType", 2);
+                            }
+                            EMCallPlugin.onResult(0, data);
                         }
 
                     });
@@ -592,7 +608,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener {
      */
     void startMonitor(){
         monitor = true;
-        EMCallSession callSession = EMClient.getInstance().callManager().getCurrentCallSession();
+        callSession = EMClient.getInstance().callManager().getCurrentCallSession();
         callSession.getCallId();
         final boolean isRecord = callSession.isRecordOnServer();
         final String serverRecordId = callSession.getServerRecordId();

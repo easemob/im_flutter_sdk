@@ -195,14 +195,48 @@ class EMHelper {
                 EMLog.e("EMHelper","Message is null object");
                 return null;
             }
+
             message.setAcked(args.getBoolean("acked"));
             message.setDeliverAcked(args.getBoolean("deliverAcked"));
             message.setDelivered(args.getBoolean("delivered"));
             message.setListened(args.getBoolean("listened"));
-            message.setLocalTime(Long.valueOf(args.getString("localTime")));
-            message.setMsgTime(Long.valueOf(args.getString("msgTime")));
+            message.setLocalTime(Long.parseLong(args.getString("localTime")));
             message.setUnread(args.getBoolean("unread"));
             setExt(args,message);
+
+            JSONObject data_body = args.getJSONObject("body");
+            int data_type = args.getInt("type");
+
+            switch(data_type){
+                    //目前暂时考虑修改这几个类型消息
+                    //文本类型消息
+                case 1:
+                    EMTextMessageBody textMessageBody = (EMTextMessageBody)message.getBody();
+                    String content = textMessageBody.getMessage();
+                    EMTextMessageBody textBody = new EMTextMessageBody(content);
+                    message.addBody(textBody);
+                    //CMD类型消息
+                case 7:
+                    EMCmdMessageBody cmdMessageBody = (EMCmdMessageBody)message.getBody();
+                    String action = cmdMessageBody.action();
+                    EMCmdMessageBody cmdBody = new EMCmdMessageBody(action);
+                    message.addBody(cmdBody);
+                    //Custom类型消息
+                case 8:
+                    EMCustomMessageBody customMessageBody = (EMCustomMessageBody)message.getBody();
+                    String event = data_body.getString("event");
+                    JSONObject params = data_body.getJSONObject("params");
+                    Map<String, String> map =new HashMap<>();
+                    Iterator iterator = params.keys();
+                    while (iterator.hasNext()){
+                        String key = iterator.next().toString();
+                        map.put(key, params.getString(key));
+                    }
+                    customMessageBody.setParams(map);
+                    customMessageBody.setEvent(event);
+                    message.addBody(customMessageBody);
+                    break;
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

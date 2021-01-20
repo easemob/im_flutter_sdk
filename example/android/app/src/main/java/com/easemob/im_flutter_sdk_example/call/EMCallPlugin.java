@@ -18,6 +18,7 @@ import com.hyphenate.chat.EMCallStateChangeListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConference;
 import com.hyphenate.exceptions.EMServiceNotReadyException;
+import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,22 +113,14 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
                 }
                 activity.registerReceiver(callReceiver,callFilter);
             }
-            else if (methodCall.method.equals(EMSDKMethod.getCallId)){
-                if (callSession != null){ getCallId(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.getConnectType)){
-                if (callSession != null){ getConnectType(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.getExt)){
-                if (callSession != null){ getExt(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.getLocalName)){
-                if (callSession != null){ getLocalName(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.getRemoteName)){
-                if (callSession != null){ getRemoteName(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.getServerRecordId)){
-                if (callSession != null){ getServerRecordId(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.getCallType)){
-                if (callSession != null){ getCallType(result); }
-            }else if (methodCall.method.equals(EMSDKMethod.isRecordOnServer)){
-                if (callSession != null){ isRecordOnServer(result); }
+              else if(methodCall.method.equals(EMSDKMethod.singleOpenVideoTransfer)){
+                openVideoTransfer();
+            } else if(methodCall.method.equals(EMSDKMethod.singleOpenVoiceTransfer)){
+                openVoiceTransfer();
+            } else if(methodCall.method.equals(EMSDKMethod.singleCloseVideoTransfer)){
+                closeVideoTransfer();
+            } else if(methodCall.method.equals(EMSDKMethod.singleCloseVoiceTransfer)){
+                closeVoiceTransfer();
             }
     }
 
@@ -154,6 +147,9 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
             }
             if (jsonObject.getBoolean("isSendPushIfOffline")){
                 callOptions.setIsSendPushIfOffline(jsonObject.getBoolean("isSendPushIfOffline"));
+            }
+            if(jsonObject.getBoolean("isClarityFirst")){
+                callOptions.setClarityFirst(jsonObject.getBoolean("isClarityFirst"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -298,85 +294,46 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
         return -1;
     }
 
-    private void getCallId(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", callSession.getCallId());
-        result.success(data);
-    }
-
-    private void getConnectType(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        if (callSession.getConnectType() == EMCallSession.ConnectType.NONE){
-            data.put("value", 0);
-        }else if (callSession.getConnectType() == EMCallSession.ConnectType.DIRECT){
-            data.put("value", 1);
-        }else if (callSession.getConnectType() == EMCallSession.ConnectType.RELAY){
-            data.put("value", 2);
+    private void openVoiceTransfer() {
+        try {
+            emCallManager.resumeVoiceTransfer();
+        } catch (HyphenateException e) {
+            e.printStackTrace();
         }
-        result.success(data);
     }
 
-    private void getExt(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", callSession.getExt());
-        result.success(data);
-    }
-
-    private void getLocalName(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", callSession.getLocalName());
-        result.success(data);
-    }
-
-    private void getRemoteName(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", callSession.getRemoteName());
-        result.success(data);
-    }
-
-    private void getServerRecordId(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", callSession.getServerRecordId());
-        result.success(data);
-    }
-
-    private void getCallType(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        if (callSession.getType() == EMCallSession.Type.VOICE){
-            data.put("value", 0);
-        }else {
-            data.put("value", 1);
+    private void openVideoTransfer() {
+        try {
+            emCallManager.resumeVideoTransfer();
+        } catch (HyphenateException e) {
+            e.printStackTrace();
         }
-        result.success(data);
     }
 
-    private void isRecordOnServer(MethodChannel.Result result){
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("success", Boolean.TRUE);
-        data.put("value", callSession.isRecordOnServer());
-        result.success(data);
+    private void closeVoiceTransfer() {
+        try {
+            emCallManager.pauseVoiceTransfer();
+        } catch (HyphenateException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void onResult(int result_status , int error_code, String error_Msg){
+    private void closeVideoTransfer() {
+        try {
+            emCallManager.pauseVideoTransfer();
+        } catch (HyphenateException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void onResult(int result_status , Map map){
         handler.post(new Runnable() {
             @Override
             public void run() {
-                Map<String, Object> data = new HashMap<String, Object>();
                 if(result_status == 0) {
-                    data.put("success", Boolean.TRUE);
-                    result.success(data);
+                    channel.invokeMethod(EMSDKMethod.getResult,map);
                 }else{
-                    data.put("success", Boolean.FALSE);
-                    data.put("code", error_code);
-                    data.put("desc", error_Msg);
-                    result.success(data);
+                    channel.invokeMethod(EMSDKMethod.getResult,map);
                 }
             }
         });

@@ -8,6 +8,7 @@ class EMCallManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emCallManagerChannel =
   const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
+  EMCallSession session;
 
   /// @nodoc
   static EMCallManager _instance;
@@ -23,6 +24,8 @@ class EMCallManager {
   /// @nodoc
   EMCallManager._internal(){
     _addNativeMethodCallHandler();
+   if(session != null)
+    session = new EMCallSession();
   }
 
   void addCallStateChangeListener(EMCallStateChangeListener listener){
@@ -41,6 +44,8 @@ class EMCallManager {
       Map argMap = call.arguments;
       if (call.method == EMSDKMethod.onCallChanged) {
          _onCallChanged(argMap);
+      }else if(call.method == EMSDKMethod.getResult){
+        _fromDataResult(argMap);
       }
       return null;
     });
@@ -114,68 +119,54 @@ class EMCallManager {
     _emCallManagerChannel.invokeMethod(EMSDKMethod.setCallOptions,convertToMap(options));
   }
 
+  Future<void> _fromDataResult(Map map){
+    print('_fromDataResult： '+map.toString());
+    session.setCallID(map['callid']);
+    session.setExt(map['ext']);
+    session.setServerRecordId(map['serverRecordId']);
+    session.setIsRecordOnServer(map['isRecordOnServer']);
+    session.setConnectType(fromConnectTypes(map['connectType']));
+  }
+
   /// 获取通话ID
   Future<String> getCallId() async {
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getCallId);
-    if (result['success']) {
-      return result['value'];
-    }
+      return session.getCallID();
   }
 
   /// 获取通话状态
   Future<ConnectTypes> getConnectType() async {
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getConnectType);
-    if (result['success']) {
-      return fromConnectTypes(result['value']);
-    }
+      return fromConnectTypes(session.getConnectType());
   }
 
   /// 获取通话扩展
   Future<String> getExt() async {
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getExt);
-    if (result['success']) {
-      return result['value'];
-    }
+      return session.getExt();
   }
 
   /// 获取本地通话userName
-  Future<String> getLocalName() async{
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getLocalName);
-    if (result['success']) {
-      return result['value'];
-    }
-  }
+//  Future<String> getLocalName() async{
+//    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getLocalName);
+//    if (result['success']) {
+//      return result['value'];
+//    }
+//  }
 
   /// 获取远程通话userName
-  Future<String> getRemoteName() async{
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getRemoteName);
-    if (result['success']) {
-      return result['value'];
-    }
-  }
+//  Future<String> getRemoteName() async{
+//    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getRemoteName);
+//    if (result['success']) {
+//      return result['value'];
+//    }
+//  }
 
   /// 获取服务端录制ID
   Future<String> getServerRecordId() async{
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getServerRecordId);
-    if (result['success']) {
-      return result['value'];
-    }
-  }
-
-  /// 获取通话类型 VOICE/VIDEO
-  Future<EMCallType> getCallType() async{
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.getCallType);
-    if (result['success']) {
-      return fromCallType(result['value']);
-    }
+    return session.getServerRecordId();
   }
 
   /// 是否开启录制
   Future<bool> isRecordOnServer() async{
-    Map result = await _emCallManagerChannel.invokeMethod(EMSDKMethod.isRecordOnServer);
-    if (result['success']) {
-      return result['value'];
-    }
+      return session.getIsRecordOnServer();
   }
 
   /// Android端用来注册广播服务调起音视频通话界面
@@ -186,6 +177,23 @@ class EMCallManager {
   ///iOS端用来初始化1v1通话单例，监听相关回调
   void registerCallSharedManager(){
     _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallSharedManager);
+  }
+
+
+  void openVideoTransfer(){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVideoTransfer);
+  }
+
+  void openVoiceTransfer(){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVoiceTransfer);
+  }
+
+  void closeVideoTransfer(){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVideoTransfer);
+  }
+
+  void closeVoiceTransfer(){
+    _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVoiceTransfer);
   }
 
 }

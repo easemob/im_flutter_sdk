@@ -25,6 +25,7 @@ apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.huawei.agconnect'
 
 android {
     compileSdkVersion 28
@@ -94,4 +95,6 @@ dependencies {
     implementation files('libs/mi_push_v3.6.12.jar')
     implementation (name:'oppo_push_v2.1.0',ext:'aar')
     implementation files('libs/vivo_push_v2.3.1.jar')
+    // hms push
+    implementation 'com.huawei.hms:push:4.0.2.300'
 }

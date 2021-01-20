@@ -5,6 +5,7 @@ import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/theme_util.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
 import 'package:im_flutter_sdk_example/widgets/bottom_input_bar.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 
 import 'group_details_page.dart';
 import 'items/chat_item.dart';
@@ -40,30 +41,27 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   List<EMMessage>  msgListFromDB = new List();
   List<Widget> extWidgetList = new List();//加号扩展栏的 widget 列表
   bool showExtWidget = false;//是否显示加号扩展栏内容
+  var loadMsgIndex = 0;
 
   ChatStatus currentStatus;//当前输入工具栏的状态
 
-  ScrollController _scrollController = ScrollController();
 
   _ChatPageState({this.arguments});
 
+//  PersonNotifier _valueListenable = PersonNotifier([]);
+
+  AutoScrollController _autoScrollController;
+  InputBarStatus _inputBarStatus = InputBarStatus.Normal;
+
   @override
   Widget build(BuildContext context) {
-    _isDark = ThemeUtils.isDark(context);
-    if(messageList.length > 0 ){
-      messageList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
-      if(!isLoad){
-        messageTotalList.clear();
-        messageTotalList.addAll(messageList);
-        print(messageTotalList.length.toString() + 'after build true: ' + messageList.length.toString());
-      }else{
-        print( '_scrollController: ' + _scrollController.offset.toString());
-        _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 2), curve: Curves.ease);
+      _isDark = ThemeUtils.isDark(context);
+      print("------build---------");
+      if(messageTotalList.length > 0 && afterLoadMessageId != '' && _inputBarStatus != InputBarStatus.GetFocus){
+        _scrollToIndex(loadMsgIndex);
       }
-      print(messageTotalList.length.toString() + 'build');
-    }
 
-    return WillPopScope(
+      return WillPopScope(
       onWillPop: _willPop,
       child: new Scaffold(
           appBar:AppBar(
@@ -108,37 +106,53 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
             child: Stack(
               children: <Widget>[
                 SafeArea(
-                  child: Column(
-                    children: <Widget>[
-                      Flexible(
-                        child: Column(
-                          children: <Widget>[
-                            Flexible(
-                              child: ListView.builder(
-                                key: UniqueKey(),
-                                shrinkWrap: true,
-                                reverse: true,
-                                controller: _scrollController,
-                                itemCount: messageTotalList.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  if (messageTotalList.length != null && messageTotalList.length > 0) {
-                                    return ChatItem(this,messageTotalList[index],_isShowTime(index));
-                                  } else {
-                                    return WidgetUtil.buildEmptyWidget();
-                                  }
-                                },
-                              ),
-                            )
-                          ],
-                        ),
+                  child: GestureDetector(
+                      onTap: () => global.emit(GlobalEvent.HindInput),
+                      onDoubleTap: () => global.emit(GlobalEvent.HindInput),
+                      child: Column(
+                        children: <Widget>[
+                          Flexible(
+                            child: Column(
+                              children: <Widget>[
+//                                ValueListenableBuilder(
+//                                  valueListenable: _valueListenable,
+//                                  builder: (BuildContext context, List<EMMessage> value, Widget child) {
+                                     Flexible(
+                                      child: ListView.builder(
+                                        key: UniqueKey(),
+                                        shrinkWrap: true,
+                                        reverse: true,
+                                        controller: _autoScrollController,
+                                        itemCount: messageTotalList.length,
+                                        itemBuilder: (BuildContext context, int index) {
+                                          if (messageTotalList.length != null && messageTotalList.length > 0) {
+//                                            value.forEach((element) { print(" 000>>"  + element.toString() + " --serveMsgId-->" + element.msgId);});
+                                            return AutoScrollTag(
+                                              key: ValueKey(index),
+                                              controller: _autoScrollController,
+                                              index: index,
+                                              child:ChatItem(this,messageTotalList[index],_isShowTime(index)),
+                                            );
+//                                            return ChatItem(this,messageTotalList[index],_isShowTime(index));
+                                          } else {
+                                            return WidgetUtil.buildEmptyWidget();
+                                          }
+                                        },
+                                      ),
+                                    )
+//                                  },
+//                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            height: 110,
+                            child: BottomInputBar(this),
+                          ),
+                          _getExtWidgets(),
+                        ],
                       ),
-                      Container(
-                        height: 110,
-                        child: BottomInputBar(this),
-                      ),
-                      _getExtWidgets(),
-                    ],
-                  ),
+                   )
                 ),
 //              _buildActionWidget(),
               ],
@@ -166,12 +180,17 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void initState() {
     super.initState();
-
+    afterLoadMessageId = '';
     currentStatus = ChatStatus.Normal;
 
     EMClient.getInstance().chatManager().addMessageListener(this);
     EMClient.getInstance().chatManager().addMessageStatusListener(this);
     EMClient.getInstance().callManager().addCallStateChangeListener(this);
+
+    _autoScrollController = AutoScrollController(
+        viewportBoundaryGetter: () =>
+            Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
+        axis: Axis.vertical);
 
     messageTotalList.clear();
 
@@ -193,9 +212,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     this.user = UserInfoDataSource.getUserInfo(toChatUsername);
     _onConversationInit();
 
-    _scrollController.addListener(() {
+    _autoScrollController.addListener(() {
       //此处要用 == 而不是 >= 否则会触发多次
-      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      if(_autoScrollController.position.pixels == _autoScrollController.position.maxScrollExtent && messageTotalList.length >= _pageSize) {
         _loadMessage();
       }
     });
@@ -204,41 +223,47 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
 
   void _onConversationInit() async{
     messageList.clear();
+    messageTotalList.clear();
+
     conversation = await EMClient.getInstance().chatManager().
     getConversation(toChatUsername, fromEMConversationType(mType), true );
 
     if(conversation != null){
       conversation.markAllMessagesAsRead();
-      msgListFromDB = await conversation.loadMoreMsgFromDB('', 20);
     }
-
-    if(msgListFromDB != null && msgListFromDB.length > 0){
-      afterLoadMessageId = msgListFromDB.first.msgId;
-        messageList.addAll(msgListFromDB);
-    }
-    isLoad = false;
-    _refreshUI();
+    _loadMessage();
   }
 
-
   void _loadMessage() async {
-    var loadlist = await conversation.loadMoreMsgFromDB(afterLoadMessageId , _pageSize);
-    if(loadlist.length > 0){
-      afterLoadMessageId = loadlist.first.msgId;
-      loadlist.sort((a, b) => b.msgTime.compareTo(a.msgTime));
-      await Future.delayed(Duration(seconds: 1), () {
-        setState(() {
-          messageTotalList.addAll(loadlist);
-        });
+    List<EMMessage> loadList = await conversation.loadMoreMsgFromDB(afterLoadMessageId , _pageSize);
+
+    if(loadList.length == 0){// 拉取数据长度为0 不刷新
+      print('没有更多数据了');
+      return;
+    }else{
+
+      loadList.sort((a, b) => b.msgTime.compareTo(a.msgTime));
+
+      setState(() {
+        messageTotalList.addAll(loadList);
       });
 
-      isLoad = true;
-    }else{
-      isLoad = true;
-      print('没有更多数据了');
+      afterLoadMessageId = loadList.last.msgId;
+      print('afterLoadMessageId load: ' + afterLoadMessageId);
+
+      for (int i = 0; i < messageTotalList.length; i++){
+        print('/n' +'  indexs: '+ i.toString() + 'msgid: ' +  messageTotalList[i].msgId + ' '+messageTotalList[i].toString());
+        if(messageTotalList[i].msgId == afterLoadMessageId){
+          loadMsgIndex = i-3;
+        }
+      }
     }
-    print(messageTotalList.length.toString() + '_loadMessage');
-    _scrollController.animateTo(_scrollController.offset, duration: new Duration(seconds: 2), curve: Curves.ease);
+  }
+
+  Future _scrollToIndex(int index) async {
+    await _autoScrollController.scrollToIndex(index,
+        duration: Duration(milliseconds: 100),
+        preferPosition: AutoScrollPosition.end);
   }
 
   ///如果是聊天室类型 先加入聊天室
@@ -257,7 +282,6 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
      if(null != conversation){
         conversation.clearAllMessages();
         setState(() {
-          messageList = [];
           messageTotalList = [];
         });
      }
@@ -319,14 +343,9 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
         });
   }
 
-  void toStringInfo() async{
-
-  }
 
   void _initExtWidgets(){
     Widget videoWidget = WidgetUtil.buildExtentionWidget('images/video_item.png','视频',_isDark,() async {
-//      WidgetUtil.hintBoxWithDefault('视频通话待实现!');
-
       EMClient.getInstance().callManager().startCall(EMCallType.Video, toChatUsername, true, true, "1323",
           onSuccess:() {
 
@@ -382,16 +401,14 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
       }
       // if the message is for current conversation
       if(username == toChatUsername || message.to == toChatUsername || message.conversationId == toChatUsername) {
-        conversation.markMessageAsRead(message.msgId);
+        insertMessage(message);
       }
     }
-    _onConversationInit();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    messageTotalList.clear();
+    _autoScrollController.dispose();
     super.dispose();
     EMClient.getInstance().chatManager().removeMessageListener(this);
     if(isJoinRoom){
@@ -462,8 +479,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void inputStatusChanged(InputBarStatus status) {
     // TODO: implement inputStatusDidChange  输入工具栏状态发生变更
+    print('inputStatusChanged' + status.toString());
     if(status == InputBarStatus.Ext) {
       showExtWidget = true;
+    }else if(status == InputBarStatus.GetFocus){
+      _inputBarStatus = InputBarStatus.GetFocus;
+    }else if(status == InputBarStatus.LoseFocus){
+      _inputBarStatus = InputBarStatus.LoseFocus;
     }else {
       showExtWidget = false;
     }
@@ -478,9 +500,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     imageMessage.chatType = fromChatType(mType);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
        print('-----------success---------->' );
-       _onConversationInit();
+       insertMessage(imageMessage);
     });
-    _onConversationInit();
   }
 
   @override
@@ -490,9 +511,8 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     imageMessage.chatType = fromChatType(mType);
     EMClient.getInstance().chatManager().sendMessage(imageMessage,onSuccess:(){
       print('-----------success---------->' );
-      _onConversationInit();
+      insertMessage(imageMessage);
     });
-    _onConversationInit();
   }
 
 
@@ -505,14 +525,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onTapItemPhone() {
     // TODO: implement onTapItemPhone
-    EMClient.getInstance().callManager().startCall(EMCallType.Video, toChatUsername, false, false, "123",
+    EMClient.getInstance().callManager().startCall(EMCallType.Voice, toChatUsername, false, false, "123",
         onSuccess:(){
           print('拨打通话成功 --- ');
         } ,
         onError:(code, desc){
           print('拨打通话失败 --- $desc');
         } );
-//    WidgetUtil.hintBoxWithDefault('音频通话待实现!');
   }
 
   @override
@@ -531,9 +550,15 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     EMClient.getInstance().chatManager().sendMessage(message,onSuccess:(){
       print('-----------ServerID---------->' + message.msgId);
       print('-----------MessageStatus---------->' + message.status.toString());
+      insertMessage(message);
     });
-    _onConversationInit();
+  }
 
+  insertMessage(EMMessage message){
+    setState(() {
+      messageTotalList.insert(0, message);
+      afterLoadMessageId = messageTotalList.last.msgId;
+    });
   }
 
   @override
@@ -567,19 +592,13 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
     // TODO: implement onAccepted
     var callId = await EMClient.getInstance().callManager().getCallId();
     var getExt = await EMClient.getInstance().callManager().getExt();
-    var getLocalName = await EMClient.getInstance().callManager().getLocalName();
-    var getRemoteName = await EMClient.getInstance().callManager().getRemoteName();
     var isRecordOnServer = await EMClient.getInstance().callManager().isRecordOnServer();
     var getConnectType = await EMClient.getInstance().callManager().getConnectType();
-    var getCallType = await EMClient.getInstance().callManager().getCallType();
     print(' onAcceptedinfo:  ' + ' callId: '
       + callId.toString()  + ' getExt: '
-      + getExt.toString() + ' getLocalName: '
-      + getLocalName.toString() + ' getRemoteName: '
-      + getRemoteName.toString() + ' isRecordOnServer: '
+      + getExt.toString() +  ' isRecordOnServer: '
       + isRecordOnServer.toString() + ' getConnectType: '
-      + getConnectType.toString() + ' getCallType: '
-      + getCallType.toString()
+      + getConnectType.toString()
     );
     print('-----------EMCallStateChangeListener---------->'+ ': onAccepted');
   }
@@ -599,13 +618,6 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   @override
   void onDisconnected(CallReason reason) async{
     // TODO: implement onDisconnected
-    Future.delayed(Duration(milliseconds: 500), () {
-      messageTotalList.clear();
-      _onConversationInit();
-    });
-    var getServerRecordId = await EMClient.getInstance().callManager().getServerRecordId();
-    print('-----------getServerRecordId----------> '+ getServerRecordId);
-    print('-----------EMCallStateChangeListener---------->'+ ': onDisconnected' + reason.toString());
   }
 
   @override
@@ -651,6 +663,17 @@ class _ChatPageState extends State<ChatPage> implements EMMessageListener,ChatIt
   }
 
 }
+
+//class PersonNotifier extends ValueNotifier<List<EMMessage>>{
+//  PersonNotifier(List<EMMessage> value) : super(value);
+//
+//  void changeMessage(List<EMMessage> newMessage){
+//    if (newMessage.length > 0) {
+//      value = newMessage;
+//    }
+//    notifyListeners();
+//  }
+//}
 
 enum ChatStatus{
   Normal,//正常

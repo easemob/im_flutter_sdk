@@ -345,11 +345,10 @@ class EMMessage {
     this.body,
     this.delivered,
     this.direction,
-    this.from,
     this.listened,
-    this.msgTime = '',
     this.status,
     this.to,
+    this.from ,
     this.type,
     this.unread,
     this.deliverAcked,
@@ -357,16 +356,17 @@ class EMMessage {
         _conversationId = '',
         _userName = '',
         chatType = ChatType.Chat,
+        msgTime = currentTimeMillis(),
         msgId = currentTimeMillis(),
         localTime = currentTimeMillis();
 
-  /// 用于创建各种消息的构造函数 - 发送方。
+  /// 用于创建各种消息的构造函数 - 发送方。(注意需要添加对应类型的body 并设置from和to)
   EMMessage.createSendMessage(EMMessageType type) : this (
       type: type,
       direction: Direction.SEND
   );
 
-  /// 用于创建各种消息的构造函数 - 接收方。
+  /// 用于创建各种消息的构造函数 - 接收方。(注意需要添加对应类型的body 并设置from和to)
   EMMessage.createReceiveMessage(EMMessageType type) : this (
       type: type,
       direction: Direction.RECEIVE
@@ -377,7 +377,8 @@ class EMMessage {
       direction: Direction.SEND,
       to: userName,
       type: EMMessageType.TXT,
-      body: EMTextMessageBody(content)
+      body: EMTextMessageBody(content),
+      from: EMClient.getInstance().getUser()
   );
 
   /// 创建语音类型消息 [filePath]: 语音片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
@@ -386,7 +387,8 @@ class EMMessage {
       direction: Direction.SEND,
       type: EMMessageType.VOICE,
       body:EMVoiceMessageBody(File(filePath),timeLength),
-      to:userName
+      to:userName,
+      from: EMClient.getInstance().getUser()
   );
 
   /// 创建图片类型消息 [filePath]: 图片路径; [sendOriginalImage]: 是否发送原图; [userName]: 接收方id.
@@ -394,7 +396,8 @@ class EMMessage {
       direction: Direction.SEND,
       type: EMMessageType.IMAGE,
       body: EMImageMessageBody(File(filePath), sendOriginalImage),
-      to: userName
+      to: userName,
+      from: EMClient.getInstance().getUser()
   );
 
   /// 创建视频类型消息 [filePath]: 视频片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
@@ -402,7 +405,8 @@ class EMMessage {
       direction: Direction.SEND,
       type: EMMessageType.VIDEO,
       body: EMVideoMessageBody(File(filePath), timeLength),
-      to: userName
+      to: userName,
+      from: EMClient.getInstance().getUser()
   );
 
   /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
@@ -410,7 +414,8 @@ class EMMessage {
       direction: Direction.SEND,
       type: EMMessageType.LOCATION,
       body: EMLocationMessageBody(locationAddress, latitude, longitude),
-      to: userName
+      to: userName,
+      from: EMClient.getInstance().getUser()
   );
 
   /// 创建文件类型消息 [filePath]: 文件路径; [userName]: 接收方id
@@ -418,7 +423,8 @@ class EMMessage {
       direction: Direction.SEND,
       type: EMMessageType.FILE,
       body: EMNormalFileMessageBody(File(filePath)),
-      to: userName
+      to: userName,
+      from: EMClient.getInstance().getUser()
   );
 
   /// 创建自定义类型消息 [event]: 自定义event; [userName]: 接收方id
@@ -426,7 +432,8 @@ class EMMessage {
       direction: Direction.SEND,
       type: EMMessageType.CUSTOM,
       body: EMCustomMessageBody(event: event, params: params),
-      to: userName
+      to: userName,
+      from: EMClient.getInstance().getUser()
   );
 
   /// @nodoc TODO:
@@ -514,7 +521,7 @@ class EMMessage {
   /// @nodoc
   Map toDataMap() {
     var result = {};
-    result["acked"] = this.acked;
+    result["acked"] = acked;
     result['attributes'] = _attributes;
     result['body'] = body.toDataMap();
     result['chatType'] = toChatType(chatType);
@@ -1086,10 +1093,10 @@ fromEMPushDisplayStyle(int type) {
   }
 }
 
-toEMPushDisplayStyle(EMPushDisplayStyle Style) {
-  if (Style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
+toEMPushDisplayStyle(EMPushDisplayStyle style) {
+  if (style == EMPushDisplayStyle.EMPushDisplayStyleSimpleBanner) {
     return 0;
-  } else if (Style == EMPushDisplayStyle.EMPushDisplayStyleMessageSummary) {
+  } else if (style == EMPushDisplayStyle.EMPushDisplayStyleMessageSummary) {
     return 1;
   }
 }

@@ -1,6 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,9 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import com.hyphenate.chat.EMChatManager;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMCustomMessageBody;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.adapter.message.EMACustomMessageBody;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONArray;
@@ -355,9 +358,9 @@ public class EMConversationWrapper implements MethodCallHandler, EMWrapper{
             JSONObject argMap = (JSONObject) args;
             String id = argMap.getString("id");
             data = new HashMap<String, Object>();
-            EMMessage message = EMHelper.convertDataMapToMessage((JSONObject)argMap.get("msg"));
+            EMMessage message = EMHelper.updateDataMapToMessage((JSONObject)argMap.get("msg"));
             if (message != null){
-                getConversation(id).updateMessage(message);
+                EMClient.getInstance().chatManager().getConversation(id).updateMessage(message);
                 data.put("success", Boolean.TRUE);
             }
             result.success(data);
