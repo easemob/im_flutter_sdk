@@ -38,7 +38,6 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
     private Context activity;
     private CallReceiver callReceiver;
     private EMCallManager emCallManager;
-    private EMCallSession callSession;
 
     private static MethodChannel.Result result;
     private static Handler handler = new Handler(Looper.getMainLooper());

@@ -607,22 +607,17 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onAccepted() async {
-    // var callId = await EMClient.getInstance().callManager().getCallId();
-    // var getExt = await EMClient.getInstance().callManager().getExt();
-    // var isRecordOnServer =
-    //     await EMClient.getInstance().callManager().isRecordOnServer();
-    // var getConnectType =
-    //     await EMClient.getInstance().callManager().getConnectType();
-    // print(' onAcceptedinfo:  ' +
-    //     ' callId: ' +
-    //     callId.toString() +
-    //     ' getExt: ' +
-    //     getExt.toString() +
-    //     ' isRecordOnServer: ' +
-    //     isRecordOnServer.toString() +
-    //     ' getConnectType: ' +
-    //     getConnectType.toString());
-    // print('-----------EMCallStateChangeListener---------->' + ': onAccepted');
+    var callId = EMClient.getInstance().callManager().callId;
+    var localName = EMClient.getInstance().callManager().localName;
+    var remoteName = EMClient.getInstance().callManager().remoteName;
+    var ext = EMClient.getInstance().callManager().callExt;
+    var serverRecordId = EMClient.getInstance().callManager().serverRecordId;
+    var isRecordOnServer =
+        EMClient.getInstance().callManager().isRecordOnServer;
+    var callType = EMClient.getInstance().callManager().callType;
+
+    print(
+        'onConnecting\n  callid -- $callId\n, localName -- $localName\n, remoteName -- $remoteName\n, ext -- $ext\n, serverRecordId -- $serverRecordId\n, isRecordOnServer -- $isRecordOnServer\n, callType -- $callType');
   }
 
   @override
@@ -632,34 +627,22 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onConnecting() {
-    print('-----------EMCallStateChangeListener---------->' + ': onConnecting');
+    var callId = EMClient.getInstance().callManager().callId;
+    var localName = EMClient.getInstance().callManager().localName;
+    var remoteName = EMClient.getInstance().callManager().remoteName;
+    var ext = EMClient.getInstance().callManager().callExt;
+    var serverRecordId = EMClient.getInstance().callManager().serverRecordId;
+    var isRecordOnServer =
+        EMClient.getInstance().callManager().isRecordOnServer;
+    var callType = EMClient.getInstance().callManager().callType;
+
+    print(
+        'onConnecting\n  callid -- $callId\n, localName -- $localName\n, remoteName -- $remoteName\n, ext -- $ext\n, serverRecordId -- $serverRecordId\n, isRecordOnServer -- $isRecordOnServer\n, callType -- $callType');
   }
 
   @override
-  void onDisconnected(CallReason reason) async {}
-
-  @override
-  void onNetVideoPause() {
-    print('-----------EMCallStateChangeListener---------->' +
-        ': onNetVideoPause');
-  }
-
-  @override
-  void onNetVideoResume() {
-    print('-----------EMCallStateChangeListener---------->' +
-        ': onNetVideoResume');
-  }
-
-  @override
-  void onNetVoicePause() {
-    print('-----------EMCallStateChangeListener---------->' +
-        ': onNetVoicePause');
-  }
-
-  @override
-  void onNetVoiceResume() {
-    print('-----------EMCallStateChangeListener---------->' +
-        ': onNetVoiceResume');
+  void onDisconnected(CallReason reason) async {
+    print('---onDisconnected  reason $reason');
   }
 
   @override
@@ -680,17 +663,6 @@ class _ChatPageState extends State<ChatPage>
         ': onNetworkUnstable');
   }
 }
-
-//class PersonNotifier extends ValueNotifier<List<EMMessage>>{
-//  PersonNotifier(List<EMMessage> value) : super(value);
-//
-//  void changeMessage(List<EMMessage> newMessage){
-//    if (newMessage.length > 0) {
-//      value = newMessage;
-//    }
-//    notifyListeners();
-//  }
-//}
 
 enum ChatStatus {
   Normal, //正常

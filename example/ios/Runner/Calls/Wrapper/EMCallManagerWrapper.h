@@ -5,11 +5,11 @@
 //  Created by easemob-DN0164 on 2020/1/14.
 //
 
-#import "EMWrapper.h"
+#import "EMCallPluginWrapper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMCallManagerWrapper : EMWrapper
+@interface EMCallManagerWrapper : EMCallPluginWrapper
 
 @end
 

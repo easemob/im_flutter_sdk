@@ -178,6 +178,7 @@
 		9007FB9625B8F47F00FD85C1 /* EMRealtimeSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FAEC25B8F47E00FD85C1 /* EMRealtimeSearch.m */; };
 		9007FB9825B8F47F00FD85C1 /* EMCallPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FAF025B8F47E00FD85C1 /* EMCallPlugin.m */; };
 		9007FBB325B8F65900FD85C1 /* EMCallHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FBB225B8F65900FD85C1 /* EMCallHelper.m */; };
+		9008C00A25B9986D00838668 /* EMCallPluginWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9008C00925B9986D00838668 /* EMCallPluginWrapper.m */; };
 		90436C4225B932F9007E3A1D /* EMMulticastDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 90436C4025B932F9007E3A1D /* EMMulticastDelegate.m */; };
 		9740EEB41CF90195004384FC /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9740EEB21CF90195004384FC /* Debug.xcconfig */; };
 		978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */; };
@@ -411,6 +412,8 @@
 		9007FAF025B8F47E00FD85C1 /* EMCallPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EMCallPlugin.m; sourceTree = "<group>"; };
 		9007FBB125B8F65900FD85C1 /* EMCallHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EMCallHelper.h; sourceTree = "<group>"; };
 		9007FBB225B8F65900FD85C1 /* EMCallHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EMCallHelper.m; sourceTree = "<group>"; };
+		9008C00825B9986D00838668 /* EMCallPluginWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EMCallPluginWrapper.h; sourceTree = "<group>"; };
+		9008C00925B9986D00838668 /* EMCallPluginWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EMCallPluginWrapper.m; sourceTree = "<group>"; };
 		90436C4025B932F9007E3A1D /* EMMulticastDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EMMulticastDelegate.m; sourceTree = "<group>"; };
 		90436C4125B932F9007E3A1D /* EMMulticastDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EMMulticastDelegate.h; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
@@ -467,6 +470,8 @@
 				9007FA1F25B8F47E00FD85C1 /* EMCallManagerWrapper.m */,
 				9007FA1E25B8F47E00FD85C1 /* EMConferenceManagerWrapper.h */,
 				9007FA2025B8F47E00FD85C1 /* EMConferenceManagerWrapper.m */,
+				9008C00825B9986D00838668 /* EMCallPluginWrapper.h */,
+				9008C00925B9986D00838668 /* EMCallPluginWrapper.m */,
 			);
 			path = Wrapper;
 			sourceTree = "<group>";
@@ -1133,6 +1138,7 @@
 				9007FAFA25B8F47E00FD85C1 /* Live2ViewController.m in Sources */,
 				9007FAFB25B8F47E00FD85C1 /* EMConferenceViewController.m in Sources */,
 				9007FB7C25B8F47F00FD85C1 /* EMConversationHelper.m in Sources */,
+				9008C00A25B9986D00838668 /* EMCallPluginWrapper.m in Sources */,
 				9007FAF325B8F47E00FD85C1 /* Call1v1AudioViewController.m in Sources */,
 				9007FAF925B8F47E00FD85C1 /* DemoConfManager.m in Sources */,
 				90436C4225B932F9007E3A1D /* EMMulticastDelegate.m in Sources */,

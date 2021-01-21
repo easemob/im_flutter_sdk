@@ -20,7 +20,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [EMClient.sharedClient.callManager addDelegate:self delegateQueue:nil];
+        
     }
     return self;
 }
@@ -80,6 +80,7 @@
 
 - (void)registerCallSharedManager:(NSDictionary *)param result:(FlutterResult)result {
     [DemoCallManager sharedManager];
+    [EMClient.sharedClient.callManager addDelegate:self delegateQueue:nil];
     [self wrapperCallBack:result
                     error:nil
                  userInfo:nil];
@@ -134,7 +135,8 @@
 }
 
 - (void)callDidAccept:(EMCallSession *)aSession {
-    NSMutableDictionary *map = [NSMutableDictionary dictionaryWithObject:@"accepted" forKey:@"type"];
+    NSMutableDictionary *map = [NSMutableDictionary dictionaryWithObject:@"accepted"
+                                                                  forKey:@"type"];
     
     if (aSession.serverVideoId && aSession.serverVideoId.length > 0) {
         map[@"serverVideoId"] = aSession.serverVideoId;
