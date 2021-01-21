@@ -176,9 +176,9 @@ public class EMSDKMethod {
     public static final String callStatusConnected = "connected";
     public static final String callStatusAccepted  = "accepted";
     public static final String callStatusDisconnected  = "disconnected";
-    public static final String netWorkDisconnected = "netWorkDisconnected";
-    public static final String netWorkUnstable = "networkUnstable";
-    public static final String netWorkNormal = "netWorkNormal";
+    public static final String networkDisconnected = "networkDisconnected";
+    public static final String networkUnstable = "networkUnstable";
+    public static final String networkNormal = "networkNormal";
     public static final String netVideoPause= "netVideoPause";
     public static final String netVideoResume = "netVideoResume";
     public static final String netVoicePause = "netVoicePause";
@@ -189,15 +189,7 @@ public class EMSDKMethod {
     public static final String registerCallReceiver = "registerCallReceiver";
     public static final String setCallOptions = "setCallOptions";
 
-    public static String getCallId = "getCallId";
-    public static String getConnectType = "getConnectType";
-    public static String getExt = "getExt";
-    public static String getLocalName = "getLocalName";
-    public static String getRemoteName = "getRemoteName";
-    public static String getServerRecordId = "getServerRecordId";
-    public static String getCallType = "getCallType";
-    public static String isRecordOnServer = "isRecordOnServer";
-    public static String getResult = "getResult";
+
     public static String singleOpenVideoTransfer = "singleOpenVideoTransfer";
     public static String singleOpenVoiceTransfer = "singleOpenVoiceTransfer";
     public static String singleCloseVideoTransfer = "singleCloseVideoTransfer";

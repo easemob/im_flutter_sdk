@@ -663,15 +663,15 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
-  void onNetWorkDisconnected() {
+  void onNetworkDisconnected() {
     print('-----------EMCallStateChangeListener---------->' +
-        ': onNetWorkDisconnected');
+        ': onNetworkDisconnected');
   }
 
   @override
-  void onNetWorkNormal() {
+  void onNetworkNormal() {
     print('-----------EMCallStateChangeListener---------->' +
-        ': onNetWorkNormal');
+        ': onNetworkNormal');
   }
 
   @override

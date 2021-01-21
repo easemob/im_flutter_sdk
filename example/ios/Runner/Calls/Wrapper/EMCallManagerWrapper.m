@@ -93,7 +93,36 @@
 
 - (void)callDidReceive:(EMCallSession *)aSession {
     self.callSession = aSession;
-    NSDictionary *map = @{@"type":@"connecting"};
+    
+    NSMutableDictionary *map = [NSMutableDictionary dictionaryWithObject:@"connecting" forKey:@"type"];
+    if (aSession.localName && aSession.localName.length > 0) {
+        map[@"localName"] = aSession.localName;
+    }
+    
+    if (aSession.remoteName && aSession.remoteName.length > 0) {
+        map[@"remoteName"] = aSession.remoteName;
+    }
+    
+    if (aSession.serverVideoId && aSession.serverVideoId.length > 0) {
+        map[@"serverVideoId"] = aSession.serverVideoId;
+    }
+    
+    if (aSession.callId && aSession.callId.length > 0) {
+        map[@"callId"] = aSession.callId;
+    }
+    
+    if (aSession.ext && aSession.ext.length > 0) {
+        map[@"callExt"] = aSession.ext;
+    }
+    
+    if (aSession.type == EMCallTypeVoice) {
+        map[@"callType"] = @(0);
+    }else {
+        map[@"callType"] = @(1);
+    }
+    
+    map[@"isRecordOnServer"] = @(aSession.willRecord);
+    
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
@@ -105,7 +134,11 @@
 }
 
 - (void)callDidAccept:(EMCallSession *)aSession {
-    NSDictionary *map = @{@"type":@"accepted"};
+    NSMutableDictionary *map = [NSMutableDictionary dictionaryWithObject:@"accepted" forKey:@"type"];
+    
+    if (aSession.serverVideoId && aSession.serverVideoId.length > 0) {
+        map[@"serverVideoId"] = aSession.serverVideoId;
+    }
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
@@ -142,11 +175,11 @@
                       status:(EMCallNetworkStatus)aStatus {
     NSString *type;
     if (aStatus == EMCallNetworkStatusNormal) {
-        type = @"netWorkNormal";
+        type = @"networkNormal";
     } else if (aStatus == EMCallNetworkStatusUnstable) {
         type = @"networkUnstable";
     } else {
-        type = @"netWorkDisconnected";
+        type = @"networkDisconnected";
     }
     
     NSDictionary *map = @{@"type":type};

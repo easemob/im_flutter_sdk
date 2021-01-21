@@ -12,11 +12,11 @@
 
 #import "DemoCallManager.h"
 
-//#import "EMGlobalVariables.h"
+#import "EMGlobalVariables.h"
 
 #import "MeetingViewController.h"
 #import "Live2ViewController.h"
-#import "EMGlobalVariables.h"
+
 #import "EMConversationHelper.h"
 
 #define CALL_TYPE @"type"

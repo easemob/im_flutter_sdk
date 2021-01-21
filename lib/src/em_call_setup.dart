@@ -67,37 +67,11 @@ Map convertToMap(EMCallOptions options) {
   return map;
 }
 
-toEMCallType(EMCallType type) {
-  if (type == EMCallType.Voice) {
-    return 0;
-  } else {
-    return 1;
-  }
-}
-
 enum callStatus {
   DISCONNECTED, //Disconnected, initial value
   CONNECTING, //Connecting
   CONNECTED, //Connected
   ACCEPTED, //Accepted
-}
-
-enum EMCallConnectType {
-  NONE, //Initial value
-  DIRECT, //direct
-  RELAY, //relay
-}
-
-// ignore: missing_return
-fromConnectType(int type) {
-  switch (type) {
-    case 0:
-      return EMCallConnectType.NONE;
-    case 1:
-      return EMCallConnectType.DIRECT;
-    case 2:
-      return EMCallConnectType.RELAY;
-  }
 }
 
 /// @nodoc EMCallType -  通话枚举的类型。
@@ -116,27 +90,32 @@ class EMCallEvent {
   static const String ON_CONNECTING = "connecting";
   static const String ON_CONNECTED = "connected";
   static const String ON_ACCEPTED = "accepted";
-  static const String ON_NET_WORK_DISCONNECTED = "netWorkDisconnected";
+  static const String ON_NET_WORK_DISCONNECTED = "networkDisconnected";
   static const String ON_NET_WORK_UNSTABLE = "networkUnstable";
-  static const String ON_NET_WORK_NORMAL = "netWorkNormal";
-  static const String ON_NET_VIDEO_PAUSE = "netVideoPause";
-  static const String ON_NET_VIDEO_RESUME = "netVideoResume";
-  static const String ON_NET_VOICE_PAUSE = "netVoicePause";
-  static const String ON_NET_VOICE_RESUME = "netVoiceResume";
+  static const String ON_NET_WORK_NORMAL = "networkNormal";
   static const String ON_DISCONNECTED = "disconnected";
 }
 
 abstract class EMCallStateChangeListener {
+  /// 通话建立中
   void onConnecting();
+
+  /// 连接已建立
   void onConnected();
+
+  /// 已接听
   void onAccepted();
-  void onNetWorkDisconnected();
+
+  /// 网络断开
+  void onNetworkDisconnected();
+
+  /// 网络不稳定
   void onNetworkUnstable();
-  void onNetWorkNormal();
-  void onNetVideoPause();
-  void onNetVideoResume();
-  void onNetVoicePause();
-  void onNetVoiceResume();
+
+  /// 网络正常
+  void onNetworkNormal();
+
+  /// 通话结束
   void onDisconnected(CallReason reason);
 }
 

@@ -176,9 +176,9 @@
 		9007FB9425B8F47F00FD85C1 /* checked@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9007FAE525B8F47E00FD85C1 /* checked@2x.png */; };
 		9007FB9525B8F47F00FD85C1 /* EMGlobalVariables.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FAE725B8F47E00FD85C1 /* EMGlobalVariables.m */; };
 		9007FB9625B8F47F00FD85C1 /* EMRealtimeSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FAEC25B8F47E00FD85C1 /* EMRealtimeSearch.m */; };
-		9007FB9725B8F47F00FD85C1 /* EMMulticastDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FAEF25B8F47E00FD85C1 /* EMMulticastDelegate.m */; };
 		9007FB9825B8F47F00FD85C1 /* EMCallPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FAF025B8F47E00FD85C1 /* EMCallPlugin.m */; };
 		9007FBB325B8F65900FD85C1 /* EMCallHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9007FBB225B8F65900FD85C1 /* EMCallHelper.m */; };
+		90436C4225B932F9007E3A1D /* EMMulticastDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 90436C4025B932F9007E3A1D /* EMMulticastDelegate.m */; };
 		9740EEB41CF90195004384FC /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 9740EEB21CF90195004384FC /* Debug.xcconfig */; };
 		978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */; };
 		97C146F31CF9000F007C117D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 97C146F21CF9000F007C117D /* main.m */; };
@@ -408,11 +408,11 @@
 		9007FAEA25B8F47E00FD85C1 /* EMHeaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EMHeaders.h; sourceTree = "<group>"; };
 		9007FAEB25B8F47E00FD85C1 /* EMDemoOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EMDemoOptions.h; sourceTree = "<group>"; };
 		9007FAEC25B8F47E00FD85C1 /* EMRealtimeSearch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EMRealtimeSearch.m; sourceTree = "<group>"; };
-		9007FAEE25B8F47E00FD85C1 /* EMMulticastDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EMMulticastDelegate.h; sourceTree = "<group>"; };
-		9007FAEF25B8F47E00FD85C1 /* EMMulticastDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EMMulticastDelegate.m; sourceTree = "<group>"; };
 		9007FAF025B8F47E00FD85C1 /* EMCallPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EMCallPlugin.m; sourceTree = "<group>"; };
 		9007FBB125B8F65900FD85C1 /* EMCallHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EMCallHelper.h; sourceTree = "<group>"; };
 		9007FBB225B8F65900FD85C1 /* EMCallHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EMCallHelper.m; sourceTree = "<group>"; };
+		90436C4025B932F9007E3A1D /* EMMulticastDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EMMulticastDelegate.m; sourceTree = "<group>"; };
+		90436C4125B932F9007E3A1D /* EMMulticastDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EMMulticastDelegate.h; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -464,8 +464,8 @@
 			isa = PBXGroup;
 			children = (
 				9007FA1D25B8F47E00FD85C1 /* EMCallManagerWrapper.h */,
-				9007FA1E25B8F47E00FD85C1 /* EMConferenceManagerWrapper.h */,
 				9007FA1F25B8F47E00FD85C1 /* EMCallManagerWrapper.m */,
+				9007FA1E25B8F47E00FD85C1 /* EMConferenceManagerWrapper.h */,
 				9007FA2025B8F47E00FD85C1 /* EMConferenceManagerWrapper.m */,
 			);
 			path = Wrapper;
@@ -487,15 +487,15 @@
 			isa = PBXGroup;
 			children = (
 				9007FA2425B8F47E00FD85C1 /* Call1v1VideoViewController.h */,
-				9007FA2525B8F47E00FD85C1 /* Call1v1AudioViewController.m */,
-				9007FA2625B8F47E00FD85C1 /* EMCallOptions+NSCoding.m */,
-				9007FA2725B8F47E00FD85C1 /* EM1v1CallViewController.h */,
-				9007FA2825B8F47E00FD85C1 /* DemoCallManager.m */,
 				9007FA2925B8F47E00FD85C1 /* Call1v1VideoViewController.m */,
 				9007FA2A25B8F47E00FD85C1 /* Call1v1AudioViewController.h */,
-				9007FA2B25B8F47E00FD85C1 /* EMCallOptions+NSCoding.h */,
+				9007FA2525B8F47E00FD85C1 /* Call1v1AudioViewController.m */,
+				9007FA2725B8F47E00FD85C1 /* EM1v1CallViewController.h */,
 				9007FA2C25B8F47E00FD85C1 /* EM1v1CallViewController.m */,
+				9007FA2B25B8F47E00FD85C1 /* EMCallOptions+NSCoding.h */,
+				9007FA2625B8F47E00FD85C1 /* EMCallOptions+NSCoding.m */,
 				9007FA2D25B8F47E00FD85C1 /* DemoCallManager.h */,
+				9007FA2825B8F47E00FD85C1 /* DemoCallManager.m */,
 			);
 			path = 1v1;
 			sourceTree = "<group>";
@@ -674,16 +674,16 @@
 		9007FAB925B8F47E00FD85C1 /* Helper */ = {
 			isa = PBXGroup;
 			children = (
-				9007FABA25B8F47E00FD85C1 /* CallResolutionViewController.m */,
-				9007FABB25B8F47E00FD85C1 /* EMCallViewController.m */,
-				9007FABC25B8F47E00FD85C1 /* CallSettingViewController.m */,
-				9007FABD25B8F47E00FD85C1 /* EMStreamView.h */,
-				9007FABE25B8F47E00FD85C1 /* EMButton.m */,
-				9007FABF25B8F47E00FD85C1 /* EMCallViewController.h */,
 				9007FAC025B8F47E00FD85C1 /* CallResolutionViewController.h */,
-				9007FAC125B8F47E00FD85C1 /* CallSettingViewController.h */,
-				9007FAC225B8F47E00FD85C1 /* EMButton.h */,
+				9007FABA25B8F47E00FD85C1 /* CallResolutionViewController.m */,
+				9007FABF25B8F47E00FD85C1 /* EMCallViewController.h */,
+				9007FABB25B8F47E00FD85C1 /* EMCallViewController.m */,
+				9007FABD25B8F47E00FD85C1 /* EMStreamView.h */,
 				9007FAC325B8F47E00FD85C1 /* EMStreamView.m */,
+				9007FAC125B8F47E00FD85C1 /* CallSettingViewController.h */,
+				9007FABC25B8F47E00FD85C1 /* CallSettingViewController.m */,
+				9007FAC225B8F47E00FD85C1 /* EMButton.h */,
+				9007FABE25B8F47E00FD85C1 /* EMButton.m */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -691,20 +691,20 @@
 		9007FAC525B8F47E00FD85C1 /* Helper */ = {
 			isa = PBXGroup;
 			children = (
+				90436C3F25B932F2007E3A1D /* MulticastDelegate */,
 				9007FAC625B8F47E00FD85C1 /* EMColorDefine.h */,
 				9007FAC725B8F47E00FD85C1 /* EMGlobalVariables.h */,
-				9007FAC825B8F47E00FD85C1 /* EMConversationHelper.m */,
-				9007FAC925B8F47E00FD85C1 /* Category */,
-				9007FAD025B8F47E00FD85C1 /* EMDemoOptions.m */,
-				9007FAD125B8F47E00FD85C1 /* SharedImgs */,
-				9007FAE625B8F47E00FD85C1 /* EMRealtimeSearch.h */,
 				9007FAE725B8F47E00FD85C1 /* EMGlobalVariables.m */,
 				9007FAE825B8F47E00FD85C1 /* EMConversationHelper.h */,
+				9007FAC825B8F47E00FD85C1 /* EMConversationHelper.m */,
+				9007FAC925B8F47E00FD85C1 /* Category */,
+				9007FAD125B8F47E00FD85C1 /* SharedImgs */,
+				9007FAE625B8F47E00FD85C1 /* EMRealtimeSearch.h */,
+				9007FAEC25B8F47E00FD85C1 /* EMRealtimeSearch.m */,
 				9007FAE925B8F47E00FD85C1 /* EMDefines.h */,
 				9007FAEA25B8F47E00FD85C1 /* EMHeaders.h */,
 				9007FAEB25B8F47E00FD85C1 /* EMDemoOptions.h */,
-				9007FAEC25B8F47E00FD85C1 /* EMRealtimeSearch.m */,
-				9007FAED25B8F47E00FD85C1 /* MulticastDelegate */,
+				9007FAD025B8F47E00FD85C1 /* EMDemoOptions.m */,
 				9007FBB125B8F65900FD85C1 /* EMCallHelper.h */,
 				9007FBB225B8F65900FD85C1 /* EMCallHelper.m */,
 			);
@@ -751,11 +751,11 @@
 			path = SharedImgs;
 			sourceTree = "<group>";
 		};
-		9007FAED25B8F47E00FD85C1 /* MulticastDelegate */ = {
+		90436C3F25B932F2007E3A1D /* MulticastDelegate */ = {
 			isa = PBXGroup;
 			children = (
-				9007FAEE25B8F47E00FD85C1 /* EMMulticastDelegate.h */,
-				9007FAEF25B8F47E00FD85C1 /* EMMulticastDelegate.m */,
+				90436C4125B932F9007E3A1D /* EMMulticastDelegate.h */,
+				90436C4025B932F9007E3A1D /* EMMulticastDelegate.m */,
 			);
 			path = MulticastDelegate;
 			sourceTree = "<group>";
@@ -1122,7 +1122,6 @@
 				9007FB7725B8F47F00FD85C1 /* CallResolutionViewController.m in Sources */,
 				9007FB9825B8F47F00FD85C1 /* EMCallPlugin.m in Sources */,
 				9007FB7825B8F47F00FD85C1 /* EMCallViewController.m in Sources */,
-				9007FB9725B8F47F00FD85C1 /* EMMulticastDelegate.m in Sources */,
 				9007FB7B25B8F47F00FD85C1 /* EMStreamView.m in Sources */,
 				9007FB9525B8F47F00FD85C1 /* EMGlobalVariables.m in Sources */,
 				9007FAF425B8F47E00FD85C1 /* EMCallOptions+NSCoding.m in Sources */,
@@ -1136,6 +1135,7 @@
 				9007FB7C25B8F47F00FD85C1 /* EMConversationHelper.m in Sources */,
 				9007FAF325B8F47E00FD85C1 /* Call1v1AudioViewController.m in Sources */,
 				9007FAF925B8F47E00FD85C1 /* DemoConfManager.m in Sources */,
+				90436C4225B932F9007E3A1D /* EMMulticastDelegate.m in Sources */,
 				9007FAFE25B8F47E00FD85C1 /* AudioRecord.m in Sources */,
 				97C146F31CF9000F007C117D /* main.m in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,

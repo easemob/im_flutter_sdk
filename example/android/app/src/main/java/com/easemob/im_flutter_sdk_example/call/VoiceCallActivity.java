@@ -202,23 +202,23 @@ public class VoiceCallActivity extends CallActivity implements OnClickListener {
                             // Start to watch the phone call state.
                             PhoneStateManager.get(VoiceCallActivity.this).addStateCallback(phoneStateCallback);
 
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("callid",callSession.getCallId());
-                            data.put("ext",callSession.getExt());
-                            data.put("serverRecordId",callSession.getServerRecordId());
-                            data.put("isRecordOnServer",callSession.isRecordOnServer());
-                            data.put("getLocalName",callSession.getLocalName());
-                            data.put("getRemoteName",callSession.getRemoteName());
-                            data.put("getCallType",callSession.getType() == EMCallSession.Type.VOICE ? 0 : 1);
+                            // Map<String, Object> data = new HashMap<String, Object>();
+                            // data.put("callid",callSession.getCallId());
+                            // data.put("ext",callSession.getExt());
+                            // data.put("serverRecordId",callSession.getServerRecordId());
+                            // data.put("isRecordOnServer",callSession.isRecordOnServer());
+                            // data.put("getLocalName",callSession.getLocalName());
+                            // data.put("getRemoteName",callSession.getRemoteName());
+                            // data.put("getCallType",callSession.getType() == EMCallSession.Type.VOICE ? 0 : 1);
 
-                            if (callSession.getConnectType() == EMCallSession.ConnectType.NONE){
-                                data.put("connectType", 0);
-                            }else if (callSession.getConnectType() == EMCallSession.ConnectType.DIRECT){
-                                data.put("connectType", 1);
-                            }else if (callSession.getConnectType() == EMCallSession.ConnectType.RELAY){
-                                data.put("connectType", 2);
-                            }
-                            EMCallPlugin.onResult(0, data );
+                            // if (callSession.getConnectType() == EMCallSession.ConnectType.NONE){
+                            //     data.put("connectType", 0);
+                            // }else if (callSession.getConnectType() == EMCallSession.ConnectType.DIRECT){
+                            //     data.put("connectType", 1);
+                            // }else if (callSession.getConnectType() == EMCallSession.ConnectType.RELAY){
+                            //     data.put("connectType", 2);
+                            // }
+                            // EMCallPlugin.onResult(data );
                         }
                     });
                     break;

@@ -14,12 +14,8 @@ class EMCallManager {
       const MethodChannel('$_channelPrefix/em_call_manager', JSONMethodCodec());
 
   EMCallType _callType;
-  EMCallConnectType _connectType;
   bool _isRecordOnServer;
   String _callExt, _callId, _localName, _remoteName, _serverRecordId;
-
-  /// 获取通话状态
-  EMCallConnectType get connectType => _connectType;
 
   /// 获取CallExt内容
   String get callExt => _callExt;
@@ -42,21 +38,23 @@ class EMCallManager {
   /// 获取当前通话类型
   EMCallType get callType => _callType;
 
-  /// @nodoc
   static EMCallManager _instance;
 
-  /// @nodoc
   final List<EMCallStateChangeListener> _callStateChangeListeners =
       List<EMCallStateChangeListener>();
 
-  /// @nodoc
   factory EMCallManager.getInstance() {
     return _instance = _instance ?? EMCallManager._internal();
   }
 
-  /// @nodoc
   EMCallManager._internal() {
-    _addNativeMethodCallHandler();
+    _emCallManagerChannel.setMethodCallHandler((MethodCall call) {
+      Map argMap = call.arguments;
+      if (call.method == EMSDKMethod.onCallChanged) {
+        _onCallChanged(argMap);
+      }
+      return null;
+    });
   }
 
   void addCallStateChangeListener(EMCallStateChangeListener listener) {
@@ -69,52 +67,44 @@ class EMCallManager {
     _callStateChangeListeners.remove(listener);
   }
 
-  /// @nodoc
-  void _addNativeMethodCallHandler() {
-    _emCallManagerChannel.setMethodCallHandler((MethodCall call) {
-      Map argMap = call.arguments;
-      if (call.method == EMSDKMethod.onCallChanged) {
-        _onCallChanged(argMap);
-      }
-      return null;
-    });
-  }
-
   Future<void> _onCallChanged(Map event) async {
     String type = event['type'];
     for (var listener in _callStateChangeListeners) {
       switch (type) {
         case EMCallEvent.ON_CONNECTING:
+          _callId = event['callId'];
+          _localName = event['localName'];
+          _remoteName = event['remoteName'];
+          _serverRecordId = event['serverVideoId'];
+          _callExt = event['callExt'];
+          _isRecordOnServer = event['isRecordOnServer'] as bool;
+          _callType = event['callType'].toInt() == 0
+              ? EMCallType.Voice
+              : EMCallType.Video;
+
           listener.onConnecting();
           break;
         case EMCallEvent.ON_CONNECTED:
           listener.onConnected();
           break;
         case EMCallEvent.ON_ACCEPTED:
+          if (event['serverVideoId'] != null) {
+            _serverRecordId = event['serverVideoId'] as String;
+          }
           listener.onAccepted();
           break;
         case EMCallEvent.ON_NET_WORK_DISCONNECTED:
-          listener.onNetWorkDisconnected();
+          listener.onNetworkDisconnected();
           break;
         case EMCallEvent.ON_NET_WORK_UNSTABLE:
           listener.onNetworkUnstable();
           break;
         case EMCallEvent.ON_NET_WORK_NORMAL:
-          listener.onNetWorkNormal();
+          listener.onNetworkNormal();
           break;
-        case EMCallEvent.ON_NET_VIDEO_PAUSE:
-          listener.onNetVideoPause();
-          break;
-        case EMCallEvent.ON_NET_VIDEO_RESUME:
-          listener.onNetVideoResume();
-          break;
-        case EMCallEvent.ON_NET_VOICE_PAUSE:
-          listener.onNetVoicePause();
-          break;
-        case EMCallEvent.ON_NET_VOICE_RESUME:
-          listener.onNetVoiceResume();
-          break;
+
         case EMCallEvent.ON_DISCONNECTED:
+          _clearData();
           listener.onDisconnected(fromCallReason(event['reason']));
           break;
       }
@@ -122,12 +112,13 @@ class EMCallManager {
   }
 
   /// 发起实时会话
-  /// [type] 通话类型，
-  /// [remoteName] 被呼叫的用户（不能与自己通话），
-  /// [isRecord] 是否开启服务端录制，
-  /// [isMerge] 录制时是否合并数据流，
-  /// [ext] 通话扩展信息，会传给被呼叫方
-  /// 如果发起实时会话成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
+  /// [type] 通话类型;
+  /// [remoteName] 被呼叫的用户（不能与自己通话）;
+  /// [isRecord] 是否开启服务端录制;
+  /// [isMerge] 录制时是否合并数据流;
+  /// [ext] 通话扩展信息，会传给被呼叫方;
+  /// [onSuccess] 发起通话成功;
+  /// [onError] 发起通话失败;
   void startCall(
     String remoteName, {
     EMCallType callType = EMCallType.Voice,
@@ -145,7 +136,7 @@ class EMCallManager {
     Future<Map> result = _emCallManagerChannel.invokeMethod(
       EMSDKMethod.startCall,
       {
-        "callType": toEMCallType(callType),
+        "callType": callType == EMCallType.Voice ? 0 : 1,
         "remoteName": remoteName,
         "record": recordOnServer,
         "mergeStream": isMerge,
@@ -158,8 +149,12 @@ class EMCallManager {
           _callId = response['callId'];
           if (onSuccess != null) onSuccess();
         } else {
-          if (onError != null) onError(response['code'], response['desc']);
           _clearData();
+          if (onError != null)
+            onError(
+              response['code'],
+              response['desc'],
+            );
         }
       },
     );
@@ -185,27 +180,10 @@ class EMCallManager {
   _clearData() {
     _callExt = null;
     _callType = null;
-    _connectType = null;
     _localName = null;
     _remoteName = null;
     _callId = null;
     _serverRecordId = null;
     _isRecordOnServer = null;
   }
-
-  // void openVideoTransfer() async {
-  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVideoTransfer);
-  // }
-
-  // void openVoiceTransfer() async {
-  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleOpenVoiceTransfer);
-  // }
-
-  // void closeVideoTransfer() async {
-  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVideoTransfer);
-  // }
-
-  // void closeVoiceTransfer() async {
-  //   _emCallManagerChannel.invokeMethod(EMSDKMethod.singleCloseVoiceTransfer);
-  // }
 }
