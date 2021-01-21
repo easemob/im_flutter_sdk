@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import android.content.Context;
+
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
@@ -32,6 +34,7 @@ import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.push.EMPushConfig;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,7 +49,7 @@ import java.util.Map;
 
 class EMOptionsHelper {
 
-    static EMOptions fromJson(JSONObject json) throws JSONException {
+    static EMOptions fromJson(JSONObject json, Context context) throws JSONException {
         EMOptions options = new EMOptions();
         options.setAppKey(json.getString("appKey"));
         options.setAutoLogin(json.getBoolean("autoLogin"));
@@ -72,6 +75,29 @@ class EMOptionsHelper {
             options.setDnsUrl(json.getString("dnsUrl"));
         }
 
+        if(json.has("pushConfig")){
+            EMPushConfig.Builder builder = new EMPushConfig.Builder(context);
+            JSONObject pushConfig = json.getJSONObject("pushConfig");
+            if(pushConfig.getBoolean("enableMiPush")){
+                builder.enableMiPush(pushConfig.getString("miAppId"), pushConfig.getString("miAppKey"));
+            }
+            if(pushConfig.getBoolean("enableFCM")){
+                builder.enableFCM(pushConfig.getString("fcmId"));
+            }
+            if(pushConfig.getBoolean("enableOppoPush")){
+                builder.enableOppoPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
+            }
+            if(pushConfig.getBoolean("enableHWPush")){
+                builder.enableHWPush();
+            }
+            if(pushConfig.getBoolean("enableMeiZuPush")){
+                builder.enableMeiZuPush(pushConfig.getString("mzAppId"), pushConfig.getString("mzAppKey"));
+            }
+            if(pushConfig.getBoolean("enableVivoPush")){
+                builder.enableVivoPush();
+            }
+            options.setPushConfig(builder.build());
+        }
         return options;
 
     }
