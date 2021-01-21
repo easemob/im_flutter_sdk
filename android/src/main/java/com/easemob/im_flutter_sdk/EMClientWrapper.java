@@ -258,7 +258,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        EMOptions options = EMOptionsHelper.fromJson(param);
+        EMOptions options = EMOptionsHelper.fromJson(param, this.registrar.context());
         EMClient.getInstance().init(this.registrar.context(), options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
         registerManagers();
