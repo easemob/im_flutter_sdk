@@ -317,7 +317,7 @@ class EMCallReceiver extends BroadcastReceiver {
         String from = intent.getStringExtra("from");
         String typeStr = intent.getStringExtra("type");
         if (mListener != null) {
-            EMCallSession.Type type = typeStr == "video" ? EMCallSession.Type.VIDEO : EMCallSession.Type.VOICE;
+            EMCallSession.Type type = typeStr.equals("video") ? EMCallSession.Type.VIDEO : EMCallSession.Type.VOICE;
             mListener.onReceive(type, from);
         }
     }
