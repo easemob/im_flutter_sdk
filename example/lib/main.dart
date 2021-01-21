@@ -10,8 +10,6 @@ import 'package:im_flutter_sdk_example/pages/chatroom_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/public_group_list_page.dart';
 import 'package:im_flutter_sdk_example/pages/call_page.dart';
 
-
-
 import 'utils/localizations.dart';
 import 'pages/home_page.dart';
 import 'package:im_flutter_sdk_example/pages/login_page.dart';
@@ -29,9 +27,8 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> implements EMConnectionListener{
+class _MyAppState extends State<MyApp> implements EMConnectionListener {
   @override
-
   bool isLogin = false;
 
   void initState() {
@@ -43,20 +40,22 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
     EMPushConfig config = EMPushConfig();
     // 判断是否为debug模式
-    if(!kReleaseMode){
+    if (!kReleaseMode) {
       config
         ..enableAPNs("chatdemoui_dev")
+        ..enableOppPush('oppoAppKey', 'oppoAppSecret')
         ..enableHWPush()
-        ..enableFCM('')
-        ..enableMeiZuPush('', '')
-        ..enableMiPush('', '');
-    }else {
+        ..enableFCM('fcmId')
+        ..enableMeiZuPush('mzAppId', 'mzAppKey')
+        ..enableMiPush('miAppId', 'miAppKey');
+    } else {
       config
         ..enableAPNs('chatdemoui')
+        ..enableOppPush('oppoAppKey', 'oppoAppSecret')
         ..enableHWPush()
-        ..enableFCM('')
-        ..enableMeiZuPush('', '')
-        ..enableMiPush('', '');
+        ..enableFCM('fcmId')
+        ..enableMeiZuPush('mzAppId', 'mzAppKey')
+        ..enableMiPush('miAppId', 'miAppKey');
     }
 
     options.debugModel = true;
@@ -77,17 +76,22 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     return MaterialApp(
       /// 配置跳转路由
       routes: <String, WidgetBuilder>{
-        Constant.toRegisterPage:(BuildContext context)=>new RegisterPage(),
-        Constant.toLoginPage:(BuildContext context)=>new LoginPage(),
+        Constant.toRegisterPage: (BuildContext context) => new RegisterPage(),
+        Constant.toLoginPage: (BuildContext context) => new LoginPage(),
         Constant.toHomePage: (BuildContext context) => new HomePage(),
-        Constant.toChatRoomListPage: (BuildContext context) => new EMChatRoomListPage(),
+        Constant.toChatRoomListPage: (BuildContext context) =>
+            new EMChatRoomListPage(),
         Constant.toChatPage: (BuildContext context) => new ChatPage(),
         Constant.toAddContact: (BuildContext context) => new EMContactAddPage(),
-        Constant.toContactList: (BuildContext context) => new EMContactsListPage(),
-        Constant.toChatGroupListPage: (BuildContext context) => new EMChatGroupListPage(),
-        Constant.toPublicGroupListPage: (BuildContext context) => new PublicGroupListPage(),
+        Constant.toContactList: (BuildContext context) =>
+            new EMContactsListPage(),
+        Constant.toChatGroupListPage: (BuildContext context) =>
+            new EMChatGroupListPage(),
+        Constant.toPublicGroupListPage: (BuildContext context) =>
+            new PublicGroupListPage(),
         Constant.toCallPage: (BuildContext context) => new CallPage(),
       },
+
       /// 配置国际化语言
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -99,7 +103,6 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         const Locale('zh', 'CH'), // 中文简体
         // ... other locales the app supports
       ],
-
 
       title: '环信即时通讯云',
 
@@ -116,6 +119,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
         primaryColor: EMColor.buttonDisabled,
         scaffoldBackgroundColor: EMColor.bgColor,
       ),
+
       ///深色模式
       darkTheme: ThemeData(
         brightness: Brightness.dark,
