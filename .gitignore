@@ -18,3 +18,4 @@ example/ios/Flutter/flutter_export_environment.sh
 **/.settings
 **/.flutter-plugins-dependencies
 _doc/
+example/.flutter-plugins-dependencies

@@ -1,10 +1,11 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/em_call_setup.dart';
 import 'em_sdk_method.dart';
 
-typedef SuccessCallBack  = Function();
+typedef SuccessCallBack = Function();
 typedef ErrorCallBack = Function(int code, String desc);
 
 class EMCallManager {
@@ -127,31 +128,41 @@ class EMCallManager {
   /// [isMerge] 录制时是否合并数据流，
   /// [ext] 通话扩展信息，会传给被呼叫方
   /// 如果发起实时会话成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  void startCall(String remoteName,{
+  void startCall(
+    String remoteName, {
     EMCallType callType = EMCallType.Voice,
-    bool isRecord = false,
+    bool recordOnServer = false,
     bool isMerge = false,
-    String ext = '', 
+    String ext = '',
     SuccessCallBack onSuccess,
     ErrorCallBack onError,
   }) {
+    _remoteName = remoteName;
+    _callType = callType;
+    _isRecordOnServer = recordOnServer;
+    _callExt = ext;
+    _localName = EMClient.getInstance().getUser();
     Future<Map> result = _emCallManagerChannel.invokeMethod(
       EMSDKMethod.startCall,
       {
         "callType": toEMCallType(callType),
         "remoteName": remoteName,
-        "record": isRecord,
+        "record": recordOnServer,
         "mergeStream": isMerge,
         "ext": ext
       },
     );
-    result.then((response) {
-      if (response["success"]) {
-        if (onSuccess != null) onSuccess();
-      } else {
-        if (onError != null) onError(response['code'], response['desc']);
-      }
-    });
+    result.then(
+      (response) {
+        if (response["success"]) {
+          _callId = response['callId'];
+          if (onSuccess != null) onSuccess();
+        } else {
+          if (onError != null) onError(response['code'], response['desc']);
+          _clearData();
+        }
+      },
+    );
   }
 
   /// 设置通话配置
@@ -167,11 +178,11 @@ class EMCallManager {
 
   ///iOS端用来初始化1v1通话单例，监听相关回调
   Future<void> registerCallSharedManager() async {
-    await _emCallManagerChannel.invokeMethod(EMSDKMethod.registerCallSharedManager);
+    await _emCallManagerChannel
+        .invokeMethod(EMSDKMethod.registerCallSharedManager);
   }
 
-
-  _clearData {
+  _clearData() {
     _callExt = null;
     _callType = null;
     _connectType = null;

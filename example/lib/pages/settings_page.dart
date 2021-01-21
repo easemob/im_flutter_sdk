@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:flutter/services.dart';
 
-import 'package:im_flutter_sdk_example/utils/style.dart';
 import 'package:im_flutter_sdk_example/utils/localizations.dart';
 import 'package:im_flutter_sdk_example/common/common.dart';
 import 'package:im_flutter_sdk_example/utils/widget_util.dart';
@@ -16,92 +14,87 @@ class EMSettingsPage extends StatefulWidget {
 }
 
 class _EMSettingsPageState extends State<EMSettingsPage> {
-
   var _mapData = [
-    {'imageName':'images/general@2x.png','name':'通用'},
-    {'imageName':'images/security@2x.png','name':'安全与隐私'},
-    {'imageName':'images/messageSetup@2x.png','name':'消息设置'},
-    {'imageName':'images/groupSetup@2x.png','name':'群组设置'},
-    {'imageName':'images/blacklist@2x.png','name':'黑名单'},
-    {'imageName':'images/multiterminal@2x.png','name':'多端多设备管理'},
-    {'imageName':'images/customServer@2x.png','name':'自定义服务器'},
-    {'imageName':'images/clearCache@2x.png','name':'清除缓存'}
+    {'imageName': 'images/general@2x.png', 'name': '通用'},
+    {'imageName': 'images/security@2x.png', 'name': '安全与隐私'},
+    {'imageName': 'images/messageSetup@2x.png', 'name': '消息设置'},
+    {'imageName': 'images/groupSetup@2x.png', 'name': '群组设置'},
+    {'imageName': 'images/blacklist@2x.png', 'name': '黑名单'},
+    {'imageName': 'images/multiterminal@2x.png', 'name': '多端多设备管理'},
+    {'imageName': 'images/customServer@2x.png', 'name': '自定义服务器'},
+    {'imageName': 'images/clearCache@2x.png', 'name': '清除缓存'}
   ];
 
   String userName = 'name';
   bool _loading = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getCurrentUser();
   }
 
-  void _getCurrentUser() async{
+  void _getCurrentUser() async {
     userName = await EMClient.getInstance().getCurrentUser();
     _refreshUI(false);
   }
 
-  _refreshUI(bool loading){
+  _refreshUI(bool loading) {
     _loading = loading;
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    return
-      Stack(
-        children: <Widget>[
-          Scaffold(
+    return Stack(
+      children: <Widget>[
+        Scaffold(
 //        backgroundColor: Colors.blue,
-            appBar: AppBar(
-              elevation: 0, // 隐藏阴影
-              backgroundColor: Colors.blue,
-              leading: Icon(null),
-            ),
-            body: SingleChildScrollView(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics:NeverScrollableScrollPhysics(),
-                itemCount: this._mapData.length + 1 + 3,
-                itemBuilder: (BuildContext context,int index){
-                  return _rowStyle(index);
-                },
-              ),
+          appBar: AppBar(
+            elevation: 0, // 隐藏阴影
+            backgroundColor: Colors.blue,
+            leading: Icon(null),
+          ),
+          body: SingleChildScrollView(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: this._mapData.length + 1 + 3,
+              itemBuilder: (BuildContext context, int index) {
+                return _rowStyle(index);
+              },
             ),
           ),
-          ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inLogout,),
-        ],
-      );
-
+        ),
+        ProgressDialog(
+          loading: _loading,
+          msg: DemoLocalizations.of(context).inLogout,
+        ),
+      ],
+    );
   }
 
- Widget _rowStyle(int index) {
-
-    if(index == 0) {
+  Widget _rowStyle(int index) {
+    if (index == 0) {
       return _header();
-    } else if(index == 4) {
-      return _isCutoffLineWithRow(index,false);
-    } else if(index == 5 || index == 8){
+    } else if (index == 4) {
+      return _isCutoffLineWithRow(index, false);
+    } else if (index == 5 || index == 8) {
       return Container(
         height: 24.0,
         color: Color.fromRGBO(240, 240, 240, 1.0),
       );
-    } else if(index == 6) {
-      return _isCutoffLineWithRow(index-1,true);
-    } else if(index == 7) {
-      return _isCutoffLineWithRow(index-1,false);
-    } else if(index == 9) {
-      return _isCutoffLineWithRow(index-2,true);
-    } else if(index == 10) {
-      return _isCutoffLineWithRow(index-2,false);
-    } else if(index == 11) {
+    } else if (index == 6) {
+      return _isCutoffLineWithRow(index - 1, true);
+    } else if (index == 7) {
+      return _isCutoffLineWithRow(index - 1, false);
+    } else if (index == 9) {
+      return _isCutoffLineWithRow(index - 2, true);
+    } else if (index == 10) {
+      return _isCutoffLineWithRow(index - 2, false);
+    } else if (index == 11) {
       return _logoutButton();
     } else {
-      return _isCutoffLineWithRow(index,true);
+      return _isCutoffLineWithRow(index, true);
     }
   }
 
@@ -114,7 +107,6 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             height: 107.0,
             color: Colors.blue,
           ),
-
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -125,7 +117,8 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             height: 71.0,
             margin: EdgeInsets.only(left: 16.0, right: 16.0, top: 56.0),
             child: ListTile(
-              leading: Image.asset('images/logo@2x.png',width: 40.0,height: 40.0),
+              leading:
+                  Image.asset('images/logo@2x.png', width: 40.0, height: 40.0),
               title: Text(
                 userName,
                 style: TextStyle(
@@ -154,7 +147,7 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
                   color: Colors.yellow,
                   borderRadius: BorderRadius.circular(10.0),
                   image: DecorationImage(
-                    image: AssetImage(_mapData[index-1]['imageName']),
+                    image: AssetImage(_mapData[index - 1]['imageName']),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -162,17 +155,22 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
                 height: 40.0,
               ),
               Padding(padding: EdgeInsets.all(10.0)),
-              Text(_mapData[index-1]['name'], style: TextStyle(fontSize: 18.0),),
+              Text(
+                _mapData[index - 1]['name'],
+                style: TextStyle(fontSize: 18.0),
+              ),
             ],
           ),
         ),
-
         _getCutoffLine(isCutoffLine),
-
         Positioned(
           child: RotatedBox(
             quarterTurns: 2,
-            child: Image.asset('images/back_01.png',width: 19.5, height: 35.0,),
+            child: Image.asset(
+              'images/back_01.png',
+              width: 19.5,
+              height: 35.0,
+            ),
           ),
           right: 30.0,
           top: 15.0,
@@ -182,13 +180,16 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
   }
 
   Positioned _getCutoffLine(bool isCutoffLine) {
-    if(isCutoffLine) {
+    if (isCutoffLine) {
       return Positioned(
         child: Container(
           height: 1.0,
           color: Color(0xffe5e5e5),
         ),
-        left: 64.0, top: 64, right: 0, bottom: 0,
+        left: 64.0,
+        top: 64,
+        right: 0,
+        bottom: 0,
       );
     } else {
       return Positioned(
@@ -215,7 +216,6 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
             '退出登录',
 //              DemoLocalizations.of(context).logout,
             style: TextStyle(color: Colors.white, fontSize: 16.0),
-
           ),
 //          color: Color.fromRGBO(0, 0, 0, 0.1),
           onPressed: () {
@@ -226,11 +226,11 @@ class _EMSettingsPageState extends State<EMSettingsPage> {
     );
   }
 
-  void logout (BuildContext context){
+  void logout(BuildContext context) {
     _refreshUI(true);
     EMClient.getInstance().logout(
       false,
-      onSuccess: (){
+      onSuccess: () {
         Navigator.of(context).pushNamed(Constant.toLoginPage);
       },
       onError: (code, desc) {

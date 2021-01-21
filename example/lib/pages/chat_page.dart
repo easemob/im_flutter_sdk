@@ -373,10 +373,14 @@ class _ChatPageState extends State<ChatPage>
     Widget videoWidget = WidgetUtil.buildExtentionWidget(
         'images/video_item.png', '视频', _isDark, () async {
       EMClient.getInstance().callManager().startCall(
-          EMCallType.Video, toChatUsername, true, true, "1323",
-          onSuccess: () {}, onError: (code, desc) {
-        print('拨打通话失败 --- $desc');
-      });
+            toChatUsername,
+            callType: EMCallType.Video,
+            isMerge: true,
+            recordOnServer: true,
+            ext: 'test ext',
+            onSuccess: () => print('呼叫成功'),
+            onError: (code, desc) => print('呼叫失败 $desc'),
+          );
     });
     Widget locationWidget = WidgetUtil.buildExtentionWidget(
         'images/location.png', '位置', _isDark, () async {
@@ -539,11 +543,14 @@ class _ChatPageState extends State<ChatPage>
   @override
   void onTapItemPhone() {
     EMClient.getInstance().callManager().startCall(
-        EMCallType.Voice, toChatUsername, false, false, "123", onSuccess: () {
-      print('拨打通话成功 --- ');
-    }, onError: (code, desc) {
-      print('拨打通话失败 --- $desc');
-    });
+          toChatUsername,
+          callType: EMCallType.Voice,
+          isMerge: true,
+          recordOnServer: true,
+          ext: 'test ext',
+          onSuccess: () => print('呼叫成功'),
+          onError: (code, desc) => print('呼叫失败 $desc'),
+        );
   }
 
   @override

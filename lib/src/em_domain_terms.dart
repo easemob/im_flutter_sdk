@@ -348,7 +348,7 @@ class EMMessage {
     this.listened,
     this.status,
     this.to,
-    this.from ,
+    this.from,
     this.type,
     this.unread,
     this.deliverAcked,
@@ -361,82 +361,93 @@ class EMMessage {
         localTime = currentTimeMillis();
 
   /// 用于创建各种消息的构造函数 - 发送方。(注意需要添加对应类型的body 并设置from和to)
-  EMMessage.createSendMessage(EMMessageType type) : this (
-      type: type,
-      direction: Direction.SEND
-  );
+  EMMessage.createSendMessage(EMMessageType type)
+      : this(type: type, direction: Direction.SEND);
 
   /// 用于创建各种消息的构造函数 - 接收方。(注意需要添加对应类型的body 并设置from和to)
-  EMMessage.createReceiveMessage(EMMessageType type) : this (
-      type: type,
-      direction: Direction.RECEIVE
-  );
+  EMMessage.createReceiveMessage(EMMessageType type)
+      : this(type: type, direction: Direction.RECEIVE);
 
   /// 创建文本类型消息 [content]: 消息内容; [userName]: 接收方id
-  EMMessage.createTxtSendMessage({@required String userName, String content = ""}) : this (
-      direction: Direction.SEND,
-      to: userName,
-      type: EMMessageType.TXT,
-      body: EMTextMessageBody(content),
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createTxtSendMessage(
+      {@required String userName, String content = ""})
+      : this(
+            direction: Direction.SEND,
+            to: userName,
+            type: EMMessageType.TXT,
+            body: EMTextMessageBody(content),
+            from: EMClient.getInstance().getUser());
 
   /// 创建语音类型消息 [filePath]: 语音片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
   /// String filePath, int timeLength, String userName)
-  EMMessage.createVoiceSendMessage({@required String userName, @required String filePath, int timeLength = 0}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.VOICE,
-      body:EMVoiceMessageBody(File(filePath),timeLength),
-      to:userName,
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createVoiceSendMessage(
+      {@required String userName,
+      @required String filePath,
+      int timeLength = 0})
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.VOICE,
+            body: EMVoiceMessageBody(File(filePath), timeLength),
+            to: userName,
+            from: EMClient.getInstance().getUser());
 
   /// 创建图片类型消息 [filePath]: 图片路径; [sendOriginalImage]: 是否发送原图; [userName]: 接收方id.
-  EMMessage.createImageSendMessage({@required String userName, @required String filePath, bool sendOriginalImage = false}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.IMAGE,
-      body: EMImageMessageBody(File(filePath), sendOriginalImage),
-      to: userName,
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createImageSendMessage(
+      {@required String userName,
+      @required String filePath,
+      bool sendOriginalImage = false})
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.IMAGE,
+            body: EMImageMessageBody(File(filePath), sendOriginalImage),
+            to: userName,
+            from: EMClient.getInstance().getUser());
 
   /// 创建视频类型消息 [filePath]: 视频片断路径;  [timeLength]: 语音时长; [userName]: 接收方id
-  EMMessage.createVideoSendMessage({@required String userName, @required String filePath, int timeLength = 0}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.VIDEO,
-      body: EMVideoMessageBody(File(filePath), timeLength),
-      to: userName,
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createVideoSendMessage(
+      {@required String userName,
+      @required String filePath,
+      int timeLength = 0})
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.VIDEO,
+            body: EMVideoMessageBody(File(filePath), timeLength),
+            to: userName,
+            from: EMClient.getInstance().getUser());
 
   /// 创建位置类型消息 [latitude]: 纬度; [longitude]: 经度; [locationAddress]: 位置名称; [userName]: 接收方id
-  EMMessage.createLocationSendMessage({@required String userName, double latitude, double longitude, String locationAddress}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.LOCATION,
-      body: EMLocationMessageBody(locationAddress, latitude, longitude),
-      to: userName,
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createLocationSendMessage(
+      {@required String userName,
+      double latitude,
+      double longitude,
+      String locationAddress})
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.LOCATION,
+            body: EMLocationMessageBody(locationAddress, latitude, longitude),
+            to: userName,
+            from: EMClient.getInstance().getUser());
 
   /// 创建文件类型消息 [filePath]: 文件路径; [userName]: 接收方id
-  EMMessage.createFileSendMessage({@required String userName, @required String filePath}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.FILE,
-      body: EMNormalFileMessageBody(File(filePath)),
-      to: userName,
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createFileSendMessage(
+      {@required String userName, @required String filePath})
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.FILE,
+            body: EMNormalFileMessageBody(File(filePath)),
+            to: userName,
+            from: EMClient.getInstance().getUser());
 
   /// 创建自定义类型消息 [event]: 自定义event; [userName]: 接收方id
-  EMMessage.createCustomSendMessage({@required String userName, @required String event, Map params}) : this (
-      direction: Direction.SEND,
-      type: EMMessageType.CUSTOM,
-      body: EMCustomMessageBody(event: event, params: params),
-      to: userName,
-      from: EMClient.getInstance().getUser()
-  );
+  EMMessage.createCustomSendMessage(
+      {@required String userName, @required String event, Map params})
+      : this(
+            direction: Direction.SEND,
+            type: EMMessageType.CUSTOM,
+            body: EMCustomMessageBody(event: event, params: params),
+            to: userName,
+            from: EMClient.getInstance().getUser());
 
-  /// @nodoc TODO:
   set isDeliverAcked(bool acked) {
     deliverAcked = acked;
   }
@@ -448,10 +459,8 @@ class EMMessage {
 
   final String _userName;
 
-  /// @nodoc TODO:
   String get userName => _userName;
 
-  /// @nodoc TODO:
   bool deliverAcked = false;
 
   /// 是否已读
@@ -463,7 +472,6 @@ class EMMessage {
   /// 消息类型[单聊，群聊，聊天室]
   ChatType chatType;
 
-  /// @nodoc TODO:
   bool delivered;
 
   /// 消息反向(发送，接收)
@@ -472,7 +480,6 @@ class EMMessage {
   /// 消息发送方
   String from;
 
-  /// @nodoc TODO：
   bool listened;
 
   /// 本地时间
@@ -606,7 +613,7 @@ toType(EMMessageType type) {
     return 6;
   } else if (type == EMMessageType.CMD) {
     return 7;
-  }else if (type == EMMessageType.CUSTOM) {
+  } else if (type == EMMessageType.CUSTOM) {
     return 8;
   }
 }
@@ -1101,7 +1108,6 @@ toEMPushDisplayStyle(EMPushDisplayStyle style) {
   }
 }
 
-
 /// 消息推送设置
 class EMPushConfigs {
   String _displayNickname;
@@ -1163,10 +1169,10 @@ toEMConferenceType(EMConferenceType type) {
 }
 
 enum EMConferenceRole {
-  NoType,   // 0
+  NoType, // 0
   Audience, // 1
-  Talker,   // 3
-  Admin,    // 7
+  Talker, // 3
+  Admin, // 7
 }
 
 toEMConferenceRole(EMConferenceRole emConferenceRole) {
@@ -1193,7 +1199,6 @@ fromEMConferenceRole(int role) {
   }
 }
 
-
 class EMConference {
   String _conferenceId;
   String _password;
@@ -1203,7 +1208,6 @@ class EMConference {
   var _admins = List<String>();
   var _speakers = List<String>();
   bool _isRecordOnServer = false;
-
 
   String getConferenceId() {
     return _conferenceId;
@@ -1279,20 +1283,20 @@ class EMConference {
     _speakers = null;
   }
 
-  EMConference.from(Map<String, dynamic> data){
+  EMConference.from(Map<String, dynamic> data) {
     _conferenceId = data["conferenceId"];
     _password = data["password"];
     _conferenceType = fromEMConferenceType(data["conferenceType"]);
     _conferenceRole = fromEMConferenceRole(data["conferenceRole"]);
     _memberNum = data["memberNum"];
     var admins = new List<String>();
-    
-    for(var s in data["admins"]){
+
+    for (var s in data["admins"]) {
       admins.add(s);
     }
     _admins = admins;
     var speakers = new List<String>();
-    for(var s in data["speakers"]){
+    for (var s in data["speakers"]) {
       speakers.add(s);
     }
     _speakers = speakers;

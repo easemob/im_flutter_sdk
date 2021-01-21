@@ -22,7 +22,6 @@ class RegisterPageState extends State<RegisterPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -30,7 +29,6 @@ class RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-
         Scaffold(
             backgroundColor: Colors.white,
             body: Container(
@@ -45,8 +43,7 @@ class RegisterPageState extends State<RegisterPage> {
                 alignment: Alignment(0, -0.6),
                 child: registerBody(),
               ),
-            )
-        ),
+            )),
 
         /// 返回按钮
         Positioned(
@@ -59,97 +56,105 @@ class RegisterPageState extends State<RegisterPage> {
             child: Container(
               width: 24.0,
               height: 24.0,
-              child: Icon(Icons.arrow_back, color: Colors.white, ),
+              child: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
 
-        ProgressDialog(loading: _loading, msg: DemoLocalizations.of(context).inRegister,),
+        ProgressDialog(
+          loading: _loading,
+          msg: DemoLocalizations.of(context).inRegister,
+        ),
       ],
     );
   }
 
   registerBody() => SingleChildScrollView(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: <Widget>[
-        Container(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Container(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SizedBox(height: 30),
 
-              SizedBox(height: 30),
-
-              Text(
-                '注册账号',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  decoration: TextDecoration.none,
-                  letterSpacing: 3,
-                  fontWeight: FontWeight.normal,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              SizedBox(height: 10.0),
-
-              /// 用户名输入框
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
-                child: TextField(
-                  controller: _usernameController,
-                  maxLines: 1,
-                  decoration: InputDecoration(
-                    hintText: "用户名",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(57),
-                      borderSide: BorderSide.none,
+                  Text(
+                    '注册账号',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      decoration: TextDecoration.none,
+                      letterSpacing: 3,
+                      fontWeight: FontWeight.normal,
                     ),
-                    fillColor: Colors.white,
-                    filled: true,
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ),
 
-              /// 密码输入框
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
-                child: TextField(
-                  controller: _pwdController,
-                  maxLines: 1,
-                  decoration: InputDecoration(
-                    hintText: "密码",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(57),
-                      borderSide: BorderSide.none,
+                  SizedBox(height: 10.0),
+
+                  /// 用户名输入框
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
+                    child: TextField(
+                      controller: _usernameController,
+                      maxLines: 1,
+                      decoration: InputDecoration(
+                        hintText: "用户名",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(57),
+                          borderSide: BorderSide.none,
+                        ),
+                        fillColor: Colors.white,
+                        filled: true,
+                      ),
                     ),
-                    fillColor: Colors.white,
-                    filled: true,
                   ),
-                ),
-              ),
 
-              /// 确认密码输入框
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
-                child: TextField(
-                  controller: _onfirmPwdController,
-                  maxLines: 1,
-                  decoration: InputDecoration(
-                    hintText: "确认密码",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(57),
-                      borderSide: BorderSide.none,
+                  /// 密码输入框
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
+                    child: TextField(
+                      controller: _pwdController,
+                      maxLines: 1,
+                      decoration: InputDecoration(
+                        hintText: "密码",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(57),
+                          borderSide: BorderSide.none,
+                        ),
+                        fillColor: Colors.white,
+                        filled: true,
+                      ),
                     ),
-                    fillColor: Colors.white,
-                    filled: true,
                   ),
-                ),
-              ),
 
-              // 同意条款，暂时不加
+                  /// 确认密码输入框
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 33.0),
+                    child: TextField(
+                      controller: _onfirmPwdController,
+                      maxLines: 1,
+                      decoration: InputDecoration(
+                        hintText: "确认密码",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(57),
+                          borderSide: BorderSide.none,
+                        ),
+                        fillColor: Colors.white,
+                        filled: true,
+                      ),
+                    ),
+                  ),
+
+                  // 同意条款，暂时不加
 //              Container(
 //                padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 48.0),
 //                child: Row(
@@ -164,93 +169,104 @@ class RegisterPageState extends State<RegisterPage> {
 //                ),
 //              ),
 
-              SizedBox(height: 34.0,),
-
-              /// 注册按钮
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
-                width: double.infinity,
-                height: 52.0,
-                child: RaisedButton(
-                  padding: EdgeInsets.all(12.0),
-                  shape: StadiumBorder(),
-                  child: Text(
-                    '注 册',
-                    style: TextStyle(color: Colors.white, fontSize: 16.0),
+                  SizedBox(
+                    height: 34.0,
                   ),
-                  color: Color.fromRGBO(0, 0, 0, 0.1),
-                  onPressed: () {
-                    if(this._usernameController.text.isEmpty || this._pwdController.text.isEmpty || this._onfirmPwdController.text.isEmpty) {
-                      WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
-                      return ;
-                    }
 
-                    if(WidgetUtil.isChinese(this._usernameController.text)) {
-                      WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
-                      return ;
-                    }
+                  /// 注册按钮
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 0.0, horizontal: 33.0),
+                    width: double.infinity,
+                    height: 52.0,
+                    child: RaisedButton(
+                      padding: EdgeInsets.all(12.0),
+                      shape: StadiumBorder(),
+                      child: Text(
+                        '注 册',
+                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                      ),
+                      color: Color.fromRGBO(0, 0, 0, 0.1),
+                      onPressed: () {
+                        if (this._usernameController.text.isEmpty ||
+                            this._pwdController.text.isEmpty ||
+                            this._onfirmPwdController.text.isEmpty) {
+                          WidgetUtil.hintBoxWithDefault('用户ID或密码不能为空!');
+                          return;
+                        }
 
-                    if(this._pwdController.text != this._onfirmPwdController.text) {
-                      WidgetUtil.hintBoxWithDefault('输入的密码不同!');
-                      return ;
+                        if (WidgetUtil.isChinese(
+                            this._usernameController.text)) {
+                          WidgetUtil.hintBoxWithDefault('用户ID不能使用中文!');
+                          return;
+                        }
 
-                    } else {
-                      register(this._usernameController.text, this._pwdController.text);
-                    }
+                        if (this._pwdController.text !=
+                            this._onfirmPwdController.text) {
+                          WidgetUtil.hintBoxWithDefault('输入的密码不同!');
+                          return;
+                        } else {
+                          register(this._usernameController.text,
+                              this._pwdController.text);
+                        }
 
-                    print('用户名${this._usernameController.text}');
-                    print('密码${this._pwdController.text}');
-                  },
-                ),
+                        print('用户名${this._usernameController.text}');
+                        print('密码${this._pwdController.text}');
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 
-  void register(String username, String password){
+  void register(String username, String password) {
     _refreshUI(true);
-    EMClient.getInstance().createAccount(username, password,
-        onSuccess: (){
-          Navigator.of(context).pushNamed(Constant.toLoginPage ,arguments:{'username':this._usernameController.text, 'password':this._pwdController.text});
-        },
-        onError: (code, desc){
-          _refreshUI(false);
-          switch(code) {
-            case 101: {
-              WidgetUtil.hintBoxWithDefault('用户ID不合法!');
-            }
-            break;
-
-            case 102: {
-              WidgetUtil.hintBoxWithDefault('用户密码不合法!');
-            }
-            break;
-
-            case 203: {
-              WidgetUtil.hintBoxWithDefault('用户ID已存在!');
-            }
-            break;
-
-            case 300: {
-              WidgetUtil.hintBoxWithDefault('无法连接服务器!');
-            }
-            break;
-
-            default: {
-              WidgetUtil.hintBoxWithDefault(desc);
-            }
-            break;
+    EMClient.getInstance().createAccount(username, password, onSuccess: () {
+      Navigator.of(context).pushNamed(Constant.toLoginPage, arguments: {
+        'username': this._usernameController.text,
+        'password': this._pwdController.text
+      });
+    }, onError: (code, desc) {
+      _refreshUI(false);
+      switch (code) {
+        case 101:
+          {
+            WidgetUtil.hintBoxWithDefault('用户ID不合法!');
           }
-        });
+          break;
+
+        case 102:
+          {
+            WidgetUtil.hintBoxWithDefault('用户密码不合法!');
+          }
+          break;
+
+        case 203:
+          {
+            WidgetUtil.hintBoxWithDefault('用户ID已存在!');
+          }
+          break;
+
+        case 300:
+          {
+            WidgetUtil.hintBoxWithDefault('无法连接服务器!');
+          }
+          break;
+
+        default:
+          {
+            WidgetUtil.hintBoxWithDefault(desc);
+          }
+          break;
+      }
+    });
   }
 
-  void _refreshUI(bool loading){
+  void _refreshUI(bool loading) {
     _loading = loading;
-    setState(() {
-
-    });
+    setState(() {});
   }
 }

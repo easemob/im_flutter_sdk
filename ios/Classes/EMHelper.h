@@ -47,13 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSArray *)chatRoomsToDictionaries:(NSArray *)chatRooms;
 
-#pragma mark - ChatRoom
-
-+ (EMCallOptions *)callOptionsDictionaryToEMCallOptions:(NSDictionary *)options;
-
-#pragma mark - CallConference
-+ (NSDictionary *)callConferenceToDictionary:(EMCallConference *)aCall;
-
 #pragma mark - PushOptions
 + (NSDictionary *)pushOptionsToDictionary:(EMPushOptions *)aPushOptions;
 

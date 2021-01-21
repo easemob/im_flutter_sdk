@@ -22,7 +22,6 @@ class SimpleImageButton extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _SimpleImageButtonState();
   }
 }
@@ -110,9 +109,9 @@ class _ImageButtonState extends State<ImageButton> {
               : Container(),
           widget.title.isNotEmpty //文本是否为空
               ? Text(
-            widget.title,
-            style: isPressed ? widget.pressedStyle : widget.normalStyle,
-          )
+                  widget.title,
+                  style: isPressed ? widget.pressedStyle : widget.normalStyle,
+                )
               : Container(),
         ],
       ),

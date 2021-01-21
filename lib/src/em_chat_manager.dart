@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import "em_conversation.dart";
 import 'em_domain_terms.dart';
 import 'em_listeners.dart';
-import 'em_log.dart';
 import 'em_sdk_method.dart';
 
 class EMChatManager {
@@ -32,27 +31,26 @@ class EMChatManager {
 
   /// 发送消息 [message].
   void sendMessage(EMMessage message,
-      { onSuccess(),
-        onProgress(int progress),
-      onError(int errorCode, String desc)}){
+      {onSuccess(),
+      onProgress(int progress),
+      onError(int errorCode, String desc)}) {
     Future<Map> result = _emChatManagerChannel.invokeMethod(
         EMSDKMethod.sendMessage, message.toDataMap());
-    result.then((response){
+    result.then((response) {
       if (response["success"]) {
-         message.msgId = EMMessage.from(response['message']).msgId;
-         message.status = EMMessage.from(response['message']).status;
-         message.acked = EMMessage.from(response['message']).acked;
-         message.deliverAcked = EMMessage.from(response['message']).deliverAcked;
-         message.delivered = EMMessage.from(response['message']).delivered;
-         message.listened = EMMessage.from(response['message']).listened;
-         message.unread = EMMessage.from(response['message']).unread;
+        message.msgId = EMMessage.from(response['message']).msgId;
+        message.status = EMMessage.from(response['message']).status;
+        message.acked = EMMessage.from(response['message']).acked;
+        message.deliverAcked = EMMessage.from(response['message']).deliverAcked;
+        message.delivered = EMMessage.from(response['message']).delivered;
+        message.listened = EMMessage.from(response['message']).listened;
+        message.unread = EMMessage.from(response['message']).unread;
         if (onSuccess != null) onSuccess();
-      } else{
+      } else {
         if (onError != null) onError(response['code'], response['desc']);
       }
     });
   }
-
 
   void _addNativeMethodCallHandler() {
     _emChatManagerChannel.setMethodCallHandler((MethodCall call) {
@@ -71,7 +69,7 @@ class EMChatManager {
         return _onMessageChanged(argMap);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
         return _conversationUpdateFunc();
-      } else if(call.method == EMSDKMethod.onMessageStatusOnProgress){
+      } else if (call.method == EMSDKMethod.onMessageStatusOnProgress) {
         return _messageStatus_onProgress(argMap);
       }
       return null;
@@ -79,9 +77,7 @@ class EMChatManager {
   }
 
   /// @nodoc ackMessageRead-> 用户[to] 确认已读取消息[messageId]。
-  void ackMessageRead(
-    String to,
-    String messageId,
+  void ackMessageRead(String to, String messageId,
       {onError(int code, String desc)}) {
     Future<Map> result = _emChatManagerChannel
         .invokeMethod(EMSDKMethod.ackMessageRead, {"to": to, "id": messageId});
@@ -94,10 +90,8 @@ class EMChatManager {
 
   /// @nodoc 调用以前发送的[message]消息。
   /// @nodoc 如果一切正常，则调用[onSuccess]，[onError]如果有任何错误，将[code]，[desc]设置为详细错误信息。
-  void recallMessage(
-    EMMessage message,
-      {onSuccess(),
-      onError(int code, String desc)}) {
+  void recallMessage(EMMessage message,
+      {onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emChatManagerChannel.invokeMethod(
         EMSDKMethod.recallMessage, message.toDataMap());
     result.then((response) {
@@ -122,12 +116,13 @@ class EMChatManager {
 
   /// 通过[id] 获取会话
   Future<EMConversation> getConversation(
-    String id,
-    EMConversationType type,
-    bool createIfNotExists) async {
-    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
-        EMSDKMethod.getConversation,
-        {"id": id, "type": toEMConversationType(type), "createIfNotExists": createIfNotExists});
+      String id, EMConversationType type, bool createIfNotExists) async {
+    Map<String, dynamic> result =
+        await _emChatManagerChannel.invokeMethod(EMSDKMethod.getConversation, {
+      "id": id,
+      "type": toEMConversationType(type),
+      "createIfNotExists": createIfNotExists
+    });
     if (result['success']) {
       return EMConversation.from(result['conversation']);
     } else {
@@ -161,12 +156,11 @@ class EMChatManager {
   void updateMessage(EMMessage message,
       {onSuccess(), onError(String desc)}) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
-        EMSDKMethod.updateChatMessage,
-        {"message": message.toDataMap()});
+        EMSDKMethod.updateChatMessage, {"message": message.toDataMap()});
     if (result['success']) {
-        if (onSuccess != null) onSuccess();
+      if (onSuccess != null) onSuccess();
     } else {
-        if (onError != null) onError(result['error']);
+      if (onError != null) onError(result['error']);
     }
   }
 
@@ -182,11 +176,10 @@ class EMChatManager {
         EMSDKMethod.downloadThumbnail, {"message": message.toDataMap()});
   }
 
-
   /// @nodoc 导入消息 [messages].
   void importMessages(List<EMMessage> messages) {
-    _emChatManagerChannel.invokeMethod(EMSDKMethod.importMessages,
-        {"messages": messageListToMap(messages)});
+    _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.importMessages, {"messages": messageListToMap(messages)});
   }
 
   List messageListToMap(List<EMMessage> messages) {
@@ -196,18 +189,18 @@ class EMChatManager {
     }
     return messageList;
   }
-  
 
   /// @nodoc 根据类型获取会话 [type].
   Future<List<EMConversation>> getConversationsByType(
       EMConversationType type) async {
-    Map<String, dynamic> result = await _emChatManagerChannel
-        .invokeMethod(EMSDKMethod.getConversationsByType, {"type": toEMConversationType(type)});
+    Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
+        EMSDKMethod.getConversationsByType,
+        {"type": toEMConversationType(type)});
     if (result["success"]) {
       var conversations = result['conversations'] as List<dynamic>;
       List<EMConversation> list = new List<EMConversation>();
       for (var value in conversations) {
-        print(value.toString()+"..xx...");
+        print(value.toString() + "..xx...");
         list.add(EMConversation.from(value));
       }
       return list;
@@ -218,11 +211,8 @@ class EMChatManager {
 
   /// @nodoc 下载文件 远程地址[remoteUrl],本地地址[localFilePath].
   void downloadFile(
-    String remoteUrl,
-    String localFilePath,
-    Map<String, String> headers,
-      {onSuccess(),
-      onError(int code, String desc)}) {
+      String remoteUrl, String localFilePath, Map<String, String> headers,
+      {onSuccess(), onError(int code, String desc)}) {
     Future<Map> result = _emChatManagerChannel.invokeMethod(
         EMSDKMethod.downloadFile, {
       "remoteUrl": remoteUrl,
@@ -260,10 +250,7 @@ class EMChatManager {
   }
 
   /// 删除与[userName] 的对话, 如果[deleteCoversations]设置为true，则还会删除消息。
-  Future<bool> deleteConversation(
-    String userName,
-    bool deleteMessages
-  ) async {
+  Future<bool> deleteConversation(String userName, bool deleteMessages) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.deleteConversation,
         {"userName": userName, "deleteMessages": deleteMessages});
@@ -299,10 +286,7 @@ class EMChatManager {
   }
 
   /// @nodoc 将某个联系人相关信息[from]更新为另外一个联系人[changeTo]。
-  Future<bool> updateParticipant(
-    String from,
-    String changeTo
-  ) async {
+  Future<bool> updateParticipant(String from, String changeTo) async {
     Map<String, dynamic> result = await _emChatManagerChannel.invokeMethod(
         EMSDKMethod.updateParticipant, {"from": from, "changeTo": changeTo});
     if (result['success']) {
@@ -314,13 +298,9 @@ class EMChatManager {
 
   /// @nodoc 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// @nodoc 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResults<EMMessage>> fetchHistoryMessages(
-    String conversationId,
-    EMConversationType type,
-    int pageSize,
-    String startMsgId,
-  {onSuccess(),
-    onError(int code, String desc)}) async {
+  Future<EMCursorResults<EMMessage>> fetchHistoryMessages(String conversationId,
+      EMConversationType type, int pageSize, String startMsgId,
+      {onSuccess(), onError(int code, String desc)}) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.fetchHistoryMessages, {
       "id": conversationId,
@@ -338,13 +318,12 @@ class EMChatManager {
   /// @nodoc 搜索以[keywords]为关键字的消息，[type]，时间戳设置为[timeStamp]，来自用户[from]，方向[direction]。
   /// @nodoc 结果返回到每个调用的最大值[maxCount]记录。
   Future<List<EMMessage>> searchMsgFromDB(
-    String keywords,
-    EMMessageType type,
-    String timeStamp,
-    int maxCount,
-    String from,
-    EMSearchDirection direction
-  ) async {
+      String keywords,
+      EMMessageType type,
+      String timeStamp,
+      int maxCount,
+      String from,
+      EMSearchDirection direction) async {
     Map<String, dynamic> result = await _emChatManagerChannel
         .invokeMethod(EMSDKMethod.searchChatMsgFromDB, {
       "keywords": keywords,
@@ -371,7 +350,7 @@ class EMChatManager {
     var list = map['messages'];
     var messageList = List<EMMessage>();
     for (var message in list) {
-        messageList.add( EMMessage.from(message) );
+      messageList.add(EMMessage.from(message));
     }
     for (var listener in _messageListeners) {
       listener.onMessageReceived(messageList);
@@ -439,7 +418,7 @@ class EMChatManager {
   }
 
   /// @nodoc
-  Future<void>_messageStatus_onProgress(Map map) async{
+  Future<void> _messageStatus_onProgress(Map map) async {
     for (var listener in _messageStatusListeners) {
       listener.onProgress(map['progress'], map['status']);
     }
@@ -463,7 +442,7 @@ class _EMCursorResults<T> extends EMCursorResults<T> {
       var list = [];
       List messageList = result['message'] as List<dynamic>;
       for (var value in messageList) {
-        list.add(EMMessage.from(value)) ;
+        list.add(EMMessage.from(value));
       }
       return list as T;
     } else {
@@ -472,6 +451,6 @@ class _EMCursorResults<T> extends EMCursorResults<T> {
   }
 }
 
-abstract class EMMessageStatus{
+abstract class EMMessageStatus {
   void onProgress(int progress, String status);
 }
