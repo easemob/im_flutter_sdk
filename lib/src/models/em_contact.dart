@@ -1,6 +1,4 @@
-
 class EMContact {
-
   factory EMContact.fromJson(Map map) {
     return EMContact._private()
       .._eid = map['eid']
@@ -37,7 +35,7 @@ class EMContact {
   /// 备注名称
   String get markName => _markName ?? _nickname ?? _eid;
 
-  Future<Null> setMarkName(String markName) async {
+  Future<void> setMarkName(String markName) async {
     _markName = markName;
     // TODO: 更新备注到服务器？
   }

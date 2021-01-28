@@ -1,6 +1,5 @@
 package com.easemob.im_flutter_sdk;
 
-import com.easemob.im_flutter_sdk.call.view.EMFlutterReaderViewFactory;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.*;

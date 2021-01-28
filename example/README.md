@@ -1,6 +1,6 @@
-# im_flutter_sdk_example
+# easeim_flutter_demo
 
-Demonstrates how to use the im_flutter_sdk plugin.
+A new Flutter project.
 
 ## Getting Started
 

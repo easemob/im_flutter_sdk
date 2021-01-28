@@ -5,7 +5,7 @@
 //  Created by 杜洁鹏 on 2020/9/11.
 //
 
-#import <Hyphenate/Hyphenate.h>
+#import <HyphenateLite/HyphenateLite.h>
 #import "EaseToFlutterJson.h"
 
 NS_ASSUME_NONNULL_BEGIN
