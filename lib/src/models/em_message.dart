@@ -105,7 +105,7 @@ class EMMessage {
     });
   }
 
-  Future<Null> _onMessageError(Map map) {
+  Future<void> _onMessageError(Map map) {
     EMLog.v('发送失败 -- ' + map.toString());
     EMMessage msg = EMMessage.fromJson(map['message']);
     this.msgId = msg.msgId;
@@ -117,7 +117,7 @@ class EMMessage {
     return null;
   }
 
-  Future<Null> _onMessageProgressChanged(Map map) {
+  Future<void> _onMessageProgressChanged(Map map) {
     EMLog.v(
       '发送 -- ' + ' msg_id: ' + this.msgId + ' ' + map['progress'].toString(),
     );
@@ -128,7 +128,7 @@ class EMMessage {
     return null;
   }
 
-  Future<Null> _onMessageSuccess(Map map) {
+  Future<void> _onMessageSuccess(Map map) {
     EMLog.v('发送成功 -- ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map['message']);
     this.msgId = msg.msgId;
@@ -140,7 +140,7 @@ class EMMessage {
     return null;
   }
 
-  Future<Null> _onMessageReadAck(Map map) {
+  Future<void> _onMessageReadAck(Map map) {
     EMLog.v('消息已读 -- ' + ' msg_id: ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map);
     this.hasReadAck = msg.hasReadAck;
@@ -151,7 +151,7 @@ class EMMessage {
     return null;
   }
 
-  Future<Null> _onMessageDeliveryAck(Map map) {
+  Future<void> _onMessageDeliveryAck(Map map) {
     EMLog.v('消息已送达 -- ' + ' msg_id: ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
@@ -162,7 +162,7 @@ class EMMessage {
     return null;
   }
 
-  Future<Null> _onMessageStatusChanged(Map map) {
+  Future<void> _onMessageStatusChanged(Map map) {
     EMLog.v('消息状态变更 -- ' + ' msg_id: ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map);
     this.status = msg.status;

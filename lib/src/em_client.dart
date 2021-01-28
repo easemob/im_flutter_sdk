@@ -3,9 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'call/em_call_manager.dart';
-import 'call/em_conference_manager.dart';
-
 import 'em_chat_manager.dart';
 import 'em_contact_manager.dart';
 import 'em_chat_room_manager.dart';
@@ -29,8 +26,6 @@ class EMClient {
   final EMChatRoomManager _chatRoomManager = EMChatRoomManager();
   final EMGroupManager _groupManager = EMGroupManager();
   final EMPushManager _pushManager = EMPushManager();
-  final EMCallManager _callManager = EMCallManager();
-  final EMConferenceManager _conferenceManager = EMConferenceManager();
   final _connectionListeners = List<EMConnectionListener>();
   final _multiDeviceListeners = List<EMMultiDeviceListener>();
 
@@ -80,7 +75,7 @@ class EMClient {
   }
 
   /// 初始化SDK 指定[options].
-  Future<Null> init(EMOptions options) async {
+  Future<void> init(EMOptions options) async {
     _options = options;
     EMLog.v('init: $options');
     // 直接返回当前登录账号和是否登陆过
@@ -141,15 +136,6 @@ class EMClient {
     Map result = await _channel.invokeMethod(EMSDKMethod.changeAppKey, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.changeAppKey);
-  }
-
-  /// 设置推送消息显示的昵称 [nickname].
-  Future<bool> updateCurrentNickname({String nickname = ''}) async {
-    EMLog.v('updateCurrentNickname: $nickname');
-    Map req = {'nickname': nickname};
-    Map result = await _channel.invokeMethod(EMSDKMethod.setNickname, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.setNickname);
   }
 
   /// @nodoc 上传日志到环信, 不对外暴露
@@ -292,15 +278,6 @@ class EMClient {
   /// @nodoc  pushManager - retrieve [EMPushManager] handle.
   EMPushManager get pushManager {
     return _pushManager;
-  }
-
-  /// @nodoc  callManager - retrieve [EMCallManager] handle.
-  EMCallManager get callManager {
-    return _callManager;
-  }
-
-  EMConferenceManager get conferenceManager {
-    return _conferenceManager;
   }
 
   /// @nodoc

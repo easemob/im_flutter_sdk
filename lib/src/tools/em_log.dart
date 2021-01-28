@@ -1,10 +1,9 @@
 import 'package:flutter/foundation.dart';
 
-class EMLog{
-
+class EMLog {
   static String TAG = 'EaseMob';
 
-  static bool debuggable = kReleaseMode ? false : true ;
+  static bool debuggable = kReleaseMode ? false : true;
 
   static void e(Object object, {String tag}) {
     _printLog(tag, ' | E | ', object);

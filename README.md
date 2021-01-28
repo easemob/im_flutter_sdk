@@ -1,4 +1,4 @@
-#### 集成SDK
+### 集成SDK
 
 注册环信请访问[环信官网](!https://www.easemob.com/)
 
@@ -15,7 +15,8 @@ dependencies:
 
 2. 执行`flutter pub get`
 3. 导入头文件:
-``` dart
+
+```dart
 import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 ```
 
@@ -34,99 +35,100 @@ dependencies:
 ``` dart
 import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 ```
-
-#### 平台说明
-Android
-
-*todo*
-
-iOS
-
-*todo*
-
-#### SDK讲解
+### SDK讲解
 
 - `EMClient` 用于管理sdk各个模块和一些账号相关的操作，如注册，登录，退出;
 - `EMChatManager`用于管理聊天相关操作，如发送消息，接收消息，发送已读回执，获取会话列表等;
 - `EMGroupManager`用于群组相关操作，如获取群组列表，加入群组，离开群组等;
 - `EMChatRoomManager`用于管理聊天室，如获取聊天室列表;
 - `EMPushManager`用于管理推送配置，如设置推送昵称，推送免打扰时间段等;
-- `EMCallManager`用于管理1v1通话，如呼叫，挂断等;
-- `EMConferenceManager`用于管理多人通话;
 
-
-
-##### 初始化
+#### 初始化
 ```dart
-	EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
-	EMPushConfig config = EMPushConfig();
-	// 配置推送信息
-	config
-        ..enableAPNs("chatdemoui_dev")
-        ..enableHWPush()
-        ..enableFCM('')
-        ..enableMeiZuPush('', '')
-        ..enableMiPush('', '');
-	options.pushConfig = config;        
-	await EMClient.getInstance.init(options);
+EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
+EMPushConfig config = EMPushConfig();
+// 配置推送信息
+config
+	..enableAPNs("chatdemoui_dev")
+	..enableHWPush()
+	..enableFCM('')
+	..enableMeiZuPush('', '')
+	..enableMiPush('', '');
+options.pushConfig = config;        
+await EMClient.getInstance.init(options);
 ```
 
 推送证书申请上传，安卓端请参考文档[第三方推送集成](!http://docs-im.easemob.com/im/android/push/thirdpartypush#%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%A8%E9%80%81%E9%9B%86%E6%88%90),iOS请参考文档[APNs推送](!http://docs-im.easemob.com/im/ios/apns/deploy)；
 
 
-##### 注册
+#### 注册
 ```dart
-EMClient.getInstance.createAccount('test1', 'password');
+await EMClient.getInstance.createAccount('test1', 'password');
 ```
 (客户端注册，需要将注册方式设置为`开放注册`，具体说明请参考文档[用户管理](!http://docs-im.easemob.com/im/server/ready/user#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86))
 
-##### 登录
+#### 登录
 ```dart
 await EMClient.getInstance.login('test1', 'password');
 ```
 
-##### 退出
-```
-EMClient.getInstance.logout(true);	
+#### 退出
+```dart
+await EMClient.getInstance.logout(true);
 ```
 
 注册环信id详细说明请参考文档[用户体系集成](!http://docs-im.easemob.com/im/server/ready/user)
 
 
-##### 监听服务器链接状态
+#### 监听服务器链接状态
 ```dart
 class _MyAppState extends State<MyApp> implements EMConnectionListener{
 	
 	@override
 	void initState() {
 		super.initState();
+		/// 添加连接监听
 		EMClient.getInstance.addConnectionListener(this);
 	}
 
 	...
 
-	/// 网络已连接
 	@override
 	void onConnected() {
-	
+	/// 网络已连接
 	}
 
-  	/// 连接失败，原因是[errorCode]
+
 	@override
 	void onDisconnected(int errorCode) {
-	
+	/// 连接失败，原因是[errorCode]	
 	}
+	
+	...
+	
+	@override
+	void dispose() {
+		/// 移除连接监听
+		EMClient.getInstance.removeConnectionListener(this);
+		super.dispose();
+  	}
 }
 
 ```
 	
-##### 获取会话列表	
+#### 获取会话列表	
 
 ```dart
-await EMClient.getInstance.chatManager.loadAllConversations();
+List<EMConversation> conList = await EMClient.getInstance.chatManager.loadAllConversations();
+```
+
+
+#### 删除会话
+```dart
+bool succeed = await EMClient.getInstance.chatManager.deleteConversation(conversation.id);
 ```
 	
-##### 构建消息
+#### 构建消息
 ```dart
 // 文本消息
 EMMessage.createTxtSendMessage(username: '接收方id', content: '消息内容');
@@ -150,7 +152,7 @@ EMMessage.createCmdSendMessage(username: '接收方id', action: '自定义事件
 EMMessage.createCustomSendMessage(username: '接收方id', event: '自定义事件');
 ```
 	
-##### 发送消息
+#### 发送消息
 
 ```dart
 try{
@@ -160,7 +162,7 @@ try{
 }
 ```
     
-##### 监听消息发送状态
+#### 监听消息发送状态
 
 ```dart
 class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
@@ -170,6 +172,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 			
 	void initState() {
 		super.initState();
+		/// 添加监听
 		msg.setMessageListener(this);
 	}
 
@@ -203,28 +206,63 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
 ```
 	
-##### 收消息监听
-_todo_
-	
-##### 发起视频通话
+#### 收消息监听
 
 ```dart
-await EMClient.getInstance.callManager.makeCall(EMCallType.Video,conversation.id);
+
+class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
+
+  @override
+  void initState() {
+    super.initState();
+    // 添加收消息监听
+    EMClient.getInstance.chatManager.addListener(this);
+  }
+
+ 
+  /// 收到cmd消息回调
+  @override
+  onCmdMessagesReceived(List<EMMessage> messages) {
+    throw UnimplementedError();
+  }
+
+  /// 会话列表数量变更
+  @override
+  onConversationsUpdate() {
+    throw UnimplementedError();
+  }
+
+  /// 消息已送达回调
+  @override
+  onMessagesDelivered(List<EMMessage> messages) {
+    throw UnimplementedError();
+  }
+
+  /// 消息已读回调
+  @override
+  onMessagesRead(List<EMMessage> messages) {
+    throw UnimplementedError();
+  }
+
+  /// 消息被撤回回调
+  @override
+  onMessagesRecalled(List<EMMessage> messages) {
+    throw UnimplementedError();
+  }
+
+  /// 收消息回调
+  @override
+  onMessagesReceived(List<EMMessage> messages) {
+    throw UnimplementedError();
+  }
+  
+  @override
+  void dispose() {
+    // 移除收消息监听
+    EMClient.getInstance.chatManager.removeListener(this);
+    super.dispose();
+  }
+}
+
 ```
-      
-##### 接听视频通话
-```dart
-await EMClient.getInstance.callManager.answerCall();
-```
-##### 设置自己视频窗口
-```dart
-EMRTCLocalView((view, viewId) {
-	EMClient.getInstance.callManager.setLocalSurfaceView(view);
-});
-```
-##### 设置对方视频窗口
-```dart
-EMRTCRemoteView((view, viewId) {
-	EMClient.getInstance.callManager.setRemoteSurfaceView(view);
-});
-```
+
