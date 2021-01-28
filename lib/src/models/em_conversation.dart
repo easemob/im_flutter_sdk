@@ -113,7 +113,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 设置当前会话中所有消息为已读
-  Future<Null> markAllMessagesAsRead() async {
+  Future<void> markAllMessagesAsRead() async {
     Map result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.markAllMessagesAsRead, this.toJson());
     EMError.hasErrorFromResult(result);

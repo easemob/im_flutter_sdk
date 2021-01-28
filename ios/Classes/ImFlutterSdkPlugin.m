@@ -6,7 +6,7 @@
 #import "EMConversationWrapper.h"
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
-#import <Hyphenate/Hyphenate.h>
+#import <HyphenateLite/HyphenateLite.h>
 #import <UserNotifications/UserNotifications.h>
 
 @implementation ImFlutterSdkPlugin

@@ -6,7 +6,6 @@ class EMSDKMethod {
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
   static const String isLoggedInBefore = 'isLoggedInBefore';
-  static const String setNickname = 'setNickname';
   static const String uploadLog = 'uploadLog';
   static const String compressLogs = 'compressLogs';
   static const String kickDevice = 'kickDevice';
@@ -189,103 +188,4 @@ class EMSDKMethod {
   static const String updateImPushStyle = 'updateImPushStyle';
   static const String updateGroupPushService = 'updateGroupPushService';
   static const String getNoDisturbGroups = 'getNoDisturbGroups';
-
-  /// EMCallManager
-  static const String setCallOptions = 'setCallOptions';
-  static const String getCallOptions = 'getCallOptions';
-
-  static const String makeCall = 'makeCall';
-  static const String answerCall = 'answerCall';
-  static const String rejectCall = 'rejectCall';
-  static const String endCall = 'endCall';
-
-  static const String enableVoiceTransfer = 'enableVoiceTransfer';
-  static const String enableVideoTransfer = 'enableVideoTransfer';
-
-  static const String muteRemoteAudio = 'muteRemoteAudio';
-  static const String muteRemoteVideo = 'muteRemoteVideo';
-
-  static const String switchCamera = 'switchCamera';
-  static const String setSurfaceView = 'setSurfaceView';
-  static const String releaseView = 'releaseView';
-
-  /// EMCallManager Listener
-  static const String onCallReceived = 'onCallReceived';
-  static const String onCallAccepted = 'onCallAccepted';
-  static const String onCallRejected = 'onCallRejected';
-  static const String onCallHangup = 'onCallHangup';
-  static const String onCallBusy = 'onCallBusy';
-  static const String onCallVideoPause = 'onCallVideoPause';
-  static const String onCallVideoResume = 'onCallVideoResume';
-  static const String onCallVoicePause = 'onCallVoicePause';
-  static const String onCallVoiceResume = 'onCallVoiceResume';
-  static const String onCallNetworkUnStable = 'onCallNetworkUnStable';
-  static const String onCallNetworkNormal = 'onCallNetworkNormal';
-  static const String onCallNetworkDisconnect = 'onCallNetworkDisconnect';
-
-  /// EMConferenceManager
-  static const String setConferenceAppKey = 'setConferenceAppKey';
-  static const String conferenceHasExists = 'conferenceHasExists';
-  static const String joinConference = 'joinConference';
-  static const String joinRoom = 'joinRoom';
-
-  static const String createWhiteboardRoom = 'createWhiteboardRoom';
-  static const String destroyWhiteboardRoom = 'destroyWhiteboardRoom';
-  static const String joinWhiteboardRoom = 'joinWhiteboardRoom';
-
-  /// EMConference
-  static const String publishConference = 'publishConference';
-  static const String unPublishConference = 'unPublishConference';
-  static const String subscribeConference = 'subscribeConference';
-  static const String unSubscribeConference = 'unSubscribeConference';
-  static const String changeMemberRoleWithMemberName =
-      'changeMemberRoleWithMemberName';
-  static const String kickConferenceMember = 'kickConferenceMember';
-  static const String destroyConference = 'destroyConference';
-  static const String leaveConference = 'leaveConference';
-  static const String startMonitorSpeaker = 'startMonitorSpeaker';
-  static const String stopMonitorSpeaker = 'stopMonitorSpeaker';
-  static const String requestTobeConferenceSpeaker =
-      'requestTobeConferenceSpeaker';
-  static const String requestTobeConferenceAdmin = 'requestTobeConferenceAdmin';
-  static const String muteConferenceMember = 'muteConferenceMember';
-  static const String responseReqSpeaker = 'responseReqSpeaker';
-  static const String responseReqAdmin = 'responseReqAdmin';
-  static const String updateConferenceWithSwitchCamera =
-      'updateConferenceWithSwitchCamera';
-  static const String updateConferenceMute = 'updateConferenceMute';
-  static const String updateConferenceVideo = 'updateConferenceVideo';
-//  static const String updateRemoteView = 'updateRemoteView';
-//  static const String updateMaxVideoKbps = 'updateMaxVideoKbps';
-  static const String setConferenceAttribute = 'setConferenceAttribute';
-  static const String deleteAttributeWithKey = 'deleteAttributeWithKey';
-  static const String muteConferenceRemoteAudio = 'muteConferenceRemoteAudio';
-  static const String muteConferenceRemoteVideo = 'muteConferenceRemoteVideo';
-  static const String muteConferenceAll = 'muteConferenceAll';
-  static const String addVideoWatermark = 'addVideoWatermark';
-  static const String clearVideoWatermark = 'clearVideoWatermark';
-
-  /// EMConferenceManager Listener
-  static const String onMemberJoined = 'onMemberJoined';
-  static const String onMemberExited = 'onMemberExited';
-  static const String onStreamAdded = 'onStreamAdded';
-  static const String onStreamRemoved = 'onStreamRemoved';
-  static const String onStreamUpdate = 'onStreamUpdate';
-  static const String onPassiveLeave = 'onPassiveLeave';
-  static const String onMemberAdminAdd = 'onMemberAdminAdd';
-  static const String onMemberAdminRemoved = 'onMemberAdminRemoved';
-  static const String onPubStreamFailed = 'onPubStreamFailed';
-  static const String onStreamSetup = 'onStreamSetup';
-  static const String onUpdateStreamFailed = 'onUpdateStreamFailed';
-  static const String onConferenceStateChanged = 'onConferenceStateChanged';
-  static const String onStreamStateUpdated = 'onStreamStateUpdated';
-  static const String onSpeakers = 'onSpeakers';
-  static const String onReceiveInvite = 'onReceiveInvite';
-  static const String onRoleChanged = 'onRoleChanged';
-  static const String onReqSpeaker = 'onReqSpeaker';
-  static const String onReqAdmin = 'onReqAdmin';
-  static const String onMute = 'onMute';
-  static const String onMuteAll = 'onMuteAll';
-  static const String onApplySpeakerRefused = 'onApplySpeakerRefused';
-  static const String onApplyAdminRefused = 'onApplyAdminRefused';
 }

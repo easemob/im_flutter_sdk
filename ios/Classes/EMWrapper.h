@@ -6,7 +6,7 @@
 //
 
 #import <Flutter/Flutter.h>
-#import <Hyphenate/Hyphenate.h>
+#import <HyphenateLite/HyphenateLite.h>
 
 
 NS_ASSUME_NONNULL_BEGIN
