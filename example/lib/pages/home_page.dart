@@ -1,145 +1,161 @@
+import 'package:easeim_flutter_demo/pages/contacts/contacts_page.dart';
+import 'package:easeim_flutter_demo/pages/conversations/conversations_page.dart';
+import 'package:easeim_flutter_demo/pages/me/me_page.dart';
+import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk_example/pages/call_page.dart';
-import 'package:im_flutter_sdk_example/utils/theme_util.dart';
-
-import 'conversation_list_page.dart';
-import 'dart:io';
-import 'find_page.dart';
-import 'package:im_flutter_sdk_example/utils/localizations.dart';
-import 'package:im_flutter_sdk_example/utils/style.dart';
-import 'contacts_list_page.dart';
-import 'settings_page.dart';
-
-class HomePage extends StatefulWidget{
+class HomePage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() {
-    return _HomePageState();
-  }
+  State<StatefulWidget> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> implements EMCallManagerListener{
-
-  var tabbarList = [
-    BottomNavigationBarItem(icon: new Icon(null)),
-  ];
-
-  var vcList = [new EMConversationListPage(), new EMContactsListPage(), new FindPage(), new EMSettingsPage()];
-  int curIndex = 0;
-
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
+  num _selectedPageIndex = 0;
+  ConversationPage _convPage;
+  List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-    EMClient.getInstance.callManager.addCallManagerListener(this);
-  }
-
-  void refreshUI(bool visible){
-
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    tabbarList = [
-      BottomNavigationBarItem(icon: new Icon(Icons.chat,),activeIcon: new Icon(Icons.chat,), title: new Text(DemoLocalizations.of(context).conversation)),
-      BottomNavigationBarItem(icon: new Icon(Icons.perm_contact_calendar,),activeIcon: new Icon(Icons.perm_contact_calendar,),title: new Text(DemoLocalizations.of(context).addressBook),),
-      BottomNavigationBarItem(icon: new Icon(Icons.apps,),activeIcon: new Icon(Icons.apps,),title: new Text(DemoLocalizations.of(context).find),),
-      BottomNavigationBarItem(icon: new Icon(Icons.face,),activeIcon: new Icon(Icons.face,),title: new Text(DemoLocalizations.of(context).mine),),
+    _requestPermiss();
+    _convPage = ConversationPage();
+    _pages = [
+      _convPage,
+      ContactsPage(),
+      MePage(),
     ];
-    return WillPopScope(
-      onWillPop: () async{
-        SystemNavigator.pop();
-        return true;
-      },
-      child: Scaffold(
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: ThemeUtils.isDark(context)? EMColor.darkAppMain : EMColor.appMain,
-          items: tabbarList,
-          type: BottomNavigationBarType.fixed,
-          onTap: (int index) {
-            setState(() {
-              curIndex = index;
-            });
-          },
-          currentIndex: curIndex,
+  }
+
+  @override
+  Widget build(context) {
+    super.build(context);
+    return Scaffold(
+      body: updatePages(),
+      bottomNavigationBar: BottomNavigationBar(
+        fixedColor: Color.fromARGB(255, 4, 174, 240),
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        currentIndex: _selectedPageIndex,
+        items: [
+          bottomItem(
+            '会话',
+            'images/home_tab_chat.png',
+            'images/home_tab_selected_chat.png',
+            true,
+          ),
+          bottomItem(
+            '通讯录',
+            'images/home_tab_contact.png',
+            'images/home_tab_selected_contact.png',
+          ),
+          bottomItem(
+            '我',
+            'images/home_tab_me.png',
+            'images/home_tab_selected_me.png',
+          ),
+        ],
+        onTap: (value) {
+          setState(() {
+            _selectedPageIndex = value;
+          });
+        },
+      ),
+    );
+  }
+
+  BottomNavigationBarItem bottomItem(String title, String unSelectedImageName,
+      [String selectedImageName, bool needUnreadCount = false]) {
+    return BottomNavigationBarItem(
+      activeIcon: SizedBox(
+        child: Stack(
+          children: [
+            Positioned(
+              left: sWidth(5),
+              right: sWidth(5),
+              top: sHeight(5),
+              bottom: sHeight(5),
+              child: Image.asset(
+                selectedImageName ?? unSelectedImageName,
+                fit: BoxFit.cover,
+              ),
+            ),
+            needUnreadCount
+                ? Positioned(
+                    right: sWidth(0),
+                    top: sHeight(2),
+                    child: ChangeNotifierProvider<ConversationPage>(
+                      create: (_) => _convPage,
+                      child: Selector(
+                        builder: (context, num data, Widget child) {
+                          return unreadCoundWidget(data);
+                        },
+                        selector: (_, ConversationPage state) {
+                          return state.totalUnreadCount;
+                        },
+                      ),
+                    ),
+                  )
+                : Container(),
+          ],
         ),
-        body: vcList[curIndex],
-      ),);
-
+        height: sWidth(45),
+        width: sWidth(45),
+      ),
+      backgroundColor: Colors.black,
+      icon: SizedBox(
+        child: Stack(
+          children: [
+            Positioned(
+              left: sWidth(5),
+              right: sWidth(5),
+              top: sHeight(5),
+              bottom: sHeight(5),
+              child: Image.asset(
+                unSelectedImageName,
+                fit: BoxFit.cover,
+              ),
+            ),
+            needUnreadCount
+                ? Positioned(
+                    right: sWidth(0),
+                    top: sHeight(2),
+                    child: ChangeNotifierProvider<ConversationPage>(
+                      create: (_) => _convPage,
+                      child: Selector(
+                        builder: (context, num data, Widget child) {
+                          return unreadCoundWidget(data);
+                        },
+                        selector: (_, ConversationPage state) {
+                          return state.totalUnreadCount;
+                        },
+                      ),
+                    ),
+                  )
+                : Container(),
+          ],
+        ),
+        height: sWidth(45),
+        width: sWidth(45),
+      ),
+      label: title,
+    );
   }
 
-  void _pushCallPage(EMCallType type, String from) async {
-    try{
-      Navigator.push(context, new MaterialPageRoute(
-          builder: (BuildContext context){
-            return CallPage(callType: type, otherUser: from);
-          },
-          fullscreenDialog: true));
-    }catch(e){
-    }
+  updatePages() {
+    return IndexedStack(
+      children: _pages,
+      index: _selectedPageIndex,
+    );
   }
 
-
-  @override
-  void onCallReceived(EMCallType type, String from) {
-    _pushCallPage(type, from);
-  }
-
-  @override
-  void onCallAccepted() {
-    // TODO: implement onCallAccepted
-  }
-
-  @override
-  void onCallBusy() {
-    Navigator.pop(context);
-  }
-
-  @override
-  void onCallHangup() {
-    Navigator.pop(context);
-  }
-
-  @override
-  void onCallNetworkDisconnect() {
-    // TODO: implement onCallNetworkDisconnect
-  }
-
-  @override
-  void onCallNetworkNormal() {
-    // TODO: implement onCallNetworkNormal
-  }
-
-  @override
-  void onCallNetworkUnStable() {
-    // TODO: implement onCallNetworkUnStable
-  }
-
-  @override
-  void onCallRejected() {
-    Navigator.pop(context);
-  }
-
-  @override
-  void onCallVideoPause() {
-    // TODO: implement onCallVideoPause
+  /// 获取麦克风权限
+  _requestPermiss() async {
+    await Permission.microphone.request();
   }
 
   @override
-  void onCallVideoResume() {
-    // TODO: implement onCallVideoResume
-  }
-
-  @override
-  void onCallVoicePause() {
-    // TODO: implement onCallVoicePause
-  }
-
-  @override
-  void onCallVoiceResume() {
-    // TODO: implement onCallVoiceResume
-  }
+  bool get wantKeepAlive => true;
 }

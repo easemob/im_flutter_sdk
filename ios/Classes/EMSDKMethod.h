@@ -19,7 +19,6 @@ static NSString * const EMMethodKeyLogin = @"login";
 static NSString * const EMMethodKeyLogout = @"logout";
 static NSString * const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString * const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
-static NSString * const EMMethodKeySetNickname = @"setNickname";
 static NSString * const EMMethodKeyUploadLog = @"uploadLog";
 static NSString * const EMMethodKeyCompressLogs = @"compressLogs";
 static NSString * const EMMethodKeyKickDevice = @"kickDevice";
@@ -180,101 +179,6 @@ static NSString * const EMMethodKeyDeclineInvitationFromGroup = @"declineInvitat
 static NSString * const EMMethodKeyIgnoreGroupPush = @"ignoreGroupPush";
 
 static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
-
-/// EMCallManager
-static NSString * const EMMethodKeySetCallOptions = @"setCallOptions";
-static NSString * const EMMethodKeyGetCallOptions = @"getCallOptions";
-
-
-static NSString * const EMMethodKeyMakeCall = @"makeCall";
-static NSString * const EMMethodKeyAnswerCall = @"answerCall";
-static NSString * const EMMethodKeyRejectCall = @"rejectCall";
-static NSString * const EMMethodKeyEndCall = @"endCall";
-static NSString * const EMMethodKeyEnableVoiceTransfer = @"enableVoiceTransfer";
-static NSString * const EMMethodKeyEnableVideoTransfer = @"enableVideoTransfer";
-static NSString * const EMMethodKeyMuteRemoteAudio = @"muteRemoteAudio";
-static NSString * const EMMethodKeyMuteRemoteVideo = @"muteRemoteVideo";
-static NSString * const EMMethodKeySwitchCamera = @"switchCamera";
-static NSString * const EMMethodKeySetSurfaceView = @"setSurfaceView";
-static NSString * const EMMethodKeyReleaseView = @"releaseView";
-
-/// EMCallManager Listener
-static NSString * const EMMethodKeyOnCallReceived = @"onCallReceived";
-static NSString * const EMMethodKeyOnCallAccepted = @"onCallAccepted";
-static NSString * const EMMethodKeyOnCallRejected = @"onCallRejected";
-static NSString * const EMMethodKeyOnCallHangup = @"onCallHangup";
-static NSString * const EMMethodKeyOnCallBusy = @"onCallBusy";
-static NSString * const EMMethodKeyOnCallVideoPause = @"onCallVideoPause";
-static NSString * const EMMethodKeyOnCallVideoResume = @"onCallVideoResume";
-static NSString * const EMMethodKeyOnCallVoicePause = @"onCallVoicePause";
-static NSString * const EMMethodKeyOnCallVoiceResume = @"onCallVoiceResume";
-static NSString * const EMMethodKeyOnCallNetworkUnStable = @"onCallNetworkUnStable";
-static NSString * const EMMethodKeyOnCallNetworkNormal = @"onCallNetworkNormal";
-static NSString * const EMMethodKeyOnCallNetworkDisconnect = @"onCallNetworkDisconnect";
-
-#pragma mark - EMConferenceManagerWrapper
-static NSString * const EMMethodKeySetConferenceAppKey = @"setConferenceAppKey";
-static NSString * const EMMethodKeyConferenceHasExists = @"conferenceHasExists";
-static NSString * const EMMethodKeyJoinConference = @"joinConference";
-static NSString * const EMMethodKeyJoinRoom = @"joinRoom";
-
-static NSString * const EMMethodKeyCreateWhiteboardRoom = @"createWhiteboardRoom";
-static NSString * const EMMethodKeyDestroyWhiteboardRoom = @"destroyWhiteboardRoom";
-static NSString * const EMMethodKeyJoinWhiteboardRoom = @"joinWhiteboardRoom";
-
-#pragma mark - EMConference
-static NSString * const EMMethodKeyPublishConference = @"publishConference";
-static NSString * const EMMethodKeyUnPublishConference = @"unPublishConference";
-static NSString * const EMMethodKeySubscribeConference = @"subscribeConference";
-static NSString * const EMMethodKeyUnSubscribeConference = @"unSubscribeConference";
-static NSString * const EMMethodKeyChangeMemberRoleWithMemberName = @"changeMemberRoleWithMemberName";
-static NSString * const EMMethodKeyKickConferenceMember = @"kickConferenceMember";
-static NSString * const EMMethodKeyDestroyConference = @"destroyConference";
-static NSString * const EMMethodKeyLeaveConference = @"leaveConference";
-static NSString * const EMMethodKeyStartMonitorSpeaker = @"startMonitorSpeaker";
-static NSString * const EMMethodKeyStopMonitorSpeaker = @"stopMonitorSpeaker";
-static NSString * const EMMethodKeyRequestTobeConferenceSpeaker = @"requestTobeConferenceSpeaker";
-static NSString * const EMMethodKeyRequestTobeConferenceAdmin = @"requestTobeConferenceAdmin";
-static NSString * const EMMethodKeyMuteConferenceMember = @"muteConferenceMember";
-static NSString * const EMMethodKeyResponseReqSpeaker = @"responseReqSpeaker";
-static NSString * const EMMethodKeyResponseReqAdmin = @"responseReqAdmin";
-static NSString * const EMMethodKeyUpdateConferenceWithSwitchCamera = @"updateConferenceWithSwitchCamera";
-static NSString * const EMMethodKeyUpdateConferenceMute = @"updateConferenceMute";
-static NSString * const EMMethodKeyUpdateConferenceVideo = @"updateConferenceVideo";
-//static NSString * const EMMethodKeyUpdateRemoteView = @"updateRemoteView";
-//static NSString * const EMMethodKeyUpdateMaxVideoKbps = @"updateMaxVideoKbps";
-static NSString * const EMMethodKeySetConferenceAttribute = @"setConferenceAttribute";
-static NSString * const EMMethodKeyDeleteAttributeWithKey = @"deleteAttributeWithKey";
-static NSString * const EMMethodKeyMuteConferenceRemoteAudio = @"muteConferenceRemoteAudio";
-static NSString * const EMMethodKeyMuteConferenceRemoteVideo = @"muteConferenceRemoteVideo";
-static NSString * const EMMethodKeyMuteConferenceAll = @"muteConferenceAll";
-static NSString * const EMMethodKeyAddVideoWatermark = @"addVideoWatermark";
-static NSString * const EMMethodKeyClearVideoWatermark = @"clearVideoWatermark";
-
-#pragma mark - EMConferenceManager Listener
-static NSString * const EMMethodKeyOnMemberJoined = @"onMemberJoined";
-static NSString * const EMMethodKeyOnMemberExited = @"onMemberExited";
-static NSString * const EMMethodKeyOnStreamAdded = @"onStreamAdded";
-static NSString * const EMMethodKeyOnStreamRemoved = @"onStreamRemoved";
-static NSString * const EMMethodKeyOnStreamUpdate = @"onStreamUpdate";
-static NSString * const EMMethodKeyOnPassiveLeave = @"onPassiveLeave";
-static NSString * const EMMethodKeyOnAdminAdd = @"onMemberAdminAdd";
-static NSString * const EMMethodKeyOnAdminRemoved = @"onMemberAdminRemoved";
-static NSString * const EMMethodKeyOnPubStreamFailed = @"onPubStreamFailed";
-static NSString * const EMMethodKeyOnStreamSetup = @"onStreamSetup";
-static NSString * const EMMethodKeyOnUpdateStreamFailed = @"onUpdateStreamFailed";
-static NSString * const EMMethodKeyOnConferenceStateChanged = @"onConferenceStateChanged";
-static NSString * const EMMethodKeyOnStreamStateUpdated = @"onStreamStateUpdated";
-static NSString * const EMMethodKeyOnSpeakers = @"onSpeakers";
-static NSString * const EMMethodKeyOnReceiveInvite = @"onReceiveInvite";
-static NSString * const EMMethodKeyOnRoleChanged = @"onRoleChanged";
-static NSString * const EMMethodKeyOnReqSpeaker = @"onReqSpeaker";
-static NSString * const EMMethodKeyOnReqAdmin = @"onReqAdmin";
-static NSString * const EMMethodKeyOnMute = @"onMute";
-static NSString * const EMMethodKeyOnMuteAll = @"onMuteAll";
-static NSString * const EMMethodKeyOnApplySpeakerRefused = @"onApplySpeakerRefused";
-static NSString * const EMMethodKeyOnApplyAdminRefused = @"onApplyAdminRefused";
-
 
 #pragma mark - EMPushManagerWrapper
 static NSString * const EMMethodKeyGetImPushConfig = @"getImPushConfig";

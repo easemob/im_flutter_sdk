@@ -13,9 +13,6 @@
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
 #import "EMPushManagerWrapper.h"
-#import "EMCallManagerWrapper.h"
-#import "EMConferenceManagerWrapper.h"
-
 #import "EMDeviceConfig+Flutter.h"
 #import "EMOptions+Flutter.h"
 
@@ -56,10 +53,6 @@
     else if ([EMMethodKeyChangeAppKey isEqualToString:call.method])
     {
         [self changeAppKey:call.arguments result:result];
-    }
-    else if ([EMMethodKeySetNickname isEqualToString:call.method])
-    {
-        [self updateCurrentUserNick:call.arguments result:result];
     }
     else if ([EMMethodKeyUploadLog isEqualToString:call.method])
     {
@@ -133,11 +126,6 @@
     EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_chat_room_manager") registrar:self.flutterPluginRegister];
     
     EMPushManagerWrapper * pushManagerWrapper =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_push_manager") registrar:self.flutterPluginRegister];
-
-    EMCallManagerWrapper * callManagerWrapper =[[EMCallManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_call_manager") registrar:self.flutterPluginRegister];
-    
-    EMConferenceManagerWrapper * conferenceManager = [[EMConferenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"em_conference_manager")  registrar:self.flutterPluginRegister];
-    
 #pragma clang diagnostic pop
     
 }
@@ -223,18 +211,6 @@
                         error:nil
                        object:username];
 
-}
-
-- (void)updateCurrentUserNick:(NSDictionary *)param result:(FlutterResult)result {
-    __weak typeof(self)weakSelf = self;
-    NSString *nickName = param[@"nickname"];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *aError = [EMClient.sharedClient setApnsNickname:nickName];
-        [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeySetNickname
-                            error:aError
-                           object:nil];
-    });
 }
 
 - (void)uploadLog:(NSDictionary *)param result:(FlutterResult)result {
