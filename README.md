@@ -351,27 +351,39 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 	
 	// 消息进度
 	@override
-	void onProgress(int progress) {}
+	void onProgress(int progress) {
+	}
 
 	// 消息发送失败
 	@override
-	void onError(EMError error) {}
+	void onError(EMError error) {
+	}
 
 	// 消息发送成功
 	@override
-	void onSuccess() {}
+	void onSuccess() {
+	}
   
 	// 消息已读
 	@override
-	void onReadAck() {}
+	void onReadAck() {
+	}
 
 	// 消息已送达
 	@override
-	void onDeliveryAck() {}
+	void onDeliveryAck() {
+	}
   
 	// 消息状态发生改变
 	@override
-	void onStatusChanged() {}
+	void onStatusChanged() {
+	}
+	
+	dispose(){
+		msg.setMessageListener(null);
+		super.dispose();
+	}
+	
 }
 
 ```
