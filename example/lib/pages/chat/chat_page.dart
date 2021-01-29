@@ -32,6 +32,7 @@ class _ChatPageState extends State<ChatPage>
   final int _timeInterval = 60 * 1000;
 
   ChatInputBar _inputBar;
+  // 用来决定是否显示时间
   int _adjacentTime = 0;
   ChatInputBarType _inputBarType = ChatInputBarType.normal;
   ChatVoicePlayer _voicePlayer = ChatVoicePlayer();
@@ -199,9 +200,9 @@ class _ChatPageState extends State<ChatPage>
             ),
             child: ChatItem(
               msg,
-              onTap: () => _messageBubbleOnTap(msg),
-              errorBtnOnTap: () => _resendMessage(msg),
-              longPress: () => _messageOnLongPress(msg),
+              onTap: (message) => _messageBubbleOnTap(message),
+              errorBtnOnTap: (message) => _resendMessage(message),
+              longPress: (message) => _messageOnLongPress(message),
             ),
             margin: EdgeInsets.only(
               top: sHeight(20),
@@ -214,9 +215,9 @@ class _ChatPageState extends State<ChatPage>
       return Container(
         child: ChatItem(
           msg,
-          onTap: () => _messageBubbleOnTap(msg),
-          errorBtnOnTap: () => _resendMessage(msg),
-          longPress: () => _messageOnLongPress(msg),
+          onTap: (message) => _messageBubbleOnTap(message),
+          errorBtnOnTap: (message) => _resendMessage(message),
+          longPress: (message) => _messageOnLongPress(message),
         ),
         margin: EdgeInsets.only(
           top: sHeight(20),
@@ -271,10 +272,11 @@ class _ChatPageState extends State<ChatPage>
   /// 下拉加载更多消息
   _loadMessages({int count = 20, bool moveBottom = true}) async {
     try {
-      List<EMMessage> msgs = await widget.conv.loadMessagesWithStartId(
-          _msgList.length > 0 ? _msgList.first.msgId : '', count);
+      List<EMMessage> msgs = await widget.conv.loadMessages(
+          startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
+          loadCount: count);
       _msgList.insertAll(0, msgs);
-    } on EMError {} on Error {} finally {
+    } on EMError {} finally {
       if (moveBottom) {
         _setStateAndMoreToListViewEnd();
       } else {
@@ -326,9 +328,12 @@ class _ChatPageState extends State<ChatPage>
   }
 
   /// 重发消息
-  void _resendMessage(EMMessage msg) {
+  void _resendMessage(EMMessage msg) async {
     _msgList.remove(msg);
-    _sendMessage(msg);
+    EMMessage message =
+        await EMClient.getInstance.chatManager.resendMessage(msg);
+    _msgList.add(message);
+    _setStateAndMoreToListViewEnd();
   }
 
   /// 发送文字消息

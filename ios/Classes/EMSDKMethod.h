@@ -47,6 +47,7 @@ static NSString * const EMMethodKeyOnContactChanged = @"onContactChanged";
 
 #pragma mark - EMChatManagerWrapper
 static NSString * const EMMethodKeySendMessage = @"sendMessage";
+static NSString * const EMMethodKeyResendMessage = @"resendMessage";
 static NSString * const EMMethodKeyAckMessageRead = @"ackMessageRead";
 static NSString * const EMMethodKeyRecallMessage = @"recallMessage";
 static NSString * const EMMethodKeyGetConversation = @"getConversation";

@@ -78,6 +78,9 @@ dependencies:
   # 显示占位符图片
   transparent_image: ^1.0.0
 
+  # 长按菜单
+  w_popup_menu: ^0.3.1
+
   # 环信 sdk
   im_flutter_sdk:  
       path: ../

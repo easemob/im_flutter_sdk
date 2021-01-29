@@ -35,6 +35,7 @@ class EMSDKMethod {
 
   /// EMChatManager methods
   static const String sendMessage = 'sendMessage';
+  static const String resendMessage = 'resendMessage';
   static const String ackMessageRead = 'ackMessageRead';
   static const String recallMessage = 'recallMessage';
   static const String getConversation = 'getConversation';
