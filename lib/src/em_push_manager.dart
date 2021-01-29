@@ -25,7 +25,9 @@ class EMPushManager {
   }
 
   /// 更新当前用户的[nickname],这样离线消息推送的时候可以显示用户昵称而不是id，需要登录环信服务器成功后调用才生效
-  Future<bool> updatePushNickname(String nickname) async {
+  Future<bool> updatePushNickname(
+    String nickname,
+  ) async {
     Map req = {'nickname': nickname};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updatePushNickname, req);

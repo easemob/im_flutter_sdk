@@ -29,7 +29,7 @@ class MePageState extends State<MePage> {
                     'flutter sdk version',
                   ),
                   Text(
-                    EMClient.getInstance.flutterSDKVersion(),
+                    EMClient.getInstance.flutterSDKVersion,
                   ),
                 ],
               ),
@@ -58,9 +58,7 @@ class MePageState extends State<MePage> {
 
   _loggout() async {
     try {
-      await EMClient.getInstance.logout(
-        unbindDeviceToken: true,
-      );
+      await EMClient.getInstance.logout(true);
       Navigator.of(context).pushReplacementNamed(
         '/login',
       );

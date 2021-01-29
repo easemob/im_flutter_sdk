@@ -43,6 +43,10 @@
         [self sendMessage:call.arguments
               channelName:EMMethodKeySendMessage
                    result:result];
+    } else if ([EMMethodKeyResendMessage isEqualToString:call.method]) {
+        [self resendMessage:call.arguments
+                 channelName:EMMethodKeyResendMessage
+                      result:result];
     } else if ([EMMethodKeyAckMessageRead isEqualToString:call.method]) {
         [self ackMessageRead:call.arguments
                  channelName:EMMethodKeyAckMessageRead
@@ -119,6 +123,43 @@
     __block EMMessage *msg = [EMMessage fromJson:param];
     
     [EMClient.sharedClient.chatManager sendMessage:msg
+                                          progress:^(int progress) {
+        [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
+                                    arguments:@{
+                                        @"progress":@(progress),
+                                        @"localTime":@(msg.localTime)
+                                    }];
+    } completion:^(EMMessage *message, EMError *error) {
+        if (error) {
+            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
+                                        arguments:@{
+                                            @"error":[error toJson],
+                                            @"localTime":@(msg.localTime),
+                                            @"message":[message toJson]
+                                        }];
+        }else {
+            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
+                                        arguments:@{
+                                            @"message":[message toJson],
+                                            @"localTime":@(msg.localTime)
+                                        }];
+        }
+    }];
+    
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:[msg toJson]];
+}
+
+- (void)resendMessage:(NSDictionary *)param
+        channelName:(NSString *)aChannelName
+             result:(FlutterResult)result {
+    
+    __weak typeof(self) weakSelf = self;
+    __block EMMessage *msg = [EMMessage fromJson:param];
+
+    [EMClient.sharedClient.chatManager resendMessage:msg
                                           progress:^(int progress) {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
                                     arguments:@{
