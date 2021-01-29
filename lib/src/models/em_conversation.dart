@@ -203,11 +203,11 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 根据起始消息id获取消息
-  Future<List> loadMessagesWithStartId(
-    String startMsgId, [
+  Future<List> loadMessages({
+    String startMsgId = '',
     int loadCount = 20,
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
-  ]) async {
+  }) async {
     Map req = this.toJson();
     req["startId"] = startMsgId ?? '';
     req['count'] = loadCount;

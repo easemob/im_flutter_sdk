@@ -42,7 +42,19 @@ class EMChatManager {
     return message;
   }
 
-  /// 发送消息 [message].
+  /// 重发消息 [message].
+  Future<EMMessage> resendMessage(EMMessage message) async {
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.resendMessage, message.toJson());
+    EMError.hasErrorFromResult(result);
+    EMMessage msg = EMMessage.fromJson(result[EMSDKMethod.resendMessage]);
+    message.from = msg.from;
+    message.to = msg.to;
+    message.status = msg.status;
+    return message;
+  }
+
+  /// 发送消息已读 [message].
   Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
     Map result = await _channel.invokeMethod(EMSDKMethod.ackMessageRead, req);
@@ -68,9 +80,11 @@ class EMChatManager {
   }
 
   /// 通过会话[id], 会话类型[type]获取会话.
-  Future<EMConversation> getConversation(String conversationId,
-      [EMConversationType type = EMConversationType.Chat,
-      bool createIfNeed = true]) async {
+  Future<EMConversation> getConversation(
+    String conversationId, [
+    EMConversationType type = EMConversationType.Chat,
+    bool createIfNeed = true,
+  ]) async {
     Map req = {
       "con_id": conversationId,
       "type": EMConversation.typeToInt(type),
@@ -144,8 +158,10 @@ class EMChatManager {
   }
 
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
-  Future<bool> deleteConversation(String conversationId,
-      [bool deleteMessages = true]) async {
+  Future<bool> deleteConversation(
+    String conversationId, [
+    bool deleteMessages = true,
+  ]) async {
     Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.deleteConversation, req);
@@ -167,10 +183,12 @@ class EMChatManager {
 
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResult> fetchHistoryMessages(String conversationId,
-      [EMConversationType type = EMConversationType.Chat,
-      int pageSize = 20,
-      String startMsgId = '']) async {
+  Future<EMCursorResult> fetchHistoryMessages(
+    String conversationId, [
+    EMConversationType type = EMConversationType.Chat,
+    int pageSize = 20,
+    String startMsgId = '',
+  ]) async {
     Map req = Map();
     req['con_id'] = conversationId;
     req['type'] = EMConversation.typeToInt(type);

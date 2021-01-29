@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
 import "em_listeners.dart";
 import 'em_sdk_method.dart';
-
-//TODO test
 import 'package:im_flutter_sdk/src/models/em_cursor_result.dart';
 import 'package:im_flutter_sdk/src/models/em_page_result.dart';
 
@@ -117,8 +115,10 @@ class EMChatRoomManager {
   }
 
   /// 翻页从服务器获取聊天室 [pageNum] and [pageSize]
-  Future<EMPageResult> fetchPublicChatRoomsFromServer(
-      {int pageNum, int pageSize}) async {
+  Future<EMPageResult> fetchPublicChatRoomsFromServer({
+    int pageNum = 1,
+    int pageSize = 200,
+  }) async {
     Map result = await _channel.invokeMethod(
         EMSDKMethod.fetchPublicChatRoomsFromServer,
         {"pageNum": pageNum, "pageSize": pageSize});
@@ -156,11 +156,13 @@ class EMChatRoomManager {
     return list;
   }
 
-  Future<EMChatRoom> createChatRoom(String subject,
-      [String desc,
-      String welcomeMsg,
-      int maxUserCount = 300,
-      List<String> members]) async {
+  Future<EMChatRoom> createChatRoom(
+    String subject, {
+    String desc,
+    String welcomeMsg,
+    int maxUserCount = 300,
+    List<String> members,
+  }) async {
     Map req = Map();
     req['subject'] = subject;
     req['desc'] = desc;
@@ -173,14 +175,19 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 销毁聊天室，需要owner权限 [roomId]
-  Future<void> destroyChatRoom(String roomId) async {
+  Future<void> destroyChatRoom(
+    String roomId,
+  ) async {
     Map req = {"roomId": roomId};
     Map result = await _channel.invokeMethod(EMSDKMethod.destroyChatRoom, req);
     EMError.hasErrorFromResult(result);
   }
 
   /// @nodoc 修改聊天室标题，需要owner权限[roomId] [subject]
-  Future<void> changeChatRoomSubject(String roomId, String subject) async {
+  Future<void> changeChatRoomSubject(
+    String roomId,
+    String subject,
+  ) async {
     Map req = {"roomId": roomId, "subject": subject};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.changeChatRoomSubject, req);
@@ -189,7 +196,9 @@ class EMChatRoomManager {
 
   /// @nodoc 修改聊天室描述信息，需要owner权限 [roomId] .[description]
   Future<void> changeChatRoomDescription(
-      String roomId, String description) async {
+    String roomId,
+    String description,
+  ) async {
     Map req = {"roomId": roomId, "description": description};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.changeChatRoomDescription, req);
@@ -198,10 +207,10 @@ class EMChatRoomManager {
 
   /// @nodoc 获取聊天室成员列表，[roomId] [cursor] [pageSize]
   Future<EMCursorResult> fetchChatRoomMembers(
-    String roomId,
-    String cursor,
-    int pageSize,
-  ) async {
+    String roomId, {
+    String cursor = '',
+    int pageSize = 200,
+  }) async {
     Map req = {"roomId": roomId, "cursor": cursor, "pageSize": pageSize};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMembers, req);
@@ -214,9 +223,9 @@ class EMChatRoomManager {
   /// [roomId] 聊天室ID [duration] 禁言的时间，单位是毫秒 [muteMembers] 禁言的用户列表
   Future<void> muteChatRoomMembers(
     String roomId,
-    List muteMembers,
-    String duration,
-  ) async {
+    List muteMembers, {
+    int duration = -1,
+  }) async {
     Map req = {
       "roomId": roomId,
       "muteMembers": muteMembers,
@@ -240,7 +249,10 @@ class EMChatRoomManager {
 
   /// @nodoc 转移聊天室的所有权，需要聊天室拥有者权限 [roomId] .[newOwner]
   /// @nodoc 如果转移成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  Future<void> changeOwner(String roomId, String newOwner) async {
+  Future<void> changeOwner(
+    String roomId,
+    String newOwner,
+  ) async {
     Map req = {"roomId": roomId, "newOwner": newOwner};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.changeChatRoomOwner, req);
@@ -249,7 +261,10 @@ class EMChatRoomManager {
 
   /// 为聊天室添加管理员，需要拥有者权限 [roomId].[admin]
   /// 如果添加成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  Future<void> addChatRoomAdmin(String roomId, String admin) async {
+  Future<void> addChatRoomAdmin(
+    String roomId,
+    String admin,
+  ) async {
     Map req = {"roomId": roomId, "admin": admin};
     Map result = await _channel.invokeMethod(EMSDKMethod.addChatRoomAdmin, req);
     EMError.hasErrorFromResult(result);
@@ -257,7 +272,10 @@ class EMChatRoomManager {
 
   /// 删除聊天室管理员，需要拥有着权限[roomId].[admin]
   /// 如果删除成功，请调用[onSuccess]，如果出现错误，请调用[onError]。
-  Future<void> removeChatRoomAdmin(String roomId, String admin) async {
+  Future<void> removeChatRoomAdmin(
+    String roomId,
+    String admin,
+  ) async {
     Map req = {"roomId": roomId, "admin": admin};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.removeChatRoomAdmin, req);
@@ -266,7 +284,10 @@ class EMChatRoomManager {
 
   /// @nodoc 获取聊天室的禁言列表，需要拥有者或者管理员权限 [roomId].[pageNum].[pageSize]
   Future<List> fetchChatRoomMuteList(
-      String roomId, int pageNum, int pageSize) async {
+    String roomId, {
+    int pageNum = 1,
+    int pageSize = 200,
+  }) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMuteList, req);
@@ -275,7 +296,10 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 删除聊天室成员，需要拥有者或者管理员权限[roomId].[members].
-  Future<void> removeChatRoomMembers(String roomId, List members) async {
+  Future<void> removeChatRoomMembers(
+    String roomId,
+    List members,
+  ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.removeChatRoomMembers, req);
@@ -283,7 +307,10 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 添加成员到黑名单，禁止成员继续加入聊天室，需要拥有者或者管理员权限[roomId].[members].
-  Future<void> blockChatRoomMembers(String roomId, List members) async {
+  Future<void> blockChatRoomMembers(
+    String roomId,
+    List members,
+  ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.blockChatRoomMembers, req);
@@ -291,7 +318,10 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 将成员从黑名单种移除，需要拥有者或者管理员权限[roomId].[members].
-  Future<void> unBlockChatRoomMembers(String roomId, List members) async {
+  Future<void> unBlockChatRoomMembers(
+    String roomId,
+    List members,
+  ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.unBlockChatRoomMembers, req);
@@ -300,7 +330,10 @@ class EMChatRoomManager {
 
   /// @nodoc 获取群组黑名单列表，分页显示，需要拥有者或者管理员权限 [roomId].[pageNum].[pageSize]
   Future<List> fetchChatRoomBlackList(
-      String roomId, int pageNum, int pageSize) async {
+    String roomId, [
+    int pageNum = 1,
+    int pageSize = 200,
+  ]) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchChatRoomBlackList, req);
@@ -310,7 +343,9 @@ class EMChatRoomManager {
 
   /// 更新聊天室公告[roomId].[announcement]
   Future<void> updateChatRoomAnnouncement(
-      String roomId, String announcement) async {
+    String roomId,
+    String announcement,
+  ) async {
     Map req = {"roomId": roomId, "announcement": announcement};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.updateChatRoomAnnouncement, req);
@@ -318,7 +353,9 @@ class EMChatRoomManager {
   }
 
   /// 从服务器获取聊天室公告内容[roomId]
-  Future<String> fetchChatRoomAnnouncement(String roomId) async {
+  Future<String> fetchChatRoomAnnouncement(
+    String roomId,
+  ) async {
     Map req = {"roomId": roomId};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchChatRoomAnnouncement, req);
