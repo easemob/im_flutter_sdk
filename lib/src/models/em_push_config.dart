@@ -48,8 +48,11 @@ extension EMPushConfigExtension on EMImPushConfig {
       const MethodChannel('com.easemob.im/em_push_manager', JSONMethodCodec());
 
   /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
-  Future<bool> setNoDisturb(bool isNoDisturb,
-      [int startTime = 0, int endTime = 24]) async {
+  Future<bool> setNoDisturb(
+    bool isNoDisturb, [
+    int startTime = 0,
+    int endTime = 24,
+  ]) async {
     if (startTime < 0) startTime = 0;
     if (endTime > 24) endTime = 24;
     Map req = {
@@ -81,7 +84,10 @@ extension EMPushConfigExtension on EMImPushConfig {
   }
 
   /// 通过群id[groupId]设置群组是否免打扰[isNoDisturb]
-  Future<EMGroup> setGroupToDisturb(String groupId, bool isNoDisturb) async {
+  Future<EMGroup> setGroupToDisturb(
+    String groupId,
+    bool isNoDisturb,
+  ) async {
     Map req = {'noDisturb': isNoDisturb, 'group_id': groupId};
     EMLog.v('setGroupToDisturb: ' + req.toString());
     Map result =

@@ -11,6 +11,10 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 
+typedef OnErrorMessageTap = Function(EMMessage msg);
+typedef OnMessageLongPress = Function(EMMessage msg);
+typedef OnMessageTap = Function(EMMessage msg);
+
 class ChatItem extends StatefulWidget {
   const ChatItem(
     this.msg, {
@@ -22,13 +26,13 @@ class ChatItem extends StatefulWidget {
   final EMMessage msg;
 
   /// 长按消息bubble
-  final VoidCallback longPress;
+  final OnMessageLongPress longPress;
 
   /// 点击消息bubble
-  final VoidCallback onTap;
+  final OnMessageTap onTap;
 
   /// 重发按钮点击
-  final VoidCallback errorBtnOnTap;
+  final OnErrorMessageTap errorBtnOnTap;
 
   /// 头像按钮点击
   final Function(String eid) avatarOnTap;
@@ -90,12 +94,12 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
           behavior: HitTestBehavior.translucent,
           onTap: () {
             if (widget.onTap != null) {
-              widget.onTap();
+              widget.onTap(widget.msg);
             }
           },
           onLongPress: () {
             if (widget.longPress != null) {
-              widget.longPress();
+              widget.longPress(widget.msg);
             }
           },
           child: Container(
@@ -150,31 +154,37 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
           ),
         );
       } else {
-        if (widget.msg.status == EMMessageStatus.PROGRESS) {
-          return Padding(
-            padding: EdgeInsets.all(sWidth(10)),
-            child: SizedBox(
-              width: sWidth(13),
-              height: sWidth(13),
-              child: CircularProgressIndicator(
-                strokeWidth: 1,
-              ),
+        return Padding(
+          padding: EdgeInsets.all(sWidth(10)),
+          child: SizedBox(
+            width: sWidth(30),
+            height: sWidth(30),
+            child: Builder(
+              builder: (_) {
+                if (widget.msg.status == EMMessageStatus.PROGRESS) {
+                  return CircularProgressIndicator(
+                    strokeWidth: 1,
+                  );
+                } else if (widget.msg.status == EMMessageStatus.FAIL) {
+                  return IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(
+                      Icons.error,
+                      color: Colors.red,
+                      size: sWidth(30),
+                    ),
+                    onPressed: () {
+                      if (widget.errorBtnOnTap != null) {
+                        widget.errorBtnOnTap(widget.msg);
+                      }
+                    },
+                  );
+                }
+                return Container();
+              },
             ),
-          );
-        } else if (widget.msg.status == EMMessageStatus.FAIL) {
-          return IconButton(
-            padding: EdgeInsets.zero,
-            icon: Icon(
-              Icons.error,
-              color: Colors.red,
-            ),
-            onPressed: () {
-              if (widget.errorBtnOnTap != null) {
-                widget.errorBtnOnTap();
-              }
-            },
-          );
-        }
+          ),
+        );
       }
     }
     return Container();

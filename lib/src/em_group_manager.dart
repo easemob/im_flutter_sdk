@@ -57,8 +57,10 @@ class EMGroupManager {
   }
 
   /// 从服务器获取已加入的群组列表
-  Future<List> getJoinedGroupsFromServer(
-      {int pageSize = 200, int pageNum = 1}) async {
+  Future<List> getJoinedGroupsFromServer({
+    int pageSize = 200,
+    int pageNum = 1,
+  }) async {
     Map req = {'pageSize': pageSize, 'pageNum': pageNum};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getJoinedGroupsFromServer, req);
@@ -70,8 +72,10 @@ class EMGroupManager {
   }
 
   /// 从服务器获取公开群组列表
-  Future<EMCursorResult> getPublicGroupsFromServer(
-      {int pageSize = 200, String cursor = ''}) async {
+  Future<EMCursorResult> getPublicGroupsFromServer({
+    int pageSize = 200,
+    String cursor = '',
+  }) async {
     Map req = {'pageSize': pageSize, 'cursor': cursor};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getPublicGroupsFromServer, req);
@@ -85,9 +89,8 @@ class EMGroupManager {
   }
 
   /// 创建群组
-  Future<EMGroup> createGroup(
-      {@required String groupName,
-      @required EMGroupOptions settings,
+  Future<EMGroup> createGroup(String groupName,
+      {EMGroupOptions settings,
       String desc = '',
       List<String> inviteMembers,
       String inviteReason = ''}) async {
@@ -104,8 +107,7 @@ class EMGroupManager {
   }
 
   /// 获取群组详情
-  Future<EMGroup> getGroupSpecificationFromServer(
-      {@required String groupId}) async {
+  Future<EMGroup> getGroupSpecificationFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getGroupSpecificationFromServer, req);
@@ -116,9 +118,10 @@ class EMGroupManager {
 
   /// 获取群组成员列表
   Future<EMCursorResult> getGroupMemberListFromServer(
-      {@required String groupId,
-      int pageSize = 200,
-      String cursor = ''}) async {
+    String groupId, {
+    int pageSize = 200,
+    String cursor = '',
+  }) async {
     Map req = {
       'groupId': groupId,
       'cursor': cursor,
@@ -136,7 +139,10 @@ class EMGroupManager {
 
   /// 获取黑名单列表
   Future<List> getGroupBlacklistFromServer(
-      {String groupId, int pageSize = 200, int pageNum = 1}) async {
+    String groupId, {
+    int pageSize = 200,
+    int pageNum = 1,
+  }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getGroupBlacklistFromServer, req);
@@ -146,7 +152,10 @@ class EMGroupManager {
 
   /// 获取禁言列表
   Future<List> getGroupMuteListFromServer(
-      {String groupId, int pageSize = 200, int pageNum = 1}) async {
+    String groupId, {
+    int pageSize = 200,
+    int pageNum = 1,
+  }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getGroupMuteListFromServer, req);
@@ -155,7 +164,7 @@ class EMGroupManager {
   }
 
   /// 获取白名单列表
-  Future<List> getGroupWhiteListFromServer({String groupId}) async {
+  Future<List> getGroupWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getGroupWhiteListFromServer, req);
@@ -164,7 +173,7 @@ class EMGroupManager {
   }
 
   /// 判断自己是否在白名单中
-  Future<bool> isMemberInWhiteListFromServer({String groupId}) async {
+  Future<bool> isMemberInWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.isMemberInWhiteListFromServer, req);
@@ -174,7 +183,10 @@ class EMGroupManager {
 
   /// 获取群共享文件列表
   Future<List<EMGroupSharedFile>> getGroupFileListFromServer(
-      {String groupId, int pageSize = 200, int pageNum = 1}) async {
+    String groupId, {
+    int pageSize = 200,
+    int pageNum = 1,
+  }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getGroupFileListFromServer, req);
@@ -187,7 +199,7 @@ class EMGroupManager {
   }
 
   /// 从服务器获取群公告
-  Future<String> getGroupAnnouncementFromServer({String groupId}) async {
+  Future<String> getGroupAnnouncementFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getGroupAnnouncementFromServer, req);
@@ -197,9 +209,10 @@ class EMGroupManager {
 
   /// 邀请用户加入私有群， 用于私有群: PrivateOnlyOwnerInvite / PrivateMemberCanInvite
   Future<void> addMembers(
-      {@required String groupId,
-      @required List<String> members,
-      String welcome}) async {
+    String groupId,
+    List<String> members, [
+    String welcome = '',
+  ]) async {
     Map req = {'welcome': welcome, 'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.addMembers, req);
     EMError.hasErrorFromResult(result);
@@ -207,7 +220,9 @@ class EMGroupManager {
 
   /// 从群组中移除用户
   Future<void> removeMembers(
-      {@required String groupId, @required List<String> members}) async {
+    String groupId,
+    List<String> members,
+  ) async {
     Map req = {'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.removeMembers, req);
     EMError.hasErrorFromResult(result);
@@ -215,7 +230,9 @@ class EMGroupManager {
 
   /// 将用户加入到群组黑名单中
   Future<void> blockMembers(
-      {@required String groupId, @required List<String> members}) async {
+    String groupId,
+    List<String> members,
+  ) async {
     Map req = {'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.blockMembers, req);
     EMError.hasErrorFromResult(result);
@@ -223,7 +240,9 @@ class EMGroupManager {
 
   /// 将用户从黑名单中移除
   Future<void> unblockMembers(
-      {@required String groupId, @required List<String> members}) async {
+    String groupId,
+    List<String> members,
+  ) async {
     Map req = {'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.unblockMembers, req);
     EMError.hasErrorFromResult(result);
@@ -231,7 +250,9 @@ class EMGroupManager {
 
   /// 更新群组名称
   Future<EMGroup> changeGroupName(
-      {@required String groupId, @required String name}) async {
+    String groupId,
+    String name,
+  ) async {
     Map req = {'name': name, 'groupId': groupId};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateGroupSubject, req);
@@ -241,7 +262,9 @@ class EMGroupManager {
 
   /// 更新群描述
   Future<EMGroup> changeGroupDescription(
-      {@required String groupId, @required String desc}) async {
+    String groupId,
+    String desc,
+  ) async {
     Map req = {'desc': desc, 'groupId': groupId};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateDescription, req);
@@ -250,28 +273,28 @@ class EMGroupManager {
   }
 
   /// 退出群组
-  Future<void> leaveGroup({@required String groupId}) async {
+  Future<void> leaveGroup(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.leaveGroup, req);
     EMError.hasErrorFromResult(result);
   }
 
   /// 解散群组
-  Future<void> destroyGroup({@required String groupId}) async {
+  Future<void> destroyGroup(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.destroyGroup, req);
     EMError.hasErrorFromResult(result);
   }
 
   /// 不接收群消息
-  Future<void> blockGroup({@required String groupId}) async {
+  Future<void> blockGroup(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.blockGroup, req);
     EMError.hasErrorFromResult(result);
   }
 
   /// 恢复接收群消息
-  Future<void> unblockGroup({@required String groupId}) async {
+  Future<void> unblockGroup(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.unblockGroup, req);
     EMError.hasErrorFromResult(result);
@@ -279,8 +302,10 @@ class EMGroupManager {
 
   /// 将群转给其他人，需要群主调用
   Future<EMGroup> changeGroupOwner(
-      {@required String groupId, @required String username}) async {
-    Map req = {'groupId': groupId, 'owner': username};
+    String groupId,
+    String newOwner,
+  ) async {
+    Map req = {'groupId': groupId, 'owner': newOwner};
     Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupOwner, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.updateGroupOwner]);
@@ -288,8 +313,10 @@ class EMGroupManager {
 
   /// 添加管理员
   Future<EMGroup> addAdmin(
-      {@required String groupId, @required String username}) async {
-    Map req = {'groupId': groupId, 'admin': username};
+    String groupId,
+    String memberId,
+  ) async {
+    Map req = {'groupId': groupId, 'admin': memberId};
     Map result = await _channel.invokeMethod(EMSDKMethod.addAdmin, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.addAdmin]);
@@ -297,8 +324,10 @@ class EMGroupManager {
 
   /// 移除管理员
   Future<EMGroup> removeAdmin(
-      {@required String groupId, @required String username}) async {
-    Map req = {'groupId': groupId, 'admin': username};
+    String groupId,
+    String adminId,
+  ) async {
+    Map req = {'groupId': groupId, 'admin': adminId};
     Map result = await _channel.invokeMethod(EMSDKMethod.removeAdmin, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.removeAdmin]);
@@ -306,9 +335,10 @@ class EMGroupManager {
 
   /// 对群成员禁言，白名单中的用户不会被限制
   Future<EMGroup> muteMembers(
-      {@required String groupId,
-      @required List<String> members,
-      int duration = -1}) async {
+    String groupId,
+    List<String> members, {
+    int duration = -1,
+  }) async {
     Map req = {'groupId': groupId, 'members': members, 'duration': duration};
     Map result = await _channel.invokeMethod(EMSDKMethod.addAdmin, req);
     EMError.hasErrorFromResult(result);
@@ -317,7 +347,9 @@ class EMGroupManager {
 
   /// 对群成员取消禁言
   Future<EMGroup> unMuteMembers(
-      {@required String groupId, @required List<String> members}) async {
+    String groupId,
+    List<String> members,
+  ) async {
     Map req = {'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.unMuteMembers, req);
     EMError.hasErrorFromResult(result);
@@ -325,7 +357,7 @@ class EMGroupManager {
   }
 
   /// 对所有群成员禁言，白名单中的用户不会被限制
-  Future<void> muteAllMembers({@required String groupId}) async {
+  Future<void> muteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.muteAllMembers, req);
     EMError.hasErrorFromResult(result);
@@ -333,7 +365,7 @@ class EMGroupManager {
   }
 
   /// 取消对所有群成员禁言
-  Future<void> unMuteAllMembers({@required String groupId}) async {
+  Future<void> unMuteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.unMuteAllMembers, req);
     EMError.hasErrorFromResult(result);
@@ -342,7 +374,9 @@ class EMGroupManager {
 
   /// 将用户添加到白名单
   Future<EMGroup> addWhiteList(
-      {@required String groupId, @required List<String> members}) async {
+    String groupId,
+    List<String> members,
+  ) async {
     Map req = {'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.addWhiteList, req);
     EMError.hasErrorFromResult(result);
@@ -351,7 +385,9 @@ class EMGroupManager {
 
   /// 将用户移出白名单
   Future<EMGroup> removeWhiteList(
-      {@required String groupId, @required List<String> members}) async {
+    String groupId,
+    List<String> members,
+  ) async {
     Map req = {'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.removeWhiteList, req);
     EMError.hasErrorFromResult(result);
@@ -360,7 +396,9 @@ class EMGroupManager {
 
   /// 上传群共享文件
   Future<bool> uploadGroupSharedFile(
-      {@required String groupId, @required String filePath}) async {
+    String groupId,
+    String filePath,
+  ) async {
     Map req = {'groupId': groupId, 'filePath': filePath};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.uploadGroupSharedFile, req);
@@ -370,9 +408,10 @@ class EMGroupManager {
 
   /// 下载群共享文件
   Future<bool> downloadGroupSharedFile(
-      {@required String groupId,
-      @required String fileId,
-      @required String savePath}) async {
+    String groupId,
+    String fileId,
+    String savePath,
+  ) async {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.downloadGroupSharedFile, req);
@@ -382,7 +421,9 @@ class EMGroupManager {
 
   /// 删除群共享文件
   Future<EMGroup> removeGroupSharedFile(
-      {@required String groupId, @required String fileId}) async {
+    String groupId,
+    String fileId,
+  ) async {
     Map req = {'groupId': groupId, 'fileId': fileId};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.removeGroupSharedFile, req);
@@ -392,7 +433,9 @@ class EMGroupManager {
 
   /// 更新群公告
   Future<EMGroup> updateGroupAnnouncement(
-      {@required String groupId, @required String announcement}) async {
+    String groupId,
+    String announcement,
+  ) async {
     Map req = {'groupId': groupId, 'announcement': announcement};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateGroupAnnouncement, req);
@@ -402,7 +445,9 @@ class EMGroupManager {
 
   /// 更新群扩展
   Future<EMGroup> updateGroupExt(
-      {@required String groupId, @required String ext}) async {
+    String groupId,
+    String ext,
+  ) async {
     Map req = {'groupId': groupId, 'ext': ext};
     Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupExt, req);
     EMError.hasErrorFromResult(result);
@@ -410,7 +455,9 @@ class EMGroupManager {
   }
 
   /// 加入公开群，用于加入不需要群主/管理员同意的公开群: EMGroupStyle.PublicOpenJoin
-  Future<EMGroup> joinPublicGroup({@required String groupId}) async {
+  Future<EMGroup> joinPublicGroup(
+    String groupId,
+  ) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.joinPublicGroup, req);
     EMError.hasErrorFromResult(result);
@@ -419,7 +466,9 @@ class EMGroupManager {
 
   /// 申请加入公开群，用于加入需要群主/管理员同意的公开群: EMGroupStyle.PublicJoinNeedApproval
   Future<EMGroup> requestToJoinPublicGroup(
-      {@required String groupId, String reason = ''}) async {
+    String groupId, [
+    String reason = '',
+  ]) async {
     Map req = {'groupId': groupId, 'reason': reason};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.requestToJoinPublicGroup, req);
@@ -430,7 +479,9 @@ class EMGroupManager {
   /// 同意公开群组申请，当群类型是EMGroupStyle.PublicJoinNeedApproval，
   /// 有人申请进群时，管理员和群主会收到申请，用该方法同意申请
   Future<EMGroup> acceptJoinApplication(
-      {@required String groupId, @required String username}) async {
+    String groupId,
+    String username,
+  ) async {
     Map req = {'groupId': groupId, 'username': username};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.acceptJoinApplication, req);
@@ -441,9 +492,10 @@ class EMGroupManager {
   /// 拒绝公开群组申请，当群类型是EMGroupStyle.PublicJoinNeedApproval，
   /// 有人申请进群时，管理员和群主会收到申请，用该方法拒绝申请
   Future<EMGroup> declineJoinApplication(
-      {@required String groupId,
-      @required String username,
-      String reason = ''}) async {
+    String groupId,
+    String username, [
+    String reason = '',
+  ]) async {
     Map req = {'groupId': groupId, 'username': username, 'reason': reason};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.declineJoinApplication, req);
@@ -454,7 +506,9 @@ class EMGroupManager {
   /// 同意群邀请，当群组是PrivateOnlyOwnerInvite / PrivateMemberCanInvite时，
   /// 有人添加您入群时您会收到群邀请，用该方法同意群邀请
   Future<EMGroup> acceptInvitationFromGroup(
-      {@required String groupId, @required String inviter}) async {
+    String groupId,
+    String inviter,
+  ) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.acceptInvitationFromGroup, req);
@@ -465,9 +519,10 @@ class EMGroupManager {
   /// 拒绝群邀请，当群组是PrivateOnlyOwnerInvite / PrivateMemberCanInvite时，
   /// 有人添加您入群时您会收到群邀请，用该方法拒绝群邀请
   Future<EMGroup> declineInvitationFromGroup(
-      {@required String groupId,
-      @required String inviter,
-      String reason = ''}) async {
+    String groupId,
+    String inviter, [
+    String reason = '',
+  ]) async {
     Map req = {'groupId': groupId, 'inviter': inviter, 'reason': reason};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.declineInvitationFromGroup, req);
@@ -477,7 +532,9 @@ class EMGroupManager {
 
   /// 设置群组免打扰，设置后，当您不在线时您不会收到群推送
   Future<EMGroup> ignoreGroupPush(
-      {@required String groupId, bool enable = true}) async {
+    String groupId, [
+    bool enable = true,
+  ]) async {
     Map req = {'groupId': groupId, 'enable': enable};
     Map result = await _channel.invokeMethod(EMSDKMethod.ignoreGroupPush, req);
     EMError.hasErrorFromResult(result);

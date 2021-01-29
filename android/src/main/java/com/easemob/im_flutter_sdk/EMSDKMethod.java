@@ -36,6 +36,7 @@ public class EMSDKMethod {
 
 /// EMChatManager methods
     static final String sendMessage = "sendMessage";
+    static final String resendMessage = "resendMessage";
     static final String ackMessageRead = "ackMessageRead";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";

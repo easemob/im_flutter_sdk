@@ -8,6 +8,7 @@ import com.hyphenate.chat.EMConversation.EMConversationType;
 
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.adapter.message.EMAMessage;
 import com.hyphenate.exceptions.HyphenateException;
 
 
@@ -45,6 +46,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         try {
             if(EMSDKMethod.sendMessage.equals(call.method)) {
                 sendMessage(param, EMSDKMethod.sendMessage, result);
+            }
+            else if(EMSDKMethod.resendMessage.equals(call.method))
+            {
+                resendMessage(param, EMSDKMethod.resendMessage, result);
             }
             else if(EMSDKMethod.ackMessageRead.equals(call.method))
             {
@@ -112,6 +117,50 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void sendMessage(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage msg = EMMessageHelper.fromJson(param);
 
+        msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
+            @Override
+            public void onSuccess() {
+                post(()->{
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("localTime", msg.localTime());
+                    messageChannel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
+                });
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+                post(()->{
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("progress", progress);
+                    map.put("localTime", msg.localTime());
+                    messageChannel.invokeMethod(EMSDKMethod.onMessageProgressUpdate, map);
+                });
+            }
+
+            @Override
+            public void onError(int code, String desc) {
+                post(()->{
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("localTime", msg.localTime());
+                    map.put("code", code);
+                    map.put("description", desc);
+                    messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
+                });
+            }
+        });
+        asyncRunnable(()->{
+            EMClient.getInstance().chatManager().sendMessage(msg);
+            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+        });
+    }
+
+    private void resendMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        EMMessage tempMsg = EMMessageHelper.fromJson(param);
+        System.out.println(tempMsg.toString());
+        EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
+        msg.setStatus(EMMessage.Status.CREATE);
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {

@@ -34,6 +34,8 @@ class EMClient {
   EMOptions _options;
   String _accessToken;
 
+  String _sdkVersion = '1.0';
+
   String _currentUsername;
   bool _isLoginBefore = false;
 
@@ -120,7 +122,9 @@ class EMClient {
 
   /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
   /// 返回退出是否成功
-  Future<bool> logout({bool unbindDeviceToken = true}) async {
+  Future<bool> logout([
+    bool unbindDeviceToken = true,
+  ]) async {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
     Map req = {'unbindToken': unbindDeviceToken};
     Map result = await _channel.invokeMethod(EMSDKMethod.logout, req);
@@ -338,9 +342,7 @@ class EMClient {
     }
   }
 
-  String flutterSDKVersion() {
-    return "1.0";
-  }
+  String get flutterSDKVersion => _sdkVersion;
 
   void _clearAllInfo() {
     _isLoginBefore = false;
