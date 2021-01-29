@@ -1,6 +1,22 @@
-## 集成SDK
+## 环信im flutter sdk
 
-注册环信请访问[环信官网](https://www.easemob.com/)。
+本机主要讲解环信im flutter sdk如何使用。
+
+[环信官网](https://www.easemob.com/)
+
+[环信iOS集成文档](http://docs-im.easemob.com/im/ios/sdk/prepare)
+
+[环信Android集成文档](http://docs-im.easemob.com/im/android/sdk/import)
+
+源码地址: [Github](https://github.com/easemob/im_flutter_sdk)  
+任何问题可以通过 [Github Issues](https://github.com/easemob/im_flutter_sdk/issues) 提问
+
+
+## 前期准备
+
+如果您还没有Appkey，可以前往[环信官网](https://www.easemob.com/)注册[即时通讯云](https://console.easemob.com/user/register)。
+
+进入console -> 添加应用 -> Appkey 获取`Appkey`。
 
 #### 通过git集成  
 
