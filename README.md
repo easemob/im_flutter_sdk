@@ -484,7 +484,7 @@ try{
 
 ```dart
 try{
-  await EMClient.getInstance.contactManager.addContact(friendEmId, reason: '您好，我想添加您为好友');
+  await EMClient.getInstance.contactManager.addContact(friendEmId, '您好，我想添加您为好友');
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
