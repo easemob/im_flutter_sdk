@@ -1,6 +1,6 @@
 ## 集成SDK
 
-注册环信请访问[环信官网](!https://www.easemob.com/)。
+注册环信请访问[环信官网](https://www.easemob.com/)。
 
 #### 通过git集成  
 
@@ -68,7 +68,7 @@ await EMClient.getInstance.init(options);
 ```
 
 >环信的推送只针对离线设备，如果您的app只是后台且没有被系统挂起，此时客户端的长连接仍然还在，这时消息仍然会直接走收消息的方法，并不会触发推送，这就要求您在收消息时判断App的状态，并实现本地推送。  
->推送证书申请上传，安卓端请参考文档[第三方推送集成](!http://docs-im.easemob.com/im/android/push/thirdpartypush#%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%A8%E9%80%81%E9%9B%86%E6%88%90)，iOS请参考文档[APNs推送](!http://docs-im.easemob.com/im/ios/apns/deploy)。
+>推送证书申请上传，安卓端请参考文档[第三方推送集成](http://docs-im.easemob.com/im/android/push/thirdpartypush#%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%A8%E9%80%81%E9%9B%86%E6%88%90)，iOS请参考文档[APNs推送](http://docs-im.easemob.com/im/ios/apns/deploy)。
 
 #### 注册
 
@@ -80,7 +80,7 @@ try {
 }
 ```
 
->客户端注册需要将注册方式设置为`开放注册`，具体说明请参考文档[用户管理](!http://docs-im.easemob.com/im/server/ready/user#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86)。
+>客户端注册需要将注册方式设置为`开放注册`，具体说明请参考文档[用户管理](http://docs-im.easemob.com/im/server/ready/user#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86)。
 
 #### 登录
 
@@ -111,7 +111,7 @@ try {
 ```
 
 >退出也有失败的情况，需要确定是否失败。  
->注册环信id详细说明请参考文档[用户体系集成](!http://docs-im.easemob.com/im/server/ready/user)。
+>注册环信id详细说明请参考文档[用户体系集成](http://docs-im.easemob.com/im/server/ready/user)。
 
 
 #### 监听服务器连接状态
