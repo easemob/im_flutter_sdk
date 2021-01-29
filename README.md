@@ -1,6 +1,6 @@
 ## 环信im flutter sdk
 
-本机主要讲解环信im flutter sdk如何使用。
+文章主要讲解环信im flutter sdk如何使用。
 
 [环信官网](https://www.easemob.com/)
 
@@ -27,7 +27,7 @@ dependencies:
   im_flutter_sdk:  
     git:  
       url: https://github.com/easemob/im_flutter_sdk.git 
-      ref: alpha
+      ref: stable
 ```
 
 2. 执行`flutter pub get`;
