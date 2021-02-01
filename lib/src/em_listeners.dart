@@ -20,7 +20,6 @@ abstract class EMMultiDeviceListener {
 
 /// @nodoc
 enum EMContactGroupEvent {
-  //TODO: confirm enumeration value sorted correctly
   CONTACT_REMOVE,
   CONTACT_ACCEPT,
   CONTACT_DECLINE,

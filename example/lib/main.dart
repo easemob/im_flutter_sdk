@@ -1,6 +1,4 @@
 import 'package:easeim_flutter_demo/pages/account/register_page.dart';
-import 'package:easeim_flutter_demo/pages/call/video_call_page.dart';
-import 'package:easeim_flutter_demo/pages/call/voice_call_page.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
 import 'package:easeim_flutter_demo/pages/home_page.dart';
@@ -36,8 +34,6 @@ class EaseIMDemo extends StatelessWidget {
           '/login': (context) => LoginPage(),
           '/register': (context) => RegisterPage(),
           '/home': (context) => HomePage(),
-          '/voicecall': (context) => VoiceCallPage(),
-          '/videocall': (context) => VideoCallPage(),
         },
         onGenerateRoute: onGenerateRoute,
         theme: ThemeData(
