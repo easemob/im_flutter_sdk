@@ -571,7 +571,7 @@ class EMMessageBodyHelper {
         File file = new File(localPath);
 
         EMImageMessageBody body = new EMImageMessageBody(file);
-        body.setFileLength(json.getLong("fileSize"));
+//        body.setFileLength(json.getLong("fileSize"));
         body.setFileName(json.getString("displayName"));
         body.setRemoteUrl(json.getString("remotePath"));
         body.setSecret(json.getString("secret"));
@@ -592,7 +592,7 @@ class EMMessageBodyHelper {
     static Map<String, Object> imageBodyToJson(EMImageMessageBody body) {
         Map<String, Object> data = new HashMap<>();
         data.put("localPath", body.getLocalUrl());
-//        data.put("fileSize", body.get());
+//        data.put("fileSize", body);
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
