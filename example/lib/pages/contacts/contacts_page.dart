@@ -30,30 +30,42 @@ class ContactsPageState extends State<ContactsPage> {
         ),
       ),
       body: AzListView(
-        physics: BouncingScrollPhysics(),
-        data: _contactList,
-        itemCount: _contactList.length,
-        itemBuilder: (_, index) {
-          return getContactRow(index);
-        },
-        susItemHeight: 40,
-        susItemBuilder: (_, index) {
-          ContactModel model = _contactList[index];
-          String tag = model.getSuspensionTag();
-          if ('🔍' == model.getSuspensionTag()) {
-            return Container();
-          }
-          return _buildSusWidget(tag, isFloat: true);
-        },
-        indexBarData: SuspensionUtil.getTagIndexList(_contactList),
-      ),
+          // physics: BouncingScrollPhysics(),
+          data: _contactList,
+          itemCount: _contactList.length,
+          itemBuilder: (_, index) => getContactRow(index),
+          susItemHeight: 30,
+          susItemBuilder: (_, index) {
+            ContactModel model = _contactList[index];
+            String tag = model.getSuspensionTag();
+            return _buildSusWidget(
+              tag,
+              isFloat: true,
+            );
+          },
+          indexBarData: SuspensionUtil.getTagIndexList(_contactList),
+          indexHintBuilder: (BuildContext context, String tag) {
+            return Container(
+              alignment: Alignment.center,
+              width: 60.0,
+              height: 60.0,
+              decoration: BoxDecoration(
+                color: Colors.blue[700].withAlpha(200),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                tag,
+                style: TextStyle(color: Colors.white, fontSize: 30.0),
+              ),
+            );
+          }),
     );
   }
 
 // // 吸顶组件
   Widget _buildSusWidget(String susTag, {bool isFloat = false}) {
     return Container(
-      height: 40,
+      height: 30,
       width: MediaQuery.of(context).size.width,
       padding: EdgeInsets.only(left: 15),
       decoration: BoxDecoration(
@@ -64,12 +76,14 @@ class ContactsPageState extends State<ContactsPage> {
       ),
       alignment: Alignment.centerLeft,
       child: Text(
-        '${susTag == '★' ? '★ 星标朋友' : susTag}',
-        softWrap: false,
+        susTag,
+        textAlign: TextAlign.center,
+        softWrap: true,
         style: TextStyle(
-            fontSize: 18,
-            color: Color(0xff777777),
-            fontWeight: FontWeight.bold),
+          fontSize: 17,
+          color: Color(0xff777777),
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -129,20 +143,10 @@ class ContactsPageState extends State<ContactsPage> {
     } on EMError {
       // Fluttertoast.showToast(msg: '获取失败');
     } finally {
-      _handleList(_contactList);
+      SuspensionUtil.sortListBySuspensionTag(_contactList);
+      SuspensionUtil.setShowSuspensionStatus(_contactList);
+
       setState(() {});
     }
-  }
-
-  void _handleList(List<ContactModel> list) {
-    for (int i = 0, length = list.length; i < length; i++) {
-      if (RegExp("[A-Z]").hasMatch(list[i].firstLetter)) {
-        list[i].tagIndex = list[i].firstLetter;
-      } else {
-        list[i].tagIndex = "#";
-      }
-    }
-    //根据A-Z排序
-    SuspensionUtil.sortListBySuspensionTag(list);
   }
 }
