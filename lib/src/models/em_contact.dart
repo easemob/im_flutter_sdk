@@ -37,6 +37,5 @@ class EMContact {
 
   Future<void> setMarkName(String markName) async {
     _markName = markName;
-    // TODO: 更新备注到服务器？
   }
 }

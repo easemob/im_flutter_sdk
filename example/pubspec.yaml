@@ -24,6 +24,16 @@ dependencies:
   flutter:
     sdk: flutter
   
+  # 通讯录 listView
+  azlistview:
+    git:
+      url: https://github.com/dujiepeng/azlistview.git
+      ref: master
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.0
+
   # 数据缓存
   shared_preferences: ^0.5.12+4
 
@@ -50,10 +60,7 @@ dependencies:
 
   # 页面路由, 目前看demo跳转比较简单，可以不用。
   # fluro: ^1.7.8
-  
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.0
+
 
   # 监听键盘弹起
   keyboard_visibility: ^0.5.6
@@ -64,9 +71,7 @@ dependencies:
   # 拼音
   # lpinyin: ^1.1.0 
 
-  # 通讯录 listView
-  azlistview: ^1.1.0
-  # 图片选择
+  # 文件选择
   #file_picker: ^2.1.4
 
   # 元组
