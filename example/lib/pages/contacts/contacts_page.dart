@@ -10,7 +10,8 @@ class ContactsPage extends StatefulWidget {
   State<StatefulWidget> createState() => ContactsPageState();
 }
 
-class ContactsPageState extends State<ContactsPage> {
+class ContactsPageState extends State<ContactsPage>
+    implements EMContactEventListener {
   List<ContactModel> _contactList = [];
   List<ContactModel> _topList = [];
 
@@ -41,6 +42,13 @@ class ContactsPageState extends State<ContactsPage> {
           data: _contactList,
           itemCount: _contactList.length,
           itemBuilder: (_, index) => getContactRow(index),
+          separatorBuilder: (_, __) {
+            return Container(
+              color: Colors.grey[300],
+              height: 0.5,
+              margin: EdgeInsets.only(left: 20, right: 10),
+            );
+          },
           susItemHeight: 30,
           susItemBuilder: (_, index) {
             ContactModel model = _contactList[index];
@@ -54,22 +62,25 @@ class ContactsPageState extends State<ContactsPage> {
               );
             }
           },
-          // indexBarData: ['☆', ...SuspensionUtil.getTagIndexList(_contactList)],
           indexBarData: SuspensionUtil.getTagIndexList(_contactList),
           indexHintBuilder: (BuildContext context, String tag) {
-            return Container(
-              alignment: Alignment.center,
-              width: 60.0,
-              height: 60.0,
-              decoration: BoxDecoration(
-                color: Colors.blue[700].withAlpha(200),
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                tag,
-                style: TextStyle(color: Colors.white, fontSize: 30.0),
-              ),
-            );
+            if (tag == '☆') {
+              return Container();
+            } else {
+              return Container(
+                alignment: Alignment.center,
+                width: 60.0,
+                height: 60.0,
+                decoration: BoxDecoration(
+                  color: Colors.blue[700].withAlpha(200),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  tag,
+                  style: TextStyle(color: Colors.white, fontSize: 30.0),
+                ),
+              );
+            }
           }),
     );
   }
@@ -144,4 +155,19 @@ class ContactsPageState extends State<ContactsPage> {
       setState(() {});
     }
   }
+
+  @override
+  void onContactAdded(String userName) {}
+
+  @override
+  void onContactDeleted(String userName) {}
+
+  @override
+  void onContactInvited(String userName, String reason) {}
+
+  @override
+  void onFriendRequestAccepted(String userName) {}
+
+  @override
+  void onFriendRequestDeclined(String userName) {}
 }

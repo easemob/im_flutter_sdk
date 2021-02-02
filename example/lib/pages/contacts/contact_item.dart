@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 
 class ContactItem extends StatelessWidget {
-  ContactItem(this.title, {Image avatar, int unreadCount = 0});
+  ContactItem(
+    this.title, {
+    this.avatar,
+    this.unreadCount = 0,
+  });
   final String title;
+  final Image avatar;
+  final unreadCount;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -14,9 +20,9 @@ class ContactItem extends StatelessWidget {
             top: 10,
             bottom: 10,
           ),
-          width: 50,
-          height: 50,
-          child: Image.asset('images/logo.png'),
+          width: 45,
+          height: 55,
+          child: avatar ?? Image.asset('images/logo.png'),
         ),
         Container(
           alignment: Alignment.centerLeft,
