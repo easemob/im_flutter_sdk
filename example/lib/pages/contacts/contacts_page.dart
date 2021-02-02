@@ -30,7 +30,6 @@ class ContactsPageState extends State<ContactsPage> {
         ),
       ),
       body: AzListView(
-          // physics: BouncingScrollPhysics(),
           data: _contactList,
           itemCount: _contactList.length,
           itemBuilder: (_, index) => getContactRow(index),
@@ -71,7 +70,12 @@ class ContactsPageState extends State<ContactsPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         border: isFloat
-            ? Border(bottom: BorderSide(color: Color(0xFFE6E6E6), width: 0.5))
+            ? Border(
+                bottom: BorderSide(
+                  color: Color(0xFFE6E6E6),
+                  width: 0.5,
+                ),
+              )
             : null,
       ),
       alignment: Alignment.centerLeft,
