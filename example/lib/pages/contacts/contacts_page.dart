@@ -3,6 +3,8 @@ import 'package:easeim_flutter_demo/models/contact_model.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+import 'contact_item.dart';
+
 class ContactsPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => ContactsPageState();
@@ -10,10 +12,16 @@ class ContactsPage extends StatefulWidget {
 
 class ContactsPageState extends State<ContactsPage> {
   List<ContactModel> _contactList = [];
+  List<ContactModel> _topList = [];
 
   @override
   void initState() {
     super.initState();
+    _topList.addAll([
+      ContactModel.custom('新的好友'),
+      ContactModel.custom('群聊'),
+      ContactModel.custom('聊天室')
+    ]);
     _fetchContactsFromServer();
   }
 
@@ -36,12 +44,17 @@ class ContactsPageState extends State<ContactsPage> {
           susItemHeight: 30,
           susItemBuilder: (_, index) {
             ContactModel model = _contactList[index];
-            String tag = model.getSuspensionTag();
-            return _buildSusWidget(
-              tag,
-              isFloat: true,
-            );
+            if (model.firstLetter == '☆') {
+              return Container();
+            } else {
+              String tag = model.getSuspensionTag();
+              return _buildSusWidget(
+                tag,
+                isFloat: false,
+              );
+            }
           },
+          // indexBarData: ['☆', ...SuspensionUtil.getTagIndexList(_contactList)],
           indexBarData: SuspensionUtil.getTagIndexList(_contactList),
           indexHintBuilder: (BuildContext context, String tag) {
             return Container(
@@ -93,47 +106,25 @@ class ContactsPageState extends State<ContactsPage> {
   }
 
   Widget getContactRow(int index) {
+    ContactModel model = _contactList[index];
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _contactDidSelected(_contactList[index]),
+      onTap: () => _contactDidSelected(model),
       child: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              margin: EdgeInsets.only(
-                left: 15,
-                top: 10,
-                bottom: 10,
-              ),
-              width: 50,
-              height: 50,
-              child: Image.asset('images/logo.png'),
-            ),
-            Container(
-              alignment: Alignment.centerLeft,
-              height: 60,
-              margin: EdgeInsets.only(top: 5, bottom: 5, left: 15, right: 5),
-              child: Text(
-                _contactList[index].contactId,
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.black,
-                ),
-                maxLines: 1,
-              ),
-            )
-          ],
-        ),
+        child: ContactItem(model.name),
       ),
     );
   }
 
   _contactDidSelected(ContactModel contact) async {
-    EMConversation conv = await EMClient.getInstance.chatManager
-        .getConversation(contact.contactId);
-    Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {});
+    if (contact.isCustom) {
+    } else {
+      EMConversation conv = await EMClient.getInstance.chatManager
+          .getConversation(contact.contactId);
+      Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {
+        // TODO: reload conversations list.
+      });
+    }
   }
 
   Future<void> _fetchContactsFromServer() async {
@@ -142,14 +133,14 @@ class ContactsPageState extends State<ContactsPage> {
           await EMClient.getInstance.contactManager.getAllContactsFromServer();
       _contactList.clear();
       for (var contact in contacts) {
-        _contactList.add(ContactModel(contact));
+        _contactList.add(ContactModel.contact(contact));
       }
     } on EMError {
       // Fluttertoast.showToast(msg: '获取失败');
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
-
+      _contactList.insertAll(0, _topList);
       setState(() {});
     }
   }
