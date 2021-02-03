@@ -14,8 +14,8 @@ void main() {
 
   SystemUiOverlayStyle uiStyle = SystemUiOverlayStyle.light;
   SystemChrome.setSystemUIOverlayStyle(uiStyle);
-  EMPushConfig config = EMPushConfig()..enableAPNs('chatdemoui');
-  var options = EMOptions(appKey: 'easemob-demo#chatdemoui');
+  EMPushConfig config = EMPushConfig()..enableAPNs('EaseIM_APNS_Product');
+  var options = EMOptions(appKey: 'easemob-demo#easeim');
   options.pushConfig = config;
   EMClient.getInstance.init(options);
   return runApp(EaseIMDemo());
