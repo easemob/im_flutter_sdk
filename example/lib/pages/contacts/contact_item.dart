@@ -43,7 +43,20 @@ class ContactItem extends StatelessWidget {
             ),
             maxLines: 1,
           ),
-        )
+        ),
+        Expanded(
+          child: SizedBox(),
+        ),
+        Container(
+          margin: EdgeInsets.only(
+            right: sWidth(40),
+          ),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: unreadCoundWidget(unreadCount),
+        ),
       ],
     );
   }

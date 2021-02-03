@@ -17,6 +17,8 @@ class ContactsPageState extends State<ContactsPage>
   List<ContactModel> _contactList = [];
   List<ContactModel> _topList = [];
 
+  int _friendRequestCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -132,15 +134,27 @@ class ContactsPageState extends State<ContactsPage>
     ContactModel model = _contactList[index];
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _contactDidSelected(model),
-      child: SafeArea(
-        child: ContactItem(model.name),
-      ),
+      onTap: () => _contactDidSelected(model, index),
+      child: SafeArea(child: Builder(builder: (_) {
+        int unreadCount = 0;
+        if (index == 0) {
+          unreadCount = _friendRequestCount;
+        }
+        return ContactItem(
+          model.name,
+          unreadCount: unreadCount,
+        );
+      })),
     );
   }
 
-  _contactDidSelected(ContactModel contact) async {
+  _contactDidSelected(ContactModel contact, int index) async {
     if (contact.isCustom) {
+      if (index == 0) {
+        Navigator.of(context).pushNamed('/newFriends').then((value) {
+          setState(() {});
+        });
+      }
     } else {
       EMConversation conv = await EMClient.getInstance.chatManager
           .getConversation(contact.contactId);
