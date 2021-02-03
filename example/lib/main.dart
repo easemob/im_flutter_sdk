@@ -1,5 +1,6 @@
 import 'package:easeim_flutter_demo/pages/account/register_page.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
+import 'package:easeim_flutter_demo/pages/contacts/contact_new_friends.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
 import 'package:easeim_flutter_demo/pages/home_page.dart';
 import 'package:easeim_flutter_demo/pages/account/login_page.dart';
@@ -36,6 +37,7 @@ class EaseIMDemo extends StatelessWidget {
           '/login': (context) => LoginPage(),
           '/register': (context) => RegisterPage(),
           '/home': (context) => HomePage(),
+          '/newFriends': (context) => ContactNewFirends(),
         },
         onGenerateRoute: onGenerateRoute,
         theme: ThemeData(

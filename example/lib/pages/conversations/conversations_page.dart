@@ -111,10 +111,7 @@ class ConversationPageState extends State<ConversationPage>
             ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (
-                  BuildContext context,
-                  int index,
-                ) {
+                (BuildContext context, int index) {
                   return conversationWidgetForIndex(index);
                 },
                 childCount: _conversationsList.length,
