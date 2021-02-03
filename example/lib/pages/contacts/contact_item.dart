@@ -1,3 +1,4 @@
+import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
 
 class ContactItem extends StatelessWidget {
@@ -21,12 +22,12 @@ class ContactItem extends StatelessWidget {
             bottom: 10,
           ),
           width: 45,
-          height: 55,
+          height: 50,
           child: avatar ?? Image.asset('images/logo.png'),
         ),
         Container(
           alignment: Alignment.centerLeft,
-          height: 60,
+          height: 50,
           margin: EdgeInsets.only(
             top: 5,
             bottom: 5,
@@ -37,7 +38,7 @@ class ContactItem extends StatelessWidget {
             title,
             textAlign: TextAlign.left,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: sFontSize(17),
               color: Colors.black,
             ),
             maxLines: 1,

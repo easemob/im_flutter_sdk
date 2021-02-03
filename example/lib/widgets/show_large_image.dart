@@ -14,6 +14,11 @@ class ShowLargeImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Positioned(
+          child: Container(
+            color: Colors.black,
+          ),
+        ),
         Center(
           child: Container(
             width: MediaQuery.of(context).size.width,

@@ -1,5 +1,7 @@
 import 'package:azlistview/azlistview.dart';
 import 'package:easeim_flutter_demo/models/contact_model.dart';
+import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
+import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -29,14 +31,23 @@ class ContactsPageState extends State<ContactsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Title(
-          color: Colors.white,
-          child: Text(
-            '通讯录',
-          ),
-        ),
+      appBar: DemoAppBar.normal(
+        '通讯录',
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => PopMenu.show(
+              context,
+              [
+                PopMenuItem('添加好友'),
+                PopMenuItem('添加群组'),
+              ],
+              callback: (index) {
+                print('index --- $index');
+              },
+            ),
+          )
+        ],
       ),
       body: AzListView(
           data: _contactList,
@@ -62,6 +73,7 @@ class ContactsPageState extends State<ContactsPage>
               );
             }
           },
+          /* ['☆', ...kIndexBarData] */
           indexBarData: SuspensionUtil.getTagIndexList(_contactList),
           indexHintBuilder: (BuildContext context, String tag) {
             if (tag == '☆') {
