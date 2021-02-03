@@ -1,7 +1,12 @@
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:flutter/material.dart';
 
-class ContactNewFirends extends StatelessWidget {
+class ContactNewFirends extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => ContactNewFirendsState();
+}
+
+class ContactNewFirendsState extends State<ContactNewFirends> {
   bool _isDone = true;
   @override
   Widget build(BuildContext context) {
