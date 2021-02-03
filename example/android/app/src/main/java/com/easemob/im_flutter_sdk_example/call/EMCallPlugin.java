@@ -163,6 +163,13 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
                     post(() -> {
                     Map<String, Object> data = new HashMap<>();
                     data.put("type",EMSDKMethod.callStatusConnecting);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                 });
+
+                    break;
+                case CONNECTED: // connected
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
                     if (session.getLocalName().length() > 0) {
                         data.put("localName", session.getLocalName());
                     }
@@ -190,13 +197,6 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
                     }else {
                         data.put("callType", Integer.valueOf(1));
                     }
-                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                 });
-
-                    break;
-                case CONNECTED: // connected
-                    post(() -> {
-                    Map<String, Object> data = new HashMap<>();
                     data.put("type",EMSDKMethod.callStatusConnected);
                     channel.invokeMethod(EMSDKMethod.onCallChanged,data);
                     });
