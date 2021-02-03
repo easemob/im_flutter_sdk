@@ -72,40 +72,54 @@ class EMCallManager {
     for (var listener in _callStateChangeListeners) {
       switch (type) {
         case EMCallEvent.ON_CONNECTING:
-          _callId = event['callId'];
-          _localName = event['localName'];
-          _remoteName = event['remoteName'];
-          _serverRecordId = event['serverVideoId'];
-          _callExt = event['callExt'];
-          _isRecordOnServer = event['isRecordOnServer'] as bool;
-          _callType = event['callType'].toInt() == 0
-              ? EMCallType.Voice
-              : EMCallType.Video;
-
-          listener.onConnecting();
+          {
+            listener.onConnecting();
+          }
           break;
         case EMCallEvent.ON_CONNECTED:
-          listener.onConnected();
+          {
+            _callId = event['callId'];
+            _localName = event['localName'];
+            _remoteName = event['remoteName'];
+            _serverRecordId = event['serverVideoId'];
+            _callExt = event['callExt'];
+            _isRecordOnServer = event['isRecordOnServer'] as bool;
+            _callType = event['callType'].toInt() == 0
+                ? EMCallType.Voice
+                : EMCallType.Video;
+
+            listener.onConnected();
+          }
           break;
         case EMCallEvent.ON_ACCEPTED:
-          if (event['serverVideoId'] != null) {
-            _serverRecordId = event['serverVideoId'] as String;
+          {
+            if (event['serverVideoId'] != null) {
+              _serverRecordId = event['serverVideoId'] as String;
+            }
+            listener.onAccepted();
           }
-          listener.onAccepted();
           break;
         case EMCallEvent.ON_NET_WORK_DISCONNECTED:
-          listener.onNetworkDisconnected();
+          {
+            listener.onNetworkDisconnected();
+          }
           break;
         case EMCallEvent.ON_NET_WORK_UNSTABLE:
-          listener.onNetworkUnstable();
+          {
+            listener.onNetworkUnstable();
+          }
           break;
         case EMCallEvent.ON_NET_WORK_NORMAL:
-          listener.onNetworkNormal();
+          {
+            listener.onNetworkNormal();
+          }
           break;
 
         case EMCallEvent.ON_DISCONNECTED:
-          _clearData();
-          listener.onDisconnected(fromCallReason(event['reason']));
+          {
+            _clearData();
+            listener.onDisconnected(fromCallReason(event['reason']));
+          }
           break;
       }
     }

@@ -96,6 +96,14 @@
     self.callSession = aSession;
     
     NSMutableDictionary *map = [NSMutableDictionary dictionaryWithObject:@"connecting" forKey:@"type"];
+    [self.channel invokeMethod:EMMethodKeyOnCallChanged
+                     arguments:map];
+}
+
+- (void)callDidConnect:(EMCallSession *)aSession {
+
+    NSMutableDictionary *map = [NSMutableDictionary dictionaryWithObject:@"connected" forKey:@"type"];
+
     if (aSession.localName && aSession.localName.length > 0) {
         map[@"localName"] = aSession.localName;
     }
@@ -124,12 +132,7 @@
     
     map[@"isRecordOnServer"] = @(aSession.willRecord);
     
-    [self.channel invokeMethod:EMMethodKeyOnCallChanged
-                     arguments:map];
-}
 
-- (void)callDidConnect:(EMCallSession *)aSession {
-    NSDictionary *map = @{@"type":@"connected"};
     [self.channel invokeMethod:EMMethodKeyOnCallChanged
                      arguments:map];
 }
