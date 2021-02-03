@@ -42,7 +42,7 @@ dependencies:
   provider: ^4.3.2+3
 
   # 汉字转拼音
-  lpinyin: ^1.1.0
+  # lpinyin: ^1.1.0
 
   # 侧滑删除
   flutter_slidable: ^0.5.7
@@ -68,6 +68,8 @@ dependencies:
   # 图片选择
   image_picker: ^0.6.7+17
 
+  # 存储图片
+  image_gallery_saver: '^1.6.7'
   # 拼音
   # lpinyin: ^1.1.0
 
@@ -79,6 +81,9 @@ dependencies:
 
   # 权限管理
   permission_handler: ^5.0.1+1
+
+  # dialog
+  flutter_smart_dialog: ^1.2.6
 
   # 显示占位符图片
   transparent_image: ^1.0.0

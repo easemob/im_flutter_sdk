@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
+import 'package:easeim_flutter_demo/widgets/show_large_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
@@ -299,6 +300,28 @@ class _ChatPageState extends State<ChatPage>
       case EMMessageBodyType.TXT:
         break;
       case EMMessageBodyType.IMAGE:
+        {
+          EMImageMessageBody body = msg.body as EMImageMessageBody;
+          Image img;
+          if (body.fileStatus != EMDownloadStatus.SUCCESS) {
+            img = Image.network(
+              body.remotePath,
+              fit: BoxFit.cover,
+            );
+          } else {
+            img = Image.file(
+              File(body.localPath),
+              fit: BoxFit.cover,
+            );
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) {
+                return ShowLargeImage(img);
+              },
+            ),
+          );
+        }
         break;
       case EMMessageBodyType.VOICE:
         {
