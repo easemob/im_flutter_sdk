@@ -185,29 +185,6 @@ static NSString * const EMMethodKeyUpdatePushServiceForGroups = @"updatePushServ
 
 static NSString * const EMMethodKeyOnGroupChanged = @"onGroupChanged";
 
-#pragma mark - EMCallManagerWrapper
-static NSString * const EMMethodKeyStartCall = @"startCall";
-static NSString * const EMMethodKeySetCallOptions = @"setCallOptions";
-//static NSString * const EMMethodKeyGetCallOptions = @"getCallOptions";
-// 兼容安卓
-static NSString * const EMMethodKeyRegisterCallReceiver = @"registerCallReceiver";
-
-static NSString * const EMMethodKeyGetCallId = @"getCallId";
-static NSString * const EMMethodKeyGetConnectType = @"getConnectType";
-static NSString * const EMMethodKeyGetExt = @"getExt";
-static NSString * const EMMethodKeyGetLocalName = @"getLocalName";
-static NSString * const EMMethodKeyGetRemoteName = @"getRemoteName";
-static NSString * const EMMethodKeyGetServerRecordId = @"getServerRecordId";
-static NSString * const EMMethodKeyGetCallType = @"getCallType";
-static NSString * const EMMethodKeyIsRecordOnServer = @"isRecordOnServer";
-static NSString * const EMMethodKeyRegisterCallSharedManager = @"registerCallSharedManager";
-
-static NSString * const EMMethodKeyOnCallChanged = @"onCallChanged";
-
-#pragma mark - EMConferenceManagerWrapper
-static NSString * const EMMethodKeyCreateAndJoinConference = @"createAndJoinConference";
-static NSString * const EMMethodKeyJoinConference = @"joinConference";
-static NSString * const EMMethodKeyRegisterConferenceSharedManager = @"registerConferenceSharedManager";
 
 #pragma mark - EMPushManagerWrapper
 static NSString * const EMMethodKeyEnableOfflinePush = @"enableOfflinePush";

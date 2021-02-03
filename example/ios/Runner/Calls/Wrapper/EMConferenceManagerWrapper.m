@@ -6,9 +6,10 @@
 //
 
 #import "EMConferenceManagerWrapper.h"
-#import "EMSDKMethod.h"
+#import "EMCallMethods.h"
+#import "EMCallHelper.h"
 #import "DemoConfManager.h"
-#import "EMHelper.h"
+
 
 @implementation EMConferenceManagerWrapper
 
@@ -49,7 +50,7 @@
         
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper callConferenceToDictionary:aCall]}];
+                     userInfo:@{@"value":[EMCallHelper callConferenceToDictionary:aCall]}];
     }];
 }
 
@@ -61,7 +62,7 @@
     [[DemoConfManager sharedManager] joinCoference:conferenceDict completion:^(EMCallConference *aCall, EMError *aError) {
         [self wrapperCallBack:result
                         error:aError
-                     userInfo:@{@"value":[EMHelper callConferenceToDictionary:aCall]}];
+                     userInfo:@{@"value":[EMCallHelper callConferenceToDictionary:aCall]}];
     }];
     
 }

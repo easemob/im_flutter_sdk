@@ -9,12 +9,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.easemob.im_flutter_sdk_example.BaseActivity;
 import com.easemob.im_flutter_sdk_example.R;
-import com.easemob.im_flutter_sdk_example.conference.EMConferencePlugin;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMError;
 import com.hyphenate.chat.EMCallManager;
@@ -172,28 +170,28 @@ public class CallActivity extends BaseActivity {
                         EMClient.getInstance().callManager().makeVoiceCall(username, ext, isRecord, isMerge);
                     }
                 } catch (final EMServiceNotReadyException e) {
-                    e.printStackTrace();
-                    runOnUiThread(new Runnable() {
-                        public void run() {                            
-                            String st2 = e.getMessage();
-                            if (e.getErrorCode() == EMError.CALL_REMOTE_OFFLINE) {
-                                st2 = getResources().getString(R.string.The_other_is_not_online);
-                            } else if (e.getErrorCode() == EMError.USER_NOT_LOGIN) {
-                                st2 = getResources().getString(R.string.Is_not_yet_connected_to_the_server);
-                            } else if (e.getErrorCode() == EMError.INVALID_USER_NAME) {
-                                st2 = getResources().getString(R.string.illegal_user_name);
-                            } else if (e.getErrorCode() == EMError.CALL_BUSY) {
-                                st2 = getResources().getString(R.string.The_other_is_on_the_phone);
-                            } else if (e.getErrorCode() == EMError.NETWORK_ERROR) {
-                                st2 = getResources().getString(R.string.can_not_connect_chat_server_connection);
-                            }
-                            Toast.makeText(CallActivity.this, st2, Toast.LENGTH_SHORT).show();
-                            data.put("error_code", e.getErrorCode());
-                            data.put("desc",st2);
-                            EMCallPlugin.onResult(1, data);
-                            finish();
-                        }
-                    });
+                    // e.printStackTrace();
+                    // runOnUiThread(new Runnable() {
+                    //     public void run() {                            
+                    //         String st2 = e.getMessage();
+                    //         if (e.getErrorCode() == EMError.CALL_REMOTE_OFFLINE) {
+                    //             st2 = getResources().getString(R.string.The_other_is_not_online);
+                    //         } else if (e.getErrorCode() == EMError.USER_NOT_LOGIN) {
+                    //             st2 = getResources().getString(R.string.Is_not_yet_connected_to_the_server);
+                    //         } else if (e.getErrorCode() == EMError.INVALID_USER_NAME) {
+                    //             st2 = getResources().getString(R.string.illegal_user_name);
+                    //         } else if (e.getErrorCode() == EMError.CALL_BUSY) {
+                    //             st2 = getResources().getString(R.string.The_other_is_on_the_phone);
+                    //         } else if (e.getErrorCode() == EMError.NETWORK_ERROR) {
+                    //             st2 = getResources().getString(R.string.can_not_connect_chat_server_connection);
+                    //         }
+                    //         Toast.makeText(CallActivity.this, st2, Toast.LENGTH_SHORT).show();
+                    //         data.put("error_code", e.getErrorCode());
+                    //         data.put("desc",st2);
+                    //         EMCallPlugin.onResult(data);
+                    //         finish();
+                    //     }
+                    // });
                 }
                 break;
             case MSG_CALL_ANSWER:

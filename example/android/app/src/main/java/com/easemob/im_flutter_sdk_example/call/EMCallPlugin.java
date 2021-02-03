@@ -38,7 +38,6 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
     private Context activity;
     private CallReceiver callReceiver;
     private EMCallManager emCallManager;
-    private EMCallSession callSession;
 
     private static MethodChannel.Result result;
     private static Handler handler = new Handler(Looper.getMainLooper());
@@ -157,112 +156,119 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
     }
 
     public void registerStateListener(){
-        EMCallStateChangeListener callStateListener = new EMCallStateChangeListener() {
-            @Override
-            public void onCallStateChanged(CallState callState, CallError error) {
-                switch (callState) {
-                    case CONNECTING: // is connecting
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.callStatusConnecting);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                            }});
-                        callSession = EMClient.getInstance().callManager().getCurrentCallSession();
-                        break;
-                    case CONNECTED: // connected
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.callStatusConnected);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                            }});
-                        break;
-                    case ACCEPTED: // call is accepted
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.callStatusAccepted);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                        }});
-                        break;
-                    case NETWORK_DISCONNECTED:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netWorkDisconnected);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                            }});
-                        break;
-                    case NETWORK_UNSTABLE:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netWorkUnstable);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                        }});
-                        break;
-                    case NETWORK_NORMAL:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netWorkNormal);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                            }});
-                        break;
-                    case  VIDEO_PAUSE:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netVideoPause);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                        }});
-                        break;
-                    case VIDEO_RESUME:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netVideoResume);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                            }});
-                        break;
-                    case VOICE_PAUSE:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netVoicePause);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                        }});
-                        break;
-                    case VOICE_RESUME:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.netVoiceResume);
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                            }});
-                        break;
-                    case DISCONNECTED:
-                        post(new Runnable() {
-                            @Override
-                            public void run() {
-                            Map<String, Object> data = new HashMap<String, Object>();
-                            data.put("type",EMSDKMethod.callStatusDisconnected);
-                            data.put("reason",EndReasonToInt(error));
-                            channel.invokeMethod(EMSDKMethod.onCallChanged,data);
-                        }});
-                        break;
-                }
+        EMCallStateChangeListener callStateListener = (callState, error) -> {
+            EMCallSession session = EMClient.getInstance().callManager().getCurrentCallSession();
+            switch (callState) {
+                case CONNECTING: // is connecting
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.callStatusConnecting);
+                    if (session.getLocalName().length() > 0) {
+                        data.put("localName", session.getLocalName());
+                    }
+
+                    if (session.getRemoteName().length() > 0) {
+                        data.put("remoteName", session.getRemoteName());
+                    }
+
+                    if (session.getServerRecordId().length() > 0) {
+                        data.put("serverVideoId", session.getServerRecordId());
+                    }
+
+                    if (session.getCallId().length() > 0) {
+                        data.put("callId", session.getCallId());
+                    }
+
+                    if (session.getExt().length() > 0) {
+                        data.put("callExt", session.getExt());
+                    }
+
+                    data.put("isRecordOnServer", Boolean.valueOf(session.isRecordOnServer()));
+
+                    if (session.getType() == EMCallSession.Type.VOICE) {
+                        data.put("callType", Integer.valueOf(0));
+                    }else {
+                        data.put("callType", Integer.valueOf(1));
+                    }
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                 });
+
+                    break;
+                case CONNECTED: // connected
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.callStatusConnected);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                    });
+                    break;
+                case ACCEPTED: // call is accepted
+                    post(() -> {
+                        Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.callStatusAccepted);
+                    if (session.getServerRecordId().length() > 0) {
+                        data.put("serverVideoId",session.getServerRecordId());
+                    }
+
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                });
+                    break;
+                case NETWORK_DISCONNECTED:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.networkDisconnected);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                    });
+                    break;
+                case NETWORK_UNSTABLE:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.networkUnstable);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                });
+                    break;
+                case NETWORK_NORMAL:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.networkNormal);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                    });
+                    break;
+                case  VIDEO_PAUSE:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.netVideoPause);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                });
+                    break;
+                case VIDEO_RESUME:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.netVideoResume);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                    });
+                    break;
+                case VOICE_PAUSE:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.netVoicePause);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                });
+                    break;
+                case VOICE_RESUME:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.netVoiceResume);
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                    });
+                    break;
+                case DISCONNECTED:
+                    post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("type",EMSDKMethod.callStatusDisconnected);
+                    data.put("reason",EndReasonToInt(error));
+                    channel.invokeMethod(EMSDKMethod.onCallChanged,data);
+                });
+                    break;
             }
         };
         emCallManager.addCallStateChangeListener(callStateListener);
@@ -326,16 +332,7 @@ public class EMCallPlugin implements FlutterPlugin, MethodChannel.MethodCallHand
         }
     }
 
-    public static void onResult(int result_status , Map map){
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if(result_status == 0) {
-                    channel.invokeMethod(EMSDKMethod.getResult,map);
-                }else{
-                    channel.invokeMethod(EMSDKMethod.getResult,map);
-                }
-            }
-        });
-    }
+    // public static void onResult(Map map){
+    //     handler.post(() -> channel.invokeMethod(EMSDKMethod.getResult,map));
+    // }
 }

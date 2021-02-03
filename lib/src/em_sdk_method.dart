@@ -178,20 +178,7 @@ class EMSDKMethod {
   static const String registerCallReceiver = "registerCallReceiver";
   static const String setCallOptions = "setCallOptions";
 
-  static const String getCallId = "getCallId";
-  static const String getConnectType = "getConnectType";
-  static const String getExt = "getExt";
-  static const String getLocalName = "getLocalName";
-  static const String getRemoteName = "getRemoteName";
-  static const String getServerRecordId = "getServerRecordId";
-  static const String getCallType = "getCallType";
-  static const String isRecordOnServer = "isRecordOnServer";
   static const String registerCallSharedManager = "registerCallSharedManager";
-  static const String getResult = "getResult";
-  static const String singleOpenVideoTransfer = "singleOpenVideoTransfer";
-  static const String singleOpenVoiceTransfer = "singleOpenVoiceTransfer";
-  static const String singleCloseVideoTransfer = "singleCloseVideoTransfer";
-  static const String singleCloseVoiceTransfer = "singleCloseVoiceTransfer";
 
   /// EMConferenceManager
   static const String createAndJoinConference = "createAndJoinConference";

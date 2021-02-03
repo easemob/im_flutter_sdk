@@ -24,7 +24,6 @@ class EMGroupDetailsPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _EMGroupDetailsPageState(this._groupId);
   }
 }
@@ -53,7 +52,6 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchGroupDetails();
   }
@@ -66,67 +64,60 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
     _blackList.clear();
     _muteList.clear();
     _currentUser = await EMClient.getInstance().getCurrentUser();
-    EMClient.getInstance().groupManager().getGroupFromServer(
-        _groupId,
+    EMClient.getInstance().groupManager().getGroupFromServer(_groupId,
         onSuccess: (group) {
-          _emGroup = group;
-          _owner = group.getOwner();
-          _groupName = group.getGroupName();
-          _membersCount = group.getMemberCount();
-          _groupMembers.add(group.getOwner());
-          group.getAdminList().forEach((admin) {
-            _groupMembers.add(admin);
-            _admins.add(admin);
-          });
-          if (group.getOwner() == _currentUser) {
-            _isOwner = true;
-          }
-          if (!_isOwner && group.getAdminList().contains(_currentUser)) {
-            _isAdmin = true;
-          }
-          EMClient.getInstance().groupManager().fetchGroupMembers(
-              _groupId,
-              '',
-              200,
-              onSuccess: (result) {
-                result.getData().forEach((member) {
-                  _groupMembers.add(member);
-                  _members.add(member);
-                });
-                _cursor = result.getCursor();
-
-                if(_isOwner || _isAdmin){
-                  EMClient.getInstance().groupManager().fetchGroupBlackList(_groupId, 0, 200,
-                      onSuccess: (blackList){
-                        _blackList = blackList;
-                        EMClient.getInstance().groupManager().fetchGroupMuteList(_groupId, 0, 200,
-                            onSuccess: (muteList){
-                              _muteList = muteList;
-                              _refreshUI(false);
-                            },
-                            onError: (code, desc){
-                              WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
-                              _refreshUI(false);
-                            }
-                        );
-                      },
-                      onError: (code, desc){
-                        WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
-                        _refreshUI(false);
-                      });
-                }else{
-                  _refreshUI(false);
-                }
-              },
-              onError: (code, desc) {
-                WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
-                _refreshUI(false);
-              });
-        },
-        onError: (code, desc) {
-          WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
-          _refreshUI(false);
+      _emGroup = group;
+      _owner = group.getOwner();
+      _groupName = group.getGroupName();
+      _membersCount = group.getMemberCount();
+      _groupMembers.add(group.getOwner());
+      group.getAdminList().forEach((admin) {
+        _groupMembers.add(admin);
+        _admins.add(admin);
+      });
+      if (group.getOwner() == _currentUser) {
+        _isOwner = true;
+      }
+      if (!_isOwner && group.getAdminList().contains(_currentUser)) {
+        _isAdmin = true;
+      }
+      EMClient.getInstance().groupManager().fetchGroupMembers(_groupId, '', 200,
+          onSuccess: (result) {
+        result.getData().forEach((member) {
+          _groupMembers.add(member);
+          _members.add(member);
         });
+        _cursor = result.getCursor();
+
+        if (_isOwner || _isAdmin) {
+          EMClient.getInstance()
+              .groupManager()
+              .fetchGroupBlackList(_groupId, 0, 200, onSuccess: (blackList) {
+            _blackList = blackList;
+            EMClient.getInstance()
+                .groupManager()
+                .fetchGroupMuteList(_groupId, 0, 200, onSuccess: (muteList) {
+              _muteList = muteList;
+              _refreshUI(false);
+            }, onError: (code, desc) {
+              WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
+              _refreshUI(false);
+            });
+          }, onError: (code, desc) {
+            WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
+            _refreshUI(false);
+          });
+        } else {
+          _refreshUI(false);
+        }
+      }, onError: (code, desc) {
+        WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
+        _refreshUI(false);
+      });
+    }, onError: (code, desc) {
+      WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
+      _refreshUI(false);
+    });
   }
 
   _refreshUI(bool loading) {
@@ -198,18 +189,18 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
     if (_membersCount > 7) {
       _count = 7;
     }
-      if (_isOwner || _isAdmin) {
-        if (_membersCount > 4) {
-          _count = 7;
-        } else {
-          _count = _membersCount + 2;
-        }
-      }else if(_emGroup.isMemberAllowToInvite()){
-        if (_membersCount > 5) {
-          _count = 7;
-        }else {
-          _count = _membersCount + 1;
-        }
+    if (_isOwner || _isAdmin) {
+      if (_membersCount > 4) {
+        _count = 7;
+      } else {
+        _count = _membersCount + 2;
+      }
+    } else if (_emGroup.isMemberAllowToInvite()) {
+      if (_membersCount > 5) {
+        _count = 7;
+      } else {
+        _count = _membersCount + 1;
+      }
     }
 
     return InkWell(
@@ -218,9 +209,18 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
         onTap: () {
           Navigator.push<bool>(context,
               new MaterialPageRoute(builder: (BuildContext context) {
-            return EMGroupMembersPage(this._groupId, this._groupMembers,
-                this._cursor, this._currentUser, this._blackList, this._muteList, this._admins, this._owner, Constant.defaultGroupMember);
-          })).then((bool _isRefresh){_isRefreshUI(_isRefresh);});
+            return EMGroupMembersPage(
+                this._groupId,
+                this._groupMembers,
+                this._cursor,
+                this._blackList,
+                this._muteList,
+                this._admins,
+                this._owner,
+                Constant.defaultGroupMember);
+          })).then((bool _isRefresh) {
+            _isRefreshUI(_isRefresh);
+          });
         },
         child: Container(
           margin: EdgeInsets.only(left: 20.0, right: 20.0),
@@ -264,50 +264,46 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                         mainAxisSpacing: 10,
                         childAspectRatio: 0.75),
                     itemBuilder: (BuildContext context, int index) {
-                      if (((_isOwner || _isAdmin) && _count - index == 2)
-                          || (!(_isOwner || _isAdmin)  && _count - index == 1 && _emGroup.isMemberAllowToInvite())) {
+                      if (((_isOwner || _isAdmin) && _count - index == 2) ||
+                          (!(_isOwner || _isAdmin) &&
+                              _count - index == 1 &&
+                              _emGroup.isMemberAllowToInvite())) {
                         return IconButton(
                           icon: Image.asset('images/add_member.png'),
                           onPressed: () {
                             Navigator.push<List<String>>(context,
                                 new MaterialPageRoute(
-                                    builder: (BuildContext context){
-                                      return EMGroupPickContactsPage(this._groupId);
-                                    })).then((List<String> contacts){
-                                      if(contacts.length > 0){
-                                        _refreshUI(true);
-                                        if(_isOwner) {
-                                          EMClient.getInstance()
-                                              .groupManager()
-                                              .addUsersToGroup(
-                                              _groupId,
-                                              contacts,
-                                              onSuccess: () {
-                                                WidgetUtil.hintBoxWithDefault(
-                                                    '群组邀请发送成功');
-                                                _refreshUI(false);
-                                              },
-                                              onError: (code, desc) {
-                                                WidgetUtil.hintBoxWithDefault(
-                                                    code.toString() + ':' +
-                                                        desc);
-                                                _refreshUI(false);
-                                              });
-                                        }else{
-                                          EMClient.getInstance().groupManager().inviteUser(_groupId, contacts,  '',
-                                              onSuccess: () {
-                                                WidgetUtil.hintBoxWithDefault(
-                                                    '群组邀请发送成功');
-                                                _refreshUI(false);
-                                              },
-                                              onError: (code, desc) {
-                                                WidgetUtil.hintBoxWithDefault(
-                                                    code.toString() + ':' +
-                                                        desc);
-                                                _refreshUI(false);
-                                              });
-                                        }
-                                      }
+                                    builder: (BuildContext context) {
+                              return EMGroupPickContactsPage(this._groupId);
+                            })).then((List<String> contacts) {
+                              if (contacts.length > 0) {
+                                _refreshUI(true);
+                                if (_isOwner) {
+                                  EMClient.getInstance()
+                                      .groupManager()
+                                      .addUsersToGroup(_groupId, contacts,
+                                          onSuccess: () {
+                                    WidgetUtil.hintBoxWithDefault('群组邀请发送成功');
+                                    _refreshUI(false);
+                                  }, onError: (code, desc) {
+                                    WidgetUtil.hintBoxWithDefault(
+                                        code.toString() + ':' + desc);
+                                    _refreshUI(false);
+                                  });
+                                } else {
+                                  EMClient.getInstance()
+                                      .groupManager()
+                                      .inviteUser(_groupId, contacts, '',
+                                          onSuccess: () {
+                                    WidgetUtil.hintBoxWithDefault('群组邀请发送成功');
+                                    _refreshUI(false);
+                                  }, onError: (code, desc) {
+                                    WidgetUtil.hintBoxWithDefault(
+                                        code.toString() + ':' + desc);
+                                    _refreshUI(false);
+                                  });
+                                }
+                              }
                             });
                           },
                         );
@@ -316,17 +312,21 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                         return IconButton(
                           icon: Image.asset('images/remove_member.png'),
                           onPressed: () {
-                            Navigator.push<bool>(context,
-                                new MaterialPageRoute(
-                                    builder: (BuildContext context) {
+                            Navigator.push<bool>(context, new MaterialPageRoute(
+                                builder: (BuildContext context) {
                               return EMGroupMembersPage(
-                                  this._groupId,
-                                  this._members,
-                                  this._cursor,
-                                  this._currentUser,
-                                  this._blackList, this._muteList, this._admins, this._owner,
-                                  Constant.removeGroupMember);
-                            })).then((bool _isRefresh){_isRefreshUI(_isRefresh);});
+                                this._groupId,
+                                this._members,
+                                this._cursor,
+                                this._blackList,
+                                this._muteList,
+                                this._admins,
+                                this._owner,
+                                Constant.removeGroupMember,
+                              );
+                            })).then((bool _isRefresh) {
+                              _isRefreshUI(_isRefresh);
+                            });
                           },
                         );
                       }
@@ -348,7 +348,6 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
   }
 
   Widget _buildGroupName() {
-
     return InkWell(
       child: Container(
         margin: EdgeInsets.only(left: 20.0, right: 20.0),
@@ -419,17 +418,14 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                         Navigator.of(context).pop();
                         _refreshUI(true);
                         EMClient.getInstance().groupManager().changeGroupName(
-                            _groupId,
-                            _groupNameController.text,
-                            onSuccess: () {
-                              WidgetUtil.hintBoxWithDefault('修改群名称成功');
-                              _fetchGroupDetails();
-                            },
-                            onError: (code, desc) {
-                              WidgetUtil.hintBoxWithDefault(
-                                  code.toString() + ':' + desc);
-                              _fetchGroupDetails();
-                            });
+                            _groupId, _groupNameController.text, onSuccess: () {
+                          WidgetUtil.hintBoxWithDefault('修改群名称成功');
+                          _fetchGroupDetails();
+                        }, onError: (code, desc) {
+                          WidgetUtil.hintBoxWithDefault(
+                              code.toString() + ':' + desc);
+                          _fetchGroupDetails();
+                        });
                       },
                     ),
                   ],
@@ -508,19 +504,17 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
             new MaterialPageRoute(builder: (BuildContext context) {
           return EMGroupAnnouncementPage(this._groupId, _isOwner || _isAdmin);
         })).then((String announcement) {
-          if(_isOwner || _isAdmin){
-          _loading = true;
-          EMClient.getInstance().groupManager().updateGroupAnnouncement(
-              _groupId,
-              announcement,
-              onSuccess: () {
-                WidgetUtil.hintBoxWithDefault('群公告更新成功');
-                _refreshUI(false);
-              },
-              onError: (code, desc) {
-                WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
-                _refreshUI(false);
-              });
+          if (_isOwner || _isAdmin) {
+            _loading = true;
+            EMClient.getInstance()
+                .groupManager()
+                .updateGroupAnnouncement(_groupId, announcement, onSuccess: () {
+              WidgetUtil.hintBoxWithDefault('群公告更新成功');
+              _refreshUI(false);
+            }, onError: (code, desc) {
+              WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
+              _refreshUI(false);
+            });
           }
         });
       },
@@ -559,8 +553,11 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
           if (_isOwner || _isAdmin) {
             Navigator.push<bool>(context,
                 new MaterialPageRoute(builder: (BuildContext context) {
-                  return EMGroupManagementPage(this._groupId, this._isOwner, this._blackList, this._muteList, this._admins);
-                })).then((bool _isRefresh){_isRefreshUI(_isRefresh);});
+              return EMGroupManagementPage(this._groupId, this._isOwner,
+                  this._blackList, this._muteList, this._admins);
+            })).then((bool _isRefresh) {
+              _isRefreshUI(_isRefresh);
+            });
           } else {
             WidgetUtil.hintBoxWithDefault('无权限操作');
           }
@@ -619,35 +616,33 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
         ),
       ),
       onTap: () {
-        if(_isOwner){
+        if (_isOwner) {
           EMClient.getInstance().groupManager().destroyGroup(_groupId,
-          onSuccess: (){
+              onSuccess: () {
             WidgetUtil.hintBoxWithDefault('解散群组成功');
             Navigator.of(context).pop(true);
-          },
-          onError: (code, desc){
-            WidgetUtil.hintBoxWithDefault(code.toString() + ':'+ desc);
+          }, onError: (code, desc) {
+            WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
           });
-        }else{
+        } else {
           EMClient.getInstance().groupManager().leaveGroup(_groupId,
-          onSuccess: (){
+              onSuccess: () {
             WidgetUtil.hintBoxWithDefault('退出群组成功');
             Navigator.of(context).pop(true);
-          },
-          onError: (code, desc){
-            WidgetUtil.hintBoxWithDefault(code.toString() + ':'+ desc);
+          }, onError: (code, desc) {
+            WidgetUtil.hintBoxWithDefault(code.toString() + ':' + desc);
           });
         }
       },
     );
   }
 
-  Widget _buildListView(){
+  Widget _buildListView() {
     return ListView.builder(
         scrollDirection: Axis.vertical,
         itemCount: 11,
-        itemBuilder: (BuildContext context, int index){
-          switch(index){
+        itemBuilder: (BuildContext context, int index) {
+          switch (index) {
             case 0:
               return _buildPortrait();
             case 1:
@@ -678,7 +673,6 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     _loadText = DemoLocalizations.of(context).loading;
     return WillPopScope(
       onWillPop: _willPop,
@@ -694,18 +688,18 @@ class _EMGroupDetailsPageState extends State<EMGroupDetailsPage> {
                 msg: _loadText,
               ),
             ],
-          )
-      ),
+          )),
     );
   }
 
-  Future<bool> _willPop () { //返回值必须是Future<bool>
+  Future<bool> _willPop() {
+    //返回值必须是Future<bool>
     Navigator.of(context).pop(false);
     return Future.value(false);
   }
 
-  void _isRefreshUI(bool _isRefresh){
-    if(_isRefresh){
+  void _isRefreshUI(bool _isRefresh) {
+    if (_isRefresh) {
       _fetchGroupDetails();
     }
   }

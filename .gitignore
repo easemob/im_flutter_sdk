@@ -16,3 +16,6 @@ example/ios/Flutter/flutter_export_environment.sh
 **/.classpath
 **/.project
 **/.settings
+**/.flutter-plugins-dependencies
+_doc/
+example/.flutter-plugins-dependencies

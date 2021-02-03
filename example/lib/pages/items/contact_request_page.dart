@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk_example/utils/widget_util.dart';
-import 'package:im_flutter_sdk_example/common/common.dart';
 
 class EMContactRequestPage extends StatefulWidget {
   @override
@@ -10,21 +7,20 @@ class EMContactRequestPage extends StatefulWidget {
   }
 }
 
-class _EMContactRequestPageState extends State<EMContactRequestPage>  {
-
+class _EMContactRequestPageState extends State<EMContactRequestPage> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
-        centerTitle : true,
-        title: Text('好友请求', ),
+        centerTitle: true,
+        title: Text(
+          '好友请求',
+        ),
 //        leading: Icon(Icons.arrow_back, color: Colors.black, ),
         elevation: 0, // 隐藏阴影
 //        backgroundColor: ThemeUtils.isDark(context) ? EMColor.darkAppMain : EMColor.appMain,
@@ -33,8 +29,10 @@ class _EMContactRequestPageState extends State<EMContactRequestPage>  {
 //      key: UniqueKey(),
       body: Column(
         children: <Widget>[
+          SizedBox(
+            height: 50,
+          ),
 
-          SizedBox(height: 50,),
           /// 好友id
 
           SizedBox(
@@ -53,17 +51,13 @@ class _EMContactRequestPageState extends State<EMContactRequestPage>  {
                 '添加好友',
 //              DemoLocalizations.of(context).login,
                 style: TextStyle(color: Colors.white, fontSize: 16.0),
-
               ),
               color: Colors.blue,
-              onPressed: () {
-
-              },
+              onPressed: () {},
             ),
           ),
         ],
       ),
     );
   }
-
 }

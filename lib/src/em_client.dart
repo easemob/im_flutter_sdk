@@ -73,12 +73,14 @@ class EMClient {
   /// 初始化SDK 指定[options] .
   Future<bool> init(EMOptions options) async {
     _options = options;
-    Future<Map> result = _emClientChannel.invokeMethod(EMSDKMethod.init, options.convertToMap());
-    result.then((response) {
-      if (response['success']) {
-          _currentUser = response['currentUser'];
-      }
-    });
+    Map result = await _emClientChannel.invokeMethod(
+        EMSDKMethod.init, options.convertToMap());
+
+    bool ret = result['success'];
+    if (ret) {
+      _currentUser = result['currentUser'];
+    }
+    return ret;
   }
 
   /// 注册环信账号[userName]/[password].
@@ -287,7 +289,7 @@ class EMClient {
     return '';
   }
 
-   String getUser(){
+  String getUser() {
     return _currentUser;
   }
 
