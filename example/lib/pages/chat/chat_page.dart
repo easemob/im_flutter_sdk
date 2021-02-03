@@ -185,35 +185,25 @@ class _ChatPageState extends State<ChatPage>
 
     _adjacentTime = msg.serverTime;
 
+    List<Widget> widgetsList = List();
+
     if (needShowTime) {
-      return Column(
-        children: [
-          Container(
-            margin: EdgeInsets.only(top: sHeight(10)),
-            child: Text(
-              timeStrByMs(msg.serverTime, showTime: true),
-              style: TextStyle(color: Colors.grey),
-            ),
+      widgetsList.add(
+        Container(
+          margin: EdgeInsets.only(top: sHeight(10)),
+          child: Text(
+            timeStrByMs(msg.serverTime, showTime: true),
+            style: TextStyle(color: Colors.grey),
           ),
-          Container(
-            constraints: BoxConstraints(
-              minWidth: double.infinity,
-            ),
-            child: ChatItem(
-              msg,
-              onTap: (message) => _messageBubbleOnTap(message),
-              errorBtnOnTap: (message) => _resendMessage(message),
-              longPress: (message) => _messageOnLongPress(message),
-            ),
-            margin: EdgeInsets.only(
-              top: sHeight(20),
-              bottom: sHeight(20),
-            ),
-          )
-        ],
+        ),
       );
-    } else {
-      return Container(
+    }
+
+    widgetsList.add(
+      Container(
+        constraints: BoxConstraints(
+          minWidth: double.infinity,
+        ),
         child: ChatItem(
           msg,
           onTap: (message) => _messageBubbleOnTap(message),
@@ -224,8 +214,11 @@ class _ChatPageState extends State<ChatPage>
           top: sHeight(20),
           bottom: sHeight(20),
         ),
-      );
-    }
+      ),
+    );
+    return Column(
+      children: widgetsList,
+    );
   }
 
   /// 发送消息已读回执
