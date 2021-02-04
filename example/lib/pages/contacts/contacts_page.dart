@@ -5,7 +5,6 @@ import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'contact_item.dart';
 
@@ -24,13 +23,17 @@ class ContactsPageState extends State<ContactsPage>
   @override
   void initState() {
     super.initState();
-    _setupPreferences();
     _topList.addAll([
       ContactModel.custom('新的好友'),
       ContactModel.custom('群聊'),
       ContactModel.custom('聊天室')
     ]);
     _fetchContactsFromServer();
+    EMClient.getInstance.contactManager.addContactListener(this);
+    String currentUser = EMClient.getInstance.currentUsername;
+    SharePreferenceManager.load(currentUser, callback: () {
+      setState(() {});
+    });
   }
 
   @override
@@ -155,7 +158,8 @@ class ContactsPageState extends State<ContactsPage>
     if (contact.isCustom) {
       if (index == 0) {
         Navigator.of(context).pushNamed('/newFriends').then((value) {
-          setState(() {});
+          _friendRequestCount = SharePreferenceManager.loadUnreadCount();
+          _fetchContactsFromServer();
         });
       }
     } else {
@@ -185,23 +189,35 @@ class ContactsPageState extends State<ContactsPage>
     }
   }
 
-  _setupPreferences() async {}
-
   @override
-  void onContactAdded(String userName) {}
-
-  @override
-  void onContactDeleted(String userName) {}
-
-  @override
-  void onContactInvited(String userName, String reason) {
-    SharePreferenceManager.addRequest(userName);
+  void onContactAdded(String userName) {
     setState(() {});
   }
 
   @override
-  void onFriendRequestAccepted(String userName) {}
+  void onContactDeleted(String userName) {
+    setState(() {});
+  }
 
   @override
-  void onFriendRequestDeclined(String userName) {}
+  void onContactInvited(String userName, String reason) {
+    SharePreferenceManager.addRequest(userName);
+    _friendRequestCount = SharePreferenceManager.loadUnreadCount();
+    setState(() {});
+  }
+
+  @override
+  void onFriendRequestAccepted(String userName) {
+    _fetchContactsFromServer();
+  }
+
+  @override
+  void onFriendRequestDeclined(String userName) {
+    setState(() {});
+  }
+
+  void dispose() {
+    EMClient.getInstance.contactManager.removeContactListener(this);
+    super.dispose();
+  }
 }

@@ -26,9 +26,21 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
     requestList = SharePreferenceManager.loadAllRequests();
 
     return Scaffold(
-      appBar: DemoAppBar.normal(
-        '好友申请',
-      ),
+      appBar: DemoAppBar.normal('好友申请', actions: [
+        FlatButton(
+          onPressed: () {
+            SharePreferenceManager.removeAllRequest();
+            setState(() {});
+          },
+          child: Text(
+            '清空',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: sFontSize(16),
+            ),
+          ),
+        )
+      ]),
       body: ListView.builder(
         itemCount: requestList.length,
         itemBuilder: (_, index) {
@@ -79,6 +91,8 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
                                 ),
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
+                                  EMClient.getInstance.contactManager
+                                      .acceptInvitation(reqestId);
                                   SharePreferenceManager.updateRequest(
                                     reqestId,
                                     true,
@@ -96,6 +110,8 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
                                 ),
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
+                                  EMClient.getInstance.contactManager
+                                      .declineInvitation(reqestId);
                                   SharePreferenceManager.updateRequest(
                                     reqestId,
                                     false,
