@@ -1,4 +1,4 @@
-import 'package:easeim_flutter_demo/unit/wx_expression.dart';
+import 'package:easeim_flutter_demo/widgets/wx_expression.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
@@ -167,6 +167,6 @@ class _ConversationItemState extends State<ConversationItem> {
 
   /// 消息时间
   String _latestMessageTime() {
-    return timeStrByMs(this.widget._conv.latestMessage.serverTime);
+    return timeStrByMs(this.widget._conv.latestMessage?.serverTime ?? 0);
   }
 }

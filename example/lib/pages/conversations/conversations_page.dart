@@ -1,5 +1,7 @@
 import 'package:easeim_flutter_demo/pages/conversations/conversation_item.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
+import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
+import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -40,14 +42,23 @@ class ConversationPageState extends State<ConversationPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Title(
-          color: Colors.white,
-          child: Text(
-            '会话',
-          ),
-        ),
+      appBar: DemoAppBar.normal(
+        '会话',
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => PopMenu.show(
+              context,
+              [
+                PopMenuItem('创建群组'),
+                PopMenuItem('添加好友'),
+              ],
+              callback: (index) {
+                print('index --- $index');
+              },
+            ),
+          )
+        ],
       ),
       body: SmartRefresher(
         enablePullDown: true,
@@ -100,10 +111,7 @@ class ConversationPageState extends State<ConversationPage>
             ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (
-                  BuildContext context,
-                  int index,
-                ) {
+                (BuildContext context, int index) {
                   return conversationWidgetForIndex(index);
                 },
                 childCount: _conversationsList.length,
