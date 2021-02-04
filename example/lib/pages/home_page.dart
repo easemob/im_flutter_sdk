@@ -153,7 +153,9 @@ class _HomePageState extends State<HomePage>
 
   /// 获取麦克风权限
   _requestPermiss() async {
-    await Permission.microphone.request();
+    Future.delayed(Duration(seconds: 3)).then((value) {
+      Permission.microphone.request();
+    });
   }
 
   @override

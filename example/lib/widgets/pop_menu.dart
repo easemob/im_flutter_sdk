@@ -21,7 +21,7 @@ class PopMenu {
       }
       widgetsList.add(
         Container(
-          height: 40,
+          height: 60,
           child: Center(
             child: Text(
               item.title,
@@ -77,7 +77,7 @@ class PopMenu {
         MediaQueryData.fromWindow(ui.window).padding.top + kToolbarHeight - 10;
 
     Widget _arrowRounder(List<PopMenuItem> items) {
-      var cellH = items.length * 40;
+      var cellH = items.length * 60;
       return Positioned(
         right: 10,
         top: top,
@@ -89,7 +89,7 @@ class PopMenu {
               borderRadius: BorderRadius.circular(5),
               child: Container(
                 color: bgColor,
-                width: 110,
+                width: 130,
                 height: cellH.toDouble(),
                 child: _menuView(items),
               ),

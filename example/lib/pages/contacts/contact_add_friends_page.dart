@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-class ContactAddFriends extends StatefulWidget {
+class ContactAddFriendsPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => ContactAddFriendsState();
+  State<StatefulWidget> createState() => ContactAddFriendsPageState();
 }
 
-class ContactAddFriendsState extends State<ContactAddFriends> {
+class ContactAddFriendsPageState extends State<ContactAddFriendsPage> {
   String _searchName = '';
 
   @override
@@ -54,7 +54,7 @@ class ContactAddFriendsState extends State<ContactAddFriends> {
                     sWidth(16),
                     sHeight(6),
                   ),
-                  hintText: '请输入id',
+                  hintText: '请输入ID',
                   hintStyle: TextStyle(
                     fontSize: sFontSize(14),
                     color: Colors.grey,
@@ -95,7 +95,14 @@ class ContactAddFriendsState extends State<ContactAddFriends> {
                       ),
                     ],
                   )
-                : Container(),
+                : Container(
+                    margin: EdgeInsets.all(20),
+                    child: Text(
+                      '此处搜索是直接返回您输入的信息，请确保您搜索的环信id在环信存在。点击添加后对方会收到好友申请。正式环境中应该是从您的服务器所有好友之后添加。',
+                      style: TextStyle(color: Colors.black38),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
           ],
         ),
       ),
