@@ -1,6 +1,6 @@
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
-import 'package:easeim_flutter_demo/widgets/toast_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -190,14 +190,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   _doRegisterAction() async {
     try {
+      SmartDialog.showLoading(msg: '注册中...');
       await EMClient.getInstance
           .createAccount(_usernameController.text, _confPwdController.text);
+
+      SmartDialog.showToast('注册成功');
       Navigator.of(context).pushReplacementNamed('/login');
     } on EMError catch (e) {
-      Toast.of(context).show(
-        '注册失败，$e',
-        duration: Duration(seconds: 3),
-      );
+      SmartDialog.showToast('注册失败 $e');
+    } finally {
+      SmartDialog.dismiss();
     }
   }
 }

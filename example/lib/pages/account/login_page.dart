@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
-import 'package:easeim_flutter_demo/widgets/toast_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class LoginPage extends StatefulWidget {
@@ -204,17 +204,18 @@ class _LoginPageState extends State<LoginPage> {
     hiddenKeyboard();
     String username = _usernameController.text;
     String passwd = _pwdController.text;
+
     try {
+      SmartDialog.showLoading(msg: '登录中...');
       await EMClient.getInstance.login(username, passwd);
 
       Navigator.of(context).pushReplacementNamed(
         '/home',
       );
     } on EMError catch (e) {
-      Toast.of(context).show(
-        '登录失败 $e',
-        duration: Duration(seconds: 3),
-      );
+      SmartDialog.showToast('登录失败 $e');
+    } finally {
+      SmartDialog.dismiss();
     }
   }
 
