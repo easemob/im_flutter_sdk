@@ -2,14 +2,15 @@ import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-class ContactNewFirends extends StatefulWidget {
+class ContactFirendsRequest extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => ContactNewFirendsState();
+  State<StatefulWidget> createState() => ContactFirendsRequestState();
 }
 
-class ContactNewFirendsState extends State<ContactNewFirends> {
+class ContactFirendsRequestState extends State<ContactFirendsRequest> {
   List<String> requestList = List();
   RegExp requestExp = RegExp(r' ');
   @override
@@ -91,8 +92,7 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
                                 ),
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
-                                  EMClient.getInstance.contactManager
-                                      .acceptInvitation(reqestId);
+                                  _acceptInvitation(reqestId);
                                   SharePreferenceManager.updateRequest(
                                     reqestId,
                                     true,
@@ -110,8 +110,7 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
                                 ),
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
-                                  EMClient.getInstance.contactManager
-                                      .declineInvitation(reqestId);
+                                  _declineInvitation(reqestId);
                                   SharePreferenceManager.updateRequest(
                                     reqestId,
                                     false,
@@ -136,5 +135,29 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
         },
       ),
     );
+  }
+
+  _acceptInvitation(String username) async {
+    try {
+      SmartDialog.showLoading(msg: '发送中...');
+      await EMClient.getInstance.contactManager.acceptInvitation(username);
+      SmartDialog.showToast('发送成功');
+    } on EMError {
+      SmartDialog.showToast('发送失败');
+    } finally {
+      SmartDialog.dismiss();
+    }
+  }
+
+  _declineInvitation(String username) async {
+    try {
+      SmartDialog.showLoading(msg: '发送中...');
+      await EMClient.getInstance.contactManager.declineInvitation(username);
+      SmartDialog.showToast('发送成功');
+    } on EMError {
+      SmartDialog.showToast('发送失败');
+    } finally {
+      SmartDialog.dismiss();
+    }
   }
 }

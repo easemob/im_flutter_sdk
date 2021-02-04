@@ -189,16 +189,17 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   _doRegisterAction() async {
-    SmartDialog.showLoading(msg: '注册中...');
     try {
+      SmartDialog.showLoading(msg: '注册中...');
       await EMClient.getInstance
           .createAccount(_usernameController.text, _confPwdController.text);
-      SmartDialog.dismiss();
+
       SmartDialog.showToast('注册成功');
       Navigator.of(context).pushReplacementNamed('/login');
     } on EMError catch (e) {
-      SmartDialog.dismiss();
       SmartDialog.showToast('注册失败 $e');
+    } finally {
+      SmartDialog.dismiss();
     }
   }
 }

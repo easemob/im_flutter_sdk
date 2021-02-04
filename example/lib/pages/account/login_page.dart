@@ -205,16 +205,17 @@ class _LoginPageState extends State<LoginPage> {
     String username = _usernameController.text;
     String passwd = _pwdController.text;
 
-    SmartDialog.showLoading(msg: '登录中...');
     try {
+      SmartDialog.showLoading(msg: '登录中...');
       await EMClient.getInstance.login(username, passwd);
-      SmartDialog.dismiss();
+
       Navigator.of(context).pushReplacementNamed(
         '/home',
       );
     } on EMError catch (e) {
-      SmartDialog.dismiss();
       SmartDialog.showToast('登录失败 $e');
+    } finally {
+      SmartDialog.dismiss();
     }
   }
 
