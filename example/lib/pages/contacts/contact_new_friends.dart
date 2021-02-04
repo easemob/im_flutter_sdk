@@ -1,5 +1,8 @@
+import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
+import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class ContactNewFirends extends StatefulWidget {
   @override
@@ -7,16 +10,34 @@ class ContactNewFirends extends StatefulWidget {
 }
 
 class ContactNewFirendsState extends State<ContactNewFirends> {
-  bool _isDone = true;
+  List<String> requestList = List();
+  RegExp requestExp = RegExp(r' ');
+  @override
+  void initState() {
+    super.initState();
+    String currentUser = EMClient.getInstance.currentUsername;
+    SharePreferenceManager.load(currentUser, callback: () {
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    requestList = SharePreferenceManager.loadAllRequests();
+
     return Scaffold(
       appBar: DemoAppBar.normal(
         '好友申请',
       ),
       body: ListView.builder(
-        itemCount: 20,
+        itemCount: requestList.length,
         itemBuilder: (_, index) {
+          bool isAlreadDone = false;
+          String reqestId = requestList[index];
+          if (requestExp.hasMatch(reqestId)) {
+            isAlreadDone = true;
+            reqestId = reqestId.substring(0, reqestId.length - 2);
+          }
           return Card(
             elevation: 5, //阴影
             shape: const RoundedRectangleBorder(
@@ -33,7 +54,7 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
                     padding: EdgeInsets.all(20),
                     child: Container(
                       child: Text(
-                        "du001添加您为好友",
+                        '$reqestId添加您为好友',
                         style: TextStyle(
                           color: Colors.black54,
                           fontSize: 16,
@@ -44,31 +65,43 @@ class ContactNewFirendsState extends State<ContactNewFirends> {
                   Divider(),
                   Padding(
                     padding: EdgeInsets.all(0),
-                    child: _isDone
+                    child: !isAlreadDone
                         ? Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               FlatButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: () {},
                                 child: Text(
                                   '同意',
                                   style: TextStyle(
                                     color: Colors.black54,
-                                    fontSize: 16,
+                                    fontSize: sFontSize(17),
                                   ),
                                 ),
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  SharePreferenceManager.updateRequest(
+                                    reqestId,
+                                    true,
+                                  );
+                                  setState(() {});
+                                },
                               ),
                               FlatButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: () {},
                                 child: Text(
                                   '拒绝',
                                   style: TextStyle(
                                     color: Colors.black54,
-                                    fontSize: 16,
+                                    fontSize: sFontSize(17),
                                   ),
                                 ),
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  SharePreferenceManager.updateRequest(
+                                    reqestId,
+                                    false,
+                                  );
+                                  setState(() {});
+                                },
                               ),
                             ],
                           )

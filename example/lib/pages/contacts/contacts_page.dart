@@ -1,9 +1,11 @@
 import 'package:azlistview/azlistview.dart';
 import 'package:easeim_flutter_demo/models/contact_model.dart';
+import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'contact_item.dart';
 
@@ -22,6 +24,7 @@ class ContactsPageState extends State<ContactsPage>
   @override
   void initState() {
     super.initState();
+    _setupPreferences();
     _topList.addAll([
       ContactModel.custom('新的好友'),
       ContactModel.custom('群聊'),
@@ -182,6 +185,8 @@ class ContactsPageState extends State<ContactsPage>
     }
   }
 
+  _setupPreferences() async {}
+
   @override
   void onContactAdded(String userName) {}
 
@@ -189,7 +194,10 @@ class ContactsPageState extends State<ContactsPage>
   void onContactDeleted(String userName) {}
 
   @override
-  void onContactInvited(String userName, String reason) {}
+  void onContactInvited(String userName, String reason) {
+    SharePreferenceManager.addRequest(userName);
+    setState(() {});
+  }
 
   @override
   void onFriendRequestAccepted(String userName) {}
