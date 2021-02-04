@@ -71,7 +71,7 @@ class EMGroupManager {
   }
 
   /// 从服务器获取公开群组列表
-  Future<EMCursorResult> getPublicGroupsFromServer({
+  Future<EMCursorResult<EMGroup>> getPublicGroupsFromServer({
     int pageSize = 200,
     String cursor = '',
   }) async {
@@ -80,7 +80,7 @@ class EMGroupManager {
         await _channel.invokeMethod(EMSDKMethod.getPublicGroupsFromServer, req);
     EMError.hasErrorFromResult(result);
 
-    return EMCursorResult.fromJson(
+    return EMCursorResult<EMGroup>.fromJson(
         result[EMSDKMethod.getPublicGroupsFromServer],
         dataItemCallback: (value) {
       return EMGroup.fromJson(value);
@@ -116,7 +116,7 @@ class EMGroupManager {
   }
 
   /// 获取群组成员列表
-  Future<EMCursorResult> getGroupMemberListFromServer(
+  Future<EMCursorResult<String>> getGroupMemberListFromServer(
     String groupId, {
     int pageSize = 200,
     String cursor = '',
@@ -131,7 +131,7 @@ class EMGroupManager {
       req,
     );
     EMError.hasErrorFromResult(result);
-    return EMCursorResult.fromJson(
+    return EMCursorResult<String>.fromJson(
         result[EMSDKMethod.getGroupMemberListFromServer],
         dataItemCallback: (value) => value);
   }

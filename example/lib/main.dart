@@ -1,7 +1,10 @@
 import 'package:easeim_flutter_demo/pages/account/register_page.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
-import 'package:easeim_flutter_demo/pages/contacts/contact_add_friends.dart';
-import 'package:easeim_flutter_demo/pages/contacts/contact_friends_request.dart';
+import 'package:easeim_flutter_demo/pages/contacts/contact_add_friends_page.dart';
+import 'package:easeim_flutter_demo/pages/contacts/contact_friends_request_page.dart';
+import 'package:easeim_flutter_demo/pages/group/group_info_page.dart';
+import 'package:easeim_flutter_demo/pages/group/joined_groups_page.dart';
+import 'package:easeim_flutter_demo/pages/group/public_groups_page.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
 import 'package:easeim_flutter_demo/pages/home_page.dart';
 import 'package:easeim_flutter_demo/pages/account/login_page.dart';
@@ -34,13 +37,15 @@ class EaseIMDemo extends StatelessWidget {
       child: MaterialApp(
         builder: (context, child) => FlutterSmartDialog(child: child),
         debugShowCheckedModeBanner: false,
-        routes: <String, WidgetBuilder>{
-          '/login': (context) => LoginPage(),
-          '/register': (context) => RegisterPage(),
-          '/home': (context) => HomePage(),
-          '/friendsRequest': (context) => ContactFirendsRequest(),
-          '/addFriends': (context) => ContactAddFriends(),
-        },
+        // routes: <String, WidgetBuilder>{
+        //   '/login': (context) => LoginPage(),
+        //   '/register': (context) => RegisterPage(),
+        //   '/home': (context) => HomePage(),
+        //   '/friendsRequest': (context) => ContactFirendsRequestPage(),
+        //   '/addFriends': (context) => ContactAddFriendsPage(),
+        //   '/publicGroups': (context) => PublicGroupsPage(),
+        //   '/joinedGroups': (context) => JoinedGroupsPage(),
+        // },
         onGenerateRoute: onGenerateRoute,
         theme: ThemeData(
             appBarTheme: AppBarTheme(elevation: 1),
@@ -57,12 +62,17 @@ class EaseIMDemo extends StatelessWidget {
 }
 
 Route<dynamic> onGenerateRoute(RouteSettings settings) {
-  String routeName = settings.name;
-  if (routeName == '/chat') {
-    return MaterialPageRoute(builder: (context) {
-      return ChatPage(settings.arguments);
-    });
-  } else {
-    return null;
-  }
+  var routes = <String, WidgetBuilder>{
+    '/login': (context) => LoginPage(),
+    '/register': (context) => RegisterPage(),
+    '/home': (context) => HomePage(),
+    '/friendsRequest': (context) => ContactFirendsRequestPage(),
+    '/addFriends': (context) => ContactAddFriendsPage(),
+    '/publicGroups': (context) => PublicGroupsPage(),
+    '/joinedGroups': (context) => JoinedGroupsPage(),
+    "/chat": (ctx) => ChatPage(settings.arguments),
+    "/groupInfo": (ctx) => GroupInfoPage(settings.arguments),
+  };
+  WidgetBuilder builder = routes[settings.name];
+  return MaterialPageRoute(builder: (ctx) => builder(ctx));
 }

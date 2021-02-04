@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DemoAppBar {
+  DemoAppBar(String s);
+
   static AppBar normal(
     String text, {
     List<Widget> actions,

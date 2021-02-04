@@ -183,7 +183,7 @@ class EMChatManager {
 
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResult> fetchHistoryMessages(
+  Future<EMCursorResult<EMMessage>> fetchHistoryMessages(
     String conversationId, [
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
@@ -197,8 +197,8 @@ class EMChatManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchHistoryMessages, req);
     EMError.hasErrorFromResult(result);
-    return EMCursorResult.fromJson(result[EMSDKMethod.fetchHistoryMessages],
-        dataItemCallback: (value) {
+    return EMCursorResult<EMMessage>.fromJson(
+        result[EMSDKMethod.fetchHistoryMessages], dataItemCallback: (value) {
       return EMMessage.fromJson(value);
     });
   }
