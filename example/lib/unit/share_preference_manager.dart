@@ -28,6 +28,18 @@ class SharePreferenceManager {
     return SharePreferenceManager.shareInstance._loadAllRequests();
   }
 
+  static int loadUnreadCount() {
+    List<String> list = loadAllRequests();
+    RegExp eidExp = RegExp(r' ');
+    int count = 0;
+    for (var requestId in list) {
+      if (!eidExp.hasMatch(requestId)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   // 处理好友申请
   static updateRequest(String eid, bool agree) {
     SharePreferenceManager.shareInstance._updateRequest(eid, agree);
@@ -52,9 +64,8 @@ class SharePreferenceManager {
   // 收到好友申请时调用
   _addRequest(String eid) {
     List<String> list = loadAllRequests();
-    RegExp eidExp = RegExp(r'$eid');
     for (var requestId in list) {
-      if (eidExp.hasMatch(requestId)) {
+      if (requestId.contains(eid)) {
         list.remove(requestId);
         break;
       }
