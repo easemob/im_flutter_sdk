@@ -4,6 +4,7 @@ import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'contact_item.dart';
@@ -51,7 +52,11 @@ class ContactsPageState extends State<ContactsPage>
                 PopMenuItem('添加群组'),
               ],
               callback: (index) {
-                print('index --- $index');
+                if (index == 0) {
+                  Navigator.of(context)
+                      .pushNamed('/addFriends')
+                      .then((value) {});
+                }
               },
             ),
           )
@@ -157,7 +162,7 @@ class ContactsPageState extends State<ContactsPage>
   _contactDidSelected(ContactModel contact, int index) async {
     if (contact.isCustom) {
       if (index == 0) {
-        Navigator.of(context).pushNamed('/newFriends').then((value) {
+        Navigator.of(context).pushNamed('/friendsRequest').then((value) {
           _friendRequestCount = SharePreferenceManager.loadUnreadCount();
           _fetchContactsFromServer();
         });
@@ -191,12 +196,14 @@ class ContactsPageState extends State<ContactsPage>
 
   @override
   void onContactAdded(String userName) {
-    setState(() {});
+    _fetchContactsFromServer();
+    SmartDialog.showToast('已被$userName加为好友');
   }
 
   @override
   void onContactDeleted(String userName) {
-    setState(() {});
+    _fetchContactsFromServer();
+    SmartDialog.showToast('已被$userName删除好友');
   }
 
   @override
@@ -208,12 +215,13 @@ class ContactsPageState extends State<ContactsPage>
 
   @override
   void onFriendRequestAccepted(String userName) {
+    SmartDialog.showToast('好友申请被$userName同意');
     _fetchContactsFromServer();
   }
 
   @override
   void onFriendRequestDeclined(String userName) {
-    setState(() {});
+    SmartDialog.showToast('好友申请被$userName拒绝');
   }
 
   void dispose() {
