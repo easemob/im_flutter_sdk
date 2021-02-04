@@ -157,8 +157,8 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
         return Padding(
           padding: EdgeInsets.all(sWidth(10)),
           child: SizedBox(
-            width: sWidth(30),
-            height: sWidth(30),
+            width: sWidth(15),
+            height: sWidth(15),
             child: Builder(
               builder: (_) {
                 if (widget.msg.status == EMMessageStatus.PROGRESS) {

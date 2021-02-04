@@ -1,11 +1,14 @@
 import 'package:easeim_flutter_demo/pages/account/register_page.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
+import 'package:easeim_flutter_demo/pages/contacts/contact_add_friends.dart';
+import 'package:easeim_flutter_demo/pages/contacts/contact_friends_request.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
 import 'package:easeim_flutter_demo/pages/home_page.dart';
 import 'package:easeim_flutter_demo/pages/account/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 void main() {
@@ -13,8 +16,8 @@ void main() {
 
   SystemUiOverlayStyle uiStyle = SystemUiOverlayStyle.light;
   SystemChrome.setSystemUIOverlayStyle(uiStyle);
-  EMPushConfig config = EMPushConfig()..enableAPNs('chatdemoui');
-  var options = EMOptions(appKey: 'easemob-demo#chatdemoui');
+  EMPushConfig config = EMPushConfig()..enableAPNs('EaseIM_APNS_Product');
+  var options = EMOptions(appKey: 'easemob-demo#easeim');
   options.pushConfig = config;
   EMClient.getInstance.init(options);
   return runApp(EaseIMDemo());
@@ -29,11 +32,14 @@ class EaseIMDemo extends StatelessWidget {
     return ScreenUtilInit(
       designSize: Size(375, 667),
       child: MaterialApp(
+        builder: (context, child) => FlutterSmartDialog(child: child),
         debugShowCheckedModeBanner: false,
         routes: <String, WidgetBuilder>{
           '/login': (context) => LoginPage(),
           '/register': (context) => RegisterPage(),
           '/home': (context) => HomePage(),
+          '/friendsRequest': (context) => ContactFirendsRequest(),
+          '/addFriends': (context) => ContactAddFriends(),
         },
         onGenerateRoute: onGenerateRoute,
         theme: ThemeData(

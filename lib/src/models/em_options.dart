@@ -2,18 +2,48 @@ import 'package:flutter/foundation.dart';
 import 'em_domain_terms.dart';
 
 class EMOptions {
-  /// 环信 appKey
+  /// 环信 appKey, 必须设置。
   String appKey = '';
+
+  /// 是否自动登录，当为`true`时，首次登录成功后，您再次启动App时，sdk会在
+  /// 初始化后自定为您登录上一次登录的账号。
   bool autoLogin = true;
+
   bool debugModel = false;
 
-  bool acceptInvitationAlways = true;
-  bool autoAcceptGroupInvitation = true;
+  /// 自动同意好友申请，当设置为`true`时，
+  /// 您在线时收到好友申请将自动同意,
+  /// 如您不在线，等您上线后会自动同意。
+  bool acceptInvitationAlways = false;
+
+  /// 是否自动同意群邀请，当设置为`true`时，
+  /// 您在线时收到加群邀请会自动同意，
+  /// 如您不在线，等您上线后会自动同意。
+  bool autoAcceptGroupInvitation = false;
+
+  /// 是否允许发送已读回执,默认值为`ture`,
+  /// 当为false时,当您通过EMChatManager调用sendMessageReadAck无效；
   bool requireAck = true;
+
+  /// 是否发送已送达回执，默认为`false`, 当为`ture`时，
+  /// 您收到消息后会自动相对方发送已送达回执。
+  /// 对方可以通过`onMessagesDelivered()`方法监听；
   bool requireDeliveryAck = false;
+
+  /// 退出群组时是否删除相应会话, 当为`true`时，
+  /// 您离开群组后对应的群消息会被删除。
   bool deleteMessagesAsExitGroup = true;
+
+  /// 退出聊天室时是否删除相应会话, 当为`true`时，
+  /// 您离开聊天室后对应的聊天室消息会被删除。
   bool deleteMessagesAsExitChatRoom = true;
+
+  /// 是否允许聊天室创建者退出聊天室，当为`true`时，
+  /// 聊天室创建者可以退出聊天室。
   bool isChatRoomOwnerLeaveAllowed = true;
+
+  /// 消息按照服务器时间排序, 当为`true`时，您从数据库中
+  /// 获取的消息是按照服务器时间排序的，否则是按照消息的本地时间排序。
   bool sortMessageByServerTime = true;
 
   bool usingHttpsOnly = false;
@@ -127,19 +157,24 @@ class EMPushConfig {
 
   bool _enableAPNS = false;
 
-  /// 开启魅族推送 [appId]: 推送用AppId, [appKey]: 推送用AppKey
+  /// 开启魅族推送, `appId`是推送用AppId, `appKey`是推送用AppKey。申请流程请访问
+  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
   void enableMeiZuPush(String appId, String appKey) {
     _enableMeiZuPush = true;
     _mzAppId = appId;
     _mzAppKey = appKey;
   }
 
+  /// 开启Oppo推送，`appkey`是Oppo的appkey，`secret`是Oppo的secret。申请流程访问
+  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
   void enableOppPush(String appKey, String secret) {
     _enableOppoPush = true;
     _oppoAppKey = appKey;
     _oppoAppSecret = secret;
   }
 
+  /// 开启小米推送, `appId`是推送用AppId, `appKey`是推送用AppKey。申请流程请访问
+  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
   void enableMiPush(String appId, String appKey) {
     _enableMiPush = true;
     _miAppId = appId;
@@ -155,10 +190,14 @@ class EMPushConfig {
     _enableVivoPush = true;
   }
 
+  /// 华为推送，具体流程请访问
+  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
   void enableHWPush() {
     _enableHWPush = true;
   }
 
+  /// 开启苹果推送，具体申请证书和上传流程请参考文档
+  /// `http://docs-im.easemob.com/im/ios/apns/deploy`
   void enableAPNs(String certName) {
     _enableAPNS = true;
     _apnsCertName = certName;
