@@ -338,7 +338,7 @@ class EMMessageHelper {
             message.setStatus(statusFromInt(json.getInt("status")));
             message.setChatType(chatTypeFromInt(json.getInt("chatType")));
             message.setDirection(json.getString("direction").equals("send") ? EMMessage.Direct.SEND : EMMessage.Direct.RECEIVE);
-
+            message.setMsgId(json.getString("msgId"));
             if (null != json.getJSONObject("attributes")){
                 JSONObject data = json.getJSONObject("attributes");
                 Iterator iterator = data.keys();
