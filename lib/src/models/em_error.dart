@@ -1,7 +1,6 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-class EMError implements Exception {
-  @pragma("vm:entry-point")
+class EMError {
   EMError._private([this._code, this._description]);
 
   int _code;

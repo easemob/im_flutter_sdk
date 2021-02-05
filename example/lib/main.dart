@@ -37,15 +37,6 @@ class EaseIMDemo extends StatelessWidget {
       child: MaterialApp(
         builder: (context, child) => FlutterSmartDialog(child: child),
         debugShowCheckedModeBanner: false,
-        // routes: <String, WidgetBuilder>{
-        //   '/login': (context) => LoginPage(),
-        //   '/register': (context) => RegisterPage(),
-        //   '/home': (context) => HomePage(),
-        //   '/friendsRequest': (context) => ContactFirendsRequestPage(),
-        //   '/addFriends': (context) => ContactAddFriendsPage(),
-        //   '/publicGroups': (context) => PublicGroupsPage(),
-        //   '/joinedGroups': (context) => JoinedGroupsPage(),
-        // },
         onGenerateRoute: onGenerateRoute,
         theme: ThemeData(
             appBarTheme: AppBarTheme(elevation: 1),

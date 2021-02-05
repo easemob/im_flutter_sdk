@@ -112,10 +112,10 @@ class ContactAddFriendsPageState extends State<ContactAddFriendsPage> {
   _addContact() async {
     try {
       SmartDialog.showLoading(msg: '发送中...');
-      EMClient.getInstance.contactManager.addContact(_searchName);
+      await EMClient.getInstance.contactManager.addContact(_searchName);
       SmartDialog.showToast('发送成功');
-    } on EMError {
-      SmartDialog.showToast('发送失败');
+    } on EMError catch (e) {
+      SmartDialog.showToast('发送失败$e');
     } finally {
       SmartDialog.dismiss();
     }

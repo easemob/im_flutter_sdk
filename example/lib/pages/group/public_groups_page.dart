@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
   String _cursor = '';
   bool _isEnd = false;
   String _searchName = '';
+  EMGroup _searchdGroup;
   final _pageSize = 30;
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
@@ -38,7 +41,13 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                   child: TextFormField(
                     focusNode: null,
                     textInputAction: TextInputAction.search,
-                    onChanged: (text) {},
+                    onChanged: (text) {
+                      _searchName = text;
+                      if (_searchName.length == 0) {
+                        _searchdGroup = null;
+                        setState(() {});
+                      }
+                    },
                     style: TextStyle(
                       fontSize: sFontSize(14),
                     ),
@@ -61,9 +70,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                       ),
                     ),
                     onFieldSubmitted: (str) {
-                      setState(() {
-                        _searchName = str;
-                      });
+                      _searchPublicId(str);
                     },
                   ),
                 ),
@@ -77,15 +84,23 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                 onLoading: () => _loadMorePublicGroups(),
                 controller: _refreshController,
                 child: ListView.separated(
-                    itemBuilder: ((_, index) {
-                      return _groupItem(index);
-                    }),
-                    separatorBuilder: ((_, index) {
-                      return Divider(
-                        color: Colors.grey[300],
-                      );
-                    }),
-                    itemCount: _groupsList.length),
+                  itemBuilder: ((_, index) {
+                    if (_searchdGroup != null) {
+                      return _groupItem(_searchdGroup);
+                    } else {
+                      EMGroup group = _groupsList[index];
+                      return _groupItem(group);
+                    }
+                  }),
+                  separatorBuilder: ((_, index) {
+                    return Divider(
+                      color: Colors.grey[300],
+                    );
+                  }),
+                  itemCount: _searchName.length != 0 && _searchdGroup != null
+                      ? 1
+                      : _groupsList.length,
+                ),
               ),
             ),
           ],
@@ -99,42 +114,54 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     super.dispose();
   }
 
-  _groupItem(int index) {
-    EMGroup group = _groupsList[index];
+  _groupItem(EMGroup group) {
     return Container(
       padding: EdgeInsets.only(
         left: sWidth(20),
         right: sWidth(20),
       ),
-      height: 40,
+      // height: sHeight(44),
       child: GestureDetector(
-        onTapUp: (_) => _fetchGroupInfo(group),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                group.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+          onTapUp: (_) => _fetchGroupInfo(group),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      group.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: sFontSize(16),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            SizedBox(
-              width: sWidth(20),
-            ),
-            FlatButton(
-              color: Colors.blue,
-              highlightColor: Colors.blue[700],
-              colorBrightness: Brightness.dark,
-              splashColor: Colors.grey,
-              child: Text("加入"),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0)),
-              onPressed: () => _joinPublicGroup(group),
-            ),
-          ],
-        ),
-      ),
+              SizedBox(
+                height: sHeight(5),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      group.groupId,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: sFontSize(13),
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          )),
     );
   }
 
@@ -181,22 +208,24 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     }
   }
 
-  _joinPublicGroup(EMGroup group) {
-    try {
-      SmartDialog.showLoading(msg: '加入中...');
-      EMClient.getInstance.groupManager.joinPublicGroup(group.groupId);
-      SmartDialog.showToast('加入成功');
-    } on EMError catch (e) {
-      SmartDialog.showToast('加入失败: $e');
-    } finally {
-      SmartDialog.dismiss();
-    }
-  }
-
   _fetchGroupInfo(EMGroup group) {
     print('_fetchGroupInfo ${group.groupId}');
     Navigator.of(context)
         .pushNamed('/groupInfo', arguments: group)
         .then((value) {});
+  }
+
+  _searchPublicId(String std) async {
+    if (std.length == 0) return;
+    try {
+      SmartDialog.showLoading(msg: '搜索中...');
+      _searchdGroup = await EMClient.getInstance.groupManager
+          .getGroupSpecificationFromServer(std);
+    } on EMError catch (e) {
+      SmartDialog.showToast('搜索失败: $e');
+    } finally {
+      SmartDialog.dismiss();
+      setState(() {});
+    }
   }
 }
