@@ -56,7 +56,7 @@ class EMGroupManager {
   }
 
   /// 从服务器获取已加入的群组列表
-  Future<List> getJoinedGroupsFromServer({
+  Future<List<EMGroup>> getJoinedGroupsFromServer({
     int pageSize = 200,
     int pageNum = 1,
   }) async {

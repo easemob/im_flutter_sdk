@@ -122,46 +122,47 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
       ),
       // height: sHeight(44),
       child: GestureDetector(
-          onTapUp: (_) => _fetchGroupInfo(group),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      group.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: sFontSize(16),
-                      ),
+        onTapUp: (_) => _fetchGroupInfo(group),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    group.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: sFontSize(16),
                     ),
                   ),
-                ],
-              ),
-              SizedBox(
-                height: sHeight(5),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      group.groupId,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: sFontSize(13),
-                        color: Colors.grey,
-                      ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: sHeight(5),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    group.groupId,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: sFontSize(13),
+                      color: Colors.grey,
                     ),
                   ),
-                ],
-              ),
-            ],
-          )),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
