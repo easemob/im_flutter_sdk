@@ -3,6 +3,7 @@ import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
 import 'package:easeim_flutter_demo/pages/contacts/contact_add_friends_page.dart';
 import 'package:easeim_flutter_demo/pages/contacts/contact_friends_request_page.dart';
 import 'package:easeim_flutter_demo/pages/group/group_info_page.dart';
+import 'package:easeim_flutter_demo/pages/group/group_members_page.dart';
 import 'package:easeim_flutter_demo/pages/group/joined_groups_page.dart';
 import 'package:easeim_flutter_demo/pages/group/public_groups_page.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
@@ -22,7 +23,7 @@ void main() {
   EMPushConfig config = EMPushConfig()..enableAPNs('EaseIM_APNS_Product');
   var options = EMOptions(appKey: 'easemob-demo#easeim');
   options.pushConfig = config;
-  EMClient.getInstance.init(options);
+  EMClient.getInstance.init(options).then((value) => null);
   return runApp(EaseIMDemo());
 }
 
@@ -63,6 +64,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     '/joinedGroups': (context) => JoinedGroupsPage(),
     "/chat": (ctx) => ChatPage(settings.arguments),
     "/groupInfo": (ctx) => GroupInfoPage(settings.arguments),
+    '/groupMemberList': (ctx) => GroupMembersPage(
+          (settings.arguments as List)[0],
+          (settings.arguments as List)[1],
+        ),
   };
   WidgetBuilder builder = routes[settings.name];
   return MaterialPageRoute(builder: (ctx) => builder(ctx));

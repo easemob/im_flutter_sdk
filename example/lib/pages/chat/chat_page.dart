@@ -343,15 +343,6 @@ class _ChatPageState extends State<ChatPage>
     print('长按 msg id ---- ${msg.msgId}');
   }
 
-  /// 重发消息
-  void _resendMessage(EMMessage msg) async {
-    _msgList.remove(msg);
-    EMMessage message =
-        await EMClient.getInstance.chatManager.resendMessage(msg);
-    _msgList.add(message);
-    _setStateAndMoreToListViewEnd();
-  }
-
   /// 发送文字消息
   _sendTextMessage(String txt) {
     if (txt.length == 0) return;
@@ -387,7 +378,35 @@ class _ChatPageState extends State<ChatPage>
 
   /// 发消息方法
   _sendMessage(EMMessage msg) async {
+    _chatType() {
+      EMMessageChatType type = EMMessageChatType.Chat;
+      switch (widget.conv.type) {
+        case EMConversationType.Chat:
+          type = EMMessageChatType.Chat;
+          break;
+        case EMConversationType.ChatRoom:
+          type = EMMessageChatType.ChatRoom;
+          break;
+        case EMConversationType.GroupChat:
+          type = EMMessageChatType.GroupChat;
+          break;
+        default:
+      }
+      return type;
+    }
+
     EMMessage message = await EMClient.getInstance.chatManager.sendMessage(msg);
+    message.chatType = _chatType();
+    _msgList.add(message);
+    _setStateAndMoreToListViewEnd();
+  }
+
+  /// 重发消息
+  void _resendMessage(EMMessage msg) async {
+    _msgList.remove(msg);
+    EMMessage message =
+        await EMClient.getInstance.chatManager.resendMessage(msg);
+
     _msgList.add(message);
     _setStateAndMoreToListViewEnd();
   }

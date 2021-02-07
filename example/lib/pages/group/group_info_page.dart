@@ -1,3 +1,4 @@
+import 'package:easeim_flutter_demo/pages/group/group_members_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -56,14 +57,109 @@ class GroupInfoPageState extends State<GroupInfoPage> {
           )
         ],
       ),
-      body: ListView(
-        children: [
-          Row(
-            children: [
-              Text('id: ${widget.group.groupId}'),
-            ],
-          )
-        ],
+      body: Container(
+        // margin: EdgeInsets.all(
+        //   sWidth(10),
+        // ),
+        child: Column(
+          children: [
+            Card(
+              // elevation: 5, //阴影
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              color: Colors.white, //颜色
+              margin: EdgeInsets.all(sWidth(10)), //margin
+              child: Container(
+                margin: EdgeInsets.all(sWidth(10)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.group.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: sFontSize(16),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: sHeight(5),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.group.groupId,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: sFontSize(13),
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTapUp: (_) => _pushGroupMembersInfo(),
+              child: Card(
+                // elevation: 5, //阴影
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                ),
+                color: Colors.white, //颜色
+                margin: EdgeInsets.all(sWidth(10)), //margin
+                child: Container(
+                  margin: EdgeInsets.all(
+                    sWidth(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text('群主'),
+                      ),
+                      Text(_group?.owner ?? ''),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Card(
+              // elevation: 5, //阴影
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              color: Colors.white, //颜色
+              margin: EdgeInsets.all(sWidth(10)), //margin
+              child: Container(
+                margin: EdgeInsets.all(
+                  sWidth(10),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text('成员数'),
+                    ),
+                    Text(_group != null ? _group?.memberCount.toString() : ''),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -106,5 +202,12 @@ class GroupInfoPageState extends State<GroupInfoPage> {
     } finally {
       SmartDialog.dismiss();
     }
+  }
+
+  _pushGroupMembersInfo() {
+    Navigator.of(context).pushNamed('/groupMemberList', arguments: [
+      _group,
+      GroupMembersPageType.Admin,
+    ]);
   }
 }
