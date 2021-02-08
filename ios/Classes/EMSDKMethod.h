@@ -49,6 +49,7 @@ static NSString * const EMMethodKeyOnContactChanged = @"onContactChanged";
 static NSString * const EMMethodKeySendMessage = @"sendMessage";
 static NSString * const EMMethodKeyResendMessage = @"resendMessage";
 static NSString * const EMMethodKeyAckMessageRead = @"ackMessageRead";
+static NSString * const EMMethodKeyAckConversationRead = @"ackConversationRead";
 static NSString * const EMMethodKeyRecallMessage = @"recallMessage";
 static NSString * const EMMethodKeyGetConversation = @"getConversation";
 static NSString * const EMMethodKeyMarkAllChatMsgAsRead = @"markAllChatMsgAsRead";
@@ -58,6 +59,8 @@ static NSString * const EMMethodKeyDownloadAttachment = @"downloadAttachment";
 static NSString * const EMMethodKeyDownloadThumbnail = @"downloadThumbnail";
 static NSString * const EMMethodKeyImportMessages = @"importMessages";
 static NSString * const EMMethodKeyLoadAllConversations = @"loadAllConversations";
+static NSString * const EMMethodKeyGetConversationsFromServer = @"getConversationsFromServer";
+
 static NSString * const EMMethodKeyDeleteConversation = @"deleteConversation";
 //static NSString * const EMMethodKeySetVoiceMessageListened = @"setVoiceMessageListened";
 //static NSString * const EMMethodKeyUpdateParticipant = @"updateParticipant";
@@ -71,7 +74,9 @@ static NSString * const EMMethodKeyOnCmdMessagesReceived = @"onCmdMessagesReceiv
 static NSString * const EMMethodKeyOnMessagesRead = @"onMessagesRead";
 static NSString * const EMMethodKeyOnMessagesDelivered = @"onMessagesDelivered";
 static NSString * const EMMethodKeyOnMessagesRecalled = @"onMessagesRecalled";
+
 static NSString * const EMMethodKeyOnConversationUpdate = @"onConversationUpdate";
+static NSString * const EMMethodKeyOnConversationHasRead = @"onConversationHasRead";
 
 #pragma mark - EMMessageListener
 static NSString * const EMMethodKeyOnMessageProgressUpdate = @"onMessageProgressUpdate";
@@ -100,7 +105,6 @@ static NSString * const EMMethodKeyLoadMsgWithStartId = @"loadMsgWithStartId";
 static NSString * const EMMethodKeyLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString * const EMMethodKeyLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString * const EMMethodKeyLoadMsgWithTime = @"loadMsgWithTime";
-
 
 
 #pragma mark - EMChatroomManagerWrapper

@@ -1,6 +1,7 @@
 import 'package:azlistview/azlistview.dart';
 import 'package:easeim_flutter_demo/models/contact_model.dart';
 import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
+import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,10 @@ class ContactsPageState extends State<ContactsPage>
                   Navigator.of(context)
                       .pushNamed('/addFriends')
                       .then((value) {});
+                } else if (index == 1) {
+                  Navigator.of(context)
+                      .pushNamed('/publicGroups')
+                      .then((value) {});
                 }
               },
             ),
@@ -86,8 +91,8 @@ class ContactsPageState extends State<ContactsPage>
               );
             }
           },
-          /* ['☆', ...kIndexBarData] */
-          indexBarData: SuspensionUtil.getTagIndexList(_contactList),
+          /* SuspensionUtil.getTagIndexList(_contactList), */
+          indexBarData: ['☆', ...kIndexBarData],
           indexHintBuilder: (BuildContext context, String tag) {
             if (tag == '☆') {
               return Container();
@@ -110,7 +115,7 @@ class ContactsPageState extends State<ContactsPage>
     );
   }
 
-// // 吸顶组件
+  // 吸顶组件
   Widget _buildSusWidget(String susTag, {bool isFloat = false}) {
     return Container(
       height: 30,
@@ -146,17 +151,47 @@ class ContactsPageState extends State<ContactsPage>
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _contactDidSelected(model, index),
-      child: SafeArea(child: Builder(builder: (_) {
-        int unreadCount = 0;
-        if (index == 0) {
-          unreadCount = _friendRequestCount;
-        }
-        return ContactItem(
-          model.name,
-          unreadCount: unreadCount,
-        );
-      })),
+      child: SafeArea(
+        child: Builder(
+          builder: (_) {
+            int unreadCount = 0;
+            if (index == 0) {
+              unreadCount = _friendRequestCount;
+            }
+            if (model.isCustom) {
+              return ContactItem(
+                model.name,
+                unreadCount: unreadCount,
+              );
+            } else {
+              return slidableItem(
+                child: ContactItem(
+                  model.name,
+                  unreadCount: unreadCount,
+                ),
+                actions: [
+                  slidableDeleteAction(
+                    onTap: () => _deleteContact(model),
+                  ),
+                ],
+              );
+            }
+          },
+        ),
+      ),
     );
+  }
+
+  _deleteContact(ContactModel contact) {
+    try {
+      SmartDialog.showLoading(msg: '删除中...');
+      EMClient.getInstance.contactManager.deleteContact(contact.contactId);
+      SmartDialog.showToast('删除成功');
+    } on EMError catch (e) {
+      SmartDialog.showToast('删除失败$e');
+    } finally {
+      SmartDialog.dismiss();
+    }
   }
 
   _contactDidSelected(ContactModel contact, int index) async {
@@ -164,6 +199,10 @@ class ContactsPageState extends State<ContactsPage>
       if (index == 0) {
         Navigator.of(context).pushNamed('/friendsRequest').then((value) {
           _friendRequestCount = SharePreferenceManager.loadUnreadCount();
+          _fetchContactsFromServer();
+        });
+      } else if (index == 1) {
+        Navigator.of(context).pushNamed('/joinedGroups').then((value) {
           _fetchContactsFromServer();
         });
       }
