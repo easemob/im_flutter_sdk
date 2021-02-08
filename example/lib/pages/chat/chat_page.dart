@@ -548,4 +548,7 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   onConversationsUpdate() {}
+
+  @override
+  onConversationRead(String from, String to) {}
 }

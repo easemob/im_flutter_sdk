@@ -25,6 +25,8 @@ class EMChatManager {
         return _onMessagesRecalled(call.arguments);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
         return _onConversationsUpdate(call.arguments);
+      } else if (call.method == EMSDKMethod.onConversationHasRead) {
+        return _onConversationHasRead(call.arguments);
       }
       return null;
     });
@@ -60,6 +62,14 @@ class EMChatManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.ackMessageRead, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.ackMessageRead);
+  }
+
+  Future<bool> sendConversationReadAck(String conversationId) async {
+    Map req = {"con_id": conversationId};
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.ackConversationRead, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.ackConversationRead);
   }
 
   /// 撤回发送的消息(增值服务), 默认时效为2分钟，超过2分钟无法撤回.
@@ -152,6 +162,18 @@ class EMChatManager {
     EMError.hasErrorFromResult(result);
     var conversationList = List<EMConversation>();
     result[EMSDKMethod.loadAllConversations]?.forEach((element) {
+      conversationList.add(EMConversation.fromJson(element));
+    });
+    return conversationList;
+  }
+
+  /// 从服务器获取会话
+  Future<List<EMConversation>> getConversationsFromServer() async {
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
+    EMError.hasErrorFromResult(result);
+    var conversationList = List<EMConversation>();
+    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
       conversationList.add(EMConversation.fromJson(element));
     });
     return conversationList;
@@ -289,6 +311,14 @@ class EMChatManager {
       listener.onConversationsUpdate();
     }
   }
+
+  Future<void> _onConversationHasRead(dynamic obj) async {
+    for (var listener in _messageListeners) {
+      String from = (obj as Map)['from'];
+      String to = (obj as Map)['to'];
+      listener.onConversationRead(from, to);
+    }
+  }
 }
 
 abstract class EMChatManagerListener {
@@ -309,4 +339,7 @@ abstract class EMChatManagerListener {
 
   /// 会话列表变化
   onConversationsUpdate() {}
+
+  /// 会话已读`from`是已读的发送方, `to`是已读的接收方
+  onConversationRead(String from, String to) {}
 }

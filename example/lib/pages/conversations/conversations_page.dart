@@ -209,4 +209,7 @@ class ConversationPageState extends State<ConversationPage>
 
   @override
   onConversationsUpdate() {}
+
+  @override
+  onConversationRead(String from, String to) {}
 }

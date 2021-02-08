@@ -37,6 +37,7 @@ class EMSDKMethod {
   static const String sendMessage = 'sendMessage';
   static const String resendMessage = 'resendMessage';
   static const String ackMessageRead = 'ackMessageRead';
+  static const String ackConversationRead = 'ackConversationRead';
   static const String recallMessage = 'recallMessage';
   static const String getConversation = 'getConversation';
   static const String markAllChatMsgAsRead = 'markAllChatMsgAsRead';
@@ -46,6 +47,7 @@ class EMSDKMethod {
   static const String downloadThumbnail = 'downloadThumbnail';
   static const String importMessages = 'importMessages';
   static const String loadAllConversations = 'loadAllConversations';
+  static const String getConversationsFromServer = 'getConversationsFromServer';
   static const String deleteConversation = 'deleteConversation';
   static const String fetchHistoryMessages = 'fetchHistoryMessages';
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
@@ -60,6 +62,7 @@ class EMSDKMethod {
   static const String onMessageChanged = 'onMessageChanged';
 
   static const String onConversationUpdate = 'onConversationUpdate';
+  static const String onConversationHasRead = 'onConversationHasRead';
 
   /// EMMessage listener
   static const String onMessageProgressUpdate = 'onMessageProgressUpdate';
