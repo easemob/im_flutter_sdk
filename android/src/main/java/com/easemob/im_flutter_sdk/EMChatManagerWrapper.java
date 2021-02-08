@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMConversationListener;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.*;
@@ -18,6 +19,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +58,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             {
                 ackMessageRead(param, EMSDKMethod.ackMessageRead, result);
             }
+            else if(EMSDKMethod.ackConversationRead.equals(call.method))
+            {
+                ackConversationRead(param, EMSDKMethod.ackConversationRead, result);
+            }
             else if(EMSDKMethod.recallMessage.equals(call.method))
             {
                 recallMessage(param, EMSDKMethod.recallMessage, result);
@@ -90,6 +97,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             else if(EMSDKMethod.loadAllConversations.equals(call.method))
             {
                 loadAllConversations(param, EMSDKMethod.loadAllConversations, result);
+            }
+            else if(EMSDKMethod.getConversationsFromServer.equals(call.method))
+            {
+                getConversationsFromServer(param, EMSDKMethod.getConversationsFromServer, result);
             }
             else if(EMSDKMethod.deleteConversation.equals(call.method))
             {
@@ -214,6 +225,18 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
     }
 
+    private void ackConversationRead(JSONObject param, String channelName, Result result) throws JSONException {
+        String conversationId = param.getString("con_id");
+        asyncRunnable(()->{
+            try {
+                EMClient.getInstance().chatManager().ackConversationRead(conversationId);
+                onSuccess(result, channelName, true);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
     private void recallMessage(JSONObject param, String channelName, Result result) throws JSONException {
         String msgId = param.getString("msg_id");
 
@@ -304,13 +327,29 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void loadAllConversations(JSONObject param, String channelName, Result result) throws JSONException {
         asyncRunnable(()->{
-            Map map = EMClient.getInstance().chatManager().getAllConversations();
+            List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
+            Collections.sort(list, (o1, o2) -> (int)(o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime()));
             List<Map> conversations = new ArrayList<>();
-            for (Object key : map.keySet()) {
-                EMConversation conversation = (EMConversation) map.get(key);
+            for (EMConversation conversation : list) {
                 conversations.add(EMConversationHelper.toJson(conversation));
             }
             onSuccess(result, channelName, conversations);
+        });
+    }
+
+    private void getConversationsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
+        asyncRunnable(()->{
+            try {
+                List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().fetchConversationsFromServer().values());
+                Collections.sort(list, (o1, o2) -> (int)(o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime()));
+                List<Map> conversations = new ArrayList<>();
+                for (EMConversation conversation : list) {
+                    conversations.add(EMConversationHelper.toJson(conversation));
+                }
+                onSuccess(result, channelName, conversations);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
         });
     }
 
@@ -378,7 +417,9 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for(EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
+                    post(()-> messageChannel.invokeMethod(EMSDKMethod.onMessageReadAck, EMMessageHelper.toJson(message)));
                 }
+
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesRead, msgList));
             }
 
@@ -387,6 +428,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for(EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
+                    post(()-> messageChannel.invokeMethod(EMSDKMethod.onMessageDeliveryAck, EMMessageHelper.toJson(message)));
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesDelivered, msgList));
             }
@@ -404,14 +446,25 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             public void onMessageChanged(EMMessage message, Object change) {
                 Map<String, Object> data = new HashMap<>();
                 data.put("message", EMMessageHelper.toJson(message));
-                post(() -> channel.invokeMethod(EMSDKMethod.onMessageChanged, data));
+                post(() -> channel.invokeMethod(EMSDKMethod.onMessageStatusChanged, data));
 
             }
         });
         //setup conversation listener
-        EMClient.getInstance().chatManager().addConversationListener(() -> {
-            Map<String, Object> data = new HashMap<>();
-            post(() -> channel.invokeMethod(EMSDKMethod.onConversationUpdate,data));
+        EMClient.getInstance().chatManager().addConversationListener(new EMConversationListener() {
+            @Override
+            public void onCoversationUpdate() {
+                Map<String, Object> data = new HashMap<>();
+                post(() -> channel.invokeMethod(EMSDKMethod.onConversationUpdate,data));
+            }
+
+            @Override
+            public void onConversationRead(String from, String to) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("from", from);
+                data.put("to", to);
+                post(() -> channel.invokeMethod(EMSDKMethod.onConversationHasRead,data));
+            }
         });
     }
 

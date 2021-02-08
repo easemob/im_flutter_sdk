@@ -54,7 +54,11 @@ class ConversationPageState extends State<ConversationPage>
                 PopMenuItem('添加好友'),
               ],
               callback: (index) {
-                print('index --- $index');
+                if (index == 1) {
+                  Navigator.of(context)
+                      .pushNamed('/addFriends')
+                      .then((value) {});
+                }
               },
             ),
           )
@@ -97,7 +101,7 @@ class ConversationPageState extends State<ConversationPage>
                         color: Color.fromRGBO(204, 204, 204, 1),
                       ),
                       Text(
-                        '请输入用户ID',
+                        '请输入会话名称',
                         style: TextStyle(
                           fontWeight: FontWeight.w300,
                           fontSize: sFontSize(16),
@@ -205,4 +209,7 @@ class ConversationPageState extends State<ConversationPage>
 
   @override
   onConversationsUpdate() {}
+
+  @override
+  onConversationRead(String from, String to) {}
 }
