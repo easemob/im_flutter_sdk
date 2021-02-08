@@ -51,7 +51,12 @@
         [self ackMessageRead:call.arguments
                  channelName:EMMethodKeyAckMessageRead
                       result:result];
-    } else if ([EMMethodKeyRecallMessage isEqualToString:call.method]) {
+    } else if ([EMMethodKeyAckConversationRead isEqualToString:call.method]) {
+        [self ackConversationRead:call.arguments
+                      channelName:EMMethodKeyAckConversationRead
+                           result:result];
+    }
+    else if ([EMMethodKeyRecallMessage isEqualToString:call.method]) {
         [self recallMessage:call.arguments
                 channelName:EMMethodKeyRecallMessage
                      result:result];
@@ -90,6 +95,10 @@
     } else if ([EMMethodKeyLoadAllConversations isEqualToString:call.method]) {
         [self loadAllConversations:call.arguments
                        channelName:EMMethodKeyLoadAllConversations
+                            result:result];
+    } else if ([EMMethodKeyGetConversationsFromServer isEqualToString:call.method]) {
+        [self loadAllConversations:call.arguments
+                       channelName:EMMethodKeyGetConversationsFromServer
                             result:result];
     } else if ([EMMethodKeyDeleteConversation isEqualToString:call.method]) {
         [self deleteConversation:call.arguments
@@ -198,6 +207,21 @@
     NSString *to = param[@"to"];
     [EMClient.sharedClient.chatManager sendMessageReadAck:msgId
                                                    toUser:to
+                                               completion:^(EMError *aError)
+    {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(!aError)];
+    }];
+}
+
+- (void)ackConversationRead:(NSDictionary *)param
+           channelName:(NSString *)aChannelName
+                result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *conversationId = param[@"con_id"];
+    [EMClient.sharedClient.chatManager ackConversationRead:conversationId
                                                completion:^(EMError *aError)
     {
         [weakSelf wrapperCallBack:result
@@ -419,6 +443,29 @@
                    object:conList];
 }
 
+- (void)getConversationsFromServer:(NSDictionary *)param
+                 channelName:(NSString *)aChannelName
+                            result:(FlutterResult)result {
+    [EMClient.sharedClient.chatManager getConversationsFromServer:^(NSArray *aCoversations, EMError *aError) {
+        NSArray *sortedList = [aCoversations sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            if (((EMConversation *)obj1).latestMessage.timestamp > ((EMConversation *)obj2).latestMessage.timestamp) {
+                return NSOrderedAscending;
+            }else {
+                return NSOrderedDescending;
+            }
+        }];
+        NSMutableArray *conList = [NSMutableArray array];
+        for (EMConversation *conversation in sortedList) {
+            [conList addObject:[conversation toJson]];
+        }
+        
+        [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:conList];
+    }];
+}
+
 - (void)deleteConversation:(NSDictionary *)param
                channelName:(NSString *)aChannelName
                     result:(FlutterResult)result {
@@ -487,10 +534,17 @@
 
 #pragma mark - EMChatManagerDelegate
 
-// TODO: 安卓没有参数，是否参数一起返回？
+
 - (void)conversationListDidUpdate:(NSArray *)aConversationList {
     [self.channel invokeMethod:EMMethodKeyOnConversationUpdate
                      arguments:nil];
+}
+
+- (void)onConversationRead:(NSString *)from
+                        to:(NSString *)to
+{
+    [self.channel invokeMethod:EMMethodKeyOnConversationHasRead
+                     arguments:@{@"from":from, @"to": to}];
 }
 
 - (void)messagesDidReceive:(NSArray *)aMessages {
