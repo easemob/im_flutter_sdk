@@ -51,7 +51,7 @@ dependencies:
   pull_to_refresh: 1.6.3
 
   # 屏幕适配
-  flutter_screenutil: ^4.0.0
+  flutter_screenutil: 4.0.3+1
 
   # 常用工具类
   flustars: ^0.3.2
