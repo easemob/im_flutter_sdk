@@ -205,6 +205,10 @@ class ContactsPageState extends State<ContactsPage>
         Navigator.of(context).pushNamed('/joinedGroups').then((value) {
           _fetchContactsFromServer();
         });
+      } else if (index == 2) {
+        Navigator.of(context).pushNamed('/rooms').then((value) {
+          _fetchContactsFromServer();
+        });
       }
     } else {
       EMConversation conv = await EMClient.getInstance.chatManager

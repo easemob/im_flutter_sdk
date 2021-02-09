@@ -18,6 +18,6 @@ class EMPageResult<T> {
   int _pageCount;
   List<T> _data;
 
-  List<T> get data => _data;
   get pageCount => _pageCount;
+  List<T> get data => _data;
 }
