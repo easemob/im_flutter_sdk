@@ -120,7 +120,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
       height: sHeight(70),
       // height: sHeight(44),
       child: ListTile(
-        onTap: () => _joinChatRoom(room),
+        onTap: () => _chatToRoom(room),
         title: Text(
           room.name,
           maxLines: 1,
@@ -178,19 +178,10 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
     }
   }
 
-  _joinChatRoom(EMChatRoom room) async {
-    try {
-      SmartDialog.showLoading(msg: '加入中...');
-      await EMClient.getInstance.chatRoomManager.joinChatRoom(room.roomId);
-      EMConversation con = await EMClient.getInstance.chatManager
-          .getConversation(room.roomId, EMConversationType.ChatRoom);
-      Navigator.of(context).pushNamed('/chat', arguments: con);
-      SmartDialog.showToast('加入成功');
-    } on EMError catch (e) {
-      SmartDialog.showToast('加入失败 --- $e');
-    } finally {
-      SmartDialog.dismiss();
-    }
+  _chatToRoom(EMChatRoom room) async {
+    EMConversation con = await EMClient.getInstance.chatManager
+        .getConversation(room.roomId, EMConversationType.ChatRoom);
+    Navigator.of(context).pushNamed('/chat', arguments: con);
   }
 
   _searchId(String std) async {
