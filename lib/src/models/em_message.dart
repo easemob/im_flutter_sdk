@@ -82,6 +82,7 @@ class EMMessage {
     @required this.body,
     this.direction = EMMessageDirection.SEND,
     this.to,
+    this.hasRead = true,
   })  : this.from = EMClient.getInstance.currentUsername,
         this.conversationId = to {
     _emMessageChannel.setMethodCallHandler((MethodCall call) {
