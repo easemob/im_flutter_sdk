@@ -171,7 +171,7 @@ class ConversationPageState extends State<ConversationPage>
   }
 
   /// 会话被点击
-  _conversationItemOnPress(int index) {
+  _conversationItemOnPress(int index) async {
     EMConversation conv = _conversationsList[index];
     Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {
       // 返回时刷新页面

@@ -50,23 +50,57 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
   @override
   Widget build(context) {
     bool isRecv = widget.msg.direction == EMMessageDirection.RECEIVE;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      textDirection: isRecv ? TextDirection.ltr : TextDirection.rtl,
-      children: [
-        Container(
-          height: sWidth(42),
-          width: sWidth(42),
-          margin: EdgeInsets.only(
-            left: sWidth(isRecv ? 20 : 10),
-            right: sWidth(!isRecv ? 20 : 10),
-          ),
-          child: _avatarWidget(),
-        ),
-        _messageWidget(isRecv),
-        _messageStateWidget(isRecv),
-      ],
+    return Builder(
+      builder: (_) {
+        _info() {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            textDirection: isRecv ? TextDirection.ltr : TextDirection.rtl,
+            children: [
+              Container(
+                height: sWidth(42),
+                width: sWidth(42),
+                margin: EdgeInsets.only(
+                  left: sWidth(isRecv ? 20 : 10),
+                  right: sWidth(!isRecv ? 20 : 10),
+                ),
+                child: _avatarWidget(),
+              ),
+              _messageWidget(isRecv),
+              _messageStateWidget(isRecv),
+            ],
+          );
+        }
+
+        Widget ret;
+        if (isRecv && widget.msg.chatType != EMMessageChatType.Chat) {
+          ret = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  left: sWidth(25),
+                ),
+                child: Text(
+                  widget.msg.from,
+                  style: TextStyle(
+                    fontSize: sFontSize(11),
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: sHeight(3),
+              ),
+              _info(),
+            ],
+          );
+        } else {
+          ret = _info();
+        }
+        return ret;
+      },
     );
   }
 
