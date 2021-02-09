@@ -1,5 +1,6 @@
 import 'package:easeim_flutter_demo/pages/account/register_page.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
+import 'package:easeim_flutter_demo/pages/chatroom/chat_room_list_page.dart';
 import 'package:easeim_flutter_demo/pages/contacts/contact_add_friends_page.dart';
 import 'package:easeim_flutter_demo/pages/contacts/contact_friends_request_page.dart';
 import 'package:easeim_flutter_demo/pages/group/group_info_page.dart';
@@ -62,12 +63,13 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     '/addFriends': (context) => ContactAddFriendsPage(),
     '/publicGroups': (context) => PublicGroupsPage(),
     '/joinedGroups': (context) => JoinedGroupsPage(),
-    "/chat": (ctx) => ChatPage(settings.arguments),
-    "/groupInfo": (ctx) => GroupInfoPage(settings.arguments),
-    '/groupMemberList': (ctx) => GroupMembersPage(
+    '/chat': (context) => ChatPage(settings.arguments),
+    '/groupInfo': (context) => GroupInfoPage(settings.arguments),
+    '/groupMemberList': (context) => GroupMembersPage(
           (settings.arguments as List)[0],
           (settings.arguments as List)[1],
         ),
+    '/rooms': (context) => ChatroomsListPages(),
   };
   WidgetBuilder builder = routes[settings.name];
   return MaterialPageRoute(builder: (ctx) => builder(ctx));

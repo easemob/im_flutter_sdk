@@ -32,7 +32,10 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
           children: [
             Container(
               height: sHeight(50),
-              padding: EdgeInsets.only(left: sWidth(20), right: sWidth(20)),
+              padding: EdgeInsets.only(
+                left: sWidth(20),
+                right: sWidth(20),
+              ),
               child: Center(
                 child: Container(
                   decoration: BoxDecoration(
@@ -93,6 +96,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                   separatorBuilder: ((_, index) {
                     return Divider(
                       color: Colors.grey[300],
+                      height: 0.3,
                     );
                   }),
                   itemCount:
@@ -113,75 +117,60 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
 
   _groupItem(EMGroup group) {
     return Container(
-      padding: EdgeInsets.only(
-        left: sWidth(20),
-        right: sWidth(20),
-      ),
-      // height: sHeight(44),
-      child: GestureDetector(
-        onTapUp: (_) => _chat(group),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _isSearch
-                      ? Text.rich(
-                          TextSpan(
-                            children: _groupItemText(
-                              group.name,
-                              fontSize: sFontSize(15),
-                              defaultColor: Colors.black87,
-                            ),
-                          ),
-                          maxLines: 1,
-                        )
-                      : Text(
-                          group.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: sFontSize(15),
-                            color: Colors.black87,
-                          ),
-                        ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: sHeight(5),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _isSearch
-                      ? Text.rich(
-                          TextSpan(
-                            children: _groupItemText(
-                              group.groupId,
-                              fontSize: sFontSize(13),
-                              defaultColor: Colors.grey,
-                            ),
-                          ),
-                          maxLines: 1,
-                        )
-                      : Text(
-                          group.groupId,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: sFontSize(13),
-                            color: Colors.grey,
-                          ),
-                        ),
-                ),
-              ],
-            ),
-          ],
+      // color: Colors.red,
+      height: sHeight(70),
+      child: ListTile(
+        onTap: () => _chat(group),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 20.0,
         ),
+        enabled: true,
+        title: Builder(
+          builder: (_) {
+            return _isSearch
+                ? Text.rich(
+                    TextSpan(
+                      children: _groupItemText(
+                        group.name,
+                        fontSize: sFontSize(15),
+                        defaultColor: Colors.black87,
+                      ),
+                    ),
+                    maxLines: 1,
+                  )
+                : Text(
+                    group.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: sFontSize(15),
+                      color: Colors.black87,
+                    ),
+                  );
+          },
+        ),
+        subtitle: Builder(builder: (_) {
+          return _isSearch
+              ? Text.rich(
+                  TextSpan(
+                    children: _groupItemText(
+                      group.groupId,
+                      fontSize: sFontSize(13),
+                      defaultColor: Colors.grey,
+                    ),
+                  ),
+                  maxLines: 1,
+                )
+              : Text(
+                  group.groupId,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: sFontSize(13),
+                    color: Colors.grey,
+                  ),
+                );
+        }),
       ),
     );
   }
@@ -249,7 +238,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
         pageSize: _pageSize,
         pageNum: _pageNumber,
       );
-      _refreshController.refreshCompleted();
+
       // 如果返回数量小于期望数量，则表示无更多数据。
       if (_pageSize > groups.length) {
         _isEnd = true;
@@ -263,9 +252,14 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       _groupsList.addAll(groups);
       setState(() {});
       SmartDialog.showToast('获取成功');
+      isMore
+          ? _refreshController.loadComplete()
+          : _refreshController.refreshCompleted();
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
-      _refreshController.refreshFailed();
+      isMore
+          ? _refreshController.loadFailed()
+          : _refreshController.refreshFailed();
     } finally {
       SmartDialog.dismiss();
     }
