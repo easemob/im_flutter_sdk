@@ -404,8 +404,8 @@ class _ChatPageState extends State<ChatPage>
       return type;
     }
 
+    msg.chatType = _chatType();
     EMMessage message = await EMClient.getInstance.chatManager.sendMessage(msg);
-    message.chatType = _chatType();
     _msgList.add(message);
     _setStateAndMoreToListViewEnd();
   }
