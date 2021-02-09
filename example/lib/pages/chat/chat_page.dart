@@ -83,7 +83,13 @@ class _ChatPageState extends State<ChatPage>
         _loadMessages(moveBottom: false);
       }
     });
-    _loadMessages();
+    if (widget.conv.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager
+          .joinChatRoom(widget.conv.id)
+          .then((value) => _loadMessages());
+    } else {
+      _loadMessages();
+    }
   }
 
   void dispose() {
@@ -93,6 +99,9 @@ class _ChatPageState extends State<ChatPage>
     EMClient.getInstance.chatManager.removeListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
+    if (widget.conv.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv.id);
+    }
     super.dispose();
   }
 
