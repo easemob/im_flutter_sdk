@@ -6,11 +6,11 @@ import 'dart:math' as math;
 class ChatVoiceBubble extends StatefulWidget {
   ChatVoiceBubble(
     this.body, [
-    this.direction = EMMessageDirection.SEND,
+    this.isSend,
     this.isPlaying = false,
   ]);
   final EMVoiceMessageBody body;
-  final EMMessageDirection direction;
+  final bool isSend;
   final bool isPlaying;
 
   @override
@@ -61,9 +61,7 @@ class ChatVoiceBubbleState extends State<ChatVoiceBubble>
         maxWidth: width,
       ),
       child: Row(
-        textDirection: widget.direction == EMMessageDirection.SEND
-            ? TextDirection.ltr
-            : TextDirection.rtl,
+        textDirection: widget.isSend ? TextDirection.ltr : TextDirection.rtl,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
@@ -75,7 +73,7 @@ class ChatVoiceBubbleState extends State<ChatVoiceBubble>
               bottom: sWidth(10),
             ),
             child: Transform.rotate(
-              angle: widget.direction != EMMessageDirection.SEND ? 0 : math.pi,
+              angle: widget.isSend ? math.pi : 0,
               child: SizedBox(
                 width: sWidth(20),
                 height: sWidth(15),

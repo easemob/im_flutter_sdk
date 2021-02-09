@@ -7,17 +7,17 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-class PublicGroupsPage extends StatefulWidget {
+class ChatroomsListPages extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => PublicGroupsPageState();
+  State<StatefulWidget> createState() => ChatroomsListPagesState();
 }
 
-class PublicGroupsPageState extends State<PublicGroupsPage> {
-  List<EMGroup> _groupsList = List();
-  String _cursor = '';
+class ChatroomsListPagesState extends State<ChatroomsListPages> {
+  List<EMChatRoom> _roomsList = List();
+  int _pageCount = 0;
   bool _isEnd = false;
   String _searchName = '';
-  EMGroup _searchdGroup;
+  EMChatRoom _searchdRoom;
   final _pageSize = 30;
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
@@ -25,7 +25,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal('公开群列表'),
+      appBar: DemoAppBar.normal('聊天室'),
       body: SafeArea(
         child: Column(
           children: [
@@ -44,7 +44,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                     onChanged: (text) {
                       _searchName = text;
                       if (_searchName.length == 0) {
-                        _searchdGroup = null;
+                        _searchdRoom = null;
                         setState(() {});
                       }
                     },
@@ -63,14 +63,14 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                         sWidth(16),
                         sHeight(6),
                       ),
-                      hintText: '请输入公开群组ID',
+                      hintText: '请输入聊天室id',
                       hintStyle: TextStyle(
                         fontSize: sFontSize(14),
                         color: Colors.grey,
                       ),
                     ),
                     onFieldSubmitted: (str) {
-                      _searchPublicId(str);
+                      _searchId(str);
                     },
                   ),
                 ),
@@ -80,16 +80,16 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
               child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: !_isEnd,
-                onRefresh: () => _loadPublicGroups(),
-                onLoading: () => _loadMorePublicGroups(),
+                onRefresh: () => _loadMoreRooms(),
+                onLoading: () => _loadMoreRooms(true),
                 controller: _refreshController,
                 child: ListView.separated(
                   itemBuilder: ((_, index) {
-                    if (_searchdGroup != null) {
-                      return _groupItem(_searchdGroup);
+                    if (_searchdRoom != null) {
+                      return _chatRoomItem(_searchdRoom);
                     } else {
-                      EMGroup group = _groupsList[index];
-                      return _groupItem(group);
+                      EMChatRoom room = _roomsList[index];
+                      return _chatRoomItem(room);
                     }
                   }),
                   separatorBuilder: ((_, index) {
@@ -98,9 +98,9 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                       height: 0.3,
                     );
                   }),
-                  itemCount: _searchName.length != 0 && _searchdGroup != null
+                  itemCount: _searchName.length != 0 && _searchdRoom != null
                       ? 1
-                      : _groupsList.length,
+                      : _roomsList.length,
                 ),
               ),
             ),
@@ -115,14 +115,14 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     super.dispose();
   }
 
-  _groupItem(EMGroup group) {
+  _chatRoomItem(EMChatRoom room) {
     return Container(
       height: sHeight(70),
       // height: sHeight(44),
       child: ListTile(
-        onTap: () => _fetchGroupInfo(group),
+        onTap: () => _joinChatRoom(room),
         title: Text(
-          group.name,
+          room.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -130,7 +130,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
           ),
         ),
         subtitle: Text(
-          group.groupId,
+          room.roomId,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -142,62 +142,63 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     );
   }
 
-  _loadMorePublicGroups() async {
-    try {
-      EMCursorResult<EMGroup> cursor = await EMClient.getInstance.groupManager
-          .getPublicGroupsFromServer(pageSize: _pageSize, cursor: _cursor);
-      _refreshController.loadComplete();
-      _cursor = cursor.cursor;
-      _groupsList.addAll(cursor.data);
-      // 返回数据小于pageSize,说明是最后一页
-      if (_pageSize > cursor.data.length) {
-        _isEnd = true;
-        setState(() {});
-      }
-    } on EMError catch (e) {
-      SmartDialog.showToast('获取失败$e');
-      _refreshController.loadFailed();
-    } finally {}
-  }
-
-  _loadPublicGroups() async {
-    try {
+  _loadMoreRooms([bool isMore = false]) async {
+    if (!isMore) {
+      _pageCount = 0;
       _isEnd = false;
+    }
+    try {
       SmartDialog.showLoading(msg: '获取中...');
-      EMCursorResult<EMGroup> cursor =
-          await EMClient.getInstance.groupManager.getPublicGroupsFromServer(
-        pageSize: _pageSize,
-      );
-      _refreshController.refreshCompleted();
-      if (_pageSize > cursor.data.length) {
-        _isEnd = true;
+      EMPageResult<EMChatRoom> result = await EMClient
+          .getInstance.chatRoomManager
+          .fetchPublicChatRoomsFromServer(pageSize: 30, pageNum: _pageCount);
+
+      _pageCount = result.pageCount;
+      if (!isMore) {
+        _roomsList.clear();
       }
-      _cursor = cursor.cursor;
-      _groupsList.clear();
-      _groupsList.addAll(cursor.data);
+      _roomsList.addAll(result.data);
+      if (_pageSize > result.data.length) {
+        _isEnd = true;
+      } else {
+        _isEnd = false;
+      }
       setState(() {});
       SmartDialog.showToast('获取成功');
+      isMore
+          ? _refreshController.loadComplete()
+          : _refreshController.refreshCompleted();
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
-      _refreshController.refreshFailed();
+      isMore
+          ? _refreshController.loadComplete()
+          : _refreshController.refreshCompleted();
     } finally {
       SmartDialog.dismiss();
     }
   }
 
-  _fetchGroupInfo(EMGroup group) {
-    print('_fetchGroupInfo ${group.groupId}');
-    Navigator.of(context)
-        .pushNamed('/groupInfo', arguments: group)
-        .then((value) {});
+  _joinChatRoom(EMChatRoom room) async {
+    try {
+      SmartDialog.showLoading(msg: '加入中...');
+      await EMClient.getInstance.chatRoomManager.joinChatRoom(room.roomId);
+      EMConversation con = await EMClient.getInstance.chatManager
+          .getConversation(room.roomId, EMConversationType.ChatRoom);
+      Navigator.of(context).pushNamed('/chat', arguments: con);
+      SmartDialog.showToast('加入成功');
+    } on EMError catch (e) {
+      SmartDialog.showToast('加入失败 --- $e');
+    } finally {
+      SmartDialog.dismiss();
+    }
   }
 
-  _searchPublicId(String std) async {
+  _searchId(String std) async {
     if (std.length == 0) return;
     try {
       SmartDialog.showLoading(msg: '搜索中...');
-      _searchdGroup = await EMClient.getInstance.groupManager
-          .getGroupSpecificationFromServer(std);
+      _searchdRoom = await EMClient.getInstance.chatRoomManager
+          .fetchChatRoomInfoFromServer(std);
     } on EMError catch (e) {
       SmartDialog.showToast('搜索失败: $e');
     } finally {
