@@ -157,7 +157,7 @@ class _ConversationItemState extends State<ConversationItem> {
 
   /// 显示的名称
   String _showName() {
-    return this.widget._conv.id;
+    return this.widget._conv.name;
   }
 
   /// 未读数
@@ -167,6 +167,9 @@ class _ConversationItemState extends State<ConversationItem> {
 
   /// 消息时间
   String _latestMessageTime() {
+    if (this.widget._conv.latestMessage == null) {
+      return '';
+    }
     return timeStrByMs(this.widget._conv.latestMessage?.serverTime ?? 0);
   }
 }

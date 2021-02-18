@@ -181,9 +181,10 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
   _chatToRoom(EMChatRoom room) async {
     EMConversation con = await EMClient.getInstance.chatManager
         .getConversation(room.roomId, EMConversationType.ChatRoom);
+    con.name = room.name;
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [room.name, con],
+      arguments: [con.name, con],
     ).then((value) =>
         EMClient.getInstance.chatRoomManager.leaveChatRoom(room.roomId));
   }

@@ -273,9 +273,10 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   _chat(EMGroup group) async {
     EMConversation conv = await EMClient.getInstance.chatManager
         .getConversation(group.groupId, EMConversationType.GroupChat);
+    conv.name = group.name;
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [group.name, conv],
+      arguments: [conv.name, conv],
     ).then((value) {});
   }
 
