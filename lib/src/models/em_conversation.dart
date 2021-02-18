@@ -19,11 +19,19 @@ class EMConversation {
 
   factory EMConversation.fromJson(Map<String, dynamic> map) {
     if (map == null) return null;
+    Map ext = map['ext'];
+    String name;
+    if (ext != null) {
+      name = ext['con_name'];
+      ext?.remove('con_name');
+    }
+
     return EMConversation._private()
       ..type = typeFromInt(map['type'])
       ..id = map['con_id']
       .._unreadCount = map['unreadCount']
-      .._ext = map['ext']
+      .._ext = ext
+      .._name = name ?? ''
       .._latestMessage = EMMessage.fromJson(map['latestMessage'])
       .._lastReceivedMessage = EMMessage.fromJson(map['lastReceivedMessage']);
   }
@@ -40,6 +48,7 @@ class EMConversation {
 
   int _unreadCount;
   Map _ext;
+  String _name;
   EMMessage _latestMessage;
   EMMessage _lastReceivedMessage;
 
@@ -92,6 +101,18 @@ extension EMConversationExtension on EMConversation {
     return _lastReceivedMessage;
   }
 
+  get name {
+    if (this._name != null && this._name.length > 0)
+      return this._name;
+    else
+      return this.id;
+  }
+
+  set name(String name) {
+    this._name = name;
+    _syncNameToNative();
+  }
+
   get ext {
     return this._ext;
   }
@@ -99,6 +120,13 @@ extension EMConversationExtension on EMConversation {
   set ext(Map map) {
     this._ext = map;
     _syncExtToNative();
+  }
+
+  Future<void> _syncNameToNative() async {
+    Map req = this.toJson();
+    req['con_name'] = this._name ?? '';
+    await _emConversationChannel.invokeMethod(
+        EMSDKMethod.syncConversationName, req);
   }
 
   Future<void> _syncExtToNative() async {

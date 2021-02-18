@@ -49,6 +49,7 @@ class EMSDKMethod {
   static const String loadAllConversations = 'loadAllConversations';
   static const String getConversationsFromServer = 'getConversationsFromServer';
   static const String deleteConversation = 'deleteConversation';
+  static const String updateConversationsName = 'updateConversationsName';
   static const String fetchHistoryMessages = 'fetchHistoryMessages';
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
   static const String getMessage = 'getMessage';
@@ -77,6 +78,7 @@ class EMSDKMethod {
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
   static const String markMessageAsRead = 'markMessageAsRead';
   static const String syncConversationExt = 'syncConversationExt';
+  static const String syncConversationName = 'syncConversationName';
   static const String removeMessage = 'removeMessage';
   static const String getLatestMessage = 'getLatestMessage';
   static const String getLatestMessageFromOthers = 'getLatestMessageFromOthers';

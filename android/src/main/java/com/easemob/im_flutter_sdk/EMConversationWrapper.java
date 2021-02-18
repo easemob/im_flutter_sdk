@@ -40,7 +40,10 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
                 markMessageAsRead(param, EMSDKMethod.markMessageAsRead, result);
             }
             else if (EMSDKMethod.syncConversationExt.equals(call.method)){
-                syncConversationExt(param, EMSDKMethod.markMessageAsRead, result);
+                syncConversationExt(param, EMSDKMethod.syncConversationExt, result);
+            }
+            else if (EMSDKMethod.syncConversationName.equals(call.method)){
+                syncConversationName(param, EMSDKMethod.syncConversationName, result);
             }
             else if (EMSDKMethod.removeMessage.equals(call.method))
             {
@@ -112,6 +115,19 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         asyncRunnable(()->{
             conversation.markMessageAsRead(msg_id);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void syncConversationName(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        String conName = params.getString("con_name");
+        String extField = conversation.getExtField();
+        JSONObject jsonObject = new JSONObject(extField);
+        jsonObject.put("con_name", conName);
+        String jsonStr = jsonObject.toString();
+        conversation.setExtField(jsonStr);
+        asyncRunnable(()->{
             onSuccess(result, channelName, true);
         });
     }
