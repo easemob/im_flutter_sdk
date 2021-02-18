@@ -175,7 +175,7 @@ class ConversationPageState extends State<ConversationPage>
     EMConversation conv = _conversationsList[index];
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [conv.id, conv],
+      arguments: [conv.name, conv],
     ).then((value) {
       // 返回时刷新页面
       _reLoadAllConversations();
