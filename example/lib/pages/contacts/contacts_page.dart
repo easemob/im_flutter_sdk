@@ -41,9 +41,9 @@ class ContactsPageState extends State<ContactsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal(
+      appBar: DemoAppBar(
         '通讯录',
-        actions: [
+        rightWidgets: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => PopMenu.show(
@@ -213,7 +213,10 @@ class ContactsPageState extends State<ContactsPage>
     } else {
       EMConversation conv = await EMClient.getInstance.chatManager
           .getConversation(contact.contactId);
-      Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {
+      Navigator.of(context).pushNamed(
+        '/chat',
+        arguments: [contact.contactId, conv],
+      ).then((value) {
         // TODO: reload conversations list.
       });
     }

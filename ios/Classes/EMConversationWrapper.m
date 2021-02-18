@@ -45,6 +45,8 @@
         [self markAllMessagesAsRead:call.arguments result:result];
     } else if ([EMMethodKeyMarkMsgAsRead isEqualToString:call.method]) {
         [self markMessageAsRead:call.arguments result:result];
+    } else if ([EMMethodKeySyncConversationExt isEqualToString:call.method]){
+        [self syncConversationExt:call.arguments result:result];
     } else if ([EMMethodKeyRemoveMsg isEqualToString:call.method]) {
         [self removeMessage:call.arguments result:result];
     } else if ([EMMethodKeyGetLatestMsg isEqualToString:call.method]) {
@@ -120,8 +122,6 @@
     }];
 }
 
-// TODO: EXT
-
 - (void)markMessageAsRead:(NSDictionary *)param result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
@@ -134,6 +134,21 @@
         
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyMarkMsgAsRead
+                            error:nil
+                           object:@(YES)];
+    }];
+}
+
+- (void)syncConversationExt:(NSDictionary *)param result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+    {
+        NSDictionary *ext = param[@"ext"];
+        conversation.ext = ext;
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeySyncConversationExt
                             error:nil
                            object:@(YES)];
     }];

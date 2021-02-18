@@ -93,13 +93,19 @@ extension EMConversationExtension on EMConversation {
   }
 
   get ext {
-    // TODO: 从native获取，并同步到_ext;
     return this._ext;
   }
 
   set ext(Map map) {
     this._ext = map;
-    // TODO: 同步到native
+    _syncExtToNative();
+  }
+
+  Future<void> _syncExtToNative() async {
+    Map req = this.toJson();
+    req['ext'] = this._ext ?? '';
+    await _emConversationChannel.invokeMethod(
+        EMSDKMethod.syncConversationExt, req);
   }
 
   /// 根据消息id设置消息已读，如果消息不属于当前会话则设置无效
