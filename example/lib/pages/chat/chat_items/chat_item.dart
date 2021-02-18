@@ -121,7 +121,6 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   /// 消息 widget
   _messageWidget(bool isRecv) {
-    EMMessageBody body = widget.msg.body;
     return Builder(
       builder: (context) {
         return GestureDetector(

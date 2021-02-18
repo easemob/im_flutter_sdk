@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
+import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/show_large_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,8 +18,12 @@ import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
 
 class ChatPage extends StatefulWidget {
-  ChatPage(EMConversation conversation) : conv = conversation;
+  ChatPage(
+    this.titleStr,
+    EMConversation conversation,
+  ) : conv = conversation;
   final EMConversation conv;
+  final String titleStr;
   @override
   State<StatefulWidget> createState() => _ChatPageState();
 }
@@ -115,11 +120,8 @@ class _ChatPageState extends State<ChatPage>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Title(
-          color: Colors.white,
-          child: Text(widget.conv.id),
-        ),
+      appBar: DemoAppBar(
+        widget.titleStr,
       ),
       body: GestureDetector(
         // 点击背景隐藏键盘

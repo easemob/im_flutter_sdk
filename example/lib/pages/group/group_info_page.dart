@@ -33,9 +33,9 @@ class GroupInfoPageState extends State<GroupInfoPage> {
       }
     }
     return Scaffold(
-      appBar: DemoAppBar.normal(
+      appBar: DemoAppBar(
         '群组信息',
-        actions: [
+        rightWidgets: [
           FlatButton(
             onPressed: () =>
                 needApproval ? _approvalJoinPublicGroup() : _joinPublicGroup(),

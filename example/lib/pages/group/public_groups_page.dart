@@ -25,7 +25,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal('公开群列表'),
+      appBar: DemoAppBar('公开群列表'),
       body: SafeArea(
         child: Column(
           children: [
