@@ -179,14 +179,14 @@ class EMChatManager {
     return conversationList;
   }
 
-  /// 批量更新一组会话显示名称`Map`,`key`会话id, `value`对应名称,既conversation.name属性。
-  Future<bool> updateConversationsName(Map<String, String> nameMap) async {
-    Map req = {"name_map": nameMap};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateConversationsName, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.updateConversationsName);
-  }
+  // 批量更新一组会话显示名称`Map`,`key`会话id, `value`对应名称,既conversation.name属性。
+  // Future<bool> updateConversationsName(Map<String, String> nameMap) async {
+  //   Map req = {"name_map": nameMap};
+  //   Map result =
+  //       await _channel.invokeMethod(EMSDKMethod.updateConversationsName, req);
+  //   EMError.hasErrorFromResult(result);
+  //   return result.boolValue(EMSDKMethod.updateConversationsName);
+  // }
 
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
   Future<bool> deleteConversation(
