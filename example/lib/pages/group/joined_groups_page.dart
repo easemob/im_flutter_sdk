@@ -1,3 +1,4 @@
+import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -277,7 +278,9 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
     Navigator.of(context).pushNamed(
       '/chat',
       arguments: [con.name, con],
-    ).then((value) {});
+    ).then((value) {
+      eventBus.fire(EventBusManager.updateConversations());
+    });
   }
 
   _searchGroupId(String std) async {

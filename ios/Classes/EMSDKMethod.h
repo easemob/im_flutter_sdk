@@ -35,6 +35,7 @@ static NSString * const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 static NSString * const EMMethodKeyAddContact = @"addContact";
 static NSString * const EMMethodKeyDeleteContact = @"deleteContact";
 static NSString * const EMMethodKeyGetAllContactsFromServer = @"getAllContactsFromServer";
+static NSString * const EMMethodKeyGetAllContactsFromDB = @"getAllContactsFromDB";
 static NSString * const EMMethodKeyAddUserToBlackList = @"addUserToBlackList";
 static NSString * const EMMethodKeyRemoveUserFromBlackList = @"removeUserFromBlackList";
 static NSString * const EMMethodKeyGetBlackListFromServer = @"getBlackListFromServer";
