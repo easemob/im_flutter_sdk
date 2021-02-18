@@ -170,7 +170,7 @@ class EMChatManager {
   /// 从服务器获取会话
   Future<List<EMConversation>> getConversationsFromServer() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
+        await _channel.invokeMethod(EMSDKMethod.getConversationsFromServer);
     EMError.hasErrorFromResult(result);
     var conversationList = List<EMConversation>();
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
@@ -178,6 +178,8 @@ class EMChatManager {
     });
     return conversationList;
   }
+
+  // Future<bool> setConversationNames(Map<String, String> nameMap) async {}
 
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
   Future<bool> deleteConversation(
