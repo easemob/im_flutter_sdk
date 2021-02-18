@@ -90,8 +90,8 @@ static NSString * const EMMethodKeyOnMessageStatusChanged = @"onMessageStatusCha
 
 static NSString * const EMMethodKeyGetUnreadMsgCount = @"getUnreadMsgCount";
 static NSString * const EMMethodKeyMarkAllMsgsAsRead = @"markAllMessagesAsRead";
-
 static NSString * const EMMethodKeyMarkMsgAsRead = @"markMessageAsRead";
+static NSString * const EMMethodKeySyncConversationExt = @"syncConversationExt";
 static NSString * const EMMethodKeyRemoveMsg = @"removeMessage";
 static NSString * const EMMethodKeyGetLatestMsg = @"getLatestMessage";
 static NSString * const EMMethodKeyGetLatestMsgFromOthers = @"getLatestMessageFromOthers";

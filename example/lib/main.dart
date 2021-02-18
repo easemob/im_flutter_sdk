@@ -65,7 +65,10 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     '/addFriends': (context) => ContactAddFriendsPage(),
     '/publicGroups': (context) => PublicGroupsPage(),
     '/joinedGroups': (context) => JoinedGroupsPage(),
-    '/chat': (context) => ChatPage(settings.arguments),
+    '/chat': (context) => ChatPage(
+          (settings.arguments as List)[0],
+          (settings.arguments as List)[1],
+        ),
     '/groupInfo': (context) => GroupInfoPage(settings.arguments),
     '/groupMemberList': (context) => GroupMembersPage(
           (settings.arguments as List)[0],

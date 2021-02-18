@@ -35,6 +35,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0
 
+  # 事件总线
+  event_bus: ^1.1.1
+  
   # 数据缓存
   shared_preferences: ^0.5.12+4
 

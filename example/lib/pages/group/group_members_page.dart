@@ -44,7 +44,7 @@ class GroupMembersPageState extends State<GroupMembersPage> {
       default:
     }
     return Scaffold(
-      appBar: DemoAppBar.normal(title),
+      appBar: DemoAppBar(title),
     );
   }
 }

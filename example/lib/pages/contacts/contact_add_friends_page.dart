@@ -15,7 +15,7 @@ class ContactAddFriendsPageState extends State<ContactAddFriendsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal('添加好友', actions: []),
+      appBar: DemoAppBar('添加好友'),
       body: Padding(
         padding: EdgeInsets.only(
           top: sHeight(10),

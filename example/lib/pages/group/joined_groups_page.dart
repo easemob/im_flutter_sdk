@@ -24,9 +24,14 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   bool get _isSearch => _searchName.length > 0;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal('群聊'),
+      appBar: DemoAppBar('群聊'),
       body: SafeArea(
         child: Column(
           children: [
@@ -268,7 +273,10 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   _chat(EMGroup group) async {
     EMConversation conv = await EMClient.getInstance.chatManager
         .getConversation(group.groupId, EMConversationType.GroupChat);
-    Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {});
+    Navigator.of(context).pushNamed(
+      '/chat',
+      arguments: [group.name, conv],
+    ).then((value) {});
   }
 
   _searchGroupId(String std) async {

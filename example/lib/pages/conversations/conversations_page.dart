@@ -42,9 +42,9 @@ class ConversationPageState extends State<ConversationPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal(
+      appBar: DemoAppBar(
         '会话',
-        actions: [
+        rightWidgets: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => PopMenu.show(
@@ -173,7 +173,10 @@ class ConversationPageState extends State<ConversationPage>
   /// 会话被点击
   _conversationItemOnPress(int index) async {
     EMConversation conv = _conversationsList[index];
-    Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {
+    Navigator.of(context).pushNamed(
+      '/chat',
+      arguments: [conv.id, conv],
+    ).then((value) {
       // 返回时刷新页面
       _reLoadAllConversations();
     });
