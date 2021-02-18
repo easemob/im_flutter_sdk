@@ -76,6 +76,7 @@ class EMSDKMethod {
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
   static const String markMessageAsRead = 'markMessageAsRead';
+  static const String syncConversationExt = 'syncConversationExt';
   static const String removeMessage = 'removeMessage';
   static const String getLatestMessage = 'getLatestMessage';
   static const String getLatestMessageFromOthers = 'getLatestMessageFromOthers';

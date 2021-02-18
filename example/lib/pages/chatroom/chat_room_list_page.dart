@@ -25,7 +25,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal('聊天室'),
+      appBar: DemoAppBar('聊天室'),
       body: SafeArea(
         child: Column(
           children: [
@@ -181,7 +181,11 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
   _chatToRoom(EMChatRoom room) async {
     EMConversation con = await EMClient.getInstance.chatManager
         .getConversation(room.roomId, EMConversationType.ChatRoom);
-    Navigator.of(context).pushNamed('/chat', arguments: con);
+    Navigator.of(context).pushNamed(
+      '/chat',
+      arguments: [room.name, con],
+    ).then((value) =>
+        EMClient.getInstance.chatRoomManager.leaveChatRoom(room.roomId));
   }
 
   _searchId(String std) async {

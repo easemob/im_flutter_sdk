@@ -33,7 +33,7 @@ class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
     requestList = SharePreferenceManager.loadAllRequests();
 
     return Scaffold(
-      appBar: DemoAppBar.normal('好友申请', actions: [
+      appBar: DemoAppBar('好友申请', rightWidgets: [
         FlatButton(
           onPressed: () {
             SharePreferenceManager.removeAllRequest();

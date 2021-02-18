@@ -76,6 +76,7 @@ public class EMSDKMethod {
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
     static final String markMessageAsRead = "markMessageAsRead";
+    static final String syncConversationExt = "syncConversationExt";
     static final String removeMessage = "removeMessage";
     static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";
