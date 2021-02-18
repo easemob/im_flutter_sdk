@@ -64,6 +64,7 @@ static NSString * const EMMethodKeyGetConversationsFromServer = @"getConversatio
 static NSString * const EMMethodKeyDeleteConversation = @"deleteConversation";
 //static NSString * const EMMethodKeySetVoiceMessageListened = @"setVoiceMessageListened";
 //static NSString * const EMMethodKeyUpdateParticipant = @"updateParticipant";
+static NSString * const EMMethodKeyUpdateConversationsName = @"updateConversationsName";
 static NSString * const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString * const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString * const EMMethodKeyGetMessage = @"getMessage";
