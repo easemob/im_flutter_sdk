@@ -1,4 +1,5 @@
 import 'package:azlistview/azlistview.dart';
+import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/models/contact_model.dart';
 import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -25,17 +26,22 @@ class ContactsPageState extends State<ContactsPage>
   @override
   void initState() {
     super.initState();
+    EMClient.getInstance.contactManager.addContactListener(this);
     _topList.addAll([
       ContactModel.custom('新的好友'),
       ContactModel.custom('群聊'),
       ContactModel.custom('聊天室')
     ]);
-    _fetchContactsFromServer();
-    EMClient.getInstance.contactManager.addContactListener(this);
+
     String currentUser = EMClient.getInstance.currentUsername;
     SharePreferenceManager.load(currentUser, callback: () {
       setState(() {});
     });
+  }
+
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadLocalContacts();
   }
 
   @override
@@ -68,50 +74,50 @@ class ContactsPageState extends State<ContactsPage>
         ],
       ),
       body: AzListView(
-          data: _contactList,
-          itemCount: _contactList.length,
-          itemBuilder: (_, index) => getContactRow(index),
-          separatorBuilder: (_, __) {
-            return Container(
-              color: Colors.grey[300],
-              height: 0.5,
-              margin: EdgeInsets.only(left: 20, right: 10),
+        data: _contactList,
+        itemCount: _contactList.length,
+        itemBuilder: (_, index) => getContactRow(index),
+        separatorBuilder: (_, __) {
+          return Container(
+            color: Colors.grey[300],
+            height: 0.5,
+            margin: EdgeInsets.only(left: 20, right: 10),
+          );
+        },
+        susItemHeight: 30,
+        susItemBuilder: (_, index) {
+          ContactModel model = _contactList[index];
+          if (model.firstLetter == '☆') {
+            return Container();
+          } else {
+            String tag = model.getSuspensionTag();
+            return _buildSusWidget(
+              tag,
+              isFloat: false,
             );
-          },
-          susItemHeight: 30,
-          susItemBuilder: (_, index) {
-            ContactModel model = _contactList[index];
-            if (model.firstLetter == '☆') {
-              return Container();
-            } else {
-              String tag = model.getSuspensionTag();
-              return _buildSusWidget(
+          }
+        },
+        indexBarData: ['☆', ...kIndexBarData],
+        indexHintBuilder: (BuildContext context, String tag) {
+          if (tag == '☆') {
+            return Container();
+          } else {
+            return Container(
+              alignment: Alignment.center,
+              width: 60.0,
+              height: 60.0,
+              decoration: BoxDecoration(
+                color: Colors.blue[700].withAlpha(200),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
                 tag,
-                isFloat: false,
-              );
-            }
-          },
-          /* SuspensionUtil.getTagIndexList(_contactList), */
-          indexBarData: ['☆', ...kIndexBarData],
-          indexHintBuilder: (BuildContext context, String tag) {
-            if (tag == '☆') {
-              return Container();
-            } else {
-              return Container(
-                alignment: Alignment.center,
-                width: 60.0,
-                height: 60.0,
-                decoration: BoxDecoration(
-                  color: Colors.blue[700].withAlpha(200),
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  tag,
-                  style: TextStyle(color: Colors.white, fontSize: 30.0),
-                ),
-              );
-            }
-          }),
+                style: TextStyle(color: Colors.white, fontSize: 30.0),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -217,7 +223,7 @@ class ContactsPageState extends State<ContactsPage>
         '/chat',
         arguments: [contact.contactId, conv],
       ).then((value) {
-        // TODO: reload conversations list.
+        eventBus.fire(EventBusManager.updateConversations());
       });
     }
   }
@@ -232,11 +238,29 @@ class ContactsPageState extends State<ContactsPage>
       }
     } on EMError {
       // Fluttertoast.showToast(msg: '获取失败');
+      _loadLocalContacts();
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       _contactList.insertAll(0, _topList);
       setState(() {});
+    }
+  }
+
+  Future<void> _loadLocalContacts() async {
+    try {
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      _contactList.clear();
+      for (var contact in contacts) {
+        _contactList.add(ContactModel.contact(contact));
+      }
+    } on EMError {} finally {
+      SuspensionUtil.sortListBySuspensionTag(_contactList);
+      SuspensionUtil.setShowSuspensionStatus(_contactList);
+      _contactList.insertAll(0, _topList);
+      setState(() {});
+      _fetchContactsFromServer();
     }
   }
 
