@@ -29,7 +29,10 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage>
-    implements ChatInputBarListener, EMChatManagerListener {
+    implements
+        ChatInputBarListener,
+        EMChatManagerListener,
+        EMChatRoomEventListener {
   List<ChatMoreViewItem> items;
 
   final _scrollController = ScrollController();
@@ -79,6 +82,7 @@ class _ChatPageState extends State<ChatPage>
     _moreView = ChatMoreView(items);
     // 添加环信回调监听
     EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
     widget.conv.markAllMessagesAsRead();
 
@@ -562,4 +566,37 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   onConversationRead(String from, String to) {}
+
+  @override
+  void onAdminAdded(String roomId, String admin) {}
+
+  @override
+  void onAdminRemoved(String roomId, String admin) {}
+
+  @override
+  void onAnnouncementChanged(String roomId, String announcement) {}
+
+  @override
+  void onChatRoomDestroyed(String roomId, String roomName) {
+    print('聊天室解散 -- $roomId, $roomName');
+  }
+
+  @override
+  void onMemberExited(String roomId, String roomName, String participant) {}
+
+  @override
+  void onMemberJoined(String roomId, String participant) {}
+
+  @override
+  void onMuteListAdded(String roomId, List mutes, String expireTime) {}
+
+  @override
+  void onMuteListRemoved(String roomId, List mutes) {}
+
+  @override
+  void onOwnerChanged(String roomId, String newOwner, String oldOwner) {}
+
+  @override
+  void onRemovedFromChatRoom(
+      String roomId, String roomName, String participant) {}
 }

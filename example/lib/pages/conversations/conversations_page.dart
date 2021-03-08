@@ -1,4 +1,5 @@
 import 'package:easeim_flutter_demo/pages/conversations/conversation_item.dart';
+import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
@@ -25,17 +26,25 @@ class ConversationPageState extends State<ConversationPage>
 
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
+
+  var notifier;
   @override
   void initState() {
     super.initState();
     // 添加环信回调监听
     EMClient.getInstance.chatManager.addListener(this);
+    notifier = eventBus.on<EventBusManager>().listen((event) {
+      if (event.eventKey == EventBusManager.updateConversaitonsList) {
+        _reLoadAllConversations();
+      }
+    });
   }
 
   void dispose() {
     _refreshController.dispose();
     // 移除环信回调监听
     EMClient.getInstance.chatManager.removeListener(this);
+    notifier.cancel();
     super.dispose();
   }
 

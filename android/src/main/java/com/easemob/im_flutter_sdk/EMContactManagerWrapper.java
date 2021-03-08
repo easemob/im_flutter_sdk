@@ -41,6 +41,10 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
             {
                 getAllContactsFromServer(param, EMSDKMethod.getAllContactsFromServer, result);
             }
+            else if(EMSDKMethod.getAllContactsFromDB.equals(call.method))
+            {
+                getAllContactsFromDB(param, EMSDKMethod.getAllContactsFromDB, result);
+            }
             else if(EMSDKMethod.addUserToBlackList.equals(call.method))
             {
                 addUserToBlackList(param, EMSDKMethod.getAllContactsFromServer, result);
@@ -109,6 +113,18 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 onError(result, e);
             }
         });
+    }
+
+    private void getAllContactsFromDB(JSONObject params, String channelName,  Result result) throws JSONException {
+//        asyncRunnable(() -> {
+//            try {
+//                // TODO:
+//                List contacts =  EMClient.getInstance().contactManager().getContactsFromDB();
+//                onSuccess(result, channelName, contacts);
+//            }catch (HyphenateException e) {
+//                onError(result, e);
+//            }
+//        });
     }
 
     private void addUserToBlackList(JSONObject params, String channelName,  Result result) throws JSONException {

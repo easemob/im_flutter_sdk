@@ -38,7 +38,7 @@ class EMChatRoomManager {
 
   /// @nodoc
   Future<void> _chatRoomChange(Map event) async {
-    String type = event['chatRoomChange'];
+    String type = event['type'];
     for (var listener in _chatRoomEventListeners) {
       switch (type) {
         case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
@@ -58,11 +58,10 @@ class EMChatRoomManager {
           listener.onMemberExited(roomId, roomName, participant);
           break;
         case EMChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM:
-          int reason = event['reason'];
           String roomId = event['roomId'];
           String roomName = event['roomName'];
           String participant = event['participant'];
-          listener.onRemovedFromChatRoom(reason, roomId, roomName, participant);
+          listener.onRemovedFromChatRoom(roomId, roomName, participant);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];

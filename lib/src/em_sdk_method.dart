@@ -23,6 +23,7 @@ class EMSDKMethod {
   static const String addContact = 'addContact';
   static const String deleteContact = 'deleteContact';
   static const String getAllContactsFromServer = 'getAllContactsFromServer';
+  static const String getAllContactsFromDB = 'getAllContactsFromDB';
   static const String addUserToBlackList = 'addUserToBlackList';
   static const String removeUserFromBlackList = 'removeUserFromBlackList';
   static const String getBlackListFromServer = 'getBlackListFromServer';

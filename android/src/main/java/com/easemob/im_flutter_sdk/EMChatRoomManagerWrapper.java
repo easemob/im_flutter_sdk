@@ -20,7 +20,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
-public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler  {
+public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler {
 
     EMChatRoomManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
@@ -30,111 +30,65 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     @Override
     public void onMethodCall(MethodCall methodCall, MethodChannel.Result result) {
 
-        JSONObject param = (JSONObject)methodCall.arguments;
+        JSONObject param = (JSONObject) methodCall.arguments;
         try {
-            if (EMSDKMethod.joinChatRoom.equals(methodCall.method))
-            {
+            if (EMSDKMethod.joinChatRoom.equals(methodCall.method)) {
                 joinChatRoom(param, EMSDKMethod.joinChatRoom, result);
-            }
-            else if(EMSDKMethod.leaveChatRoom.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.leaveChatRoom.equals(methodCall.method)) {
                 leaveChatRoom(param, EMSDKMethod.joinChatRoom, result);
-            }
-            else if(EMSDKMethod.fetchPublicChatRoomsFromServer.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.fetchPublicChatRoomsFromServer.equals(methodCall.method)) {
                 fetchPublicChatRoomsFromServer(param, EMSDKMethod.fetchPublicChatRoomsFromServer, result);
-            }
-            else if(EMSDKMethod.fetchChatRoomInfoFromServer.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.fetchChatRoomInfoFromServer.equals(methodCall.method)) {
                 fetchChatRoomInfoFromServer(param, EMSDKMethod.fetchChatRoomInfoFromServer, result);
-            }
-            else if(EMSDKMethod.getChatRoom.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.getChatRoom.equals(methodCall.method)) {
                 getChatRoom(param, EMSDKMethod.getChatRoom, result);
-            }
-            else if(EMSDKMethod.getAllChatRooms.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.getAllChatRooms.equals(methodCall.method)) {
                 getAllChatRooms(param, EMSDKMethod.getAllChatRooms, result);
-            }
-            else if(EMSDKMethod.createChatRoom.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.createChatRoom.equals(methodCall.method)) {
                 createChatRoom(param, EMSDKMethod.createChatRoom, result);
-            }
-            else if(EMSDKMethod.destroyChatRoom.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.destroyChatRoom.equals(methodCall.method)) {
                 destroyChatRoom(param, EMSDKMethod.destroyChatRoom, result);
-            }
-            else if(EMSDKMethod.changeChatRoomSubject.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.changeChatRoomSubject.equals(methodCall.method)) {
                 changeChatRoomSubject(param, EMSDKMethod.changeChatRoomSubject, result);
-            }
-            else if(EMSDKMethod.changeChatRoomDescription.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.changeChatRoomDescription.equals(methodCall.method)) {
                 changeChatRoomDescription(param, EMSDKMethod.changeChatRoomDescription, result);
-            }
-            else if(EMSDKMethod.fetchChatRoomMembers.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.fetchChatRoomMembers.equals(methodCall.method)) {
                 fetchChatRoomMembers(param, EMSDKMethod.fetchChatRoomMembers, result);
-            }
-            else if(EMSDKMethod.muteChatRoomMembers.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.muteChatRoomMembers.equals(methodCall.method)) {
                 muteChatRoomMembers(param, EMSDKMethod.muteChatRoomMembers, result);
-            }
-            else if(EMSDKMethod.unMuteChatRoomMembers.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.unMuteChatRoomMembers.equals(methodCall.method)) {
                 unMuteChatRoomMembers(param, EMSDKMethod.unMuteChatRoomMembers, result);
-            }
-            else if(EMSDKMethod.changeChatRoomOwner.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.changeChatRoomOwner.equals(methodCall.method)) {
                 changeChatRoomOwner(param, EMSDKMethod.changeChatRoomOwner, result);
-            }
-            else if(EMSDKMethod.addChatRoomAdmin.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.addChatRoomAdmin.equals(methodCall.method)) {
                 addChatRoomAdmin(param, EMSDKMethod.addChatRoomAdmin, result);
-            }
-            else if(EMSDKMethod.removeChatRoomAdmin.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.removeChatRoomAdmin.equals(methodCall.method)) {
                 removeChatRoomAdmin(param, EMSDKMethod.removeChatRoomAdmin, result);
-            }
-            else if(EMSDKMethod.fetchChatRoomMuteList.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.fetchChatRoomMuteList.equals(methodCall.method)) {
                 fetchChatRoomMuteList(param, EMSDKMethod.fetchChatRoomMuteList, result);
-            }
-            else if(EMSDKMethod.removeChatRoomMembers.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.removeChatRoomMembers.equals(methodCall.method)) {
                 removeChatRoomMembers(param, EMSDKMethod.removeChatRoomMembers, result);
-            }
-            else if(EMSDKMethod.blockChatRoomMembers.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.blockChatRoomMembers.equals(methodCall.method)) {
                 blockChatRoomMembers(param, EMSDKMethod.blockChatRoomMembers, result);
-            }
-            else if(EMSDKMethod.unBlockChatRoomMembers.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.unBlockChatRoomMembers.equals(methodCall.method)) {
                 unBlockChatRoomMembers(param, EMSDKMethod.unBlockChatRoomMembers, result);
-            }
-            else if(EMSDKMethod.fetchChatRoomBlackList.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.fetchChatRoomBlackList.equals(methodCall.method)) {
                 fetchChatRoomBlackList(param, EMSDKMethod.fetchChatRoomBlackList, result);
-            }
-            else if(EMSDKMethod.updateChatRoomAnnouncement.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.updateChatRoomAnnouncement.equals(methodCall.method)) {
                 updateChatRoomAnnouncement(param, EMSDKMethod.updateChatRoomAnnouncement, result);
-            }
-            else if(EMSDKMethod.fetchChatRoomAnnouncement.equals(methodCall.method))
-            {
+            } else if (EMSDKMethod.fetchChatRoomAnnouncement.equals(methodCall.method)) {
                 fetchChatRoomAnnouncement(param, EMSDKMethod.fetchChatRoomAnnouncement, result);
-            }
-            else {
+            } else {
                 super.onMethodCall(methodCall, result);
             }
-        }catch (JSONException ignored) {
+        } catch (JSONException ignored) {
 
         }
     }
 
     private void joinChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
-        EMValueWrapperCallBack<EMChatRoom> callBack = new EMValueWrapperCallBack<EMChatRoom> (result, channelName){
+        EMValueWrapperCallBack<EMChatRoom> callBack = new EMValueWrapperCallBack<EMChatRoom>(result, channelName) {
             @Override
             public void onSuccess(EMChatRoom object) {
                 updateObject(EMChatRoomHelper.toJson(object));
@@ -147,37 +101,40 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     private void leaveChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
 
-        asyncRunnable(()-> {
+        asyncRunnable(() -> {
             EMClient.getInstance().chatroomManager().leaveChatRoom(roomId);
             onSuccess(result, channelName, true);
         });
     }
 
-    private void fetchPublicChatRoomsFromServer(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void fetchPublicChatRoomsFromServer(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         int pageNum = param.getInt("pageNum");
         int pageSize = param.getInt("pageSize");
 
-        EMClient.getInstance().chatroomManager().asyncFetchPublicChatRoomsFromServer(pageNum, pageSize, new EMValueWrapperCallBack<EMPageResult<EMChatRoom>> (result, channelName) {
-            @Override
-            public void onSuccess(EMPageResult object) {
-                updateObject(EMPageResultHelper.toJson(object));
-            }
+        EMClient.getInstance().chatroomManager().asyncFetchPublicChatRoomsFromServer(pageNum, pageSize,
+                new EMValueWrapperCallBack<EMPageResult<EMChatRoom>>(result, channelName) {
+                    @Override
+                    public void onSuccess(EMPageResult object) {
+                        updateObject(EMPageResultHelper.toJson(object));
+                    }
 
-            @Override
-            public void onError(int code, String desc) {
-                super.onError(code, desc);
-            }
-        });
+                    @Override
+                    public void onError(int code, String desc) {
+                        super.onError(code, desc);
+                    }
+                });
     }
 
-    private void fetchChatRoomInfoFromServer(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void fetchChatRoomInfoFromServer(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
 
-        asyncRunnable(()-> {
-            try{
+        asyncRunnable(() -> {
+            try {
                 EMChatRoom room = EMClient.getInstance().chatroomManager().fetchChatRoomFromServer(roomId);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
@@ -186,16 +143,17 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     private void getChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
 
-        asyncRunnable(()-> {
+        asyncRunnable(() -> {
             EMChatRoom room = EMClient.getInstance().chatroomManager().getChatRoom(roomId);
             onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
         });
     }
 
-    private void getAllChatRooms(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        asyncRunnable(()-> {
+    private void getAllChatRooms(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
+        asyncRunnable(() -> {
             List<EMChatRoom> list = EMClient.getInstance().chatroomManager().getAllChatRooms();
-            List<Map<String ,Object>> roomList = new ArrayList<>();
+            List<Map<String, Object>> roomList = new ArrayList<>();
             for (EMChatRoom room : list) {
                 roomList.add(EMChatRoomHelper.toJson(room));
             }
@@ -203,7 +161,8 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         });
     }
 
-    private void createChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void createChatRoom(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String subject = param.getString("subject");
         String description = param.getString("desc");
         String welcomeMessage = param.getString("welcomeMsg");
@@ -213,73 +172,81 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         for (int i = 0; i < members.length(); i++) {
             membersList.add((String) members.get(i));
         }
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().createChatRoom(subject,description,welcomeMessage,maxUserCount,membersList);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().createChatRoom(subject, description,
+                        welcomeMessage, maxUserCount, membersList);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void destroyChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void destroyChatRoom(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatroomManager().destroyChatRoom(roomId);
                 onSuccess(result, channelName, true);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void changeChatRoomSubject(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void changeChatRoomSubject(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         String subject = param.getString("subject");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().changeChatRoomSubject(roomId,subject);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().changeChatRoomSubject(roomId, subject);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void changeChatRoomDescription(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void changeChatRoomDescription(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         String description = param.getString("description");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().changeChatroomDescription(roomId,description);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().changeChatroomDescription(roomId,
+                        description);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void fetchChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void fetchChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         String cursor = param.getString("cursor");
         int pageSize = param.getInt("pageSize");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMCursorResult<String>cursorResult  = EMClient.getInstance().chatroomManager().fetchChatRoomMembers(roomId, cursor, pageSize);
+                EMCursorResult<String> cursorResult = EMClient.getInstance().chatroomManager()
+                        .fetchChatRoomMembers(roomId, cursor, pageSize);
                 onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void muteChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void muteChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         long duration = Long.parseLong(param.getString("duration"));
         JSONArray muteMembers = param.getJSONArray("muteMembers");
@@ -288,17 +255,19 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             muteMembersList.add((String) muteMembers.get(i));
         }
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().muteChatRoomMembers(roomId,muteMembersList,duration);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().muteChatRoomMembers(roomId, muteMembersList,
+                        duration);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void unMuteChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void unMuteChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         JSONArray muteMembers = param.getJSONArray("unMuteMembers");
         List<String> unMuteMembersList = new ArrayList<>();
@@ -306,37 +275,25 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             unMuteMembersList.add((String) muteMembers.get(i));
         }
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().unMuteChatRoomMembers(roomId,unMuteMembersList);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().unMuteChatRoomMembers(roomId,
+                        unMuteMembersList);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void changeChatRoomOwner(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void changeChatRoomOwner(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         String newOwner = param.getString("newOwner");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().changeOwner(roomId,newOwner);
-                onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
-            }catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-    private void addChatRoomAdmin(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        String roomId = param.getString("roomId");
-        String admin = param.getString("admin");
-
-        asyncRunnable(()->{
-            try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().addChatRoomAdmin(roomId,admin);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().changeOwner(roomId, newOwner);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);
@@ -344,13 +301,14 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         });
     }
 
-    private void removeChatRoomAdmin(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void addChatRoomAdmin(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         String admin = param.getString("admin");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().removeChatRoomAdmin(roomId,admin);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().addChatRoomAdmin(roomId, admin);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);
@@ -358,12 +316,28 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         });
     }
 
-    private void fetchChatRoomMuteList(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+    private void removeChatRoomAdmin(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
+        String roomId = param.getString("roomId");
+        String admin = param.getString("admin");
+
+        asyncRunnable(() -> {
+            try {
+                EMChatRoom room = EMClient.getInstance().chatroomManager().removeChatRoomAdmin(roomId, admin);
+                onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void fetchChatRoomMuteList(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         int pageNum = param.getInt("pageNum");
         int pageSize = param.getInt("pageSize");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 Map map = EMClient.getInstance().chatroomManager().fetchChatRoomMuteList(roomId, pageNum, pageSize);
                 onSuccess(result, channelName, map);
@@ -372,7 +346,9 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             }
         });
     }
-    private void removeChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void removeChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         JSONArray members = param.getJSONArray("members");
         List<String> membersList = new ArrayList<>();
@@ -380,16 +356,18 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             membersList.add((String) members.get(i));
         }
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().removeChatRoomMembers(roomId,membersList);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().removeChatRoomMembers(roomId, membersList);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
-    private void blockChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void blockChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         JSONArray blockMembers = param.getJSONArray("members");
         List<String> blockMembersList = new ArrayList<>();
@@ -397,16 +375,19 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             blockMembersList.add((String) blockMembers.get(i));
         }
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().blockChatroomMembers(roomId, blockMembersList);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().blockChatroomMembers(roomId,
+                        blockMembersList);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
-    private void unBlockChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void unBlockChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         JSONArray blockMembers = param.getJSONArray("members");
         List<String> blockMembersList = new ArrayList<>();
@@ -414,34 +395,40 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             blockMembersList.add((String) blockMembers.get(i));
         }
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().unblockChatRoomMembers(roomId, blockMembersList);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().unblockChatRoomMembers(roomId,
+                        blockMembersList);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
-    private void fetchChatRoomBlackList(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void fetchChatRoomBlackList(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         int pageNum = param.getInt("pageNum");
         int pageSize = param.getInt("pageSize");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                List<String> blockList = EMClient.getInstance().chatroomManager().fetchChatRoomBlackList(roomId, pageNum, pageSize);
+                List<String> blockList = EMClient.getInstance().chatroomManager().fetchChatRoomBlackList(roomId,
+                        pageNum, pageSize);
                 onSuccess(result, channelName, blockList);
             } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
-    private void updateChatRoomAnnouncement(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void updateChatRoomAnnouncement(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
         String announcement = param.getString("announcement");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatroomManager().updateChatRoomAnnouncement(roomId, announcement);
                 onSuccess(result, channelName, true);
@@ -450,12 +437,14 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             }
         });
     }
-    private void fetchChatRoomAnnouncement(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void fetchChatRoomAnnouncement(JSONObject param, String channelName, MethodChannel.Result result)
+            throws JSONException {
         String roomId = param.getString("roomId");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                String announcement =  EMClient.getInstance().chatroomManager().fetchChatRoomAnnouncement(roomId);
+                String announcement = EMClient.getInstance().chatroomManager().fetchChatRoomAnnouncement(roomId);
                 onSuccess(result, channelName, announcement);
             } catch (HyphenateException e) {
                 onError(result, e);
@@ -485,10 +474,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onChatRoomDestroyed(String roomId, String roomName) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",roomId);
-                    data.put("roomName",roomName);
-                    data.put("chatRoomChange","onChatRoomDestroyed");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", roomId);
+                    data.put("roomName", roomName);
+                    data.put("type", "onChatRoomDestroyed");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -496,10 +485,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onMemberJoined(String roomId, String participant) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",roomId);
-                    data.put("participant",participant);
-                    data.put("chatRoomChange","onMemberJoined");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", roomId);
+                    data.put("participant", participant);
+                    data.put("type", "onMemberJoined");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -507,11 +496,11 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onMemberExited(String roomId, String roomName, String participant) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",roomId);
-                    data.put("roomName",roomName);
-                    data.put("participant",participant);
-                    data.put("chatRoomChange","onMemberExited");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", roomId);
+                    data.put("roomName", roomName);
+                    data.put("participant", participant);
+                    data.put("type", "onMemberExited");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -519,12 +508,11 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onRemovedFromChatRoom(int reason, String roomId, String roomName, String participant) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",roomId);
-                    data.put("roomName",roomName);
-                    data.put("participant",participant);
-                    data.put("reason",reason);
-                    data.put("chatRoomChange","onRemovedFromChatRoom");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", roomId);
+                    data.put("roomName", roomName);
+                    data.put("participant", participant);
+                    data.put("type", "onRemovedFromChatRoom");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -532,11 +520,11 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onMuteListAdded(String chatRoomId, List<String> mutes, long expireTime) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",chatRoomId);
-                    data.put("mutes",mutes);
-                    data.put("expireTime",String.valueOf(expireTime));
-                    data.put("chatRoomChange","onMuteListAdded");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", chatRoomId);
+                    data.put("mutes", mutes);
+                    data.put("expireTime", String.valueOf(expireTime));
+                    data.put("type", "onMuteListAdded");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -544,10 +532,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onMuteListRemoved(String chatRoomId, List<String> mutes) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",chatRoomId);
-                    data.put("mutes",mutes);
-                    data.put("chatRoomChange","onMuteListRemoved");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", chatRoomId);
+                    data.put("mutes", mutes);
+                    data.put("type", "onMuteListRemoved");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -555,10 +543,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onAdminAdded(String chatRoomId, String admin) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",chatRoomId);
-                    data.put("admin",admin);
-                    data.put("chatRoomChange","onAdminAdded");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", chatRoomId);
+                    data.put("admin", admin);
+                    data.put("type", "onAdminAdded");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -566,10 +554,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onAdminRemoved(String chatRoomId, String admin) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",chatRoomId);
-                    data.put("admin",admin);
-                    data.put("chatRoomChange","onAdminRemoved");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", chatRoomId);
+                    data.put("admin", admin);
+                    data.put("type", "onAdminRemoved");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -577,11 +565,11 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onOwnerChanged(String chatRoomId, String newOwner, String oldOwner) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",chatRoomId);
-                    data.put("newOwner",newOwner);
-                    data.put("oldOwner",oldOwner);
-                    data.put("chatRoomChange","onOwnerChanged");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", chatRoomId);
+                    data.put("newOwner", newOwner);
+                    data.put("oldOwner", oldOwner);
+                    data.put("chatRoomChange", "onOwnerChanged");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
 
@@ -589,10 +577,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             public void onAnnouncementChanged(String chatRoomId, String announcement) {
                 post(() -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("roomId",chatRoomId);
-                    data.put("announcement",announcement);
-                    data.put("chatRoomChange","onAnnouncementChanged");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange,data);
+                    data.put("roomId", chatRoomId);
+                    data.put("announcement", announcement);
+                    data.put("chatRoomChange", "onAnnouncementChanged");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
                 });
             }
         });
