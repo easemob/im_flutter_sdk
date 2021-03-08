@@ -23,6 +23,7 @@ class EMSDKMethod {
   static const String addContact = 'addContact';
   static const String deleteContact = 'deleteContact';
   static const String getAllContactsFromServer = 'getAllContactsFromServer';
+  static const String getAllContactsFromDB = 'getAllContactsFromDB';
   static const String addUserToBlackList = 'addUserToBlackList';
   static const String removeUserFromBlackList = 'removeUserFromBlackList';
   static const String getBlackListFromServer = 'getBlackListFromServer';
@@ -37,6 +38,7 @@ class EMSDKMethod {
   static const String sendMessage = 'sendMessage';
   static const String resendMessage = 'resendMessage';
   static const String ackMessageRead = 'ackMessageRead';
+  static const String ackConversationRead = 'ackConversationRead';
   static const String recallMessage = 'recallMessage';
   static const String getConversation = 'getConversation';
   static const String markAllChatMsgAsRead = 'markAllChatMsgAsRead';
@@ -46,7 +48,9 @@ class EMSDKMethod {
   static const String downloadThumbnail = 'downloadThumbnail';
   static const String importMessages = 'importMessages';
   static const String loadAllConversations = 'loadAllConversations';
+  static const String getConversationsFromServer = 'getConversationsFromServer';
   static const String deleteConversation = 'deleteConversation';
+  static const String updateConversationsName = 'updateConversationsName';
   static const String fetchHistoryMessages = 'fetchHistoryMessages';
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
   static const String getMessage = 'getMessage';
@@ -60,6 +64,7 @@ class EMSDKMethod {
   static const String onMessageChanged = 'onMessageChanged';
 
   static const String onConversationUpdate = 'onConversationUpdate';
+  static const String onConversationHasRead = 'onConversationHasRead';
 
   /// EMMessage listener
   static const String onMessageProgressUpdate = 'onMessageProgressUpdate';
@@ -73,6 +78,8 @@ class EMSDKMethod {
   static const String getUnreadMsgCount = 'getUnreadMsgCount';
   static const String markAllMessagesAsRead = 'markAllMessagesAsRead';
   static const String markMessageAsRead = 'markMessageAsRead';
+  static const String syncConversationExt = 'syncConversationExt';
+  static const String syncConversationName = 'syncConversationName';
   static const String removeMessage = 'removeMessage';
   static const String getLatestMessage = 'getLatestMessage';
   static const String getLatestMessageFromOthers = 'getLatestMessageFromOthers';

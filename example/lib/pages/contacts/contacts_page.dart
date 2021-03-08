@@ -1,6 +1,8 @@
 import 'package:azlistview/azlistview.dart';
+import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/models/contact_model.dart';
 import 'package:easeim_flutter_demo/unit/share_preference_manager.dart';
+import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
@@ -24,25 +26,31 @@ class ContactsPageState extends State<ContactsPage>
   @override
   void initState() {
     super.initState();
+    EMClient.getInstance.contactManager.addContactListener(this);
     _topList.addAll([
       ContactModel.custom('新的好友'),
       ContactModel.custom('群聊'),
       ContactModel.custom('聊天室')
     ]);
-    _fetchContactsFromServer();
-    EMClient.getInstance.contactManager.addContactListener(this);
+
     String currentUser = EMClient.getInstance.currentUsername;
     SharePreferenceManager.load(currentUser, callback: () {
       setState(() {});
     });
   }
 
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // _loadLocalContacts();
+    _fetchContactsFromServer();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal(
+      appBar: DemoAppBar(
         '通讯录',
-        actions: [
+        rightWidgets: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => PopMenu.show(
@@ -56,6 +64,10 @@ class ContactsPageState extends State<ContactsPage>
                   Navigator.of(context)
                       .pushNamed('/addFriends')
                       .then((value) {});
+                } else if (index == 1) {
+                  Navigator.of(context)
+                      .pushNamed('/publicGroups')
+                      .then((value) {});
                 }
               },
             ),
@@ -63,54 +75,54 @@ class ContactsPageState extends State<ContactsPage>
         ],
       ),
       body: AzListView(
-          data: _contactList,
-          itemCount: _contactList.length,
-          itemBuilder: (_, index) => getContactRow(index),
-          separatorBuilder: (_, __) {
-            return Container(
-              color: Colors.grey[300],
-              height: 0.5,
-              margin: EdgeInsets.only(left: 20, right: 10),
+        data: _contactList,
+        itemCount: _contactList.length,
+        itemBuilder: (_, index) => getContactRow(index),
+        separatorBuilder: (_, __) {
+          return Container(
+            color: Colors.grey[300],
+            height: 0.5,
+            margin: EdgeInsets.only(left: 20, right: 10),
+          );
+        },
+        susItemHeight: 30,
+        susItemBuilder: (_, index) {
+          ContactModel model = _contactList[index];
+          if (model.firstLetter == '☆') {
+            return Container();
+          } else {
+            String tag = model.getSuspensionTag();
+            return _buildSusWidget(
+              tag,
+              isFloat: false,
             );
-          },
-          susItemHeight: 30,
-          susItemBuilder: (_, index) {
-            ContactModel model = _contactList[index];
-            if (model.firstLetter == '☆') {
-              return Container();
-            } else {
-              String tag = model.getSuspensionTag();
-              return _buildSusWidget(
+          }
+        },
+        indexBarData: ['☆', ...kIndexBarData],
+        indexHintBuilder: (BuildContext context, String tag) {
+          if (tag == '☆') {
+            return Container();
+          } else {
+            return Container(
+              alignment: Alignment.center,
+              width: 60.0,
+              height: 60.0,
+              decoration: BoxDecoration(
+                color: Colors.blue[700].withAlpha(200),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
                 tag,
-                isFloat: false,
-              );
-            }
-          },
-          /* ['☆', ...kIndexBarData] */
-          indexBarData: SuspensionUtil.getTagIndexList(_contactList),
-          indexHintBuilder: (BuildContext context, String tag) {
-            if (tag == '☆') {
-              return Container();
-            } else {
-              return Container(
-                alignment: Alignment.center,
-                width: 60.0,
-                height: 60.0,
-                decoration: BoxDecoration(
-                  color: Colors.blue[700].withAlpha(200),
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  tag,
-                  style: TextStyle(color: Colors.white, fontSize: 30.0),
-                ),
-              );
-            }
-          }),
+                style: TextStyle(color: Colors.white, fontSize: 30.0),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
-// // 吸顶组件
+  // 吸顶组件
   Widget _buildSusWidget(String susTag, {bool isFloat = false}) {
     return Container(
       height: 30,
@@ -146,17 +158,47 @@ class ContactsPageState extends State<ContactsPage>
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _contactDidSelected(model, index),
-      child: SafeArea(child: Builder(builder: (_) {
-        int unreadCount = 0;
-        if (index == 0) {
-          unreadCount = _friendRequestCount;
-        }
-        return ContactItem(
-          model.name,
-          unreadCount: unreadCount,
-        );
-      })),
+      child: SafeArea(
+        child: Builder(
+          builder: (_) {
+            int unreadCount = 0;
+            if (index == 0) {
+              unreadCount = _friendRequestCount;
+            }
+            if (model.isCustom) {
+              return ContactItem(
+                model.name,
+                unreadCount: unreadCount,
+              );
+            } else {
+              return slidableItem(
+                child: ContactItem(
+                  model.name,
+                  unreadCount: unreadCount,
+                ),
+                actions: [
+                  slidableDeleteAction(
+                    onTap: () => _deleteContact(model),
+                  ),
+                ],
+              );
+            }
+          },
+        ),
+      ),
     );
+  }
+
+  _deleteContact(ContactModel contact) {
+    try {
+      SmartDialog.showLoading(msg: '删除中...');
+      EMClient.getInstance.contactManager.deleteContact(contact.contactId);
+      SmartDialog.showToast('删除成功');
+    } on EMError catch (e) {
+      SmartDialog.showToast('删除失败$e');
+    } finally {
+      SmartDialog.dismiss();
+    }
   }
 
   _contactDidSelected(ContactModel contact, int index) async {
@@ -166,12 +208,23 @@ class ContactsPageState extends State<ContactsPage>
           _friendRequestCount = SharePreferenceManager.loadUnreadCount();
           _fetchContactsFromServer();
         });
+      } else if (index == 1) {
+        Navigator.of(context).pushNamed('/joinedGroups').then((value) {
+          _fetchContactsFromServer();
+        });
+      } else if (index == 2) {
+        Navigator.of(context).pushNamed('/rooms').then((value) {
+          _fetchContactsFromServer();
+        });
       }
     } else {
       EMConversation conv = await EMClient.getInstance.chatManager
           .getConversation(contact.contactId);
-      Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {
-        // TODO: reload conversations list.
+      Navigator.of(context).pushNamed(
+        '/chat',
+        arguments: [contact.contactId, conv],
+      ).then((value) {
+        eventBus.fire(EventBusManager.updateConversations());
       });
     }
   }
@@ -185,12 +238,30 @@ class ContactsPageState extends State<ContactsPage>
         _contactList.add(ContactModel.contact(contact));
       }
     } on EMError {
-      // Fluttertoast.showToast(msg: '获取失败');
+      SmartDialog.showToast('获取失败');
+      _loadLocalContacts();
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       _contactList.insertAll(0, _topList);
       setState(() {});
+    }
+  }
+
+  Future<void> _loadLocalContacts() async {
+    try {
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      _contactList.clear();
+      for (var contact in contacts) {
+        _contactList.add(ContactModel.contact(contact));
+      }
+    } on EMError {} finally {
+      SuspensionUtil.sortListBySuspensionTag(_contactList);
+      SuspensionUtil.setShowSuspensionStatus(_contactList);
+      _contactList.insertAll(0, _topList);
+      setState(() {});
+      _fetchContactsFromServer();
     }
   }
 

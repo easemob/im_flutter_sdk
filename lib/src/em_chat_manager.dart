@@ -25,6 +25,8 @@ class EMChatManager {
         return _onMessagesRecalled(call.arguments);
       } else if (call.method == EMSDKMethod.onConversationUpdate) {
         return _onConversationsUpdate(call.arguments);
+      } else if (call.method == EMSDKMethod.onConversationHasRead) {
+        return _onConversationHasRead(call.arguments);
       }
       return null;
     });
@@ -60,6 +62,14 @@ class EMChatManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.ackMessageRead, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.ackMessageRead);
+  }
+
+  Future<bool> sendConversationReadAck(String conversationId) async {
+    Map req = {"con_id": conversationId};
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.ackConversationRead, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.ackConversationRead);
   }
 
   /// 撤回发送的消息(增值服务), 默认时效为2分钟，超过2分钟无法撤回.
@@ -157,6 +167,27 @@ class EMChatManager {
     return conversationList;
   }
 
+  /// 从服务器获取会话
+  Future<List<EMConversation>> getConversationsFromServer() async {
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getConversationsFromServer);
+    EMError.hasErrorFromResult(result);
+    var conversationList = List<EMConversation>();
+    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+      conversationList.add(EMConversation.fromJson(element));
+    });
+    return conversationList;
+  }
+
+  // 批量更新一组会话显示名称`Map`,`key`会话id, `value`对应名称,既conversation.name属性。
+  // Future<bool> updateConversationsName(Map<String, String> nameMap) async {
+  //   Map req = {"name_map": nameMap};
+  //   Map result =
+  //       await _channel.invokeMethod(EMSDKMethod.updateConversationsName, req);
+  //   EMError.hasErrorFromResult(result);
+  //   return result.boolValue(EMSDKMethod.updateConversationsName);
+  // }
+
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
   Future<bool> deleteConversation(
     String conversationId, [
@@ -183,7 +214,7 @@ class EMChatManager {
 
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResult> fetchHistoryMessages(
+  Future<EMCursorResult<EMMessage>> fetchHistoryMessages(
     String conversationId, [
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
@@ -197,8 +228,8 @@ class EMChatManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchHistoryMessages, req);
     EMError.hasErrorFromResult(result);
-    return EMCursorResult.fromJson(result[EMSDKMethod.fetchHistoryMessages],
-        dataItemCallback: (value) {
+    return EMCursorResult<EMMessage>.fromJson(
+        result[EMSDKMethod.fetchHistoryMessages], dataItemCallback: (value) {
       return EMMessage.fromJson(value);
     });
   }
@@ -289,6 +320,14 @@ class EMChatManager {
       listener.onConversationsUpdate();
     }
   }
+
+  Future<void> _onConversationHasRead(dynamic obj) async {
+    for (var listener in _messageListeners) {
+      String from = (obj as Map)['from'];
+      String to = (obj as Map)['to'];
+      listener.onConversationRead(from, to);
+    }
+  }
 }
 
 abstract class EMChatManagerListener {
@@ -309,4 +348,7 @@ abstract class EMChatManagerListener {
 
   /// 会话列表变化
   onConversationsUpdate() {}
+
+  /// 会话已读`from`是已读的发送方, `to`是已读的接收方
+  onConversationRead(String from, String to) {}
 }

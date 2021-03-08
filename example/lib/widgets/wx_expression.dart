@@ -3,14 +3,6 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-//╔══════════════════════════╗
-//║ Author       : 贾恒飞
-//║ Timer        : 2020/3/6
-//║ Model        : yunim
-//║ PackageName  : com.tencent.mm
-//║ Node         : 微信表情
-//╚══════════════════════════╝
-
 ///表情组件
 class WeChatExpression extends StatelessWidget {
   ///一行表情数量

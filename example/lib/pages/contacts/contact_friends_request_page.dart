@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-class ContactFirendsRequest extends StatefulWidget {
+class ContactFirendsRequestPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => ContactFirendsRequestState();
+  State<StatefulWidget> createState() => ContactFirendsRequestPageState();
 }
 
-class ContactFirendsRequestState extends State<ContactFirendsRequest> {
+class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
   List<String> requestList = List();
   RegExp requestExp = RegExp(r' ');
   @override
@@ -23,11 +23,17 @@ class ContactFirendsRequestState extends State<ContactFirendsRequest> {
   }
 
   @override
+  void dispose() {
+    SharePreferenceManager.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     requestList = SharePreferenceManager.loadAllRequests();
 
     return Scaffold(
-      appBar: DemoAppBar.normal('好友申请', actions: [
+      appBar: DemoAppBar('好友申请', rightWidgets: [
         FlatButton(
           onPressed: () {
             SharePreferenceManager.removeAllRequest();

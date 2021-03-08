@@ -25,6 +25,7 @@ public class EMSDKMethod {
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
     static final String getAllContactsFromServer = "getAllContactsFromServer";
+    static final String getAllContactsFromDB = "getAllContactsFromDB";
     static final String addUserToBlackList = "addUserToBlackList";
     static final String removeUserFromBlackList = "removeUserFromBlackList";
     static final String getBlackListFromServer = "getBlackListFromServer";
@@ -38,6 +39,7 @@ public class EMSDKMethod {
     static final String sendMessage = "sendMessage";
     static final String resendMessage = "resendMessage";
     static final String ackMessageRead = "ackMessageRead";
+    static final String ackConversationRead = "ackConversationRead";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";
     static final String markAllChatMsgAsRead = "markAllChatMsgAsRead";
@@ -47,6 +49,7 @@ public class EMSDKMethod {
     static final String downloadThumbnail = "downloadThumbnail";
     static final String importMessages = "importMessages";
     static final String loadAllConversations = "loadAllConversations";
+    static final String getConversationsFromServer = "getConversationsFromServer";
     static final String deleteConversation = "deleteConversation";
     static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
@@ -58,9 +61,9 @@ public class EMSDKMethod {
     static final String onMessagesRead = "onMessagesRead";
     static final String onMessagesDelivered = "onMessagesDelivered";
     static final String onMessagesRecalled = "onMessagesRecalled";
-    static final String onMessageChanged = "onMessageChanged";
-    
+
     static final String onConversationUpdate = "onConversationUpdate";
+    static final String onConversationHasRead = "onConversationHasRead";
 
     /// EMMessage listener
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
@@ -74,6 +77,8 @@ public class EMSDKMethod {
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
     static final String markMessageAsRead = "markMessageAsRead";
+    static final String syncConversationExt = "syncConversationExt";
+    static final String syncConversationName = "syncConversationName";
     static final String removeMessage = "removeMessage";
     static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";

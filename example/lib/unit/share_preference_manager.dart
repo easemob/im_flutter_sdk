@@ -3,13 +3,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SharePreferenceManager {
   static SharePreferenceManager _instance;
   SharedPreferences _prefs;
+  Function _callback;
   String _eid;
   static load(eid, {Function callback}) {
     SharePreferenceManager.shareInstance._eid = eid;
+    SharePreferenceManager.shareInstance._callback = callback;
     if (callback != null) {
-      Future.delayed(Duration(seconds: 3)).then((value) {
-        if (callback != null) {
-          callback();
+      Future.delayed(Duration(seconds: 2)).then((value) {
+        if (SharePreferenceManager.shareInstance._callback != null) {
+          SharePreferenceManager.shareInstance._callback();
         }
       });
     }
@@ -17,6 +19,10 @@ class SharePreferenceManager {
 
   static SharePreferenceManager get shareInstance =>
       _instance = _instance ?? SharePreferenceManager._getInstance();
+
+  static clear() {
+    SharePreferenceManager.shareInstance._callback = null;
+  }
 
   // 收到好友申请时调用
   static addRequest(String eid) {
@@ -57,7 +63,6 @@ class SharePreferenceManager {
   _loadSharePerference() async {
     if (_prefs == null) {
       _prefs = await SharedPreferences.getInstance();
-      print('object');
     }
   }
 

@@ -82,6 +82,7 @@ class EMMessage {
     @required this.body,
     this.direction = EMMessageDirection.SEND,
     this.to,
+    this.hasRead = true,
   })  : this.from = EMClient.getInstance.currentUsername,
         this.conversationId = to {
     _emMessageChannel.setMethodCallHandler((MethodCall call) {
@@ -536,8 +537,9 @@ class EMFileMessageBody extends EMMessageBody {
     this.fileSize = map['fileSize'];
     this.localPath = map['localPath'];
     this.displayName = map['displayName'];
-    this.fileStatus =
-        EMFileMessageBody.downloadStatusFromInt(map['fileStatus']);
+    this.fileStatus = EMFileMessageBody.downloadStatusFromInt(
+      map['fileStatus'],
+    );
   }
 
   @override
@@ -616,10 +618,11 @@ class EMImageMessageBody extends EMFileMessageBody {
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
     this.sendOriginalImage = map.boolValue('sendOriginalImage');
-    this.height = map['height'].toDouble();
-    this.width = map['width'].toDouble();
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map['thumbnailStatus']);
+    this.height = map['height']?.toDouble();
+    this.width = map['width']?.toDouble();
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
+      map['thumbnailStatus'],
+    );
   }
 
   @override
@@ -679,10 +682,11 @@ class EMVideoMessageBody extends EMFileMessageBody {
     this.thumbnailLocalPath = map['thumbnailLocalPath'] as String;
     this.thumbnailRemotePath = map['thumbnailRemotePath'] as String;
     this.thumbnailSecret = map['thumbnailSecret'] as String;
-    this.height = map['height'].toDouble();
-    this.width = map['width'].toDouble();
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map['thumbnailStatus']);
+    this.height = map['height']?.toDouble();
+    this.width = map['width']?.toDouble();
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
+      map['thumbnailStatus'],
+    );
   }
 
   @override
@@ -783,7 +787,7 @@ class EMCustomMessageBody extends EMMessageBody {
   EMCustomMessageBody.fromJson({Map map})
       : super.fromJson(map: map, type: EMMessageBodyType.CUSTOM) {
     this.event = map['event'];
-    this.params = map['params'].cast<String, String>();
+    this.params = map['params']?.cast<String, String>();
   }
 
   @override

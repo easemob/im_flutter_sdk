@@ -279,89 +279,126 @@ class EMMessageHelper {
         EMMessage message = null;
         JSONObject bodyJson = json.getJSONObject("body");
         String type = bodyJson.getString("type");
-        switch (type){
-            case "txt": {
-                message = EMMessage.createReceiveMessage(Type.TXT);
-                message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
+        if(json.getString("direction").equals("send")){
+            switch (type){
+                case "txt": {
+                    message = EMMessage.createSendMessage(Type.TXT);
+                    message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
+                }
+                break;
+                case "img": {
+                    message = EMMessage.createSendMessage(Type.IMAGE);
+                    message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
+                }
+                break;
+                case "loc": {
+                    message = EMMessage.createSendMessage(Type.LOCATION);
+                    message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
+                }
+                break;
+                case "video": {
+                    message = EMMessage.createSendMessage(Type.VIDEO);
+                    message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
+                }
+                break;
+                case "voice": {
+                    message = EMMessage.createSendMessage(Type.VOICE);
+                    message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
+                }
+                break;
+                case "file": {
+                    message = EMMessage.createSendMessage(Type.FILE);
+                    message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
+                }
+                break;
+                case "cmd": {
+                    message = EMMessage.createSendMessage(Type.CMD);
+                    message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
+                }
+                break;
+                case "custom": {
+                    message = EMMessage.createSendMessage(Type.CUSTOM);
+                    message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
+                }
+                break;
             }
-            break;
-            case "img": {
-                message = EMMessage.createSendMessage(Type.IMAGE);
-                message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
+        }else{
+            switch (type){
+                case "txt": {
+                    message = EMMessage.createReceiveMessage(Type.TXT);
+                    message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
+                }
+                break;
+                case "img": {
+                    message = EMMessage.createReceiveMessage(Type.IMAGE);
+                    message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
+                }
+                break;
+                case "loc": {
+                    message = EMMessage.createReceiveMessage(Type.LOCATION);
+                    message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
+                }
+                break;
+                case "video": {
+                    message = EMMessage.createReceiveMessage(Type.VIDEO);
+                    message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
+                }
+                break;
+                case "voice": {
+                    message = EMMessage.createReceiveMessage(Type.VOICE);
+                    message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
+                }
+                break;
+                case "file": {
+                    message = EMMessage.createReceiveMessage(Type.FILE);
+                    message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
+                }
+                break;
+                case "cmd": {
+                    message = EMMessage.createReceiveMessage(Type.CMD);
+                    message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
+                }
+                break;
+                case "custom": {
+                    message = EMMessage.createReceiveMessage(Type.CUSTOM);
+                    message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
+                }
+                break;
             }
-            break;
-            case "loc": {
-                message = EMMessage.createSendMessage(Type.LOCATION);
-                message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
-            }
-            break;
-            case "video": {
-                message = EMMessage.createSendMessage(Type.VIDEO);
-                message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
-            }
-            break;
-            case "voice": {
-                message = EMMessage.createSendMessage(Type.VOICE);
-                message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
-            }
-            break;
-            case "file": {
-                message = EMMessage.createSendMessage(Type.FILE);
-                message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
-            }
-            break;
-            case "cmd": {
-                message = EMMessage.createSendMessage(Type.CMD);
-                message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
-            }
-            break;
-            case "custom": {
-                message = EMMessage.createSendMessage(Type.CUSTOM);
-                message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
-            }
-            break;
+            message.setFrom(json.getString("from"));
         }
-
-        if (message != null) {
-            
-            String from = json.getString("from");
-            if (from == null || from.length() == 0) {
-                from = EMClient.getInstance().getCurrentUser();
-            }
-            message.setFrom(from);
-            message.setTo(json.getString("to"));
-            message.setAcked(json.getBoolean("hasReadAck"));
+        message.setTo(json.getString("to"));
+        message.setAcked(json.getBoolean("hasReadAck"));
+        if(statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS){
             message.setUnread(!json.getBoolean("hasRead"));
-            message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
-            message.setLocalTime(json.getLong("localTime"));
-            message.setMsgTime(json.getLong("serverTime"));
-            message.setStatus(statusFromInt(json.getInt("status")));
-            message.setChatType(chatTypeFromInt(json.getInt("chatType")));
-            message.setDirection(json.getString("direction").equals("send") ? EMMessage.Direct.SEND : EMMessage.Direct.RECEIVE);
-
-            if (null != json.getJSONObject("attributes")){
-                JSONObject data = json.getJSONObject("attributes");
-                Iterator iterator = data.keys();
-                while (iterator.hasNext()){
-                    String key = iterator.next().toString();
-                    Object result = data.get(key);
-                    if (result.getClass().getSimpleName().equals("Integer")) {
-                        message.setAttribute(key, (Integer) result);
-                    } else if (result.getClass().getSimpleName().equals("Boolean")) {
-                        message.setAttribute(key, (Boolean) result);
-                    } else if (result.getClass().getSimpleName().equals("Long")) {
-                        message.setAttribute(key, (Long) result);
-                    } else if (result.getClass().getSimpleName().equals("JSONObject")) {
-                        message.setAttribute(key, (JSONObject) result);
-                    } else if (result.getClass().getSimpleName().equals("JSONArray")) {
-                        message.setAttribute(key, (JSONArray) result);
-                    } else {
-                        message.setAttribute(key, data.getString(key));
-                    }
+        }
+        message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
+        message.setLocalTime(json.getLong("localTime"));
+        message.setMsgTime(json.getLong("serverTime"));
+        message.setStatus(statusFromInt(json.getInt("status")));
+        message.setChatType(chatTypeFromInt(json.getInt("chatType")));
+        message.setMsgId(json.getString("msgId"));
+        if (null != json.getJSONObject("attributes")){
+            JSONObject data = json.getJSONObject("attributes");
+            Iterator iterator = data.keys();
+            while (iterator.hasNext()){
+                String key = iterator.next().toString();
+                Object result = data.get(key);
+                if (result.getClass().getSimpleName().equals("Integer")) {
+                    message.setAttribute(key, (Integer) result);
+                } else if (result.getClass().getSimpleName().equals("Boolean")) {
+                    message.setAttribute(key, (Boolean) result);
+                } else if (result.getClass().getSimpleName().equals("Long")) {
+                    message.setAttribute(key, (Long) result);
+                } else if (result.getClass().getSimpleName().equals("JSONObject")) {
+                    message.setAttribute(key, (JSONObject) result);
+                } else if (result.getClass().getSimpleName().equals("JSONArray")) {
+                    message.setAttribute(key, (JSONArray) result);
+                } else {
+                    message.setAttribute(key, data.getString(key));
                 }
             }
         }
-
         return message;
     }
 

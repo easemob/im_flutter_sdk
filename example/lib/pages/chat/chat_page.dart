@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
+import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/show_large_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,14 +18,21 @@ import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
 
 class ChatPage extends StatefulWidget {
-  ChatPage(EMConversation conversation) : conv = conversation;
+  ChatPage(
+    this.titleStr,
+    EMConversation conversation,
+  ) : conv = conversation;
   final EMConversation conv;
+  final String titleStr;
   @override
   State<StatefulWidget> createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage>
-    implements ChatInputBarListener, EMChatManagerListener {
+    implements
+        ChatInputBarListener,
+        EMChatManagerListener,
+        EMChatRoomEventListener {
   List<ChatMoreViewItem> items;
 
   final _scrollController = ScrollController();
@@ -74,6 +82,7 @@ class _ChatPageState extends State<ChatPage>
     _moreView = ChatMoreView(items);
     // 添加环信回调监听
     EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
     widget.conv.markAllMessagesAsRead();
 
@@ -83,7 +92,13 @@ class _ChatPageState extends State<ChatPage>
         _loadMessages(moveBottom: false);
       }
     });
-    _loadMessages();
+    if (widget.conv.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager
+          .joinChatRoom(widget.conv.id)
+          .then((value) => _loadMessages());
+    } else {
+      _loadMessages();
+    }
   }
 
   void dispose() {
@@ -93,6 +108,9 @@ class _ChatPageState extends State<ChatPage>
     EMClient.getInstance.chatManager.removeListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
+    if (widget.conv.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv.id);
+    }
     super.dispose();
   }
 
@@ -106,11 +124,8 @@ class _ChatPageState extends State<ChatPage>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Title(
-          color: Colors.white,
-          child: Text(widget.conv.id),
-        ),
+      appBar: DemoAppBar(
+        widget.titleStr,
       ),
       body: GestureDetector(
         // 点击背景隐藏键盘
@@ -343,15 +358,6 @@ class _ChatPageState extends State<ChatPage>
     print('长按 msg id ---- ${msg.msgId}');
   }
 
-  /// 重发消息
-  void _resendMessage(EMMessage msg) async {
-    _msgList.remove(msg);
-    EMMessage message =
-        await EMClient.getInstance.chatManager.resendMessage(msg);
-    _msgList.add(message);
-    _setStateAndMoreToListViewEnd();
-  }
-
   /// 发送文字消息
   _sendTextMessage(String txt) {
     if (txt.length == 0) return;
@@ -387,7 +393,35 @@ class _ChatPageState extends State<ChatPage>
 
   /// 发消息方法
   _sendMessage(EMMessage msg) async {
+    _chatType() {
+      EMMessageChatType type = EMMessageChatType.Chat;
+      switch (widget.conv.type) {
+        case EMConversationType.Chat:
+          type = EMMessageChatType.Chat;
+          break;
+        case EMConversationType.ChatRoom:
+          type = EMMessageChatType.ChatRoom;
+          break;
+        case EMConversationType.GroupChat:
+          type = EMMessageChatType.GroupChat;
+          break;
+        default:
+      }
+      return type;
+    }
+
+    msg.chatType = _chatType();
     EMMessage message = await EMClient.getInstance.chatManager.sendMessage(msg);
+    _msgList.add(message);
+    _setStateAndMoreToListViewEnd();
+  }
+
+  /// 重发消息
+  void _resendMessage(EMMessage msg) async {
+    _msgList.remove(msg);
+    EMMessage message =
+        await EMClient.getInstance.chatManager.resendMessage(msg);
+
     _msgList.add(message);
     _setStateAndMoreToListViewEnd();
   }
@@ -529,4 +563,40 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   onConversationsUpdate() {}
+
+  @override
+  onConversationRead(String from, String to) {}
+
+  @override
+  void onAdminAdded(String roomId, String admin) {}
+
+  @override
+  void onAdminRemoved(String roomId, String admin) {}
+
+  @override
+  void onAnnouncementChanged(String roomId, String announcement) {}
+
+  @override
+  void onChatRoomDestroyed(String roomId, String roomName) {
+    print('聊天室解散 -- $roomId, $roomName');
+  }
+
+  @override
+  void onMemberExited(String roomId, String roomName, String participant) {}
+
+  @override
+  void onMemberJoined(String roomId, String participant) {}
+
+  @override
+  void onMuteListAdded(String roomId, List mutes, String expireTime) {}
+
+  @override
+  void onMuteListRemoved(String roomId, List mutes) {}
+
+  @override
+  void onOwnerChanged(String roomId, String newOwner, String oldOwner) {}
+
+  @override
+  void onRemovedFromChatRoom(
+      String roomId, String roomName, String participant) {}
 }

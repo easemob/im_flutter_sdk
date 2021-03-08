@@ -524,18 +524,17 @@
                         reason:(EMChatroomBeKickedReason)aReason {
     NSString *type;
     NSDictionary *map;
-    if (aReason == EMChatroomBeKickedReasonBeRemoved) {
+    if (aReason == EMChatroomBeKickedReasonDestroyed) {
         type = @"onChatRoomDestroyed";
         map = @{
             @"type":type,
             @"roomId":aChatroom.chatroomId,
             @"roomName":aChatroom.subject
         };
-    } else if (aReason == EMChatroomBeKickedReasonDestroyed) {
+    } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
         type = @"onRemovedFromChatRoom";
         map = @{
             @"type":type,
-            @"reason":[NSNumber numberWithInt:0],
             @"roomId":aChatroom.chatroomId,
             @"roomName":aChatroom.subject,
             @"participant":[[EMClient sharedClient] currentUsername]

@@ -94,6 +94,19 @@ class EMContactManager {
     return contacts;
   }
 
+  /// 从本地获取所有的好友 `only ios now.`
+  Future<List<EMContact>> getAllContactsFromDB() async {
+    Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
+    EMError.hasErrorFromResult(result);
+    List<EMContact> contacts = List();
+    result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
+      // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
+      contacts.add(EMContact.fromJson({'eid': element}));
+    });
+
+    return contacts;
+  }
+
   /// 把指定用户加入到黑名单中 [username] .
   Future<String> addUserToBlackList(String username) async {
     Map req = {'username': username};

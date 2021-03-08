@@ -39,6 +39,12 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.markMessageAsRead.equals(call.method)) {
                 markMessageAsRead(param, EMSDKMethod.markMessageAsRead, result);
             }
+            else if (EMSDKMethod.syncConversationExt.equals(call.method)){
+                syncConversationExt(param, EMSDKMethod.syncConversationExt, result);
+            }
+            else if (EMSDKMethod.syncConversationName.equals(call.method)){
+                syncConversationName(param, EMSDKMethod.syncConversationName, result);
+            }
             else if (EMSDKMethod.removeMessage.equals(call.method))
             {
                 removeMessage(param, EMSDKMethod.removeMessage, result);
@@ -109,6 +115,33 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         asyncRunnable(()->{
             conversation.markMessageAsRead(msg_id);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void syncConversationName(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        String conName = params.getString("con_name");
+        String extField = conversation.getExtField();
+        JSONObject jsonObject = new JSONObject(extField);
+        jsonObject.put("con_name", conName);
+        String jsonStr = jsonObject.toString();
+        conversation.setExtField(jsonStr);
+        asyncRunnable(()->{
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void syncConversationExt(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        JSONObject ext = params.getJSONObject("ext");
+        String jsonStr = "";
+        if (ext.length() != 0) {
+            jsonStr = ext.toString();
+        }
+        conversation.setExtField(jsonStr);
+
+        asyncRunnable(()->{
             onSuccess(result, channelName, true);
         });
     }
@@ -272,7 +305,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
         String con_id = params.getString("con_id");
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
-        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(con_id, type);
+        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(con_id, type, true);
         return conversation;
     }
 

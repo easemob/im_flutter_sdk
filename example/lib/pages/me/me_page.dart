@@ -41,7 +41,7 @@ class MePageState extends State<MePage> {
                     color: Colors.red,
                     onPressed: _loggout,
                     child: Text(
-                      '退出',
+                      '退出[${EMClient.getInstance.currentUsername}]',
                       style: TextStyle(
                         color: Colors.white,
                       ),
