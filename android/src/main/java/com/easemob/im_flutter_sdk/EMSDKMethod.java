@@ -25,6 +25,7 @@ public class EMSDKMethod {
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
     static final String getAllContactsFromServer = "getAllContactsFromServer";
+    static final String getAllContactsFromDB = "getAllContactsFromDB";
     static final String addUserToBlackList = "addUserToBlackList";
     static final String removeUserFromBlackList = "removeUserFromBlackList";
     static final String getBlackListFromServer = "getBlackListFromServer";
