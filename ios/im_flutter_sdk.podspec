@@ -18,7 +18,7 @@ A new flutter plugin project.
 
 
   s.dependency 'Flutter'
-  s.dependency 'HyphenateLite','3.7.4'
+  s.dependency 'HyphenateChat','3.8.0'
   
 
   s.ios.deployment_target = '9.0'
