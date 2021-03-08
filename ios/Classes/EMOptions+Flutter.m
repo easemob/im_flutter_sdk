@@ -6,7 +6,7 @@
 //
 
 #import "EMOptions+Flutter.h"
-#import <HyphenateLite/EMOptions+PrivateDeploy.h>
+#import <HyphenateChat/EMOptions+PrivateDeploy.h>
 
 @implementation EMOptions (Flutter)
 - (NSDictionary *)toJson {

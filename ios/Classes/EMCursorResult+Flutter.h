@@ -5,12 +5,12 @@
 //  Created by 杜洁鹏 on 2020/9/27.
 //
 
-#import <HyphenateLite/HyphenateLite.h>
+#import <HyphenateChat/HyphenateChat.h>
 #import "EaseToFlutterJson.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMCursorResult (Flutter)<EaseToFlutterJson>
+@interface EMCursorResult (Flutter) <EaseToFlutterJson>
 - (NSDictionary *)toJson;
 @end
 

@@ -55,5 +55,5 @@ dependencies {
     // Google firebase cloud messaging
     implementation 'com.google.android.gms:play-services-base:11.4.0'
     implementation 'com.google.firebase:firebase-messaging:11.4.0'
-    api 'com.hyphenate:hyphenate-sdk-lite:3.7.4'
+    api 'com.hyphenate:hyphenate-chat:3.8.0'
 }
