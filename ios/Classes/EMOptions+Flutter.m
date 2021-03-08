@@ -49,7 +49,7 @@
     options.isChatroomOwnerLeaveAllowed = [aJson[@"isChatRoomOwnerLeaveAllowed"] boolValue];
     options.isAutoTransferMessageAttachments = [aJson[@"serverTransfer"] boolValue];
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
-    options.pushKitCertName = aJson[@"pushConfig"][@"apnsCertName"];
+    options.apnsCertName = aJson[@"pushConfig"][@"apnsCertName"];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
     options.chatPort = [aJson[@"imPort"] intValue];
     options.chatServer = aJson[@"imServer"];
