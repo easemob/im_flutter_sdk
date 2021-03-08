@@ -41,7 +41,8 @@ class ContactsPageState extends State<ContactsPage>
 
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadLocalContacts();
+    // _loadLocalContacts();
+    _fetchContactsFromServer();
   }
 
   @override
@@ -237,7 +238,7 @@ class ContactsPageState extends State<ContactsPage>
         _contactList.add(ContactModel.contact(contact));
       }
     } on EMError {
-      // Fluttertoast.showToast(msg: '获取失败');
+      SmartDialog.showToast('获取失败');
       _loadLocalContacts();
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
