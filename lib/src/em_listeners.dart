@@ -92,9 +92,9 @@ abstract class EMChatRoomEventListener {
   /// 有用户[participant]离开id是[roomId]，名字是[roomName]的聊天室
   void onMemberExited(String roomId, String roomName, String participant);
 
-  /// 用用户[participant]被id是[roomId],名称[roomName]的聊天室删除，删除原因是[reason]
+  /// 用户[participant]被id是[roomId],名称[roomName]的聊天室删除
   void onRemovedFromChatRoom(
-      int reason, String roomId, String roomName, String participant);
+      String roomId, String roomName, String participant);
 
   /// @nodoc id是[roomId]的聊天室禁言列表[mutes]有增加
   void onMuteListAdded(String roomId, List mutes, String expireTime);

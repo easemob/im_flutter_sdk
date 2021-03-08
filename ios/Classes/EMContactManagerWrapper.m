@@ -35,6 +35,8 @@
         [self deleteContact:call.arguments result:result];
     } else if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
         [self getAllContactsFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyGetAllContactsFromDB isEqualToString:call.method]) {
+        [self getAllContactsFromDB:call.arguments result:result];
     } else if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
         [self addUserToBlackList:call.arguments result:result];
     } else if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
@@ -94,6 +96,16 @@
                            object:aList];
     }];
 }
+
+- (void)getAllContactsFromDB:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSArray *aList = EMClient.sharedClient.contactManager.getContacts;
+    [weakSelf wrapperCallBack:result
+                  channelName:EMMethodKeyGetAllContactsFromDB
+                        error:nil
+                       object:aList];
+}
+
 
 - (void)addUserToBlackList:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;

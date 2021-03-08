@@ -9,10 +9,10 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 class ChatImageBubble extends StatelessWidget {
   ChatImageBubble(
     this.body, [
-    this.direction = EMMessageDirection.SEND,
+    this.isSend,
   ]);
   final EMImageMessageBody body;
-  final EMMessageDirection direction;
+  final bool isSend;
 
   /// 最大长度
   final double maxSize = sWidth(160);
@@ -33,7 +33,7 @@ class ChatImageBubble extends StatelessWidget {
       width = maxSize;
     }
     File localPath = File(body.localPath);
-    if (direction == EMMessageDirection.SEND && localPath.existsSync()) {
+    if (isSend && localPath.existsSync()) {
       image = Image.file(
         localPath,
         fit: BoxFit.contain,

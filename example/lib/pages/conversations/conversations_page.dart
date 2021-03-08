@@ -1,4 +1,5 @@
 import 'package:easeim_flutter_demo/pages/conversations/conversation_item.dart';
+import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
@@ -25,26 +26,34 @@ class ConversationPageState extends State<ConversationPage>
 
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
+
+  var notifier;
   @override
   void initState() {
     super.initState();
     // 添加环信回调监听
     EMClient.getInstance.chatManager.addListener(this);
+    notifier = eventBus.on<EventBusManager>().listen((event) {
+      if (event.eventKey == EventBusManager.updateConversaitonsList) {
+        _reLoadAllConversations();
+      }
+    });
   }
 
   void dispose() {
     _refreshController.dispose();
     // 移除环信回调监听
     EMClient.getInstance.chatManager.removeListener(this);
+    notifier.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DemoAppBar.normal(
+      appBar: DemoAppBar(
         '会话',
-        actions: [
+        rightWidgets: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => PopMenu.show(
@@ -54,7 +63,11 @@ class ConversationPageState extends State<ConversationPage>
                 PopMenuItem('添加好友'),
               ],
               callback: (index) {
-                print('index --- $index');
+                if (index == 1) {
+                  Navigator.of(context)
+                      .pushNamed('/addFriends')
+                      .then((value) {});
+                }
               },
             ),
           )
@@ -97,7 +110,7 @@ class ConversationPageState extends State<ConversationPage>
                         color: Color.fromRGBO(204, 204, 204, 1),
                       ),
                       Text(
-                        '请输入用户ID',
+                        '请输入会话名称',
                         style: TextStyle(
                           fontWeight: FontWeight.w300,
                           fontSize: sFontSize(16),
@@ -167,9 +180,12 @@ class ConversationPageState extends State<ConversationPage>
   }
 
   /// 会话被点击
-  _conversationItemOnPress(int index) {
-    EMConversation conv = _conversationsList[index];
-    Navigator.of(context).pushNamed('/chat', arguments: conv).then((value) {
+  _conversationItemOnPress(int index) async {
+    EMConversation con = _conversationsList[index];
+    Navigator.of(context).pushNamed(
+      '/chat',
+      arguments: [con.name, con],
+    ).then((value) {
       // 返回时刷新页面
       _reLoadAllConversations();
     });
@@ -205,4 +221,7 @@ class ConversationPageState extends State<ConversationPage>
 
   @override
   onConversationsUpdate() {}
+
+  @override
+  onConversationRead(String from, String to) {}
 }

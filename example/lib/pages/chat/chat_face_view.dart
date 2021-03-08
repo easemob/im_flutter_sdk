@@ -53,12 +53,12 @@ class ChatFaceViewState extends State<ChatFaceView> {
                     offset: Offset(0, 0),
                     color: Color.fromRGBO(242, 242, 242, 1.0),
                     blurRadius: sWidth(10),
-                    spreadRadius: sWidth(5),
+                    spreadRadius: sWidth(15),
                   ),
                   BoxShadow(
-                    offset: Offset(0, 30),
+                    offset: Offset(0, sWidth(10)),
                     color: Color.fromRGBO(242, 242, 242, 1.0),
-                    spreadRadius: sWidth(20),
+                    spreadRadius: sWidth(15),
                   )
                 ],
               ),

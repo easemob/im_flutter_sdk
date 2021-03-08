@@ -50,23 +50,57 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
   @override
   Widget build(context) {
     bool isRecv = widget.msg.direction == EMMessageDirection.RECEIVE;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      textDirection: isRecv ? TextDirection.ltr : TextDirection.rtl,
-      children: [
-        Container(
-          height: sWidth(42),
-          width: sWidth(42),
-          margin: EdgeInsets.only(
-            left: sWidth(isRecv ? 20 : 10),
-            right: sWidth(!isRecv ? 20 : 10),
-          ),
-          child: _avatarWidget(),
-        ),
-        _messageWidget(isRecv),
-        _messageStateWidget(isRecv),
-      ],
+    return Builder(
+      builder: (_) {
+        _info() {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            textDirection: isRecv ? TextDirection.ltr : TextDirection.rtl,
+            children: [
+              Container(
+                height: sWidth(42),
+                width: sWidth(42),
+                margin: EdgeInsets.only(
+                  left: sWidth(isRecv ? 20 : 10),
+                  right: sWidth(!isRecv ? 20 : 10),
+                ),
+                child: _avatarWidget(),
+              ),
+              _messageWidget(isRecv),
+              _messageStateWidget(isRecv),
+            ],
+          );
+        }
+
+        Widget ret;
+        if (isRecv && widget.msg.chatType != EMMessageChatType.Chat) {
+          ret = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  left: sWidth(25),
+                ),
+                child: Text(
+                  widget.msg.from,
+                  style: TextStyle(
+                    fontSize: sFontSize(11),
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: sHeight(3),
+              ),
+              _info(),
+            ],
+          );
+        } else {
+          ret = _info();
+        }
+        return ret;
+      },
     );
   }
 
@@ -87,7 +121,6 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   /// 消息 widget
   _messageWidget(bool isRecv) {
-    EMMessageBody body = widget.msg.body;
     return Builder(
       builder: (context) {
         return GestureDetector(
@@ -116,11 +149,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
                 bottomLeft: Radius.circular(10),
                 bottomRight: Radius.circular(10),
               ),
-              child: ChatMessageBubble(
-                widget.msg.msgId,
-                body,
-                widget.msg.direction,
-              ),
+              child: _messageBubble(),
             ),
           ),
         );
@@ -218,55 +247,49 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
     setState(() {});
     print('发送成功');
   }
-}
 
-class ChatMessageBubble extends StatelessWidget {
-  const ChatMessageBubble(
-    this.msgId,
-    this.body, [
-    this.direction = EMMessageDirection.SEND,
-  ]);
-  final EMMessageBody body;
-  final EMMessageDirection direction;
-  final String msgId;
-  @override
-  Widget build(context) {
-    Widget bubble;
-    switch (body.type) {
-      case EMMessageBodyType.TXT:
-        bubble = ChatTextBubble(body);
-        break;
-      case EMMessageBodyType.LOCATION:
-        bubble = ChatLocationBubble(body);
-        break;
-      case EMMessageBodyType.IMAGE:
-        bubble = ChatImageBubble(body, direction);
-        break;
-      case EMMessageBodyType.VOICE:
-        bubble = Builder(builder: (context) {
-          return Selector(
-            selector: (_, ChatVoicePlayer player) =>
-                Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
-            builder: (_, data, __) => ChatVoiceBubble(
-                body, direction, (data.item1 == this.msgId) && data.item2),
-          );
-        });
-        break;
-      case EMMessageBodyType.VIDEO:
-        bubble = ChatVideoBubble(body);
-        break;
-      case EMMessageBodyType.FILE:
-        bubble = ChatFileBubble(body);
-        break;
-      case EMMessageBodyType.CMD:
-      case EMMessageBodyType.CUSTOM:
-        bubble = Container();
-    }
-    return Container(
-      color: direction == EMMessageDirection.RECEIVE
-          ? Colors.white
-          : Color.fromRGBO(193, 227, 252, 1),
-      child: bubble,
-    );
+  _messageBubble() {
+    EMMessageBody body = widget.msg.body;
+    bool isSend = widget.msg.direction != EMMessageDirection.RECEIVE;
+    return Builder(builder: (_) {
+      Widget bubble;
+      switch (widget.msg.body.type) {
+        case EMMessageBodyType.TXT:
+          bubble = ChatTextBubble(body);
+          break;
+        case EMMessageBodyType.LOCATION:
+          bubble = ChatLocationBubble(body);
+          break;
+        case EMMessageBodyType.IMAGE:
+          bubble = ChatImageBubble(body, isSend);
+          break;
+        case EMMessageBodyType.VOICE:
+          bubble = Builder(builder: (context) {
+            return Selector(
+              selector: (_, ChatVoicePlayer player) =>
+                  Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
+              builder: (_, data, __) => ChatVoiceBubble(
+                body,
+                isSend,
+                (data.item1 == widget.msg.msgId) && data.item2,
+              ),
+            );
+          });
+          break;
+        case EMMessageBodyType.VIDEO:
+          bubble = ChatVideoBubble(body);
+          break;
+        case EMMessageBodyType.FILE:
+          bubble = ChatFileBubble(body);
+          break;
+        case EMMessageBodyType.CMD:
+        case EMMessageBodyType.CUSTOM:
+          bubble = Container();
+      }
+      return Container(
+        color: isSend ? Color.fromRGBO(193, 227, 252, 1) : Colors.white,
+        child: bubble,
+      );
+    });
   }
 }

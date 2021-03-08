@@ -34,7 +34,7 @@ class EMClient {
   EMOptions _options;
   String _accessToken;
 
-  String _sdkVersion = '1.0';
+  String _sdkVersion = '1.0.0';
 
   String _currentUsername;
   bool _isLoginBefore = false;

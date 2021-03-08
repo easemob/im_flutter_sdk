@@ -38,7 +38,7 @@ class EMChatRoomManager {
 
   /// @nodoc
   Future<void> _chatRoomChange(Map event) async {
-    String type = event['chatRoomChange'];
+    String type = event['type'];
     for (var listener in _chatRoomEventListeners) {
       switch (type) {
         case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
@@ -58,11 +58,10 @@ class EMChatRoomManager {
           listener.onMemberExited(roomId, roomName, participant);
           break;
         case EMChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM:
-          int reason = event['reason'];
           String roomId = event['roomId'];
           String roomName = event['roomName'];
           String participant = event['participant'];
-          listener.onRemovedFromChatRoom(reason, roomId, roomName, participant);
+          listener.onRemovedFromChatRoom(roomId, roomName, participant);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
@@ -115,7 +114,7 @@ class EMChatRoomManager {
   }
 
   /// 翻页从服务器获取聊天室 [pageNum] and [pageSize]
-  Future<EMPageResult> fetchPublicChatRoomsFromServer({
+  Future<EMPageResult<EMChatRoom>> fetchPublicChatRoomsFromServer({
     int pageNum = 1,
     int pageSize = 200,
   }) async {
@@ -123,7 +122,7 @@ class EMChatRoomManager {
         EMSDKMethod.fetchPublicChatRoomsFromServer,
         {"pageNum": pageNum, "pageSize": pageSize});
     EMError.hasErrorFromResult(result);
-    return EMPageResult.fromJson(
+    return EMPageResult<EMChatRoom>.fromJson(
         result[EMSDKMethod.fetchPublicChatRoomsFromServer],
         dataItemCallback: (map) {
       return EMChatRoom.fromJson(map);
@@ -206,7 +205,7 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 获取聊天室成员列表，[roomId] [cursor] [pageSize]
-  Future<EMCursorResult> fetchChatRoomMembers(
+  Future<EMCursorResult<EMChatRoom>> fetchChatRoomMembers(
     String roomId, {
     String cursor = '',
     int pageSize = 200,
@@ -215,7 +214,8 @@ class EMChatRoomManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMembers, req);
     EMError.hasErrorFromResult(result);
-    return EMCursorResult.fromJson(result[EMSDKMethod.fetchChatRoomMembers],
+    return EMCursorResult<EMChatRoom>.fromJson(
+        result[EMSDKMethod.fetchChatRoomMembers],
         dataItemCallback: (obj) => obj);
   }
 
