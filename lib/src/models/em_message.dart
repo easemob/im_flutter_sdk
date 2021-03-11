@@ -66,8 +66,7 @@ abstract class EMMessageStatusListener {
 
 class EMMessage {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _emMessageChannel =
-      const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
+  static const MethodChannel _emMessageChannel = const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
 
   EMMessage._private();
 
@@ -175,10 +174,23 @@ class EMMessage {
   }
 
   /// 构造发送的文字消息
-  EMMessage.createTxtSendMessage(
-      {@required String username, String content = ""})
+  EMMessage.createTxtSendMessage({@required String username, String content = ""})
       : this.createSendMessage(
-            to: username, body: EMTextMessageBody(content: content));
+          to: username,
+          body: EMTextMessageBody(content: content),
+        );
+
+  /// 构造发送的文件消息
+  EMMessage.createFileSendMessage({
+    @required String username,
+    @required String filePath,
+    String displayName = '',
+  }) : this.createSendMessage(
+            to: username,
+            body: EMFileMessageBody(
+              localPath: filePath,
+              displayName: displayName,
+            ));
 
   /// 构造发送的图片消息
   EMMessage.createImageSendMessage({
@@ -226,12 +238,7 @@ class EMMessage {
     @required String filePath,
     int duration = 0,
     String displayName = '',
-  }) : this.createSendMessage(
-            to: username,
-            body: EMVoiceMessageBody(
-                localPath: filePath,
-                duration: duration,
-                displayName: displayName));
+  }) : this.createSendMessage(to: username, body: EMVoiceMessageBody(localPath: filePath, duration: duration, displayName: displayName));
 
   /// 构造发送的位置消息
   EMMessage.createLocationSendMessage({
@@ -239,22 +246,13 @@ class EMMessage {
     @required double latitude,
     @required double longitude,
     String address = '',
-  }) : this.createSendMessage(
-            to: username,
-            body: EMLocationMessageBody(
-                latitude: latitude, longitude: longitude, address: address));
+  }) : this.createSendMessage(to: username, body: EMLocationMessageBody(latitude: latitude, longitude: longitude, address: address));
 
   /// 构造发送的cmd消息
-  EMMessage.createCmdSendMessage({@required String username, @required action})
-      : this.createSendMessage(
-            to: username, body: EMCmdMessageBody(action: action));
+  EMMessage.createCmdSendMessage({@required String username, @required action}) : this.createSendMessage(to: username, body: EMCmdMessageBody(action: action));
 
   /// 构造发送的自定义消息
-  EMMessage.createCustomSendMessage(
-      {@required String username, @required event, Map params})
-      : this.createSendMessage(
-            to: username,
-            body: EMCustomMessageBody(event: event, params: params));
+  EMMessage.createCustomSendMessage({@required String username, @required event, Map params}) : this.createSendMessage(to: username, body: EMCustomMessageBody(event: event, params: params));
 
   EMMessageStatusListener listener;
 
@@ -310,8 +308,7 @@ class EMMessage {
     data['to'] = this.to;
     data['body'] = this.body.toJson();
     data['attributes'] = this.attributes;
-    data['direction'] =
-        this.direction == EMMessageDirection.SEND ? 'send' : 'rec';
+    data['direction'] = this.direction == EMMessageDirection.SEND ? 'send' : 'rec';
     data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
@@ -332,9 +329,7 @@ class EMMessage {
       ..from = map['from'] as String
       ..body = _bodyFromMap(map['body'])
       ..attributes = map['attributes'] ?? {}
-      ..direction = map['direction'] == 'send'
-          ? EMMessageDirection.SEND
-          : EMMessageDirection.RECEIVE
+      ..direction = map['direction'] == 'send' ? EMMessageDirection.SEND : EMMessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
@@ -474,11 +469,9 @@ abstract class EMMessageBody {
 
 // text body
 class EMTextMessageBody extends EMMessageBody {
-  EMTextMessageBody({@required this.content})
-      : super(type: EMMessageBodyType.TXT);
+  EMTextMessageBody({@required this.content}) : super(type: EMMessageBodyType.TXT);
 
-  EMTextMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.TXT) {
+  EMTextMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.TXT) {
     this.content = map['content'];
   }
 
@@ -494,12 +487,9 @@ class EMTextMessageBody extends EMMessageBody {
 
 // location body
 class EMLocationMessageBody extends EMMessageBody {
-  EMLocationMessageBody(
-      {@required this.latitude, @required this.longitude, this.address})
-      : super(type: EMMessageBodyType.LOCATION);
+  EMLocationMessageBody({@required this.latitude, @required this.longitude, this.address}) : super(type: EMMessageBodyType.LOCATION);
 
-  EMLocationMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.LOCATION) {
+  EMLocationMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.LOCATION) {
     this.latitude = map['latitude'];
     this.longitude = map['longitude'];
     this.address = map['address'];
@@ -529,9 +519,7 @@ class EMFileMessageBody extends EMMessageBody {
     EMMessageBodyType type = EMMessageBodyType.FILE,
   }) : super(type: type);
 
-  EMFileMessageBody.fromJson(
-      {Map map, EMMessageBodyType type = EMMessageBodyType.FILE})
-      : super.fromJson(map: map, type: type) {
+  EMFileMessageBody.fromJson({Map map, EMMessageBodyType type = EMMessageBodyType.FILE}) : super.fromJson(map: map, type: type) {
     this.secret = map['secret'];
     this.remotePath = map['remotePath'];
     this.fileSize = map['fileSize'];
@@ -612,8 +600,7 @@ class EMImageMessageBody extends EMFileMessageBody {
           type: EMMessageBodyType.IMAGE,
         );
 
-  EMImageMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.IMAGE) {
+  EMImageMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.IMAGE) {
     this.thumbnailLocalPath = map['thumbnailLocalPath'];
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
@@ -634,8 +621,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data['sendOriginalImage'] = this.sendOriginalImage;
     data['height'] = this.height;
     data['width'] = this.width;
-    data['thumbnailStatus'] =
-        EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
+    data['thumbnailStatus'] = EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
     return data;
   }
 
@@ -676,8 +662,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
           type: EMMessageBodyType.VIDEO,
         );
 
-  EMVideoMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.VIDEO) {
+  EMVideoMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.VIDEO) {
     this.duration = map['duration'] as int;
     this.thumbnailLocalPath = map['thumbnailLocalPath'] as String;
     this.thumbnailRemotePath = map['thumbnailRemotePath'] as String;
@@ -698,8 +683,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
     data['thumbnailSecret'] = this.thumbnailSecret;
     data['height'] = this.height;
     data['width'] = this.width;
-    data['thumbnailStatus'] =
-        EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
+    data['thumbnailStatus'] = EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
     return data;
   }
 
@@ -737,8 +721,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
           type: EMMessageBodyType.VOICE,
         );
 
-  EMVoiceMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.VOICE) {
+  EMVoiceMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.VOICE) {
     this.duration = map['duration'];
   }
 
@@ -755,11 +738,9 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 
 // cmd body
 class EMCmdMessageBody extends EMMessageBody {
-  EMCmdMessageBody({@required this.action, this.deliverOnlineOnly})
-      : super(type: EMMessageBodyType.CMD);
+  EMCmdMessageBody({@required this.action, this.deliverOnlineOnly}) : super(type: EMMessageBodyType.CMD);
 
-  EMCmdMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.CMD) {
+  EMCmdMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.CMD) {
     this.action = map['action'];
     this.deliverOnlineOnly = map['deliverOnlineOnly'] == 0 ? false : true;
   }
@@ -781,11 +762,9 @@ class EMCmdMessageBody extends EMMessageBody {
 
 // custom body
 class EMCustomMessageBody extends EMMessageBody {
-  EMCustomMessageBody({@required this.event, this.params})
-      : super(type: EMMessageBodyType.CUSTOM);
+  EMCustomMessageBody({@required this.event, this.params}) : super(type: EMMessageBodyType.CUSTOM);
 
-  EMCustomMessageBody.fromJson({Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.CUSTOM) {
+  EMCustomMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.CUSTOM) {
     this.event = map['event'];
     this.params = map['params']?.cast<String, String>();
   }

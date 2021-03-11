@@ -95,13 +95,13 @@ dependencies:
   w_popup_menu: ^0.3.1
 
   # ease_call_kit
-  # ease_call_kit:
-  #   git:
-  #     url: https://github.com/dujiepeng/ease_call_kit.git
-  #     ref: main
-
   ease_call_kit:
-    path: ../../ease_call_kit/
+    git:
+      url: https://github.com/dujiepeng/ease_call_kit.git
+      ref: main
+
+  # ease_call_kit:
+  #   path: ../../ease_call_kit/
 
   # 环信 sdk
   im_flutter_sdk:
