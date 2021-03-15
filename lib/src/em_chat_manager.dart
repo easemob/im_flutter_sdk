@@ -10,8 +10,20 @@ class EMChatManager {
       const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
 
   final _messageListeners = List<EMChatManagerListener>();
+  
+  factory EMChatManager() => _getInstance();
+  static EMChatManager get instance => _getInstance();
+  static EMChatManager _instance;
 
-  EMChatManager() {
+  static EMChatManager _getInstance() {
+    if (_instance == null) {
+      _instance = new EMChatManager._internal();
+    }
+    return _instance;
+  }
+
+  EMChatManager._internal() {
+    // 初始化
     _channel.setMethodCallHandler((MethodCall call) {
       if (call.method == EMSDKMethod.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -31,6 +43,27 @@ class EMChatManager {
       return null;
     });
   }
+
+//   EMChatManager() {
+//     _channel.setMethodCallHandler((MethodCall call) {
+//       if (call.method == EMSDKMethod.onMessagesReceived) {
+//         return _onMessagesReceived(call.arguments);
+//       } else if (call.method == EMSDKMethod.onCmdMessagesReceived) {
+//         return _onCmdMessagesReceived(call.arguments);
+//       } else if (call.method == EMSDKMethod.onMessagesRead) {
+//         return _onMessagesRead(call.arguments);
+//       } else if (call.method == EMSDKMethod.onMessagesDelivered) {
+//         return _onMessagesDelivered(call.arguments);
+//       } else if (call.method == EMSDKMethod.onMessagesRecalled) {
+//         return _onMessagesRecalled(call.arguments);
+//       } else if (call.method == EMSDKMethod.onConversationUpdate) {
+//         return _onConversationsUpdate(call.arguments);
+//       } else if (call.method == EMSDKMethod.onConversationHasRead) {
+//         return _onConversationHasRead(call.arguments);
+//       }
+//       return null;
+//     });
+//   }
 
   /// 发送消息 [message].
   Future<EMMessage> sendMessage(EMMessage message) async {
