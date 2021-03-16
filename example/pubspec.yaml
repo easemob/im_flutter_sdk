@@ -94,15 +94,24 @@ dependencies:
   # 长按菜单
   w_popup_menu: ^0.3.1
 
+  # ease_call_kit
+  ease_call_kit:
+    git:
+      url: https://github.com/dujiepeng/ease_call_kit.git
+      ref: main
+
+  # ease_call_kit:
+  #   path: ../../ease_call_kit/
+
   # 环信 sdk
   im_flutter_sdk:
-      path: ../
+    path: ../
 
   # 音频录制转换和播放
   record_amr:
-      git:
-        url: https://github.com/dujiepeng/record_amr.git
-        ref: master
+    git:
+      url: https://github.com/dujiepeng/record_amr.git
+      ref: master
 
 dev_dependencies:
   flutter_test:
@@ -165,6 +174,8 @@ flutter:
     - images/chat_faces_delete.png
     
     - images/contact_default_avatar.png
+    - images/contact_select_check.png
+    - images/contact_select_uncheck.png
     
     - images/expression/
     
