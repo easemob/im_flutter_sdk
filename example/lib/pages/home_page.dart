@@ -1,3 +1,4 @@
+import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/contacts/contacts_page.dart';
 import 'package:easeim_flutter_demo/pages/conversations/conversations_page.dart';
 import 'package:easeim_flutter_demo/pages/me/me_page.dart';
@@ -20,6 +21,15 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
+
+    // 初始化 EaseCallKit插件
+    EaseCallKit.initWithConfig(
+      EaseCallConfig('15cb0d28b87b425ea613fc46f7c9f974')
+        ..userMap = {
+          'du001': EaseCallUser('nick001', ''),
+          'du002': EaseCallUser('nick002', ''),
+        },
+    );
     _requestPermiss();
     _convPage = ConversationPage();
     _pages = [

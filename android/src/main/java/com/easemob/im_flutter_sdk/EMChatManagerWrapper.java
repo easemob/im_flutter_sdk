@@ -12,7 +12,6 @@ import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.adapter.message.EMAMessage;
 import com.hyphenate.exceptions.HyphenateException;
 
-
 import java.util.ArrayList;
 
 import org.json.JSONArray;
@@ -32,106 +31,72 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-
-public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler{
+public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler {
 
     private MethodChannel messageChannel;
 
     EMChatManagerWrapper(Registrar registrar, String channelName) {
         super(registrar, channelName);
-        messageChannel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
+        messageChannel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_message",
+                JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
-        JSONObject param = (JSONObject)call.arguments;
+        JSONObject param = (JSONObject) call.arguments;
         try {
-            if(EMSDKMethod.sendMessage.equals(call.method)) {
+            if (EMSDKMethod.sendMessage.equals(call.method)) {
                 sendMessage(param, EMSDKMethod.sendMessage, result);
-            }
-            else if(EMSDKMethod.resendMessage.equals(call.method))
-            {
+            } else if (EMSDKMethod.resendMessage.equals(call.method)) {
                 resendMessage(param, EMSDKMethod.resendMessage, result);
-            }
-            else if(EMSDKMethod.ackMessageRead.equals(call.method))
-            {
+            } else if (EMSDKMethod.ackMessageRead.equals(call.method)) {
                 ackMessageRead(param, EMSDKMethod.ackMessageRead, result);
-            }
-            else if(EMSDKMethod.ackConversationRead.equals(call.method))
-            {
+            } else if (EMSDKMethod.ackConversationRead.equals(call.method)) {
                 ackConversationRead(param, EMSDKMethod.ackConversationRead, result);
-            }
-            else if(EMSDKMethod.recallMessage.equals(call.method))
-            {
+            } else if (EMSDKMethod.recallMessage.equals(call.method)) {
                 recallMessage(param, EMSDKMethod.recallMessage, result);
-            }
-            else if(EMSDKMethod.getConversation.equals(call.method))
-            {
+            } else if (EMSDKMethod.getConversation.equals(call.method)) {
                 getConversation(param, EMSDKMethod.getConversation, result);
-            }
-            else if(EMSDKMethod.markAllChatMsgAsRead.equals(call.method))
-            {
+            } else if (EMSDKMethod.markAllChatMsgAsRead.equals(call.method)) {
                 markAllChatMsgAsRead(param, EMSDKMethod.markAllChatMsgAsRead, result);
-            }
-            else if(EMSDKMethod.getUnreadMessageCount.equals(call.method))
-            {
+            } else if (EMSDKMethod.getUnreadMessageCount.equals(call.method)) {
                 getUnreadMessageCount(param, EMSDKMethod.getUnreadMessageCount, result);
-            }
-            else if(EMSDKMethod.updateChatMessage.equals(call.method))
-            {
+            } else if (EMSDKMethod.updateChatMessage.equals(call.method)) {
                 updateChatMessage(param, EMSDKMethod.updateChatMessage, result);
-            }
-            else if(EMSDKMethod.downloadAttachment.equals(call.method))
-            {
+            } else if (EMSDKMethod.downloadAttachment.equals(call.method)) {
                 downloadAttachment(param, EMSDKMethod.downloadAttachment, result);
-            }
-            else if(EMSDKMethod.downloadThumbnail.equals(call.method))
-            {
+            } else if (EMSDKMethod.downloadThumbnail.equals(call.method)) {
                 downloadThumbnail(param, EMSDKMethod.downloadThumbnail, result);
-            }
-            else if(EMSDKMethod.importMessages.equals(call.method))
-            {
+            } else if (EMSDKMethod.importMessages.equals(call.method)) {
                 importMessages(param, EMSDKMethod.importMessages, result);
-            }
-            else if(EMSDKMethod.loadAllConversations.equals(call.method))
-            {
+            } else if (EMSDKMethod.loadAllConversations.equals(call.method)) {
                 loadAllConversations(param, EMSDKMethod.loadAllConversations, result);
-            }
-            else if(EMSDKMethod.getConversationsFromServer.equals(call.method))
-            {
+            } else if (EMSDKMethod.getConversationsFromServer.equals(call.method)) {
                 getConversationsFromServer(param, EMSDKMethod.getConversationsFromServer, result);
-            }
-            else if(EMSDKMethod.deleteConversation.equals(call.method))
-            {
+            } else if (EMSDKMethod.deleteConversation.equals(call.method)) {
                 deleteConversation(param, EMSDKMethod.deleteConversation, result);
-            }
-            else if(EMSDKMethod.fetchHistoryMessages.equals(call.method))
-            {
+            } else if (EMSDKMethod.fetchHistoryMessages.equals(call.method)) {
                 fetchHistoryMessages(param, EMSDKMethod.fetchHistoryMessages, result);
-            }
-            else if(EMSDKMethod.searchChatMsgFromDB.equals(call.method))
-            {
+            } else if (EMSDKMethod.searchChatMsgFromDB.equals(call.method)) {
                 searchChatMsgFromDB(param, EMSDKMethod.searchChatMsgFromDB, result);
-            }
-            else if(EMSDKMethod.getMessage.equals(call.method))
-            {
+            } else if (EMSDKMethod.getMessage.equals(call.method)) {
                 getMessage(param, EMSDKMethod.getMessage, result);
-            }
-            else {
+            } else {
                 super.onMethodCall(call, result);
             }
-        }catch (JSONException ignored) {
+        } catch (JSONException ignored) {
 
         }
     }
+
     private void sendMessage(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage msg = EMMessageHelper.fromJson(param);
 
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
-                post(()->{
+                post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
                     map.put("localTime", msg.localTime());
@@ -141,7 +106,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onProgress(int progress, String status) {
-                post(()->{
+                post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("progress", progress);
                     map.put("localTime", msg.localTime());
@@ -151,7 +116,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onError(int code, String desc) {
-                post(()->{
+                post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
                     map.put("localTime", msg.localTime());
@@ -161,7 +126,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 });
             }
         });
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMClient.getInstance().chatManager().sendMessage(msg);
             onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
@@ -175,7 +140,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
-                post(()->{
+                post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
                     map.put("localTime", msg.localTime());
@@ -185,7 +150,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onProgress(int progress, String status) {
-                post(()->{
+                post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("progress", progress);
                     map.put("localTime", msg.localTime());
@@ -195,7 +160,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onError(int code, String desc) {
-                post(()->{
+                post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
                     map.put("localTime", msg.localTime());
@@ -205,7 +170,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 });
             }
         });
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMClient.getInstance().chatManager().sendMessage(msg);
             onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
@@ -215,7 +180,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         String msgId = param.getString("msg_id");
         String to = param.getString("to");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatManager().ackMessageRead(to, msgId);
                 onSuccess(result, channelName, true);
@@ -227,7 +192,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void ackConversationRead(JSONObject param, String channelName, Result result) throws JSONException {
         String conversationId = param.getString("con_id");
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatManager().ackConversationRead(conversationId);
                 onSuccess(result, channelName, true);
@@ -240,7 +205,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void recallMessage(JSONObject param, String channelName, Result result) throws JSONException {
         String msgId = param.getString("msg_id");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
                 EMClient.getInstance().chatManager().recallMessage(msg);
@@ -254,7 +219,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void getMessage(JSONObject param, String channelName, Result result) throws JSONException {
         String msgId = param.getString("msg_id");
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
             onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
@@ -264,8 +229,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         String conId = param.getString("con_id");
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
 
-        asyncRunnable(()->{
-            EMConversation conversation =  EMClient.getInstance().chatManager().getConversation(conId, type, true);
+        asyncRunnable(() -> {
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, true);
             onSuccess(result, channelName, EMConversationHelper.toJson(conversation));
         });
     }
@@ -273,7 +238,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void markAllChatMsgAsRead(JSONObject param, String channelName, Result result) throws JSONException {
         EMClient.getInstance().chatManager().markAllConversationsAsRead();
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             onSuccess(result, channelName, true);
         });
     }
@@ -281,7 +246,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void getUnreadMessageCount(JSONObject param, String channelName, Result result) throws JSONException {
         int count = EMClient.getInstance().chatManager().getUnreadMessageCount();
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             onSuccess(result, channelName, count);
         });
     }
@@ -289,7 +254,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void updateChatMessage(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMClient.getInstance().chatManager().updateMessage(msg);
             onSuccess(result, channelName, true);
         });
@@ -298,12 +263,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void importMessages(JSONObject param, String channelName, Result result) throws JSONException {
         JSONArray ary = param.getJSONArray("messages");
         List<EMMessage> messages = new ArrayList<>();
-        for(int i = 0; i < ary.length(); i++) {
+        for (int i = 0; i < ary.length(); i++) {
             JSONObject obj = ary.getJSONObject(i);
             messages.add(EMMessageHelper.fromJson(obj));
         }
 
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMClient.getInstance().chatManager().importMessages(messages);
             onSuccess(result, channelName, true);
         });
@@ -311,7 +276,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void downloadAttachment(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMClient.getInstance().chatManager().downloadAttachment(msg);
             onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
@@ -319,16 +284,29 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void downloadThumbnail(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             EMClient.getInstance().chatManager().downloadThumbnail(msg);
             onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
     }
 
     private void loadAllConversations(JSONObject param, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
-            List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
-            Collections.sort(list, (o1, o2) -> (int)(o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime()));
+        asyncRunnable(() -> {
+            List<EMConversation> list = new ArrayList<>(
+                    EMClient.getInstance().chatManager().getAllConversations().values());
+            Collections.sort(list, new Comparator<EMConversation>() {
+                @Override
+                public int compare(EMConversation o1, EMConversation o2) {
+                    if (o1.getLastMessage() == null) {
+                        return 1;
+                    }
+
+                    if (o2.getLastMessage() == null) {
+                        return -1;
+                    }
+                    return (int) (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime());
+                }
+            });
             List<Map> conversations = new ArrayList<>();
             for (EMConversation conversation : list) {
                 conversations.add(EMConversationHelper.toJson(conversation));
@@ -338,10 +316,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getConversationsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
-                List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().fetchConversationsFromServer().values());
-                Collections.sort(list, (o1, o2) -> (int)(o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime()));
+                List<EMConversation> list = new ArrayList<>(
+                        EMClient.getInstance().chatManager().fetchConversationsFromServer().values());
+                Collections.sort(list,
+                        (o1, o2) -> (int) (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime()));
                 List<Map> conversations = new ArrayList<>();
                 for (EMConversation conversation : list) {
                     conversations.add(EMConversationHelper.toJson(conversation));
@@ -356,7 +336,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void deleteConversation(JSONObject param, String channelName, Result result) throws JSONException {
         String conId = param.getString("con_id");
         boolean isDelete = param.getBoolean("deleteMessages");
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             boolean ret = EMClient.getInstance().chatManager().deleteConversation(conId, isDelete);
             onSuccess(result, channelName, ret);
         });
@@ -368,9 +348,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         int pageSize = param.getInt("pageSize");
         String startMsgId = param.getString("startMsgId");
         try {
-            EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId, type, pageSize, startMsgId);
+            EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
+                    type, pageSize, startMsgId);
             onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
-        }catch(HyphenateException e) {
+        } catch (HyphenateException e) {
             onError(result, e);
         }
     }
@@ -381,22 +362,23 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         int count = param.getInt("maxCount");
         String from = param.getString("from");
         EMSearchDirection direction = searchDirectionFromString(param.getString("direction"));
-        asyncRunnable(()->{
-            List<EMMessage> msgList = EMClient.getInstance().chatManager().searchMsgFromDB(keywords, timeStamp, count, from, direction);
+        asyncRunnable(() -> {
+            List<EMMessage> msgList = EMClient.getInstance().chatManager().searchMsgFromDB(keywords, timeStamp, count,
+                    from, direction);
             List<Map> messages = new ArrayList<>();
-            for(EMMessage msg: msgList) {
+            for (EMMessage msg : msgList) {
                 messages.add(EMMessageHelper.toJson(msg));
             }
             onSuccess(result, channelName, messages);
         });
     }
 
-    private void registerEaseListener(){
+    private void registerEaseListener() {
         EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
             @Override
             public void onMessageReceived(List<EMMessage> messages) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for(EMMessage message : messages) {
+                for (EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesReceived, msgList));
@@ -406,7 +388,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             public void onCmdMessageReceived(List<EMMessage> messages) {
 
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for(EMMessage message : messages) {
+                for (EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onCmdMessagesReceived, msgList));
@@ -415,9 +397,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             @Override
             public void onMessageRead(List<EMMessage> messages) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for(EMMessage message : messages) {
+                for (EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
-                    post(()-> messageChannel.invokeMethod(EMSDKMethod.onMessageReadAck, EMMessageHelper.toJson(message)));
+                    post(() -> messageChannel.invokeMethod(EMSDKMethod.onMessageReadAck,
+                            EMMessageHelper.toJson(message)));
                 }
 
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesRead, msgList));
@@ -426,9 +409,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             @Override
             public void onMessageDelivered(List<EMMessage> messages) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for(EMMessage message : messages) {
+                for (EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
-                    post(()-> messageChannel.invokeMethod(EMSDKMethod.onMessageDeliveryAck, EMMessageHelper.toJson(message)));
+                    post(() -> messageChannel.invokeMethod(EMSDKMethod.onMessageDeliveryAck,
+                            EMMessageHelper.toJson(message)));
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesDelivered, msgList));
             }
@@ -436,7 +420,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             @Override
             public void onMessageRecalled(List<EMMessage> messages) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
-                for(EMMessage message : messages) {
+                for (EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesRecalled, msgList));
@@ -450,12 +434,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             }
         });
-        //setup conversation listener
+        // setup conversation listener
         EMClient.getInstance().chatManager().addConversationListener(new EMConversationListener() {
             @Override
             public void onCoversationUpdate() {
                 Map<String, Object> data = new HashMap<>();
-                post(() -> channel.invokeMethod(EMSDKMethod.onConversationUpdate,data));
+                post(() -> channel.invokeMethod(EMSDKMethod.onConversationUpdate, data));
             }
 
             @Override
@@ -463,7 +447,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 Map<String, Object> data = new HashMap<>();
                 data.put("from", from);
                 data.put("to", to);
-                post(() -> channel.invokeMethod(EMSDKMethod.onConversationHasRead,data));
+                post(() -> channel.invokeMethod(EMSDKMethod.onConversationHasRead, data));
             }
         });
     }
@@ -472,4 +456,3 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         return direction == "up" ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
     }
 }
-
