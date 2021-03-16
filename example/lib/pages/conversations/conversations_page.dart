@@ -1,3 +1,4 @@
+import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/conversations/conversation_item.dart';
 import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -20,12 +21,10 @@ class ConversationPage extends StatefulWidget with ChangeNotifier {
   State<StatefulWidget> createState() => ConversationPageState();
 }
 
-class ConversationPageState extends State<ConversationPage>
-    implements EMChatManagerListener {
+class ConversationPageState extends State<ConversationPage> implements EMChatManagerListener {
   List<EMConversation> _conversationsList = List();
 
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: true);
+  RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   var notifier;
   @override
@@ -61,12 +60,21 @@ class ConversationPageState extends State<ConversationPage>
               [
                 PopMenuItem('创建群组'),
                 PopMenuItem('添加好友'),
+                PopMenuItem('多人通话'),
               ],
               callback: (index) {
-                if (index == 1) {
-                  Navigator.of(context)
-                      .pushNamed('/addFriends')
-                      .then((value) {});
+                if (index == 0) {
+                } else if (index == 1) {
+                  Navigator.of(context).pushNamed('/addFriends').then((value) {});
+                } else if (index == 2) {
+                  Navigator.of(context).pushNamed('/contactSelect').then(
+                    (value) {
+                      List<String> users = value as List<String>;
+                      if (users.length > 0) {
+                        EaseCallKit.startInviteUsers(users);
+                      }
+                    },
+                  );
                 }
               },
             ),
@@ -139,8 +147,7 @@ class ConversationPageState extends State<ConversationPage>
   /// 更新会话列表
   void _reLoadAllConversations() async {
     try {
-      List<EMConversation> list =
-          await EMClient.getInstance.chatManager.loadAllConversations();
+      List<EMConversation> list = await EMClient.getInstance.chatManager.loadAllConversations();
       _conversationsList.clear();
       _conversationsList.addAll(list);
       _refreshController.refreshCompleted();
@@ -171,8 +178,7 @@ class ConversationPageState extends State<ConversationPage>
   /// 侧滑删除按钮点击
   _deleteConversation(int index) async {
     try {
-      await EMClient.getInstance.chatManager
-          .deleteConversation(_conversationsList[index].id);
+      await EMClient.getInstance.chatManager.deleteConversation(_conversationsList[index].id);
       _conversationsList.removeAt(index);
     } on Error {} finally {
       setState(() {});
