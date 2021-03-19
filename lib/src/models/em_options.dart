@@ -82,16 +82,12 @@ class EMOptions {
       ..acceptInvitationAlways = json.boolValue('acceptInvitationAlways')
       ..autoAcceptGroupInvitation = json.boolValue('autoAcceptGroupInvitation')
       ..deleteMessagesAsExitGroup = json.boolValue('deleteMessagesAsExitGroup')
-      ..deleteMessagesAsExitChatRoom =
-          json.boolValue('deleteMessagesAsExitChatRoom')
+      ..deleteMessagesAsExitChatRoom = json.boolValue('deleteMessagesAsExitChatRoom')
       ..isAutoDownload = json.boolValue('isAutoDownload')
-      ..isChatRoomOwnerLeaveAllowed =
-          json.boolValue('isChatRoomOwnerLeaveAllowed')
+      ..isChatRoomOwnerLeaveAllowed = json.boolValue('isChatRoomOwnerLeaveAllowed')
       ..serverTransfer = json.boolValue('serverTransfer')
       ..usingHttpsOnly = json.boolValue('usingHttpsOnly')
-      ..pushConfig = json['pushConfig'] != null
-          ? EMPushConfig.fromJson(json['pushConfig'])
-          : null
+      ..pushConfig = json['pushConfig'] != null ? EMPushConfig.fromJson(json['pushConfig']) : null
       ..enableDNSConfig = json.boolValue('enableDNSConfig')
       ..imPort = json['imPort']
       ..imServer = json['imServer']
