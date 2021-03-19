@@ -41,13 +41,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="easemob.hyphenate.calluikit.ui.EaseVideoCallActivity"
+            android:name="com.hyphenate.calluikit.ui.EaseVideoCallActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait"/>
         <activity
-            android:name="easemob.hyphenate.calluikit.ui.EaseMultipleVideoActivity"
+            android:name="com.hyphenate.calluikit.ui.EaseMultipleVideoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
