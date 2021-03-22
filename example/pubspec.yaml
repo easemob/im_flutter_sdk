@@ -97,8 +97,8 @@ dependencies:
   # ease_call_kit
   ease_call_kit:
     git:
-      url: https://github.com/dujiepeng/ease_call_kit.git
-      ref: main
+      url: https://github.com/easemob/ease_call_kit.git
+      ref: stable
 
   # ease_call_kit:
   #   path: ../../ease_call_kit/
