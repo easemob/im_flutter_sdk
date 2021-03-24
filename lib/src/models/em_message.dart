@@ -280,7 +280,11 @@ class EMMessage {
 
   void setMessageListener(EMMessageStatusListener listener) {
     this.listener = listener;
-    MessageCallBackManager.getInstance.addMessage(this);
+    if (listener != null) {
+      MessageCallBackManager.getInstance.addMessage(this);
+    } else {
+      MessageCallBackManager.getInstance.removeMessage(this);
+    }
   }
 
   // 消息id
