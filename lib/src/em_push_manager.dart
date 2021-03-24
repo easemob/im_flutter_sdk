@@ -49,9 +49,8 @@ class EMPushManager {
       Map result = await _channel.invokeMethod(EMSDKMethod.updateFCMPushToken, req);
       EMError.hasErrorFromResult(result);
       return result.boolValue(EMSDKMethod.updateFCMPushToken);
-    } else {
-      return true;
     }
+    return true;
   }
 
   /// 上传iOS推送deviceToken
