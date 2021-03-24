@@ -64,10 +64,48 @@ abstract class EMMessageStatusListener {
   void onStatusChanged() {}
 }
 
-class EMMessage {
+class MessageCallBackManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emMessageChannel = const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
+  Map<String, EMMessage> cacheMessageMap;
+  static MessageCallBackManager _instance;
+  static MessageCallBackManager get getInstance => _instance = _instance ?? MessageCallBackManager._internal();
+  MessageCallBackManager._internal() {
+    cacheMessageMap = {};
+    _emMessageChannel.setMethodCallHandler((MethodCall call) {
+      Map argMap = call.arguments;
+      int localTime = argMap['localTime'];
+      EMMessage msg = cacheMessageMap[localTime.toString()];
+      if (msg == null) {
+        return null;
+      }
+      if (call.method == EMSDKMethod.onMessageProgressUpdate) {
+        return msg._onMessageProgressChanged(argMap);
+      } else if (call.method == EMSDKMethod.onMessageError) {
+        return msg._onMessageError(argMap);
+      } else if (call.method == EMSDKMethod.onMessageSuccess) {
+        return msg._onMessageSuccess(argMap);
+      } else if (call.method == EMSDKMethod.onMessageReadAck) {
+        return msg._onMessageReadAck(argMap);
+      } else if (call.method == EMSDKMethod.onMessageDeliveryAck) {
+        return msg._onMessageDeliveryAck(argMap);
+      } else if (call.method == EMSDKMethod.onMessageStatusChanged) {
+        return msg._onMessageStatusChanged(argMap);
+      }
+      return null;
+    });
+  }
 
+  addMessage(EMMessage message) {
+    cacheMessageMap[message.localTime.toString()] = message;
+  }
+
+  removeMessage(EMMessage message) {
+    cacheMessageMap.remove(message.localTime.toString());
+  }
+}
+
+class EMMessage {
   EMMessage._private();
 
   /// 构造接收的消息
@@ -83,26 +121,10 @@ class EMMessage {
     this.to,
     this.hasRead = true,
   })  : this.from = EMClient.getInstance.currentUsername,
-        this.conversationId = to {
-    _emMessageChannel.setMethodCallHandler((MethodCall call) {
-      Map argMap = call.arguments;
-      int localTime = argMap['localTime'];
-      if (this.localTime != localTime) return null;
-      if (call.method == EMSDKMethod.onMessageProgressUpdate) {
-        return _onMessageProgressChanged(argMap);
-      } else if (call.method == EMSDKMethod.onMessageError) {
-        return _onMessageError(argMap);
-      } else if (call.method == EMSDKMethod.onMessageSuccess) {
-        return _onMessageSuccess(argMap);
-      } else if (call.method == EMSDKMethod.onMessageReadAck) {
-        return _onMessageReadAck(argMap);
-      } else if (call.method == EMSDKMethod.onMessageDeliveryAck) {
-        return _onMessageDeliveryAck(argMap);
-      } else if (call.method == EMSDKMethod.onMessageStatusChanged) {
-        return _onMessageStatusChanged(argMap);
-      }
-      return null;
-    });
+        this.conversationId = to;
+
+  void dispose() {
+    MessageCallBackManager.getInstance.removeMessage(this);
   }
 
   Future<void> _onMessageError(Map map) {
@@ -258,6 +280,11 @@ class EMMessage {
 
   void setMessageListener(EMMessageStatusListener listener) {
     this.listener = listener;
+    if (listener != null) {
+      MessageCallBackManager.getInstance.addMessage(this);
+    } else {
+      MessageCallBackManager.getInstance.removeMessage(this);
+    }
   }
 
   // 消息id
