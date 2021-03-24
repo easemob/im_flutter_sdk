@@ -52,7 +52,12 @@
         [self getNoDisturbGroups:call.arguments
                      channelName:EMMethodKeyGetNoDisturbGroups
                           result:result];
-    } else{
+    } else if ([EMMethodKeyBindDeviceToken isEqualToString:call.method]) {
+        [self  bindDeviceToken:call.arguments
+                   channelName:(NSString *)EMMethodKeyBindDeviceToken
+                        result:result];
+    }
+    else{
         [super handleMethodCall:call result:result];
     }
 }
@@ -179,5 +184,23 @@
         });
     });
 }
+
+- (void)bindDeviceToken:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *deviceToken = param[@"token"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        EMError *error = [EMClient.sharedClient bindDeviceToken:deviceToken];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:nil];
+        });
+    });
+}
+
 
 @end
