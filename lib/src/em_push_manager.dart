@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 
 import 'em_sdk_method.dart';
@@ -39,6 +41,9 @@ class EMPushManager {
   Future<bool> updateHMSPushToken(
     String token,
   ) async {
+    if (Platform.isIOS) {
+      return true;
+    }
     Map req = {'token': token};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateHMSPushToken, req);
@@ -50,6 +55,9 @@ class EMPushManager {
   Future<bool> updateFCMPushToken(
     String token,
   ) async {
+    if (Platform.isIOS) {
+      return true;
+    }
     Map req = {'token': token};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateFCMPushToken, req);
