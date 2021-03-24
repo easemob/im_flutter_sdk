@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
@@ -130,7 +132,7 @@ class EMMessage {
   Future<void> _onMessageError(Map map) {
     EMLog.v('发送失败 -- ' + map.toString());
     EMMessage msg = EMMessage.fromJson(map['message']);
-    this.msgId = msg.msgId;
+    this._msgId = msg.msgId;
     this.status = msg.status;
 
     if (listener != null) {
@@ -153,7 +155,7 @@ class EMMessage {
   Future<void> _onMessageSuccess(Map map) {
     EMLog.v('发送成功 -- ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map['message']);
-    this.msgId = msg.msgId;
+    this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
     if (listener != null) {
@@ -174,7 +176,6 @@ class EMMessage {
   }
 
   Future<void> _onMessageDeliveryAck(Map map) {
-    EMLog.v('消息已送达 -- ' + ' msg_id: ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
 
@@ -185,7 +186,6 @@ class EMMessage {
   }
 
   Future<void> _onMessageStatusChanged(Map map) {
-    EMLog.v('消息状态变更 -- ' + ' msg_id: ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map);
     this.status = msg.status;
 
@@ -288,7 +288,9 @@ class EMMessage {
   }
 
   // 消息id
-  String msgId = DateTime.now().millisecondsSinceEpoch.toString();
+  String _msgId, msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(99999).toString();
+
+  String get msgId => _msgId ?? msgLocalId;
 
   // 消息所属会话id
   String conversationId;
@@ -339,7 +341,7 @@ class EMMessage {
     data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
-    data['msgId'] = this.msgId;
+    data['msgId'] = this._msgId;
     data['conversationId'] = this.conversationId ?? this.to;
     data['chatType'] = chatTypeToInt(this.chatType);
     data['localTime'] = this.localTime;
@@ -360,7 +362,7 @@ class EMMessage {
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
-      ..msgId = map['msgId'] as String
+      .._msgId = map['msgId'] as String
       ..conversationId = map['conversationId'] as String
       ..chatType = chatTypeFromInt(map['chatType'] as int)
       ..localTime = map['localTime'] as int
