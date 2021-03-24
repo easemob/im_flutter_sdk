@@ -104,6 +104,11 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
     );
   }
 
+  void dispose() {
+    widget.msg.dispose();
+    super.dispose();
+  }
+
   /// 头像 widget
   _avatarWidget() {
     return FlatButton(
@@ -266,8 +271,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
         case EMMessageBodyType.VOICE:
           bubble = Builder(builder: (context) {
             return Selector(
-              selector: (_, ChatVoicePlayer player) =>
-                  Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
+              selector: (_, ChatVoicePlayer player) => Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
               builder: (_, data, __) => ChatVoiceBubble(
                 body,
                 isSend,
