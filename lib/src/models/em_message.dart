@@ -101,9 +101,7 @@ class MessageCallBackManager {
   }
 
   removeMessage(EMMessage message) {
-    print('remove - $message');
     cacheMessageMap.remove(message.localTime.toString());
-    print('cacheMessageMap.length --- ${cacheMessageMap.length}');
   }
 }
 
