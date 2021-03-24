@@ -194,3 +194,4 @@ static NSString *const EMMethodKeyImPushNoDisturb = @"imPushNoDisturb";
 static NSString *const EMMethodKeyUpdateImPushStyle = @"updateImPushStyle";
 static NSString *const EMMethodKeyUpdateGroupPushService = @"updateGroupPushService";
 static NSString *const EMMethodKeyGetNoDisturbGroups = @"getNoDisturbGroups";
+static NSString *const EMMethodKeyBindDeviceToken = @"updateAPNsPushToken";
