@@ -190,6 +190,8 @@ class EMSDKMethod {
   static const String getImPushConfig = 'getImPushConfig';
   static const String getImPushConfigFromServer = 'getImPushConfigFromServer';
   static const String updatePushNickname = 'updatePushNickname';
+  static const String updateHMSPushToken = 'updateHMSPushToken';
+  static const String updateFCMPushToken = 'updateFCMPushToken';
 
   /// ImPushConfig
   static const String imPushNoDisturb = 'imPushNoDisturb';

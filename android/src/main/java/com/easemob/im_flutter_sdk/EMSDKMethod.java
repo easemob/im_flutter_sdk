@@ -182,6 +182,8 @@ public class EMSDKMethod {
     static final String getImPushConfig = "getImPushConfig";
     static final String getImPushConfigFromServer = "getImPushConfigFromServer";
     static final String updatePushNickname = "updatePushNickname";
+    static final String updateHMSPushToken = "updateHMSPushToken";
+    static final String updateFCMPushToken = "updateFCMPushToken";
 
     /// ImPushConfig
     static final String imPushNoDisturb = "imPushNoDisturb";
