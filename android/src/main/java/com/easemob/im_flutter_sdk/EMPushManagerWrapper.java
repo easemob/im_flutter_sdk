@@ -51,6 +51,12 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if(EMSDKMethod.getNoDisturbGroups.equals(call.method)){
                 getNoDisturbGroups(param, EMSDKMethod.getNoDisturbGroups, result);
             }
+            else if(EMSDKMethod.updateHMSPushToken.equals(call.method)){
+                updateHMSPushToken(param, EMSDKMethod.updateHMSPushToken, result);
+            }
+            else if(EMSDKMethod.updateFCMPushToken.equals(call.method)){
+                updateFCMPushToken(param, EMSDKMethod.updateFCMPushToken, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -129,5 +135,21 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     private void getNoDisturbGroups(JSONObject params, String channelName,  Result result) throws JSONException {
         List<String> groupIds = EMClient.getInstance().pushManager().getNoPushGroups();
         onSuccess(result, channelName, groupIds);
+    }
+
+    private void updateHMSPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
+        String token = params.getString("token");
+        asyncRunnable(()->{
+            EMClient.getInstance().sendHMSPushTokenToServer(token);
+            onSuccess(result, channelName, token);
+        });
+    }
+
+    private void updateFCMPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
+        String token = params.getString("token");
+        asyncRunnable(()->{
+            EMClient.getInstance().sendFCMTokenToServer(token);
+            onSuccess(result, channelName, token);
+        });
     }
 }

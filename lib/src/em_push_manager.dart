@@ -34,4 +34,26 @@ class EMPushManager {
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.updatePushNickname);
   }
+
+  /// 上传华为推送token
+  Future<bool> updateHMSPushToken(
+    String token,
+  ) async {
+    Map req = {'token': token};
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateHMSPushToken, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.updateHMSPushToken);
+  }
+
+  /// 上传FCM推送token
+  Future<bool> updateFCMPushToken(
+    String token,
+  ) async {
+    Map req = {'token': token};
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateFCMPushToken, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.updateFCMPushToken);
+  }
 }
