@@ -11,6 +11,7 @@
 源码地址: [Github](https://github.com/easemob/im_flutter_sdk)  
 任何问题可以通过 [Github Issues](https://github.com/easemob/im_flutter_sdk/issues) 提问
 
+Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://github.com/easemob/ease_call_kit),如果问题，可以通过 [EaseCallKit Issues](https://github.com/easemob/ease_call_kit/issues) 提问
 
 ## 前期准备
 
@@ -733,7 +734,7 @@ try{
 
 ```dart
 try{
-  await EMClient.getInstance.groupManager.removeMembers(groupId, inviteMembers);
+  await EMClient.getInstance.groupManager.removeMembers(groupId, members);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }

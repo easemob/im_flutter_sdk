@@ -341,7 +341,7 @@ class EMMessage {
     data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
-    data['msgId'] = this._msgId;
+    data['msgId'] = this.msgId;
     data['conversationId'] = this.conversationId ?? this.to;
     data['chatType'] = chatTypeToInt(this.chatType);
     data['localTime'] = this.localTime;
