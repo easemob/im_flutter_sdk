@@ -238,9 +238,10 @@ class EMChatManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.searchChatMsgFromDB, req);
     EMError.hasErrorFromResult(result);
     List<EMMessage> list = List();
-    (result[EMSDKMethod.searchChatMsgFromDB] as List).forEach((element) {
+    result[EMSDKMethod.searchChatMsgFromDB]?.forEach((element) {
       list.add(EMMessage.fromJson(element));
     });
+
     return list;
   }
 

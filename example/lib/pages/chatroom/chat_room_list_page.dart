@@ -19,8 +19,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
   String _searchName = '';
   EMChatRoom _searchdRoom;
   final _pageSize = 30;
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: true);
+  RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +79,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
               child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: !_isEnd,
-                onRefresh: () => _loadMoreRooms(),
+                onRefresh: _loadMoreRooms,
                 onLoading: () => _loadMoreRooms(true),
                 controller: _refreshController,
                 child: ListView.separated(
@@ -98,9 +97,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
                       height: 0.3,
                     );
                   }),
-                  itemCount: _searchName.length != 0 && _searchdRoom != null
-                      ? 1
-                      : _roomsList.length,
+                  itemCount: _searchName.length != 0 && _searchdRoom != null ? 1 : _roomsList.length,
                 ),
               ),
             ),
@@ -149,9 +146,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
     }
     try {
       SmartDialog.showLoading(msg: '获取中...');
-      EMPageResult<EMChatRoom> result = await EMClient
-          .getInstance.chatRoomManager
-          .fetchPublicChatRoomsFromServer(pageSize: 30, pageNum: _pageCount);
+      EMPageResult<EMChatRoom> result = await EMClient.getInstance.chatRoomManager.fetchPublicChatRoomsFromServer(pageSize: 30, pageNum: _pageCount);
 
       _pageCount = result.pageCount;
       if (!isMore) {
@@ -165,36 +160,29 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
       }
       setState(() {});
       SmartDialog.showToast('获取成功');
-      isMore
-          ? _refreshController.loadComplete()
-          : _refreshController.refreshCompleted();
+      isMore ? _refreshController.loadComplete() : _refreshController.refreshCompleted();
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
-      isMore
-          ? _refreshController.loadComplete()
-          : _refreshController.refreshCompleted();
+      isMore ? _refreshController.loadComplete() : _refreshController.refreshCompleted();
     } finally {
       SmartDialog.dismiss();
     }
   }
 
   _chatToRoom(EMChatRoom room) async {
-    EMConversation con = await EMClient.getInstance.chatManager
-        .getConversation(room.roomId, EMConversationType.ChatRoom);
+    EMConversation con = await EMClient.getInstance.chatManager.getConversation(room.roomId, EMConversationType.ChatRoom);
     con.name = room.name;
     Navigator.of(context).pushNamed(
       '/chat',
       arguments: [con.name, con],
-    ).then((value) =>
-        EMClient.getInstance.chatRoomManager.leaveChatRoom(room.roomId));
+    ).then((value) => EMClient.getInstance.chatRoomManager.leaveChatRoom(room.roomId));
   }
 
   _searchId(String std) async {
     if (std.length == 0) return;
     try {
       SmartDialog.showLoading(msg: '搜索中...');
-      _searchdRoom = await EMClient.getInstance.chatRoomManager
-          .fetchChatRoomInfoFromServer(std);
+      _searchdRoom = await EMClient.getInstance.chatRoomManager.fetchChatRoomInfoFromServer(std);
     } on EMError catch (e) {
       SmartDialog.showToast('搜索失败: $e');
     } finally {

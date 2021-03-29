@@ -4,6 +4,7 @@ import 'package:easeim_flutter_demo/pages/conversations/conversations_page.dart'
 import 'package:easeim_flutter_demo/pages/me/me_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -12,8 +13,7 @@ class HomePage extends StatefulWidget {
   State<StatefulWidget> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with AutomaticKeepAliveClientMixin {
+class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
   num _selectedPageIndex = 0;
   ConversationPage _convPage;
   List<Widget> _pages;
@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(context) {
     super.build(context);
+    _fetchPushConfig();
     return Scaffold(
       body: updatePages(),
       bottomNavigationBar: BottomNavigationBar(
@@ -76,8 +77,16 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  BottomNavigationBarItem bottomItem(String title, String unSelectedImageName,
-      [String selectedImageName, bool needUnreadCount = false]) {
+  _fetchPushConfig() async {
+    try {
+      List<String> list = await EMClient.getInstance.groupManager.getGroupsWithoutNotice();
+      print(list);
+    } on EMError catch (e) {
+      print(e);
+    }
+  }
+
+  BottomNavigationBarItem bottomItem(String title, String unSelectedImageName, [String selectedImageName, bool needUnreadCount = false]) {
     return BottomNavigationBarItem(
       activeIcon: SizedBox(
         child: Stack(
