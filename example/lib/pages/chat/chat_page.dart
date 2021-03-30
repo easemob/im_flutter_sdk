@@ -400,10 +400,9 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   /// 重发消息
   void _resendMessage(EMMessage msg) async {
-    _msgList.remove(msg);
-    EMMessage message = await EMClient.getInstance.chatManager.resendMessage(msg);
-
-    _msgList.add(message);
+    // _msgList.remove(msg);
+    await EMClient.getInstance.chatManager.resendMessage(msg);
+    // _msgList.add(msg);
     _setStateAndMoreToListViewEnd();
   }
 

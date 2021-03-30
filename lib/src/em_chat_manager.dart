@@ -33,6 +33,7 @@ class EMChatManager {
 
   /// 发送消息 [message].
   Future<EMMessage> sendMessage(EMMessage message) async {
+    message.status = EMMessageStatus.PROGRESS;
     Map result = await _channel.invokeMethod(EMSDKMethod.sendMessage, message.toJson());
     EMError.hasErrorFromResult(result);
     EMMessage msg = EMMessage.fromJson(result[EMSDKMethod.sendMessage]);
@@ -44,6 +45,7 @@ class EMChatManager {
 
   /// 重发消息 [message].
   Future<EMMessage> resendMessage(EMMessage message) async {
+    message.status = EMMessageStatus.PROGRESS;
     Map result = await _channel.invokeMethod(EMSDKMethod.resendMessage, message.toJson());
     EMError.hasErrorFromResult(result);
     EMMessage msg = EMMessage.fromJson(result[EMSDKMethod.resendMessage]);
