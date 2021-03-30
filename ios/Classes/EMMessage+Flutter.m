@@ -31,7 +31,9 @@
                                                             to:to
                                                           body:body
                                                            ext:aJson[@"attributes"]];
-    
+    if (aJson[@"msgId"]) {
+        msg.messageId = aJson[@"msgId"];
+    }
     msg.direction = ({
         [aJson[@"direction"] isEqualToString:@"send"] ? EMMessageDirectionSend : EMMessageDirectionReceive;
     });

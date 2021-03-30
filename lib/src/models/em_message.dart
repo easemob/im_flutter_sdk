@@ -99,7 +99,9 @@ class MessageCallBackManager {
   }
 
   addMessage(EMMessage message) {
-    cacheMessageMap[message.localTime.toString()] = message;
+    if (message.status != EMMessageStatus.SUCCESS) {
+      cacheMessageMap[message.localTime.toString()] = message;
+    }
   }
 
   removeMessage(EMMessage message) {
