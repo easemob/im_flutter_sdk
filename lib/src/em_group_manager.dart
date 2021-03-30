@@ -38,7 +38,7 @@ class EMGroupManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getJoinedGroups);
     EMError.hasErrorFromResult(result);
     var list = List();
-    (result[EMSDKMethod.getJoinedGroups] as List).forEach((element) => list.add(EMGroup.fromJson(element)));
+    result[EMSDKMethod.getJoinedGroups]?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
 
@@ -46,8 +46,7 @@ class EMGroupManager {
   Future<List<String>> getGroupsWithoutNotice() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupsWithoutPushNotification);
     EMError.hasErrorFromResult(result);
-    var list = List();
-    (result[EMSDKMethod.getGroupsWithoutPushNotification] as List).forEach((element) => list.add(element));
+    var list = result[EMSDKMethod.getGroupsWithoutPushNotification]?.cast<String>();
     return list;
   }
 
@@ -60,7 +59,7 @@ class EMGroupManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getJoinedGroupsFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMGroup> list = List();
-    (result[EMSDKMethod.getJoinedGroupsFromServer] as List).forEach((element) => list.add(EMGroup.fromJson(element)));
+    result[EMSDKMethod.getJoinedGroupsFromServer]?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
 
@@ -122,7 +121,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupBlacklistFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupBlacklistFromServer];
+    return result[EMSDKMethod.getGroupBlacklistFromServer].cast<String>();
   }
 
   /// 获取禁言列表
@@ -134,7 +133,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupMuteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupMuteListFromServer];
+    return result[EMSDKMethod.getGroupMuteListFromServer].cast<String>();
   }
 
   /// 获取白名单列表
@@ -142,7 +141,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupWhiteListFromServer];
+    return result[EMSDKMethod.getGroupWhiteListFromServer].cast<String>();
   }
 
   /// 判断自己是否在白名单中
@@ -163,7 +162,7 @@ class EMGroupManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupFileListFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMGroupSharedFile> list = List();
-    (result[EMSDKMethod.getGroupFileListFromServer] as List).forEach((element) {
+    result[EMSDKMethod.getGroupFileListFromServer]?.forEach((element) {
       list.add(EMGroupSharedFile.fromJson(element));
     });
     return list;
