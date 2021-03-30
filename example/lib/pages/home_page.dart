@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   @override
   Widget build(context) {
     super.build(context);
-    _fetchPushConfig();
+
     return Scaffold(
       body: updatePages(),
       bottomNavigationBar: BottomNavigationBar(
@@ -75,15 +75,6 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
         },
       ),
     );
-  }
-
-  _fetchPushConfig() async {
-    try {
-      List<String> list = await EMClient.getInstance.groupManager.getGroupsWithoutNotice();
-      print(list);
-    } on EMError catch (e) {
-      print(e);
-    }
   }
 
   BottomNavigationBarItem bottomItem(String title, String unSelectedImageName, [String selectedImageName, bool needUnreadCount = false]) {
