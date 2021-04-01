@@ -266,6 +266,10 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
 
   _chat(EMGroup group) async {
     EMConversation con = await EMClient.getInstance.chatManager.getConversation(group.groupId, EMConversationType.GroupChat);
+    if (con == null) {
+      SmartDialog.showToast('会话创建失败');
+      return;
+    }
     con.name = group.name;
     Navigator.of(context).pushNamed(
       '/chat',

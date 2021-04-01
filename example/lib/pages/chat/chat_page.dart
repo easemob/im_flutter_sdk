@@ -53,18 +53,14 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   @override
   void initState() {
     super.initState();
-    // 监听键盘弹起收回
-
     EaseCallKit.listener = this;
-
+    // 监听键盘弹起收回
     _subscribeId = KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
         _keyboardVisible = visible;
         _setStateAndMoreToListViewEnd();
       },
     );
-
-    _inputBarEditingController.addListener(() {});
 
     items = [
       ChatMoreViewItem('images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
@@ -80,15 +76,15 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     EMClient.getInstance.chatManager.addListener(this);
     EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
-    widget.conv.markAllMessagesAsRead();
+    widget.conv?.markAllMessagesAsRead();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels == _scrollController.position.minScrollExtent) {
         _loadMessages(moveBottom: false);
       }
     });
-    if (widget.conv.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv.id).then((value) => _loadMessages());
+    if (widget.conv?.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv?.id).then((value) => _loadMessages());
     } else {
       _loadMessages();
     }
@@ -101,8 +97,8 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     EMClient.getInstance.chatManager.removeListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
-    if (widget.conv.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv.id);
+    if (widget.conv?.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv?.id);
     }
     EaseCallKit.dispose();
     super.dispose();
@@ -346,11 +342,13 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   /// 发送文字消息
   _sendTextMessage(String txt) {
     if (txt.length == 0) return;
-    EMMessage msg = EMMessage.createTxtSendMessage(
-      username: widget.conv.id,
-      content: txt,
-    );
-    _sendMessage(msg);
+    for (int i = 0; i < 3; i++) {
+      EMMessage msg = EMMessage.createTxtSendMessage(
+        username: widget.conv.id,
+        content: i.toString(),
+      );
+      _sendMessage(msg);
+    }
     _inputBarEditingController.text = '';
   }
 
