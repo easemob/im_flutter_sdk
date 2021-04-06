@@ -188,36 +188,36 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
           ),
         );
       } else {
-        return Padding(
-          padding: EdgeInsets.all(sWidth(10)),
-          child: SizedBox(
-            width: sWidth(15),
-            height: sWidth(15),
-            child: Builder(
-              builder: (_) {
-                if (widget.msg.status == EMMessageStatus.PROGRESS) {
-                  return CircularProgressIndicator(
+        return Builder(
+          builder: (_) {
+            if (widget.msg.status == EMMessageStatus.PROGRESS) {
+              return Padding(
+                padding: EdgeInsets.all(sWidth(10)),
+                child: SizedBox(
+                  width: sWidth(20),
+                  height: sWidth(20),
+                  child: CircularProgressIndicator(
                     strokeWidth: 1,
-                  );
-                } else if (widget.msg.status == EMMessageStatus.FAIL) {
-                  return IconButton(
-                    padding: EdgeInsets.zero,
-                    icon: Icon(
-                      Icons.error,
-                      color: Colors.red,
-                      size: sWidth(30),
-                    ),
-                    onPressed: () {
-                      if (widget.errorBtnOnTap != null) {
-                        widget.errorBtnOnTap(widget.msg);
-                      }
-                    },
-                  );
-                }
-                return Container();
-              },
-            ),
-          ),
+                  ),
+                ),
+              );
+            } else if (widget.msg.status == EMMessageStatus.FAIL || widget.msg.status == EMMessageStatus.CREATE) {
+              return IconButton(
+                padding: EdgeInsets.zero,
+                icon: Icon(
+                  Icons.error,
+                  color: Colors.red,
+                  size: sWidth(30),
+                ),
+                onPressed: () {
+                  if (widget.errorBtnOnTap != null) {
+                    widget.errorBtnOnTap(widget.msg);
+                  }
+                },
+              );
+            }
+            return Container();
+          },
         );
       }
     }

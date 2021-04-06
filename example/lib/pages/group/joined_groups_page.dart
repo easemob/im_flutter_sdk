@@ -19,8 +19,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   List<EMGroup> _searchdGroups = List();
   final _pageSize = 30;
   int _pageNumber = 0;
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: true);
+  RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   bool get _isSearch => _searchName.length > 0;
 
@@ -86,7 +85,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
               child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: !_isEnd,
-                onRefresh: () => _loadJoinedGroups(),
+                onRefresh: _loadJoinedGroups,
                 onLoading: () => _loadJoinedGroups(true),
                 controller: _refreshController,
                 child: ListView.separated(
@@ -105,8 +104,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                       height: 0.3,
                     );
                   }),
-                  itemCount:
-                      _isSearch ? _searchdGroups.length : _groupsList.length,
+                  itemCount: _isSearch ? _searchdGroups.length : _groupsList.length,
                 ),
               ),
             ),
@@ -239,8 +237,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       }
 
       SmartDialog.showLoading(msg: '获取中...');
-      List<EMGroup> groups =
-          await EMClient.getInstance.groupManager.getJoinedGroupsFromServer(
+      List<EMGroup> groups = await EMClient.getInstance.groupManager.getJoinedGroupsFromServer(
         pageSize: _pageSize,
         pageNum: _pageNumber,
       );
@@ -258,22 +255,17 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       _groupsList.addAll(groups);
       setState(() {});
       SmartDialog.showToast('获取成功');
-      isMore
-          ? _refreshController.loadComplete()
-          : _refreshController.refreshCompleted();
+      isMore ? _refreshController.loadComplete() : _refreshController.refreshCompleted();
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
-      isMore
-          ? _refreshController.loadFailed()
-          : _refreshController.refreshFailed();
+      isMore ? _refreshController.loadFailed() : _refreshController.refreshFailed();
     } finally {
       SmartDialog.dismiss();
     }
   }
 
   _chat(EMGroup group) async {
-    EMConversation con = await EMClient.getInstance.chatManager
-        .getConversation(group.groupId, EMConversationType.GroupChat);
+    EMConversation con = await EMClient.getInstance.chatManager.getConversation(group.groupId, EMConversationType.GroupChat);
     con.name = group.name;
     Navigator.of(context).pushNamed(
       '/chat',

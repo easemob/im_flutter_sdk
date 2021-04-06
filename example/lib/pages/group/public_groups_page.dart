@@ -19,8 +19,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
   String _searchName = '';
   EMGroup _searchdGroup;
   final _pageSize = 30;
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: true);
+  RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   @override
   Widget build(BuildContext context) {
@@ -80,8 +79,8 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
               child: SmartRefresher(
                 enablePullDown: true,
                 enablePullUp: !_isEnd,
-                onRefresh: () => _loadPublicGroups(),
-                onLoading: () => _loadMorePublicGroups(),
+                onRefresh: _loadPublicGroups,
+                onLoading: _loadMorePublicGroups,
                 controller: _refreshController,
                 child: ListView.separated(
                   itemBuilder: ((_, index) {
@@ -98,9 +97,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                       height: 0.3,
                     );
                   }),
-                  itemCount: _searchName.length != 0 && _searchdGroup != null
-                      ? 1
-                      : _groupsList.length,
+                  itemCount: _searchName.length != 0 && _searchdGroup != null ? 1 : _groupsList.length,
                 ),
               ),
             ),
@@ -144,8 +141,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
 
   _loadMorePublicGroups() async {
     try {
-      EMCursorResult<EMGroup> cursor = await EMClient.getInstance.groupManager
-          .getPublicGroupsFromServer(pageSize: _pageSize, cursor: _cursor);
+      EMCursorResult<EMGroup> cursor = await EMClient.getInstance.groupManager.getPublicGroupsFromServer(pageSize: _pageSize, cursor: _cursor);
       _refreshController.loadComplete();
       _cursor = cursor.cursor;
       _groupsList.addAll(cursor.data);
@@ -164,8 +160,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     try {
       _isEnd = false;
       SmartDialog.showLoading(msg: '获取中...');
-      EMCursorResult<EMGroup> cursor =
-          await EMClient.getInstance.groupManager.getPublicGroupsFromServer(
+      EMCursorResult<EMGroup> cursor = await EMClient.getInstance.groupManager.getPublicGroupsFromServer(
         pageSize: _pageSize,
       );
       _refreshController.refreshCompleted();
@@ -187,17 +182,14 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
 
   _fetchGroupInfo(EMGroup group) {
     print('_fetchGroupInfo ${group.groupId}');
-    Navigator.of(context)
-        .pushNamed('/groupInfo', arguments: group)
-        .then((value) {});
+    Navigator.of(context).pushNamed('/groupInfo', arguments: group).then((value) {});
   }
 
   _searchPublicId(String std) async {
     if (std.length == 0) return;
     try {
       SmartDialog.showLoading(msg: '搜索中...');
-      _searchdGroup = await EMClient.getInstance.groupManager
-          .getGroupSpecificationFromServer(std);
+      _searchdGroup = await EMClient.getInstance.groupManager.getGroupSpecificationFromServer(std);
     } on EMError catch (e) {
       SmartDialog.showToast('搜索失败: $e');
     } finally {
