@@ -140,7 +140,7 @@ class EMChatRoomManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getAllChatRooms);
     EMError.hasErrorFromResult(result);
     List list = List();
-    (result[EMSDKMethod.getAllChatRooms] as List).forEach((element) => list.add(EMChatRoom.fromJson(element)));
+    result[EMSDKMethod.getAllChatRooms]?.forEach((element) => list.add(EMChatRoom.fromJson(element)));
     return list;
   }
 
@@ -267,7 +267,7 @@ class EMChatRoomManager {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result = await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMuteList, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.fetchChatRoomMuteList];
+    return result[EMSDKMethod.fetchChatRoomMuteList].cast<String>();
   }
 
   /// @nodoc 删除聊天室成员，需要拥有者或者管理员权限[roomId].[members].
@@ -309,7 +309,7 @@ class EMChatRoomManager {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result = await _channel.invokeMethod(EMSDKMethod.fetchChatRoomBlackList, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.fetchChatRoomBlackList];
+    return result[EMSDKMethod.fetchChatRoomBlackList].cast<String>();
   }
 
   /// 更新聊天室公告[roomId].[announcement]

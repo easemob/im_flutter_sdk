@@ -218,7 +218,7 @@ extension EMConversationExtension on EMConversation {
     EMError.hasErrorFromResult(result);
 
     List<EMMessage> list = List();
-    (result[EMSDKMethod.loadMsgWithMsgType] as List).forEach((element) {
+    result[EMSDKMethod.loadMsgWithMsgType]?.forEach((element) {
       list.add(EMMessage.fromJson(element));
     });
     return list;
@@ -240,7 +240,7 @@ extension EMConversationExtension on EMConversation {
     EMError.hasErrorFromResult(result);
 
     List<EMMessage> msgList = List();
-    (result[EMSDKMethod.loadMsgWithStartId] as List).forEach((element) {
+    result[EMSDKMethod.loadMsgWithStartId]?.forEach((element) {
       msgList.add(EMMessage.fromJson(element));
     });
     return msgList;
@@ -265,7 +265,7 @@ extension EMConversationExtension on EMConversation {
     EMError.hasErrorFromResult(result);
 
     List<EMMessage> msgList = List();
-    (result[EMSDKMethod.loadMsgWithKeywords] as List).forEach((element) {
+    result[EMSDKMethod.loadMsgWithKeywords]?.forEach((element) {
       msgList.add(EMMessage.fromJson(element));
     });
     return msgList;
@@ -286,7 +286,7 @@ extension EMConversationExtension on EMConversation {
     EMError.hasErrorFromResult(result);
 
     List<EMMessage> msgList = List();
-    (result[EMSDKMethod.loadMsgWithTime] as List).forEach((element) {
+    result[EMSDKMethod.loadMsgWithTime]?.forEach((element) {
       msgList.add(EMMessage.fromJson(element));
     });
     return msgList;
