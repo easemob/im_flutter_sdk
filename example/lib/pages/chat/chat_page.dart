@@ -336,7 +336,7 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   /// 消息长按
   _messageOnLongPress(EMMessage msg) {
-    print('长按 msg id ---- ${msg.msgId}');
+    EMClient.getInstance.chatManager.recallMessage(msg.msgId).then((value) => print(value)).catchError((e) => print(e));
   }
 
   /// 发送文字消息
