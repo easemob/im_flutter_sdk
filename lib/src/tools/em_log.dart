@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class EMLog {
+  // ignore: non_constant_identifier_names
   static String TAG = 'EaseMob';
 
   static bool debuggable = kReleaseMode ? false : true;
