@@ -152,7 +152,7 @@ class EMContactManager {
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
     EMError.hasErrorFromResult(result);
-    List<String> devices = result[EMSDKMethod.getSelfIdsOnOtherPlatform].cast<String>();
+    List<String> devices = result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
     return devices;
   }
 
