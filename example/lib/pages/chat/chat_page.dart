@@ -8,6 +8,7 @@ import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/show_large_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
@@ -336,19 +337,17 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   /// 消息长按
   _messageOnLongPress(EMMessage msg) {
-    EMClient.getInstance.chatManager.recallMessage(msg.msgId).then((value) => print(value)).catchError((e) => print(e));
+    // EMClient.getInstance.chatManager.recallMessage(msg.msgId).then((value) => print(value)).catchError((e) => print(e));
   }
 
   /// 发送文字消息
   _sendTextMessage(String txt) {
     if (txt.length == 0) return;
-    for (int i = 0; i < 3; i++) {
-      EMMessage msg = EMMessage.createTxtSendMessage(
-        username: widget.conv.id,
-        content: i.toString(),
-      );
-      _sendMessage(msg);
-    }
+    EMMessage msg = EMMessage.createTxtSendMessage(
+      username: widget.conv.id,
+      content: txt,
+    );
+    _sendMessage(msg);
     _inputBarEditingController.text = '';
   }
 
