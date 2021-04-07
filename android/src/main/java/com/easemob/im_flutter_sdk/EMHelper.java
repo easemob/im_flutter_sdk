@@ -56,12 +56,12 @@ class EMOptionsHelper {
         options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
         options.setDeleteMessagesAsExitChatRoom(json.getBoolean("deleteMessagesAsExitChatRoom"));
         options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
-//            options.setAutoLogin(json.getBoolean(""));  isChatRoomOwnerLeaveAllowed
-//            options.setAutoLogin(json.getBoolean(""));  debugModel
-//            options.setAutoLogin(json.getBoolean(""));  serverTransfer
+        // options.setAutoLogin(json.getBoolean("")); isChatRoomOwnerLeaveAllowed
+        // options.setAutoLogin(json.getBoolean("")); debugModel
+        // options.setAutoLogin(json.getBoolean("")); serverTransfer
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
-//            options.setAutoLogin(json.getBoolean(""));  EMPushConfig
-//            options.setAutoLogin(json.getBoolean(""));  enableDNSConfig
+        // options.setAutoLogin(json.getBoolean("")); EMPushConfig
+        // options.setAutoLogin(json.getBoolean("")); enableDNSConfig
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
         if (!json.getBoolean("enableDNSConfig")) {
             options.setImPort(json.getInt("imPort"));
@@ -70,25 +70,25 @@ class EMOptionsHelper {
             options.setDnsUrl(json.getString("dnsUrl"));
         }
 
-        if(json.has("pushConfig")){
+        if (json.has("pushConfig")) {
             EMPushConfig.Builder builder = new EMPushConfig.Builder(context);
             JSONObject pushConfig = json.getJSONObject("pushConfig");
-            if(pushConfig.getBoolean("enableMiPush")){
+            if (pushConfig.getBoolean("enableMiPush")) {
                 builder.enableMiPush(pushConfig.getString("miAppId"), pushConfig.getString("miAppKey"));
             }
-            if(pushConfig.getBoolean("enableFCM")){
+            if (pushConfig.getBoolean("enableFCM")) {
                 builder.enableFCM(pushConfig.getString("fcmId"));
             }
-            if(pushConfig.getBoolean("enableOppoPush")){
+            if (pushConfig.getBoolean("enableOppoPush")) {
                 builder.enableOppoPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
             }
-            if(pushConfig.getBoolean("enableHWPush")){
+            if (pushConfig.getBoolean("enableHWPush")) {
                 builder.enableHWPush();
             }
-            if(pushConfig.getBoolean("enableMeiZuPush")){
+            if (pushConfig.getBoolean("enableMeiZuPush")) {
                 builder.enableMeiZuPush(pushConfig.getString("mzAppId"), pushConfig.getString("mzAppKey"));
             }
-            if(pushConfig.getBoolean("enableVivoPush")){
+            if (pushConfig.getBoolean("enableVivoPush")) {
                 builder.enableVivoPush();
             }
             options.setPushConfig(builder.build());
@@ -110,12 +110,12 @@ class EMOptionsHelper {
         data.put("deleteMessagesAsExitChatRoom", options.isDeleteMessagesAsExitChatRoom());
         data.put("isAutoDownload", options.getAutodownloadThumbnail());
         data.put("isChatRoomOwnerLeaveAllowed", options.isChatroomOwnerLeaveAllowed());
-//        data.put("serverTransfer", "");
-//        data.put("debugModel", options.);
-//        data.put("serverTransfer", options.);
+        // data.put("serverTransfer", "");
+        // data.put("debugModel", options.);
+        // data.put("serverTransfer", options.);
         data.put("usingHttpsOnly", options.getUsingHttpsOnly());
-//        data.put("EMPushConfig", "");
-//        data.put("enableDNSConfig", "");
+        // data.put("EMPushConfig", "");
+        // data.put("enableDNSConfig", "");
         data.put("imPort", options.getImPort());
         data.put("imServer", options.getImServer());
         data.put("restServer", options.getRestServer());
@@ -124,7 +124,6 @@ class EMOptionsHelper {
         return data;
     }
 }
-
 
 class EMContactHelper {
     static EMContact fromJson(JSONObject json) throws JSONException {
@@ -141,7 +140,6 @@ class EMContactHelper {
     }
 }
 
-
 class EMGroupHelper {
     static Map<String, Object> toJson(EMGroup group) {
         Map<String, Object> data = new HashMap<>();
@@ -156,11 +154,10 @@ class EMGroupHelper {
         data.put("blacklist", group.getBlackList());
         data.put("muteList", group.getMuteList());
         data.put("sharedFileList", group.getShareFileList());
-//        data.put("", group.getnoticeEnable);
+        data.put("noticeEnable", !EMClient.getInstance().pushManager().getNoPushGroups().contains(group.getGroupId()));
         data.put("messageBlocked", group.isMsgBlocked());
         data.put("isAllMemberMuted", group.isAllMemberMuted());
-//        data.put("", group.getOptions());
-//        data.put("", group.getPermissionType());
+        data.put("permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
 
         EMGroupOptions options = new EMGroupOptions();
         options.extField = group.getExtension();
@@ -168,21 +165,42 @@ class EMGroupHelper {
 
         if (group.isPublic()) {
             if (group.isMemberOnly()) {
-                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
-            }else {
-                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
+                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
+            } else {
+                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
             }
-        }else {
+        } else {
             if (group.isMemberAllowToInvite()) {
-                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
-            }else {
-                options.style =  EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
+                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
+            } else {
+                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
             }
         }
-
         data.put("options", EMGroupOptionsHelper.toJson(options));
-
         return data;
+    }
+
+    static int intTypeFromGroupPermissionType(EMGroup.EMGroupPermissionType type) {
+        int ret = -1;
+        switch (type){
+            case none:{
+                ret = -1;
+            }
+            break;
+            case member:{
+                ret = 0;
+            }
+            break;
+            case admin:{
+                ret = 1;
+            }
+            break;
+            case owner:{
+                ret = 2;
+            }
+            break;
+        }
+        return ret;
     }
 }
 
@@ -220,11 +238,15 @@ class EMGroupOptionsHelper {
     }
 
     private static EMGroupManager.EMGroupStyle styleFromInt(int style) {
-        switch (style){
-            case 0: return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
-            case 1: return EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
-            case 2: return EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
-            case 3: return EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
+        switch (style) {
+            case 0:
+                return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
+            case 1:
+                return EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
+            case 2:
+                return EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
+            case 3:
+                return EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
         }
 
         return EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
@@ -232,24 +254,26 @@ class EMGroupOptionsHelper {
 
     private static int styleToInt(EMGroupManager.EMGroupStyle style) {
         switch (style) {
-            case EMGroupStylePrivateOnlyOwnerInvite: return 0;
-            case EMGroupStylePrivateMemberCanInvite: return 1;
-            case EMGroupStylePublicJoinNeedApproval: return 2;
-            case EMGroupStylePublicOpenJoin: return 3;
+            case EMGroupStylePrivateOnlyOwnerInvite:
+                return 0;
+            case EMGroupStylePrivateMemberCanInvite:
+                return 1;
+            case EMGroupStylePublicJoinNeedApproval:
+                return 2;
+            case EMGroupStylePublicOpenJoin:
+                return 3;
         }
 
         return 0;
     }
 }
 
+class EMChatRoomHelper {
 
-
-class EMChatRoomHelper{
-
-//   chatroom 都是native -> flutter, 不需要fromJson
-//    static EMChatRoom fromJson(JSONObject json) throws JSONException {
-//        EMChatRoom chatRoom = new EMChatRoom();
-//    }
+    // chatroom 都是native -> flutter, 不需要fromJson
+    // static EMChatRoom fromJson(JSONObject json) throws JSONException {
+    // EMChatRoom chatRoom = new EMChatRoom();
+    // }
 
     static Map<String, Object> toJson(EMChatRoom chatRoom) {
         Map<String, Object> data = new HashMap<>();
@@ -265,12 +289,35 @@ class EMChatRoomHelper{
         data.put("muteList", chatRoom.getMuteList().values());
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
-//        data.put("permissionType", chatRoom);
+        data.put("permissionType", intTypeFromPermissionType(chatRoom.getChatRoomPermissionType()));
 
         return data;
     }
 
-//    static int premissionTypeToInt()
+    static int intTypeFromPermissionType(EMChatRoom.EMChatRoomPermissionType type) {
+        int ret = -1;
+        switch (type) {
+            case none: {
+                ret = -1;
+            }
+            break;
+            case member: {
+                ret = 0;
+            }
+            break;
+            case admin: {
+                ret = 1;
+            }
+            break;
+            case owner: {
+                ret = 2;
+            }
+            break;
+            default:
+                break;
+        }
+        return ret;
+    }
 }
 
 class EMMessageHelper {
@@ -279,8 +326,8 @@ class EMMessageHelper {
         EMMessage message = null;
         JSONObject bodyJson = json.getJSONObject("body");
         String type = bodyJson.getString("type");
-        if(json.getString("direction").equals("send")){
-            switch (type){
+        if (json.getString("direction").equals("send")) {
+            switch (type) {
                 case "txt": {
                     message = EMMessage.createSendMessage(Type.TXT);
                     message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
@@ -322,8 +369,8 @@ class EMMessageHelper {
                 }
                 break;
             }
-        }else{
-            switch (type){
+        } else {
+            switch (type) {
                 case "txt": {
                     message = EMMessage.createReceiveMessage(Type.TXT);
                     message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
@@ -369,7 +416,7 @@ class EMMessageHelper {
         }
         message.setTo(json.getString("to"));
         message.setAcked(json.getBoolean("hasReadAck"));
-        if(statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS){
+        if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
         }
         message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
@@ -378,10 +425,10 @@ class EMMessageHelper {
         message.setStatus(statusFromInt(json.getInt("status")));
         message.setChatType(chatTypeFromInt(json.getInt("chatType")));
         message.setMsgId(json.getString("msgId"));
-        if (null != json.getJSONObject("attributes")){
+        if (null != json.getJSONObject("attributes")) {
             JSONObject data = json.getJSONObject("attributes");
             Iterator iterator = data.keys();
-            while (iterator.hasNext()){
+            while (iterator.hasNext()) {
                 String key = iterator.next().toString();
                 Object result = data.get(key);
                 if (result.getClass().getSimpleName().equals("Integer")) {
@@ -403,45 +450,54 @@ class EMMessageHelper {
     }
 
     static Map<String, Object> toJson(EMMessage message) {
-        if (message == null) return null;
+        if (message == null)
+            return null;
         Map<String, Object> data = new HashMap<>();
         String type = "";
-        switch (message.getType()){
+        switch (message.getType()) {
             case TXT: {
                 type = "txt";
                 data.put("body", EMMessageBodyHelper.textBodyToJson((EMTextMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case IMAGE: {
                 type = "img";
                 data.put("body", EMMessageBodyHelper.imageBodyToJson((EMImageMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case LOCATION: {
                 type = "loc";
                 data.put("body", EMMessageBodyHelper.localBodyToJson((EMLocationMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case CMD: {
                 type = "cmd";
                 data.put("body", EMMessageBodyHelper.cmdBodyToJson((EMCmdMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case CUSTOM: {
                 type = "custom";
                 data.put("body", EMMessageBodyHelper.customBodyToJson((EMCustomMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case FILE: {
                 type = "file";
                 data.put("body", EMMessageBodyHelper.fileBodyToJson((EMNormalFileMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case VIDEO: {
                 type = "video";
                 data.put("body", EMMessageBodyHelper.videoBodyToJson((EMVideoMessageBody) message.getBody()));
-            } break;
+            }
+            break;
             case VOICE: {
                 type = "voice";
                 data.put("body", EMMessageBodyHelper.voiceBodyToJson((EMVoiceMessageBody) message.getBody()));
-            } break;
+            }
+            break;
         }
 
-        if (message.ext().size() > 0 && null != message.ext()){
+        if (message.ext().size() > 0 && null != message.ext()) {
             data.put("attributes", message.ext());
         }
         data.put("from", message.getFrom());
@@ -461,39 +517,53 @@ class EMMessageHelper {
     }
 
     private static EMMessage.ChatType chatTypeFromInt(int type) {
-        switch (type){
-            case 0: return EMMessage.ChatType.Chat;
-            case 1: return EMMessage.ChatType.GroupChat;
-            case 2: return EMMessage.ChatType.ChatRoom;
+        switch (type) {
+            case 0:
+                return EMMessage.ChatType.Chat;
+            case 1:
+                return EMMessage.ChatType.GroupChat;
+            case 2:
+                return EMMessage.ChatType.ChatRoom;
         }
         return EMMessage.ChatType.Chat;
     }
 
     private static int chatTypeToInt(EMMessage.ChatType type) {
         switch (type) {
-            case Chat: return 0;
-            case GroupChat: return 1;
-            case ChatRoom: return 2;
+            case Chat:
+                return 0;
+            case GroupChat:
+                return 1;
+            case ChatRoom:
+                return 2;
         }
         return 0;
     }
 
     private static EMMessage.Status statusFromInt(int status) {
         switch (status) {
-            case 0: return EMMessage.Status.CREATE;
-            case 1: return EMMessage.Status.INPROGRESS;
-            case 2: return EMMessage.Status.SUCCESS;
-            case 3: return EMMessage.Status.FAIL;
+            case 0:
+                return EMMessage.Status.CREATE;
+            case 1:
+                return EMMessage.Status.INPROGRESS;
+            case 2:
+                return EMMessage.Status.SUCCESS;
+            case 3:
+                return EMMessage.Status.FAIL;
         }
         return EMMessage.Status.CREATE;
     }
 
     private static int statusToInt(EMMessage.Status status) {
         switch (status) {
-            case CREATE: return 0;
-            case INPROGRESS: return 1;
-            case SUCCESS: return 2;
-            case FAIL: return 3;
+            case CREATE:
+                return 0;
+            case INPROGRESS:
+                return 1;
+            case SUCCESS:
+                return 2;
+            case FAIL:
+                return 3;
         }
         return 0;
     }
@@ -502,13 +572,11 @@ class EMMessageHelper {
 
 class EMMessageBodyHelper {
 
-
     static EMTextMessageBody textBodyFromJson(JSONObject json) throws JSONException {
         String content = json.getString("content");
         EMTextMessageBody body = new EMTextMessageBody(content);
         return body;
     }
-
 
     static Map<String, Object> textBodyToJson(EMTextMessageBody body) {
         Map<String, Object> data = new HashMap<>();
@@ -516,7 +584,6 @@ class EMMessageBodyHelper {
         data.put("type", "txt");
         return data;
     }
-
 
     static EMLocationMessageBody localBodyFromJson(JSONObject json) throws JSONException {
         double latitude = json.getDouble("latitude");
@@ -536,7 +603,7 @@ class EMMessageBodyHelper {
         return data;
     }
 
-    static EMCmdMessageBody cmdBodyFromJson(JSONObject json) throws JSONException  {
+    static EMCmdMessageBody cmdBodyFromJson(JSONObject json) throws JSONException {
         String action = json.getString("action");
         boolean deliverOnlineOnly = json.getBoolean("deliverOnlineOnly");
 
@@ -554,12 +621,12 @@ class EMMessageBodyHelper {
         return data;
     }
 
-    static EMCustomMessageBody customBodyFromJson(JSONObject json) throws JSONException  {
+    static EMCustomMessageBody customBodyFromJson(JSONObject json) throws JSONException {
         String event = json.getString("event");
         JSONObject jsonObject = json.getJSONObject("params");
-        Map<String, String> params =new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         Iterator iterator = jsonObject.keys();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             String key = iterator.next().toString();
             params.put(key, jsonObject.getString(key));
         }
@@ -578,16 +645,17 @@ class EMMessageBodyHelper {
         return data;
     }
 
-    static EMFileMessageBody fileBodyFromJson(JSONObject json) throws JSONException  {
+    static EMFileMessageBody fileBodyFromJson(JSONObject json) throws JSONException {
         String localPath = json.getString("localPath");
         File file = new File(localPath);
 
         EMNormalFileMessageBody body = new EMNormalFileMessageBody(file);
-        body.setFileLength(json.getLong("fileSize"));
+        // body.setFileLength(json.getLong("fileSize"));
         body.setFileName(json.getString("displayName"));
         body.setRemoteUrl(json.getString("remotePath"));
         body.setSecret(json.getString("secret"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        body.setFileLength(json.getInt("fileSize"));
         return body;
     }
 
@@ -598,17 +666,18 @@ class EMMessageBodyHelper {
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
+        data.put("fileSize", body.getFileSize());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("type", "file");
         return data;
     }
 
-    static EMImageMessageBody imageBodyFromJson(JSONObject json) throws JSONException  {
+    static EMImageMessageBody imageBodyFromJson(JSONObject json) throws JSONException {
         String localPath = json.getString("localPath");
         File file = new File(localPath);
 
         EMImageMessageBody body = new EMImageMessageBody(file);
-//        body.setFileLength(json.getLong("fileSize"));
+        // body.setFileLength(json.getLong("fileSize"));
         body.setFileName(json.getString("displayName"));
         body.setRemoteUrl(json.getString("remotePath"));
         body.setSecret(json.getString("secret"));
@@ -617,7 +686,7 @@ class EMMessageBodyHelper {
         body.setThumbnailLocalPath(json.getString("thumbnailLocalPath"));
         body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         body.setThumbnailSecret(json.getString("thumbnailSecret"));
-
+        body.setFileLength(json.getInt("fileSize"));
         int width = json.getInt("height");
         int height = json.getInt("width");
         body.setThumbnailSize(width, height);
@@ -629,7 +698,6 @@ class EMMessageBodyHelper {
     static Map<String, Object> imageBodyToJson(EMImageMessageBody body) {
         Map<String, Object> data = new HashMap<>();
         data.put("localPath", body.getLocalUrl());
-//        data.put("fileSize", body);
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
@@ -640,11 +708,12 @@ class EMMessageBodyHelper {
         data.put("height", body.getHeight());
         data.put("width", body.getWidth());
         data.put("sendOriginalImage", body.isSendOriginalImage());
+        data.put("fileSize", body.getFileSize());
         data.put("type", "img");
         return data;
     }
 
-    static EMVideoMessageBody videoBodyFromJson(JSONObject json) throws JSONException  {
+    static EMVideoMessageBody videoBodyFromJson(JSONObject json) throws JSONException {
         String localPath = json.getString("localPath");
         String thumbnailLocalPath = json.getString("thumbnailLocalPath");
         int duration = json.getInt("duration");
@@ -659,14 +728,14 @@ class EMMessageBodyHelper {
         body.setRemoteUrl(json.getString("remotePath"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
         body.setSecret(json.getString("secret"));
-
+        body.setFileLength(json.getInt("fileSize"));
         return body;
     }
 
     static Map<String, Object> videoBodyToJson(EMVideoMessageBody body) {
         Map<String, Object> data = new HashMap<>();
         data.put("localPath", body.getLocalUrl());
-//        data.put("thumbnailLocalPath", body.getLocalThumbUri());
+        // data.put("thumbnailLocalPath", body.getLocalThumbUri());
         data.put("duration", body.getDuration());
         data.put("fileSize", body.getVideoFileLength());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
@@ -677,12 +746,13 @@ class EMMessageBodyHelper {
         data.put("remotePath", body.getRemoteUrl());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
+        data.put("fileSize", body.getVideoFileLength());
         data.put("type", "video");
 
         return data;
     }
 
-    static EMVoiceMessageBody voiceBodyFromJson(JSONObject json) throws JSONException  {
+    static EMVoiceMessageBody voiceBodyFromJson(JSONObject json) throws JSONException {
         String localPath = json.getString("localPath");
         File file = new File(localPath);
         int duration = json.getInt("duration");
@@ -691,6 +761,7 @@ class EMMessageBodyHelper {
         body.setFileName(json.getString("displayName"));
         body.setFileLength(json.getLong("fileSize"));
         body.setSecret(json.getString("secret"));
+        body.setFileLength(json.getInt("fileSize"));
         return body;
     }
 
@@ -703,26 +774,34 @@ class EMMessageBodyHelper {
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
         data.put("type", "voice");
-
+        data.put("fileSize", body.getFileSize());
         return data;
     }
 
     private static EMFileMessageBody.EMDownloadStatus downloadStatusFromInt(int downloadStatus) {
         switch (downloadStatus) {
-            case 0: return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
-            case 1: return EMFileMessageBody.EMDownloadStatus.SUCCESSED;
-            case 2: return EMFileMessageBody.EMDownloadStatus.FAILED;
-            case 3: return EMFileMessageBody.EMDownloadStatus.PENDING;
+            case 0:
+                return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
+            case 1:
+                return EMFileMessageBody.EMDownloadStatus.SUCCESSED;
+            case 2:
+                return EMFileMessageBody.EMDownloadStatus.FAILED;
+            case 3:
+                return EMFileMessageBody.EMDownloadStatus.PENDING;
         }
         return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
     }
 
     private static int downloadStatusToInt(EMFileMessageBody.EMDownloadStatus downloadStatus) {
-        switch (downloadStatus){
-            case DOWNLOADING: return 0;
-            case SUCCESSED: return 1;
-            case FAILED: return 2;
-            case PENDING: return 3;
+        switch (downloadStatus) {
+            case DOWNLOADING:
+                return 0;
+            case SUCCESSED:
+                return 1;
+            case FAILED:
+                return 2;
+            case PENDING:
+                return 3;
         }
         return 0;
     }
@@ -730,11 +809,11 @@ class EMMessageBodyHelper {
 
 class EMConversationHelper {
 
-//    EMConversation 都是native -> flutter, 不需要fromJson
-//    static EMConversation fromJson(JSONObject json) throws JSONException {
-//        EMConversation conv = new EMConversation();
-//        return conv;
-//    }
+    // EMConversation 都是native -> flutter, 不需要fromJson
+    // static EMConversation fromJson(JSONObject json) throws JSONException {
+    // EMConversation conv = new EMConversation();
+    // return conv;
+    // }
 
     static Map<String, Object> toJson(EMConversation conversation) {
         Map<String, Object> data = new HashMap<>();
@@ -752,12 +831,14 @@ class EMConversationHelper {
         }
     }
 
-
     static EMConversation.EMConversationType typeFromInt(int type) {
         switch (type) {
-            case 0: return EMConversation.EMConversationType.Chat;
-            case 1: return EMConversation.EMConversationType.GroupChat;
-            case 2: return EMConversation.EMConversationType.ChatRoom;
+            case 0:
+                return EMConversation.EMConversationType.Chat;
+            case 1:
+                return EMConversation.EMConversationType.GroupChat;
+            case 2:
+                return EMConversation.EMConversationType.ChatRoom;
         }
 
         return EMConversation.EMConversationType.Chat;
@@ -765,16 +846,20 @@ class EMConversationHelper {
 
     private static int typeToInt(EMConversation.EMConversationType type) {
         switch (type) {
-            case Chat: return 0;
-            case GroupChat: return 1;
-            case ChatRoom: return 2;
+            case Chat:
+                return 0;
+            case GroupChat:
+                return 1;
+            case ChatRoom:
+                return 2;
         }
 
         return 0;
     }
 
-    private static Map<String, Object> jsonStringToMap(String content) throws JSONException{
-        if (content == null) return null;
+    private static Map<String, Object> jsonStringToMap(String content) throws JSONException {
+        if (content == null)
+            return null;
         content = content.trim();
         Map<String, Object> result = new HashMap<>();
         try {
@@ -788,7 +873,7 @@ class EMConversationHelper {
                         result.put(i + "", jsonArray.getString(i));
                     }
                 }
-            } else if (content.charAt(0) == '{'){
+            } else if (content.charAt(0) == '{') {
                 JSONObject jsonObject = new JSONObject(content);
                 Iterator<String> iterator = jsonObject.keys();
                 while (iterator.hasNext()) {
@@ -800,8 +885,8 @@ class EMConversationHelper {
                         result.put(key, value.toString().trim());
                     }
                 }
-            }else {
-               throw new JSONException("");
+            } else {
+                throw new JSONException("");
             }
         } catch (JSONException e) {
             throw new JSONException("");
@@ -826,20 +911,20 @@ class EMCursorResultHelper {
 
     static Map<String, Object> toJson(EMCursorResult result) {
         Map<String, Object> data = new HashMap<>();
-        data.put("cursor",result.getCursor());
+        data.put("cursor", result.getCursor());
         List list = (List) result.getData();
         List<Object> jsonList = new ArrayList<>();
-        for (Object obj: list) {
+        for (Object obj : list) {
             if (obj instanceof EMMessage) {
-                jsonList.add(EMMessageHelper.toJson((EMMessage)obj));
+                jsonList.add(EMMessageHelper.toJson((EMMessage) obj));
             }
 
             if (obj instanceof EMGroup) {
-                jsonList.add(EMGroupHelper.toJson((EMGroup)obj));
+                jsonList.add(EMGroupHelper.toJson((EMGroup) obj));
             }
 
             if (obj instanceof EMChatRoom) {
-                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom)obj));
+                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
             }
 
             if (obj instanceof String) {
@@ -847,10 +932,11 @@ class EMCursorResultHelper {
             }
 
             if (obj instanceof EMGroupInfo) {
-                jsonList.add(EMGroupHelper.toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
+                jsonList.add(EMGroupHelper
+                        .toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
             }
         }
-        data.put("list",jsonList);
+        data.put("list", jsonList);
 
         return data;
     }
@@ -860,23 +946,23 @@ class EMPageResultHelper {
 
     static Map<String, Object> toJson(EMPageResult result) {
         Map<String, Object> data = new HashMap<>();
-        data.put("count",result.getPageCount());
+        data.put("count", result.getPageCount());
         List list = (List) result.getData();
         List<Map> jsonList = new ArrayList<>();
-        for (Object obj: list) {
+        for (Object obj : list) {
             if (obj instanceof EMMessage) {
-                jsonList.add(EMMessageHelper.toJson((EMMessage)obj));
+                jsonList.add(EMMessageHelper.toJson((EMMessage) obj));
             }
 
             if (obj instanceof EMGroup) {
-                jsonList.add(EMGroupHelper.toJson((EMGroup)obj));
+                jsonList.add(EMGroupHelper.toJson((EMGroup) obj));
             }
 
             if (obj instanceof EMChatRoom) {
-                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom)obj));
+                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
             }
         }
-        data.put("list",jsonList);
+        data.put("list", jsonList);
         return data;
     }
 }
@@ -889,7 +975,6 @@ class EMErrorHelper {
         return data;
     }
 }
-
 
 class EMPushConfigsHelper {
     static Map<String, Object> toJson(EMPushConfigs pushConfigs) {
@@ -910,4 +995,3 @@ class HyphenateExceptionHelper {
         return data;
     }
 }
-

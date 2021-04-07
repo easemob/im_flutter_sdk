@@ -8,6 +8,7 @@ import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/show_large_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
@@ -53,18 +54,14 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   @override
   void initState() {
     super.initState();
-    // 监听键盘弹起收回
-
     EaseCallKit.listener = this;
-
+    // 监听键盘弹起收回
     _subscribeId = KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
         _keyboardVisible = visible;
         _setStateAndMoreToListViewEnd();
       },
     );
-
-    _inputBarEditingController.addListener(() {});
 
     items = [
       ChatMoreViewItem('images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
@@ -80,15 +77,15 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     EMClient.getInstance.chatManager.addListener(this);
     EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
-    widget.conv.markAllMessagesAsRead();
+    widget.conv?.markAllMessagesAsRead();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels == _scrollController.position.minScrollExtent) {
         _loadMessages(moveBottom: false);
       }
     });
-    if (widget.conv.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv.id).then((value) => _loadMessages());
+    if (widget.conv?.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv?.id).then((value) => _loadMessages());
     } else {
       _loadMessages();
     }
@@ -101,8 +98,8 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     EMClient.getInstance.chatManager.removeListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
-    if (widget.conv.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv.id);
+    if (widget.conv?.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv?.id);
     }
     EaseCallKit.dispose();
     super.dispose();
@@ -340,7 +337,7 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   /// 消息长按
   _messageOnLongPress(EMMessage msg) {
-    print('长按 msg id ---- ${msg.msgId}');
+    // EMClient.getInstance.chatManager.recallMessage(msg.msgId).then((value) => print(value)).catchError((e) => print(e));
   }
 
   /// 发送文字消息
