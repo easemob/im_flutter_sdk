@@ -136,7 +136,7 @@ class EMMessage {
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
-
+    this.body = msg.body;
     if (listener != null) {
       listener.onError(EMError.fromJson(map));
     }
@@ -155,7 +155,6 @@ class EMMessage {
   }
 
   Future<void> _onMessageSuccess(Map map) {
-    EMLog.v('发送成功 -- ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
@@ -163,6 +162,7 @@ class EMMessage {
     if (listener != null) {
       listener.onSuccess();
     }
+    EMLog.v('发送成功 -- ' + this.toString());
     return null;
   }
 
@@ -566,7 +566,9 @@ class EMFileMessageBody extends EMMessageBody {
     final Map<String, dynamic> data = super.toJson();
     data['secret'] = this.secret;
     data['remotePath'] = this.remotePath;
+    // if (this.fileSize != 0) {
     data['fileSize'] = this.fileSize;
+    // }
     data['localPath'] = this.localPath;
     data['displayName'] = this.displayName ?? '';
     data['fileStatus'] = EMFileMessageBody.downloadStatusToInt(this.fileStatus);

@@ -42,14 +42,7 @@ class EaseIMDemo extends StatelessWidget {
           builder: (context, child) => FlutterSmartDialog(child: child),
           debugShowCheckedModeBanner: false,
           onGenerateRoute: onGenerateRoute,
-          theme: ThemeData(
-              appBarTheme: AppBarTheme(elevation: 1),
-              buttonTheme: ButtonThemeData(
-                  minWidth: 44.0,
-                  highlightColor: Color.fromRGBO(0, 0, 0, 0),
-                  splashColor: Color.fromRGBO(0, 0, 0, 0)),
-              highlightColor: Color.fromRGBO(0, 0, 0, 0),
-              splashColor: Color.fromRGBO(0, 0, 0, 0)),
+          theme: ThemeData(appBarTheme: AppBarTheme(elevation: 1), buttonTheme: ButtonThemeData(minWidth: 44.0, highlightColor: Color.fromRGBO(0, 0, 0, 0), splashColor: Color.fromRGBO(0, 0, 0, 0)), highlightColor: Color.fromRGBO(0, 0, 0, 0), splashColor: Color.fromRGBO(0, 0, 0, 0)),
           home: IndexPage(),
         );
       },

@@ -655,6 +655,7 @@ class EMMessageBodyHelper {
         body.setRemoteUrl(json.getString("remotePath"));
         body.setSecret(json.getString("secret"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        body.setFileLength(json.getInt("fileSize"));
         return body;
     }
 
@@ -665,6 +666,7 @@ class EMMessageBodyHelper {
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
+        data.put("fileSize", body.getFileSize());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("type", "file");
         return data;
@@ -684,7 +686,7 @@ class EMMessageBodyHelper {
         body.setThumbnailLocalPath(json.getString("thumbnailLocalPath"));
         body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         body.setThumbnailSecret(json.getString("thumbnailSecret"));
-
+        body.setFileLength(json.getInt("fileSize"));
         int width = json.getInt("height");
         int height = json.getInt("width");
         body.setThumbnailSize(width, height);
@@ -696,7 +698,6 @@ class EMMessageBodyHelper {
     static Map<String, Object> imageBodyToJson(EMImageMessageBody body) {
         Map<String, Object> data = new HashMap<>();
         data.put("localPath", body.getLocalUrl());
-        // data.put("fileSize", body);
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
@@ -707,6 +708,7 @@ class EMMessageBodyHelper {
         data.put("height", body.getHeight());
         data.put("width", body.getWidth());
         data.put("sendOriginalImage", body.isSendOriginalImage());
+        data.put("fileSize", body.getFileSize());
         data.put("type", "img");
         return data;
     }
@@ -726,7 +728,7 @@ class EMMessageBodyHelper {
         body.setRemoteUrl(json.getString("remotePath"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
         body.setSecret(json.getString("secret"));
-
+        body.setFileLength(json.getInt("fileSize"));
         return body;
     }
 
@@ -744,6 +746,7 @@ class EMMessageBodyHelper {
         data.put("remotePath", body.getRemoteUrl());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
+        data.put("fileSize", body.getVideoFileLength());
         data.put("type", "video");
 
         return data;
@@ -758,6 +761,7 @@ class EMMessageBodyHelper {
         body.setFileName(json.getString("displayName"));
         body.setFileLength(json.getLong("fileSize"));
         body.setSecret(json.getString("secret"));
+        body.setFileLength(json.getInt("fileSize"));
         return body;
     }
 
@@ -770,7 +774,7 @@ class EMMessageBodyHelper {
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
         data.put("type", "voice");
-
+        data.put("fileSize", body.getFileSize());
         return data;
     }
 

@@ -121,7 +121,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupBlacklistFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupBlacklistFromServer].cast<String>();
+    return result[EMSDKMethod.getGroupBlacklistFromServer]?.cast<String>();
   }
 
   /// 获取禁言列表
@@ -133,7 +133,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupMuteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupMuteListFromServer].cast<String>();
+    return result[EMSDKMethod.getGroupMuteListFromServer]?.cast<String>();
   }
 
   /// 获取白名单列表
@@ -141,7 +141,7 @@ class EMGroupManager {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(EMSDKMethod.getGroupWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupWhiteListFromServer].cast<String>();
+    return result[EMSDKMethod.getGroupWhiteListFromServer]?.cast<String>();
   }
 
   /// 判断自己是否在白名单中
