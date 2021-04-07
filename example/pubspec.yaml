@@ -111,7 +111,7 @@ dependencies:
   record_amr:
     git:
       url: https://github.com/dujiepeng/record_amr.git
-      ref: master
+      ref: stable
 
 dev_dependencies:
   flutter_test:
