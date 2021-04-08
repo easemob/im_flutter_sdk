@@ -417,36 +417,34 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         String groupId = param.getString("groupId");
         JSONArray array = param.getJSONArray("members");
 
-        String[] members = new String[array.length()];
+        List<String> members = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
-            members[i] = array.getString(i) ;
+            members.add(array.getString(i));
         }
-        // TODO: remove members
-        // EMClient.getInstance().groupManager().removeMembers(groupId, members, new EMWrapperCallBack(result, channelName, true));
+
+        EMClient.getInstance().groupManager().asyncRemoveUsersFromGroup(groupId, members, new EMWrapperCallBack(result, channelName, true));
     }
 
     private void blockMembers(JSONObject param, String channelName,  Result result) throws JSONException {
         String groupId = param.getString("groupId");
         JSONArray array = param.getJSONArray("members");
-        String[] members = new String[array.length()];
+        List<String> members = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
-            members[i] = array.getString(i);
+            members.add(array.getString(i));
         }
 
-        // TODO: block members
-        // EMClient.getInstance().groupManager().blockUser();
+        EMClient.getInstance().groupManager().asyncBlockUsers(groupId, members, new EMWrapperCallBack(result, channelName, true));
     }
 
     private void unblockMembers(JSONObject param, String channelName,  Result result) throws JSONException {
         String groupId = param.getString("groupId");
         JSONArray array = param.getJSONArray("members");
-        String[] members = new String[array.length()];
+        List<String> members = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
-            members[i] = array.getString(i);
+            members.add(array.getString(i));
         }
 
-        // TODO: unblock members
-        // EMClient.getInstance().groupManager().unblockUser();
+        EMClient.getInstance().groupManager().asyncUnblockUsers(groupId, members, new EMWrapperCallBack(result, channelName, true));
     }
 
     private void updateGroupSubject(JSONObject param, String channelName,  Result result) throws JSONException {
