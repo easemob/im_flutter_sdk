@@ -171,6 +171,10 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
 
   _chatToRoom(EMChatRoom room) async {
     EMConversation con = await EMClient.getInstance.chatManager.getConversation(room.roomId, EMConversationType.ChatRoom);
+    if (con == null) {
+      SmartDialog.showToast('会话创建失败');
+      return;
+    }
     con.name = room.name;
     Navigator.of(context).pushNamed(
       '/chat',

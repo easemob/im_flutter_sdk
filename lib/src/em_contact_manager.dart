@@ -148,11 +148,11 @@ class EMContactManager {
     return result[EMSDKMethod.declineInvitation];
   }
 
-  /// @nodoc 从服务器获取登录用户在其他设备上登录的ID
+  /// 从服务器获取登录用户在其他设备上登录的ID
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
     EMError.hasErrorFromResult(result);
-    List<String> devices = result[EMSDKMethod.getSelfIdsOnOtherPlatform].cast<String>();
+    List<String> devices = result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
     return devices;
   }
 

@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'models/em_domain_terms.dart';
 import 'em_sdk_method.dart';
 
@@ -251,6 +252,7 @@ class EMChatManager {
   Future<void> _onMessagesReceived(List messages) async {
     var messageList = List<EMMessage>();
     for (var message in messages) {
+      EMLog.e('收到消息 -- $message');
       messageList.add(EMMessage.fromJson(message));
     }
     for (var listener in _messageListeners) {
