@@ -252,7 +252,6 @@ class EMChatManager {
   Future<void> _onMessagesReceived(List messages) async {
     var messageList = List<EMMessage>();
     for (var message in messages) {
-      EMLog.e('收到消息 -- $message');
       messageList.add(EMMessage.fromJson(message));
     }
     for (var listener in _messageListeners) {
