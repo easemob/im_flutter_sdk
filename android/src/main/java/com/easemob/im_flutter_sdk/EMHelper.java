@@ -154,7 +154,7 @@ class EMGroupHelper {
         data.put("blacklist", group.getBlackList());
         data.put("muteList", group.getMuteList());
         data.put("sharedFileList", group.getShareFileList());
-        if (group.getGroupId() != null && !EMClient.getInstance().pushManager().getNoPushGroups().isEmpty()) {
+        if (group.getGroupId() != null && EMClient.getInstance().pushManager().getNoPushGroups() != null) {
             data.put("noticeEnable", !EMClient.getInstance().pushManager().getNoPushGroups().contains(group.getGroupId()));
         }
         data.put("messageBlocked", group.isMsgBlocked());
