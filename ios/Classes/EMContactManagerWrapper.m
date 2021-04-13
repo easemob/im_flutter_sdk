@@ -37,12 +37,12 @@
         [self getAllContactsFromServer:call.arguments result:result];
     } else if ([EMMethodKeyGetAllContactsFromDB isEqualToString:call.method]) {
         [self getAllContactsFromDB:call.arguments result:result];
-    } else if ([EMMethodKeyAddUserToBlackList isEqualToString:call.method]) {
-        [self addUserToBlackList:call.arguments result:result];
-    } else if ([EMMethodKeyRemoveUserFromBlackList isEqualToString:call.method]) {
-        [self removeUserFromBlackList:call.arguments result:result];
-    } else if ([EMMethodKeyGetBlackListFromServer isEqualToString:call.method]) {
-        [self getBlackListFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyAddUserToBlockList isEqualToString:call.method]) {
+        [self addUserToBlockList:call.arguments result:result];
+    } else if ([EMMethodKeyRemoveUserFromBlockList isEqualToString:call.method]) {
+        [self removeUserFromBlockList:call.arguments result:result];
+    } else if ([EMMethodKeyGetBlockListFromServer isEqualToString:call.method]) {
+        [self getBlockListFromServer:call.arguments result:result];
     } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
         [self acceptInvitation:call.arguments result:result];
     } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
@@ -107,39 +107,39 @@
 }
 
 
-- (void)addUserToBlackList:(NSDictionary *)param result:(FlutterResult)result {
+- (void)addUserToBlockList:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
     [EMClient.sharedClient.contactManager addUserToBlackList:username
                                                   completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAddUserToBlackList
+                      channelName:EMMethodKeyAddUserToBlockList
                             error:aError
                            object:aUsername];
     }];
 }
 
-- (void)removeUserFromBlackList:(NSDictionary *)param result:(FlutterResult)result {
+- (void)removeUserFromBlockList:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
     [EMClient.sharedClient.contactManager removeUserFromBlackList:username
                                                        completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyRemoveUserFromBlackList
+                      channelName:EMMethodKeyRemoveUserFromBlockList
                             error:aError
                            object:aUsername];
     }];
     
 }
 
-- (void)getBlackListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getBlockListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient.contactManager getBlackListFromServerWithCompletion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetBlackListFromServer
+                      channelName:EMMethodKeyGetBlockListFromServer
                             error:aError
                            object:aList];
     }];

@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'em_domain_terms.dart';
 
-enum EMGroupStyle{
+enum EMGroupStyle {
   PrivateOnlyOwnerInvite, // 私有群，只有群主能邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
   PrivateMemberCanInvite, // 私有群，所有人都可以邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
   PublicJoinNeedApproval, // 公开群，可以通过获取公开群列表api取的，申请加入时需要管理员以上权限用户同意；
-  PublicOpenJoin,         // 公开群，可以通过获取公开群列表api取的，可以直接进入；
+  PublicOpenJoin, // 公开群，可以通过获取公开群列表api取的，可以直接进入；
 }
 
 enum EMGroupPermissionType {
@@ -16,7 +16,6 @@ enum EMGroupPermissionType {
 }
 
 class EMGroup {
-
   EMGroup._private();
 
   String _groupId;
@@ -27,7 +26,7 @@ class EMGroup {
   int _memberCount;
   List _memberList;
   List _adminList;
-  List _blackList;
+  List _blockList;
   List _muteList;
   List _sharedFileList;
   bool _noticeEnable = true;
@@ -44,7 +43,7 @@ class EMGroup {
   int get memberCount => _memberCount;
   List get memberList => _memberList;
   List get adminList => _adminList;
-  List get blackList => _blackList;
+  List get blockList => _blockList;
   List get muteList => _muteList;
   List get sharedFileList => _sharedFileList;
   bool get noticeEnable => _noticeEnable;
@@ -64,7 +63,7 @@ class EMGroup {
       .._memberCount = map['memberCount']
       .._memberList = map['memberList']
       .._adminList = map['adminList']
-      .._blackList = map['blackList']
+      .._blockList = map['blockList']
       .._muteList = map['muteList']
       .._sharedFileList = map['sharedFileList']
       .._noticeEnable = map.boolValue('noticeEnable')
@@ -84,7 +83,7 @@ class EMGroup {
     data['memberCount'] = _memberCount;
     data['memberList'] = _memberList;
     data['adminList'] = _adminList;
-    data['blackList'] = _blackList;
+    data['blockList'] = _blockList;
     data['muteList'] = _muteList;
     data['sharedFileList'] = _sharedFileList;
     data['noticeEnable'] = _noticeEnable;
@@ -97,46 +96,54 @@ class EMGroup {
 
   static EMGroupPermissionType permissionTypeFromInt(int type) {
     EMGroupPermissionType ret = EMGroupPermissionType.Member;
-    switch(type) {
-      case -1:{
-        ret = EMGroupPermissionType.None;
-      }
-      break;
-      case 0:{
-        ret = EMGroupPermissionType.Member;
-      }
-      break;
-      case 1:{
-        ret = EMGroupPermissionType.Admin;
-      }
-      break;
-      case 2:{
-        ret = EMGroupPermissionType.Owner;
-      }
-      break;
+    switch (type) {
+      case -1:
+        {
+          ret = EMGroupPermissionType.None;
+        }
+        break;
+      case 0:
+        {
+          ret = EMGroupPermissionType.Member;
+        }
+        break;
+      case 1:
+        {
+          ret = EMGroupPermissionType.Admin;
+        }
+        break;
+      case 2:
+        {
+          ret = EMGroupPermissionType.Owner;
+        }
+        break;
     }
     return ret;
   }
 
   static int permissionTypeToInt(EMGroupPermissionType type) {
     int ret = 0;
-    switch(type) {
-      case EMGroupPermissionType.None:{
-        ret = -1;
-      }
+    switch (type) {
+      case EMGroupPermissionType.None:
+        {
+          ret = -1;
+        }
         break;
-      case EMGroupPermissionType.Member:{
-        ret = 0;
-      }
-      break;
-      case EMGroupPermissionType.Admin:{
-        ret = 1;
-      }
-      break;
-      case EMGroupPermissionType.Owner:{
-        ret = 2;
-      }
-      break;
+      case EMGroupPermissionType.Member:
+        {
+          ret = 0;
+        }
+        break;
+      case EMGroupPermissionType.Admin:
+        {
+          ret = 1;
+        }
+        break;
+      case EMGroupPermissionType.Owner:
+        {
+          ret = 2;
+        }
+        break;
     }
     return ret;
   }
@@ -148,7 +155,6 @@ class EMGroup {
 }
 
 class EMGroupOptions {
-
   EMGroupOptions._private();
 
   EMGroupOptions({@required EMGroupStyle style, int count = 200, bool inviteNeedConfirm = false, String extension = ''}) {
@@ -164,9 +170,9 @@ class EMGroupOptions {
   String _ext;
 
   EMGroupStyle get style => _style;
-  int get maxCount =>_maxCount;
+  int get maxCount => _maxCount;
   bool get inviteNeedConfirm => _inviteNeedConfirm;
-  String get ext =>_ext;
+  String get ext => _ext;
 
   factory EMGroupOptions.fromJson(Map map) {
     if (map == null) return null;
@@ -178,7 +184,7 @@ class EMGroupOptions {
   }
 
   Map toJson() {
-    Map data  = Map();
+    Map data = Map();
     data['style'] = EMGroupOptions.styleTypeToInt(_style);
     data['maxCount'] = _maxCount;
     data['inviteNeedConfirm'] = _inviteNeedConfirm;
@@ -188,46 +194,54 @@ class EMGroupOptions {
 
   static EMGroupStyle styleTypeFromInt(int type) {
     EMGroupStyle ret = EMGroupStyle.PrivateOnlyOwnerInvite;
-    switch(type) {
-      case 0:{
-        ret = EMGroupStyle.PrivateOnlyOwnerInvite;
-      }
+    switch (type) {
+      case 0:
+        {
+          ret = EMGroupStyle.PrivateOnlyOwnerInvite;
+        }
         break;
-      case 1:{
-        ret = EMGroupStyle.PrivateMemberCanInvite;
-      }
-      break;
-      case 2:{
-        ret = EMGroupStyle.PublicJoinNeedApproval;
-      }
-      break;
-      case 3:{
-        ret = EMGroupStyle.PublicOpenJoin;
-      }
-      break;
+      case 1:
+        {
+          ret = EMGroupStyle.PrivateMemberCanInvite;
+        }
+        break;
+      case 2:
+        {
+          ret = EMGroupStyle.PublicJoinNeedApproval;
+        }
+        break;
+      case 3:
+        {
+          ret = EMGroupStyle.PublicOpenJoin;
+        }
+        break;
     }
     return ret;
   }
 
   static int styleTypeToInt(EMGroupStyle type) {
     int ret = 0;
-    switch(type) {
-      case EMGroupStyle.PrivateOnlyOwnerInvite:{
-        ret = 0;
-      }
-      break;
-      case EMGroupStyle.PrivateMemberCanInvite:{
-        ret = 1;
-      }
-      break;
-      case EMGroupStyle.PublicJoinNeedApproval:{
-        ret = 2;
-      }
-      break;
-      case EMGroupStyle.PublicOpenJoin:{
-        ret = 3;
-      }
-      break;
+    switch (type) {
+      case EMGroupStyle.PrivateOnlyOwnerInvite:
+        {
+          ret = 0;
+        }
+        break;
+      case EMGroupStyle.PrivateMemberCanInvite:
+        {
+          ret = 1;
+        }
+        break;
+      case EMGroupStyle.PublicJoinNeedApproval:
+        {
+          ret = 2;
+        }
+        break;
+      case EMGroupStyle.PublicOpenJoin:
+        {
+          ret = 3;
+        }
+        break;
     }
     return ret;
   }
@@ -239,7 +253,6 @@ class EMGroupOptions {
 }
 
 class EMGroupSharedFile {
-
   EMGroupSharedFile._private();
 
   String _fileId;
@@ -249,13 +262,13 @@ class EMGroupSharedFile {
   int _fileSize;
 
   String get fileId => _fileId;
-  String get fileName =>_fileName;
+  String get fileName => _fileName;
   String get fileOwner => _fileOwner;
   int get createTime => _createTime;
   int get fileSize => _fileSize;
 
   factory EMGroupSharedFile.fromJson(Map map) {
-    if(map == null) return null;
+    if (map == null) return null;
     return EMGroupSharedFile._private()
       .._fileId = map["fileId"]
       .._fileName = map["name"]

@@ -113,15 +113,15 @@ class EMGroupManager {
   }
 
   /// 获取黑名单列表
-  Future<List<String>> getGroupBlacklistFromServer(
+  Future<List<String>> getGroupBlockListFromServer(
     String groupId, {
     int pageSize = 200,
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupBlacklistFromServer, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupBlockListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupBlacklistFromServer]?.cast<String>();
+    return result[EMSDKMethod.getGroupBlockListFromServer]?.cast<String>();
   }
 
   /// 获取禁言列表
