@@ -72,8 +72,8 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                 blockChatRoomMembers(param, EMSDKMethod.blockChatRoomMembers, result);
             } else if (EMSDKMethod.unBlockChatRoomMembers.equals(methodCall.method)) {
                 unBlockChatRoomMembers(param, EMSDKMethod.unBlockChatRoomMembers, result);
-            } else if (EMSDKMethod.fetchChatRoomBlackList.equals(methodCall.method)) {
-                fetchChatRoomBlackList(param, EMSDKMethod.fetchChatRoomBlackList, result);
+            } else if (EMSDKMethod.fetchChatRoomBlockList.equals(methodCall.method)) {
+                fetchChatRoomBlockList(param, EMSDKMethod.fetchChatRoomBlockList, result);
             } else if (EMSDKMethod.updateChatRoomAnnouncement.equals(methodCall.method)) {
                 updateChatRoomAnnouncement(param, EMSDKMethod.updateChatRoomAnnouncement, result);
             } else if (EMSDKMethod.fetchChatRoomAnnouncement.equals(methodCall.method)) {
@@ -406,7 +406,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         });
     }
 
-    private void fetchChatRoomBlackList(JSONObject param, String channelName, MethodChannel.Result result)
+    private void fetchChatRoomBlockList(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String roomId = param.getString("roomId");
         int pageNum = param.getInt("pageNum");

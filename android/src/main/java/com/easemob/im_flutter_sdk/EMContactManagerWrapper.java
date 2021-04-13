@@ -45,29 +45,29 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
             {
                 getAllContactsFromDB(param, EMSDKMethod.getAllContactsFromDB, result);
             }
-            else if(EMSDKMethod.addUserToBlackList.equals(call.method))
+            else if(EMSDKMethod.addUserToBlockList.equals(call.method))
             {
-                addUserToBlackList(param, EMSDKMethod.getAllContactsFromServer, result);
+                addUserToBlockList(param, EMSDKMethod.addUserToBlockList, result);
             }
-            else if(EMSDKMethod.removeUserFromBlackList.equals(call.method))
+            else if(EMSDKMethod.removeUserFromBlockList.equals(call.method))
             {
-                removeUserFromBlackList(param, EMSDKMethod.getAllContactsFromServer, result);
+                removeUserFromBlockList(param, EMSDKMethod.removeUserFromBlockList, result);
             }
-            else if(EMSDKMethod.getBlackListFromServer.equals(call.method))
+            else if(EMSDKMethod.getBlockListFromServer.equals(call.method))
             {
-                getBlackListFromServer(param, EMSDKMethod.getAllContactsFromServer, result);
+                getBlockListFromServer(param, EMSDKMethod.getBlockListFromServer, result);
             }
             else if(EMSDKMethod.acceptInvitation.equals(call.method))
             {
-                acceptInvitation(param, EMSDKMethod.getAllContactsFromServer, result);
+                acceptInvitation(param, EMSDKMethod.acceptInvitation, result);
             }
             else if(EMSDKMethod.declineInvitation.equals(call.method))
             {
-                declineInvitation(param, EMSDKMethod.getAllContactsFromServer, result);
+                declineInvitation(param, EMSDKMethod.declineInvitation, result);
             }
             else if(EMSDKMethod.getSelfIdsOnOtherPlatform.equals(call.method))
             {
-                getSelfIdsOnOtherPlatform(param, EMSDKMethod.getAllContactsFromServer, result);
+                getSelfIdsOnOtherPlatform(param, EMSDKMethod.getSelfIdsOnOtherPlatform, result);
             }
             else  {
                 super.onMethodCall(call, result);
@@ -127,7 +127,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 //        });
     }
 
-    private void addUserToBlackList(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void addUserToBlockList(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = params.getString("username");
         asyncRunnable(() -> {
             try {
@@ -139,7 +139,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
         });
     }
 
-    private void removeUserFromBlackList(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void removeUserFromBlockList(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = params.getString("username");
         asyncRunnable(() -> {
             try {
@@ -151,7 +151,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
         });
     }
 
-    private void getBlackListFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void getBlockListFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
         asyncRunnable(() -> {
             try {
                 List contacts = EMClient.getInstance().contactManager().getBlackListFromServer();
