@@ -23,10 +23,10 @@ class EMContactManager {
   }
 
   final List<EMContactEventListener> _contactChangeEventListeners = List<EMContactEventListener>();
-  List<String> _blackList;
+  List<String> _blockList;
 
   /// 本地缓存的黑名单列表，在从服务器获取黑名单后有值
-  List<String> get blackList => _blackList;
+  List<String> get blockList => _blockList;
 
   /// @nodoc
   Future<void> _onContactChanged(Map event) async {
@@ -105,31 +105,31 @@ class EMContactManager {
   }
 
   /// 把指定用户加入到黑名单中 [username] .
-  Future<String> addUserToBlackList(String username) async {
+  Future<String> addUserToBlockList(String username) async {
     Map req = {'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addUserToBlackList, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.addUserToBlackList];
+    return result[EMSDKMethod.addUserToBlockList];
   }
 
   /// 把用户从黑名单中移除 [username].
-  Future<String> removeUserFromBlackList(String username) async {
+  Future<String> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.removeUserFromBlackList, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.removeUserFromBlackList];
+    return result[EMSDKMethod.removeUserFromBlockList];
   }
 
   /// 从服务器获取黑名单中的用户的ID
-  Future<List<EMContact>> getBlackListFromServer() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getBlackListFromServer);
+  Future<List<EMContact>> getBlockListFromServer() async {
+    Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
     EMError.hasErrorFromResult(result);
-    List<EMContact> blackList = List();
+    List<EMContact> blockList = List();
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      blackList.add(EMContact.fromJson({'eid': element}));
+      blockList.add(EMContact.fromJson({'eid': element}));
     });
-    return blackList;
+    return blockList;
   }
 
   /// 接受加好友的邀请[username].
