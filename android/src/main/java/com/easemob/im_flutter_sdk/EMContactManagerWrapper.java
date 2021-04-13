@@ -16,8 +16,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
-
-public class EMContactManagerWrapper extends EMWrapper implements MethodCallHandler{
+public class EMContactManagerWrapper extends EMWrapper implements MethodCallHandler {
 
     EMContactManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
@@ -27,49 +26,29 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     @Override
     public void onMethodCall(MethodCall call, Result result) {
 
-        JSONObject param = (JSONObject)call.arguments;
+        JSONObject param = (JSONObject) call.arguments;
         try {
-            if (EMSDKMethod.addContact.equals(call.method))
-            {
+            if (EMSDKMethod.addContact.equals(call.method)) {
                 addContact(param, EMSDKMethod.addContact, result);
-            }
-            else if(EMSDKMethod.deleteContact.equals(call.method))
-            {
+            } else if (EMSDKMethod.deleteContact.equals(call.method)) {
                 deleteContact(param, EMSDKMethod.deleteContact, result);
-            }
-            else if(EMSDKMethod.getAllContactsFromServer.equals(call.method))
-            {
+            } else if (EMSDKMethod.getAllContactsFromServer.equals(call.method)) {
                 getAllContactsFromServer(param, EMSDKMethod.getAllContactsFromServer, result);
-            }
-            else if(EMSDKMethod.getAllContactsFromDB.equals(call.method))
-            {
+            } else if (EMSDKMethod.getAllContactsFromDB.equals(call.method)) {
                 getAllContactsFromDB(param, EMSDKMethod.getAllContactsFromDB, result);
-            }
-            else if(EMSDKMethod.addUserToBlockList.equals(call.method))
-            {
+            } else if (EMSDKMethod.addUserToBlockList.equals(call.method)) {
                 addUserToBlockList(param, EMSDKMethod.addUserToBlockList, result);
-            }
-            else if(EMSDKMethod.removeUserFromBlockList.equals(call.method))
-            {
+            } else if (EMSDKMethod.removeUserFromBlockList.equals(call.method)) {
                 removeUserFromBlockList(param, EMSDKMethod.removeUserFromBlockList, result);
-            }
-            else if(EMSDKMethod.getBlockListFromServer.equals(call.method))
-            {
+            } else if (EMSDKMethod.getBlockListFromServer.equals(call.method)) {
                 getBlockListFromServer(param, EMSDKMethod.getBlockListFromServer, result);
-            }
-            else if(EMSDKMethod.acceptInvitation.equals(call.method))
-            {
+            } else if (EMSDKMethod.acceptInvitation.equals(call.method)) {
                 acceptInvitation(param, EMSDKMethod.acceptInvitation, result);
-            }
-            else if(EMSDKMethod.declineInvitation.equals(call.method))
-            {
+            } else if (EMSDKMethod.declineInvitation.equals(call.method)) {
                 declineInvitation(param, EMSDKMethod.declineInvitation, result);
-            }
-            else if(EMSDKMethod.getSelfIdsOnOtherPlatform.equals(call.method))
-            {
+            } else if (EMSDKMethod.getSelfIdsOnOtherPlatform.equals(call.method)) {
                 getSelfIdsOnOtherPlatform(param, EMSDKMethod.getSelfIdsOnOtherPlatform, result);
-            }
-            else  {
+            } else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException e) {
@@ -85,7 +64,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
             try {
                 EMClient.getInstance().contactManager().addContact(username, reason);
                 onSuccess(result, channelName, username);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
@@ -98,107 +77,106 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
             try {
                 EMClient.getInstance().contactManager().deleteContact(username, keepConversation);
                 onSuccess(result, channelName, username);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void getAllContactsFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void getAllContactsFromServer(JSONObject params, String channelName, Result result) throws JSONException {
         asyncRunnable(() -> {
             try {
-                List contacts =  EMClient.getInstance().contactManager().getAllContactsFromServer();
+                List contacts = EMClient.getInstance().contactManager().getAllContactsFromServer();
                 onSuccess(result, channelName, contacts);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void getAllContactsFromDB(JSONObject params, String channelName,  Result result) throws JSONException {
-//        asyncRunnable(() -> {
-//            try {
-//                // TODO:
-//                List contacts =  EMClient.getInstance().contactManager().getContactsFromDB();
-//                onSuccess(result, channelName, contacts);
-//            }catch (HyphenateException e) {
-//                onError(result, e);
-//            }
-//        });
+    private void getAllContactsFromDB(JSONObject params, String channelName, Result result) throws JSONException {
+        asyncRunnable(() -> {
+            try {
+                List contacts = EMClient.getInstance().contactManager().getContactsFromLocal();
+                onSuccess(result, channelName, contacts);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
-    private void addUserToBlockList(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void addUserToBlockList(JSONObject params, String channelName, Result result) throws JSONException {
         String username = params.getString("username");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().addUserToBlackList(username, false);
                 onSuccess(result, channelName, username);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void removeUserFromBlockList(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void removeUserFromBlockList(JSONObject params, String channelName, Result result) throws JSONException {
         String username = params.getString("username");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().removeUserFromBlackList(username);
                 onSuccess(result, channelName, username);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void getBlockListFromServer(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void getBlockListFromServer(JSONObject params, String channelName, Result result) throws JSONException {
         asyncRunnable(() -> {
             try {
                 List contacts = EMClient.getInstance().contactManager().getBlackListFromServer();
                 onSuccess(result, channelName, contacts);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void acceptInvitation(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void acceptInvitation(JSONObject params, String channelName, Result result) throws JSONException {
         String username = params.getString("username");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().acceptInvitation(username);
                 onSuccess(result, channelName, username);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void declineInvitation(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void declineInvitation(JSONObject params, String channelName, Result result) throws JSONException {
         String username = params.getString("username");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().declineInvitation(username);
                 onSuccess(result, channelName, username);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
 
-    private void getSelfIdsOnOtherPlatform(JSONObject params, String channelName,  Result result) throws JSONException {
+    private void getSelfIdsOnOtherPlatform(JSONObject params, String channelName, Result result) throws JSONException {
         asyncRunnable(() -> {
             try {
                 List platforms = EMClient.getInstance().contactManager().getSelfIdsOnOtherPlatform();
                 onSuccess(result, channelName, platforms);
-            }catch (HyphenateException e) {
+            } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
 
     }
 
-    private void registerEaseListener(){
+    private void registerEaseListener() {
         EMClient.getInstance().contactManager().setContactListener(new EMContactListener() {
             @Override
             public void onContactAdded(String userName) {

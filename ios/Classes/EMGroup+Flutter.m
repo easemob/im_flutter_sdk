@@ -20,7 +20,7 @@
     ret[@"memberCount"] = @(self.occupantsCount);
     ret[@"memberList"] = self.memberList;
     ret[@"adminList"] = self.adminList;
-    ret[@"blocklist"] = self.blacklist;
+    ret[@"blockList"] = self.blacklist;
     ret[@"muteList"] = self.muteList;
     ret[@"sharedFileList"] = self.sharedFileList;
     ret[@"noticeEnable"] = @(self.isPushNotificationEnabled);

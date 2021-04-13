@@ -18,7 +18,7 @@
     ret[@"memberCount"] = @(self.occupantsCount);
     ret[@"adminList"] = self.adminList;
     ret[@"memberList"] = self.memberList;
-    ret[@"blocklist"] = self.blacklist;
+    ret[@"blockList"] = self.blacklist;
     ret[@"muteList"] = self.muteList;
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"announcement"] = self.announcement;
