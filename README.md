@@ -523,7 +523,7 @@ try{
 
 ```dart
 try{
-  List<EMContact> contactsList = await EMClient.getInstance.contactManager.getBlackListFromServer();
+  List<EMContact> blockList = await EMClient.getInstance.contactManager.getBlockListFromServer();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -534,7 +534,7 @@ try{
 
 ```dart
 try{
-  await EMClient.getInstance.contactManager.addUserToBlackList(emId);
+  await EMClient.getInstance.contactManager.addUserToBlockList(emId);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -546,7 +546,7 @@ try{
 
 ```dart
 try{
-  await EMClient.getInstance.contactManager.removeUserFromBlackList(emId);
+  await EMClient.getInstance.contactManager.removeUserFromBlockList(emId);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -805,7 +805,7 @@ try{
 
 ```dart
 try{
-  List blockList = await EMClient.getInstance.groupManager.getGroupBlacklistFromServer(group.groupId);
+  List blockList = await EMClient.getInstance.groupManager.getGroupBlocklistFromServer(group.groupId);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -815,7 +815,7 @@ try{
 
 ```dart
 try{
-  await EMClient.getInstance.groupManager.blockMembers(group.groupId, blackList);
+  await EMClient.getInstance.groupManager.blockMembers(group.groupId, blockList);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -827,7 +827,7 @@ try{
 
 ```dart
 try{
-  await EMClient.getInstance.groupManager.unblockMembers(group.groupId, unBlackList);
+  await EMClient.getInstance.groupManager.unblockMembers(group.groupId, unBlockList);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1378,7 +1378,7 @@ try{
 
 ```dart
 try{
-  List<String> blockList = await EMClient.getInstance.roomManager.fetchChatRoomBlackList(roomId);
+  List<String> blockList = await EMClient.getInstance.roomManager.fetchChatRoomBlockList(roomId);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
