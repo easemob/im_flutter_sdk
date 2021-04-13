@@ -151,7 +151,7 @@ class EMGroupHelper {
         data.put("memberCount", group.getMemberCount());
         data.put("memberList", group.getMembers());
         data.put("adminList", group.getAdminList());
-        data.put("blacklist", group.getBlackList());
+        data.put("blockList", group.getBlackList());
         data.put("muteList", group.getMuteList());
         data.put("sharedFileList", group.getShareFileList());
         if (group.getGroupId() != null && EMClient.getInstance().pushManager().getNoPushGroups() != null) {
@@ -287,7 +287,7 @@ class EMChatRoomHelper {
         data.put("memberCount", chatRoom.getMemberCount());
         data.put("adminList", chatRoom.getAdminList());
         data.put("memberList", chatRoom.getMemberList());
-        data.put("blacklist", chatRoom.getBlackList());
+        data.put("blockList", chatRoom.getBlackList());
         data.put("muteList", chatRoom.getMuteList().values());
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());

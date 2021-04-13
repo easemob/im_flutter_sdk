@@ -64,9 +64,9 @@
     {
         [self getGroupMemberListFromServer:call.arguments result:result];
     }
-    else if ([EMMethodKeyGetGroupBlocklistFromServer isEqualToString:call.method])
+    else if ([EMMethodKeyGetGroupBlockListFromServer isEqualToString:call.method])
     {
-        [self getGroupBlocklistFromServer:call.arguments result:result];
+        [self getGroupBlockListFromServer:call.arguments result:result];
     }
     else if ([EMMethodKeyGetGroupMuteListFromServer isEqualToString:call.method])
     {
@@ -330,7 +330,7 @@
     }];
 }
 
-- (void)getGroupBlocklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupBlockListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupBlacklistFromServerWithId:param[@"groupId"]
                                                                pageNumber:[param[@"pageNum"] intValue]
@@ -338,7 +338,7 @@
                                                                completion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupBlocklistFromServer
+                      channelName:EMMethodKeyGetGroupBlockListFromServer
                             error:aError
                            object:aList];
     }];

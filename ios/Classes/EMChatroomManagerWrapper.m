@@ -61,8 +61,8 @@
     else if ([EMMethodKeyGetChatroomMemberListFromServer isEqualToString:call.method]) {
         [self getChatroomMemberListFromServer:call.arguments result:result];
     }
-    else if ([EMMethodKeyFetchChatroomBlocklistFromServer isEqualToString:call.method]) {
-        [self fetchChatroomBlocklistFromServer:call.arguments result:result];
+    else if ([EMMethodKeyFetchChatroomBlockListFromServer isEqualToString:call.method]) {
+        [self fetchChatroomBlockListFromServer:call.arguments result:result];
     }
     else if ([EMMethodKeyGetChatroomMuteListFromServer isEqualToString:call.method]) {
         [self getChatroomMuteListFromServer:call.arguments result:result];
@@ -255,7 +255,7 @@
     }];
 }
 
-- (void)fetchChatroomBlocklistFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)fetchChatroomBlockListFromServer:(NSDictionary *)param result:(FlutterResult)result {
     
     __weak typeof(self) weakSelf = self;
     
@@ -268,7 +268,7 @@
                                                                  completion:^(NSArray *aList, EMError *aError)
     {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyFetchChatroomBlocklistFromServer
+                      channelName:EMMethodKeyFetchChatroomBlockListFromServer
                             error:aError
                            object:aList];
     }];

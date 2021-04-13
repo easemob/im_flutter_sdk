@@ -129,7 +129,7 @@ static NSString *const EMMethodKeyGetChatroomMuteListFromServer = @"fetchChatRoo
 static NSString *const EMMethodKeyChatRoomRemoveMembers = @"removeChatRoomMembers";
 static NSString *const EMMethodKeyChatRoomBlockMembers = @"blockChatRoomMembers";
 static NSString *const EMMethodKeyChatRoomUnblockMembers = @"unBlockChatRoomMembers";
-static NSString *const EMMethodKeyFetchChatroomBlocklistFromServer = @"fetchChatRoomBlockList";
+static NSString *const EMMethodKeyFetchChatroomBlockListFromServer = @"fetchChatRoomBlockList";
 static NSString *const EMMethodKeyUpdateChatRoomAnnouncement = @"updateChatRoomAnnouncement";
 static NSString *const EMMethodKeyFetchChatroomAnnouncement = @"fetchChatRoomAnnouncement";
 
@@ -145,7 +145,7 @@ static NSString *const EMMethodKeyGetPublicGroupsFromServer = @"getPublicGroupsF
 static NSString *const EMMethodKeyCreateGroup = @"createGroup";
 static NSString *const EMMethodKeyGetGroupSpecificationFromServer = @"getGroupSpecificationFromServer";
 static NSString *const EMMethodKeyGetGroupMemberListFromServer = @"getGroupMemberListFromServer";
-static NSString *const EMMethodKeyGetGroupBlocklistFromServer = @"getGroupBlocklistFromServer";
+static NSString *const EMMethodKeyGetGroupBlockListFromServer = @"getGroupBlockListFromServer";
 static NSString *const EMMethodKeyGetGroupMuteListFromServer = @"getGroupMuteListFromServer";
 static NSString *const EMMethodKeyGetGroupWhiteListFromServer = @"getGroupWhiteListFromServer";
 static NSString *const EMMethodKeyIsMemberInWhiteListFromServer = @"isMemberInWhiteListFromServer";

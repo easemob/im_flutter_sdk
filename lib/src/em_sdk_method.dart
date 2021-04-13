@@ -135,7 +135,7 @@ class EMSDKMethod {
   static const String createGroup = 'createGroup';
   static const String getGroupSpecificationFromServer = 'getGroupSpecificationFromServer';
   static const String getGroupMemberListFromServer = 'getGroupMemberListFromServer';
-  static const String getGroupBlocklistFromServer = 'getGroupBlocklistFromServer';
+  static const String getGroupBlockListFromServer = 'getGroupBlockListFromServer';
   static const String getGroupMuteListFromServer = 'getGroupMuteListFromServer';
   static const String getGroupWhiteListFromServer = 'getGroupWhiteListFromServer';
   static const String isMemberInWhiteListFromServer = 'isMemberInWhiteListFromServer';

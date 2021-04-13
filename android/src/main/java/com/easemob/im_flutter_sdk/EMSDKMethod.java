@@ -134,7 +134,7 @@ public class EMSDKMethod {
     static final String createGroup = "createGroup";
     static final String getGroupSpecificationFromServer = "getGroupSpecificationFromServer";
     static final String getGroupMemberListFromServer = "getGroupMemberListFromServer";
-    static final String getGroupBlacklistFromServer = "getGroupBlacklistFromServer";
+    static final String getGroupBlockListFromServer = "getGroupBlockListFromServer";
     static final String getGroupMuteListFromServer = "getGroupMuteListFromServer";
     static final String getGroupWhiteListFromServer = "getGroupWhiteListFromServer";
     static final String isMemberInWhiteListFromServer = "isMemberInWhiteListFromServer";

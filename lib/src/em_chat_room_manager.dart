@@ -301,15 +301,15 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 获取群组黑名单列表，分页显示，需要拥有者或者管理员权限 [roomId].[pageNum].[pageSize]
-  Future<List<String>> fetchChatRoomBlackList(
+  Future<List<String>> fetchChatRoomBlockList(
     String roomId, [
     int pageNum = 1,
     int pageSize = 200,
   ]) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
-    Map result = await _channel.invokeMethod(EMSDKMethod.fetchChatRoomBlackList, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.fetchChatRoomBlockList, req);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.fetchChatRoomBlackList]?.cast<String>();
+    return result[EMSDKMethod.fetchChatRoomBlockList]?.cast<String>();
   }
 
   /// 更新聊天室公告[roomId].[announcement]
