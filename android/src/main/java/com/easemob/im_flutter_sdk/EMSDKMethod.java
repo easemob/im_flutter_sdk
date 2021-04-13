@@ -13,29 +13,28 @@ public class EMSDKMethod {
     static final String compressLogs = "compressLogs";
     static final String kickDevice = "kickDevice";
     static final String kickAllDevices = "kickAllDevices";
-    static final String getLoggedInDevicesFromServer =  "getLoggedInDevicesFromServer";
-    static final String getCurrentUser =  "getCurrentUser";
+    static final String getLoggedInDevicesFromServer = "getLoggedInDevicesFromServer";
+    static final String getCurrentUser = "getCurrentUser";
 
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
-
 
     /// EMContactManager methods
     static final String addContact = "addContact";
     static final String deleteContact = "deleteContact";
     static final String getAllContactsFromServer = "getAllContactsFromServer";
     static final String getAllContactsFromDB = "getAllContactsFromDB";
-    static final String addUserToBlackList = "addUserToBlackList";
-    static final String removeUserFromBlackList = "removeUserFromBlackList";
-    static final String getBlackListFromServer = "getBlackListFromServer";
+    static final String addUserToBlockList = "addUserToBlockList";
+    static final String removeUserFromBlockList = "removeUserFromBlockList";
+    static final String getBlockListFromServer = "getBlockListFromServer";
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
 
     static final String onContactChanged = "onContactChanged";
 
-/// EMChatManager methods
+    /// EMChatManager methods
     static final String sendMessage = "sendMessage";
     static final String resendMessage = "resendMessage";
     static final String ackMessageRead = "ackMessageRead";
@@ -73,7 +72,7 @@ public class EMSDKMethod {
     static final String onMessageDeliveryAck = "onMessageDeliveryAck";
     static final String onMessageStatusChanged = "onMessageStatusChanged";
 
-/// EMConversation
+    /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
     static final String markMessageAsRead = "markMessageAsRead";
@@ -87,7 +86,6 @@ public class EMSDKMethod {
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
 
-
     // 根据消息id获取消息
     static final String loadMsgWithId = "loadMsgWithId";
     // 根据起始消息id获取消息
@@ -99,8 +97,7 @@ public class EMSDKMethod {
     // 通过时间获取消息
     static final String loadMsgWithTime = "loadMsgWithTime";
 
-
-    //EMChatRoomManager
+    // EMChatRoomManager
     static final String joinChatRoom = "joinChatRoom";
     static final String leaveChatRoom = "leaveChatRoom";
     static final String fetchPublicChatRoomsFromServer = "fetchPublicChatRoomsFromServer";
@@ -121,11 +118,11 @@ public class EMSDKMethod {
     static final String removeChatRoomMembers = "removeChatRoomMembers";
     static final String blockChatRoomMembers = "blockChatRoomMembers";
     static final String unBlockChatRoomMembers = "unBlockChatRoomMembers";
-    static final String fetchChatRoomBlackList = "fetchChatRoomBlackList";
+    static final String fetchChatRoomBlockList = "fetchChatRoomBlockList";
     static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
     static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
 
-    //EMChatRoomManagerListener
+    // EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChanged";
 
     /// EMGroupManager
@@ -137,7 +134,7 @@ public class EMSDKMethod {
     static final String createGroup = "createGroup";
     static final String getGroupSpecificationFromServer = "getGroupSpecificationFromServer";
     static final String getGroupMemberListFromServer = "getGroupMemberListFromServer";
-    static final String getGroupBlacklistFromServer = "getGroupBlacklistFromServer";
+    static final String getGroupBlockListFromServer = "getGroupBlockListFromServer";
     static final String getGroupMuteListFromServer = "getGroupMuteListFromServer";
     static final String getGroupWhiteListFromServer = "getGroupWhiteListFromServer";
     static final String isMemberInWhiteListFromServer = "isMemberInWhiteListFromServer";
