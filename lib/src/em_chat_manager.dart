@@ -185,8 +185,7 @@ class EMChatManager {
     bool deleteMessages = true,
   ]) async {
     Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.deleteConversation, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.deleteConversation, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.deleteConversation);
   }
