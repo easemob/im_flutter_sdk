@@ -206,6 +206,15 @@ class EMGroupHelper {
     }
 }
 
+class EMGroupInfoHelper {
+    static Map<String, Object> toJson(EMGroupInfo group) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("groupId", group.getGroupId());
+        data.put("name", group.getGroupName());
+        return data;
+    }
+}
+
 class EMMucSharedFileHelper {
     static Map<String, Object> toJson(EMMucSharedFile file) {
         Map<String, Object> data = new HashMap<>();
@@ -934,8 +943,13 @@ class EMCursorResultHelper {
             }
 
             if (obj instanceof EMGroupInfo) {
-                jsonList.add(EMGroupHelper
-                        .toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
+                EMGroup group = EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId());
+                if (group != null) {
+                    jsonList.add(EMGroupHelper
+                            .toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
+                }else  {
+                    jsonList.add(EMGroupInfoHelper.toJson((EMGroupInfo) obj));
+                }
             }
         }
         data.put("list", jsonList);
