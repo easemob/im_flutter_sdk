@@ -139,7 +139,7 @@ class EMChatRoomManager {
   Future<List<EMChatRoom>> getAllChatRooms() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getAllChatRooms);
     EMError.hasErrorFromResult(result);
-    List list = List();
+    List<EMChatRoom> list = List();
     result[EMSDKMethod.getAllChatRooms]?.forEach((element) => list.add(EMChatRoom.fromJson(element)));
     return list;
   }
