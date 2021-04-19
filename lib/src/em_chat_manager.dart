@@ -142,7 +142,8 @@ class EMChatManager {
 
   /// 下载缩略图 [message].
   Future<bool> downloadThumbnail(EMMessage message) async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.downloadThumbnail, {"message": message.toJson()});
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.downloadThumbnail, {"message": message.toJson()});
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.downloadThumbnail);
   }
@@ -163,7 +164,7 @@ class EMChatManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getConversationsFromServer);
     EMError.hasErrorFromResult(result);
     var conversationList = List<EMConversation>();
-    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+    result[EMSDKMethod.getConversationsFromServer]?.forEach((element) {
       conversationList.add(EMConversation.fromJson(element));
     });
     return conversationList;

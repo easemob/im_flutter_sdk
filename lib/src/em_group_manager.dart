@@ -37,7 +37,7 @@ class EMGroupManager {
   Future<List<EMGroup>> getJoinedGroups() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getJoinedGroups);
     EMError.hasErrorFromResult(result);
-    var list = List();
+    List<EMGroup> list = List();
     result[EMSDKMethod.getJoinedGroups]?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
