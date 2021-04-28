@@ -138,7 +138,7 @@ class EMMessage {
     this.status = msg.status;
     this.body = msg.body;
     if (listener != null) {
-      listener.onError(EMError.fromJson(map));
+      listener.onError(EMError.fromJson(map['error']));
     }
     return null;
   }
