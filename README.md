@@ -62,6 +62,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 - `EMGroupManager`用于群组相关操作，如获取群组列表，加入群组，离开群组等;
 - `EMChatRoomManager`用于管理聊天室，如获取聊天室列表;
 - `EMPushManager`用于管理推送配置，如设置推送昵称，推送免打扰时间段等;
+- `EMUserInfoManager`用于更新自己的用户属性，设置用户属性，获取其他用户的用户属性等;
 
 > SDK依赖环信Lite SDK，不支持音视频。
 
@@ -1608,5 +1609,63 @@ try{
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
+```
+
+### EMUserInfoManager
+
+#### 更新自己的用户属性
+```dart
+ try {
+     
+      Map aMap = {'nickName': 'gagaga', 'mail': 'jinliang.liu@easemob.com'};
+      EMUserInfo updateUserInfo =
+          await EMClient.getInstance.userInfoManager.updateOwnUserInfo(aMap);
+    } on EMError catch (e) {
+      print('操作失败，原因是: $e');
+    }
+```
+#### 更新自己的某一个用户属性
+```dart
+   try {
+      EMUserInfoType infoType = EMUserInfoType.EMUserInfoTypeBirth;
+      String updateValue = '2021.01.01';
+      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
+          .updateOwnUserInfoWithType(infoType, updateValue);
+    } on EMError catch (e) {
+      print('操作失败，原因是: $e');
+    }
+```
+#### 获取多用户的用户属性
+```dart
+  try {
+      String userId = EMClient.getInstance.currentUsername;
+      List<String> userIds = List();
+      userIds.add(userId);
+      userIds.add('xxx');
+      Map userInfoMap =
+          await EMClient.getInstance.userInfoManager.fetchUserInfoById(userIds);
+  
+    } on EMError catch (e) {
+      print('操作失败，原因是: $e');
+    }
+```
+#### 获取多用户指定的用户属性
+```dart
+try {
+      String userId = EMClient.getInstance.currentUsername;
+      List<String> userIds = List();
+      userIds.add(userId);
+      userIds.add('liu001');
+
+      List<EMUserInfoType> types = List();
+      types.add(EMUserInfoType.EMUserInfoTypeNickName);
+      types.add(EMUserInfoType.EMUserInfoTypeBirth);
+
+      Map userInfoMap = await EMClient.getInstance.userInfoManager
+          .fetchUserInfoByIdWithType(userIds, types);
+
+    } on EMError catch (e) {
+      print('操作失败，原因是: $e');
+    }
 ```
 
