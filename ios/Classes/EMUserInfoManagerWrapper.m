@@ -85,15 +85,11 @@
     
     [EMClient.sharedClient.userInfoManager fetchUserInfoById:userIds completion:^(NSDictionary *aUserDatas, EMError *aError) {
         
-        NSLog(@"fetchUserInfoById aUserDatas:%@",aUserDatas);
-
         NSMutableDictionary *dic = NSMutableDictionary.new;
         [aUserDatas enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
             dic[key] = [(EMUserInfo *)obj toJson];
         }];
-        
-        NSLog(@"dic:%@",dic);
-        
+                
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyFetchUserInfoById
                             error:aError
@@ -111,14 +107,11 @@
 
     [EMClient.sharedClient.userInfoManager fetchUserInfoById:userIds type:userInfoTypes completion:^(NSDictionary *aUserDatas, EMError *aError) {
             
-        NSLog(@"fetchUserInfoByIdWithType aUserDatas:%@",aUserDatas);
-
         NSMutableDictionary *dic = NSMutableDictionary.new;
         [aUserDatas enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
             dic[key] = [(EMUserInfo *)obj toJson];
         }];
         
-        NSLog(@"dic:%@",dic);
         
             [weakSelf wrapperCallBack:result
                           channelName:EMMethodKeyFetchUserInfoByIdWithType
