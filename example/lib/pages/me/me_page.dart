@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -50,6 +52,54 @@ class MePageState extends State<MePage> {
                 ),
               ],
             ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: updateOwnUserInfo,
+                    child: Text(
+                      'updateOwnUserInfo',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: fetchUserInfoById,
+                    child: Text(
+                      'fetchUserInfoById',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: fetchUserInfoByIdWithType,
+                    child: Text(
+                      'fetchUserInfoByIdWithType',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -70,13 +120,17 @@ class MePageState extends State<MePage> {
       String userId = EMClient.getInstance.currentUsername;
       List<String> userIds = List();
       userIds.add(userId);
-      userIds.add('liu001');
       userIds.add('liu003');
+      userIds.add('liu004');
+
+      int expireTime = DateTime.fromMillisecondsSinceEpoch(
+              DateTime.now().millisecondsSinceEpoch - 10000000)
+          .millisecondsSinceEpoch;
 
       print('userIds: $userIds');
+      Map userInfoMap = await EMClient.getInstance.userInfoManager
+          .fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
 
-      Map userInfoMap =
-          await EMClient.getInstance.userInfoManager.fetchUserInfoById(userIds);
       print('userInfoMap: $userInfoMap');
       print('=====================');
       print('=====================');
@@ -101,8 +155,12 @@ class MePageState extends State<MePage> {
 
       print('userIds: $userIds');
 
+      int expireTime = DateTime.fromMillisecondsSinceEpoch(
+              DateTime.now().millisecondsSinceEpoch - 10000000)
+          .millisecondsSinceEpoch;
+
       Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithType(userIds, types);
+          .fetchUserInfoByIdWithType(userIds, types, expireTime: expireTime);
       EMUserInfo userInfo = userInfoMap[userId];
       print('userInfoMap: $userInfoMap');
       print('=====================');
@@ -118,10 +176,20 @@ class MePageState extends State<MePage> {
       String userId = EMClient.getInstance.currentUsername;
       print('userId: $userId');
 
-      Map aMap = {'nickName': 'gagaga', 'mail': 'jinliang.liu@easemob.com'};
-      EMUserInfo updateUserInfo =
-          await EMClient.getInstance.userInfoManager.updateOwnUserInfo(aMap);
-      print('updateUserInfo: $updateUserInfo');
+      EMUserInfo eUserInfo =
+          EMClient.getInstance.userInfoManager.getOwnUserInfo();
+      eUserInfo.nickName = '葫芦娃';
+      String source = '123456789';
+      String month = source[Random().nextInt(source.length)];
+      String day = source[Random().nextInt(source.length)];
+
+      eUserInfo.birth = '2021-0$month-' + day;
+      print('eUserInfo.birth:${eUserInfo.birth}');
+      eUserInfo.description();
+
+      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
+          .updateOwnUserInfo(eUserInfo);
+      updateUserInfo.description();
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }

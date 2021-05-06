@@ -27,15 +27,15 @@
 
 + (EMUserInfo *)fromJson:(NSDictionary *)aJson {
     EMUserInfo *userInfo = EMUserInfo.new;
-    userInfo.userId = aJson[@"userId"];
-    userInfo.nickName = aJson[@"nickName"];
-    userInfo.avatarUrl = aJson[@"avatarUrl"];
-    userInfo.mail = aJson[@"mail"];
-    userInfo.phone = aJson[@"phone"];
-    userInfo.gender = [aJson[@"gender"] integerValue];
-    userInfo.sign = aJson[@"sign"];
-    userInfo.birth = aJson[@"birth"];
-    userInfo.ext = aJson[@"ext"];
+    userInfo.userId = aJson[@"userId"] ?: @"";
+    userInfo.nickName = aJson[@"nickName"] ?: @"";
+    userInfo.avatarUrl = aJson[@"avatarUrl"] ?: @"";
+    userInfo.mail = aJson[@"mail"] ?: @"";
+    userInfo.phone = aJson[@"phone"] ?: @"";
+    userInfo.gender = [aJson[@"gender"] integerValue] ?: 0;
+    userInfo.sign = aJson[@"sign"] ?: @"";
+    userInfo.birth = aJson[@"birth"] ?: @"";
+    userInfo.ext = aJson[@"ext"] ?: @"";
     return [userInfo copy];
 }
 

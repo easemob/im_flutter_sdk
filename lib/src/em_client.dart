@@ -119,6 +119,7 @@ class EMClient {
     _currentUsername = result[EMSDKMethod.login]['username'];
     _accessToken = result[EMSDKMethod.login]['token'];
     _isLoginBefore = true;
+
     return _currentUsername;
   }
 
@@ -355,5 +356,6 @@ class EMClient {
     _connected = false;
     _accessToken = '';
     _currentUsername = '';
+    _userInfoManager.clearUserInfoCache();
   }
 }
