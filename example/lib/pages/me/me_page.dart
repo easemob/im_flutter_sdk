@@ -52,54 +52,6 @@ class MePageState extends State<MePage> {
                 ),
               ],
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: updateOwnUserInfo,
-                    child: Text(
-                      'updateOwnUserInfo',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: fetchUserInfoById,
-                    child: Text(
-                      'fetchUserInfoById',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: fetchUserInfoByIdWithType,
-                    child: Text(
-                      'fetchUserInfoByIdWithType',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
