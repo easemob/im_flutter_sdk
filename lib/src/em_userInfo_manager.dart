@@ -10,8 +10,6 @@ class EMUserInfoManager {
       '$_channelPrefix/em_userInfo_manager', JSONMethodCodec());
 
   EMUserInfo _ownUserInfo;
-  //当前登录用户id
-  String _currentUserId;
 
   //有效的联系人map
   Map<String, EMUserInfo> effectiveUserInfoMap;
@@ -56,21 +54,6 @@ class EMUserInfoManager {
 
     return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
   }
-
-  // //获取指定id的用户的用户属性
-  // Future<Map> fetchUserInfoById(List<String> userIds) async {
-  //   Map req = {'userIds': userIds};
-  //   Map result =
-  //       await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
-
-  //   EMError.hasErrorFromResult(result);
-  //   Map tempMap = Map();
-  //   result[EMSDKMethod.fetchUserInfoById].forEach((key, value) {
-  //     tempMap[key] = EMUserInfo.fromJson(value);
-  //   });
-
-  //   return tempMap;
-  // }
 
   //获取指定id的用户的用户属性
   Future<Map> fetchUserInfoByIdWithExpireTime(List<String> userIds,
