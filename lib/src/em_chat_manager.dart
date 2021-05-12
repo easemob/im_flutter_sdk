@@ -137,14 +137,14 @@ class EMChatManager {
   Future<EMMessage> downloadAttachment(EMMessage message) async {
     Map result = await _channel.invokeMethod(EMSDKMethod.downloadAttachment, {"message": message.toJson()});
     EMError.hasErrorFromResult(result);
-    return EMMessage.fromJson(result[EMSDKMethod.getMessage]);
+    return EMMessage.fromJson(result[EMSDKMethod.downloadAttachment]);
   }
 
   /// 下载缩略图 [message].
   Future<EMMessage> downloadThumbnail(EMMessage message) async {
     Map result = await _channel.invokeMethod(EMSDKMethod.downloadThumbnail, {"message": message.toJson()});
     EMError.hasErrorFromResult(result);
-    return EMMessage.fromJson(result[EMSDKMethod.getMessage]);
+    return EMMessage.fromJson(result[EMSDKMethod.downloadThumbnail]);
   }
 
   /// 获取所有会话
