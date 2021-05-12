@@ -52,6 +52,70 @@ class MePageState extends State<MePage> {
                 ),
               ],
             ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: fetchUserInfoById,
+                    child: Text(
+                      'fetchUserInfoById',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: fetchUserInfoByIdWithType,
+                    child: Text(
+                      'fetchUserInfoByIdWithType',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: updateOwnUserInfo,
+                    child: Text(
+                      'updateOwnUserInfo',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: FlatButton(
+                    color: Colors.red,
+                    onPressed: updateOwnUserInfoWithType,
+                    child: Text(
+                      'updateOwnUserInfoWithType',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -88,7 +152,9 @@ class MePageState extends State<MePage> {
       print('=====================');
 
       EMUserInfo userInfo = userInfoMap[userId];
-      userInfo.description();
+      if (userInfo != null) {
+        userInfo.description();
+      }
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }
@@ -135,6 +201,7 @@ class MePageState extends State<MePage> {
       String month = source[Random().nextInt(source.length)];
       String day = source[Random().nextInt(source.length)];
 
+      eUserInfo.gender = 2;
       eUserInfo.birth = '2021-0$month-' + day;
       print('eUserInfo.birth:${eUserInfo.birth}');
       eUserInfo.description();
@@ -149,12 +216,20 @@ class MePageState extends State<MePage> {
 
   updateOwnUserInfoWithType() async {
     try {
-      EMUserInfoType infoType = EMUserInfoType.EMUserInfoTypeBirth;
-      String updateValue = '2021.01.01';
+      EMUserInfoType infoType = EMUserInfoType.EMUserInfoTypePhone;
+
+      String source = '123456789';
+      String month = source[Random().nextInt(source.length)];
+      String day = source[Random().nextInt(source.length)];
+
+      // String updateValue = '2021-0$month-' + day;
+
+      String updateValue = '136112255$month$day';
+      print("updateValue:$updateValue");
 
       EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
           .updateOwnUserInfoWithType(infoType, updateValue);
-      print('updateUserInfo: $updateUserInfo');
+      print('updateOwnUserInfoWithType userInfo: $updateUserInfo');
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }

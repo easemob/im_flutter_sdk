@@ -60,7 +60,7 @@ class EMUserInfo {
 
   void description() {
     print(
-        '\n=======================\n$this\n userId:$userId\n nickName:$nickName\n avatarUrl:$avatarUrl\n mail:$mail\n phone:$phone\n gender:$gender\n sign:$sign\n birth:$birth\n sign:$ext\n expireTime:$expireTime\n =======================\n');
+        '\n=======================\n$this\n userId:$userId\n nickName:$nickName\n avatarUrl:$avatarUrl\n mail:$mail\n phone:$phone\n gender:$gender\n sign:$sign\n birth:$birth\n ext:$ext\n expireTime:$expireTime\n =======================\n');
   }
 
   EMUserInfo.private([this.userId]);

@@ -1642,9 +1642,15 @@ try{
       List<String> userIds = List();
       userIds.add(userId);
       userIds.add('xxx');
-      Map userInfoMap =
-          await EMClient.getInstance.userInfoManager.fetchUserInfoById(userIds);
-  
+      
+      int expireTime = DateTime.fromMillisecondsSinceEpoch(
+              DateTime.now().millisecondsSinceEpoch - 10000000)
+          .millisecondsSinceEpoch;
+
+      Map userInfoMap = await EMClient.getInstance.userInfoManager
+          .fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
+
+
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }
@@ -1655,14 +1661,20 @@ try {
       String userId = EMClient.getInstance.currentUsername;
       List<String> userIds = List();
       userIds.add(userId);
-      userIds.add('liu001');
+      userIds.add('xxx');
 
       List<EMUserInfoType> types = List();
       types.add(EMUserInfoType.EMUserInfoTypeNickName);
       types.add(EMUserInfoType.EMUserInfoTypeBirth);
 
+
+      int expireTime = DateTime.fromMillisecondsSinceEpoch(
+              DateTime.now().millisecondsSinceEpoch - 10000000)
+          .millisecondsSinceEpoch;
+
       Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithType(userIds, types);
+          .fetchUserInfoByIdWithType(userIds, types, expireTime: expireTime);
+
 
     } on EMError catch (e) {
       print('操作失败，原因是: $e');

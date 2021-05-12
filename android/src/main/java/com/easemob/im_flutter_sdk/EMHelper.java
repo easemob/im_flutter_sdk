@@ -30,6 +30,7 @@ import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.push.EMPushConfig;
+import com.hyphenate.chat.EMUserInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -133,6 +134,7 @@ class EMContactHelper {
     }
 
     static Map<String, Object> toJson(EMContact contact) {
+
         Map<String, Object> data = new HashMap<>();
         data.put("eid", contact.getUsername());
         data.put("nickname", contact.getNickname());
@@ -997,3 +999,39 @@ class HyphenateExceptionHelper {
         return data;
     }
 }
+
+class EMUserInfoHelper {
+    static EMUserInfo  fromJson(JSONObject json) throws JSONException {
+        EMUserInfo userInfo = new EMUserInfo();
+        userInfo.setUserId(json.getString("userId"));
+        userInfo.setNickName(json.getString("nickName"));
+        userInfo.setAvatarUrl(json.getString("avatarUrl"));
+        //安卓，iOS邮箱字段不统一，需要统一处理
+        userInfo.setEmail(json.getString("mail"));
+        userInfo.setPhoneNumber(json.getString("phone"));
+        userInfo.setGender(json.getInt("gender"));
+        userInfo.setSignature(json.getString("sign"));
+        userInfo.setBirth(json.getString("birth"));
+        userInfo.setExt(json.getString("ext"));
+
+        return userInfo;
+    }
+
+
+    static Map<String, Object> toJson(EMUserInfo userInfo) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", userInfo.getUserId());
+        data.put("nickName", userInfo.getNickName());
+        data.put("avatarUrl", userInfo.getAvatarUrl());
+        data.put("email", userInfo.getEmail());
+        data.put("phoneNumber", userInfo.getPhoneNumber());
+        data.put("gender", userInfo.getGender());
+        data.put("signature", userInfo.getSignature());
+        data.put("birth", userInfo.getBirth());
+        data.put("ext", userInfo.getExt());
+
+        return data;
+    }
+}
+
+
