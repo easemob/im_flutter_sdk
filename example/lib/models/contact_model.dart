@@ -5,7 +5,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class ContactModel with ISuspensionBean {
   ContactModel.contact(EMContact contact)
-      : this._eid = contact.eid,
+      : this._eid = contact.userInfo.userId,
         this._isCustom = false;
   ContactModel.custom(String name, [Image avatar])
       : this._eid = name,
