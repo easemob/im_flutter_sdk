@@ -61,6 +61,7 @@ abstract class EMContactEventListener {
   void onFriendRequestAccepted(String userName);
 
   /// 发出的好友申请被[userName]拒绝
+  ///
   void onFriendRequestDeclined(String userName);
 }
 

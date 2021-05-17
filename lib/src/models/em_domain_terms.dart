@@ -12,3 +12,4 @@ export 'em_message.dart';
 export 'em_options.dart';
 export 'em_push_config.dart';
 export 'em_page_result.dart';
+export 'em_userInfo.dart';

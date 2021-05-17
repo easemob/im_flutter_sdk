@@ -1,39 +1,27 @@
+import 'em_userInfo.dart';
+
 class EMContact {
   factory EMContact.fromJson(Map map) {
-    return EMContact._private()
-      .._eid = map['eid']
-      .._nickname = map['nickname']
-      .._avatarURL = map['avatarURL']
-      .._markName = map['markName'];
+    return EMContact._private().._userInfo = EMUserInfo.fromJson(map);
   }
 
   Map toJson() {
     Map data = Map();
-    data['eid'] = _eid;
-    data['nickname'] = _nickname;
-    data['avatarURL'] = _avatarURL;
-    data['markName'] = _markName;
+    data = _userInfo.toJson();
     return data;
   }
 
-  EMContact._private([this._eid]);
+  EMContact._private();
 
-  String _eid;
-  String _nickname;
-  String _avatarURL = '';
+  EMUserInfo _userInfo;
+
   String _markName;
 
-  /// 环信id
-  String get eid => _eid;
-
-  /// 头像地址
-  String get avatarURL => _avatarURL;
-
-  /// nickname
-  String get nickname => _nickname ?? _eid;
+  //用户属性
+  EMUserInfo get userInfo => _userInfo;
 
   /// 备注名称
-  String get markName => _markName ?? _nickname ?? _eid;
+  String get markName => _markName ?? _userInfo.nickName ?? _userInfo.userId;
 
   Future<void> setMarkName(String markName) async {
     _markName = markName;
