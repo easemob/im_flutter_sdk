@@ -139,13 +139,10 @@ class MePageState extends State<MePage> {
       userIds.add('liu003');
       userIds.add('liu004');
 
-      int expireTime = DateTime.fromMillisecondsSinceEpoch(
-              DateTime.now().millisecondsSinceEpoch - 10000000)
-          .millisecondsSinceEpoch;
+      int expireTime = DateTime.fromMillisecondsSinceEpoch(DateTime.now().millisecondsSinceEpoch - 10000000).millisecondsSinceEpoch;
 
       print('userIds: $userIds');
-      Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
+      Map userInfoMap = await EMClient.getInstance.userInfoManager.fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
 
       print('userInfoMap: $userInfoMap');
       print('=====================');
@@ -173,12 +170,9 @@ class MePageState extends State<MePage> {
 
       print('userIds: $userIds');
 
-      int expireTime = DateTime.fromMillisecondsSinceEpoch(
-              DateTime.now().millisecondsSinceEpoch - 10000000)
-          .millisecondsSinceEpoch;
+      int expireTime = DateTime.fromMillisecondsSinceEpoch(DateTime.now().millisecondsSinceEpoch - 10000000).millisecondsSinceEpoch;
 
-      Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithType(userIds, types, expireTime: expireTime);
+      Map userInfoMap = await EMClient.getInstance.userInfoManager.fetchUserInfoByIdWithType(userIds, types, expireTime: expireTime);
       EMUserInfo userInfo = userInfoMap[userId];
       print('userInfoMap: $userInfoMap');
       print('=====================');
@@ -194,8 +188,7 @@ class MePageState extends State<MePage> {
       String userId = EMClient.getInstance.currentUsername;
       print('userId: $userId');
 
-      EMUserInfo eUserInfo =
-          EMClient.getInstance.userInfoManager.getOwnUserInfo();
+      EMUserInfo eUserInfo = await EMClient.getInstance.userInfoManager.fetchOwneInfo();
       eUserInfo.nickName = '葫芦娃';
       String source = '123456789';
       String month = source[Random().nextInt(source.length)];
@@ -206,8 +199,7 @@ class MePageState extends State<MePage> {
       print('eUserInfo.birth:${eUserInfo.birth}');
       eUserInfo.description();
 
-      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
-          .updateOwnUserInfo(eUserInfo);
+      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager.updateOwnUserInfo(eUserInfo);
       updateUserInfo.description();
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
@@ -227,8 +219,7 @@ class MePageState extends State<MePage> {
       String updateValue = '136112255$month$day';
       print("updateValue:$updateValue");
 
-      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
-          .updateOwnUserInfoWithType(infoType, updateValue);
+      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager.updateOwnUserInfoWithType(infoType, updateValue);
       print('updateOwnUserInfoWithType userInfo: $updateUserInfo');
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
