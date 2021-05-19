@@ -131,7 +131,7 @@ class EMContactManager {
         await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
     EMError.hasErrorFromResult(result);
     List<EMContact> blockList = List();
-    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+    result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
       blockList.add(EMContact.fromJson({'userId': element}));
     });

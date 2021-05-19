@@ -123,7 +123,10 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMConversation conversation = conversationWithParam(params);
         String conName = params.getString("con_name");
         String extField = conversation.getExtField();
-        JSONObject jsonObject = new JSONObject(extField);
+        JSONObject jsonObject = new JSONObject();
+        if(!extField.isEmpty()){
+            jsonObject = new JSONObject(extField);
+        }
         jsonObject.put("con_name", conName);
         String jsonStr = jsonObject.toString();
         conversation.setExtField(jsonStr);

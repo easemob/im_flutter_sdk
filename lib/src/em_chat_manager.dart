@@ -134,17 +134,17 @@ class EMChatManager {
   }
 
   /// 下载附件 [message].
-  Future<bool> downloadAttachment(EMMessage message) async {
+  Future<EMMessage> downloadAttachment(EMMessage message) async {
     Map result = await _channel.invokeMethod(EMSDKMethod.downloadAttachment, {"message": message.toJson()});
     EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.downloadAttachment);
+    return EMMessage.fromJson(result[EMSDKMethod.downloadAttachment]);
   }
 
   /// 下载缩略图 [message].
-  Future<bool> downloadThumbnail(EMMessage message) async {
+  Future<EMMessage> downloadThumbnail(EMMessage message) async {
     Map result = await _channel.invokeMethod(EMSDKMethod.downloadThumbnail, {"message": message.toJson()});
     EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.downloadThumbnail);
+    return EMMessage.fromJson(result[EMSDKMethod.downloadThumbnail]);
   }
 
   /// 获取所有会话
@@ -163,7 +163,7 @@ class EMChatManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getConversationsFromServer);
     EMError.hasErrorFromResult(result);
     var conversationList = List<EMConversation>();
-    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+    result[EMSDKMethod.getConversationsFromServer]?.forEach((element) {
       conversationList.add(EMConversation.fromJson(element));
     });
     return conversationList;

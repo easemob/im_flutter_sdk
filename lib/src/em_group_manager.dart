@@ -338,9 +338,9 @@ class EMGroupManager {
     int duration = -1,
   }) async {
     Map req = {'groupId': groupId, 'members': members, 'duration': duration};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addAdmin, req);
+    Map result = await _channel.invokeMethod(EMSDKMethod.muteMembers, req);
     EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.addAdmin]);
+    return EMGroup.fromJson(result[EMSDKMethod.muteMembers]);
   }
 
   /// 对群成员取消禁言

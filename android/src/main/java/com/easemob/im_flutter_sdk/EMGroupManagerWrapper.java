@@ -143,7 +143,11 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void getGroupWithId(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-        onSuccess(result, channelName, EMGroupHelper.toJson(group));
+        if (group != null) {
+            onSuccess(result, channelName, EMGroupHelper.toJson(group));
+        }else {
+            onSuccess(result, channelName, null);
+        }
     }
 
     private void getJoinedGroups(JSONObject param, String channelName, Result result) throws JSONException {

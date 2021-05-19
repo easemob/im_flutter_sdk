@@ -175,7 +175,7 @@ class MePageState extends State<MePage> {
       print('userId: $userId');
 
       EMUserInfo eUserInfo =
-          EMClient.getInstance.userInfoManager.getOwnUserInfo();
+          await EMClient.getInstance.userInfoManager.fetchOwnUserInfo();
       eUserInfo.nickName = '葫芦娃';
       String source = '123456789';
       String month = source[Random().nextInt(source.length)];
