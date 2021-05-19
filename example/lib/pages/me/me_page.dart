@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:easeim_flutter_demo/pages/me/userInfoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -10,6 +11,13 @@ class MePage extends StatefulWidget {
 
 class MePageState extends State<MePage> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  String _nickName = '';
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -18,20 +26,52 @@ class MePageState extends State<MePage> {
       body: Container(
         margin: EdgeInsets.only(
           left: 10,
+          top: 10,
           right: 10,
+          bottom: 10,
         ),
         child: Column(
           children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: goUserInfoPage,
+              child: Container(
+                margin:
+                    EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
+                height: 30,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '个人信息',
+                      style: TextStyle(
+                        fontSize: 14.0,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                    Icon(Icons.keyboard_arrow_right),
+                  ],
+                ),
+              ),
+            ),
             Container(
               height: 30,
+              margin: EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'flutter sdk version',
+                    style: TextStyle(
+                      fontSize: 14.0,
+                    ),
+                    textAlign: TextAlign.left,
                   ),
                   Text(
                     EMClient.getInstance.flutterSDKVersion,
+                    style: TextStyle(
+                      fontSize: 14.0,
+                    ),
                   ),
                 ],
               ),
@@ -44,70 +84,6 @@ class MePageState extends State<MePage> {
                     onPressed: _loggout,
                     child: Text(
                       '退出[${EMClient.getInstance.currentUsername}]',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: fetchUserInfoById,
-                    child: Text(
-                      'fetchUserInfoById',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: fetchUserInfoByIdWithType,
-                    child: Text(
-                      'fetchUserInfoByIdWithType',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: updateOwnUserInfo,
-                    child: Text(
-                      'updateOwnUserInfo',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
-                    onPressed: updateOwnUserInfoWithType,
-                    child: Text(
-                      'updateOwnUserInfoWithType',
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -129,6 +105,10 @@ class MePageState extends State<MePage> {
         '/login',
       );
     } on EMError {}
+  }
+
+  goUserInfoPage() {
+    Navigator.of(context).pushNamed('/userInfoPage').then((value) {});
   }
 
   fetchUserInfoById() async {
@@ -222,14 +202,13 @@ class MePageState extends State<MePage> {
       String month = source[Random().nextInt(source.length)];
       String day = source[Random().nextInt(source.length)];
 
-      // String updateValue = '2021-0$month-' + day;
-
       String updateValue = '136112255$month$day';
       print("updateValue:$updateValue");
 
       EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
           .updateOwnUserInfoWithType(infoType, updateValue);
       print('updateOwnUserInfoWithType userInfo: $updateUserInfo');
+      updateUserInfo.description();
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }

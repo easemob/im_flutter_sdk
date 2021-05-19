@@ -37,6 +37,7 @@ class EMUserInfoManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
     EMError.hasErrorFromResult(result);
+    print("updateOwnUserInfo_manager result:$result");
     return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
   }
 
@@ -79,6 +80,7 @@ class EMUserInfoManager {
       }
     }
     Map req = {'userIds': reqIds};
+
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
 
@@ -162,6 +164,20 @@ class EMUserInfoManager {
     });
 
     return resultMap;
+  }
+
+  Future<EMUserInfo> getCurrentUserInfo() async {
+    List<String> userIds = List();
+    userIds.add(EMClient.getInstance.currentUsername);
+    print(
+        "EMClient.getInstance.currentUsername:${EMClient.getInstance.currentUsername}");
+
+    Map userInfoMap = await fetchUserInfoByIdWithExpireTime(userIds);
+    EMUserInfo retUseInfo = userInfoMap[EMClient.getInstance.currentUsername];
+    print("getCurrentUserInfo userInfoMap:$userInfoMap");
+    print("retUseInfo:$retUseInfo");
+
+    return retUseInfo;
   }
 
   // 整型转化用户属性类型 【int => EMUserInfoType】
@@ -265,6 +281,7 @@ class EMUserInfoManager {
     return _ownUserInfo;
   }
 
+  //清除缓存
   void clearUserInfoCache() {
     effectiveUserInfoMap.clear();
   }
