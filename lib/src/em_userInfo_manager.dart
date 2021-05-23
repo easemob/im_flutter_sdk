@@ -8,18 +8,12 @@ class EMUserInfoManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_userInfo_manager', JSONMethodCodec());
 
-  EMUserInfo _ownUserInfo;
+  EMUserInfo? _ownUserInfo;
 
   //有效的联系人map
-  Map<String, EMUserInfo> _effectiveUserInfoMap;
+  Map<String, EMUserInfo> _effectiveUserInfoMap = Map();
 
-  EMUserInfoManager() {
-    _channel.setMethodCallHandler((MethodCall call) {
-      return null;
-    });
-
-    _effectiveUserInfoMap = Map();
-  }
+  EMUserInfoManager() {}
 
   //更新自己的用户属性
   Future<EMUserInfo> updateOwnUserInfo(EMUserInfo userInfo) async {
@@ -30,25 +24,28 @@ class EMUserInfoManager {
   }
 
   //更新自己制定类型的用户属性
-  Future<EMUserInfo> updateOwnUserInfoWithType(EMUserInfoType type, String userInfoValue) async {
+  Future<EMUserInfo?> updateOwnUserInfoWithType(EMUserInfoType type, String userInfoValue) async {
     Map req = {'userInfoType': _userInfoTypeToInt(type), 'userInfoValue': userInfoValue};
     Map result = await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfoWithType, req);
     EMError.hasErrorFromResult(result);
-    _ownUserInfo = EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
-    _ownUserInfo.expireTime = DateTime.now().millisecondsSinceEpoch;
-    _effectiveUserInfoMap[_ownUserInfo.userId] = _ownUserInfo;
+    if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
+      _ownUserInfo = EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
+      _ownUserInfo!.expireTime = DateTime.now().millisecondsSinceEpoch;
+      _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
+    }
+
     return _ownUserInfo;
   }
 
-  Future<EMUserInfo> fetchOwneInfo({int expireTime = 60}) async {
+  Future<EMUserInfo?> fetchOwneInfo({int expireTime = 60}) async {
     Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime([EMClient.getInstance.currentUsername], expireTime: expireTime);
     _ownUserInfo = ret.values.first;
     return _ownUserInfo;
   }
 
   //获取指定id的用户的用户属性
-  Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithExpireTime(List<String> userIds, {int expireTime = 60}) async {
-    List<String> reqIds = userIds.where((element) => !_effectiveUserInfoMap.containsKey(element) || (_effectiveUserInfoMap.containsKey(element) && DateTime.now().millisecondsSinceEpoch - _effectiveUserInfoMap[element].expireTime > expireTime * 1000));
+  Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithExpireTime(List<String?> userIds, {int expireTime = 60}) async {
+    List<String> reqIds = userIds.where((element) => !_effectiveUserInfoMap.containsKey(element) || (_effectiveUserInfoMap.containsKey(element) && DateTime.now().millisecondsSinceEpoch - _effectiveUserInfoMap[element]!.expireTime > expireTime * 1000)) as List<String>;
     Map<String, EMUserInfo> resultMap = Map();
     Map req = {'userIds': reqIds};
     Map result = await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
@@ -66,13 +63,13 @@ class EMUserInfoManager {
 
   //获取指定id的用户的指定类型的用户属性
   Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithType(List<String> userIds, List<EMUserInfoType> types, {int expireTime = 60}) async {
-    List<int> userInfoTypes = List();
+    List<int> userInfoTypes = [];
     types.forEach((element) {
       int type = _userInfoTypeToInt(element);
       userInfoTypes.add(type);
     });
 
-    List<String> reqIds = userIds.where((element) => !_effectiveUserInfoMap.containsKey(element) || (_effectiveUserInfoMap.containsKey(element) && DateTime.now().millisecondsSinceEpoch - _effectiveUserInfoMap[element].expireTime > expireTime * 1000));
+    List<String> reqIds = userIds.where((element) => !_effectiveUserInfoMap.containsKey(element) || (_effectiveUserInfoMap.containsKey(element) && DateTime.now().millisecondsSinceEpoch - _effectiveUserInfoMap[element]!.expireTime > expireTime * 1000)) as List<String>;
     Map resultMap = Map();
 
     Map req = {'userIds': reqIds, 'userInfoTypes': userInfoTypes};
@@ -87,7 +84,7 @@ class EMUserInfoManager {
       _effectiveUserInfoMap[key] = eUserInfo;
     });
 
-    return resultMap;
+    return resultMap as FutureOr<Map<String, EMUserInfo>>;
   }
 
   // 整型转化用户属性类型 【int => EMUserInfoType】
@@ -185,6 +182,6 @@ class EMUserInfoManager {
   }
 
   void clearUserInfoCache() {
-    _effectiveUserInfoMap?.clear();
+    _effectiveUserInfoMap.clear();
   }
 }

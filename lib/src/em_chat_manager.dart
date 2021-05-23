@@ -9,10 +9,10 @@ class EMChatManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
 
-  final _messageListeners = List<EMChatManagerListener>();
+  final _messageListeners = [];
 
   EMChatManager() {
-    _channel.setMethodCallHandler((MethodCall call) {
+    _channel.setMethodCallHandler((MethodCall call) async {
       if (call.method == EMSDKMethod.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
       } else if (call.method == EMSDKMethod.onCmdMessagesReceived) {
@@ -57,14 +57,14 @@ class EMChatManager {
   }
 
   /// 发送消息已读 [message].
-  Future<bool> sendMessageReadAck(EMMessage message) async {
+  Future<bool?> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
     Map result = await _channel.invokeMethod(EMSDKMethod.ackMessageRead, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.ackMessageRead);
   }
 
-  Future<bool> sendConversationReadAck(String conversationId) async {
+  Future<bool?> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
     Map result = await _channel.invokeMethod(EMSDKMethod.ackConversationRead, req);
     EMError.hasErrorFromResult(result);
@@ -72,7 +72,7 @@ class EMChatManager {
   }
 
   /// 撤回发送的消息(增值服务), 默认时效为2分钟，超过2分钟无法撤回.
-  Future<bool> recallMessage(String messageId) async {
+  Future<bool?> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
     Map result = await _channel.invokeMethod(EMSDKMethod.recallMessage, req);
     EMError.hasErrorFromResult(result);
@@ -88,7 +88,7 @@ class EMChatManager {
   }
 
   /// 通过会话[id], 会话类型[type]获取会话.
-  Future<EMConversation> getConversation(
+  Future<EMConversation?> getConversation(
     String conversationId, [
     EMConversationType type = EMConversationType.Chat,
     bool createIfNeed = true,
@@ -96,21 +96,25 @@ class EMChatManager {
     Map req = {"con_id": conversationId, "type": EMConversation.typeToInt(type), "createIfNeed": createIfNeed};
     Map result = await _channel.invokeMethod(EMSDKMethod.getConversation, req);
     EMError.hasErrorFromResult(result);
-    return EMConversation.fromJson(result[EMSDKMethod.getConversation]);
+    EMConversation? ret;
+    if (result[EMSDKMethod.getConversation] != null) {
+      ret = EMConversation.fromJson(result[EMSDKMethod.getConversation]);
+    }
+    return ret;
   }
 
   /// 将所有对话标记为已读.
-  Future<bool> markAllConversationsAsRead() async {
+  Future<bool?> markAllConversationsAsRead() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.markAllChatMsgAsRead);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.markAllChatMsgAsRead);
   }
 
   /// 获取未读消息的计数.
-  Future<int> getUnreadMessageCount() async {
+  Future<int?> getUnreadMessageCount() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getUnreadMessageCount);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getUnreadMessageCount] as int;
+    return result[EMSDKMethod.getUnreadMessageCount] as int?;
   }
 
   /// 更新消息[message].
@@ -122,8 +126,8 @@ class EMChatManager {
   }
 
   /// 导入消息 [messages].
-  Future<bool> importMessages(List<EMMessage> messages) async {
-    List<Map> list = List();
+  Future<bool?> importMessages(List<EMMessage> messages) async {
+    List<Map> list = [];
     messages.forEach((element) {
       list.add(element.toJson());
     });
@@ -151,7 +155,7 @@ class EMChatManager {
   Future<List<EMConversation>> loadAllConversations() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.loadAllConversations);
     EMError.hasErrorFromResult(result);
-    var conversationList = List<EMConversation>();
+    List<EMConversation> conversationList = [];
     result[EMSDKMethod.loadAllConversations]?.forEach((element) {
       conversationList.add(EMConversation.fromJson(element));
     });
@@ -162,7 +166,7 @@ class EMChatManager {
   Future<List<EMConversation>> getConversationsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getConversationsFromServer);
     EMError.hasErrorFromResult(result);
-    var conversationList = List<EMConversation>();
+    List<EMConversation> conversationList = [];
     result[EMSDKMethod.getConversationsFromServer]?.forEach((element) {
       conversationList.add(EMConversation.fromJson(element));
     });
@@ -179,7 +183,7 @@ class EMChatManager {
   // }
 
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
-  Future<bool> deleteConversation(
+  Future<bool?> deleteConversation(
     String conversationId, [
     bool deleteMessages = true,
   ]) async {
@@ -191,13 +195,11 @@ class EMChatManager {
 
   /// 添加消息监听 [listener]
   void addListener(EMChatManagerListener listener) {
-    assert(listener != null);
     _messageListeners.add(listener);
   }
 
   /// 移除消息监听[listener]
   void removeListener(EMChatManagerListener listener) {
-    assert(listener != null);
     _messageListeners.remove(listener);
   }
 
@@ -240,7 +242,7 @@ class EMChatManager {
 
     Map result = await _channel.invokeMethod(EMSDKMethod.searchChatMsgFromDB, req);
     EMError.hasErrorFromResult(result);
-    List<EMMessage> list = List();
+    List<EMMessage> list = [];
     result[EMSDKMethod.searchChatMsgFromDB]?.forEach((element) {
       list.add(EMMessage.fromJson(element));
     });
@@ -250,7 +252,7 @@ class EMChatManager {
 
   /// @nodoc
   Future<void> _onMessagesReceived(List messages) async {
-    var messageList = List<EMMessage>();
+    List<EMMessage> messageList = [];
     for (var message in messages) {
       messageList.add(EMMessage.fromJson(message));
     }
@@ -261,7 +263,7 @@ class EMChatManager {
 
   /// @nodoc
   Future<void> _onCmdMessagesReceived(List messages) async {
-    var list = List<EMMessage>();
+    List<EMMessage> list = [];
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
@@ -272,7 +274,7 @@ class EMChatManager {
 
   /// @nodoc
   Future<void> _onMessagesRead(List messages) async {
-    var list = List<EMMessage>();
+    List<EMMessage> list = [];
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
@@ -283,7 +285,7 @@ class EMChatManager {
 
   /// @nodoc
   Future<void> _onMessagesDelivered(List messages) async {
-    var list = List<EMMessage>();
+    List<EMMessage> list = [];
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
@@ -293,7 +295,7 @@ class EMChatManager {
   }
 
   Future<void> _onMessagesRecalled(List messages) async {
-    var list = List<EMMessage>();
+    List<EMMessage> list = [];
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
@@ -310,8 +312,8 @@ class EMChatManager {
 
   Future<void> _onConversationHasRead(dynamic obj) async {
     for (var listener in _messageListeners) {
-      String from = (obj as Map)['from'];
-      String to = (obj as Map)['to'];
+      String? from = (obj as Map)['from'];
+      String? to = obj['to'];
       listener.onConversationRead(from, to);
     }
   }
@@ -337,5 +339,5 @@ abstract class EMChatManagerListener {
   onConversationsUpdate() {}
 
   /// 会话已读`from`是已读的发送方, `to`是已读的接收方
-  onConversationRead(String from, String to) {}
+  onConversationRead(String? from, String? to) {}
 }

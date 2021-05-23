@@ -1,70 +1,69 @@
-import 'package:flutter/foundation.dart';
 import 'em_domain_terms.dart';
 
 class EMOptions {
   /// 环信 appKey, 必须设置。
-  String appKey = '';
+  String? appKey = '';
 
   /// 是否自动登录，当为`true`时，首次登录成功后，您再次启动App时，sdk会在
   /// 初始化后自定为您登录上一次登录的账号。
-  bool autoLogin = true;
+  bool? autoLogin = true;
 
-  bool debugModel = false;
+  bool? debugModel = false;
 
   /// 自动同意好友申请，当设置为`true`时，
   /// 您在线时收到好友申请将自动同意,
   /// 如您不在线，等您上线后会自动同意。
-  bool acceptInvitationAlways = false;
+  bool? acceptInvitationAlways = false;
 
   /// 是否自动同意群邀请，当设置为`true`时，
   /// 您在线时收到加群邀请会自动同意，
   /// 如您不在线，等您上线后会自动同意。
-  bool autoAcceptGroupInvitation = false;
+  bool? autoAcceptGroupInvitation = false;
 
   /// 是否允许发送已读回执,默认值为`ture`,
   /// 当为false时,当您通过EMChatManager调用sendMessageReadAck无效；
-  bool requireAck = true;
+  bool? requireAck = true;
 
   /// 是否发送已送达回执，默认为`false`, 当为`ture`时，
   /// 您收到消息后会自动相对方发送已送达回执。
   /// 对方可以通过`onMessagesDelivered()`方法监听；
-  bool requireDeliveryAck = false;
+  bool? requireDeliveryAck = false;
 
   /// 退出群组时是否删除相应会话, 当为`true`时，
   /// 您离开群组后对应的群消息会被删除。
-  bool deleteMessagesAsExitGroup = true;
+  bool? deleteMessagesAsExitGroup = true;
 
   /// 退出聊天室时是否删除相应会话, 当为`true`时，
   /// 您离开聊天室后对应的聊天室消息会被删除。
-  bool deleteMessagesAsExitChatRoom = true;
+  bool? deleteMessagesAsExitChatRoom = true;
 
   /// 是否允许聊天室创建者退出聊天室，当为`true`时，
   /// 聊天室创建者可以退出聊天室。
-  bool isChatRoomOwnerLeaveAllowed = true;
+  bool? isChatRoomOwnerLeaveAllowed = true;
 
   /// 消息按照服务器时间排序, 当为`true`时，您从数据库中
   /// 获取的消息是按照服务器时间排序的，否则是按照消息的本地时间排序。
-  bool sortMessageByServerTime = true;
+  bool? sortMessageByServerTime = true;
 
-  bool usingHttpsOnly = false;
-  bool serverTransfer = true;
-  bool isAutoDownload = true;
+  bool? usingHttpsOnly = false;
+  bool? serverTransfer = true;
+  bool? isAutoDownload = true;
 
-  EMPushConfig pushConfig;
+  EMPushConfig? pushConfig;
 
-  bool enableDNSConfig = true;
-  String dnsUrl = '';
-  String restServer = '';
-  String imServer = '';
-  int imPort = 0;
+  bool? enableDNSConfig = true;
+  String? dnsUrl = '';
+  String? restServer = '';
+  String? imServer = '';
+  int? imPort = 0;
 
-  EMOptions({@required this.appKey});
+  EMOptions({required this.appKey});
 
   /// 设置自定义server地址
   void customServerInfo({
-    @required String customRestServer,
-    @required String customImServer,
-    @required int customImPort,
+    required String customRestServer,
+    required String customImServer,
+    required int customImPort,
   }) {
     restServer = customRestServer;
     imServer = customImServer;
@@ -117,7 +116,7 @@ class EMOptions {
     data['sortMessageByServerTime'] = this.sortMessageByServerTime;
     data['usingHttpsOnly'] = this.usingHttpsOnly;
     if (this.pushConfig != null) {
-      data['pushConfig'] = this.pushConfig.toJson();
+      data['pushConfig'] = this.pushConfig!.toJson();
     }
     return data;
   }
@@ -129,29 +128,29 @@ class EMOptions {
 }
 
 class EMPushConfig {
-  String _mzAppId = '';
-  String _mzAppKey = '';
+  String? _mzAppId = '';
+  String? _mzAppKey = '';
 
-  String _oppoAppKey = '';
-  String _oppoAppSecret = '';
+  String? _oppoAppKey = '';
+  String? _oppoAppSecret = '';
 
-  String _miAppId = '';
-  String _miAppKey = '';
+  String? _miAppId = '';
+  String? _miAppKey = '';
 
-  String _fcmId = '';
+  String? _fcmId = '';
 
-  String _apnsCertName = '';
+  String? _apnsCertName = '';
 
-  bool _enableMeiZuPush = false;
-  bool _enableOppoPush = false;
-  bool _enableMiPush = false;
+  bool? _enableMeiZuPush = false;
+  bool? _enableOppoPush = false;
+  bool? _enableMiPush = false;
 
-  bool _enableFCM = false;
+  bool? _enableFCM = false;
 
-  bool _enableVivoPush = false;
-  bool _enableHWPush = false;
+  bool? _enableVivoPush = false;
+  bool? _enableHWPush = false;
 
-  bool _enableAPNS = false;
+  bool? _enableAPNS = false;
 
   /// 开启魅族推送, `appId`是推送用AppId, `appKey`是推送用AppKey。申请流程请访问
   /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`

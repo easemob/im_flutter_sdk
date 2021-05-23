@@ -1,7 +1,9 @@
 // 思考： 是否要把所有格式转换的部分都放到这个extension中？
 
+
+
 extension MapExtension on Map {
-  bool boolValue(String key) {
+  bool? boolValue(String key) {
     if ((this[key] == null) || (this[key] == 0)) {
       return false;
     } else if (this[key] is int) {
@@ -9,7 +11,7 @@ extension MapExtension on Map {
     } else if (this[key] is String) {
       return this[key].toString().length == 0 ? false : true;
     } else {
-      return this[key] as bool;
+      return this[key] as bool?;
     }
   }
 }

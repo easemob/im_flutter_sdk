@@ -10,20 +10,19 @@ enum EMImPushStyle { Simple, Summary }
 class EMImPushConfig {
   EMImPushConfig._private();
 
-  EMImPushStyle _pushStyle;
-  bool _noDisturb;
-  int _noDisturbStartHour;
-  int _noDisturbEndHour;
-  List<String> _noDisturbGroups = List();
+  EMImPushStyle? _pushStyle;
+  bool? _noDisturb;
+  int? _noDisturbStartHour;
+  int? _noDisturbEndHour;
+  List<String?>? _noDisturbGroups = [];
 
-  EMImPushStyle get pushStyle => _pushStyle;
-  bool get noDisturb => _noDisturb;
-  int get noDisturbStartHour => _noDisturbStartHour;
-  int get noDisturbEndHour => _noDisturbEndHour;
-  List<String> get noDisturbGroups => _noDisturbGroups;
+  EMImPushStyle? get pushStyle => _pushStyle;
+  bool? get noDisturb => _noDisturb;
+  int? get noDisturbStartHour => _noDisturbStartHour;
+  int? get noDisturbEndHour => _noDisturbEndHour;
+  List<String?>? get noDisturbGroups => _noDisturbGroups;
 
   factory EMImPushConfig.fromJson(Map map) {
-    if (map == null) return null;
     return EMImPushConfig._private()
       .._pushStyle = map['pushStyle'] == 0 ? EMImPushStyle.Simple : EMImPushStyle.Summary
       .._noDisturb = map.boolValue('noDisturb')
@@ -56,7 +55,7 @@ extension EMPushConfigExtension on EMImPushConfig {
     Map req = {'noDisturb': isNoDisturb, 'startTime': startTime, 'endTime': endTime};
     Map result = await _channel.invokeMethod(EMSDKMethod.imPushNoDisturb, req);
     EMError.hasErrorFromResult(result);
-    bool success = result.boolValue(EMSDKMethod.imPushNoDisturb);
+    bool success = result.boolValue(EMSDKMethod.imPushNoDisturb)!;
     if (success) {
       _noDisturb = isNoDisturb;
       _noDisturbStartHour = startTime;
@@ -71,7 +70,7 @@ extension EMPushConfigExtension on EMImPushConfig {
     Map req = {'pushStyle': pushStyle == EMImPushStyle.Simple ? 0 : 1};
     Map result = await _channel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
     EMError.hasErrorFromResult(result);
-    bool success = result.boolValue(EMSDKMethod.updateImPushStyle);
+    bool success = result.boolValue(EMSDKMethod.updateImPushStyle)!;
     if (success) _pushStyle = pushStyle;
     return success;
   }
@@ -86,13 +85,13 @@ extension EMPushConfigExtension on EMImPushConfig {
     Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
     EMError.hasErrorFromResult(result);
     EMGroup group = EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
-    _noDisturbGroups.removeWhere((e) => e == group.groupId);
-    if (isNoDisturb) _noDisturbGroups.add(group.groupId);
+    _noDisturbGroups!.removeWhere((e) => e == group.groupId);
+    if (isNoDisturb) _noDisturbGroups!.add(group.groupId);
     return group;
   }
 
   /// 获取免打扰群组列表
-  Future<List<String>> noDisturbGroupsFromServer() async {
+  Future<List<String?>?> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
     _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>();
