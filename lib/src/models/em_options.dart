@@ -1,6 +1,3 @@
-
-
-import 'package:flutter/foundation.dart';
 import 'em_domain_terms.dart';
 
 class EMOptions {

@@ -1,11 +1,9 @@
-
-
-typedef cursorResultCallback = Object Function(dynamic obj);
+typedef CursorResultCallback = Object Function(dynamic obj);
 
 class EMCursorResult<T> {
   EMCursorResult._private();
 
-  factory EMCursorResult.fromJson(Map<String, dynamic> map, {dataItemCallback: cursorResultCallback}) {
+  factory EMCursorResult.fromJson(Map<String, dynamic> map, {dataItemCallback: CursorResultCallback}) {
     EMCursorResult<T?> result = EMCursorResult<T?>._private()
       .._cursor = map['cursor']
       .._data = [];

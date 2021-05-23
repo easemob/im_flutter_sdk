@@ -81,7 +81,7 @@ class EMClient {
     _options = options;
     EMLog.v('init: $options');
     // 直接返回当前登录账号和是否登陆过
-    Map result = await (_channel.invokeMethod(EMSDKMethod.init, options.toJson()) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.init, options.toJson());
     Map map = result[EMSDKMethod.init];
     _currentUsername = map['currentUsername'];
     _isLoginBefore = map['isLoginBefore'] as bool?;
@@ -95,7 +95,7 @@ class EMClient {
   Future<String?> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.createAccount, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.createAccount, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.createAccount];
   }
@@ -105,7 +105,7 @@ class EMClient {
   Future<String?> login(String username, String pwdOrToken, [bool isPassword = true]) async {
     EMLog.v('login: $username : $pwdOrToken, isPassword: $isPassword');
     Map req = {'username': username, 'pwdOrToken': pwdOrToken, 'isPassword': isPassword};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.login, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.login, req);
     EMError.hasErrorFromResult(result);
 
     _currentUsername = result[EMSDKMethod.login]['username'];
@@ -122,7 +122,7 @@ class EMClient {
   ]) async {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
     Map req = {'unbindToken': unbindDeviceToken};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.logout, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.logout, req);
     EMError.hasErrorFromResult(result);
     _clearAllInfo();
     return result.boolValue(EMSDKMethod.logout);
@@ -132,14 +132,14 @@ class EMClient {
   Future<bool?> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.changeAppKey, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.changeAppKey, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.changeAppKey);
   }
 
   /// @nodoc 上传日志到环信, 不对外暴露
   Future<bool> _uploadLog() async {
-    Map result = await (_channel.invokeMethod(EMSDKMethod.uploadLog) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.uploadLog);
     EMError.hasErrorFromResult(result);
     return true;
   }
@@ -148,7 +148,7 @@ class EMClient {
   /// 返回日志路径
   Future<String?> compressLogs() async {
     EMLog.v('compressLogs:');
-    Map result = await (_channel.invokeMethod(EMSDKMethod.compressLogs) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.compressLogs);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.compressLogs];
   }
@@ -158,7 +158,7 @@ class EMClient {
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer({required String username, required String password}) async {
     EMLog.v('getLoggedInDevicesFromServer: $username, "******"');
     Map req = {'username': username, 'password': password};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.getLoggedInDevicesFromServer, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getLoggedInDevicesFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMDeviceInfo> list = [];
     result[EMSDKMethod.getLoggedInDevicesFromServer]?.forEach((info) {
@@ -172,7 +172,7 @@ class EMClient {
   Future<bool?> kickDevice({required String username, required String password, required String resource}) async {
     EMLog.v('kickDevice: $username, "******"');
     Map req = {'username': username, 'password': password, 'resource': resource};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.kickDevice, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.kickDevice, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.kickDevice);
   }
@@ -182,7 +182,7 @@ class EMClient {
   Future<bool?> kickAllDevices({required String username, required String password}) async {
     EMLog.v('kickAllDevices: $username, "******"');
     Map req = {'username': username, 'password': password};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.kickAllDevices, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.kickAllDevices, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.kickAllDevices);
   }
@@ -191,25 +191,21 @@ class EMClient {
 
   /// @nodoc 添加多设备监听的接口 [listener].
   void addMultiDeviceListener(EMMultiDeviceListener listener) {
-    assert(listener != null);
     _multiDeviceListeners.add(listener);
   }
 
   /// @nodoc 移除多设备监听的接口[listener].
   void removeMultiDeviceListener(EMMultiDeviceListener listener) {
-    assert(listener != null);
     _multiDeviceListeners.remove(listener);
   }
 
   /// 添加链接状态监听的接口[listener].
   void addConnectionListener(EMConnectionListener listener) {
-    assert(listener != null);
     _connectionListeners.add(listener);
   }
 
   /// 移除链接状态监听的接口[listener].
   void removeConnectionListener(EMConnectionListener listener) {
-    assert(listener != null);
     _connectionListeners.remove(listener);
   }
 
