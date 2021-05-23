@@ -11,8 +11,7 @@ class EMSDKMethod {
   static const String kickDevice = 'kickDevice';
   static const String kickAllDevices = 'kickAllDevices';
   static const String currentUser = 'currentUser';
-  static const String getLoggedInDevicesFromServer =
-      'getLoggedInDevicesFromServer';
+  static const String getLoggedInDevicesFromServer = 'getLoggedInDevicesFromServer';
 
   /// EMClient listener
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';
@@ -102,10 +101,8 @@ class EMSDKMethod {
   /// EMChatRoomManager methods
   static const String joinChatRoom = 'joinChatRoom';
   static const String leaveChatRoom = 'leaveChatRoom';
-  static const String fetchPublicChatRoomsFromServer =
-      'fetchPublicChatRoomsFromServer';
-  static const String fetchChatRoomInfoFromServer =
-      'fetchChatRoomInfoFromServer';
+  static const String fetchPublicChatRoomsFromServer = 'fetchPublicChatRoomsFromServer';
+  static const String fetchChatRoomInfoFromServer = 'fetchChatRoomInfoFromServer';
   static const String getChatRoom = 'getChatRoom';
   static const String getAllChatRooms = 'getAllChatRooms';
   static const String createChatRoom = 'createChatRoom';
@@ -132,25 +129,18 @@ class EMSDKMethod {
   /// EMGroupManager
   static const String getGroupWithId = 'getGroupWithId';
   static const String getJoinedGroups = 'getJoinedGroups';
-  static const String getGroupsWithoutPushNotification =
-      'getGroupsWithoutPushNotification';
+  static const String getGroupsWithoutPushNotification = 'getGroupsWithoutPushNotification';
   static const String getJoinedGroupsFromServer = 'getJoinedGroupsFromServer';
   static const String getPublicGroupsFromServer = 'getPublicGroupsFromServer';
   static const String createGroup = 'createGroup';
-  static const String getGroupSpecificationFromServer =
-      'getGroupSpecificationFromServer';
-  static const String getGroupMemberListFromServer =
-      'getGroupMemberListFromServer';
-  static const String getGroupBlockListFromServer =
-      'getGroupBlockListFromServer';
+  static const String getGroupSpecificationFromServer = 'getGroupSpecificationFromServer';
+  static const String getGroupMemberListFromServer = 'getGroupMemberListFromServer';
+  static const String getGroupBlockListFromServer = 'getGroupBlockListFromServer';
   static const String getGroupMuteListFromServer = 'getGroupMuteListFromServer';
-  static const String getGroupWhiteListFromServer =
-      'getGroupWhiteListFromServer';
-  static const String isMemberInWhiteListFromServer =
-      'isMemberInWhiteListFromServer';
+  static const String getGroupWhiteListFromServer = 'getGroupWhiteListFromServer';
+  static const String isMemberInWhiteListFromServer = 'isMemberInWhiteListFromServer';
   static const String getGroupFileListFromServer = 'getGroupFileList';
-  static const String getGroupAnnouncementFromServer =
-      'getGroupAnnouncementFromServer';
+  static const String getGroupAnnouncementFromServer = 'getGroupAnnouncementFromServer';
   static const String addMembers = 'addMembers';
   static const String removeMembers = 'removeMembers';
   static const String blockMembers = 'blockMembers';

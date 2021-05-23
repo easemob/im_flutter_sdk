@@ -1639,7 +1639,7 @@ try{
 ```dart
   try {
       String userId = EMClient.getInstance.currentUsername;
-      List<String> userIds = List();
+      List<String> userIds =[];
       userIds.add(userId);
       userIds.add('xxx');
       
@@ -1659,11 +1659,11 @@ try{
 ```dart
 try {
       String userId = EMClient.getInstance.currentUsername;
-      List<String> userIds = List();
+      List<String> userIds =[];
       userIds.add(userId);
       userIds.add('xxx');
 
-      List<EMUserInfoType> types = List();
+      List<EMUserInfoType> types =[];
       types.add(EMUserInfoType.EMUserInfoTypeNickName);
       types.add(EMUserInfoType.EMUserInfoTypeBirth);
 
