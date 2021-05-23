@@ -61,7 +61,7 @@ class EMContactManager {
     String reason = '',
   ]) async {
     Map req = {'username': username, 'reason': reason};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.addContact, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.addContact, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.addContact];
   }
@@ -73,14 +73,14 @@ class EMContactManager {
     bool keepConversation = false,
   ]) async {
     Map req = {'username': username, 'keepConversation': keepConversation};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.deleteContact, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.deleteContact, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.deleteContact];
   }
 
   /// 从服务器获取所有的好友
   Future<List<EMContact>> getAllContactsFromServer() async {
-    Map result = await (_channel.invokeMethod(EMSDKMethod.getAllContactsFromServer) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
     EMError.hasErrorFromResult(result);
     List<EMContact> contacts = [];
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
@@ -93,7 +93,7 @@ class EMContactManager {
 
   /// 从本地获取所有的好友 `only ios now.`
   Future<List<EMContact>> getAllContactsFromDB() async {
-    Map result = await (_channel.invokeMethod(EMSDKMethod.getAllContactsFromDB) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
     EMError.hasErrorFromResult(result);
     List<EMContact> contacts = [];
     result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
@@ -107,7 +107,7 @@ class EMContactManager {
   /// 把指定用户加入到黑名单中 [username] .
   Future<String?> addUserToBlockList(String username) async {
     Map req = {'username': username};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.addUserToBlockList, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.addUserToBlockList];
   }
@@ -115,14 +115,14 @@ class EMContactManager {
   /// 把用户从黑名单中移除 [username].
   Future<String?> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.removeUserFromBlockList];
   }
 
   /// 从服务器获取黑名单中的用户的ID
   Future<List<EMContact>> getBlockListFromServer() async {
-    Map result = await (_channel.invokeMethod(EMSDKMethod.getBlockListFromServer) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
     EMError.hasErrorFromResult(result);
     List<EMContact> blockList = [];
     result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
@@ -135,7 +135,7 @@ class EMContactManager {
   /// 接受加好友的邀请[username].
   Future<String?> acceptInvitation(String username) async {
     Map req = {'username': username};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.acceptInvitation, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.acceptInvitation, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.acceptInvitation];
   }
@@ -143,14 +143,14 @@ class EMContactManager {
   /// 拒绝加好友的邀请 [username].
   Future<String?> declineInvitation(String username) async {
     Map req = {'username': username};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.declineInvitation, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.declineInvitation, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.declineInvitation];
   }
 
   /// 从服务器获取登录用户在其他设备上登录的ID
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
-    Map result = await (_channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
     EMError.hasErrorFromResult(result);
     List<String>? devices = result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
     return devices;

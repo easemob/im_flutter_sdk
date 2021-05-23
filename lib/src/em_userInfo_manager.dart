@@ -13,16 +13,12 @@ class EMUserInfoManager {
   //有效的联系人map
   Map<String, EMUserInfo> _effectiveUserInfoMap = Map();
 
-  EMUserInfoManager() {
-    _channel.setMethodCallHandler((MethodCall call) {
-      return null;
-    } as Future<dynamic> Function(MethodCall)?);
-  }
+  EMUserInfoManager() {}
 
   //更新自己的用户属性
   Future<EMUserInfo> updateOwnUserInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
     EMError.hasErrorFromResult(result);
     return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
   }
@@ -30,7 +26,7 @@ class EMUserInfoManager {
   //更新自己制定类型的用户属性
   Future<EMUserInfo?> updateOwnUserInfoWithType(EMUserInfoType type, String userInfoValue) async {
     Map req = {'userInfoType': _userInfoTypeToInt(type), 'userInfoValue': userInfoValue};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.updateOwnUserInfoWithType, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfoWithType, req);
     EMError.hasErrorFromResult(result);
     if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
       _ownUserInfo = EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
@@ -52,7 +48,7 @@ class EMUserInfoManager {
     List<String> reqIds = userIds.where((element) => !_effectiveUserInfoMap.containsKey(element) || (_effectiveUserInfoMap.containsKey(element) && DateTime.now().millisecondsSinceEpoch - _effectiveUserInfoMap[element]!.expireTime > expireTime * 1000)) as List<String>;
     Map<String, EMUserInfo> resultMap = Map();
     Map req = {'userIds': reqIds};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
       value['expireTime'] = DateTime.now().millisecondsSinceEpoch;
@@ -77,7 +73,7 @@ class EMUserInfoManager {
     Map resultMap = Map();
 
     Map req = {'userIds': reqIds, 'userInfoTypes': userInfoTypes};
-    Map result = await (_channel.invokeMethod(EMSDKMethod.fetchUserInfoByIdWithType, req) as FutureOr<Map<dynamic, dynamic>>);
+    Map result = await _channel.invokeMethod(EMSDKMethod.fetchUserInfoByIdWithType, req);
 
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
