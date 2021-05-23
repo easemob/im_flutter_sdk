@@ -1,3 +1,5 @@
+
+
 class EMDeviceInfo {
 
 
@@ -19,13 +21,13 @@ class EMDeviceInfo {
   }
 
   /// 设备资源描述
-  String get resource => _resource;
+  String? get resource => _resource;
   /// 设备的UUID
-  String get deviceUUID => _deviceUUID;
+  String? get deviceUUID => _deviceUUID;
   /// 设备名称
-  String get deviceName => _deviceName;
+  String? get deviceName => _deviceName;
 
-  String _resource;
-  String _deviceUUID;
-  String _deviceName;
+  String? _resource;
+  String? _deviceUUID;
+  String? _deviceName;
 }

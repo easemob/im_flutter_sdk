@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'em_domain_terms.dart';
 
 enum EMGroupStyle {
@@ -18,42 +17,41 @@ enum EMGroupPermissionType {
 class EMGroup {
   EMGroup._private();
 
-  String _groupId;
-  String _name = '';
-  String _description = '';
-  String _owner = '';
-  String _announcement = '';
-  int _memberCount;
-  List _memberList;
-  List _adminList;
-  List _blockList;
-  List _muteList;
-  List _sharedFileList;
-  bool _noticeEnable = true;
-  bool _messageBlocked = false;
-  bool _isAllMemberMuted = false;
-  EMGroupOptions _options;
-  EMGroupPermissionType _permissionType;
+  String? _groupId;
+  String? _name = '';
+  String? _description = '';
+  String? _owner = '';
+  String? _announcement = '';
+  int? _memberCount;
+  List? _memberList;
+  List? _adminList;
+  List? _blockList;
+  List? _muteList;
+  List? _sharedFileList;
+  bool? _noticeEnable = true;
+  bool? _messageBlocked = false;
+  bool? _isAllMemberMuted = false;
+  EMGroupOptions? _options;
+  EMGroupPermissionType? _permissionType;
 
-  String get groupId => _groupId;
-  String get name => _name;
-  String get description => _description;
-  String get owner => _owner;
-  String get announcement => _announcement;
-  int get memberCount => _memberCount;
-  List get memberList => _memberList;
-  List get adminList => _adminList;
-  List get blockList => _blockList;
-  List get muteList => _muteList;
-  List get sharedFileList => _sharedFileList;
-  bool get noticeEnable => _noticeEnable;
-  bool get messageBlocked => _messageBlocked;
-  bool get isAllMemberMuted => _isAllMemberMuted;
-  EMGroupOptions get settings => _options;
-  EMGroupPermissionType get permissionType => _permissionType;
+  String? get groupId => _groupId;
+  String? get name => _name;
+  String? get description => _description;
+  String? get owner => _owner;
+  String? get announcement => _announcement;
+  int? get memberCount => _memberCount;
+  List? get memberList => _memberList;
+  List? get adminList => _adminList;
+  List? get blockList => _blockList;
+  List? get muteList => _muteList;
+  List? get sharedFileList => _sharedFileList;
+  bool? get noticeEnable => _noticeEnable;
+  bool? get messageBlocked => _messageBlocked;
+  bool? get isAllMemberMuted => _isAllMemberMuted;
+  EMGroupOptions? get settings => _options;
+  EMGroupPermissionType? get permissionType => _permissionType;
 
   factory EMGroup.fromJson(Map map) {
-    if (map == null) return null;
     return EMGroup._private()
       .._groupId = map['groupId']
       .._name = map['name']
@@ -89,12 +87,12 @@ class EMGroup {
     data['noticeEnable'] = _noticeEnable;
     data['messageBlocked'] = _messageBlocked;
     data['isAllMemberMuted'] = _isAllMemberMuted;
-    data['options'] = _options.toJson();
+    data['options'] = _options!.toJson();
     data['permissionType'] = EMGroup.permissionTypeToInt(_permissionType);
     return data;
   }
 
-  static EMGroupPermissionType permissionTypeFromInt(int type) {
+  static EMGroupPermissionType permissionTypeFromInt(int? type) {
     EMGroupPermissionType ret = EMGroupPermissionType.Member;
     switch (type) {
       case -1:
@@ -121,8 +119,9 @@ class EMGroup {
     return ret;
   }
 
-  static int permissionTypeToInt(EMGroupPermissionType type) {
+  static int permissionTypeToInt(EMGroupPermissionType? type) {
     int ret = 0;
+    if (type == null) return ret;
     switch (type) {
       case EMGroupPermissionType.None:
         {
@@ -157,30 +156,29 @@ class EMGroup {
 class EMGroupOptions {
   EMGroupOptions._private();
 
-  EMGroupOptions({@required EMGroupStyle style, int count = 200, bool inviteNeedConfirm = false, String extension = ''}) {
+  EMGroupOptions({required EMGroupStyle style, int count = 200, bool inviteNeedConfirm = false, String extension = ''}) {
     _style = style;
     _maxCount = count;
     _inviteNeedConfirm = inviteNeedConfirm;
     _ext = extension;
   }
 
-  EMGroupStyle _style;
-  int _maxCount;
-  bool _inviteNeedConfirm;
-  String _ext;
+  EMGroupStyle? _style;
+  int? _maxCount;
+  bool? _inviteNeedConfirm;
+  String? _ext;
 
-  EMGroupStyle get style => _style;
-  int get maxCount => _maxCount;
-  bool get inviteNeedConfirm => _inviteNeedConfirm;
-  String get ext => _ext;
+  EMGroupStyle? get style => _style;
+  int? get maxCount => _maxCount;
+  bool? get inviteNeedConfirm => _inviteNeedConfirm;
+  String? get ext => _ext;
 
-  factory EMGroupOptions.fromJson(Map map) {
-    if (map == null) return null;
+  factory EMGroupOptions.fromJson(Map? map) {
     return EMGroupOptions._private()
-      .._style = EMGroupOptions.styleTypeFromInt(map['style'])
-      .._maxCount = map['maxCount']
-      .._ext = map['ext']
-      .._inviteNeedConfirm = map.boolValue('inviteNeedConfirm');
+      .._style = EMGroupOptions.styleTypeFromInt(map?['style'])
+      .._maxCount = map?['maxCount']
+      .._ext = map?['ext']
+      .._inviteNeedConfirm = map?.boolValue('inviteNeedConfirm');
   }
 
   Map toJson() {
@@ -192,7 +190,7 @@ class EMGroupOptions {
     return data;
   }
 
-  static EMGroupStyle styleTypeFromInt(int type) {
+  static EMGroupStyle styleTypeFromInt(int? type) {
     EMGroupStyle ret = EMGroupStyle.PrivateOnlyOwnerInvite;
     switch (type) {
       case 0:
@@ -219,8 +217,9 @@ class EMGroupOptions {
     return ret;
   }
 
-  static int styleTypeToInt(EMGroupStyle type) {
+  static int styleTypeToInt(EMGroupStyle? type) {
     int ret = 0;
+    if (type == null) return ret;
     switch (type) {
       case EMGroupStyle.PrivateOnlyOwnerInvite:
         {
@@ -255,26 +254,25 @@ class EMGroupOptions {
 class EMGroupSharedFile {
   EMGroupSharedFile._private();
 
-  String _fileId;
-  String _fileName;
-  String _fileOwner;
-  int _createTime;
-  int _fileSize;
+  String? _fileId;
+  String? _fileName;
+  String? _fileOwner;
+  int? _createTime;
+  int? _fileSize;
 
-  String get fileId => _fileId;
-  String get fileName => _fileName;
-  String get fileOwner => _fileOwner;
-  int get createTime => _createTime;
-  int get fileSize => _fileSize;
+  String? get fileId => _fileId;
+  String? get fileName => _fileName;
+  String? get fileOwner => _fileOwner;
+  int? get createTime => _createTime;
+  int? get fileSize => _fileSize;
 
-  factory EMGroupSharedFile.fromJson(Map map) {
-    if (map == null) return null;
+  factory EMGroupSharedFile.fromJson(Map? map) {
     return EMGroupSharedFile._private()
-      .._fileId = map["fileId"]
-      .._fileName = map["name"]
-      .._fileOwner = map["owner"]
-      .._createTime = map["createTime"]
-      .._fileSize = map["fileSize"];
+      .._fileId = map?["fileId"]
+      .._fileName = map?["name"]
+      .._fileOwner = map?["owner"]
+      .._createTime = map?["createTime"]
+      .._fileSize = map?["fileSize"];
   }
 
   Map toJson() {
