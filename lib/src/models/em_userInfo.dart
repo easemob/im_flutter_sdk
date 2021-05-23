@@ -23,15 +23,10 @@ class EMUserInfo {
     String aBirth = '',
     String aExt = '',
     int aExpireTime = 0,
-  }) {
-    userId = aUserId ?? '';
-  }
+  });
 
   factory EMUserInfo.fromJson(Map map) {
-    if (map == null) return null;
-
-    return EMUserInfo.private()
-      ..userId = map['userId']
+    return EMUserInfo.private(map['userId'])
       ..nickName = map['nickName']
       ..avatarUrl = map['avatarUrl']
       ..mail = map['mail']
@@ -59,21 +54,20 @@ class EMUserInfo {
   }
 
   void description() {
-    print(
-        '\n=======================\n$this\n userId:$userId\n nickName:$nickName\n avatarUrl:$avatarUrl\n mail:$mail\n phone:$phone\n gender:$gender\n sign:$sign\n birth:$birth\n ext:$ext\n expireTime:$expireTime\n =======================\n');
+    print('\n=======================\n$this\n userId:$userId\n nickName:$nickName\n avatarUrl:$avatarUrl\n mail:$mail\n phone:$phone\n gender:$gender\n sign:$sign\n birth:$birth\n ext:$ext\n expireTime:$expireTime\n =======================\n');
   }
 
-  EMUserInfo.private([this.userId]);
+  EMUserInfo.private(this.userId);
 
   String userId = '';
-  String nickName = '';
-  String avatarUrl = '';
-  String mail = '';
-  String phone = '';
-  int gender = 0;
-  String sign = '';
-  String birth = '';
-  String ext = '';
+  String? nickName = '';
+  String? avatarUrl = '';
+  String? mail = '';
+  String? phone = '';
+  int? gender = 0;
+  String? sign = '';
+  String? birth = '';
+  String? ext = '';
   int expireTime = 0;
 
   // String userId;

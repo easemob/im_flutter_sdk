@@ -13,9 +13,8 @@ class EMChatRoom {
   String toString() => toJson().toString();
 
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
-    if (map == null) return null;
     return EMChatRoom._private()
-      .._roomId = map['roomId'] as String
+      .._roomId = map['roomId'] as String?
       .._name = map['name']
       .._description = map['desc']
       .._owner = map['owner']
@@ -50,29 +49,29 @@ class EMChatRoom {
   }
 
   // 房间id
-  String _roomId = '';
+  String? _roomId = '';
   // 房间名称
-  String _name = '';
+  String? _name = '';
   // 房间描述
-  String _description = '';
+  String? _description = '';
   // 房主
-  String _owner = '';
+  String? _owner = '';
   //公告
-  String _announcement = '';
+  String? _announcement = '';
   // 当前人数
-  int _memberCount = 0;
+  int? _memberCount = 0;
   // 最大人数
-  int _maxUsers = 0;
+  int? _maxUsers = 0;
   // 管理员列表
-  List _adminList;
+  List? _adminList;
   // 成员列表
-  List _memberList;
+  List? _memberList;
   // 黑名单列表
-  List _blockList;
+  List? _blockList;
   // 禁言列表
-  List _muteList;
+  List? _muteList;
   // 是否全员禁言
-  bool _isAllMemberMuted;
+  bool? _isAllMemberMuted;
   // 在聊天室中的角色
   EMChatRoomPermissionType _permissionType = EMChatRoomPermissionType.None;
 
@@ -90,7 +89,7 @@ class EMChatRoom {
   get isAllMemberMuted => _isAllMemberMuted;
   get permissionType => _permissionType;
 
-  static EMChatRoomPermissionType permissionTypeFromInt(int type) {
+  static EMChatRoomPermissionType permissionTypeFromInt(int? type) {
     EMChatRoomPermissionType ret = EMChatRoomPermissionType.Member;
     switch (type) {
       case -1:
@@ -109,13 +108,17 @@ class EMChatRoom {
     int ret = 0;
     switch (type) {
       case EMChatRoomPermissionType.None:
-        return -1;
+        ret = -1;
+        break;
       case EMChatRoomPermissionType.Member:
-        return 0;
+        ret = 0;
+        break;
       case EMChatRoomPermissionType.Admin:
-        return 1;
+        ret = 1;
+        break;
       case EMChatRoomPermissionType.Owner:
-        return 2;
+        ret = 2;
+        break;
     }
     return ret;
   }

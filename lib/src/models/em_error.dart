@@ -1,10 +1,8 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-
 class EMError {
   EMError._private([this._code, this._description]);
 
-  int _code;
-  String _description;
+  int? _code = 0;
+  String? _description;
 
   get code {
     return _code;
@@ -15,7 +13,6 @@ class EMError {
   }
 
   factory EMError.fromJson(Map map) {
-    if (map == null) return null;
     return EMError._private()
       .._code = map['code']
       .._description = map['description'];
@@ -27,15 +24,15 @@ class EMError {
 //  }
 
   static hasErrorFromResult(Map map) {
-    EMError error = EMError.fromJson(map['error']);
-    if (error != null) {
-      EMLog.v('error - ' + error.toString());
-      throw (error);
+    if (map['error'] == null) {
+      return;
+    } else {
+      throw (EMError.fromJson(map['error']));
     }
   }
 
   @override
   String toString() {
-    return "code: " + _code.toString() + " desc: " + _description;
+    return "code: " + _code.toString() + " desc: " + _description!;
   }
 }
