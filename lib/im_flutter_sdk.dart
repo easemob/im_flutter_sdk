@@ -5,6 +5,7 @@ export 'src/em_contact_manager.dart';
 export 'src/em_chat_manager.dart';
 export 'src/em_group_manager.dart';
 export 'src/em_push_manager.dart';
+export 'src/em_userInfo_manager.dart';
 
 export 'src/models/em_domain_terms.dart';
 export 'src/models/em_message.dart';

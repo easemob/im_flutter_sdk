@@ -7,6 +7,13 @@
 
 #import "EMWrapper.h"
 #import "EMError+Flutter.h"
+#define easemob_dispatch_main_async_safe(block)\
+    if ([NSThread isMainThread]) {\
+        block();\
+    } else {\
+        dispatch_async(dispatch_get_main_queue(), block);\
+    }
+
 
 @implementation EMWrapper
 
@@ -36,7 +43,10 @@
         if (aObj) {
             dic[aChannelName] = aObj;
         }
-        result(dic);
+        
+        easemob_dispatch_main_async_safe(^(){
+            result(dic);
+        });
     }
 }
 

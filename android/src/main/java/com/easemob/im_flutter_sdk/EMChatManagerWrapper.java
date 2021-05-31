@@ -214,7 +214,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 if (msg != null) {
                     EMClient.getInstance().chatManager().recallMessage(msg);
                 }
-                onSuccess(result, channelName, true);
+                onSuccess(result, channelName, true);                
             } catch (HyphenateException e) {
                 onError(result, e);
             }

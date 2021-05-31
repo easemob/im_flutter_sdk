@@ -66,6 +66,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 onSuccess(result, channelName, username);
             } catch (HyphenateException e) {
                 onError(result, e);
+            
             }
         });
     }

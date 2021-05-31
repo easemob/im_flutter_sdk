@@ -187,4 +187,11 @@ public class EMSDKMethod {
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updateGroupPushService = "updateGroupPushService";
     static final String getNoDisturbGroups = "getNoDisturbGroups";
+
+
+    /// EMUserInfoManager 
+    static final String updateOwnUserInfo = "updateOwnUserInfo";
+    static final String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
+    static final String fetchUserInfoById = "fetchUserInfoById";
+    static final String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
 }
