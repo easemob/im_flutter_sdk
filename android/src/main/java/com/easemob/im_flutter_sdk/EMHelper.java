@@ -1018,18 +1018,21 @@ class HyphenateExceptionHelper {
 }
 
 class EMUserInfoHelper {
-    static EMUserInfo  fromJson(JSONObject json) throws JSONException {
+    static EMUserInfo  fromJson(JSONObject obj) throws JSONException {
         EMUserInfo userInfo = new EMUserInfo();
-        userInfo.setUserId(json.getString("userId"));
-        userInfo.setNickName(json.getString("nickName"));
-        userInfo.setAvatarUrl(json.getString("avatarUrl"));
-        //安卓，iOS邮箱字段不统一，需要统一处理
-        userInfo.setEmail(json.getString("mail"));
-        userInfo.setPhoneNumber(json.getString("phone"));
-        userInfo.setGender(json.getInt("gender"));
-        userInfo.setSignature(json.getString("sign"));
-        userInfo.setBirth(json.getString("birth"));
-        userInfo.setExt(json.getString("ext"));
+
+        userInfo.setUserId(obj.getString("userId"));
+        userInfo.setNickName(obj.optString(EMUserInfo.EMUserInfoType.NICKNAME.getDesc()));
+        String gender = obj.optString(EMUserInfo.EMUserInfoType.GENDER.getDesc());
+        if(gender != null && gender.length() > 0){
+            userInfo.setGender(Integer.valueOf(gender));
+        }
+        userInfo.setEmail(obj.optString(EMUserInfo.EMUserInfoType.EMAIL.getDesc()));
+        userInfo.setPhoneNumber(obj.optString(EMUserInfo.EMUserInfoType.PHONE.getDesc()));
+        userInfo.setSignature(obj.optString(EMUserInfo.EMUserInfoType.SIGN.getDesc()));
+        userInfo.setAvatarUrl(obj.optString(EMUserInfo.EMUserInfoType.AVATAR_URL.getDesc()));
+        userInfo.setExt(obj.optString(EMUserInfo.EMUserInfoType.EXT.getDesc()));
+        userInfo.setBirth(obj.optString(EMUserInfo.EMUserInfoType.BIRTH.getDesc()));
 
         return userInfo;
     }

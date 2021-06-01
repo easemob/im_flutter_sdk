@@ -16,7 +16,8 @@ class ContactsPage extends StatefulWidget {
   State<StatefulWidget> createState() => ContactsPageState();
 }
 
-class ContactsPageState extends State<ContactsPage> implements EMContactEventListener {
+class ContactsPageState extends State<ContactsPage>
+    implements EMContactEventListener {
   List<ContactModel> _contactList = [];
   List<ContactModel> _topList = [];
 
@@ -26,7 +27,11 @@ class ContactsPageState extends State<ContactsPage> implements EMContactEventLis
   void initState() {
     super.initState();
     EMClient.getInstance.contactManager.addContactListener(this);
-    _topList.addAll([ContactModel.custom('新的好友'), ContactModel.custom('群聊'), ContactModel.custom('聊天室')]);
+    _topList.addAll([
+      ContactModel.custom('新的好友'),
+      ContactModel.custom('群聊'),
+      ContactModel.custom('聊天室')
+    ]);
 
     String currentUser = EMClient.getInstance.currentUsername;
     SharePreferenceManager.load(currentUser, callback: () {
@@ -56,9 +61,13 @@ class ContactsPageState extends State<ContactsPage> implements EMContactEventLis
               ],
               callback: (index) {
                 if (index == 0) {
-                  Navigator.of(context).pushNamed('/addFriends').then((value) {});
+                  Navigator.of(context)
+                      .pushNamed('/addFriends')
+                      .then((value) {});
                 } else if (index == 1) {
-                  Navigator.of(context).pushNamed('/publicGroups').then((value) {});
+                  Navigator.of(context)
+                      .pushNamed('/publicGroups')
+                      .then((value) {});
                 }
               },
             ),
@@ -209,7 +218,8 @@ class ContactsPageState extends State<ContactsPage> implements EMContactEventLis
         });
       }
     } else {
-      EMConversation conv = await EMClient.getInstance.chatManager.getConversation(contact.contactId);
+      EMConversation conv = await EMClient.getInstance.chatManager
+          .getConversation(contact.contactId);
       if (conv == null) {
         SmartDialog.showToast('会话创建失败');
         return;
@@ -225,7 +235,8 @@ class ContactsPageState extends State<ContactsPage> implements EMContactEventLis
 
   Future<void> _fetchContactsFromServer() async {
     try {
-      List<EMContact> contacts = await EMClient.getInstance.contactManager.getAllContactsFromServer();
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromServer();
       _contactList.clear();
       for (var contact in contacts) {
         _contactList.add(ContactModel.contact(contact));
@@ -243,7 +254,8 @@ class ContactsPageState extends State<ContactsPage> implements EMContactEventLis
 
   Future<void> _loadLocalContacts() async {
     try {
-      List<EMContact> contacts = await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromDB();
       _contactList.clear();
       for (var contact in contacts) {
         _contactList.add(ContactModel.contact(contact));
