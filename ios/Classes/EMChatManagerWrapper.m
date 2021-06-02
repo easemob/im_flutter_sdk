@@ -324,11 +324,11 @@
     EMMessage *msg = [EMMessage fromJson:param[@"message"]];
     [EMClient.sharedClient.chatManager updateMessage:msg
                                           completion:^(EMMessage *aMessage, EMError *aError)
-     {    [weakSelf wrapperCallBack:result
+     {
+         [weakSelf wrapperCallBack:result
                         channelName:aChannelName
                               error:aError
                              object:[aMessage toJson]];
-        
     }];
 }
 
