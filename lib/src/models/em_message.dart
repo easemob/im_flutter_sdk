@@ -771,7 +771,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 
 // cmd body
 class EMCmdMessageBody extends EMMessageBody {
-  EMCmdMessageBody({@required this.action, this.deliverOnlineOnly}) : super(type: EMMessageBodyType.CMD);
+  EMCmdMessageBody({@required this.action, this.deliverOnlineOnly = false}) : super(type: EMMessageBodyType.CMD);
 
   EMCmdMessageBody.fromJson({Map map}) : super.fromJson(map: map, type: EMMessageBodyType.CMD) {
     this.action = map['action'];

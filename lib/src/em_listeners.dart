@@ -14,8 +14,7 @@ abstract class EMMultiDeviceListener {
   void onContactEvent(EMContactGroupEvent event, String target, String ext);
 
   /// @nodoc
-  void onGroupEvent(
-      EMContactGroupEvent event, String target, List<String> usernames);
+  void onGroupEvent(EMContactGroupEvent event, String target, List<String> usernames);
 }
 
 /// @nodoc
@@ -94,8 +93,7 @@ abstract class EMChatRoomEventListener {
   void onMemberExited(String roomId, String roomName, String participant);
 
   /// 用户[participant]被id是[roomId],名称[roomName]的聊天室删除
-  void onRemovedFromChatRoom(
-      String roomId, String roomName, String participant);
+  void onRemovedFromChatRoom(String roomId, String roomName, String participant);
 
   /// @nodoc id是[roomId]的聊天室禁言列表[mutes]有增加
   void onMuteListAdded(String roomId, List mutes, String expireTime);
@@ -121,8 +119,7 @@ class EMGroupChangeEvent {
   static const String ON_INVITATION_RECEIVED = "onInvitationReceived";
   static const String ON_INVITATION_ACCEPTED = "onInvitationAccepted";
   static const String ON_INVITATION_DECLINED = "onInvitationDeclined";
-  static const String ON_AUTO_ACCEPT_INVITATION =
-      "onAutoAcceptInvitationFromGroup";
+  static const String ON_AUTO_ACCEPT_INVITATION = "onAutoAcceptInvitationFromGroup";
   static const String ON_USER_REMOVED = "onUserRemoved";
   static const String ON_REQUEST_TO_JOIN_RECEIVED = "onRequestToJoinReceived";
   static const String ON_REQUEST_TO_JOIN_DECLINED = "onRequestToJoinDeclined";
@@ -141,21 +138,17 @@ class EMGroupChangeEvent {
 }
 
 abstract class EMGroupChangeListener {
-  /// id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
-  void onInvitationReceived(
-      String groupId, String groupName, String inviter, String reason);
+  /// id是[groupId], 名称是[groupName]的群邀请,邀请人是[inviter],理由是[reason]
+  void onInvitationReceived(String groupId, String groupName, String inviter, String reason);
 
   /// 收到用户[applicant]申请加入id是[groupId], 名称是[groupName]的群，原因是[reason]
-  void onRequestToJoinReceived(
-      String groupId, String groupName, String applicant, String reason);
+  void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason);
 
   /// 入群申请被同意
-  void onRequestToJoinAccepted(
-      String groupId, String groupName, String accepter);
+  void onRequestToJoinAccepted(String groupId, String groupName, String accepter);
 
   /// 入群申请被拒绝
-  void onRequestToJoinDeclined(
-      String groupId, String groupName, String decliner, String reason);
+  void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason);
 
   /// 入群邀请被同意
   void onInvitationAccepted(String groupId, String invitee, String reason);
@@ -170,8 +163,7 @@ abstract class EMGroupChangeListener {
   void onGroupDestroyed(String groupId, String groupName);
 
   /// @nodoc 自动同意加群
-  void onAutoAcceptInvitationFromGroup(
-      String groupId, String inviter, String inviteMessage);
+  void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage);
 
   /// 群禁言列表增加
   void onMuteListAdded(String groupId, List mutes, int muteExpire);

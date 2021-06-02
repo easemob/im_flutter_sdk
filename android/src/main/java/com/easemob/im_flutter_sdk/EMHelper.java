@@ -637,17 +637,18 @@ class EMMessageBodyHelper {
 
     static EMCustomMessageBody customBodyFromJson(JSONObject json) throws JSONException {
         String event = json.getString("event");
-        JSONObject jsonObject = json.getJSONObject("params");
-        Map<String, String> params = new HashMap<>();
-        Iterator iterator = jsonObject.keys();
-        while (iterator.hasNext()) {
-            String key = iterator.next().toString();
-            params.put(key, jsonObject.getString(key));
-        }
-
         EMCustomMessageBody body = new EMCustomMessageBody(event);
-        body.setParams(params);
 
+        if (json.has("params") && json.get("params") != JSONObject.NULL) {
+            JSONObject jsonObject = json.getJSONObject("params");
+            Map<String, String> params = new HashMap<>();
+            Iterator iterator = jsonObject.keys();
+            while (iterator.hasNext()) {
+                String key = iterator.next().toString();
+                params.put(key, jsonObject.getString(key));
+            }
+            body.setParams(params);
+        }
         return body;
     }
 
