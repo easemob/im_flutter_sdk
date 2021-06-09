@@ -11,6 +11,7 @@ import 'package:easeim_flutter_demo/pages/group/public_groups_page.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
 import 'package:easeim_flutter_demo/pages/home_page.dart';
 import 'package:easeim_flutter_demo/pages/account/login_page.dart';
+import 'package:easeim_flutter_demo/pages/me/userInfoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/screenutil_init.dart';
@@ -23,7 +24,9 @@ void main() {
   SystemUiOverlayStyle uiStyle = SystemUiOverlayStyle.light;
   SystemChrome.setSystemUIOverlayStyle(uiStyle);
   EMPushConfig config = EMPushConfig()..enableAPNs('EaseIM_APNS_Product');
-  var options = EMOptions(appKey: 'easemob-demo#easeim');
+  // var options = EMOptions(appKey: 'easemob-demo#easeim');
+  var options = EMOptions(appKey: '1118210518231124#c');
+
   options.pushConfig = config;
   EMClient.getInstance.init(options).then((value) => null);
   return runApp(EaseIMDemo());
@@ -42,7 +45,14 @@ class EaseIMDemo extends StatelessWidget {
           builder: (context, child) => FlutterSmartDialog(child: child),
           debugShowCheckedModeBanner: false,
           onGenerateRoute: onGenerateRoute,
-          theme: ThemeData(appBarTheme: AppBarTheme(elevation: 1), buttonTheme: ButtonThemeData(minWidth: 44.0, highlightColor: Color.fromRGBO(0, 0, 0, 0), splashColor: Color.fromRGBO(0, 0, 0, 0)), highlightColor: Color.fromRGBO(0, 0, 0, 0), splashColor: Color.fromRGBO(0, 0, 0, 0)),
+          theme: ThemeData(
+              appBarTheme: AppBarTheme(elevation: 1),
+              buttonTheme: ButtonThemeData(
+                  minWidth: 44.0,
+                  highlightColor: Color.fromRGBO(0, 0, 0, 0),
+                  splashColor: Color.fromRGBO(0, 0, 0, 0)),
+              highlightColor: Color.fromRGBO(0, 0, 0, 0),
+              splashColor: Color.fromRGBO(0, 0, 0, 0)),
           home: IndexPage(),
         );
       },
@@ -70,7 +80,9 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         ),
     '/rooms': (context) => ChatroomsListPages(),
     '/contactSelect': (context) => ContactSelectPage(),
+    '/userInfoPage': (context) => UserInfoPage(),
   };
+
   WidgetBuilder builder = routes[settings.name];
   return MaterialPageRoute(builder: (ctx) => builder(ctx));
 }

@@ -91,8 +91,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void sendMessage(JSONObject param, String channelName, Result result) throws JSONException {
-        EMMessage msg = EMMessageHelper.fromJson(param);
-
+        EMMessage message = EMClient.getInstance().chatManager().getMessage(param.getString("msgId"));
+        if(message == null){
+            message = EMMessageHelper.fromJson(param);
+        }
+        final EMMessage msg = message;
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -258,7 +261,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().updateMessage(msg);
-            onSuccess(result, channelName, true);
+            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
     }
 
