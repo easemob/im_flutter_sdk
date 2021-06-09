@@ -116,7 +116,7 @@ class MePageState extends State<MePage> {
       String userId = EMClient.getInstance.currentUsername;
       List<String> userIds = List();
       userIds.add(userId);
-      userIds.add('liu003');
+      userIds.add('liu005');
       userIds.add('liu004');
 
       int expireTime = DateTime.fromMillisecondsSinceEpoch(
@@ -128,13 +128,16 @@ class MePageState extends State<MePage> {
           .fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
 
       print('userInfoMap: $userInfoMap');
-      print('=====================');
-      print('=====================');
+      print('fetchUserInfoById\n===============================');
+      print('===============================');
 
-      EMUserInfo userInfo = userInfoMap[userId];
-      if (userInfo != null) {
-        userInfo.description();
+      for (var key in userInfoMap.keys) {
+        EMUserInfo us = userInfoMap[key];
+        us.description();
       }
+
+      print('===============================');
+      print('===============================');
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }
@@ -150,6 +153,7 @@ class MePageState extends State<MePage> {
       List<EMUserInfoType> types = List();
       types.add(EMUserInfoType.EMUserInfoTypeNickName);
       types.add(EMUserInfoType.EMUserInfoTypeBirth);
+      types.add(EMUserInfoType.EMUserInfoTypeAvatarURL);
 
       print('userIds: $userIds');
 
@@ -176,10 +180,13 @@ class MePageState extends State<MePage> {
 
       EMUserInfo eUserInfo =
           await EMClient.getInstance.userInfoManager.fetchOwnUserInfo();
-      eUserInfo.nickName = '葫芦娃';
+      eUserInfo.nickName = '111';
       String source = '123456789';
       String month = source[Random().nextInt(source.length)];
       String day = source[Random().nextInt(source.length)];
+      String urlString =
+          'http://thirdqq.qlogo.cn/g?b=oidb&k=F3O4ZsbrmMjAwJRyAhmkaw&s=100&t=1556336302';
+      eUserInfo.avatarUrl = urlString;
 
       eUserInfo.gender = 2;
       eUserInfo.birth = '2021-0$month-' + day;
