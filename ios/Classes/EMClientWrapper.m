@@ -334,7 +334,7 @@
 }
 
 - (void)userDidForbidByServer {
-    [self onDisconnected:1]; // 需要明确具体的code
+    [self onDisconnected:305];
 }
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {

@@ -30,7 +30,7 @@
                                                           from:from
                                                             to:to
                                                           body:body
-                                                           ext:aJson[@"attributes"]];
+                                                           ext:nil];
     if (aJson[@"msgId"]) {
         msg.messageId = aJson[@"msgId"];
     }
@@ -45,7 +45,7 @@
     msg.isReadAcked = [aJson[@"hasReadAck"] boolValue];
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
     msg.isRead = [aJson[@"hasRead"] boolValue];
-    
+    msg.ext = aJson[@"attributes"];
     return msg;
 }
 
@@ -485,6 +485,8 @@
     NSString *displayName = aJson[@"displayName"];
     EMVideoMessageBody *ret = [[EMVideoMessageBody alloc] initWithLocalPath:path displayName:displayName];
     ret.duration = [aJson[@"duration"] intValue];
+    ret.secretKey = aJson[@"secret"];
+    ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
@@ -498,6 +500,8 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"duration"] = @(self.duration);
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
+    ret[@"secret"] = self.secretKey;
+    ret[@"remotePath"] = self.remotePath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
     ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
@@ -522,6 +526,8 @@
     NSString *path = aJson[@"localPath"];
     NSString *displayName = aJson[@"displayName"];
     EMVoiceMessageBody *ret = [[EMVoiceMessageBody alloc] initWithLocalPath:path displayName:displayName];
+    ret.secretKey = aJson[@"secret"];
+    ret.remotePath = aJson[@"remotePath"];
     ret.duration = [aJson[@"duration"] intValue];
     ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
@@ -533,6 +539,8 @@
     ret[@"displayName"] = self.displayName;
     ret[@"localPath"] = self.localPath;
     ret[@"fileSize"] = @(self.fileLength);
+    ret[@"secret"] = self.secretKey;
+    ret[@"remotePath"] = self.remotePath;
     ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);;
     return ret;
 }
