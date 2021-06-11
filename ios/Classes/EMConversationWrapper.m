@@ -192,7 +192,6 @@
 
 - (void)insertMessage:(NSDictionary *)param result:(FlutterResult)result
 {
-    NSLog(@"插入消息 --- %@", param);
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
@@ -354,8 +353,6 @@
                                object:jsonMsgs];
         }];
     }];
-    
-    NSLog(@"%@", NSHomeDirectory());
 }
 
 - (void)loadMsgWithKeywords:(NSDictionary *)param result:(FlutterResult)result
