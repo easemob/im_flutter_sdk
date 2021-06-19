@@ -30,7 +30,12 @@ class ChatPage extends StatefulWidget {
   State<StatefulWidget> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EMChatManagerListener, EMChatRoomEventListener, EaseCallKitListener {
+class _ChatPageState extends State<ChatPage>
+    implements
+        ChatInputBarListener,
+        EMChatManagerListener,
+        EMChatRoomEventListener,
+        EaseCallKitListener {
   List<ChatMoreViewItem> items;
 
   final _scrollController = ScrollController();
@@ -64,12 +69,18 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     );
 
     items = [
-      ChatMoreViewItem('images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
-      ChatMoreViewItem('images/chat_input_more_camera.png', '相机', _moreCameraBtnOnTap),
-      ChatMoreViewItem('images/chat_input_more_loc.png', '位置', _moreLocalBtnOnTap),
-      ChatMoreViewItem('images/chat_input_more_file.png', '文件', _moreFileBtnOnTap),
-      ChatMoreViewItem('images/chat_input_more_pin.png', '语音', _moreVoiceCallBtnOnTap),
-      ChatMoreViewItem('images/chat_input_more_pin.png', '视频', _moreVideoCallBtnOnTap),
+      ChatMoreViewItem(
+          'images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
+      ChatMoreViewItem(
+          'images/chat_input_more_camera.png', '相机', _moreCameraBtnOnTap),
+      ChatMoreViewItem(
+          'images/chat_input_more_loc.png', '位置', _moreLocalBtnOnTap),
+      ChatMoreViewItem(
+          'images/chat_input_more_file.png', '文件', _moreFileBtnOnTap),
+      ChatMoreViewItem(
+          'images/chat_input_more_pin.png', '语音', _moreVoiceCallBtnOnTap),
+      ChatMoreViewItem(
+          'images/chat_input_more_pin.png', '视频', _moreVideoCallBtnOnTap),
     ];
 
     _moreView = ChatMoreView(items);
@@ -80,12 +91,15 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     widget.conv?.markAllMessagesAsRead();
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels == _scrollController.position.minScrollExtent) {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.minScrollExtent) {
         _loadMessages(moveBottom: false);
       }
     });
     if (widget.conv?.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv?.id).then((value) => _loadMessages());
+      EMClient.getInstance.chatRoomManager
+          .joinChatRoom(widget.conv?.id)
+          .then((value) => _loadMessages());
     } else {
       _loadMessages();
     }
@@ -142,9 +156,11 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (_, int index) {
-                              return ChangeNotifierProvider<ChatVoicePlayer>.value(
+                              return ChangeNotifierProvider<
+                                  ChatVoicePlayer>.value(
                                 value: _voicePlayer,
-                                child: _chatItemFromMessage(_msgList[index], index),
+                                child: _chatItemFromMessage(
+                                    _msgList[index], index),
                               );
                             },
                             childCount: _msgList.length,
@@ -181,7 +197,9 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   _chatItemFromMessage(EMMessage msg, int index) {
     _makeMessageAsRead(msg);
     bool needShowTime = false;
-    if (_adjacentTime == 0 || (msg.serverTime - _adjacentTime).abs() > _timeInterval || index == 0) {
+    if (_adjacentTime == 0 ||
+        (msg.serverTime - _adjacentTime).abs() > _timeInterval ||
+        index == 0) {
       needShowTime = true;
     }
 
@@ -225,7 +243,8 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   /// 发送消息已读回执
   _makeMessageAsRead(EMMessage msg) async {
-    if (msg.chatType == EMMessageChatType.Chat && msg.direction == EMMessageDirection.RECEIVE) {
+    if (msg.chatType == EMMessageChatType.Chat &&
+        msg.direction == EMMessageDirection.RECEIVE) {
       if (msg.hasReadAck == false) {
         try {
           await EMClient.getInstance.chatManager.sendMessageReadAck(msg);
@@ -247,12 +266,14 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
       return ChatFaceView(
         _inputBarEditingController.text.length > 0,
         onFaceTap: (expression) {
-          _inputBarEditingController.text = _inputBarEditingController.text + '[${expression.name}]';
+          _inputBarEditingController.text =
+              _inputBarEditingController.text + '[${expression.name}]';
           setState(() {});
         },
         onDeleteTap: () {
           if (_inputBarEditingController.text.length > 0) {
-            _inputBarEditingController.text = _inputBarEditingController.text.substring(0, _inputBarEditingController.text.length - 1);
+            _inputBarEditingController.text = _inputBarEditingController.text
+                .substring(0, _inputBarEditingController.text.length - 1);
           }
         },
         onSendTap: () => _sendTextMessage(_inputBarEditingController.text),
@@ -265,7 +286,9 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   /// 下拉加载更多消息
   _loadMessages({int count = 20, bool moveBottom = true}) async {
     try {
-      List<EMMessage> msgs = await widget.conv.loadMessages(startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '', loadCount: count);
+      List<EMMessage> msgs = await widget.conv.loadMessages(
+          startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
+          loadCount: count);
       _msgList.insertAll(0, msgs);
     } on EMError {} finally {
       if (moveBottom) {
@@ -341,13 +364,15 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   }
 
   /// 发送文字消息
-  _sendTextMessage(String txt) {
+  _sendTextMessage(String txt) async {
     if (txt.length == 0) return;
     EMMessage msg = EMMessage.createTxtSendMessage(
       username: widget.conv.id,
       content: txt,
     );
+
     _sendMessage(msg);
+    _setStateAndMoreToListViewEnd();
     _inputBarEditingController.text = '';
   }
 
@@ -356,7 +381,10 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
     Image.file(
       File(imagePath),
       fit: BoxFit.contain,
-    ).image.resolve(ImageConfiguration()).addListener(ImageStreamListener((ImageInfo info, bool _) {
+    )
+        .image
+        .resolve(ImageConfiguration())
+        .addListener(ImageStreamListener((ImageInfo info, bool _) {
       EMMessage msg = EMMessage.createImageSendMessage(
         username: widget.conv.id,
         filePath: imagePath,
@@ -397,15 +425,16 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   /// 重发消息
   void _resendMessage(EMMessage msg) async {
-    // _msgList.remove(msg);
+    _msgList.remove(msg);
+
     await EMClient.getInstance.chatManager.resendMessage(msg);
-    // _msgList.add(msg);
-    _setStateAndMoreToListViewEnd();
+    _msgList.add(msg);
   }
 
   /// 相册按钮被点击
   _moreViewPhotoBtnOnTap() async {
-    PickedFile pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+    PickedFile pickedFile =
+        await ImagePicker().getImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       _sendImageMessage(
         pickedFile.path,
@@ -416,6 +445,9 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   /// 拍照按钮被点击
   _moreCameraBtnOnTap() {
     print('_moreCameraBtnOnTap');
+    widget.conv.deleteAllMessages();
+    _msgList.clear();
+    setState(() {});
   }
 
   /// 位置按钮被点击
@@ -437,7 +469,8 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
 
   _moreVideoCallBtnOnTap() {
     if (widget.conv.type == EMConversationType.Chat) {
-      EaseCallKit.startSingleCall(widget.conv.id, callType: EaseCallType.SingeVideo);
+      EaseCallKit.startSingleCall(widget.conv.id,
+          callType: EaseCallType.SingeVideo);
     }
   }
 
@@ -468,7 +501,8 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   void voiceBtnTouchUpInside() {
     RecordAmr.stopVoiceRecord((path, duration) {
       if (path != null && duration > 0) {
-        EMMessage msg = EMMessage.createVoiceSendMessage(username: widget.conv.id, filePath: path, duration: duration);
+        EMMessage msg = EMMessage.createVoiceSendMessage(
+            username: widget.conv.id, filePath: path, duration: duration);
         _sendMessage(msg);
       } else {
         print('录制时间太短');
@@ -580,10 +614,12 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   void onOwnerChanged(String roomId, String newOwner, String oldOwner) {}
 
   @override
-  void onRemovedFromChatRoom(String roomId, String roomName, String participant) {}
+  void onRemovedFromChatRoom(
+      String roomId, String roomName, String participant) {}
 
   @override
-  void callDidEnd(String channelName, EaseCallEndReason reason, int time, EaseCallType callType) {}
+  void callDidEnd(String channelName, EaseCallEndReason reason, int time,
+      EaseCallType callType) {}
 
   @override
   void callDidOccurError(EaseCallError error) {
@@ -594,7 +630,8 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   void callDidReceive(EaseCallType callType, String inviter, Map ext) {}
 
   @override
-  void callDidRequestRTCToken(String appId, String channelName, String account) {}
+  void callDidRequestRTCToken(
+      String appId, String channelName, String account) {}
 
   @override
   void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
