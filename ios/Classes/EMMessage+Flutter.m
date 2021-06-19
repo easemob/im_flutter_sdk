@@ -334,8 +334,13 @@
 @implementation EMCustomMessageBody (Flutter)
 
 + (EMCustomMessageBody *)fromJson:(NSDictionary *)aJson {
+    NSDictionary *dic = aJson[@"params"];
+    if ([dic isKindOfClass:[NSNull class]]) {
+        dic = nil;
+    }
+    
     EMCustomMessageBody *ret = [[EMCustomMessageBody alloc] initWithEvent:aJson[@"event"]
-                                                                      ext:aJson[@"params"]];
+                                                                      ext:dic];
     return ret;
 }
 
