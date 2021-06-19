@@ -29,7 +29,7 @@ dependencies:
   azlistview:
     git:
       url: https://github.com/dujiepeng/azlistview.git
-      ref: master
+      ref: b4db388
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -98,7 +98,8 @@ dependencies:
   ease_call_kit:
     git:
       url: https://github.com/easemob/ease_call_kit.git
-      ref: stable
+      ref: 535f6e7
+
 
   # ease_call_kit:
   #   path: ../../ease_call_kit/
@@ -111,7 +112,7 @@ dependencies:
   record_amr:
     git:
       url: https://github.com/dujiepeng/record_amr.git
-      ref: stable
+      ref: 8409dfc
 
 dev_dependencies:
   flutter_test:
