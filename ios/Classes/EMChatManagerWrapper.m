@@ -1,6 +1,6 @@
 //
 //  EMChatManagerWrapper.m
-//  
+//
 //
 //  Created by 杜洁鹏 on 2019/10/8.
 //
@@ -241,6 +241,15 @@
                result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msg_id"];
+    EMMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
+    if (!msg) {
+        EMError *error = [EMError errorWithDescription:@"The message was not found" code:EMErrorMessageInvalid];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@(!error)];
+        return;
+    }
     [EMClient.sharedClient.chatManager recallMessageWithMessageId:msgId
                                                        completion:^(EMError *aError)
      {
