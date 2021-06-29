@@ -95,11 +95,7 @@ extension EMPushConfigExtension on EMImPushConfig {
   Future<List<String>> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
-    List<String> groupIds = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>();
-    for (String groupId in groupIds) {
-      _noDisturbGroups.removeWhere((e) => e == groupId);
-      _noDisturbGroups.add(groupId);
-    }
+    _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>() ?? [];
     return _noDisturbGroups;
   }
 }
