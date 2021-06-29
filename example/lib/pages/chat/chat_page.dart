@@ -338,13 +338,6 @@ class _ChatPageState extends State<ChatPage> implements ChatInputBarListener, EM
   /// 消息长按
   _messageOnLongPress(EMMessage msg) async {
     // EMClient.getInstance.chatManager.recallMessage(msg.msgId).then((value) => print(value)).catchError((e) => print(e));
-
-    try {
-      EMImPushConfig config = await EMClient.getInstance.pushManager.getImPushConfig();
-      await config.setGroupToDisturb(widget.conv.id, true);
-    } on EMError catch (e) {
-      print(e);
-    }
   }
 
   /// 发送文字消息
