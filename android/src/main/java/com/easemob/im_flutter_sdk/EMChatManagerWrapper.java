@@ -371,11 +371,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             Collections.sort(list, new Comparator<EMConversation>() {
                 @Override
                 public int compare(EMConversation o1, EMConversation o2) {
-                    if (o1.getLastMessage() == null) {
+                    if (o1.getLastMessage() == null || o1.getLatestMessage().getMsgTime() == null) {
                         return 1;
                     }
 
-                    if (o2.getLastMessage() == null) {
+                    if (o2.getLastMessage() == null || o2.getLatestMessage().getMsgTime() == null) {
                         return -1;
                     }
                     return (int) (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime());
