@@ -97,8 +97,8 @@
                        channelName:EMMethodKeyLoadAllConversations
                             result:result];
     } else if ([EMMethodKeyGetConversationsFromServer isEqualToString:call.method]) {
-        [self loadAllConversations:call.arguments
-                       channelName:EMMethodKeyGetConversationsFromServer
+        [self getConversationsFromServer:call.arguments
+                             channelName:EMMethodKeyGetConversationsFromServer
                             result:result];
     } else if ([EMMethodKeyDeleteConversation isEqualToString:call.method]) {
         [self deleteConversation:call.arguments
