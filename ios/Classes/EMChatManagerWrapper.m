@@ -270,7 +270,6 @@
                   channelName:aChannelName
                         error:nil
                        object:[msg toJson]];
-    
 }
 
 - (void)getConversation:(NSDictionary *)param

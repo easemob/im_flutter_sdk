@@ -137,12 +137,12 @@ class EMClient {
     return result.boolValue(EMSDKMethod.changeAppKey);
   }
 
-  /// @nodoc 上传日志到环信, 不对外暴露
-  Future<bool> _uploadLog() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.uploadLog);
-    EMError.hasErrorFromResult(result);
-    return true;
-  }
+  // /// @nodoc 上传日志到环信, 不对外暴露
+  // Future<bool> _uploadLog() async {
+  //   Map result = await _channel.invokeMethod(EMSDKMethod.uploadLog);
+  //   EMError.hasErrorFromResult(result);
+  //   return true;
+  // }
 
   /// 压缩环信日志
   /// 返回日志路径
