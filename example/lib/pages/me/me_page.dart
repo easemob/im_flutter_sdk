@@ -1,6 +1,4 @@
 import 'dart:math';
-
-import 'package:easeim_flutter_demo/pages/me/userInfoPage.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -14,8 +12,6 @@ class MePageState extends State<MePage> {
   void initState() {
     super.initState();
   }
-
-  String _nickName = '';
 
   @override
   Widget build(BuildContext context) {
