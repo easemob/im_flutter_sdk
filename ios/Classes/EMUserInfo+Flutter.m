@@ -12,8 +12,8 @@
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"userId"] = self.userId;
-    ret[@"nickName"] = self.nickName;
-    ret[@"avatarUrl"] = self.avatarUrl;
+    ret[@"nickname"] = self.nickName;
+    ret[@"avatarurl"] = self.avatarUrl;
     ret[@"mail"] = self.mail;
     ret[@"phone"] = self.phone;
     ret[@"gender"] = @(self.gender);

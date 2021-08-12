@@ -32,8 +32,8 @@ class EMUserInfo {
 
     return EMUserInfo.private()
       ..userId = map['userId']
-      ..nickName = map['nickName']
-      ..avatarUrl = map['avatarUrl']
+      ..nickName = map['nickname']
+      ..avatarUrl = map['avatarurl']
       ..mail = map['mail']
       ..phone = map['phone']
       ..gender = map['gender']
