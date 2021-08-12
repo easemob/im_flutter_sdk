@@ -1030,17 +1030,17 @@ class EMUserInfoHelper {
         EMUserInfo userInfo = new EMUserInfo();
 
         userInfo.setUserId(obj.getString("userId"));
-        userInfo.setNickName(obj.optString(EMUserInfo.EMUserInfoType.NICKNAME.getDesc()));
-        String gender = obj.optString(EMUserInfo.EMUserInfoType.GENDER.getDesc());
-        if (gender != null && gender.length() > 0) {
-            userInfo.setGender(Integer.valueOf(gender));
+        userInfo.setNickName(obj.optString("nickName"));
+        if (obj.has("gender")){
+            userInfo.setGender(obj.getInt("gender"));
         }
-        userInfo.setEmail(obj.optString(EMUserInfo.EMUserInfoType.EMAIL.getDesc()));
-        userInfo.setPhoneNumber(obj.optString(EMUserInfo.EMUserInfoType.PHONE.getDesc()));
-        userInfo.setSignature(obj.optString(EMUserInfo.EMUserInfoType.SIGN.getDesc()));
-        userInfo.setAvatarUrl(obj.optString(EMUserInfo.EMUserInfoType.AVATAR_URL.getDesc()));
-        userInfo.setExt(obj.optString(EMUserInfo.EMUserInfoType.EXT.getDesc()));
-        userInfo.setBirth(obj.optString(EMUserInfo.EMUserInfoType.BIRTH.getDesc()));
+
+        userInfo.setEmail(obj.optString("mail"));
+        userInfo.setPhoneNumber(obj.optString("phone"));
+        userInfo.setSignature(obj.optString("sign"));
+        userInfo.setAvatarUrl(obj.optString("avatarUrl"));
+        userInfo.setExt(obj.optString("ext"));
+        userInfo.setBirth(obj.optString("birth"));
 
         return userInfo;
     }
@@ -1050,10 +1050,10 @@ class EMUserInfoHelper {
         data.put("userId", userInfo.getUserId());
         data.put("nickName", userInfo.getNickName());
         data.put("avatarUrl", userInfo.getAvatarUrl());
-        data.put("email", userInfo.getEmail());
-        data.put("phoneNumber", userInfo.getPhoneNumber());
+        data.put("mail", userInfo.getEmail());
+        data.put("phone", userInfo.getPhoneNumber());
         data.put("gender", userInfo.getGender());
-        data.put("signature", userInfo.getSignature());
+        data.put("sign", userInfo.getSignature());
         data.put("birth", userInfo.getBirth());
         data.put("ext", userInfo.getExt());
 
