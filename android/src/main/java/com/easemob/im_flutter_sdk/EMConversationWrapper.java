@@ -231,8 +231,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMConversation conversation = conversationWithParam(params);
         String startId = params.getString("startId");
         int pageSize = params.getInt("count");
+        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
         asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize);
+            List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize,direction);
             List<Map> messages = new ArrayList<>();
             for(EMMessage msg: msgList) {
                 messages.add(EMMessageHelper.toJson(msg));
