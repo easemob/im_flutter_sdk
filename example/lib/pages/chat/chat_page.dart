@@ -14,7 +14,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 // import 'package:record_amr/record_amr.dart';
-
 import 'chat_face_view.dart';
 import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
@@ -97,11 +96,18 @@ class _ChatPageState extends State<ChatPage>
       }
     });
     if (widget.conv?.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager
-          .joinChatRoom(widget.conv?.id)
-          .then((value) => _loadMessages());
+      joinChatRoom();
     } else {
       _loadMessages();
+    }
+  }
+
+  void joinChatRoom() async {
+    try {
+      await EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv?.id);
+      _loadMessages();
+    } on EMError catch (e) {
+      print("加入房间失败 -- " + e.toString());
     }
   }
 
@@ -485,7 +491,15 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
-  void voiceBtnTouchDown() {
+  void voiceBtnTouchDown() async {
+    // TODO: start record;
+    // await Record.start(
+    //   path: 'aFullPath/myFile.m4a', // required
+    //   encoder: AudioEncoder.AAC, // by default
+    //   bitRate: 128000, // by default
+    //   sampleRate: 44100, // by default
+    // );
+
     // RecordAmr.startVoiceRecord((volume) {
     //   print('volume -- $volume');
     // }).then((value) {
@@ -499,6 +513,7 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void voiceBtnTouchUpInside() {
+    // TODO: end record and send message;
     // RecordAmr.stopVoiceRecord((path, duration) {
     //   if (path != null && duration > 0) {
     //     EMMessage msg = EMMessage.createVoiceSendMessage(username: widget.conv.id, filePath: path, duration: duration);
@@ -511,6 +526,7 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void voiceBtnTouchUpOutside() {
+    // TODO: cancel record
     print('录音按钮被外部抬起');
     _setStateAndMoreToListViewEnd();
   }
