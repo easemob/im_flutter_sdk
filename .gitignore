@@ -19,3 +19,4 @@ example/ios/Flutter/flutter_export_environment.sh
 .history/
 **/*/.flutter-plugins-dependencies
 **/.fvm
+**/release/
