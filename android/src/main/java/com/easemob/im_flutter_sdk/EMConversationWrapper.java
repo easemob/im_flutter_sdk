@@ -1,7 +1,5 @@
 package com.easemob.im_flutter_sdk;
-
 import android.text.TextUtils;
-
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
