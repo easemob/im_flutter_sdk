@@ -215,7 +215,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 if (msg != null) {
                     EMClient.getInstance().chatManager().recallMessage(msg);
                 }
-                onSuccess(result, channelName, true);
+                onSuccess(result, channelName, true);               
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -306,12 +306,14 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onError(int code, String desc) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("code", code);
+                data.put("description", desc);
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
                     map.put("localTime", msg.localTime());
-                    map.put("code", code);
-                    map.put("description", desc);
+                    map.put("error", data);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
                 });
             }
@@ -348,12 +350,14 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onError(int code, String desc) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("code", code);
+                data.put("description", desc);
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
                     map.put("localTime", msg.localTime());
-                    map.put("code", code);
-                    map.put("description", desc);
+                    map.put("error", data);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
                 });
             }
