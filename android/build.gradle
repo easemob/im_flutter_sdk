@@ -3,25 +3,25 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
-        //google()
-        //jcenter()
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        jcenter()
+//        maven { url 'https://maven.aliyun.com/repository/google' }
+//        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+//        maven { url 'https://maven.aliyun.com/repository/public' }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.android.tools.build:gradle:3.5.0'
     }
 }
 
 allprojects {
     repositories {
-        //google()
-        //jcenter()
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        jcenter()
+//        maven { url 'https://maven.aliyun.com/repository/google' }
+//        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+//        maven { url 'https://maven.aliyun.com/repository/public' }
     }
 }
 
@@ -46,13 +46,11 @@ android {
         disable 'InvalidPackage'
     }
 
-    //use legacy for android > 6.0
-    useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
-    // Google firebase cloud messaging
+    // // Google firebase cloud messaging
     // implementation 'com.google.android.gms:play-services-base:11.4.0'
     // implementation 'com.google.firebase:firebase-messaging:11.4.0'
     implementation 'io.hyphenate:hyphenate-chat:3.8.3'

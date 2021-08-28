@@ -1,6 +1,6 @@
 //
 //  EMChatManagerWrapper.m
-//  
+//
 //
 //  Created by 杜洁鹏 on 2019/10/8.
 //
@@ -97,7 +97,7 @@
                        channelName:EMMethodKeyLoadAllConversations
                             result:result];
     } else if ([EMMethodKeyGetConversationsFromServer isEqualToString:call.method]) {
-        [self loadAllConversations:call.arguments
+        [self getConversationsFromServer:call.arguments
                        channelName:EMMethodKeyGetConversationsFromServer
                             result:result];
     } else if ([EMMethodKeyDeleteConversation isEqualToString:call.method]) {
@@ -241,6 +241,15 @@
                result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msg_id"];
+    EMMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
+    if (!msg) {
+        EMError *error = [EMError errorWithDescription:@"The message was not found" code:EMErrorMessageInvalid];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@(!error)];
+        return;
+    }
     [EMClient.sharedClient.chatManager recallMessageWithMessageId:msgId
                                                        completion:^(EMError *aError)
      {
@@ -261,7 +270,6 @@
                   channelName:aChannelName
                         error:nil
                        object:[msg toJson]];
-    
 }
 
 - (void)getConversation:(NSDictionary *)param
@@ -324,11 +332,11 @@
     EMMessage *msg = [EMMessage fromJson:param[@"message"]];
     [EMClient.sharedClient.chatManager updateMessage:msg
                                           completion:^(EMMessage *aMessage, EMError *aError)
-     {    [weakSelf wrapperCallBack:result
+     {
+         [weakSelf wrapperCallBack:result
                         channelName:aChannelName
                               error:aError
                              object:[aMessage toJson]];
-        
     }];
 }
 

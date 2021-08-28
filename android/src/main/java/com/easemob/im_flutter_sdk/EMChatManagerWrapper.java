@@ -91,8 +91,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void sendMessage(JSONObject param, String channelName, Result result) throws JSONException {
-        EMMessage msg = EMMessageHelper.fromJson(param);
-
+        final EMMessage msg = EMMessageHelper.fromJson(param);
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -136,16 +135,19 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void resendMessage(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage tempMsg = EMMessageHelper.fromJson(param);
-        System.out.println(tempMsg.toString());
         EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
+        if (msg == null) {
+            msg = tempMsg;
+        }
         msg.setStatus(EMMessage.Status.CREATE);
-        msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
+        EMMessage finalMsg = msg;
+        finalMsg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("message", EMMessageHelper.toJson(msg));
-                    map.put("localTime", msg.localTime());
+                    map.put("message", EMMessageHelper.toJson(finalMsg));
+                    map.put("localTime", finalMsg.localTime());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
                 });
             }
@@ -155,28 +157,26 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("progress", progress);
-                    map.put("localTime", msg.localTime());
+                    map.put("localTime", finalMsg.localTime());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageProgressUpdate, map);
                 });
             }
 
             @Override
             public void onError(int code, String desc) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("code", code);
-                data.put("description", desc);
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("message", EMMessageHelper.toJson(msg));
-                    map.put("localTime", msg.localTime());
-                    map.put("error", data);
+                    map.put("message", EMMessageHelper.toJson(finalMsg));
+                    map.put("localTime", finalMsg.localTime());
+                    map.put("code", code);
+                    map.put("description", desc);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
                 });
             }
         });
+        EMClient.getInstance().chatManager().sendMessage(msg);
         asyncRunnable(() -> {
-            EMClient.getInstance().chatManager().sendMessage(msg);
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            onSuccess(result, channelName, EMMessageHelper.toJson(finalMsg));
         });
     }
 
@@ -215,7 +215,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 if (msg != null) {
                     EMClient.getInstance().chatManager().recallMessage(msg);
                 }
-                onSuccess(result, channelName, true);                
+                onSuccess(result, channelName, true);               
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -262,7 +262,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().updateMessage(msg);
-            onSuccess(result, channelName, true);
+            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
         });
     }
 
@@ -382,7 +382,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                     if (o2.getLastMessage() == null) {
                         return -1;
                     }
-                    return (int) (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime());
+                    return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
                 }
             });
             List<Map> conversations = new ArrayList<>();
@@ -399,7 +399,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 List<EMConversation> list = new ArrayList<>(
                         EMClient.getInstance().chatManager().fetchConversationsFromServer().values());
                 Collections.sort(list,
-                        (o1, o2) -> (int) (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime()));
+                        (o1, o2) -> (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1));
                 List<Map> conversations = new ArrayList<>();
                 for (EMConversation conversation : list) {
                     conversations.add(EMConversationHelper.toJson(conversation));

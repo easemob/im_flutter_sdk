@@ -145,7 +145,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
         if (group != null) {
             onSuccess(result, channelName, EMGroupHelper.toJson(group));
-        }else {
+        } else {
             onSuccess(result, channelName, null);
         }
     }
@@ -163,7 +163,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 updateObject(groupList);
             }
         };
-        EMClient.getInstance().groupManager().asyncGetJoinedGroupsFromServer(callBack);
+        List<EMGroup> groups = EMClient.getInstance().groupManager().getAllGroups();
+        onSuccess(result, channelName, groups);
     }
 
     private void getGroupsWithoutPushNotification(JSONObject param, String channelName, Result result)
@@ -679,7 +680,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().asyncAcceptApplication(groupId, username, callBack);
+        EMClient.getInstance().groupManager().asyncAcceptApplication(username, groupId, callBack);
     }
 
     private void declineJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
@@ -696,7 +697,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().asyncDeclineApplication(groupId, username, reason, callBack);
+        EMClient.getInstance().groupManager().asyncDeclineApplication(username, groupId, reason, callBack);
     }
 
     private void acceptInvitationFromGroup(JSONObject param, String channelName, Result result) throws JSONException {

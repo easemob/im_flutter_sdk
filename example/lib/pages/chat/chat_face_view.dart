@@ -72,7 +72,7 @@ class ChatFaceViewState extends State<ChatFaceView> {
                       color: Colors.white,
                     ),
                     // 删除按钮
-                    child: FlatButton(
+                    child: TextButton(
                       child: Image.asset(
                         'images/chat_faces_delete.png',
                         color:
@@ -101,8 +101,12 @@ class ChatFaceViewState extends State<ChatFaceView> {
                           : Colors.white,
                     ),
                     // 发送按钮
-                    child: FlatButton(
-                      padding: EdgeInsets.zero,
+                    child: TextButton(
+                      style: ButtonStyle(
+                        padding: MaterialStateProperty.all(
+                          EdgeInsets.zero,
+                        ),
+                      ),
                       onPressed: () {
                         if (widget.onSendTap != null) {
                           widget.onSendTap();
