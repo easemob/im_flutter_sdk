@@ -426,9 +426,16 @@ class EMMessageHelper {
             }
                 break;
             }
+        }
+
+        if (!json.isNull("to")) {
+            message.setTo(json.getString("to"));
+        }
+
+        if (!json.isNull("from")) {
             message.setFrom(json.getString("from"));
         }
-        message.setTo(json.getString("to"));
+
         message.setAcked(json.getBoolean("hasReadAck"));
         if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
@@ -637,6 +644,9 @@ class EMMessageBodyHelper {
 
     static EMCustomMessageBody customBodyFromJson(JSONObject json) throws JSONException {
         String event = json.getString("event");
+        EMCustomMessageBody body = new EMCustomMessageBody(event);
+
+        if (json.has("params") && json.get("params") != JSONObject.NULL) {
         JSONObject jsonObject = json.getJSONObject("params");
         Map<String, String> params = new HashMap<>();
         Iterator iterator = jsonObject.keys();
@@ -644,10 +654,8 @@ class EMMessageBodyHelper {
             String key = iterator.next().toString();
             params.put(key, jsonObject.getString(key));
         }
-
-        EMCustomMessageBody body = new EMCustomMessageBody(event);
         body.setParams(params);
-
+        }
         return body;
     }
 
@@ -1018,37 +1026,37 @@ class HyphenateExceptionHelper {
 }
 
 class EMUserInfoHelper {
-    static EMUserInfo  fromJson(JSONObject json) throws JSONException {
+    static EMUserInfo fromJson(JSONObject obj) throws JSONException {
         EMUserInfo userInfo = new EMUserInfo();
-        userInfo.setUserId(json.getString("userId"));
-        userInfo.setNickName(json.getString("nickName"));
-        userInfo.setAvatarUrl(json.getString("avatarUrl"));
-        //安卓，iOS邮箱字段不统一，需要统一处理
-        userInfo.setEmail(json.getString("mail"));
-        userInfo.setPhoneNumber(json.getString("phone"));
-        userInfo.setGender(json.getInt("gender"));
-        userInfo.setSignature(json.getString("sign"));
-        userInfo.setBirth(json.getString("birth"));
-        userInfo.setExt(json.getString("ext"));
+
+        userInfo.setUserId(obj.getString("userId"));
+        userInfo.setNickName(obj.optString("nickName"));
+        if (obj.has("gender")){
+            userInfo.setGender(obj.getInt("gender"));
+        }
+
+        userInfo.setEmail(obj.optString("mail"));
+        userInfo.setPhoneNumber(obj.optString("phone"));
+        userInfo.setSignature(obj.optString("sign"));
+        userInfo.setAvatarUrl(obj.optString("avatarUrl"));
+        userInfo.setExt(obj.optString("ext"));
+        userInfo.setBirth(obj.optString("birth"));
 
         return userInfo;
     }
-
 
     static Map<String, Object> toJson(EMUserInfo userInfo) {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", userInfo.getUserId());
         data.put("nickName", userInfo.getNickName());
         data.put("avatarUrl", userInfo.getAvatarUrl());
-        data.put("email", userInfo.getEmail());
-        data.put("phoneNumber", userInfo.getPhoneNumber());
+        data.put("mail", userInfo.getEmail());
+        data.put("phone", userInfo.getPhoneNumber());
         data.put("gender", userInfo.getGender());
-        data.put("signature", userInfo.getSignature());
+        data.put("sign", userInfo.getSignature());
         data.put("birth", userInfo.getBirth());
         data.put("ext", userInfo.getExt());
 
         return data;
     }
 }
-
-

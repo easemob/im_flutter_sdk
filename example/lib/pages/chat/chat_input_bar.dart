@@ -36,6 +36,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
   bool _voiceBtnSelected = false;
   bool _voiceMoveIn = true;
 
+  bool _showSendBtn = true;
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +63,9 @@ class _ChatInputBarState extends State<ChatInputBar> {
       FocusScope.of(context).requestFocus(_inputFocusNode);
     } else {
       _inputFocusNode.unfocus();
+    }
+    if (widget.barType != ChatInputBarType.emoji) {
+      _updateInputBarType();
     }
 
     return Row(
@@ -118,57 +123,10 @@ class _ChatInputBarState extends State<ChatInputBar> {
           ),
         ),
         // 表情按钮
-        Container(
-          height: sHeight(48),
-          padding: EdgeInsets.only(
-            bottom: sHeight(10),
-            top: sHeight(10),
-            left: sWidth(6),
-            right: 0,
-          ),
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: FlatButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => _faceBtnOnTap(),
-              child: Image.asset(
-                widget.barType == ChatInputBarType.emoji
-                    ? 'images/chat_input_bar_keyboard.png'
-                    : 'images/chat_input_bar_emoji.png',
-                width: sWidth(22),
-                height: sWidth(22),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-        ),
-        // 更多按钮
-        Container(
-          height: sHeight(48),
-          padding: EdgeInsets.only(
-            bottom: sHeight(10),
-            top: sHeight(10),
-            left: sWidth(6),
-            right: sWidth(16),
-          ),
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: FlatButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => _moreBtnOnTap(),
-              child: Image.asset(
-                widget.barType == ChatInputBarType.more
-                    ? 'images/chat_input_bar_more_close.png'
-                    : 'images/chat_input_bar_more_show.png',
-                width: sWidth(22),
-                height: sWidth(22),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-        ),
+        _emojiAndMoreWidget(),
+        // SizedBox(
+        //   width: 5,
+        // ),
       ],
     );
   }
@@ -215,12 +173,95 @@ class _ChatInputBarState extends State<ChatInputBar> {
     );
   }
 
+  Widget _emojiAndMoreWidget() {
+    return Row(
+      children: [
+        Container(
+          height: sHeight(48),
+          padding: EdgeInsets.only(
+            bottom: sHeight(10),
+            top: sHeight(10),
+            left: sWidth(5),
+            right: 5,
+          ),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: FlatButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => _faceBtnOnTap(),
+              child: Image.asset(
+                widget.barType == ChatInputBarType.emoji
+                    ? 'images/chat_input_bar_keyboard.png'
+                    : 'images/chat_input_bar_emoji.png',
+                width: sWidth(22),
+                height: sWidth(22),
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+        ),
+        // 更多按钮
+        !_showSendBtn
+            ? Container(
+          height: sHeight(48),
+          padding: EdgeInsets.only(
+            bottom: sHeight(10),
+            top: sHeight(10),
+            left: sWidth(6),
+            right: sWidth(16),
+          ),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: FlatButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => _moreBtnOnTap(),
+              child: Image.asset(
+                widget.barType == ChatInputBarType.more
+                    ? 'images/chat_input_bar_more_close.png'
+                    : 'images/chat_input_bar_more_show.png',
+                width: sWidth(22),
+                height: sWidth(22),
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+              )
+            : Container(
+                child: FlatButton(
+                  color: Colors.blue,
+                  padding:
+                      EdgeInsets.symmetric(vertical: 0, horizontal: sWidth(10)),
+                  onPressed: () {
+                    _sendBtnDidClicked(widget.textController.text);
+                  },
+        child: Text(
+                    '发送',
+          style: TextStyle(
+                      color: Colors.white,
+                      fontSize: sFontSize(16),
+                      fontWeight: FontWeight.w400,
+                    ),
+          ),
+                  shape: RoundedRectangleBorder(
+                      side: BorderSide.none,
+                      borderRadius: BorderRadius.all(Radius.circular(6))),
+        ),
+                padding: EdgeInsets.fromLTRB(0, 0, sWidth(10), 0),
+      ),
+      ],
+    );
+  }
+
   /// 输入框
   Widget _inputText() {
     return TextFormField(
       focusNode: _inputFocusNode,
-      textInputAction: TextInputAction.send,
-      onChanged: (text) {},
+      textInputAction: TextInputAction.newline,
+      onChanged: (text) {
+        _updateInputBarType();
+      },
       style: TextStyle(
         fontSize: sFontSize(14),
       ),
@@ -242,7 +283,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
           color: Colors.grey,
         ),
       ),
-      onFieldSubmitted: (str) => _sendBtnDidClicked(str),
+      onEditingComplete: () {},
     );
   }
 
@@ -335,6 +376,11 @@ class _ChatInputBarState extends State<ChatInputBar> {
     if (widget.listener != null && txt.length > 0) {
       widget.listener.sendBtnOnTap(txt);
     }
+  }
+
+  _updateInputBarType() {
+    _showSendBtn = widget.textController.text.length > 0;
+    setState(() {});
   }
 }
 

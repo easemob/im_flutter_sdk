@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import android.renderscript.Sampler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +24,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
-import android.content.Context;
-import android.text.style.SuperscriptSpan;
-import android.text.style.UpdateAppearance;
-
-import static android.content.ContentValues.TAG;
 
 public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHandler {
     EMUserInfoManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
@@ -57,24 +54,16 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
         JSONObject obj = params.getJSONObject("userInfo");
         EMUserInfo userInfo = EMUserInfoHelper.fromJson(obj);
         asyncRunnable(() -> {
-            EMValueCallBack callBack = new EMValueCallBack() {
-                @Override
-                public void onSuccess(Object value) {
-                    List<String> userIds = new ArrayList<>();
-                    userIds.add(userInfo.getUserId());
-                    Map<String,List> reMap = new HashMap<>();
-                    reMap.put("userIds", userIds);
 
-                    try {
-                        fetchUserInfoByUserId((JSONObject) reMap,channelName,result);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+            EMValueWrapperCallBack<String> callBack = new EMValueWrapperCallBack<String>(result, channelName){
+                @Override
+                public void onSuccess(final String object) {
+                    updateObject(EMUserInfoHelper.toJson(userInfo));
                 }
 
                 @Override
-                public void onError(int error, String errorMsg) {
-                    onError(error, errorMsg);
+                public void onError(final int code, final String desc) {
+                    super.onError(code, desc);
                 }
             };
 
@@ -91,25 +80,24 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
 
          asyncRunnable(()->{
 
-             EMValueCallBack callBack = new EMValueCallBack() {
+             EMValueWrapperCallBack<String> callBack = new EMValueWrapperCallBack<String>(result, channelName){
                  @Override
-                 public void onSuccess(Object value) {
-                     List<String> userIds = new ArrayList<>();
-                     String userId = EMClient.getInstance().getCurrentUser();
-                     userIds.add(userId);
-                     Map<String,List> reMap = new HashMap<>();
-                     reMap.put("userIds", userIds);
+                 public void onSuccess(final String object) {
+                     EMLog.e("updateOwnUserInfoWithType", "object: "+object);
 
-                     try {
-                         EMUserInfoManagerWrapper.this.fetchUserInfoByUserId((JSONObject) reMap,channelName,result);
+                     if(object != null && object.length() > 0) {
+                         JSONObject obj = null;
+                         try {
+                             obj = new JSONObject(object);
+                     String userId = EMClient.getInstance().getCurrentUser();
+                             obj.put("userId", userId);
+                             EMUserInfo userInfo = EMUserInfoHelper.fromJson(obj);
+                             updateObject(EMUserInfoHelper.toJson(userInfo));
+
                      } catch (JSONException e) {
                          e.printStackTrace();
                      }
                  }
-
-                 @Override
-                 public void onError(int error, String errorMsg) {
-                     onError(error, errorMsg);
                  }
              };
 

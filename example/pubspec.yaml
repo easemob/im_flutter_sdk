@@ -24,7 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-    
+
   # 通讯录 listView
   azlistview:
     git:
@@ -94,12 +94,11 @@ dependencies:
   # 长按菜单
   w_popup_menu: ^0.3.1
 
-  # ease_call_kit
+  #ease_call_kit
   ease_call_kit:
     git:
       url: https://github.com/easemob/ease_call_kit.git
       ref: stable
-
   # ease_call_kit:
   #   path: ../../ease_call_kit/
 
@@ -107,11 +106,15 @@ dependencies:
   im_flutter_sdk:
     path: ../
 
+  # flutter_sound: ^7.8.4
+
   # 音频录制转换和播放
-  record_amr:
-    git:
-      url: https://github.com/dujiepeng/record_amr.git
-      ref: stable
+  # record_amr:
+  #   git:
+  #     url: https://github.com/dujiepeng/record_amr.git
+  #     ref: 8409dfc
+# record_amr:
+    # path: ../../record_amr/
 
 dev_dependencies:
   flutter_test:
@@ -140,8 +143,8 @@ flutter:
     - images/login_pwd_hidden.png
     - images/login_usename_clear.png
     - images/login_protocal_selected.png
-    - images/login_protocal_unselected.png    
-    
+    - images/login_protocal_unselected.png
+
     - images/register_back.png
 
     - images/home_tab_chat.png
@@ -170,15 +173,15 @@ flutter:
     - images/chat_bubble_voice_ripple00.png
     - images/chat_bubble_voice_ripple01.png
     - images/chat_bubble_voice_ripple02.png
-    
+
     - images/chat_faces_delete.png
-    
+
     - images/contact_default_avatar.png
     - images/contact_select_check.png
     - images/contact_select_uncheck.png
-    
+
     - images/expression/
-    
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

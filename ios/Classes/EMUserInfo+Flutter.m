@@ -35,7 +35,11 @@
     userInfo.gender = [aJson[@"gender"] integerValue] ?: 0;
     userInfo.sign = aJson[@"sign"] ?: @"";
     userInfo.birth = aJson[@"birth"] ?: @"";
+    if ([aJson[@"ext"] isKindOfClass:[NSNull class]]) {
+        userInfo.ext = @"";
+    }else {
     userInfo.ext = aJson[@"ext"] ?: @"";
+    }
     return [userInfo copy];
 }
 

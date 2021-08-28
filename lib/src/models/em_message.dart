@@ -47,7 +47,7 @@ enum EMMessageBodyType {
 
 abstract class EMMessageStatusListener {
   /// 消息进度
-  void onProgress(int? progress) {}
+  void onProgress(int progress) {}
 
   /// 消息发送失败
   void onError(EMError error) {}
@@ -149,7 +149,7 @@ class EMMessage {
       '发送 -- ' + ' msg_id: ' + this.msgId! + ' ' + map['progress'].toString(),
     );
     if (this.listener != null) {
-      int? progress = map['progress'];
+      int progress = map['progress'];
       listener!.onProgress(progress);
     }
     return null;
@@ -297,7 +297,7 @@ class EMMessage {
 
   EMMessageStatusListener? listener;
 
-  void setMessageListener(EMMessageStatusListener listener) {
+  void setMessageListener(EMMessageStatusListener? listener) {
     this.listener = listener;
     if (listener != null) {
       MessageCallBackManager.getInstance.addMessage(this);
@@ -512,7 +512,6 @@ abstract class EMMessageBody {
       case EMMessageBodyType.VOICE:
         return 'voice';
     }
-    return '';
   }
 
   // body 类型
