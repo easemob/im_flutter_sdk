@@ -83,8 +83,12 @@ class _ChatInputBarState extends State<ChatInputBar> {
           child: SizedBox(
             width: 24,
             height: 24,
-            child: FlatButton(
-              padding: EdgeInsets.zero,
+            child: TextButton(
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all(
+                  EdgeInsets.zero,
+                ),
+              ),
               onPressed: () {
                 if (widget.listener != null)
                   widget.listener.recordOrTextBtnOnTap(isRecord: _showVoiceBtn);
@@ -187,8 +191,12 @@ class _ChatInputBarState extends State<ChatInputBar> {
           child: SizedBox(
             width: 24,
             height: 24,
-            child: FlatButton(
-              padding: EdgeInsets.zero,
+            child: TextButton(
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all(
+                  EdgeInsets.zero,
+                ),
+              ),
               onPressed: () => _faceBtnOnTap(),
               child: Image.asset(
                 widget.barType == ChatInputBarType.emoji
@@ -196,7 +204,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     : 'images/chat_input_bar_emoji.png',
                 width: sWidth(22),
                 height: sWidth(22),
-                fit: BoxFit.fill,
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -204,52 +212,71 @@ class _ChatInputBarState extends State<ChatInputBar> {
         // 更多按钮
         !_showSendBtn
             ? Container(
-          height: sHeight(48),
-          padding: EdgeInsets.only(
-            bottom: sHeight(10),
-            top: sHeight(10),
-            left: sWidth(6),
-            right: sWidth(16),
-          ),
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: FlatButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => _moreBtnOnTap(),
-              child: Image.asset(
-                widget.barType == ChatInputBarType.more
-                    ? 'images/chat_input_bar_more_close.png'
-                    : 'images/chat_input_bar_more_show.png',
-                width: sWidth(22),
-                height: sWidth(22),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
+                height: sHeight(48),
+                padding: EdgeInsets.only(
+                  bottom: sHeight(10),
+                  top: sHeight(10),
+                  left: sWidth(6),
+                  right: sWidth(16),
+                ),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: TextButton(
+                    style: ButtonStyle(
+                      padding: MaterialStateProperty.all(
+                        EdgeInsets.zero,
+                      ),
+                    ),
+                    onPressed: () => _moreBtnOnTap(),
+                    child: Image.asset(
+                      widget.barType == ChatInputBarType.more
+                          ? 'images/chat_input_bar_more_close.png'
+                          : 'images/chat_input_bar_more_show.png',
+                      width: sWidth(22),
+                      height: sWidth(22),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
               )
             : Container(
-                child: FlatButton(
-                  color: Colors.blue,
-                  padding:
+                child: TextButton(
+                  style: ButtonStyle(
+                    padding: MaterialStateProperty.all(
                       EdgeInsets.symmetric(vertical: 0, horizontal: sWidth(10)),
+                    ),
+                    backgroundColor: MaterialStateProperty.resolveWith(
+                      (states) {
+                        if (states.contains(MaterialState.pressed)) {
+                          return Colors.blue[700];
+                        }
+                        return Colors.blue;
+                      },
+                    ),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        side: BorderSide.none,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
                   onPressed: () {
                     _sendBtnDidClicked(widget.textController.text);
                   },
-        child: Text(
+                  child: Text(
                     '发送',
-          style: TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: sFontSize(16),
                       fontWeight: FontWeight.w400,
                     ),
-          ),
-                  shape: RoundedRectangleBorder(
-                      side: BorderSide.none,
-                      borderRadius: BorderRadius.all(Radius.circular(6))),
-        ),
+                  ),
+                ),
                 padding: EdgeInsets.fromLTRB(0, 0, sWidth(10), 0),
-      ),
+              ),
       ],
     );
   }

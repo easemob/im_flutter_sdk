@@ -96,8 +96,12 @@ class ConversationPageState extends State<ConversationPage>
               titleSpacing: 0,
               floating: false,
               centerTitle: true,
-              title: FlatButton(
-                padding: EdgeInsets.zero,
+              title: TextButton(
+                style: ButtonStyle(
+                  padding: MaterialStateProperty.all(
+                    EdgeInsets.zero,
+                  ),
+                ),
                 onPressed: () {
                   print('search');
                 },

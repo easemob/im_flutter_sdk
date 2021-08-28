@@ -34,7 +34,7 @@ class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
 
     return Scaffold(
       appBar: DemoAppBar('好友申请', rightWidgets: [
-        FlatButton(
+        TextButton(
           onPressed: () {
             SharePreferenceManager.removeAllRequest();
             setState(() {});
@@ -88,7 +88,7 @@ class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
                         ? Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              FlatButton(
+                              TextButton(
                                 child: Text(
                                   '同意',
                                   style: TextStyle(
@@ -96,7 +96,6 @@ class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
                                     fontSize: sFontSize(17),
                                   ),
                                 ),
-                                padding: EdgeInsets.zero,
                                 onPressed: () {
                                   _acceptInvitation(reqestId);
                                   SharePreferenceManager.updateRequest(
@@ -106,7 +105,7 @@ class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
                                   setState(() {});
                                 },
                               ),
-                              FlatButton(
+                              TextButton(
                                 child: Text(
                                   '拒绝',
                                   style: TextStyle(
@@ -114,7 +113,6 @@ class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
                                     fontSize: sFontSize(17),
                                   ),
                                 ),
-                                padding: EdgeInsets.zero,
                                 onPressed: () {
                                   _declineInvitation(reqestId);
                                   SharePreferenceManager.updateRequest(

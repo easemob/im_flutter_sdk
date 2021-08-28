@@ -30,9 +30,11 @@ class ShowLargeImage extends StatelessWidget {
         Positioned(
           left: 10,
           top: 20,
-          child: FlatButton(
-            padding: EdgeInsets.zero,
-            color: Colors.black12,
+          child: TextButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.black12),
+              padding: MaterialStateProperty.all(EdgeInsets.zero),
+            ),
             child: Icon(
               Icons.close,
               color: Colors.white,
@@ -45,9 +47,11 @@ class ShowLargeImage extends StatelessWidget {
         Positioned(
           bottom: 20,
           right: 20,
-          child: FlatButton(
-            padding: EdgeInsets.zero,
-            color: Colors.black12,
+          child: TextButton(
+            style: ButtonStyle(
+              padding: MaterialStateProperty.all(EdgeInsets.zero),
+              backgroundColor: MaterialStateProperty.all(Colors.black12),
+            ),
             child: Icon(
               Icons.download_sharp,
               color: Colors.white,

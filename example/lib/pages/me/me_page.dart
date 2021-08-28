@@ -75,8 +75,12 @@ class MePageState extends State<MePage> {
             Row(
               children: [
                 Expanded(
-                  child: FlatButton(
-                    color: Colors.red,
+                  child: TextButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        Colors.red,
+                      ),
+                    ),
                     onPressed: _loggout,
                     child: Text(
                       '退出[${EMClient.getInstance.currentUsername}]',
@@ -124,16 +128,11 @@ class MePageState extends State<MePage> {
           .fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
 
       print('userInfoMap: $userInfoMap');
-      print('fetchUserInfoById\n===============================');
-      print('===============================');
 
       for (var key in userInfoMap.keys) {
         EMUserInfo us = userInfoMap[key];
         us.description();
       }
-
-      print('===============================');
-      print('===============================');
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }
@@ -161,8 +160,6 @@ class MePageState extends State<MePage> {
           .fetchUserInfoByIdWithType(userIds, types, expireTime: expireTime);
       EMUserInfo userInfo = userInfoMap[userId];
       print('userInfoMap: $userInfoMap');
-      print('=====================');
-      print('=====================');
       userInfo.description();
     } on EMError catch (e) {
       print('操作失败，原因是: $e');

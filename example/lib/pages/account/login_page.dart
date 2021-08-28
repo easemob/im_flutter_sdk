@@ -137,8 +137,12 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             SizedBox(
                               height: 30,
-                              child: FlatButton(
-                                padding: EdgeInsets.only(left: 10),
+                              child: TextButton(
+                                style: ButtonStyle(
+                                  padding: MaterialStateProperty.all(
+                                    EdgeInsets.only(left: 10),
+                                  ),
+                                ),
                                 child: Text(
                                   '同意 服务条款 与 隐私协议',
                                   style: TextStyle(
@@ -167,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Positioned(
                   bottom: 30,
-                  child: FlatButton(
+                  child: TextButton(
                     child: Text(
                       '账号注册',
                       style: TextStyle(
