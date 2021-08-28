@@ -297,7 +297,7 @@ class EMMessage {
 
   EMMessageStatusListener? listener;
 
-  void setMessageListener(EMMessageStatusListener listener) {
+  void setMessageListener(EMMessageStatusListener? listener) {
     this.listener = listener;
     if (listener != null) {
       MessageCallBackManager.getInstance.addMessage(this);
