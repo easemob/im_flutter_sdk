@@ -36,7 +36,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
       appBar: DemoAppBar(
         '群组信息',
         rightWidgets: [
-          FlatButton(
+          TextButton(
             onPressed: () =>
                 needApproval ? _approvalJoinPublicGroup() : _joinPublicGroup(),
             child: Builder(

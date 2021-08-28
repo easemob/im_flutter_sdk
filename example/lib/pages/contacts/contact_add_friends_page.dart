@@ -83,14 +83,23 @@ class ContactAddFriendsPageState extends State<ContactAddFriendsPage> {
                           ),
                         ),
                       ),
-                      FlatButton(
-                        color: Colors.blue,
-                        highlightColor: Colors.blue[700],
-                        colorBrightness: Brightness.dark,
-                        splashColor: Colors.grey,
-                        child: Text("添加"),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0)),
+                      TextButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith(
+                            (states) {
+                              if (states.contains(MaterialState.pressed)) {
+                                return Colors.blue[700];
+                              }
+                              return Colors.blue;
+                            },
+                          ),
+                        ),
+                        child: Text(
+                          "添加",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
                         onPressed: () => _addContact(),
                       ),
                     ],

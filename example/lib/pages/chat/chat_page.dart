@@ -235,6 +235,7 @@ class _ChatPageState extends State<ChatPage>
           onTap: (message) => _messageBubbleOnTap(message),
           errorBtnOnTap: (message) => _resendMessage(message),
           longPress: (message) => _messageOnLongPress(message),
+          avatarOnTap: (eid) => {print('$eid 头像被点击')},
         ),
         margin: EdgeInsets.only(
           top: sHeight(20),
@@ -366,7 +367,7 @@ class _ChatPageState extends State<ChatPage>
 
   /// 消息长按
   _messageOnLongPress(EMMessage msg) async {
-    // EMClient.getInstance.chatManager.recallMessage(msg.msgId).then((value) => print(value)).catchError((e) => print(e));
+    print('长按消息 $msg');
   }
 
   /// 发送文字消息

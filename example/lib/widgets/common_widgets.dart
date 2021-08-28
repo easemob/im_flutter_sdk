@@ -77,7 +77,7 @@ loginRegisterButton({
     child: Row(
       children: [
         Expanded(
-          child: FlatButton(
+          child: TextButton(
             child: Text(
               title,
               textAlign: TextAlign.center,
