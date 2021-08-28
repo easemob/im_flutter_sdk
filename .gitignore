@@ -1,25 +1,34 @@
+
 .DS_Store
 .dart_tool/
+.idea
+.vscode
+*.iml
+gitpull.sh
+gitpush.sh
 
 .packages
 .pub/
 
-.vscode/
 build/
-.gradle
-.idea/
-**/.metadata
-**/pubspec.lock
-**/Runner.xcworkspace/
-**/Podfile.lock
-example/ios/Flutter/flutter_export_environment.sh
-**/.classpath
-**/.project
-**/.settings
-.history/
-**/*/.flutter-plugins-dependencies
-**/.fvm
-**/release/
+*.lock
+*.*~
+example/*.lock
+example/ios/Podfile.lock.classpath
+.project
+.settings
+**/*.classpath
+
+# Android related
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -44,6 +53,9 @@ example/ios/Flutter/flutter_export_environment.sh
 **/ios/Flutter/app.flx
 **/ios/Flutter/app.zip
 **/ios/Flutter/flutter_assets/
-**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/flutter_export_environment.sh
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+android/gradle/wrapper/gradle-wrapper.properties
+
+.history/
