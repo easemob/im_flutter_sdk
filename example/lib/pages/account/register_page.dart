@@ -64,6 +64,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Positioned(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
                           height: 88,
@@ -111,13 +112,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         Container(
-                          height: 70,
-                          margin: EdgeInsets.only(
-                              top: 5, left: 48, right: 48, bottom: 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              Spacer(),
                               Container(
                                 width: 30,
                                 height: 30,
@@ -136,22 +135,25 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(
-                                height: 30,
-                                child: FlatButton(
-                                  padding: EdgeInsets.only(left: 10),
-                                  child: Text(
-                                    '同意 服务条款 与 隐私协议',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w300,
-                                    ),
+                              TextButton(
+                                child: Text(
+                                  '同意 服务条款 与 隐私协议',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w300,
                                   ),
-                                  onPressed: () {},
                                 ),
-                              )
+                                onPressed: () {},
+                                // style: ButtonStyle(
+                                //     padding: MaterialStateProperty.all(
+                                //         EdgeInsets.only(bottom: 20))),
+                              ),
+                              Spacer(),
                             ],
                           ),
+                        ),
+                        SizedBox(
+                          height: 30,
                         ),
                         loginRegisterButton(
                           enable: _agreeProtocal,

@@ -11,7 +11,7 @@ class ContactFirendsRequestPage extends StatefulWidget {
 }
 
 class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
-  List<String> requestList = List();
+  List<String> requestList = [];
   RegExp requestExp = RegExp(r' ');
   @override
   void initState() {

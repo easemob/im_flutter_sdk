@@ -21,10 +21,12 @@ class ConversationPage extends StatefulWidget with ChangeNotifier {
   State<StatefulWidget> createState() => ConversationPageState();
 }
 
-class ConversationPageState extends State<ConversationPage> implements EMChatManagerListener {
-  List<EMConversation> _conversationsList = List();
+class ConversationPageState extends State<ConversationPage>
+    implements EMChatManagerListener {
+  List<EMConversation> _conversationsList = [];
 
-  RefreshController _refreshController = RefreshController(initialRefresh: true);
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: true);
 
   var notifier;
   @override
@@ -65,7 +67,9 @@ class ConversationPageState extends State<ConversationPage> implements EMChatMan
               callback: (index) {
                 if (index == 0) {
                 } else if (index == 1) {
-                  Navigator.of(context).pushNamed('/addFriends').then((value) {});
+                  Navigator.of(context)
+                      .pushNamed('/addFriends')
+                      .then((value) {});
                 } else if (index == 2) {
                   Navigator.of(context).pushNamed('/contactSelect').then(
                     (value) {
@@ -147,7 +151,8 @@ class ConversationPageState extends State<ConversationPage> implements EMChatMan
   /// 更新会话列表
   void _reLoadAllConversations() async {
     try {
-      List<EMConversation> list = await EMClient.getInstance.chatManager.loadAllConversations();
+      List<EMConversation> list =
+          await EMClient.getInstance.chatManager.loadAllConversations();
       _conversationsList.clear();
       _conversationsList.addAll(list);
       _refreshController.refreshCompleted();
@@ -178,7 +183,8 @@ class ConversationPageState extends State<ConversationPage> implements EMChatMan
   /// 侧滑删除按钮点击
   _deleteConversation(int index) async {
     try {
-      await EMClient.getInstance.chatManager.deleteConversation(_conversationsList[index].id);
+      await EMClient.getInstance.chatManager
+          .deleteConversation(_conversationsList[index].id);
       _conversationsList.removeAt(index);
     } on Error {} finally {
       setState(() {});

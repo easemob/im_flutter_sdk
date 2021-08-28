@@ -82,7 +82,7 @@ class SharePreferenceManager {
   // 获取所有好友申请
   List<String> _loadAllRequests() {
     List<String> list = _prefs?.getStringList(this._eid);
-    return list ?? List();
+    return list ?? [];
   }
 
   // 处理好友申请
@@ -103,7 +103,7 @@ class SharePreferenceManager {
 
   // 删除所有好有申请
   _removeAllRequest() {
-    List<String> list = List();
+    List<String> list = [];
     _prefs?.setStringList(this._eid, list);
   }
 }
