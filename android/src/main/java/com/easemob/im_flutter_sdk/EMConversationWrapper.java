@@ -1,5 +1,5 @@
 package com.easemob.im_flutter_sdk;
-
+import android.text.TextUtils;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -231,8 +231,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMConversation conversation = conversationWithParam(params);
         String startId = params.getString("startId");
         int pageSize = params.getInt("count");
+        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
         asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize);
+            List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize, direction);
             List<Map> messages = new ArrayList<>();
             for(EMMessage msg: msgList) {
                 messages.add(EMMessageHelper.toJson(msg));
@@ -313,6 +314,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
-        return direction == "up" ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
+        return TextUtils.equals(direction, "up") ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
     }
 }

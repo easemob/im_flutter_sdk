@@ -111,8 +111,12 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   /// 头像 widget
   _avatarWidget() {
-    return FlatButton(
-      padding: EdgeInsets.zero,
+    return TextButton(
+      style: ButtonStyle(
+        padding: MaterialStateProperty.all(
+          EdgeInsets.zero,
+        ),
+      ),
       onPressed: () {
         if (widget.avatarOnTap != null) {
           widget.avatarOnTap(widget.msg.from);
@@ -201,7 +205,8 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
                   ),
                 ),
               );
-            } else if (widget.msg.status == EMMessageStatus.FAIL || widget.msg.status == EMMessageStatus.CREATE) {
+            } else if (widget.msg.status == EMMessageStatus.FAIL ||
+                widget.msg.status == EMMessageStatus.CREATE) {
               return IconButton(
                 padding: EdgeInsets.zero,
                 icon: Icon(
@@ -271,7 +276,8 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
         case EMMessageBodyType.VOICE:
           bubble = Builder(builder: (context) {
             return Selector(
-              selector: (_, ChatVoicePlayer player) => Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
+              selector: (_, ChatVoicePlayer player) =>
+                  Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
               builder: (_, data, __) => ChatVoiceBubble(
                 body,
                 isSend,

@@ -15,7 +15,7 @@ class PopMenu {
   }) {
     // 定义item
     Widget _menuViewItem(PopMenuItem item) {
-      List<Widget> widgetsList = List();
+      List<Widget> widgetsList = [];
       if (item.imageName != null) {
         widgetsList.add(Image.asset(item.imageName));
       }

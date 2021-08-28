@@ -4,7 +4,6 @@ import 'package:easeim_flutter_demo/pages/conversations/conversations_page.dart'
 import 'package:easeim_flutter_demo/pages/me/me_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 

@@ -68,8 +68,12 @@ class AExpression extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: FlatButton(
-        padding: EdgeInsets.all(bigSizeRatio),
+      child: TextButton(
+        style: ButtonStyle(
+          padding: MaterialStateProperty.all(
+            EdgeInsets.all(bigSizeRatio),
+          ),
+        ),
         onPressed: () {
           _callClick(expression);
         },

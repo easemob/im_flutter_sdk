@@ -192,7 +192,6 @@
 
 - (void)insertMessage:(NSDictionary *)param result:(FlutterResult)result
 {
-    
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
@@ -220,7 +219,7 @@
         EMMessage *msg = [EMMessage fromJson:msgDict];
         
         EMError *error = nil;
-        [conversation insertMessage:msg error:&error];
+        [conversation appendMessage:msg error:&error];
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyAppendMsg
                             error:error
@@ -239,7 +238,7 @@
         EMMessage *msg = [EMMessage fromJson:msgDict];
         
         EMError *error = nil;
-        [conversation insertMessage:msg error:&error];
+        [conversation updateMessageChange:msg error:&error];
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUpdateConversationMsg
                             error:error

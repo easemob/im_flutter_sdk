@@ -25,7 +25,7 @@ class ContactSelectPageState extends State<ContactSelectPage> {
       appBar: DemoAppBar(
         '选择联系人',
         rightWidgets: [
-          FlatButton(
+          TextButton(
             child: Text(
               '确定',
               style: TextStyle(color: Colors.white),
@@ -140,7 +140,8 @@ class ContactSelectPageState extends State<ContactSelectPage> {
 
   Future<void> _fetchContactsFromServer() async {
     try {
-      List<EMContact> contacts = await EMClient.getInstance.contactManager.getAllContactsFromServer();
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromServer();
       _contactList.clear();
       for (var contact in contacts) {
         _contactList.add(ContactModel.contact(contact));
@@ -157,7 +158,8 @@ class ContactSelectPageState extends State<ContactSelectPage> {
 
   Future<void> _loadLocalContacts() async {
     try {
-      List<EMContact> contacts = await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromDB();
       _contactList.clear();
       for (var contact in contacts) {
         _contactList.add(ContactModel.contact(contact));
@@ -223,7 +225,9 @@ class SelectContactItem extends StatelessWidget {
             right: sWidth(30),
           ),
           child: Image.asset(
-            selected ? 'images/contact_select_check.png' : 'images/contact_select_uncheck.png',
+            selected
+                ? 'images/contact_select_check.png'
+                : 'images/contact_select_uncheck.png',
             fit: BoxFit.contain,
             width: sWidth(50),
             height: sWidth(50),
