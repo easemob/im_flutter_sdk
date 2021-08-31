@@ -17,6 +17,7 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
 
 [iOS常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/iOS_QA.md)
 
+**QQ群: 535134817**
 
 ## 前期准备
 
