@@ -13,9 +13,7 @@
 
 Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://github.com/easemob/ease_call_kit),如果问题，可以通过 [EaseCallKit Issues](https://github.com/easemob/ease_call_kit/issues) 提问
 
-[安卓常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/Android_QA.md)
-
-[iOS常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/iOS_QA.md)
+[常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/flutter_QA.md)
 
 **QQ群: 535134817**
 
