@@ -7,7 +7,7 @@ flutter clean
 flutter pub get
 ```
 
-Demo使用Appkey为` easemob-demo#easeui`
+Demo使用Appkey为` easemob-demo#easeim`
 可以和环信iOS，Android Demo互通，使用前需要先在Demo中注册账号，并添加好友，其他平台Demo获sdk体验，请访问[下载页](https://www.easemob.com/download/im) 。
 
 ### Demo讲解
