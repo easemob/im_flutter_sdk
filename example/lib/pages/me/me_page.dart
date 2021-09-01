@@ -27,28 +27,6 @@ class MePageState extends State<MePage> {
         ),
         child: Column(
           children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: goUserInfoPage,
-              child: Container(
-                margin:
-                    EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
-                height: 30,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '个人信息',
-                      style: TextStyle(
-                        fontSize: 14.0,
-                      ),
-                      textAlign: TextAlign.left,
-                    ),
-                    Icon(Icons.keyboard_arrow_right),
-                  ],
-                ),
-              ),
-            ),
             Container(
               height: 30,
               margin: EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),

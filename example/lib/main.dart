@@ -79,7 +79,6 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         ),
     '/rooms': (context) => ChatroomsListPages(),
     '/contactSelect': (context) => ContactSelectPage(),
-    // '/userInfoPage': (context) => UserInfoPage(),
   };
 
   WidgetBuilder builder = routes[settings.name];
