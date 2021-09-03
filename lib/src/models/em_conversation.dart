@@ -264,17 +264,19 @@ extension EMConversationExtension on EMConversation {
     return msgList;
   }
 
-  Future<List<EMMessage>> loadMessagesWithKeyword({
-    String? keywords,
+  Future<List<EMMessage>> loadMessagesWithKeyword(
+    String keywords, {
+    String? sender,
     int timestamp = -1,
     int count = 20,
-    String? sender,
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
   }) async {
     Map req = this.toJson();
     req["keywords"] = keywords;
     req['count'] = count;
-    req['sender'] = sender;
+    if (sender != null) {
+      req['sender'] = sender;
+    }
     req['timestamp'] = timestamp;
     req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
 
