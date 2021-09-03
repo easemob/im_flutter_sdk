@@ -245,12 +245,16 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     private void loadMsgWithKeywords(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
         String keywords = params.getString("keywords");
-        String sender = params.getString("sender");
+        String sender = null;
+        if (params.has("sender")) {
+            sender = params.getString("sender");
+        }
+        final String name = sender;
         int count = params.getInt("count");
         long timestamp = params.getLong("timestamp");
         EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
         asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, sender, direction);
+            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, name, direction);
             List<Map> messages = new ArrayList<>();
             for(EMMessage msg: msgList) {
                 messages.add(EMMessageHelper.toJson(msg));

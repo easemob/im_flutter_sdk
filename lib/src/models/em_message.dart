@@ -289,11 +289,10 @@ class EMMessage {
 
   /// 构造发送的自定义消息
   EMMessage.createCustomSendMessage(
-      {required String username, required event, Map? params})
+      {required String username, required event, Map<String, String>? params})
       : this.createSendMessage(
             to: username,
-            body: EMCustomMessageBody(
-                event: event, params: params as Map<String, String>?));
+            body: EMCustomMessageBody(event: event, params: params));
 
   EMMessageStatusListener? listener;
 
