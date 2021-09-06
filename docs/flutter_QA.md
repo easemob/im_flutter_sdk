@@ -33,6 +33,8 @@
   }
 ```
 
+#### 3. 用户属性通过type获取出现部分丢失，不完整；
+用户属性在获取时为了方便使用会缓存，如果您是使用type的方式获取部分属性，需要每次获取时type传入的内容都相同，否则可能出现用户属性中只有最后一次获取的值。
 
 
 [安卓常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/Android_QA.md)
