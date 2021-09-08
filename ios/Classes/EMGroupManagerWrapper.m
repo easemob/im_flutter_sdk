@@ -806,10 +806,12 @@
 
 - (void)ignoreGroupPush:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager updatePushServiceForGroup:param[@"groupId"]
-                                                    isPushEnabled:[param[@"enable"] boolValue]
-                                                       completion:^(EMGroup *aGroup, EMError *aError)
-     {
+    
+    __block NSString *groupId = param[@"groupId"];
+    [EMClient.sharedClient.pushManager updatePushServiceForGroups:@[groupId]
+                                                      disablePush:[param[@"ignore"] boolValue]
+                                                       completion:^(EMError * _Nonnull aError) {
+        EMGroup *aGroup = [EMGroup groupWithId:groupId];
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyIgnoreGroupPush
                             error:aError
