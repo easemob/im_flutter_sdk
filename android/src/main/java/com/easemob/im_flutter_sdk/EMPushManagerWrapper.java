@@ -118,12 +118,12 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void updateGroupPushService(JSONObject params, String channelName,  Result result) throws JSONException {
         String groupId = params.getString("group_id");
-        boolean noDisturb = params.getBoolean("noDisturb");
+        boolean enablePush = params.getBoolean("enablePush");
         List<String> groupList = new ArrayList<>();
         groupList.add(groupId);
         asyncRunnable(()-> {
             try {
-                EMClient.getInstance().pushManager().updatePushServiceForGroup(groupList, noDisturb);
+                EMClient.getInstance().pushManager().updatePushServiceForGroup(groupList, !enablePush);
                 EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
                 onSuccess(result, channelName, EMGroupHelper.toJson(group));
             } catch(HyphenateException e) {

@@ -154,10 +154,13 @@
                         result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *groupId = param[@"group_id"];
-    bool noDisturb = [param[@"noDisturb"] boolValue];
-    [EMClient.sharedClient.groupManager updatePushServiceForGroup:groupId
-                                                    isPushEnabled:!noDisturb
-                                                       completion:^(EMGroup *aGroup, EMError *aError) {
+    bool enablePush = [param[@"enablePush"] boolValue];
+    
+    [EMClient.sharedClient.pushManager updatePushServiceForGroups:@[groupId]
+                                                      disablePush:!enablePush
+                                                       completion:^(EMError * _Nonnull aError)
+    {
+        EMGroup *aGroup = [EMGroup groupWithId:groupId];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -171,7 +174,8 @@
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         EMError *aError = nil;
-        NSArray *list = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&aError];
+        [EMClient.sharedClient.pushManager getPushOptionsFromServerWithError:&aError];
+        NSArray *list = [EMClient.sharedClient.pushManager noPushGroups];
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
@@ -188,7 +192,6 @@
     NSString *deviceToken = param[@"token"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         EMError *error = [EMClient.sharedClient bindDeviceToken:deviceToken];
-        
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
