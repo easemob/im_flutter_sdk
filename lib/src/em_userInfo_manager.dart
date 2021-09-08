@@ -22,7 +22,7 @@ class EMUserInfoManager {
     _effectiveUserInfoMap = Map();
   }
 
-  //更新自己的用户属性
+  /// 更新自己的用户属性
   Future<EMUserInfo> updateOwnUserInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
@@ -32,7 +32,7 @@ class EMUserInfoManager {
     return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
   }
 
-  //更新自己制定类型的用户属性
+  /// 更新自己制定类型的用户属性
   Future<EMUserInfo> updateOwnUserInfoWithType(
       EMUserInfoType type, String userInfoValue) async {
     Map req = {
@@ -49,6 +49,7 @@ class EMUserInfoManager {
     return _ownUserInfo;
   }
 
+  /// 获取自己的用户属性 [expireTime]过期时间，如果上次获取距今时间小于过期时间，直接返回缓存数据
   Future<EMUserInfo> fetchOwnUserInfo({int expireTime = 60}) async {
     Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
         [EMClient.getInstance.currentUsername],
@@ -57,7 +58,7 @@ class EMUserInfoManager {
     return _ownUserInfo;
   }
 
-  //获取指定id的用户的用户属性
+  /// 获取指定id的用户的用户属性 [userIds]要获取的用户id， [expireTime]过期时间，如果上次获取距今时间小于过期时间则直接取缓存数据。
   Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithExpireTime(
       List<String> userIds,
       {int expireTime = 60}) async {
@@ -101,7 +102,7 @@ class EMUserInfoManager {
     return resultMap;
   }
 
-  //获取指定id的用户的指定类型的用户属性
+  /// 获取指定id的用户的指定类型的用户属性[userIds]要获取的用户id，[types]要获取的属性, [expireTime]过期时间，如果上次获取距今时间小于过期时间则直接取缓存数据。
   Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithType(
       List<String> userIds, List<EMUserInfoType> types,
       {int expireTime = 60}) async {
@@ -151,9 +152,6 @@ class EMUserInfoManager {
   }
 
   Future<EMUserInfo> getCurrentUserInfo() async {
-    print(
-        "EMClient.getInstance.currentUsername:${EMClient.getInstance.currentUsername}");
-
     Map userInfoMap = await fetchUserInfoByIdWithExpireTime(
         [EMClient.getInstance.currentUsername]);
     EMUserInfo retUseInfo = userInfoMap[EMClient.getInstance.currentUsername];

@@ -733,13 +733,13 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void ignoreGroupPush(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-        boolean enable = param.getBoolean("enable");
+        boolean ignore = param.getBoolean("ignore");
         List<String> list = new ArrayList<>();
         list.add(groupId);
 
         asyncRunnable(() -> {
             try {
-                EMClient.getInstance().pushManager().updatePushServiceForGroup(list, enable);
+                EMClient.getInstance().pushManager().updatePushServiceForGroup(list, !ignore);
                 EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
                 onSuccess(result, channelName, EMGroupHelper.toJson(group));
             } catch (HyphenateException e) {

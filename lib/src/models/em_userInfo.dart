@@ -39,8 +39,7 @@ class EMUserInfo {
       ..gender = map['gender']
       ..sign = map['sign']
       ..birth = map['birth']
-      ..ext = map['ext']
-      ..expireTime = map['expireTime'];
+      ..ext = map['ext'];
   }
 
   Map toJson() {
@@ -54,13 +53,7 @@ class EMUserInfo {
     data['sign'] = sign;
     data['birth'] = birth;
     data['ext'] = ext;
-    data['expireTime'] = expireTime;
     return data;
-  }
-
-  void description() {
-    print(
-        '\n=======================\n$this\n userId:$userId\n nickName:$nickName\n avatarUrl:$avatarUrl\n mail:$mail\n phone:$phone\n gender:$gender\n sign:$sign\n birth:$birth\n ext:$ext\n expireTime:$expireTime\n =======================\n');
   }
 
   EMUserInfo.private([this.userId]);
@@ -75,46 +68,4 @@ class EMUserInfo {
   String birth = '';
   String ext = '';
   int expireTime = 0;
-
-  // String userId;
-  // String nickName;
-  // String avatarUrl = '';
-  // String mail;
-  // String phone;
-  // int gender;
-  // String sign;
-  // String birth;
-  // String ext;
-  // //过期时间
-  // int expireTime;
-
-  // /// 用户环信Id
-  // String get userId => userId;
-
-  // /// nickname
-  // String get nickName => nickName;
-
-  // /// 头像地址
-  // String get avatarUrl => avatarUrl;
-
-  // // 用户邮箱地址
-  // String get mail => mail;
-
-  // // 用户联系方式
-  // String get phone => phone;
-
-  // // 用户性别，0为未设置
-  // int get gender => gender;
-
-  // // 用户签名
-  // String get sign => sign;
-
-  // // 用户生日
-  // String get birth => birth;
-
-  // // 扩展字段
-  // String get ext => ext;
-
-  // //过期时间
-  // int get expireTime => expireTime;
 }
