@@ -13,6 +13,10 @@
 
 Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://github.com/easemob/ease_call_kit),如果问题，可以通过 [EaseCallKit Issues](https://github.com/easemob/ease_call_kit/issues) 提问
 
+[常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/flutter_QA.md)
+
+**QQ群: 535134817**
+
 ## 前期准备
 
 如果您还没有Appkey，可以前往[环信官网](https://www.easemob.com/)注册[即时通讯云](https://console.easemob.com/user/register)。
