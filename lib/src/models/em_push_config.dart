@@ -25,7 +25,8 @@ class EMImPushConfig {
   factory EMImPushConfig.fromJson(Map map) {
     if (map == null) return null;
     return EMImPushConfig._private()
-      .._pushStyle = map['pushStyle'] == 0 ? EMImPushStyle.Simple : EMImPushStyle.Summary
+      .._pushStyle =
+          map['pushStyle'] == 0 ? EMImPushStyle.Simple : EMImPushStyle.Summary
       .._noDisturb = map.boolValue('noDisturb')
       .._noDisturbStartHour = map['noDisturbStartHour']
       .._noDisturbEndHour = map['noDisturbEndHour'];
@@ -43,7 +44,8 @@ class EMImPushConfig {
 
 extension EMPushConfigExtension on EMImPushConfig {
   // channel的命名与pushManager中的channel一致，本质上还是一个channel。
-  static const MethodChannel _channel = const MethodChannel('com.easemob.im/em_push_manager', JSONMethodCodec());
+  static const MethodChannel _channel =
+      const MethodChannel('com.easemob.im/em_push_manager', JSONMethodCodec());
 
   /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
   Future<bool> setNoDisturb(
@@ -53,7 +55,11 @@ extension EMPushConfigExtension on EMImPushConfig {
   ]) async {
     if (startTime < 0) startTime = 0;
     if (endTime > 24) endTime = 24;
-    Map req = {'noDisturb': isNoDisturb, 'startTime': startTime, 'endTime': endTime};
+    Map req = {
+      'noDisturb': isNoDisturb,
+      'startTime': startTime,
+      'endTime': endTime
+    };
     Map result = await _channel.invokeMethod(EMSDKMethod.imPushNoDisturb, req);
     EMError.hasErrorFromResult(result);
     bool success = result.boolValue(EMSDKMethod.imPushNoDisturb);
@@ -69,25 +75,28 @@ extension EMPushConfigExtension on EMImPushConfig {
   Future<bool> setPushStyle(EMImPushStyle pushStyle) async {
     EMLog.v('setPushStyle: ' + pushStyle.toString());
     Map req = {'pushStyle': pushStyle == EMImPushStyle.Simple ? 0 : 1};
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
     EMError.hasErrorFromResult(result);
     bool success = result.boolValue(EMSDKMethod.updateImPushStyle);
     if (success) _pushStyle = pushStyle;
     return success;
   }
 
-  /// 通过群id[groupId]设置群组是否免打扰[isNoDisturb]
-  Future<EMGroup> setGroupToDisturb(
+  /// 通过群id[groupId]设置群组是否接收推送[enablePush], 默认群组推送都是开启的，如果需要关闭某个群组的推送，需要传NO。
+  Future<EMGroup> setGroupEnablePush(
     String groupId,
-    bool isNoDisturb,
+    bool enablePush,
   ) async {
-    Map req = {'noDisturb': isNoDisturb, 'group_id': groupId};
+    Map req = {'enablePush': enablePush, 'group_id': groupId};
     EMLog.v('setGroupToDisturb: ' + req.toString());
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
     EMError.hasErrorFromResult(result);
-    EMGroup group = EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
+    EMGroup group =
+        EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
     _noDisturbGroups.removeWhere((e) => e == group.groupId);
-    if (isNoDisturb) _noDisturbGroups.add(group.groupId);
+    if (enablePush) _noDisturbGroups.add(group.groupId);
     return group;
   }
 
@@ -95,7 +104,8 @@ extension EMPushConfigExtension on EMImPushConfig {
   Future<List<String>> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
-    _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>() ?? [];
+    _noDisturbGroups =
+        result[EMSDKMethod.getNoDisturbGroups]?.cast<String>() ?? [];
     return _noDisturbGroups;
   }
 }
