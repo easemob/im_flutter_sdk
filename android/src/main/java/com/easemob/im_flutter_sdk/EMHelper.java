@@ -159,6 +159,8 @@ class EMGroupHelper {
         if (group.getGroupId() != null && EMClient.getInstance().pushManager().getNoPushGroups() != null) {
             data.put("noticeEnable",
                     !EMClient.getInstance().pushManager().getNoPushGroups().contains(group.getGroupId()));
+        }else {
+            data.put("noticeEnable", true);
         }
         data.put("messageBlocked", group.isMsgBlocked());
         data.put("isAllMemberMuted", group.isAllMemberMuted());

@@ -12,34 +12,22 @@ enum EMUserInfoType {
 }
 
 class EMUserInfo {
-  EMUserInfo(
-    String aUserId, {
-    String aNickName = '',
-    String aAvatarUrl = '',
-    String aMail = '',
-    String aPhone = '',
-    int aGender = 0,
-    String aSign = '',
-    String aBirth = '',
-    String aExt = '',
-    int aExpireTime = 0,
-  }) {
+  EMUserInfo(String aUserId) {
     userId = aUserId ?? '';
   }
 
   factory EMUserInfo.fromJson(Map map) {
-    if (map == null) return null;
+    EMUserInfo info = EMUserInfo.private(map['userId']);
+    info.nickName = map['nickName'];
+    info.avatarUrl = map['avatarUrl'];
+    info.mail = map['mail'];
+    info.phone = map['phone'];
+    info.gender = map['gender'];
+    info.sign = map['sign'];
+    info.birth = map['birth'];
+    info.ext = map['ext'];
 
-    return EMUserInfo.private()
-      ..userId = map['userId']
-      ..nickName = map['nickName']
-      ..avatarUrl = map['avatarUrl']
-      ..mail = map['mail']
-      ..phone = map['phone']
-      ..gender = map['gender']
-      ..sign = map['sign']
-      ..birth = map['birth']
-      ..ext = map['ext'];
+    return info;
   }
 
   Map toJson() {
@@ -57,7 +45,6 @@ class EMUserInfo {
   }
 
   EMUserInfo.private([this.userId]);
-
   String userId = '';
   String nickName = '';
   String avatarUrl = '';
@@ -67,5 +54,5 @@ class EMUserInfo {
   String sign = '';
   String birth = '';
   String ext = '';
-  int expireTime = 0;
+  int expireTime = DateTime.now().millisecondsSinceEpoch;
 }
