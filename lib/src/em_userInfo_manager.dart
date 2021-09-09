@@ -28,8 +28,9 @@ class EMUserInfoManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
     EMError.hasErrorFromResult(result);
-    print("updateOwnUserInfo_manager result:$result");
-    return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
+    _ownUserInfo = EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
+    _effectiveUserInfoMap[_ownUserInfo.userId] = _ownUserInfo;
+    return _ownUserInfo;
   }
 
   /// 更新自己制定类型的用户属性
@@ -44,7 +45,6 @@ class EMUserInfoManager {
     EMError.hasErrorFromResult(result);
     _ownUserInfo =
         EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
-    _ownUserInfo.expireTime = DateTime.now().millisecondsSinceEpoch;
     _effectiveUserInfoMap[_ownUserInfo.userId] = _ownUserInfo;
     return _ownUserInfo;
   }
@@ -92,7 +92,6 @@ class EMUserInfoManager {
 
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
-      value['expireTime'] = DateTime.now().millisecondsSinceEpoch;
       EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
       resultMap[key] = eUserInfo;
       //restore userInfos
@@ -141,7 +140,6 @@ class EMUserInfoManager {
 
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
-      value['expireTime'] = DateTime.now().millisecondsSinceEpoch;
       EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
       resultMap[key] = eUserInfo;
       //restore userInfos
