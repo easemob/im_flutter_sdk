@@ -45,23 +45,27 @@ class EMUserInfoManager {
   }
 
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 60}) async {
-    Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
-        [EMClient.getInstance.currentUsername],
-        expireTime: expireTime);
-    _ownUserInfo = ret.values.first;
+    if (EMClient.getInstance.currentUsername != null) {
+      Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
+          [EMClient.getInstance.currentUsername!],
+          expireTime: expireTime);
+      _ownUserInfo = ret.values.first;
+    }
     return _ownUserInfo;
   }
 
   //获取指定id的用户的用户属性
   Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithExpireTime(
-      List<String?> userIds,
+      List<String> userIds,
       {int expireTime = 60}) async {
-    List<String> reqIds = userIds.where((element) =>
-        !_effectiveUserInfoMap.containsKey(element) ||
-        (_effectiveUserInfoMap.containsKey(element) &&
-            DateTime.now().millisecondsSinceEpoch -
-                    _effectiveUserInfoMap[element]!.expireTime >
-                expireTime * 1000)) as List<String>;
+    List<String> reqIds = userIds
+        .where((element) =>
+            !_effectiveUserInfoMap.containsKey(element) ||
+            (_effectiveUserInfoMap.containsKey(element) &&
+                DateTime.now().millisecondsSinceEpoch -
+                        _effectiveUserInfoMap[element]!.expireTime >
+                    expireTime * 1000))
+        .toList();
     Map<String, EMUserInfo> resultMap = Map();
     Map req = {'userIds': reqIds};
     Map result =
@@ -207,6 +211,7 @@ class EMUserInfoManager {
   }
 
   void clearUserInfoCache() {
+    _ownUserInfo = null;
     _effectiveUserInfoMap.clear();
   }
 }
