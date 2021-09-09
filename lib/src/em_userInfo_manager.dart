@@ -38,7 +38,6 @@ class EMUserInfoManager {
     if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
       _ownUserInfo =
           EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
-      _ownUserInfo!.expireTime = DateTime.now().millisecondsSinceEpoch;
       _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
     }
 
@@ -69,7 +68,6 @@ class EMUserInfoManager {
         await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
-      value['expireTime'] = DateTime.now().millisecondsSinceEpoch;
       EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
       resultMap[key] = eUserInfo;
       //restore userInfos
@@ -89,12 +87,14 @@ class EMUserInfoManager {
       userInfoTypes.add(type);
     });
 
-    List<String> reqIds = userIds.where((element) =>
-        !_effectiveUserInfoMap.containsKey(element) ||
-        (_effectiveUserInfoMap.containsKey(element) &&
-            DateTime.now().millisecondsSinceEpoch -
-                    _effectiveUserInfoMap[element]!.expireTime >
-                expireTime * 1000)) as List<String>;
+    List<String> reqIds = userIds
+        .where((element) =>
+            !_effectiveUserInfoMap.containsKey(element) ||
+            (_effectiveUserInfoMap.containsKey(element) &&
+                DateTime.now().millisecondsSinceEpoch -
+                        _effectiveUserInfoMap[element]!.expireTime >
+                    expireTime * 1000))
+        .toList();
     Map resultMap = Map();
 
     Map req = {'userIds': reqIds, 'userInfoTypes': userInfoTypes};
@@ -103,7 +103,6 @@ class EMUserInfoManager {
 
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
-      value['expireTime'] = DateTime.now().millisecondsSinceEpoch;
       EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
       resultMap[key] = eUserInfo;
       //restore userInfos

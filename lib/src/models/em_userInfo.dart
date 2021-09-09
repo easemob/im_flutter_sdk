@@ -12,18 +12,7 @@ enum EMUserInfoType {
 }
 
 class EMUserInfo {
-  EMUserInfo(
-    String aUserId, {
-    String aNickName = '',
-    String aAvatarUrl = '',
-    String aMail = '',
-    String aPhone = '',
-    int aGender = 0,
-    String aSign = '',
-    String aBirth = '',
-    String aExt = '',
-    int aExpireTime = 0,
-  });
+  EMUserInfo(String aUserId);
 
   factory EMUserInfo.fromJson(Map map) {
     EMUserInfo info = EMUserInfo.private(map['userId']);
@@ -35,10 +24,6 @@ class EMUserInfo {
     info.sign = map['sign'];
     info.birth = map['birth'];
     info.ext = map['ext'];
-    if (map['expireTime'] != null) {
-      info.expireTime = map['expireTime'];
-    }
-
     return info;
   }
 
@@ -53,7 +38,6 @@ class EMUserInfo {
     data['sign'] = sign;
     data['birth'] = birth;
     data['ext'] = ext;
-    data['expireTime'] = expireTime;
     return data;
   }
 
@@ -68,5 +52,5 @@ class EMUserInfo {
   String? sign = '';
   String? birth = '';
   String? ext = '';
-  int expireTime = 0;
+  int expireTime = DateTime.now().millisecondsSinceEpoch;
 }
