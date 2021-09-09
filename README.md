@@ -331,7 +331,10 @@ EMMessage msg = EMMessage.createVideoSendMessage(username: '接收方id', filePa
 	
 // 音频消息
 EMMessage msg = EMMessage.createVoiceSendMessage(username: '接收方id', filePath: '语音路径');
-	
+
+// 文件消息
+EMMessage msg = EMMessage.createFileSendMessage(username: '接收方id', filePath: '语音路径');
+
 // 位置消息
 EMMessage msg = EMMessage.createLocationSendMessage(username: '接收方id', latitude: '纬度', longitude: '经度', address: '地址名称');
 	
