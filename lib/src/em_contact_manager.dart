@@ -88,20 +88,20 @@ class EMContactManager {
     List<EMContact> contacts = List();
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      contacts.add(EMContact.fromJson({'userId': element}));
+      contacts.add(EMContact(element));
     });
 
     return contacts;
   }
 
-  /// 从本地获取所有的好友 `only ios now.`
+  /// 从本地获取所有的好友。
   Future<List<EMContact>> getAllContactsFromDB() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
     EMError.hasErrorFromResult(result);
     List<EMContact> contacts = List();
     result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      contacts.add(EMContact.fromJson({'userId': element}));
+      contacts.add(EMContact(element));
     });
 
     return contacts;
@@ -133,7 +133,7 @@ class EMContactManager {
     List<EMContact> blockList = List();
     result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      blockList.add(EMContact.fromJson({'userId': element}));
+      blockList.add(EMContact(element));
     });
     return blockList;
   }
