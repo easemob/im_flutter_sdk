@@ -3,27 +3,42 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'em_userInfo.dart';
 
 class EMContact {
-  EMContact(this.userId);
+  factory EMContact.fromJson(Map map) {
+    return EMContact._private()
+      .._eid = map['eid']
+      .._nickname = map['nickname']
+      .._avatarURL = map['avatarURL']
+      .._markName = map['markName'];
+  }
+  Map toJson() {
+    Map data = Map();
+    data['eid'] = _eid;
+    data['nickname'] = _nickname;
+    data['avatarURL'] = _avatarURL;
+    data['markName'] = _markName;
+    return data;
+  }
 
+  EMContact._private([this._eid]);
+  String _eid;
+  String _nickname;
+  String _avatarURL = '';
   String _markName;
 
-  /// 用户id
-  String userId;
+  /// 环信id
+  String get eid => _eid;
 
-  /// 从缓存中获取用户属性，只有使用[EMUserInfoManager]从服务器获取过该用户属性才生效
-  EMUserInfo get userInfo =>
-      EMClient.getInstance.userInfoManager.getCacheInfo(userId);
+  /// 头像地址
+  String get avatarURL => _avatarURL;
 
-  /// 获取用户昵称或者id。当对方设置过昵称并使用[EMUserInfoManager]从服务器获取过该用户属性才会返回昵称，否则返回用户id
-  String get nickNameOfUserId => userInfo.nickName ?? userId;
+  /// nickname
+  String get nickname => _nickname ?? _eid;
 
-  /// 获取备注名缓存
-  @Deprecated("Use nickNameOfUserId")
-  String get markName => _markName ?? userInfo.nickName ?? userId;
+  /// 备注名称
+  String get markName => _markName ?? _nickname ?? _eid;
 
-  /// 设置备注名缓存，应用重启后失效
-  @Deprecated("")
   Future<void> setMarkName(String markName) async {
     _markName = markName;
+    // TODO: 更新备注到服务器？
   }
 }
