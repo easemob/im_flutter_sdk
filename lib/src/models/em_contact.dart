@@ -1,7 +1,3 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-
-import 'em_userInfo.dart';
-
 class EMContact {
   factory EMContact.fromJson(Map map) {
     return EMContact._private()
@@ -18,6 +14,8 @@ class EMContact {
     data['markName'] = _markName;
     return data;
   }
+
+  EMContact(this._eid);
 
   EMContact._private([this._eid]);
   String _eid;
