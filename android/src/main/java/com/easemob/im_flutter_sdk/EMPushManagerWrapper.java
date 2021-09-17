@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -24,6 +25,10 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     EMPushManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+    }
+
+    EMPushManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
     }
 
     @Override

@@ -7,7 +7,8 @@ import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.util.EMLog;
 
-import io.flutter.plugin.common.JSONMethodCodec;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -19,11 +20,11 @@ import java.util.Map;
 /**
  * ImFlutterSdkPlugin
  */
-public class ImFlutterSdkPlugin {
+public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
 
     static final Handler handler = new Handler(Looper.getMainLooper());
 
-    private ImFlutterSdkPlugin() {
+    public ImFlutterSdkPlugin() {
     }
 
     /**
@@ -31,6 +32,22 @@ public class ImFlutterSdkPlugin {
      */
     public static void registerWith(Registrar registrar) {
         new EMClientWrapper(registrar, "em_client");
+    }
+
+    @Override
+    public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
+        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "tencent_im_plugin");
+        channel.setMethodCallHandler(new EMClientWrapper(flutterPluginBinding, "em_client"));
+    }
+
+    @Override
+    public void onDetachedFromEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
+
+    }
+
+    @Override
+    public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+
     }
 }
 
