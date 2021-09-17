@@ -3,6 +3,7 @@ package com.easemob.im_flutter_sdk;
 import com.hyphenate.EMGroupChangeListener;
 import com.hyphenate.chat.EMClient;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodChannel.Result;
 
@@ -32,6 +33,11 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     EMGroupManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+        registerEaseListener();
+    }
+
+    EMGroupManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
         registerEaseListener();
     }
 

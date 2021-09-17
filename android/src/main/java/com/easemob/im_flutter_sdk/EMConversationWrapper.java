@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 import android.text.TextUtils;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -22,6 +24,10 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
     EMConversationWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+    }
+
+    EMConversationWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
     }
 
     @Override

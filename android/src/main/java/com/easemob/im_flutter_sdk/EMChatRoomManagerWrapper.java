@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -24,6 +26,11 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
     EMChatRoomManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+        registerEaseListener();
+    }
+
+    EMChatRoomManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
         registerEaseListener();
     }
 
