@@ -9,6 +9,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -31,6 +32,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     EMClientWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+    }
+
+    EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
     }
 
     @Override
@@ -256,11 +261,24 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMUserInfoManagerWrapper(registrar, "em_userInfo_manager");
     }
 
+    private void bindingManagers() {
+        new EMChatManagerWrapper(binging, "em_chat_manager");
+        new EMContactManagerWrapper(binging, "em_contact_manager");
+        new EMChatRoomManagerWrapper(binging, "em_chat_room_manager");
+        new EMGroupManagerWrapper(binging, "em_group_manager");
+        new EMConversationWrapper(binging, "em_conversation");
+        new EMPushManagerWrapper(binging, "em_push_manager");
+        new EMUserInfoManagerWrapper(binging, "em_userInfo_manager");
+    }
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        EMOptions options = EMOptionsHelper.fromJson(param, this.registrar.context());
-        EMClient.getInstance().init(this.registrar.context(), options);
+        EMOptions options = EMOptionsHelper.fromJson(param, this.context);
+        EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
-        registerManagers();
+        if (binging != null){
+            bindingManagers();
+        }else {
+            registerManagers();
+        }
         addEMListener();
 
         Map<String, Object> data = new HashMap<>();

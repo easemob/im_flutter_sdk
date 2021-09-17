@@ -19,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -28,6 +29,10 @@ import io.flutter.plugin.common.PluginRegistry;
 public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHandler {
     EMUserInfoManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+    }
+
+    EMUserInfoManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
     }
 
     @Override

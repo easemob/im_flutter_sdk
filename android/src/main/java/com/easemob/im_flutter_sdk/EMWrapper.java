@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import android.content.Context;
+
 import com.hyphenate.exceptions.HyphenateException;
 
 import java.util.HashMap;
@@ -8,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -23,11 +27,21 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
 
   public EMWrapper(PluginRegistry.Registrar registrar, String channelName) {
     this.registrar = registrar;
+    this.context = registrar.context();
     this.channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + channelName, JSONMethodCodec.INSTANCE);
     channel.setMethodCallHandler(this);
   }
 
+  public EMWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+    this.context = flutterPluginBinding.getApplicationContext();
+    this.binging = flutterPluginBinding;
+    this.channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), CHANNEL_PREFIX + channelName, JSONMethodCodec.INSTANCE);
+    channel.setMethodCallHandler(this);
+  }
+
+  public Context context;
   public PluginRegistry.Registrar registrar;
+  public FlutterPlugin.FlutterPluginBinding binging;
   public MethodChannel channel;
 
   public void post(Runnable runnable) {
@@ -57,7 +71,7 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
   }
 
   @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+  public void onMethodCall(MethodCall call, MethodChannel.Result result) {
     result.notImplemented();
   }
 }

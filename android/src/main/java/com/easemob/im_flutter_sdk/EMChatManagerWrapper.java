@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.JSONMethodCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -37,8 +38,13 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     EMChatManagerWrapper(Registrar registrar, String channelName) {
         super(registrar, channelName);
-        messageChannel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_message",
-                JSONMethodCodec.INSTANCE);
+        messageChannel = new MethodChannel(registrar.messenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
+        registerEaseListener();
+    }
+
+    EMChatManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
+        super(flutterPluginBinding, channelName);
+        messageChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
 
