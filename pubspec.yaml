@@ -1,7 +1,6 @@
 name: im_flutter_sdk
 description: Easemob IM flutter SDK.
 version: 1.0.0
-author: easemob <sdk@easemob.com>
 homepage: http://www.easemob.com/product/im
 
 environment:
