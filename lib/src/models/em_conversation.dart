@@ -206,17 +206,21 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 根据消息id获取消息，如果消息id不属于当前会话，则无法获取到
-  Future<EMMessage> loadMessage(String messageId) async {
+  Future<EMMessage?> loadMessage(String messageId) async {
     Map req = this.toJson();
     req['msg_id'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.loadMsgWithId, req);
     EMError.hasErrorFromResult(result);
-    return EMMessage.fromJson(result[EMSDKMethod.loadMsgWithId]);
+    if (result[EMSDKMethod.loadMsgWithId] != null) {
+      return EMMessage.fromJson(result[EMSDKMethod.loadMsgWithId]);
+    } else {
+      return null;
+    }
   }
 
   /// 根据类型获取当前会话汇总的消息
-  Future<List<EMMessage>> loadMessagesWithMsgType({
+  Future<List<EMMessage?>> loadMessagesWithMsgType({
     required EMMessageBodyType type,
     int timestamp = -1,
     int count = 20,
@@ -234,7 +238,7 @@ extension EMConversationExtension on EMConversation {
         EMSDKMethod.loadMsgWithMsgType, req);
     EMError.hasErrorFromResult(result);
 
-    List<EMMessage> list = [];
+    List<EMMessage?> list = [];
     result[EMSDKMethod.loadMsgWithMsgType]?.forEach((element) {
       list.add(EMMessage.fromJson(element));
     });
