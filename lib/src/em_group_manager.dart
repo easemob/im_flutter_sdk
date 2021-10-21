@@ -10,7 +10,8 @@ import 'em_listeners.dart';
 
 class EMGroupManager {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_group_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel(
+      '$_channelPrefix/em_group_manager', JSONMethodCodec());
 
   EMGroupManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
@@ -38,15 +39,18 @@ class EMGroupManager {
     Map result = await _channel.invokeMethod(EMSDKMethod.getJoinedGroups);
     EMError.hasErrorFromResult(result);
     List<EMGroup> list = [];
-    result[EMSDKMethod.getJoinedGroups]?.forEach((element) => list.add(EMGroup.fromJson(element)));
+    result[EMSDKMethod.getJoinedGroups]
+        ?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
 
   /// 获取免打扰的群组列表id
   Future<List<String>?> getGroupsWithoutNotice() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupsWithoutPushNotification);
+    Map result = await _channel
+        .invokeMethod(EMSDKMethod.getGroupsWithoutPushNotification);
     EMError.hasErrorFromResult(result);
-    var list = result[EMSDKMethod.getGroupsWithoutPushNotification]?.cast<String>();
+    var list =
+        result[EMSDKMethod.getGroupsWithoutPushNotification]?.cast<String>();
     return list;
   }
 
@@ -56,10 +60,12 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'pageSize': pageSize, 'pageNum': pageNum};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getJoinedGroupsFromServer, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getJoinedGroupsFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMGroup> list = [];
-    result[EMSDKMethod.getJoinedGroupsFromServer]?.forEach((element) => list.add(EMGroup.fromJson(element)));
+    result[EMSDKMethod.getJoinedGroupsFromServer]
+        ?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
 
@@ -69,17 +75,30 @@ class EMGroupManager {
     String cursor = '',
   }) async {
     Map req = {'pageSize': pageSize, 'cursor': cursor};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getPublicGroupsFromServer, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getPublicGroupsFromServer, req);
     EMError.hasErrorFromResult(result);
 
-    return EMCursorResult<EMGroup>.fromJson(result[EMSDKMethod.getPublicGroupsFromServer], dataItemCallback: (value) {
+    return EMCursorResult<EMGroup>.fromJson(
+        result[EMSDKMethod.getPublicGroupsFromServer],
+        dataItemCallback: (value) {
       return EMGroup.fromJson(value);
     });
   }
 
   /// 创建群组
-  Future<EMGroup> createGroup(String groupName, {required EMGroupOptions settings, String desc = '', List<String>? inviteMembers, String inviteReason = ''}) async {
-    Map req = {'groupName': groupName, 'desc': desc, 'inviteMembers': inviteMembers ?? [], 'inviteReason': inviteReason, 'options': settings.toJson()};
+  Future<EMGroup> createGroup(String groupName,
+      {required EMGroupOptions settings,
+      String desc = '',
+      List<String>? inviteMembers,
+      String inviteReason = ''}) async {
+    Map req = {
+      'groupName': groupName,
+      'desc': desc,
+      'inviteMembers': inviteMembers ?? [],
+      'inviteReason': inviteReason,
+      'options': settings.toJson()
+    };
     Map result = await _channel.invokeMethod(EMSDKMethod.createGroup, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.createGroup]);
@@ -88,9 +107,11 @@ class EMGroupManager {
   /// 获取群组详情
   Future<EMGroup> getGroupSpecificationFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupSpecificationFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getGroupSpecificationFromServer, req);
     EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.getGroupSpecificationFromServer]);
+    return EMGroup.fromJson(
+        result[EMSDKMethod.getGroupSpecificationFromServer]);
   }
 
   /// 获取群组成员列表
@@ -109,7 +130,9 @@ class EMGroupManager {
       req,
     );
     EMError.hasErrorFromResult(result);
-    return EMCursorResult<String>.fromJson(result[EMSDKMethod.getGroupMemberListFromServer], dataItemCallback: (value) => value);
+    return EMCursorResult<String>.fromJson(
+        result[EMSDKMethod.getGroupMemberListFromServer],
+        dataItemCallback: (value) => value);
   }
 
   /// 获取黑名单列表
@@ -119,7 +142,8 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupBlockListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getGroupBlockListFromServer, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.getGroupBlockListFromServer]?.cast<String>();
   }
@@ -131,7 +155,8 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupMuteListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getGroupMuteListFromServer, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.getGroupMuteListFromServer]?.cast<String>();
   }
@@ -139,7 +164,8 @@ class EMGroupManager {
   /// 获取白名单列表
   Future<List<String>?> getGroupWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupWhiteListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getGroupWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.getGroupWhiteListFromServer]?.cast<String>();
   }
@@ -147,7 +173,8 @@ class EMGroupManager {
   /// 判断自己是否在白名单中
   Future<bool?> isMemberInWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.isMemberInWhiteListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.isMemberInWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.isMemberInWhiteListFromServer);
   }
@@ -159,7 +186,8 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupFileListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getGroupFileListFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMGroupSharedFile> list = [];
     result[EMSDKMethod.getGroupFileListFromServer]?.forEach((element) {
@@ -171,7 +199,8 @@ class EMGroupManager {
   /// 从服务器获取群公告
   Future<String?> getGroupAnnouncementFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupAnnouncementFromServer, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.getGroupAnnouncementFromServer, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.getGroupAnnouncementFromServer];
   }
@@ -223,7 +252,8 @@ class EMGroupManager {
     String name,
   ) async {
     Map req = {'name': name, 'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupSubject, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateGroupSubject, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.updateGroupSubject]);
   }
@@ -234,7 +264,8 @@ class EMGroupManager {
     String desc,
   ) async {
     Map req = {'desc': desc, 'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateDescription, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateDescription, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.updateDescription]);
   }
@@ -365,7 +396,8 @@ class EMGroupManager {
     String filePath,
   ) async {
     Map req = {'groupId': groupId, 'filePath': filePath};
-    Map result = await _channel.invokeMethod(EMSDKMethod.uploadGroupSharedFile, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.uploadGroupSharedFile, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.uploadGroupSharedFile);
   }
@@ -377,7 +409,8 @@ class EMGroupManager {
     String savePath,
   ) async {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
-    Map result = await _channel.invokeMethod(EMSDKMethod.downloadGroupSharedFile, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.downloadGroupSharedFile, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.downloadGroupSharedFile);
   }
@@ -388,7 +421,8 @@ class EMGroupManager {
     String fileId,
   ) async {
     Map req = {'groupId': groupId, 'fileId': fileId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.removeGroupSharedFile, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.removeGroupSharedFile, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.removeGroupSharedFile]);
   }
@@ -399,7 +433,8 @@ class EMGroupManager {
     String announcement,
   ) async {
     Map req = {'groupId': groupId, 'announcement': announcement};
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupAnnouncement, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.updateGroupAnnouncement, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.updateGroupAnnouncement]);
   }
@@ -431,7 +466,8 @@ class EMGroupManager {
     String reason = '',
   ]) async {
     Map req = {'groupId': groupId, 'reason': reason};
-    Map result = await _channel.invokeMethod(EMSDKMethod.requestToJoinPublicGroup, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.requestToJoinPublicGroup, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.requestToJoinPublicGroup]);
   }
@@ -443,7 +479,8 @@ class EMGroupManager {
     String username,
   ) async {
     Map req = {'groupId': groupId, 'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.acceptJoinApplication, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.acceptJoinApplication, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.acceptJoinApplication]);
   }
@@ -456,7 +493,8 @@ class EMGroupManager {
     String reason = '',
   ]) async {
     Map req = {'groupId': groupId, 'username': username, 'reason': reason};
-    Map result = await _channel.invokeMethod(EMSDKMethod.declineJoinApplication, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.declineJoinApplication, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.declineJoinApplication]);
   }
@@ -468,7 +506,8 @@ class EMGroupManager {
     String inviter,
   ) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
-    Map result = await _channel.invokeMethod(EMSDKMethod.acceptInvitationFromGroup, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.acceptInvitationFromGroup, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.acceptInvitationFromGroup]);
   }
@@ -481,7 +520,8 @@ class EMGroupManager {
     String reason = '',
   ]) async {
     Map req = {'groupId': groupId, 'inviter': inviter, 'reason': reason};
-    Map result = await _channel.invokeMethod(EMSDKMethod.declineInvitationFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.declineInvitationFromGroup, req);
     EMError.hasErrorFromResult(result);
     return EMGroup.fromJson(result[EMSDKMethod.acceptInvitationFromGroup]);
   }
@@ -509,7 +549,7 @@ class EMGroupManager {
 
   /// @nodoc
   Future<void> _onGroupChanged(Map? map) async {
-    for (var listener in _groupChangeListeners) {
+    for (EMGroupChangeListener listener in _groupChangeListeners) {
       print('[EMGroupChange:]_onGroupChanged');
       var type = map!['type'];
       switch (type) {
@@ -518,50 +558,55 @@ class EMGroupManager {
           String? groupName = map['groupName'];
           String? inviter = map['inviter'];
           String? reason = map['reason'];
-          listener.onInvitationReceived(groupId, groupName, inviter, reason);
+          listener.onInvitationReceivedFromGroup(
+              groupId, groupName, inviter, reason);
           break;
         case EMGroupChangeEvent.ON_INVITATION_ACCEPTED:
           String? groupId = map['groupId'];
           String? invitee = map['invitee'];
           String? reason = map['reason'];
-          listener.onInvitationAccepted(groupId, invitee, reason);
+          listener.onInvitationAcceptedFromGroup(groupId, invitee, reason);
           break;
         case EMGroupChangeEvent.ON_INVITATION_DECLINED:
           String? groupId = map['groupId'];
           String? invitee = map['invitee'];
           String? reason = map['reason'];
-          listener.onInvitationDeclined(groupId, invitee, reason);
+          listener.onInvitationDeclinedFromGroup(groupId, invitee, reason);
           break;
         case EMGroupChangeEvent.ON_AUTO_ACCEPT_INVITATION:
           String? groupId = map['groupId'];
           String? inviter = map['inviter'];
           String? inviteMessage = map['inviteMessage'];
-          listener.onAutoAcceptInvitationFromGroup(groupId, inviter, inviteMessage);
+          listener.onAutoAcceptInvitationFromGroup(
+              groupId, inviter, inviteMessage);
           break;
         case EMGroupChangeEvent.ON_USER_REMOVED:
           String? groupId = map['groupId'];
           String? groupName = map['groupName'];
-          listener.onUserRemoved(groupId, groupName);
+          listener.onUserRemovedFromGroup(groupId, groupName);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED:
           String? groupId = map['groupId'];
           String? groupName = map['groupName'];
           String? applicant = map['applicant'];
           String? reason = map['reason'];
-          listener.onRequestToJoinReceived(groupId, groupName, applicant, reason);
+          listener.onRequestToJoinReceivedFromGroup(
+              groupId, groupName, applicant, reason);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
           String? groupId = map['groupId'];
           String? groupName = map['groupName'];
           String? decliner = map['decliner'];
           String? reason = map['reason'];
-          listener.onRequestToJoinDeclined(groupId, groupName, decliner, reason);
+          listener.onRequestToJoinDeclinedFromGroup(
+              groupId, groupName, decliner, reason);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
           String? groupId = map['groupId'];
           String? groupName = map['groupName'];
           String? accepter = map['accepter'];
-          listener.onRequestToJoinAccepted(groupId, groupName, accepter);
+          listener.onRequestToJoinAcceptedFromGroup(
+              groupId, groupName, accepter);
           break;
         case EMGroupChangeEvent.ON_GROUP_DESTROYED:
           String? groupId = map['groupId'];
@@ -572,53 +617,54 @@ class EMGroupManager {
           String? groupId = map['groupId'];
           List? mutes = map['mutes'];
           int? muteExpire = map['muteExpire'];
-          listener.onMuteListAdded(groupId, mutes, muteExpire);
+          listener.onMuteListAddedFromGroup(groupId, mutes, muteExpire);
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
           String? groupId = map['groupId'];
           List? mutes = map['mutes'];
-          listener.onMuteListRemoved(groupId, mutes);
+          listener.onMuteListRemovedFromGroup(groupId, mutes);
           break;
         case EMGroupChangeEvent.ON_ADMIN_ADDED:
           String? groupId = map['groupId'];
           String? administrator = map['administrator'];
-          listener.onAdminAdded(groupId, administrator);
+          listener.onAdminAddedFromGroup(groupId, administrator);
           break;
         case EMGroupChangeEvent.ON_ADMIN_REMOVED:
           String? groupId = map['groupId'];
           String? administrator = map['administrator'];
-          listener.onAdminRemoved(groupId, administrator);
+          listener.onAdminRemovedFromGroup(groupId, administrator);
           break;
         case EMGroupChangeEvent.ON_OWNER_CHANGED:
           String? groupId = map['groupId'];
           String? newOwner = map['newOwner'];
           String? oldOwner = map['oldOwner'];
-          listener.onOwnerChanged(groupId, newOwner, oldOwner);
+          listener.onOwnerChangedFromGroup(groupId, newOwner, oldOwner);
           break;
         case EMGroupChangeEvent.ON_MEMBER_JOINED:
           String? groupId = map['groupId'];
           String? member = map['member'];
-          listener.onMemberJoined(groupId, member);
+          listener.onMemberJoinedFromGroup(groupId, member);
           break;
         case EMGroupChangeEvent.ON_MEMBER_EXITED:
           String? groupId = map['groupId'];
           String? member = map['member'];
-          listener.onMemberExited(groupId, member);
+          listener.onMemberExitedFromGroup(groupId, member);
           break;
         case EMGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
           String? groupId = map['groupId'];
           String? announcement = map['announcement'];
-          listener.onAnnouncementChanged(groupId, announcement);
+          listener.onAnnouncementChangedFromGroup(groupId, announcement);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
           String? groupId = map['groupId'];
-          EMGroupSharedFile sharedFile = EMGroupSharedFile.fromJson(map['sharedFile']);
-          listener.onSharedFileAdded(groupId, sharedFile);
+          EMGroupSharedFile sharedFile =
+              EMGroupSharedFile.fromJson(map['sharedFile']);
+          listener.onSharedFileAddedFromGroup(groupId, sharedFile);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:
           String? groupId = map['groupId'];
           String? fileId = map['fileId'];
-          listener.onSharedFileDeleted(groupId, fileId);
+          listener.onSharedFileDeletedFromGroup(groupId, fileId);
           break;
       }
     }

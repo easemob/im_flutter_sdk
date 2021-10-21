@@ -17,7 +17,7 @@
 #import "EMOptions+Flutter.h"
 #import "EMUserInfoManagerWrapper.h"
 
-@interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate>
+@interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
 @end
 
 @implementation EMClientWrapper
@@ -27,7 +27,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        
+        [registrar addApplicationDelegate:self];
     }
     return self;
 }
@@ -399,5 +399,17 @@
     }
 #endif
 }
+
+#pragma mark - AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    NSLog(@"didFinishLaunchingWithOptions --- ");
+    return YES;
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    
+}
+
 
 @end
