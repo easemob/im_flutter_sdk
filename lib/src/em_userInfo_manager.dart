@@ -17,7 +17,7 @@ class EMUserInfoManager {
   EMUserInfoManager();
 
   //更新自己的用户属性
-  Future<EMUserInfo> updateOwnUserInfo(EMUserInfo userInfo) async {
+  Future<EMUserInfo?> updateOwnUserInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
@@ -25,7 +25,7 @@ class EMUserInfoManager {
     return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
   }
 
-  //更新自己制定类型的用户属性
+  /// 更新自己用户属性
   Future<EMUserInfo?> updateOwnUserInfoWithType(
       EMUserInfoType type, String userInfoValue) async {
     Map req = {
@@ -44,7 +44,7 @@ class EMUserInfoManager {
     return _ownUserInfo;
   }
 
-  Future<EMUserInfo?> fetchOwnInfo({int expireTime = 60}) async {
+  Future<EMUserInfo?> fetchOwnInfo({int expireTime = 3600}) async {
     if (EMClient.getInstance.currentUsername != null) {
       Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
           [EMClient.getInstance.currentUsername!],
@@ -54,11 +54,13 @@ class EMUserInfoManager {
     return _ownUserInfo;
   }
 
-  //获取指定id的用户的用户属性
+  /// 获取指定id的用户的用户属性,
+  /// `userIds` 需要获取的环信id;
+  /// `expireTime` 过期时间，单位秒。如果之前获取过, 如果距当前时间小于过期时间则不会重复获取
   Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithExpireTime(
       List<String> userIds,
-      {int expireTime = 60}) async {
-    List<String> reqIds = userIds
+      {int expireTime = 3600}) async {
+    List<String> needReqIds = userIds
         .where((element) =>
             !_effectiveUserInfoMap.containsKey(element) ||
             (_effectiveUserInfoMap.containsKey(element) &&
@@ -67,24 +69,38 @@ class EMUserInfoManager {
                     expireTime * 1000))
         .toList();
     Map<String, EMUserInfo> resultMap = Map();
-    Map req = {'userIds': reqIds};
+
+    userIds.forEach((element) {
+      if (_effectiveUserInfoMap.containsKey(element)) {
+        resultMap[element] = _effectiveUserInfoMap[element]!;
+      }
+    });
+    if (needReqIds.length == 0) {
+      return resultMap;
+    }
+
+    Map req = {'userIds': needReqIds};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
     EMError.hasErrorFromResult(result);
     result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
       EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
       resultMap[key] = eUserInfo;
-      //restore userInfos
       _effectiveUserInfoMap[key] = eUserInfo;
     });
 
     return resultMap;
   }
 
-  //获取指定id的用户的指定类型的用户属性
+  /// 获取指定id的用户的指定类型的用户属性
+  /// `userIds` 需要获取的环信id;
+  /// `types` 需要获取的属性
+  /// `expireTime` 过期时间，单位秒。如果之前获取过, 如果距当前时间小于过期时间则不会重复获取
+  @Deprecated(
+      'Use userInfoManager.fetchUserInfoByIdWithExpireTime() method instead.')
   Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithType(
       List<String> userIds, List<EMUserInfoType> types,
-      {int expireTime = 60}) async {
+      {int expireTime = 3600}) async {
     List<int> userInfoTypes = [];
     types.forEach((element) {
       int type = _userInfoTypeToInt(element);
@@ -109,7 +125,7 @@ class EMUserInfoManager {
     result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
       EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
       resultMap[key] = eUserInfo;
-      //restore userInfos
+
       _effectiveUserInfoMap[key] = eUserInfo;
     });
 
