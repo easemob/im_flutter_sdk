@@ -802,7 +802,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 
 // cmd body
 class EMCmdMessageBody extends EMMessageBody {
-  EMCmdMessageBody({required this.action, this.deliverOnlineOnly})
+  EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
       : super(type: EMMessageBodyType.CMD);
 
   EMCmdMessageBody.fromJson({required Map map})

@@ -73,7 +73,7 @@ dependencies:
   image_picker: 0.6.7+17
 
   # 存储图片
-  image_gallery_saver: '1.6.9'
+  image_gallery_saver: '^1.7.0'
   # 拼音
   # lpinyin: ^1.1.0
 

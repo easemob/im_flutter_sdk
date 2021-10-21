@@ -362,7 +362,7 @@ class EMChatManager implements EMMessageStatusListener {
 
 abstract class EMChatManagerListener {
   /// 收到消息[messages]
-  onMessagesReceived(List<EMMessage> messages) {}
+  void onMessagesReceived(List<EMMessage> messages) {}
 
   /// 收到cmd消息[messages]
   onCmdMessagesReceived(List<EMMessage> messages) {}

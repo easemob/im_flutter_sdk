@@ -176,7 +176,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
     }
   }
 
-  _approvalJoinPublicGroup() {
+  _approvalJoinPublicGroup() async {
     try {
       SmartDialog.showLoading(msg: '申请中...');
       EMClient.getInstance.groupManager
@@ -187,7 +187,8 @@ class GroupInfoPageState extends State<GroupInfoPage> {
     } finally {
       SmartDialog.dismiss();
     }
-    EMClient.getInstance.groupManager.requestToJoinPublicGroup(_group.groupId);
+    await EMClient.getInstance.groupManager
+        .requestToJoinPublicGroup(_group.groupId);
   }
 
   _fetchGroupInfo() async {
