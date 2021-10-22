@@ -31,7 +31,9 @@ class EMChatRoomManager {
 
   /// 移除聊天室监听器
   void removeChatRoomListener(EMChatRoomEventListener listener) {
-    _chatRoomEventListeners.remove(listener);
+    if (_chatRoomEventListeners.contains(listener)) {
+      _chatRoomEventListeners.remove(listener);
+    }
   }
 
   /// @nodoc
