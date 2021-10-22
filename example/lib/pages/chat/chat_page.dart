@@ -297,7 +297,8 @@ class _ChatPageState extends State<ChatPage>
           startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
           loadCount: count);
       _msgList.insertAll(0, msgs);
-    } on EMError {} finally {
+    } on EMError {
+    } finally {
       if (moveBottom) {
         _setStateAndMoreToListViewEnd();
       } else {
@@ -601,13 +602,13 @@ class _ChatPageState extends State<ChatPage>
   onConversationRead(String from, String to) {}
 
   @override
-  void onAdminAdded(String roomId, String admin) {}
+  void onAdminAddedFromChatRoom(String roomId, String admin) {}
 
   @override
-  void onAdminRemoved(String roomId, String admin) {}
+  void onAdminRemovedFromChatRoom(String roomId, String admin) {}
 
   @override
-  void onAnnouncementChanged(String roomId, String announcement) {}
+  void onAnnouncementChangedFromChatRoom(String roomId, String announcement) {}
 
   @override
   void onChatRoomDestroyed(String roomId, String roomName) {
@@ -615,19 +616,22 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
-  void onMemberExited(String roomId, String roomName, String participant) {}
+  void onMemberExitedFromChatRoom(
+      String roomId, String roomName, String participant) {}
 
   @override
-  void onMemberJoined(String roomId, String participant) {}
+  void onMemberJoinedFromChatRoom(String roomId, String participant) {}
 
   @override
-  void onMuteListAdded(String roomId, List mutes, String expireTime) {}
+  void onMuteListAddedFromChatRoom(
+      String roomId, List mutes, String expireTime) {}
 
   @override
-  void onMuteListRemoved(String roomId, List mutes) {}
+  void onMuteListRemovedFromChatRoom(String roomId, List mutes) {}
 
   @override
-  void onOwnerChanged(String roomId, String newOwner, String oldOwner) {}
+  void onOwnerChangedFromChatRoom(
+      String roomId, String newOwner, String oldOwner) {}
 
   @override
   void onRemovedFromChatRoom(

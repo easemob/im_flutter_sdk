@@ -225,7 +225,7 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。
   /// 结果按每页[pageSize]分页，从[startMsgId]开始。
-  Future<EMCursorResult<EMMessage>> fetchHistoryMessages(
+  Future<EMCursorResult<EMMessage?>> fetchHistoryMessages(
     String conversationId, {
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
@@ -239,7 +239,7 @@ class EMChatManager implements EMMessageStatusListener {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchHistoryMessages, req);
     EMError.hasErrorFromResult(result);
-    return EMCursorResult<EMMessage>.fromJson(
+    return EMCursorResult<EMMessage?>.fromJson(
         result[EMSDKMethod.fetchHistoryMessages], dataItemCallback: (value) {
       return EMMessage.fromJson(value);
     });
@@ -362,7 +362,7 @@ class EMChatManager implements EMMessageStatusListener {
 
 abstract class EMChatManagerListener {
   /// 收到消息[messages]
-  onMessagesReceived(List<EMMessage> messages) {}
+  void onMessagesReceived(List<EMMessage> messages) {}
 
   /// 收到cmd消息[messages]
   onCmdMessagesReceived(List<EMMessage> messages) {}

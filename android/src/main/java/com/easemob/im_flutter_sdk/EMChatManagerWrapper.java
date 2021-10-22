@@ -431,13 +431,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
         int pageSize = param.getInt("pageSize");
         String startMsgId = param.getString("startMsgId");
-        try {
-            EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
-                    type, pageSize, startMsgId);
-            onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
-        } catch (HyphenateException e) {
-            onError(result, e);
-        }
+        asyncRunnable(() -> {
+            try {
+                EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
+                        type, pageSize, startMsgId);
+                onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
     private void searchChatMsgFromDB(JSONObject param, String channelName, Result result) throws JSONException {
