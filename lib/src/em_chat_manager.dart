@@ -220,7 +220,9 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 移除消息监听[listener]
   void removeListener(EMChatManagerListener listener) {
-    _messageListeners.remove(listener);
+    if (_messageListeners.contains(listener)) {
+      _messageListeners.remove(listener);
+    }
   }
 
   /// 在会话[conversationId]中提取历史消息，按[type]筛选。

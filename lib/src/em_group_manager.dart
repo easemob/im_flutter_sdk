@@ -544,7 +544,9 @@ class EMGroupManager {
 
   /// @nodoc removeGroupChangeListener - Remove [listener] from the listener list.
   void removeGroupChangeListener(EMGroupChangeListener listener) {
-    _groupChangeListeners.remove(listener);
+    if (_groupChangeListeners.contains(listener)) {
+      _groupChangeListeners.remove(listener);
+    }
   }
 
   /// @nodoc
