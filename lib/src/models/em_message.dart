@@ -106,7 +106,9 @@ class MessageCallBackManager {
   }
 
   removeMessage(EMMessage message) {
-    cacheMessageMap.remove(message.localTime.toString());
+    if (cacheMessageMap.containsKey(message.localTime.toString())) {
+      cacheMessageMap.remove(message.localTime.toString());
+    }
   }
 }
 

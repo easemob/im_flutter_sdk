@@ -212,7 +212,9 @@ class EMClient {
 
   /// @nodoc 移除多设备监听的接口[listener].
   void removeMultiDeviceListener(EMMultiDeviceListener listener) {
-    _multiDeviceListeners.remove(listener);
+    if (_multiDeviceListeners.contains(listener)) {
+      _multiDeviceListeners.remove(listener);
+    }
   }
 
   /// 添加链接状态监听的接口[listener].
@@ -222,7 +224,9 @@ class EMClient {
 
   /// 移除链接状态监听的接口[listener].
   void removeConnectionListener(EMConnectionListener listener) {
-    _connectionListeners.remove(listener);
+    if (_connectionListeners.contains(listener)) {
+      _connectionListeners.remove(listener);
+    }
   }
 
   /// @nodoc once connection changed, listeners to be informed.

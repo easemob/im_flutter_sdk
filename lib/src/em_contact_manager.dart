@@ -9,7 +9,8 @@ import 'models/em_domain_terms.dart';
 
 class EMContactManager {
   static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/em_contact_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel(
+      '$_channelPrefix/em_contact_manager', JSONMethodCodec());
 
   /// @nodoc
   EMContactManager() {
@@ -80,7 +81,8 @@ class EMContactManager {
 
   /// 从服务器获取所有的好友
   Future<List<EMContact>> getAllContactsFromServer() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
     EMError.hasErrorFromResult(result);
     List<EMContact> contacts = [];
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
@@ -107,7 +109,8 @@ class EMContactManager {
   /// 把指定用户加入到黑名单中 [username] .
   Future<String?> addUserToBlockList(String username) async {
     Map req = {'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.addUserToBlockList];
   }
@@ -115,14 +118,16 @@ class EMContactManager {
   /// 把用户从黑名单中移除 [username].
   Future<String?> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.removeUserFromBlockList];
   }
 
   /// 从服务器获取黑名单中的用户的ID
   Future<List<EMContact>> getBlockListFromServer() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
     EMError.hasErrorFromResult(result);
     List<EMContact> blockList = [];
     result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
@@ -143,16 +148,19 @@ class EMContactManager {
   /// 拒绝加好友的邀请 [username].
   Future<String?> declineInvitation(String username) async {
     Map req = {'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.declineInvitation, req);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.declineInvitation, req);
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.declineInvitation];
   }
 
   /// 从服务器获取登录用户在其他设备上登录的ID
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
     EMError.hasErrorFromResult(result);
-    List<String>? devices = result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
+    List<String>? devices =
+        result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
     return devices;
   }
 
@@ -163,7 +171,9 @@ class EMContactManager {
 
   /// 移除好友监听器  [contactListener]
   void removeContactListener(EMContactEventListener contactListener) {
-    _contactChangeEventListeners.remove(contactListener);
+    if (_contactChangeEventListeners.contains(contactListener)) {
+      _contactChangeEventListeners.remove(contactListener);
+    }
   }
 }
 
