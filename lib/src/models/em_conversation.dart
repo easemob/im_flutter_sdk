@@ -21,7 +21,7 @@ class EMConversation {
     Map<String, String>? ext = map['ext']?.cast<String, String>();
     String? name;
     if (ext != null) {
-      name = ext['con_name']!;
+      name = ext['con_name'];
       ext.remove('con_name');
     }
 
