@@ -29,6 +29,8 @@ static NSString *const EMMethodKeyOnConnected = @"onConnected";
 static NSString *const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString *const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 
+static NSString *const EMMethodKeySendDataToFlutter = @"onSendDataToFlutter";
+
 #pragma mark - EMContactManagerWrapper
 static NSString *const EMMethodKeyAddContact = @"addContact";
 static NSString *const EMMethodKeyDeleteContact = @"deleteContact";

@@ -22,6 +22,30 @@
 
 @implementation EMClientWrapper
 
+static EMClientWrapper *wrapper = nil;
+
+
++ (EMClientWrapper *)sharedWrapper {
+    return wrapper;
+}
+
+- (void)sendDataToFlutter:(NSDictionary *)aData {
+    if (aData == nil) {
+        return;
+    }
+    [self.channel invokeMethod:EMMethodKeySendDataToFlutter
+                     arguments:aData];
+}
+
++ (EMClientWrapper *)channelName:(NSString *)aChannelName
+                       registrar:(NSObject<FlutterPluginRegistrar>*)registrar
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        wrapper = [[EMClientWrapper alloc] initWithChannelName:aChannelName registrar:registrar];
+    });
+    return wrapper;
+}
 
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -365,7 +389,6 @@
     [self.channel invokeMethod:EMMethodKeyOnDisconnected
                      arguments:@{@"errorCode" : @(errorCode)}];
 }
-
 
 
 #pragma mark - register APNs

@@ -29,13 +29,27 @@ import org.json.JSONObject;
 
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
+    static EMClientWrapper wrapper;
 
     EMClientWrapper(PluginRegistry.Registrar registrar, String channelName) {
         super(registrar, channelName);
+        wrapper = this;
     }
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
+        wrapper = this;
+    }
+
+    public static EMClientWrapper getInstance() {
+        return wrapper;
+    }
+
+    public void sendDataToFlutter(final Map data) {
+        if (data == null) {
+            return;
+        }
+        post(()-> channel.invokeMethod(EMSDKMethod.onSendDataToFlutter, data));
     }
 
     @Override

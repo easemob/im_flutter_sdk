@@ -13,6 +13,7 @@
 #import "EMError+Flutter.h"
 #import "EMCursorResult+Flutter.h"
 
+
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
 
