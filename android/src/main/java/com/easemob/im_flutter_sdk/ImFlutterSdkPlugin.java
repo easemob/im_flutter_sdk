@@ -36,7 +36,7 @@ public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCa
 
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "tencent_im_plugin");
+        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "em_client");
         channel.setMethodCallHandler(new EMClientWrapper(flutterPluginBinding, "em_client"));
     }
 

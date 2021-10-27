@@ -367,20 +367,20 @@ abstract class EMChatManagerListener {
   void onMessagesReceived(List<EMMessage> messages) {}
 
   /// 收到cmd消息[messages]
-  onCmdMessagesReceived(List<EMMessage> messages) {}
+  void onCmdMessagesReceived(List<EMMessage> messages) {}
 
   /// 收到[messages]消息已读
-  onMessagesRead(List<EMMessage> messages) {}
+  void onMessagesRead(List<EMMessage> messages) {}
 
   /// 收到[messages]消息已送达
-  onMessagesDelivered(List<EMMessage> messages) {}
+  void onMessagesDelivered(List<EMMessage> messages) {}
 
   /// 收到[messages]消息被撤回
-  onMessagesRecalled(List<EMMessage> messages) {}
+  void onMessagesRecalled(List<EMMessage> messages) {}
 
   /// 会话列表变化
-  onConversationsUpdate() {}
+  void onConversationsUpdate() {}
 
   /// 会话已读`from`是已读的发送方, `to`是已读的接收方
-  onConversationRead(String? from, String? to) {}
+  void onConversationRead(String? from, String? to) {}
 }
