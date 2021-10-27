@@ -18,6 +18,10 @@ abstract class EMMultiDeviceListener {
       EMContactGroupEvent? event, String? target, List<String>? usernames);
 }
 
+abstract class EMCustomListener {
+  void onDataReceived(Map map);
+}
+
 /// @nodoc
 enum EMContactGroupEvent {
   CONTACT_REMOVE,

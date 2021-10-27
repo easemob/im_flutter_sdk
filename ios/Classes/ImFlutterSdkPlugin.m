@@ -10,10 +10,13 @@
 #import <UserNotifications/UserNotifications.h>
 
 @implementation ImFlutterSdkPlugin
+
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
-    EMClientWrapper *wrapper =  [[EMClientWrapper alloc] initWithChannelName:EMChannelName(@"em_client") registrar:registrar];
+//    EMClientWrapper *wrapper =  [[EMClientWrapper alloc] initWithChannelName:EMChannelName(@"em_client") registrar:registrar];
+    [EMClientWrapper channelName:EMChannelName(@"em_client") registrar:registrar];
 #pragma clang diagnostic pop
 }
 

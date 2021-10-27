@@ -19,6 +19,7 @@ public class EMSDKMethod {
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
+    static final String onSendDataToFlutter = "onSendDataToFlutter";
 
     /// EMContactManager methods
     static final String addContact = "addContact";
