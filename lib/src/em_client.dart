@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'em_chat_manager.dart';
@@ -26,8 +27,9 @@ class EMClient {
   final EMGroupManager _groupManager = EMGroupManager();
   final EMPushManager _pushManager = EMPushManager();
   final EMUserInfoManager _userInfoManager = EMUserInfoManager();
-  final _connectionListeners = [];
-  final _multiDeviceListeners = [];
+  final List<EMConnectionListener> _connectionListeners = [];
+  final List<EMMultiDeviceListener> _multiDeviceListeners = [];
+  final List<EMCustomListener> _customListeners = [];
 
   /// instance fields
   bool _connected = false;
@@ -71,6 +73,8 @@ class EMClient {
         return _onDisconnected(argMap);
       } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
         return _onMultiDeviceEvent(argMap!);
+      } else if (call.method == EMSDKMethod.onSendDataToFlutter) {
+        return _onReceiveCustomData(argMap!);
       }
       return null;
     });
@@ -229,6 +233,16 @@ class EMClient {
     }
   }
 
+  void addCustomListener(EMCustomListener listener) {
+    _customListeners.add(listener);
+  }
+
+  void removeCustomListener(EMCustomListener listener) {
+    if (_customListeners.contains(listener)) {
+      _customListeners.remove(listener);
+    }
+  }
+
   /// @nodoc once connection changed, listeners to be informed.
   Future<void> _onConnected() async {
     _connected = true;
@@ -257,6 +271,13 @@ class EMClient {
         listener.onContactEvent(
             convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
       }
+    }
+  }
+
+  void _onReceiveCustomData(Map map) {
+    debugPrint("map ---- $map");
+    for (var listener in _customListeners) {
+      listener.onDataReceived(map);
     }
   }
 

@@ -254,17 +254,19 @@ class ContactsPageState extends State<ContactsPage>
 
   Future<void> _loadLocalContacts() async {
     try {
-      List<EMContact> contacts = await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      List<EMContact> contacts =
+          await EMClient.getInstance.contactManager.getAllContactsFromDB();
       _contactList.clear();
       for (var contact in contacts) {
         _contactList.add(ContactModel.contact(contact));
       }
-    } on EMError {} finally {
+    } on EMError {
+    } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       _contactList.insertAll(0, _topList);
       setState(() {});
-      _fetchContactsFromServer();
+      // _fetchContactsFromServer();
     }
   }
 
