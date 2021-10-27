@@ -249,16 +249,14 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 搜索包含[keywords]的消息，消息类型为[type]，起始时间[timeStamp]，条数[maxCount], 消息发送方[from]，方向[direction]。
   Future<List<EMMessage>> searchMsgFromDB(
-    String keywords, [
-    EMMessageChatType type = EMMessageChatType.Chat,
-    int timeStamp = 0,
+    String keywords, {
+    int timeStamp = -1,
     int maxCount = 20,
     String from = '',
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
-  ]) async {
+  }) async {
     Map req = Map();
     req['keywords'] = keywords;
-    req['type'] = EMMessage.chatTypeToInt(type);
     req['timeStamp'] = timeStamp;
     req['maxCount'] = maxCount;
     req['from'] = from;
