@@ -42,58 +42,73 @@ class EMChatRoomManager {
     for (EMChatRoomEventListener listener in _chatRoomEventListeners) {
       switch (type) {
         case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
-          String? roomId = event['roomId'];
+          String roomId = event['roomId'];
           String? roomName = event['roomName'];
           listener.onChatRoomDestroyed(roomId, roomName);
           break;
         case EMChatRoomEvent.ON_MEMBER_JOINED:
-          String? roomId = event['roomId'];
-          String? participant = event['participant'];
+          String roomId = event['roomId'];
+          String participant = event['participant'];
           listener.onMemberJoinedFromChatRoom(roomId, participant);
           break;
         case EMChatRoomEvent.ON_MEMBER_EXITED:
-          String? roomId = event['roomId'];
+          String roomId = event['roomId'];
           String? roomName = event['roomName'];
-          String? participant = event['participant'];
+          String participant = event['participant'];
           listener.onMemberExitedFromChatRoom(roomId, roomName, participant);
           break;
         case EMChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM:
-          String? roomId = event['roomId'];
+          String roomId = event['roomId'];
           String? roomName = event['roomName'];
-          String? participant = event['participant'];
+          String participant = event['participant'];
           listener.onRemovedFromChatRoom(roomId, roomName, participant);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
-          String? roomId = event['roomId'];
-          List? mutes = event['mutes'];
+          String roomId = event['roomId'];
+          List<String> mutes = event['mutes'];
           String? expireTime = event['expireTime'];
           listener.onMuteListAddedFromChatRoom(roomId, mutes, expireTime);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
-          String? roomId = event['roomId'];
-          List? mutes = event['mutes'];
+          String roomId = event['roomId'];
+          List<String> mutes = event['mutes'];
           listener.onMuteListRemovedFromChatRoom(roomId, mutes);
           break;
         case EMChatRoomEvent.ON_ADMIN_ADDED:
-          String? roomId = event['roomId'];
-          String? admin = event['admin'];
+          String roomId = event['roomId'];
+          String admin = event['admin'];
           listener.onAdminAddedFromChatRoom(roomId, admin);
           break;
         case EMChatRoomEvent.ON_ADMIN_REMOVED:
-          String? roomId = event['roomId'];
-          String? admin = event['admin'];
+          String roomId = event['roomId'];
+          String admin = event['admin'];
           listener.onAdminRemovedFromChatRoom(roomId, admin);
           break;
         case EMChatRoomEvent.ON_OWNER_CHANGED:
-          String? roomId = event['roomId'];
-          String? newOwner = event['newOwner'];
-          String? oldOwner = event['oldOwner'];
+          String roomId = event['roomId'];
+          String newOwner = event['newOwner'];
+          String oldOwner = event['oldOwner'];
           listener.onOwnerChangedFromChatRoom(roomId, newOwner, oldOwner);
           break;
         case EMChatRoomEvent.ON_ANNOUNCEMENT_CHANGED:
-          String? roomId = event['roomId'];
-          String? announcement = event['announcement'];
+          String roomId = event['roomId'];
+          String announcement = event['announcement'];
           listener.onAnnouncementChangedFromChatRoom(roomId, announcement);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
+          String roomId = event['roomId'];
+          List<String> members = event["whitelist"];
+          listener.onWhiteListAddedFromChatRoom(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> members = event["whitelist"];
+          listener.onWhiteListRemovedFromChatRoom(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String roomId = event['roomId'];
+          bool isAllMuted = event['isMuted'];
+          listener.onAllChatRoomMemberMuteStateChanged(roomId, isAllMuted);
           break;
       }
     }

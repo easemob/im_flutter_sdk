@@ -39,7 +39,8 @@ class EMClient {
   String _sdkVersion = '1.0.0';
 
   String? _currentUsername;
-  bool? _isLoginBefore = false;
+
+  bool _isLoginBefore = false;
 
   /// 获取配置信息[EMOptions].
   EMOptions? get options => _options;
@@ -54,7 +55,7 @@ class EMClient {
   String? get currentUsername => _currentUsername;
 
   /// 获取是否登录
-  bool? get isLoginBefore => _isLoginBefore;
+  bool get isLoginBefore => _isLoginBefore;
 
   static EMClient get getInstance =>
       _instance = _instance ?? EMClient._internal();
@@ -89,7 +90,13 @@ class EMClient {
         await _channel.invokeMethod(EMSDKMethod.init, options.toJson());
     Map map = result[EMSDKMethod.init];
     _currentUsername = map['currentUsername'];
-    _isLoginBefore = map['isLoginBefore'] as bool?;
+    _isLoginBefore = () {
+      if (map.containsKey("isLoginBefore")) {
+        return map['isLoginBefore'] as bool;
+      } else {
+        return false;
+      }
+    }();
 
     return null;
   }
