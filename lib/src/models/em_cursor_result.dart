@@ -4,7 +4,7 @@ class EMCursorResult<T> {
   EMCursorResult._private();
 
   factory EMCursorResult.fromJson(Map<String, dynamic> map, {dataItemCallback: CursorResultCallback}) {
-    EMCursorResult<T?> result = EMCursorResult<T?>._private()
+    EMCursorResult<T> result = EMCursorResult<T>._private()
       .._cursor = map['cursor']
       .._data = [];
 
