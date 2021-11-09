@@ -375,8 +375,8 @@ class _ChatPageState extends State<ChatPage>
   _sendTextMessage(String txt) async {
     if (txt.length == 0) return;
     EMMessage msg = EMMessage.createTxtSendMessage(
-      username: widget.conv.id,
-      content: txt,
+      widget.conv.id,
+      txt,
     );
 
     _sendMessage(msg);

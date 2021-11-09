@@ -145,7 +145,7 @@ class EMClient {
     return result.boolValue(EMSDKMethod.logout);
   }
 
-  /// 修改appKey [appKey].
+  /// 修改appKey [newAppKey].
   Future<bool?> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
