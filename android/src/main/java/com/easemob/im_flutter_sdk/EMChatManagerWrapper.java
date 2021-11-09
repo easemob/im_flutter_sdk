@@ -519,6 +519,16 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessageStatusChanged, data));
 
             }
+
+            @Override
+            public void onGroupMessageRead(List<EMGroupReadAck> var1) {
+
+            }
+
+            @Override
+            public void onReadAckForGroupMessageUpdated() {
+
+            }
         });
         // setup conversation listener
         EMClient.getInstance().chatManager().addConversationListener(new EMConversationListener() {
