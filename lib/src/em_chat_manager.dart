@@ -98,7 +98,7 @@ class EMChatManager implements EMMessageStatusListener {
     return EMMessage.fromJson(result[EMSDKMethod.getMessage]);
   }
 
-  /// 通过会话[id], 会话类型[type]获取会话.
+  /// 通过会话[conversationId], 会话类型[type]获取会话.
   Future<EMConversation?> getConversation(
     String conversationId, [
     EMConversationType type = EMConversationType.Chat,

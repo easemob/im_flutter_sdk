@@ -27,7 +27,9 @@ class EMError {
     if (map['error'] == null) {
       return;
     } else {
-      throw (EMError.fromJson(map['error']));
+      try {
+        throw (EMError.fromJson(map['error']));
+      } on Exception {}
     }
   }
 
