@@ -615,6 +615,41 @@
                      arguments:map];
 }
 
+- (void)chatroomWhiteListDidUpdate:(EMChatroom *)aChatroom
+             addedWhiteListMembers:(NSArray *)aMembers {
+    NSDictionary *map = @{
+        @"type":@"onWhiteListAdded",
+        @"roomId":aChatroom.chatroomId,
+        @"whitelist":aMembers
+    };
+    [self.channel invokeMethod:EMMethodKeyChatroomChanged
+                     arguments:map];
+}
+
+
+- (void)chatroomWhiteListDidUpdate:(EMChatroom *)aChatroom
+           removedWhiteListMembers:(NSArray *)aMembers {
+    NSDictionary *map = @{
+        @"type":@"onWhiteListRemoved",
+        @"roomId":aChatroom.chatroomId,
+        @"whitelist":aMembers
+    };
+    [self.channel invokeMethod:EMMethodKeyChatroomChanged
+                     arguments:map];
+}
+
+
+- (void)chatroomAllMemberMuteChanged:(EMChatroom *)aChatroom
+                    isAllMemberMuted:(BOOL)aMuted {
+    NSDictionary *map = @{
+        @"type":@"onAllMemberMuteStateChanged",
+        @"roomId":aChatroom.chatroomId,
+        @"isMuted":@(aMuted)
+    };
+    [self.channel invokeMethod:EMMethodKeyChatroomChanged
+                     arguments:map];
+}
+
 #pragma mark - EMChatroom Pack Method
 
 // 聊天室成员获取结果转字典

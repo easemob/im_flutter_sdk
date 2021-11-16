@@ -552,121 +552,135 @@ class EMGroupManager {
   /// @nodoc
   Future<void> _onGroupChanged(Map? map) async {
     for (EMGroupChangeListener listener in _groupChangeListeners) {
-      print('[EMGroupChange:]_onGroupChanged');
       var type = map!['type'];
       switch (type) {
         case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           String? groupName = map['groupName'];
-          String? inviter = map['inviter'];
+          String inviter = map['inviter'];
           String? reason = map['reason'];
           listener.onInvitationReceivedFromGroup(
               groupId, groupName, inviter, reason);
           break;
         case EMGroupChangeEvent.ON_INVITATION_ACCEPTED:
-          String? groupId = map['groupId'];
-          String? invitee = map['invitee'];
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
           String? reason = map['reason'];
           listener.onInvitationAcceptedFromGroup(groupId, invitee, reason);
           break;
         case EMGroupChangeEvent.ON_INVITATION_DECLINED:
-          String? groupId = map['groupId'];
-          String? invitee = map['invitee'];
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
           String? reason = map['reason'];
           listener.onInvitationDeclinedFromGroup(groupId, invitee, reason);
           break;
         case EMGroupChangeEvent.ON_AUTO_ACCEPT_INVITATION:
-          String? groupId = map['groupId'];
-          String? inviter = map['inviter'];
+          String groupId = map['groupId'];
+          String inviter = map['inviter'];
           String? inviteMessage = map['inviteMessage'];
           listener.onAutoAcceptInvitationFromGroup(
               groupId, inviter, inviteMessage);
           break;
         case EMGroupChangeEvent.ON_USER_REMOVED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           String? groupName = map['groupName'];
           listener.onUserRemovedFromGroup(groupId, groupName);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           String? groupName = map['groupName'];
-          String? applicant = map['applicant'];
+          String applicant = map['applicant'];
           String? reason = map['reason'];
           listener.onRequestToJoinReceivedFromGroup(
               groupId, groupName, applicant, reason);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           String? groupName = map['groupName'];
-          String? decliner = map['decliner'];
+          String decliner = map['decliner'];
           String? reason = map['reason'];
           listener.onRequestToJoinDeclinedFromGroup(
               groupId, groupName, decliner, reason);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           String? groupName = map['groupName'];
-          String? accepter = map['accepter'];
+          String accepter = map['accepter'];
           listener.onRequestToJoinAcceptedFromGroup(
               groupId, groupName, accepter);
           break;
         case EMGroupChangeEvent.ON_GROUP_DESTROYED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           String? groupName = map['groupName'];
           listener.onGroupDestroyed(groupId, groupName);
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_ADDED:
-          String? groupId = map['groupId'];
-          List? mutes = map['mutes'];
+          String groupId = map['groupId'];
+          List<String> mutes = map['mutes'];
           int? muteExpire = map['muteExpire'];
           listener.onMuteListAddedFromGroup(groupId, mutes, muteExpire);
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
-          String? groupId = map['groupId'];
-          List? mutes = map['mutes'];
+          String groupId = map['groupId'];
+          List<String> mutes = map['mutes'];
           listener.onMuteListRemovedFromGroup(groupId, mutes);
           break;
         case EMGroupChangeEvent.ON_ADMIN_ADDED:
-          String? groupId = map['groupId'];
-          String? administrator = map['administrator'];
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
           listener.onAdminAddedFromGroup(groupId, administrator);
           break;
         case EMGroupChangeEvent.ON_ADMIN_REMOVED:
-          String? groupId = map['groupId'];
-          String? administrator = map['administrator'];
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
           listener.onAdminRemovedFromGroup(groupId, administrator);
           break;
         case EMGroupChangeEvent.ON_OWNER_CHANGED:
-          String? groupId = map['groupId'];
-          String? newOwner = map['newOwner'];
-          String? oldOwner = map['oldOwner'];
+          String groupId = map['groupId'];
+          String newOwner = map['newOwner'];
+          String oldOwner = map['oldOwner'];
           listener.onOwnerChangedFromGroup(groupId, newOwner, oldOwner);
           break;
         case EMGroupChangeEvent.ON_MEMBER_JOINED:
-          String? groupId = map['groupId'];
-          String? member = map['member'];
+          String groupId = map['groupId'];
+          String member = map['member'];
           listener.onMemberJoinedFromGroup(groupId, member);
           break;
         case EMGroupChangeEvent.ON_MEMBER_EXITED:
-          String? groupId = map['groupId'];
-          String? member = map['member'];
+          String groupId = map['groupId'];
+          String member = map['member'];
           listener.onMemberExitedFromGroup(groupId, member);
           break;
         case EMGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
-          String? groupId = map['groupId'];
-          String? announcement = map['announcement'];
+          String groupId = map['groupId'];
+          String announcement = map['announcement'];
           listener.onAnnouncementChangedFromGroup(groupId, announcement);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
-          String? groupId = map['groupId'];
+          String groupId = map['groupId'];
           EMGroupSharedFile sharedFile =
               EMGroupSharedFile.fromJson(map['sharedFile']);
           listener.onSharedFileAddedFromGroup(groupId, sharedFile);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:
-          String? groupId = map['groupId'];
-          String? fileId = map['fileId'];
+          String groupId = map['groupId'];
+          String fileId = map['fileId'];
           listener.onSharedFileDeletedFromGroup(groupId, fileId);
+          break;
+        case EMGroupChangeEvent.ON_WHITE_LIST_ADDED:
+          String groupId = map["groupId"];
+          List<String> members = map['whitelist'];
+          listener.onWhiteListAddedFromGroup(groupId, members);
+          break;
+        case EMGroupChangeEvent.ON_WHITE_LIST_REMOVED:
+          String groupId = map["groupId"];
+          List<String> members = map['whitelist'];
+          listener.onWhiteListRemovedFromGroup(groupId, members);
+          break;
+        case EMGroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isAllMuted = map["isMuted"] as bool;
+          listener.onAllGroupMemberMuteStateChanged(groupId, isAllMuted);
           break;
       }
     }

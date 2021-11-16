@@ -6,10 +6,12 @@ class EMLog {
 
   static bool debuggable = kReleaseMode ? false : true;
 
+  /// Error级别的log
   static void e(Object object, {String? tag}) {
     _printLog(tag, ' | E | ', object);
   }
 
+  /// Verbose级别的log
   static void v(Object object, {String? tag}) {
     if (debuggable) {
       _printLog(tag, ' | V | ', object);
