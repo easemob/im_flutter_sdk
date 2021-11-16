@@ -1621,7 +1621,7 @@ try{
 ```dart
  try {
      
-      Map aMap = {'nickName': 'gagaga', 'mail': 'jinliang.liu@easemob.com'};
+      Map aMap = {'nickName': 'gagaga', 'mail': 'xxx@easemob.com'};
       EMUserInfo updateUserInfo =
           await EMClient.getInstance.userInfoManager.updateOwnUserInfo(aMap);
     } on EMError catch (e) {
@@ -1646,39 +1646,9 @@ try{
       List<String> userIds =[];
       userIds.add(userId);
       userIds.add('xxx');
-      
-      int expireTime = DateTime.fromMillisecondsSinceEpoch(
-              DateTime.now().millisecondsSinceEpoch - 10000000)
-          .millisecondsSinceEpoch;
-
+    
       Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithExpireTime(userIds, expireTime: expireTime);
-
-
-    } on EMError catch (e) {
-      print('操作失败，原因是: $e');
-    }
-```
-#### 获取多用户指定的用户属性
-```dart
-try {
-      String userId = EMClient.getInstance.currentUsername;
-      List<String> userIds =[];
-      userIds.add(userId);
-      userIds.add('xxx');
-
-      List<EMUserInfoType> types =[];
-      types.add(EMUserInfoType.EMUserInfoTypeNickName);
-      types.add(EMUserInfoType.EMUserInfoTypeBirth);
-
-
-      int expireTime = DateTime.fromMillisecondsSinceEpoch(
-              DateTime.now().millisecondsSinceEpoch - 10000000)
-          .millisecondsSinceEpoch;
-
-      Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithType(userIds, types, expireTime: expireTime);
-
+          .fetchUserInfoByIdWithExpireTime(userIds, expireTime: 3600);
 
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
