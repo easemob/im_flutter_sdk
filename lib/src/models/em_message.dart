@@ -202,8 +202,9 @@ class EMMessage {
 
   /// 构造发送的文字消息
   EMMessage.createTxtSendMessage(
-      {required String username, String content = ""})
-      : this.createSendMessage(
+    String username,
+    String content,
+  ) : this.createSendMessage(
           to: username,
           body: EMTextMessageBody(content: content),
         );

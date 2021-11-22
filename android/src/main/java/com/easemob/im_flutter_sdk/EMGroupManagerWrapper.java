@@ -759,17 +759,29 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
             @Override
             public void onWhiteListAdded(String groupId, List<String> whitelist) {
-
+                Map<String, Object> data = new HashMap<>();
+                data.put("type", "onWhiteListAdded");
+                data.put("groupId", groupId);
+                data.put("whitelist", whitelist);
+                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
             }
 
             @Override
             public void onWhiteListRemoved(String groupId, List<String> whitelist) {
-
+                Map<String, Object> data = new HashMap<>();
+                data.put("type", "onWhiteListRemoved");
+                data.put("groupId", groupId);
+                data.put("whitelist", whitelist);
+                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
             }
 
             @Override
             public void onAllMemberMuteStateChanged(String groupId, boolean isMuted) {
-
+                Map<String, Object> data = new HashMap<>();
+                data.put("type", "onAllMemberMuteStateChanged");
+                data.put("groupId", groupId);
+                data.put("isMuted", isMuted);
+                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
             }
 
             @Override

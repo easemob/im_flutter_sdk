@@ -464,17 +464,35 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
             @Override
             public void onWhiteListAdded(String chatRoomId, List<String> whitelist) {
-
+                post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("roomId", chatRoomId);
+                    data.put("whitelist", whitelist);
+                    data.put("type", "onWhiteListAdded");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
+                });
             }
 
             @Override
             public void onWhiteListRemoved(String chatRoomId, List<String> whitelist) {
-
+                post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("roomId", chatRoomId);
+                    data.put("whitelist", whitelist);
+                    data.put("type", "onWhiteListRemoved");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
+                });
             }
 
             @Override
             public void onAllMemberMuteStateChanged(String chatRoomId, boolean isMuted) {
-
+                post(() -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("roomId", chatRoomId);
+                    data.put("isMuted", isMuted);
+                    data.put("type", "onAllMemberMuteStateChanged");
+                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
+                });
             }
 
             @Override

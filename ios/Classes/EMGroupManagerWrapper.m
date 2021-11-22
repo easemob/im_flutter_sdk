@@ -271,7 +271,7 @@
                       channelName:EMMethodKeyGetJoinedGroupsFromServer
                             error:aError
                            object:list];
-
+        
     }];
 }
 
@@ -300,7 +300,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyCreateGroup
                             error:aError
-               object:[aGroup toJson]];
+                           object:[aGroup toJson]];
     }];
 }
 
@@ -312,7 +312,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyGetGroupSpecificationFromServer
                             error:aError
-               object:[aGroup toJson]];
+                           object:[aGroup toJson]];
     }];
 }
 
@@ -362,7 +362,7 @@
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupWhiteListFromServerWithId:param[@"groupId"]
                                                                completion:^(NSArray *aList, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyGetGroupWhiteListFromServer
                             error:aError
@@ -374,7 +374,7 @@
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager isMemberInWhiteListFromServerWithGroupId:param[@"groupId"]
                                                                       completion:^(BOOL inWhiteList, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyIsMemberInWhiteListFromServer
                             error:aError
@@ -432,7 +432,7 @@
                             error:aError
                            object:[aGroup toJson]];
     }];
-
+    
 }
 
 - (void)blockMembers:(NSDictionary *)param result:(FlutterResult)result {
@@ -593,8 +593,8 @@
 - (void)unMuteMembers:(NSDictionary *)param result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager unmuteMembers:param[@"members"]
-                                          fromGroup:param[@"groupId"]
-                                         completion:^(EMGroup *aGroup, EMError *aError)
+                                            fromGroup:param[@"groupId"]
+                                           completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUnMuteMembers
@@ -607,7 +607,7 @@
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager muteAllMembersFromGroup:param[@"groupId"]
                                                      completion:^(EMGroup *aGroup, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyMuteAllMembers
                             error:aError
@@ -619,7 +619,7 @@
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager unmuteAllMembersFromGroup:param[@"groupId"]
                                                        completion:^(EMGroup *aGroup, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyUnMuteAllMembers
                             error:aError
@@ -640,15 +640,15 @@
 }
 
 - (void)removeWhiteList:(NSDictionary *)param result:(FlutterResult)result {
-//    __weak typeof(self) weakSelf = self;
-//    [EMClient.sharedClient.groupManager removeWhiteListMembers:param[@"members"]
-//                                                     fromGroup:param[@"groupId"]
-//                                                    completion:^(EMGroup *aGroup, EMError *aError) {
-//        [weakSelf wrapperCallBack:result
-//                      channelName:EMMethodKeyAddWhiteList
-//                            error:aError
-//                           object:[aGroup toJson]];
-//    }];
+    //    __weak typeof(self) weakSelf = self;
+    //    [EMClient.sharedClient.groupManager removeWhiteListMembers:param[@"members"]
+    //                                                     fromGroup:param[@"groupId"]
+    //                                                    completion:^(EMGroup *aGroup, EMError *aError) {
+    //        [weakSelf wrapperCallBack:result
+    //                      channelName:EMMethodKeyAddWhiteList
+    //                            error:aError
+    //                           object:[aGroup toJson]];
+    //    }];
 }
 
 // TODO: dujiepeng.
@@ -690,7 +690,7 @@
     [EMClient.sharedClient.groupManager removeGroupSharedFileWithId:param[@"groupId"]
                                                        sharedFileId:param[@"fileId"]
                                                          completion:^(EMGroup *aGroup, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyRemoveGroupSharedFile
                             error:aError
@@ -709,7 +709,7 @@
                             error:aError
                            object:[aGroup toJson]];
     }];
-
+    
 }
 
 - (void)updateGroupExt:(NSDictionary *)param result:(FlutterResult)result {
@@ -925,17 +925,6 @@
                      arguments:map];
 }
 
-/*
-- (void)groupListDidUpdate:(NSArray *)aGroupList {
-    NSDictionary *map = @{
-        @"type":@(GROUP_LIST_UPDATE),
-        @"groupList":[self groupsArrayWithDictionaryArray:aGroupList]
-    };
-    [self.channel invokeMethod:EMMethodKeyOnGroupChanged
-                     arguments:map];
-}
-*/
-
 - (void)groupMuteListDidUpdate:(EMGroup *)aGroup
              addedMutedMembers:(NSArray *)aMutedMembers
                     muteExpire:(NSInteger)aMuteExpire {
@@ -955,6 +944,39 @@
         @"type":@"onMuteListRemoved",
         @"groupId":aGroup.groupId,
         @"mutes":aMutedMembers
+    };
+    [self.channel invokeMethod:EMMethodKeyOnGroupChanged
+                     arguments:map];
+}
+
+- (void)groupWhiteListDidUpdate:(EMGroup *)aGroup
+          addedWhiteListMembers:(NSArray *)aMembers {
+    NSDictionary *map = @{
+        @"type":@"onWhiteListAdded",
+        @"groupId":aGroup.groupId,
+        @"whitelist":aMembers
+    };
+    [self.channel invokeMethod:EMMethodKeyOnGroupChanged
+                     arguments:map];
+}
+
+- (void)groupWhiteListDidUpdate:(EMGroup *)aGroup
+        removedWhiteListMembers:(NSArray *)aMembers {
+    NSDictionary *map = @{
+        @"type":@"onWhiteListRemoved",
+        @"groupId":aGroup.groupId,
+        @"whitelist":aMembers
+    };
+    [self.channel invokeMethod:EMMethodKeyOnGroupChanged
+                     arguments:map];
+}
+
+- (void)groupAllMemberMuteChanged:(EMGroup *)aGroup
+                 isAllMemberMuted:(BOOL)aMuted {
+    NSDictionary *map = @{
+        @"type":@"onAllMemberMuteStateChanged",
+        @"groupId":aGroup.groupId,
+        @"isMuted":@(aMuted)
     };
     [self.channel invokeMethod:EMMethodKeyOnGroupChanged
                      arguments:map];

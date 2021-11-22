@@ -375,8 +375,8 @@ class _ChatPageState extends State<ChatPage>
   _sendTextMessage(String txt) async {
     if (txt.length == 0) return;
     EMMessage msg = EMMessage.createTxtSendMessage(
-      username: widget.conv.id,
-      content: txt,
+      widget.conv.id,
+      txt,
     );
 
     _sendMessage(msg);
@@ -624,10 +624,10 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onMuteListAddedFromChatRoom(
-      String roomId, List mutes, String expireTime) {}
+      String roomId, List<String> mutes, String expireTime) {}
 
   @override
-  void onMuteListRemovedFromChatRoom(String roomId, List mutes) {}
+  void onMuteListRemovedFromChatRoom(String roomId, List<String> mutes) {}
 
   @override
   void onOwnerChangedFromChatRoom(
@@ -655,4 +655,13 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
+
+  @override
+  void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted) {}
+
+  @override
+  void onWhiteListAddedFromChatRoom(String roomId, List<String> members) {}
+
+  @override
+  void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
 }
