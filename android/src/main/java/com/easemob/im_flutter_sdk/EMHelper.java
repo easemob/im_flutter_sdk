@@ -79,6 +79,7 @@ class EMOptionsHelper {
             }
             if (pushConfig.getBoolean("enableFCM")) {
                 builder.enableFCM(pushConfig.getString("fcmId"));
+                options.setUseFCM(true);
             }
             if (pushConfig.getBoolean("enableOppoPush")) {
                 builder.enableOppoPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));
