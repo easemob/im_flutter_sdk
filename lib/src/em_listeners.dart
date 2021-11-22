@@ -85,42 +85,55 @@ class EMChatRoomEvent {
   static const String ON_ADMIN_REMOVED = "onAdminRemoved";
   static const String ON_OWNER_CHANGED = "onOwnerChanged";
   static const String ON_ANNOUNCEMENT_CHANGED = "onAnnouncementChanged";
+  static const String ON_WHITE_LIST_REMOVED = "onWhiteListRemoved";
+  static const String ON_WHITE_LIST_ADDED = "onWhiteListAdded";
+  static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED =
+      "onAllMemberMuteStateChanged";
 }
 
 abstract class EMChatRoomEventListener {
   /// id是[roomId],名称是[roomName]的聊天室被销毁
-  void onChatRoomDestroyed(String? roomId, String? roomName);
+  void onChatRoomDestroyed(String roomId, String? roomName);
 
   /// 有用户[participant]加入id是[roomId]的聊天室
-  void onMemberJoinedFromChatRoom(String? roomId, String? participant);
+  void onMemberJoinedFromChatRoom(String roomId, String participant);
 
   /// 有用户[participant]离开id是[roomId]，名字是[roomName]的聊天室
   void onMemberExitedFromChatRoom(
-      String? roomId, String? roomName, String? participant);
+      String roomId, String? roomName, String participant);
 
   /// 用户[participant]被id是[roomId],名称[roomName]的聊天室删除
   void onRemovedFromChatRoom(
-      String? roomId, String? roomName, String? participant);
+      String roomId, String? roomName, String? participant);
 
   /// @nodoc id是[roomId]的聊天室禁言列表[mutes]有增加
   void onMuteListAddedFromChatRoom(
-      String? roomId, List? mutes, String? expireTime);
+      String roomId, List<String> mutes, String? expireTime);
 
   /// @nodoc id是[roomId]的聊天室禁言列表[mutes]有减少
-  void onMuteListRemovedFromChatRoom(String? roomId, List? mutes);
+  void onMuteListRemovedFromChatRoom(String roomId, List<String> mutes);
 
   /// @nodoc id是[roomId]的聊天室增加id是[admin]管理员
-  void onAdminAddedFromChatRoom(String? roomId, String? admin);
+  void onAdminAddedFromChatRoom(String roomId, String admin);
 
   /// @nodoc id是[roomId]的聊天室移除id是[admin]管理员
-  void onAdminRemovedFromChatRoom(String? roomId, String? admin);
+  void onAdminRemovedFromChatRoom(String roomId, String admin);
 
   /// @nodoc id是[roomId]的聊天室所有者由[oldOwner]变更为[newOwner]
   void onOwnerChangedFromChatRoom(
-      String? roomId, String? newOwner, String? oldOwner);
+      String roomId, String newOwner, String oldOwner);
 
   /// @nodoc id是[roomId]的聊天室公告变为[announcement]
-  void onAnnouncementChangedFromChatRoom(String? roomId, String? announcement);
+  void onAnnouncementChangedFromChatRoom(String roomId, String announcement);
+
+  /// 有用户被添加到聊天室白名单
+  void onWhiteListAddedFromChatRoom(String roomId, List<String> members);
+
+  /// 有用户从聊天室白名单被移除
+  void onWhiteListRemovedFromChatRoom(String roomId, List<String> members);
+
+  /// 聊天室禁言状态发生变化
+  void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted);
 }
 
 /// @nodoc
@@ -145,72 +158,85 @@ class EMGroupChangeEvent {
   static const String ON_ANNOUNCEMENT_CHANGED = "onAnnouncementChanged";
   static const String ON_SHARED_FILE_ADDED = "onSharedFileAdded";
   static const String ON_SHARED_FILE__DELETED = "onSharedFileDeleted";
+  static const String ON_WHITE_LIST_REMOVED = "onWhiteListRemoved";
+  static const String ON_WHITE_LIST_ADDED = "onWhiteListAdded";
+  static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED =
+      "onAllMemberMuteStateChanged";
 }
 
 abstract class EMGroupChangeListener {
   /// id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
   void onInvitationReceivedFromGroup(
-      String? groupId, String? groupName, String? inviter, String? reason);
+      String groupId, String? groupName, String inviter, String? reason);
 
   /// 收到用户[applicant]申请加入id是[groupId], 名称是[groupName]的群，原因是[reason]
   void onRequestToJoinReceivedFromGroup(
-      String? groupId, String? groupName, String? applicant, String? reason);
+      String groupId, String? groupName, String applicant, String? reason);
 
   /// 入群申请被同意
   void onRequestToJoinAcceptedFromGroup(
-      String? groupId, String? groupName, String? accepter);
+      String groupId, String? groupName, String accepter);
 
   /// 入群申请被拒绝
   void onRequestToJoinDeclinedFromGroup(
-      String? groupId, String? groupName, String? decliner, String? reason);
+      String groupId, String? groupName, String decliner, String? reason);
 
   /// 入群邀请被同意
   void onInvitationAcceptedFromGroup(
-      String? groupId, String? invitee, String? reason);
+      String groupId, String invitee, String? reason);
 
   /// 入群邀请被拒绝
   void onInvitationDeclinedFromGroup(
-      String? groupId, String? invitee, String? reason);
+      String groupId, String invitee, String? reason);
 
   /// 被移出群组
-  void onUserRemovedFromGroup(String? groupId, String? groupName);
+  void onUserRemovedFromGroup(String groupId, String? groupName);
 
   /// 群组解散
-  void onGroupDestroyed(String? groupId, String? groupName);
+  void onGroupDestroyed(String groupId, String? groupName);
 
   /// @nodoc 自动同意加群
   void onAutoAcceptInvitationFromGroup(
-      String? groupId, String? inviter, String? inviteMessage);
+      String groupId, String inviter, String? inviteMessage);
 
   /// 群禁言列表增加
-  void onMuteListAddedFromGroup(String? groupId, List? mutes, int? muteExpire);
+  void onMuteListAddedFromGroup(
+      String groupId, List<String> mutes, int? muteExpire);
 
   /// 群禁言列表减少
-  void onMuteListRemovedFromGroup(String? groupId, List? mutes);
+  void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
 
   /// 群管理增加
-  void onAdminAddedFromGroup(String? groupId, String? administrator);
+  void onAdminAddedFromGroup(String groupId, String admin);
 
   /// 群管理被移除
-  void onAdminRemovedFromGroup(String? groupId, String? administrator);
+  void onAdminRemovedFromGroup(String groupId, String admin);
 
   /// 群所有者变更
   void onOwnerChangedFromGroup(
-      String? groupId, String? newOwner, String? oldOwner);
+      String groupId, String newOwner, String oldOwner);
 
   /// 有用户加入群
-  void onMemberJoinedFromGroup(String? groupId, String? member);
+  void onMemberJoinedFromGroup(String groupId, String member);
 
   /// 有用户离开群
-  void onMemberExitedFromGroup(String? groupId, String? member);
+  void onMemberExitedFromGroup(String groupId, String member);
 
   /// 群公告变更
-  void onAnnouncementChangedFromGroup(String? groupId, String? announcement);
+  void onAnnouncementChangedFromGroup(String groupId, String announcement);
 
   /// 群共享文件增加
-  void onSharedFileAddedFromGroup(
-      String? groupId, EMGroupSharedFile sharedFile);
+  void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
 
   /// 群共享文件被删除
-  void onSharedFileDeletedFromGroup(String? groupId, String? fileId);
+  void onSharedFileDeletedFromGroup(String groupId, String fileId);
+
+  /// 有用户被添加到群组白名单
+  void onWhiteListAddedFromGroup(String groupId, List<String> members);
+
+  /// 有用户从群组白名单被移除
+  void onWhiteListRemovedFromGroup(String groupId, List<String> members);
+
+  /// 群组禁言状态发生变化
+  void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
 }
