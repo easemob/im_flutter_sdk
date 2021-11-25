@@ -58,6 +58,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 resendMessage(param, EMSDKMethod.resendMessage, result);
             } else if (EMSDKMethod.ackMessageRead.equals(call.method)) {
                 ackMessageRead(param, EMSDKMethod.ackMessageRead, result);
+            } else if (EMSDKMethod.ackGroupMessageRead.equals(call.method)) {
+                ackGroupMessageRead(param, EMSDKMethod.ackGroupMessageRead, result);
             } else if (EMSDKMethod.ackConversationRead.equals(call.method)) {
                 ackConversationRead(param, EMSDKMethod.ackConversationRead, result);
             } else if (EMSDKMethod.recallMessage.equals(call.method)) {
@@ -194,6 +196,23 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             try {
                 EMClient.getInstance().chatManager().ackMessageRead(to, msgId);
                 onSuccess(result, channelName, true);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void ackGroupMessageRead(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.getString("msg_id");
+        String to = param.getString("group_id");
+        String content = null;
+        if(param.has("content")) {
+            content = param.getString("content");
+        }
+        String finalContent = content;
+        asyncRunnable(()->{
+            try {
+                EMClient.getInstance().chatManager().ackGroupMessageRead(to, msgId, finalContent);
             } catch (HyphenateException e) {
                 onError(result, e);
             }

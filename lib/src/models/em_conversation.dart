@@ -144,7 +144,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 根据消息id设置消息已读，如果消息不属于当前会话则设置无效
-  Future<bool?> markMessageAsRead(String messageId) async {
+  Future<bool> markMessageAsRead(String messageId) async {
     Map req = this.toJson();
     req['msg_id'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
@@ -161,7 +161,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 插入消息，插入的消息会根据消息时间插入到对应的位置
-  Future<bool?> insertMessage(EMMessage message) async {
+  Future<bool> insertMessage(EMMessage message) async {
     Map req = this.toJson();
     req['msg'] = message.toJson();
     Map result = await _emConversationChannel.invokeMethod(
@@ -171,7 +171,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 添加消息，添加的消息会添加到最后一条消息的位置
-  Future<bool?> appendMessage(EMMessage message) async {
+  Future<bool> appendMessage(EMMessage message) async {
     Map req = this.toJson();
     req['msg'] = message.toJson();
     Map result = await _emConversationChannel.invokeMethod(
@@ -180,7 +180,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 更新消息
-  Future<bool?> updateMessage(EMMessage message) async {
+  Future<bool> updateMessage(EMMessage message) async {
     Map req = this.toJson();
     req['msg'] = message.toJson();
     Map result = await _emConversationChannel.invokeMethod(
@@ -190,7 +190,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   /// 根据消息id [messageId] 删除消息
-  Future<bool?> deleteMessage(String messageId) async {
+  Future<bool> deleteMessage(String messageId) async {
     Map req = this.toJson();
     req['msg_id'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
@@ -200,7 +200,7 @@ extension EMConversationExtension on EMConversation {
   }
 
   // 删除当前会话中所有消息
-  Future<bool?> deleteAllMessages() async {
+  Future<bool> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(
         EMSDKMethod.clearAllMessages, this.toJson());
     EMError.hasErrorFromResult(result);
