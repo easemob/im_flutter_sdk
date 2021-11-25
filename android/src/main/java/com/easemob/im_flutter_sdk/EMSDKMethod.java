@@ -39,6 +39,7 @@ public class EMSDKMethod {
     static final String sendMessage = "sendMessage";
     static final String resendMessage = "resendMessage";
     static final String ackMessageRead = "ackMessageRead";
+    static final String ackGroupMessageRead = "ackGroupMessageRead";
     static final String ackConversationRead = "ackConversationRead";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";
@@ -59,6 +60,7 @@ public class EMSDKMethod {
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
     static final String onMessagesRead = "onMessagesRead";
+    static final String onGroupMessageRead = "onGroupMessageRead";
     static final String onMessagesDelivered = "onMessagesDelivered";
     static final String onMessagesRecalled = "onMessagesRecalled";
 

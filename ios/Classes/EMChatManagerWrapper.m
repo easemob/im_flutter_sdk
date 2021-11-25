@@ -10,6 +10,7 @@
 
 #import "EMMessage+Flutter.h"
 #import "EMConversation+Flutter.h"
+#import "EMGroupMessageAck+Flutter.h"
 #import "EMError+Flutter.h"
 #import "EMCursorResult+Flutter.h"
 
@@ -49,6 +50,10 @@
                 channelName:EMMethodKeyResendMessage
                      result:result];
     } else if ([EMMethodKeyAckMessageRead isEqualToString:call.method]) {
+        [self ackMessageRead:call.arguments
+                 channelName:EMMethodKeyAckMessageRead
+                      result:result];
+    } else if ([EMMethodKeyAckGroupMessageRead isEqualToString:call.method]) {
         [self ackMessageRead:call.arguments
                  channelName:EMMethodKeyAckMessageRead
                       result:result];
@@ -99,8 +104,8 @@
                             result:result];
     } else if ([EMMethodKeyGetConversationsFromServer isEqualToString:call.method]) {
         [self getConversationsFromServer:call.arguments
-                       channelName:EMMethodKeyGetConversationsFromServer
-                            result:result];
+                             channelName:EMMethodKeyGetConversationsFromServer
+                                  result:result];
     } else if ([EMMethodKeyDeleteConversation isEqualToString:call.method]) {
         [self deleteConversation:call.arguments
                      channelName:EMMethodKeyDeleteConversation
@@ -115,8 +120,8 @@
                            result:result];
     } else if ([EMMethodKeyUpdateConversationsName isEqualToString:call.method]) {
         [self updateConversationsName:call.arguments
-                      channelName:EMMethodKeyUpdateConversationsName
-                           result:result];
+                          channelName:EMMethodKeyUpdateConversationsName
+                               result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -141,23 +146,23 @@
                                           progress:^(int progress) {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
                                     arguments:@{
-                                        @"progress":@(progress),
-                                        @"localTime":@(msg.localTime)
-                                    }];
+            @"progress":@(progress),
+            @"localTime":@(msg.localTime)
+        }];
     } completion:^(EMMessage *message, EMError *error) {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
                                         arguments:@{
-                                            @"error":[error toJson],
-                                            @"localTime":@(msg.localTime),
-                                            @"message":[message toJson]
-                                        }];
+                @"error":[error toJson],
+                @"localTime":@(msg.localTime),
+                @"message":[message toJson]
+            }];
         }else {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
                                         arguments:@{
-                                            @"message":[message toJson],
-                                            @"localTime":@(msg.localTime)
-                                        }];
+                @"message":[message toJson],
+                @"localTime":@(msg.localTime)
+            }];
         }
     }];
     
@@ -178,23 +183,23 @@
                                             progress:^(int progress) {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
                                     arguments:@{
-                                        @"progress":@(progress),
-                                        @"localTime":@(msg.localTime)
-                                    }];
+            @"progress":@(progress),
+            @"localTime":@(msg.localTime)
+        }];
     } completion:^(EMMessage *message, EMError *error) {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
                                         arguments:@{
-                                            @"error":[error toJson],
-                                            @"localTime":@(msg.localTime),
-                                            @"message":[message toJson]
-                                        }];
+                @"error":[error toJson],
+                @"localTime":@(msg.localTime),
+                @"message":[message toJson]
+            }];
         }else {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
                                         arguments:@{
-                                            @"message":[message toJson],
-                                            @"localTime":@(msg.localTime)
-                                        }];
+                @"message":[message toJson],
+                @"localTime":@(msg.localTime)
+            }];
         }
     }];
     
@@ -221,6 +226,26 @@
                            object:@(!aError)];
     }];
 }
+
+- (void)ackGroupMessageRead:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *msgId = param[@"msg_id"];
+    NSString *groupId = param[@"group_id"];
+    NSString *content = param[@"content"];
+    [EMClient.sharedClient.chatManager sendGroupMessageReadAck:msgId
+                                                       toGroup:groupId
+                                                       content:content
+                                                    completion:^(EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(!aError)];
+    }];
+}
+
 
 - (void)ackConversationRead:(NSDictionary *)param
                 channelName:(NSString *)aChannelName
@@ -334,10 +359,10 @@
     [EMClient.sharedClient.chatManager updateMessage:msg
                                           completion:^(EMMessage *aMessage, EMError *aError)
      {
-         [weakSelf wrapperCallBack:result
-                        channelName:aChannelName
-                              error:aError
-                             object:[aMessage toJson]];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aMessage toJson]];
     }];
 }
 
@@ -371,24 +396,24 @@
      {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
                                     arguments:@{
-                                        @"progress":@(progress),
-                                        @"localTime":@(msg.localTime)
-                                    }];
+            @"progress":@(progress),
+            @"localTime":@(msg.localTime)
+        }];
     } completion:^(EMMessage *message, EMError *error)
      {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
                                         arguments:@{
-                                            @"error":[error toJson],
-                                            @"localTime":@(msg.localTime),
-                                            @"message":[message toJson]
-                                        }];
+                @"error":[error toJson],
+                @"localTime":@(msg.localTime),
+                @"message":[message toJson]
+            }];
         }else {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
                                         arguments:@{
-                                            @"message":[message toJson],
-                                            @"localTime":@(msg.localTime)
-                                        }];
+                @"message":[message toJson],
+                @"localTime":@(msg.localTime)
+            }];
         }
     }];
     
@@ -408,24 +433,24 @@
      {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
                                     arguments:@{
-                                        @"progress":@(progress),
-                                        @"localTime":@(msg.localTime)
-                                    }];
+            @"progress":@(progress),
+            @"localTime":@(msg.localTime)
+        }];
     } completion:^(EMMessage *message, EMError *error)
      {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
                                         arguments:@{
-                                            @"error":[error toJson],
-                                            @"localTime":@(msg.localTime),
-                                            @"message":[message toJson]
-                                        }];
+                @"error":[error toJson],
+                @"localTime":@(msg.localTime),
+                @"message":[message toJson]
+            }];
         }else {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
                                         arguments:@{
-                                            @"message":[message toJson],
-                                            @"localTime":@(msg.localTime)
-                                        }];
+                @"message":[message toJson],
+                @"localTime":@(msg.localTime)
+            }];
         }
     }];
     
@@ -551,7 +576,7 @@
                          result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSDictionary *namesMap = param[@"name_map"];
-
+    
     NSArray *conversationsList = EMClient.sharedClient.chatManager.getAllConversations;
     for (EMConversation *con in conversationsList) {
         if (namesMap[con.conversationId]) {
@@ -583,8 +608,7 @@
 }
 
 - (void)onConversationRead:(NSString *)from
-                        to:(NSString *)to
-{
+                        to:(NSString *)to {
     [self.channel invokeMethod:EMMethodKeyOnConversationHasRead
                      arguments:@{@"from":from, @"to": to}];
 }
@@ -611,9 +635,10 @@
 - (void)messagesDidRead:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
-        [list addObject:[msg toJson]];
+        NSDictionary *json = [msg toJson];
+        [list addObject:json];
         [self.messageChannel invokeMethod:EMMethodKeyOnMessageReadAck
-                                arguments:[msg toJson]];
+                                arguments:json];
     }
     
     [self.channel invokeMethod:EMMethodKeyOnMessagesRead arguments:list];
@@ -622,8 +647,10 @@
 - (void)messagesDidDeliver:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
+        NSDictionary *json = [msg toJson];
+        [list addObject:json];
         [self.messageChannel invokeMethod:EMMethodKeyOnMessageDeliveryAck
-                                arguments:@{@"message":[msg toJson]}];
+                                arguments:@{@"message":json}];
     }
     
     [self.channel invokeMethod:EMMethodKeyOnMessagesDelivered
@@ -650,6 +677,17 @@
 - (void)messageAttachmentStatusDidChange:(EMMessage *)aMessage
                                    error:(EMError *)aError {
     
+}
+
+- (void)groupMessageDidRead:(EMMessage *)aMessage groupAcks:(NSArray *)aGroupAcks {
+    NSMutableArray *list = [NSMutableArray array];
+    for (EMGroupMessageAck *ack in aGroupAcks) {
+        NSDictionary *json = [ack toJson];
+        [list addObject:json];
+    }
+    
+    [self.channel invokeMethod:EMMethodKeyOnGroupMessageRead
+                     arguments:list];
 }
 
 
