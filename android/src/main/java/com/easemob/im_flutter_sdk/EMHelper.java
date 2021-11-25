@@ -592,6 +592,19 @@ class EMMessageHelper {
 
 }
 
+class EMGroupMessageAckHelper {
+    static Map<String, Object>groupAckToJson(EMGroupMessageAck ack) {
+        Map<String, Object> data = new HashMap<>();
+//        data.put("msg_id","ack.");
+//        data.put("","");
+//        data.put("","");
+//        data.put("","");
+//        data.put("","");
+        return data;
+    }
+}
+
+
 class EMMessageBodyHelper {
 
     static EMTextMessageBody textBodyFromJson(JSONObject json) throws JSONException {

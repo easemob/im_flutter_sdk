@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:provider/provider.dart';
@@ -701,4 +702,7 @@ class _ChatPageState extends State<ChatPage>
       }
     }
   }
+
+  @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
 }

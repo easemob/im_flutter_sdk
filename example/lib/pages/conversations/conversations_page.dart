@@ -6,6 +6,7 @@ import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: must_be_immutable
@@ -190,7 +191,8 @@ class ConversationPageState extends State<ConversationPage>
       await EMClient.getInstance.chatManager
           .deleteConversation(_conversationsList[index].id);
       _conversationsList.removeAt(index);
-    } on Error {} finally {
+    } on Error {
+    } finally {
       setState(() {});
     }
   }
@@ -208,13 +210,13 @@ class ConversationPageState extends State<ConversationPage>
   }
 
   @override
-  onCmdMessagesReceived(List<EMMessage> messages) {}
+  void onCmdMessagesReceived(List<EMMessage> messages) {}
 
   @override
-  onMessagesDelivered(List<EMMessage> messages) {}
+  void onMessagesDelivered(List<EMMessage> messages) {}
 
   @override
-  onMessagesRead(List<EMMessage> messages) {
+  void onMessagesRead(List<EMMessage> messages) {
     bool needReload = false;
     for (var msg in messages) {
       if (msg.to == EMClient.getInstance.currentUsername) {
@@ -228,16 +230,19 @@ class ConversationPageState extends State<ConversationPage>
   }
 
   @override
-  onMessagesRecalled(List<EMMessage> messages) {}
+  void onMessagesRecalled(List<EMMessage> messages) {}
 
   @override
-  onMessagesReceived(List<EMMessage> messages) {
+  void onMessagesReceived(List<EMMessage> messages) {
     _reLoadAllConversations();
   }
 
   @override
-  onConversationsUpdate() {}
+  void onConversationRead(String from, String to) {}
 
   @override
-  onConversationRead(String from, String to) {}
+  void onConversationsUpdate() {}
+
+  @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
 }
