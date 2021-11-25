@@ -15,6 +15,7 @@ import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMGroupManager;
 import com.hyphenate.chat.EMGroupOptions;
+import com.hyphenate.chat.EMGroupReadAck;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
@@ -592,14 +593,16 @@ class EMMessageHelper {
 
 }
 
-class EMGroupMessageAckHelper {
-    static Map<String, Object>groupAckToJson(EMGroupMessageAck ack) {
+class EMGroupAckHelper {
+    static Map<String, Object>groupAckToJson(EMGroupReadAck ack) {
         Map<String, Object> data = new HashMap<>();
-//        data.put("msg_id","ack.");
-//        data.put("","");
-//        data.put("","");
-//        data.put("","");
-//        data.put("","");
+        data.put("msg_id", ack.getMsgId());
+        data.put("from", ack.getFrom());
+        data.put("count", ack.getCount());
+        data.put("timestamp", ack.getTimestamp());
+        if (ack.getContent() != null) {
+            data.put("content", ack.getContent());
+        }
         return data;
     }
 }
