@@ -39,6 +39,7 @@ class EMSDKMethod {
   static const String sendMessage = 'sendMessage';
   static const String resendMessage = 'resendMessage';
   static const String ackMessageRead = 'ackMessageRead';
+  static const String ackGroupMessageRead = 'ackGroupMessageRead';
   static const String ackConversationRead = 'ackConversationRead';
   static const String recallMessage = 'recallMessage';
   static const String getConversation = 'getConversation';
@@ -60,6 +61,7 @@ class EMSDKMethod {
   static const String onMessagesReceived = 'onMessagesReceived';
   static const String onCmdMessagesReceived = 'onCmdMessagesReceived';
   static const String onMessagesRead = 'onMessagesRead';
+  static const String onGroupMessageRead = 'onGroupMessageRead';
   static const String onMessagesDelivered = 'onMessagesDelivered';
   static const String onMessagesRecalled = 'onMessagesRecalled';
   static const String onMessageChanged = 'onMessageChanged';

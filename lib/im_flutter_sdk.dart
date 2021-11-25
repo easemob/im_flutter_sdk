@@ -9,6 +9,6 @@ export 'src/em_userInfo_manager.dart';
 
 export 'src/models/em_domain_terms.dart';
 export 'src/models/em_message.dart';
-export 'src/tools//em_log.dart';
-
+export 'src/models/em_group_message_ack.dart';
+export 'src/tools/em_log.dart';
 export 'src/em_listeners.dart';
