@@ -672,9 +672,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
 
-  @override
-  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
-
   Future<void> fetchRTCToken(String channelName, String username) async {
     String token = EMClient.getInstance.accessToken;
     if (token == null) return null;
@@ -705,4 +702,7 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
+  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
 }
