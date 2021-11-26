@@ -69,12 +69,11 @@ class MessageCallBackManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _emMessageChannel =
       const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
-  late Map<String, EMMessage> cacheMessageMap;
+  Map<String, EMMessage> cacheMessageMap = {};
   static MessageCallBackManager? _instance;
   static MessageCallBackManager get getInstance =>
       _instance = _instance ?? MessageCallBackManager._internal();
   MessageCallBackManager._internal() {
-    cacheMessageMap = {};
     _emMessageChannel.setMethodCallHandler((MethodCall call) async {
       Map<String, dynamic> argMap = call.arguments;
       int? localTime = argMap['localTime'];

@@ -171,7 +171,7 @@ class EMGroupManager {
   }
 
   /// 判断自己是否在白名单中
-  Future<bool?> isMemberInWhiteListFromServer(String groupId) async {
+  Future<bool> isMemberInWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.isMemberInWhiteListFromServer, req);
@@ -391,7 +391,7 @@ class EMGroupManager {
   }
 
   /// 上传群共享文件
-  Future<bool?> uploadGroupSharedFile(
+  Future<bool> uploadGroupSharedFile(
     String groupId,
     String filePath,
   ) async {
@@ -403,7 +403,7 @@ class EMGroupManager {
   }
 
   /// 下载群共享文件
-  Future<bool?> downloadGroupSharedFile(
+  Future<bool> downloadGroupSharedFile(
     String groupId,
     String fileId,
     String savePath,

@@ -134,7 +134,7 @@ class EMClient {
 
   /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
   /// 返回退出是否成功
-  Future<bool?> logout([
+  Future<bool> logout([
     bool unbindDeviceToken = true,
   ]) async {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
@@ -146,7 +146,7 @@ class EMClient {
   }
 
   /// 修改appKey [newAppKey].
-  Future<bool?> changeAppKey({required String newAppKey}) async {
+  Future<bool> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
     Map result = await _channel.invokeMethod(EMSDKMethod.changeAppKey, req);
@@ -188,7 +188,7 @@ class EMClient {
 
   /// 根据设备ID，将该设备下线,
   /// 账号和密码 [username]/[password] 设备ID[resource].
-  Future<bool?> kickDevice(
+  Future<bool> kickDevice(
       {required String username,
       required String password,
       required String resource}) async {
@@ -205,7 +205,7 @@ class EMClient {
 
   /// 将该账号下的所有设备都踢下线
   /// 账号和密码 [username]/[password].
-  Future<bool?> kickAllDevices(
+  Future<bool> kickAllDevices(
       {required String username, required String password}) async {
     EMLog.v('kickAllDevices: $username, "******"');
     Map req = {'username': username, 'password': password};

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:provider/provider.dart';
@@ -671,9 +672,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
 
-  @override
-  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
-
   Future<void> fetchRTCToken(String channelName, String username) async {
     String token = EMClient.getInstance.accessToken;
     if (token == null) return null;
@@ -701,4 +699,10 @@ class _ChatPageState extends State<ChatPage>
       }
     }
   }
+
+  @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
+  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
 }

@@ -50,6 +50,7 @@ static NSString *const EMMethodKeyOnContactChanged = @"onContactChanged";
 static NSString *const EMMethodKeySendMessage = @"sendMessage";
 static NSString *const EMMethodKeyResendMessage = @"resendMessage";
 static NSString *const EMMethodKeyAckMessageRead = @"ackMessageRead";
+static NSString *const EMMethodKeyAckGroupMessageRead = @"ackGroupMessageRead";
 static NSString *const EMMethodKeyAckConversationRead = @"ackConversationRead";
 static NSString *const EMMethodKeyRecallMessage = @"recallMessage";
 static NSString *const EMMethodKeyGetConversation = @"getConversation";
@@ -74,6 +75,7 @@ static NSString *const EMMethodKeyGetMessage = @"getMessage";
 static NSString *const EMMethodKeyOnMessagesReceived = @"onMessagesReceived";
 static NSString *const EMMethodKeyOnCmdMessagesReceived = @"onCmdMessagesReceived";
 static NSString *const EMMethodKeyOnMessagesRead = @"onMessagesRead";
+static NSString *const EMMethodKeyOnGroupMessageRead = @"onGroupMessageRead";
 static NSString *const EMMethodKeyOnMessagesDelivered = @"onMessagesDelivered";
 static NSString *const EMMethodKeyOnMessagesRecalled = @"onMessagesRecalled";
 
