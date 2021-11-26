@@ -124,7 +124,7 @@ static EMClientWrapper *wrapper = nil;
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
     // 如果有证书名，说明要使用Apns
-    if (options.pushKitCertName.length > 0) {
+    if (options.apnsCertName.length > 0) {
         [self _registerAPNs];
     }
     [weakSelf wrapperCallBack:result
@@ -426,7 +426,7 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    NSLog(@"didFinishLaunchingWithOptions --- ");
+    
     return YES;
 }
 
