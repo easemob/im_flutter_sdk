@@ -37,7 +37,7 @@
     msg.direction = ({
         [aJson[@"direction"] isEqualToString:@"send"] ? EMMessageDirectionSend : EMMessageDirectionReceive;
     });
-    
+    msg.isNeedGroupAck = aJson[@"needGroupAck"];
     msg.chatType = [msg chatTypeFromInt:[aJson[@"chatType"] intValue]];
     msg.status = [msg statusFromInt:[aJson[@"status"] intValue]];
     msg.localTime = [aJson[@"localTime"] longLongValue];

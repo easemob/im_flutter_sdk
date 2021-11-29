@@ -307,50 +307,53 @@ class EMMessage {
     }
   }
 
-  // 消息id
+  /// 消息id
   String? _msgId,
       msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
           Random().nextInt(99999).toString();
 
   String? get msgId => _msgId ?? msgLocalId;
 
-  // 消息所属会话id
+  /// 消息所属会话id
   String? conversationId;
 
-  // 消息发送方
+  /// 消息发送方
   String? from = '';
 
-  // 消息接收方
+  /// 消息接收方
   String? to = '';
 
-  // 消息本地时间
-  int? localTime = DateTime.now().millisecondsSinceEpoch;
+  /// 消息本地时间
+  int localTime = DateTime.now().millisecondsSinceEpoch;
 
-  // 消息的服务器时间
-  int? serverTime = DateTime.now().millisecondsSinceEpoch;
+  /// 消息的服务器时间
+  int serverTime = DateTime.now().millisecondsSinceEpoch;
 
-  // 消息是否收到已送达回执
-  bool? hasDeliverAck = false;
+  /// 消息是否收到已送达回执
+  bool hasDeliverAck = false;
 
-  // 消息是否发送/收到已读回执
-  bool? hasReadAck = false;
+  /// 消息是否发送/收到已读回执
+  bool hasReadAck = false;
 
-  // 是否已读
-  bool? hasRead = false;
+  /// 是否需要群消息已读回执，默认为false
+  bool needGroupAck = false;
 
-  // 消息类型
+  /// 是否已读
+  bool hasRead = false;
+
+  /// 消息类型
   EMMessageChatType chatType = EMMessageChatType.Chat;
 
-  // 消息方向
+  /// 消息方向
   EMMessageDirection direction = EMMessageDirection.SEND;
 
-  // 消息状态
+  /// 消息状态
   EMMessageStatus status = EMMessageStatus.CREATE;
 
-  // 消息扩展
+  /// 消息扩展
   Map attributes = {};
 
-  // msg body
+  /// msg body
   EMMessageBody? body;
 
   Map<String, dynamic> toJson() {
@@ -364,6 +367,7 @@ class EMMessage {
     data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
+    data['needGroupAck'] = this.needGroupAck;
     data['msgId'] = this.msgId;
     data['conversationId'] = this.conversationId ?? this.to;
     data['chatType'] = chatTypeToInt(this.chatType);
@@ -385,12 +389,13 @@ class EMMessage {
           : EMMessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
+      ..needGroupAck = map.boolValue('needGroupAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map['msgId'] as String?
       ..conversationId = map['conversationId'] as String?
       ..chatType = chatTypeFromInt(map['chatType'] as int?)
-      ..localTime = map['localTime'] as int?
-      ..serverTime = map['serverTime'] as int?
+      ..localTime = map['localTime'] as int
+      ..serverTime = map['serverTime'] as int
       ..status = _chatStatusFromInt(map['status'] as int?);
   }
 
@@ -519,7 +524,7 @@ abstract class EMMessageBody {
   EMMessageBodyType? type;
 }
 
-// text body
+/// text body
 class EMTextMessageBody extends EMMessageBody {
   EMTextMessageBody({required this.content})
       : super(type: EMMessageBodyType.TXT);
@@ -539,7 +544,7 @@ class EMTextMessageBody extends EMMessageBody {
   String? content = '';
 }
 
-// location body
+/// location body
 class EMLocationMessageBody extends EMMessageBody {
   EMLocationMessageBody(
       {required this.latitude, required this.longitude, this.address})
@@ -561,14 +566,15 @@ class EMLocationMessageBody extends EMMessageBody {
     return data;
   }
 
-  // 地址
+  /// 地址
   String? address = '';
 
-  // 经纬度
+  /// 经纬度
   double? latitude = 0;
   double? longitude = 0;
 }
 
+/// file body
 class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody({
     this.localPath,
@@ -603,22 +609,22 @@ class EMFileMessageBody extends EMMessageBody {
     return data;
   }
 
-  // 本地路径
+  /// 本地路径
   String? localPath = '';
 
-  // secret
+  /// secret
   String? secret = '';
 
-  // 服务器路径
+  /// 服务器路径
   String? remotePath = '';
 
-  // 附件状态
+  /// 附件状态
   EMDownloadStatus fileStatus = EMDownloadStatus.PENDING;
 
-  // 文件大小
+  /// 文件大小
   int? fileSize = 0;
 
-  // 文件名称
+  /// 文件名称
   String? displayName = '';
 
   static EMDownloadStatus downloadStatusFromInt(int? status) {
@@ -646,7 +652,7 @@ class EMFileMessageBody extends EMMessageBody {
   }
 }
 
-// image body
+/// image body
 class EMImageMessageBody extends EMFileMessageBody {
   EMImageMessageBody({
     String? localPath,
@@ -688,29 +694,29 @@ class EMImageMessageBody extends EMFileMessageBody {
     return data;
   }
 
-  // 是否是原图
+  /// 是否是原图
   bool? sendOriginalImage = false;
 
-  // 缩略图本地地址
+  /// 缩略图本地地址
   String? thumbnailLocalPath = '';
 
-  // 缩略图服务器地址
+  /// 缩略图服务器地址
   String? thumbnailRemotePath = '';
 
-  // 缩略图 secret
+  /// 缩略图 secret
   String? thumbnailSecret = '';
 
-  // 缩略图状态
+  /// 缩略图状态
   EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
 
-  // 宽
+  /// 宽
   double? width = 0;
 
-  // 高
+  /// 高
   double? height = 0;
 }
 
-// video body
+/// video body
 class EMVideoMessageBody extends EMFileMessageBody {
   EMVideoMessageBody({
     String? localPath,
@@ -752,29 +758,29 @@ class EMVideoMessageBody extends EMFileMessageBody {
     return data;
   }
 
-  // 时长。秒
+  /// 时长。秒
   int? duration = 0;
 
-  // 缩略图本地地址
+  /// 缩略图本地地址
   String? thumbnailLocalPath = '';
 
-  // 缩略图服务器地址
+  /// 缩略图服务器地址
   String? thumbnailRemotePath = '';
 
-  // 缩略图 secret
+  /// 缩略图 secret
   String? thumbnailSecret = '';
 
-  // 缩略图状态
+  /// 缩略图状态
   EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
 
-  // 宽
+  /// 宽
   double? width = 0;
 
-  // 高
+  /// 高
   double? height = 0;
 }
 
-// voice body
+/// voice body
 class EMVoiceMessageBody extends EMFileMessageBody {
   EMVoiceMessageBody({
     localPath,
@@ -798,11 +804,11 @@ class EMVoiceMessageBody extends EMFileMessageBody {
     return data;
   }
 
-  // 时长, 秒
+  /// 时长, 秒
   int? duration = 0;
 }
 
-// cmd body
+/// cmd body
 class EMCmdMessageBody extends EMMessageBody {
   EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
       : super(type: EMMessageBodyType.CMD);
@@ -828,7 +834,7 @@ class EMCmdMessageBody extends EMMessageBody {
   bool? deliverOnlineOnly = false;
 }
 
-// custom body
+/// custom body
 class EMCustomMessageBody extends EMMessageBody {
   EMCustomMessageBody({required this.event, this.params})
       : super(type: EMMessageBodyType.CUSTOM);
@@ -847,9 +853,9 @@ class EMCustomMessageBody extends EMMessageBody {
     return data;
   }
 
-  // 自定义事件key
+  /// 自定义事件key
   String? event = '';
 
-  // 附加参数
+  /// 附加参数
   Map<String, String>? params = {};
 }
