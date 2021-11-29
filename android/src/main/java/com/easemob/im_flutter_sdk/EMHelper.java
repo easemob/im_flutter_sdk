@@ -443,6 +443,7 @@ class EMMessageHelper {
             message.setUnread(!json.getBoolean("hasRead"));
         }
         message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
+        message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
         message.setLocalTime(json.getLong("localTime"));
         message.setMsgTime(json.getLong("serverTime"));
         message.setStatus(statusFromInt(json.getInt("status")));
