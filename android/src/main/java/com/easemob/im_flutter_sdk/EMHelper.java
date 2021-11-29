@@ -444,6 +444,10 @@ class EMMessageHelper {
         }
         message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
         message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
+        if (json.has("groupAckCount")) {
+            message.setGroupAckCount(json.getInt("groupAckCount"));
+        }
+
         message.setLocalTime(json.getLong("localTime"));
         message.setMsgTime(json.getLong("serverTime"));
         message.setStatus(statusFromInt(json.getInt("status")));
@@ -536,6 +540,8 @@ class EMMessageHelper {
         data.put("conversationId", message.conversationId());
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
+        data.put("needGroupAck", message.isNeedGroupAck());
+        data.put("groupAckCount", message.groupAckCount());
 
         return data;
     }

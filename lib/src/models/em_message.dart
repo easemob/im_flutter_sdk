@@ -338,6 +338,9 @@ class EMMessage {
   /// 是否需要群消息已读回执，默认为false
   bool needGroupAck = false;
 
+  /// 群消息已读数量，只有在群消息时有效
+  int groupAckCount = 0;
+
   /// 是否已读
   bool hasRead = false;
 
@@ -368,6 +371,7 @@ class EMMessage {
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
     data['needGroupAck'] = this.needGroupAck;
+    data['groupAckCount'] = this.groupAckCount;
     data['msgId'] = this.msgId;
     data['conversationId'] = this.conversationId ?? this.to;
     data['chatType'] = chatTypeToInt(this.chatType);
@@ -390,6 +394,7 @@ class EMMessage {
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
+      ..groupAckCount = map["groupAckCount"] as int
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map['msgId'] as String?
       ..conversationId = map['conversationId'] as String?
