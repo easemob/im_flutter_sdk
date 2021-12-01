@@ -70,6 +70,7 @@ static NSString *const EMMethodKeyUpdateConversationsName = @"updateConversation
 static NSString *const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString *const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString *const EMMethodKeyGetMessage = @"getMessage";
+static NSString *const EMMethodKeyAsyncFetchGroupAcks = @"asyncFetchGroupAcks";
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const EMMethodKeyOnMessagesReceived = @"onMessagesReceived";
