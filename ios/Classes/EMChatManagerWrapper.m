@@ -122,6 +122,10 @@
         [self updateConversationsName:call.arguments
                           channelName:EMMethodKeyUpdateConversationsName
                                result:result];
+    } else if ([EMMethodKeyAsyncFetchGroupAcks isEqualToString:call.method]) {
+        [self fetchGroupReadAck:call.arguments
+                    channelName:EMMethodKeyAsyncFetchGroupAcks
+                         result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -542,6 +546,24 @@
                            object:[aResult toJson]];
     }];
 }
+
+- (void)fetchGroupReadAck:(NSDictionary *)param
+              channelName:(NSString *)aChannelName
+                   result:(FlutterResult) result {
+    NSString *msgId = param[@"msg_id"];
+    int pageSize = [param[@"pageSize"] intValue];
+    NSString *ackId = param[@"ack_id"];
+    NSString *groupId = param[@"group_id"];
+
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager asyncFetchGroupMessageAcksFromServer:msgId groupId:groupId startGroupAckId:ackId pageSize:pageSize completion:^(EMCursorResult *aResult, EMError *aError, int totalCount) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aResult toJson]];
+    }];
+}
+
 
 - (void)searchChatMsgFromDB:(NSDictionary *)param
                 channelName:(NSString *)aChannelName

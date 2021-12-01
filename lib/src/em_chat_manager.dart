@@ -294,6 +294,37 @@ class EMChatManager implements EMMessageStatusListener {
     return list;
   }
 
+  /// 从服务器获取群组已读回执。
+  /// [msgId], 需要获取的群消息id。
+  /// [startAckId], 起始的ackId, 用于分页。
+  /// [pageSize], 返回的数量。
+  Future<EMCursorResult<EMGroupMessageAck?>> asyncFetchGroupAcks(
+    String msgId, {
+    String? startAckId,
+    int pageSize = 0,
+  }) async {
+    Map req = Map();
+    req["msg_id"] = msgId;
+    if (startAckId != null) {
+      req["ack_id"] = startAckId;
+    }
+    req["pageSize"] = pageSize;
+
+    Map data =
+        await _channel.invokeMethod(EMSDKMethod.asyncFetchGroupAcks, req);
+
+    EMError.hasErrorFromResult(data);
+
+    EMCursorResult<EMGroupMessageAck?> result = EMCursorResult.fromJson(
+      data[EMSDKMethod.asyncFetchGroupAcks],
+      dataItemCallback: (map) {
+        return EMGroupMessageAck.fromJson(map);
+      },
+    );
+
+    return result;
+  }
+
   /// @nodoc
   Future<void> _onMessagesReceived(List messages) async {
     List<EMMessage> messageList = [];

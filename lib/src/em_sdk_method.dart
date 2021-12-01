@@ -56,6 +56,7 @@ class EMSDKMethod {
   static const String fetchHistoryMessages = 'fetchHistoryMessages';
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
   static const String getMessage = 'getMessage';
+  static const String asyncFetchGroupAcks = 'asyncFetchGroupAcks';
 
   /// EMChatManager listener
   static const String onMessagesReceived = 'onMessagesReceived';

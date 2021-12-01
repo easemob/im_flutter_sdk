@@ -601,7 +601,7 @@ class EMMessageHelper {
 }
 
 class EMGroupAckHelper {
-    static Map<String, Object>groupAckToJson(EMGroupReadAck ack) {
+    static Map<String, Object>toJson(EMGroupReadAck ack) {
         Map<String, Object> data = new HashMap<>();
         data.put("msg_id", ack.getMsgId());
         data.put("from", ack.getFrom());
@@ -973,6 +973,10 @@ class EMCursorResultHelper {
 
             if (obj instanceof EMChatRoom) {
                 jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
+            }
+
+            if (obj instanceof EMGroupReadAck) {
+                jsonList.add(EMGroupAckHelper.toJson((EMGroupReadAck) obj));
             }
 
             if (obj instanceof String) {
