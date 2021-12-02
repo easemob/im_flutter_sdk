@@ -39,26 +39,27 @@ dependencies:
   event_bus: 1.1.1
   
   # 数据缓存
-  shared_preferences: 0.5.12+4
+  shared_preferences: ^2.0.9
 
   # 状态共享
   provider: 4.3.2+3
 
   # 汉字转拼音
-  # lpinyin: ^1.1.0
+  lpinyin: ^2.0.3
 
   # 侧滑删除
   flutter_slidable: 0.5.7
 
   # 下拉刷新
-  # pull_to_refresh: 1.6.4
   pull_to_refresh: ^2.0.0
 
   # 屏幕适配
   flutter_screenutil: 4.0.3+1
 
   # 常用工具类
-  flustars: ^0.3.2
+  flustars: ^2.0.1
+  # 强制使用1.5.0版本，为了兼容flustars 的问题
+  decimal: 1.5.0
 
   # 滚动列表，可以根据index滚动到指定位置
   # scroll_to_index: ^1.0.6

@@ -372,6 +372,13 @@ class _ChatPageState extends State<ChatPage>
   /// 消息长按
   _messageOnLongPress(EMMessage msg) async {
     print('长按消息 $msg');
+    String toAddUsername;
+    String reason;
+    try {
+      EMClient.getInstance.contactManager.addContact(toAddUsername, reason);
+    } on EMError catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   /// 发送文字消息
