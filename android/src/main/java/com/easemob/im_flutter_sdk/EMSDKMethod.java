@@ -29,9 +29,11 @@ public class EMSDKMethod {
     static final String addUserToBlockList = "addUserToBlockList";
     static final String removeUserFromBlockList = "removeUserFromBlockList";
     static final String getBlockListFromServer = "getBlockListFromServer";
+    static final String getBlockListFromDB = "getBlockListFromDB";
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
+
 
     static final String onContactChanged = "onContactChanged";
 

@@ -39,6 +39,7 @@ static NSString *const EMMethodKeyGetAllContactsFromDB = @"getAllContactsFromDB"
 static NSString *const EMMethodKeyAddUserToBlockList = @"addUserToBlockList";
 static NSString *const EMMethodKeyRemoveUserFromBlockList = @"removeUserFromBlockList";
 static NSString *const EMMethodKeyGetBlockListFromServer = @"getBlockListFromServer";
+static NSString *const EMMethodKeyGetBlockListFromDB = @"getBlockListFromDB";
 static NSString *const EMMethodKeyAcceptInvitation = @"acceptInvitation";
 static NSString *const EMMethodKeyDeclineInvitation = @"declineInvitation";
 static NSString *const EMMethodKeyGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatform";
