@@ -16,7 +16,7 @@ class ContactSelectPageState extends State<ContactSelectPage> {
   List<String> _selectedUsers = [];
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchContactsFromServer();
+    _fetchContactsFromServer(2);
   }
 
   @override
@@ -120,7 +120,7 @@ class ContactSelectPageState extends State<ContactSelectPage> {
       onTap: () => _contactDidSelected(model, index),
       child: SafeArea(
         child: SelectContactItem(
-          model.name,
+          model.showName,
           selected: _selectedUsers.contains(
             model.contactId,
           ),
@@ -138,14 +138,19 @@ class ContactSelectPageState extends State<ContactSelectPage> {
     setState(() {});
   }
 
-  Future<void> _fetchContactsFromServer() async {
+  Future<void> _fetchContactsFromServer([int count = 1]) async {
+    if (count == 0) {
+      return;
+    }
+
+    count--;
     try {
-      List<EMContact> contacts =
+      List<String> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromServer();
+      List<ContactModel> list = await _fetchUsersInfo(contacts);
       _contactList.clear();
-      for (var contact in contacts) {
-        _contactList.add(ContactModel.contact(contact));
-      }
+      _contactList.addAll(list);
+      setState(() {});
     } on EMError {
       SmartDialog.showToast('获取失败');
       _loadLocalContacts();
@@ -156,20 +161,45 @@ class ContactSelectPageState extends State<ContactSelectPage> {
     }
   }
 
-  Future<void> _loadLocalContacts() async {
+  Future<void> _loadLocalContacts([int count = 1]) async {
     try {
-      List<EMContact> contacts =
+      List<String> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      List<ContactModel> list = await _fetchUsersInfo(contacts);
       _contactList.clear();
-      for (var contact in contacts) {
-        _contactList.add(ContactModel.contact(contact));
-      }
-    } on EMError {} finally {
+      _contactList.addAll(list);
+      setState(() {});
+    } on EMError {
+    } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       setState(() {});
-      _fetchContactsFromServer();
+      Future.delayed(Duration(seconds: 3)).then((value) {
+        _fetchContactsFromServer(count);
+      });
     }
+  }
+
+  Future<List<ContactModel>> _fetchUsersInfo(List<String> list) async {
+    List<ContactModel> ret = [];
+    Map<String, EMUserInfo> map = await EMClient.getInstance.userInfoManager
+        .fetchUserInfoByIdWithExpireTime(list);
+    List<String> emIds = map.keys.toList();
+    List<String> noInfoIds = list.toList();
+    noInfoIds.removeWhere((element) {
+      return emIds.contains(element);
+    });
+    for (var emId in noInfoIds) {
+      ret.add(
+        ContactModel.fromUserId(emId),
+      );
+    }
+    for (var info in map.values.toList()) {
+      ret.add(
+        ContactModel.fromUserInfo(info),
+      );
+    }
+    return ret;
   }
 }
 
