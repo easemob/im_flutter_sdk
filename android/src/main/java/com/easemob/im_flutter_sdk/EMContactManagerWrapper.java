@@ -48,6 +48,8 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 removeUserFromBlockList(param, EMSDKMethod.removeUserFromBlockList, result);
             } else if (EMSDKMethod.getBlockListFromServer.equals(call.method)) {
                 getBlockListFromServer(param, EMSDKMethod.getBlockListFromServer, result);
+            } else if (EMSDKMethod.getBlockListFromDB.equals(call.method)) {
+                getBlockListFromDB(param, EMSDKMethod.getBlockListFromDB, result);
             } else if (EMSDKMethod.acceptInvitation.equals(call.method)) {
                 acceptInvitation(param, EMSDKMethod.acceptInvitation, result);
             } else if (EMSDKMethod.declineInvitation.equals(call.method)) {
@@ -145,6 +147,11 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 onError(result, e);
             }
         });
+    }
+
+    private void getBlockListFromDB(JSONObject params, String channelName, Result result) throws JSONException {
+        List contacts = EMClient.getInstance().contactManager().getBlackListUsernames();
+        onSuccess(result, channelName, contacts);
     }
 
     private void acceptInvitation(JSONObject params, String channelName, Result result) throws JSONException {
