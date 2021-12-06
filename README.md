@@ -68,8 +68,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 - `EMPushManager`用于管理推送配置，如设置推送昵称，推送免打扰时间段等;
 - `EMUserInfoManager`用于更新自己的用户属性，设置用户属性，获取其他用户的用户属性等;
 
-> SDK依赖环信Lite SDK，不支持音视频。
-
 
 ### EMClient
 
@@ -294,7 +292,7 @@ try{
 
 ```
 
-
+#### 删除消息
 
 ```dart
 try{
@@ -472,9 +470,19 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
   onMessagesRecalled(List<EMMessage> messages) {
   }
 
+  // 会话已读回执
+  @override
+  onConversationRead(String from, String to) { 
+  }
+  
   // 收消息回调
   @override
   onMessagesReceived(List<EMMessage> messages) {
+  }
+  
+  // 群消息已读回执
+  @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {
   }
   
   @override
@@ -487,13 +495,41 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
 
 ```
 
+#### 会话列表漫游
+
+```dart
+try {
+  List<EMConversation> conversations =
+      await EMClient.getInstance.chatManager.getConversationsFromServer();
+} on EMError catch (e) {
+  debugPrint("error: ${e.code}");
+}
+```
+
+> 会话列表漫游为增值服务，需要单独开通。
+
+#### 消息漫游
+
+```dart
+try {
+  EMCursorResult<EMMessage> result = await EMClient.getInstance.chatManager
+      .fetchHistoryMessages(conversationId);
+} on EMError catch (e) {
+  debugPrint("error: ${e.code}");
+}
+```
+
+> 消息漫游为增值服务，需要单独开通。
+
+
+
 ### EMContactManager
 
 #### 从服务器获取通讯录中的用户列表
 
 ```dart
 try{
-  List<EMContact> contactsList = await EMClient.getInstance.contactManager.getAllContactsFromServer();
+  List<String> contactsList = await EMClient.getInstance.contactManager.getAllContactsFromServer();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -528,7 +564,7 @@ try{
 
 ```dart
 try{
-  List<EMContact> blockList = await EMClient.getInstance.contactManager.getBlockListFromServer();
+  List<String> blockList = await EMClient.getInstance.contactManager.getBlockListFromServer();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
