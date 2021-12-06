@@ -2,7 +2,6 @@ export '../em_sdk_method.dart';
 export '../tools/em_extension.dart';
 
 export 'em_chat_room.dart';
-export 'em_contact.dart';
 export 'em_conversation.dart';
 export 'em_cursor_result.dart';
 export 'em_deviceInfo.dart';
