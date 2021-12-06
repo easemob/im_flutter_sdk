@@ -24,10 +24,6 @@ class EMContactManager {
   }
 
   final List<EMContactEventListener> _contactChangeEventListeners = [];
-  List<String>? _blockList;
-
-  /// 本地缓存的黑名单列表，在从服务器获取黑名单后有值
-  List<String>? get blockList => _blockList;
 
   /// @nodoc
   Future<void> _onContactChanged(Map event) async {
@@ -80,34 +76,36 @@ class EMContactManager {
   }
 
   /// 从服务器获取所有的好友
-  Future<List<EMContact>> getAllContactsFromServer() async {
+  Future<List<String?>> getAllContactsFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
     EMError.hasErrorFromResult(result);
-    List<EMContact> contacts = [];
+    List<String?> contacts = [];
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      contacts.add(EMContact.fromJson({'userId': element}));
+      contacts.add(element);
     });
 
     return contacts;
   }
 
-  /// 从本地获取所有的好友 `only ios now.`
-  Future<List<EMContact>> getAllContactsFromDB() async {
+  /// 从本地获取所有的好友
+  Future<List<String?>> getAllContactsFromDB() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
     EMError.hasErrorFromResult(result);
-    List<EMContact> contacts = [];
+    List<String?> contacts = [];
     result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      contacts.add(EMContact.fromJson({'userId': element}));
+      contacts.add(element);
     });
 
     return contacts;
   }
 
   /// 把指定用户加入到黑名单中 [username] .
-  Future<String?> addUserToBlockList(String username) async {
+  Future<String?> addUserToBlockList(
+    String username,
+  ) async {
     Map req = {'username': username};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
@@ -124,15 +122,26 @@ class EMContactManager {
     return result[EMSDKMethod.removeUserFromBlockList];
   }
 
-  /// 从服务器获取黑名单中的用户的ID
-  Future<List<EMContact>> getBlockListFromServer() async {
+  /// 从服务器获取黑名单列表
+  Future<List<String?>> getBlockListFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
     EMError.hasErrorFromResult(result);
-    List<EMContact> blockList = [];
+    List<String?> blockList = [];
     result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      blockList.add(EMContact.fromJson({'userId': element}));
+      blockList.add(element);
+    });
+    return blockList;
+  }
+
+  /// 从本地数据库中获取黑名单列表
+  Future<List<String?>> getBlockListFromDB() async {
+    Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromDB);
+    EMError.hasErrorFromResult(result);
+    List<String?> blockList = [];
+    result[EMSDKMethod.getBlockListFromDB]?.forEach((element) {
+      blockList.add(element);
     });
     return blockList;
   }

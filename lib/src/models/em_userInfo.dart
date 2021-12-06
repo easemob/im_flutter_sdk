@@ -1,14 +1,14 @@
 //用户属性类型
 
 enum EMUserInfoType {
-  EMUserInfoTypeNickName,
-  EMUserInfoTypeAvatarURL,
-  EMUserInfoTypePhone,
-  EMUserInfoTypeMail,
-  EMUserInfoTypeGender,
-  EMUserInfoTypeSign,
-  EMUserInfoTypeBirth,
-  EMUserInfoTypeExt,
+  NickName,
+  AvatarURL,
+  Phone,
+  Mail,
+  Gender,
+  Sign,
+  Birth,
+  Ext,
 }
 
 class EMUserInfo {

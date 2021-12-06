@@ -19,7 +19,11 @@ class ContactsPage extends StatefulWidget {
 class ContactsPageState extends State<ContactsPage>
     implements EMContactEventListener {
   List<ContactModel> _contactList = [];
-  List<ContactModel> _topList = [];
+  List<ContactModel> _topList = [
+    ContactModel.custom('新的好友'),
+    ContactModel.custom('群聊'),
+    ContactModel.custom('聊天室'),
+  ];
 
   int _friendRequestCount = 0;
 
@@ -27,11 +31,6 @@ class ContactsPageState extends State<ContactsPage>
   void initState() {
     super.initState();
     EMClient.getInstance.contactManager.addContactListener(this);
-    _topList.addAll([
-      ContactModel.custom('新的好友'),
-      ContactModel.custom('群聊'),
-      ContactModel.custom('聊天室')
-    ]);
 
     String currentUser = EMClient.getInstance.currentUsername;
     SharePreferenceManager.load(currentUser, callback: () {
@@ -41,8 +40,8 @@ class ContactsPageState extends State<ContactsPage>
 
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // _loadLocalContacts();
-    _fetchContactsFromServer();
+
+    _fetchContactsFromServer(3);
   }
 
   @override
@@ -167,13 +166,13 @@ class ContactsPageState extends State<ContactsPage>
             }
             if (model.isCustom) {
               return ContactItem(
-                model.name,
+                model.showName,
                 unreadCount: unreadCount,
               );
             } else {
               return slidableItem(
                 child: ContactItem(
-                  model.name,
+                  model.showName,
                   unreadCount: unreadCount,
                 ),
                 actions: [
@@ -233,17 +232,21 @@ class ContactsPageState extends State<ContactsPage>
     }
   }
 
-  Future<void> _fetchContactsFromServer() async {
+  Future<void> _fetchContactsFromServer([int count = 1]) async {
+    if (count == 0) {
+      return;
+    }
+
+    count--;
     try {
-      List<EMContact> contacts =
+      List<String> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromServer();
+      List<ContactModel> list = await _fetchUserInfo(contacts);
       _contactList.clear();
-      for (var contact in contacts) {
-        _contactList.add(ContactModel.contact(contact));
-      }
+      _contactList.addAll(list);
     } on EMError {
       SmartDialog.showToast('获取失败');
-      _loadLocalContacts();
+      _loadLocalContacts(count);
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
@@ -252,22 +255,46 @@ class ContactsPageState extends State<ContactsPage>
     }
   }
 
-  Future<void> _loadLocalContacts() async {
+  Future<void> _loadLocalContacts([int count = 1]) async {
     try {
-      List<EMContact> contacts =
+      List<String> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromDB();
+      List<ContactModel> list = await _fetchUserInfo(contacts);
       _contactList.clear();
-      for (var contact in contacts) {
-        _contactList.add(ContactModel.contact(contact));
-      }
+      _contactList.addAll(list);
     } on EMError {
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       _contactList.insertAll(0, _topList);
       setState(() {});
-      // _fetchContactsFromServer();
+      Future.delayed(Duration(seconds: 3)).then((value) {
+        _fetchContactsFromServer(count);
+      });
     }
+  }
+
+  Future<List<ContactModel>> _fetchUserInfo(List<String> emIds) async {
+    List<ContactModel> ret = [];
+
+    Map<String, EMUserInfo> map = await EMClient.getInstance.userInfoManager
+        .fetchUserInfoByIdWithExpireTime(emIds);
+
+    List<String> hasInfoIds = map.keys.toList();
+    for (var hasInfoId in hasInfoIds) {
+      ret.add(ContactModel.fromUserInfo(map[hasInfoId]));
+    }
+
+    List<String> noInfoIds = emIds.toList();
+    noInfoIds.removeWhere((element) {
+      return hasInfoIds.contains(element);
+    });
+
+    for (var noInfoId in noInfoIds) {
+      ret.add(ContactModel.fromUserId(noInfoId));
+    }
+
+    return ret;
   }
 
   @override

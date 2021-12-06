@@ -17,6 +17,7 @@
         return nil;
     }
     
+    
     NSString *from = aJson[@"from"];
     if (from.length == 0) {
         from = EMClient.sharedClient.currentUsername;
@@ -34,9 +35,11 @@
     if (aJson[@"msgId"]) {
         msg.messageId = aJson[@"msgId"];
     }
+    
     msg.direction = ({
         [aJson[@"direction"] isEqualToString:@"send"] ? EMMessageDirectionSend : EMMessageDirectionReceive;
     });
+    
     
     msg.chatType = [msg chatTypeFromInt:[aJson[@"chatType"] intValue]];
     msg.status = [msg statusFromInt:[aJson[@"status"] intValue]];
@@ -45,6 +48,7 @@
     msg.isReadAcked = [aJson[@"hasReadAck"] boolValue];
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
     msg.isRead = [aJson[@"hasRead"] boolValue];
+    msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
     msg.ext = aJson[@"attributes"];
     return msg;
 }
@@ -59,6 +63,7 @@
     ret[@"hasRead"] = @(self.isRead);
     ret[@"hasDeliverAck"] = @(self.isDeliverAcked);
     ret[@"hasReadAck"] = @(self.isReadAcked);
+    ret[@"needGroupAck"] = @(self.isNeedGroupAck);
     ret[@"serverTime"] = @(self.timestamp);
     ret[@"attributes"] = self.ext ?: @{};
     ret[@"localTime"] = @(self.localTime);

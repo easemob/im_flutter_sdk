@@ -27,8 +27,6 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
-    //[EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
-    
     if ([EMMethodKeyAddContact isEqualToString:call.method]) {
         [self addContact:call.arguments result:result];
     } else if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
@@ -43,6 +41,8 @@
         [self removeUserFromBlockList:call.arguments result:result];
     } else if ([EMMethodKeyGetBlockListFromServer isEqualToString:call.method]) {
         [self getBlockListFromServer:call.arguments result:result];
+    } else if ([EMMethodKeyGetBlockListFromDB isEqualToString:call.method]){
+        [self getBlockListFromDB:call.arguments result:result];
     } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
         [self acceptInvitation:call.arguments result:result];
     } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
@@ -143,6 +143,12 @@
                             error:aError
                            object:aList];
     }];
+}
+
+- (void)getBlockListFromDB:(NSDictionary *)param result:(FlutterResult)result {
+    
+    NSArray * list = [EMClient.sharedClient.contactManager getBlackList];
+    [self wrapperCallBack:result channelName:EMMethodKeyGetBlockListFromDB error:nil object:list];
 }
 
 - (void)acceptInvitation:(NSDictionary *)param result:(FlutterResult)result {

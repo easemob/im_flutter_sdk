@@ -443,6 +443,11 @@ class EMMessageHelper {
             message.setUnread(!json.getBoolean("hasRead"));
         }
         message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
+        message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
+        if (json.has("groupAckCount")) {
+            message.setGroupAckCount(json.getInt("groupAckCount"));
+        }
+
         message.setLocalTime(json.getLong("localTime"));
         message.setMsgTime(json.getLong("serverTime"));
         message.setStatus(statusFromInt(json.getInt("status")));
@@ -535,6 +540,8 @@ class EMMessageHelper {
         data.put("conversationId", message.conversationId());
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
+        data.put("needGroupAck", message.isNeedGroupAck());
+        data.put("groupAckCount", message.groupAckCount());
 
         return data;
     }
@@ -594,7 +601,7 @@ class EMMessageHelper {
 }
 
 class EMGroupAckHelper {
-    static Map<String, Object>groupAckToJson(EMGroupReadAck ack) {
+    static Map<String, Object>toJson(EMGroupReadAck ack) {
         Map<String, Object> data = new HashMap<>();
         data.put("msg_id", ack.getMsgId());
         data.put("from", ack.getFrom());
@@ -966,6 +973,10 @@ class EMCursorResultHelper {
 
             if (obj instanceof EMChatRoom) {
                 jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
+            }
+
+            if (obj instanceof EMGroupReadAck) {
+                jsonList.add(EMGroupAckHelper.toJson((EMGroupReadAck) obj));
             }
 
             if (obj instanceof String) {
