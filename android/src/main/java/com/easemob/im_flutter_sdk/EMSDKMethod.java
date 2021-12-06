@@ -29,9 +29,11 @@ public class EMSDKMethod {
     static final String addUserToBlockList = "addUserToBlockList";
     static final String removeUserFromBlockList = "removeUserFromBlockList";
     static final String getBlockListFromServer = "getBlockListFromServer";
+    static final String getBlockListFromDB = "getBlockListFromDB";
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
+
 
     static final String onContactChanged = "onContactChanged";
 
@@ -39,6 +41,7 @@ public class EMSDKMethod {
     static final String sendMessage = "sendMessage";
     static final String resendMessage = "resendMessage";
     static final String ackMessageRead = "ackMessageRead";
+    static final String ackGroupMessageRead = "ackGroupMessageRead";
     static final String ackConversationRead = "ackConversationRead";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";
@@ -59,6 +62,7 @@ public class EMSDKMethod {
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
     static final String onMessagesRead = "onMessagesRead";
+    static final String onGroupMessageRead = "onGroupMessageRead";
     static final String onMessagesDelivered = "onMessagesDelivered";
     static final String onMessagesRecalled = "onMessagesRecalled";
 
@@ -122,6 +126,7 @@ public class EMSDKMethod {
     static final String fetchChatRoomBlockList = "fetchChatRoomBlockList";
     static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
     static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
+    static final String asyncFetchGroupAcks = "asyncFetchGroupAck";
 
     // EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChanged";

@@ -39,6 +39,7 @@ static NSString *const EMMethodKeyGetAllContactsFromDB = @"getAllContactsFromDB"
 static NSString *const EMMethodKeyAddUserToBlockList = @"addUserToBlockList";
 static NSString *const EMMethodKeyRemoveUserFromBlockList = @"removeUserFromBlockList";
 static NSString *const EMMethodKeyGetBlockListFromServer = @"getBlockListFromServer";
+static NSString *const EMMethodKeyGetBlockListFromDB = @"getBlockListFromDB";
 static NSString *const EMMethodKeyAcceptInvitation = @"acceptInvitation";
 static NSString *const EMMethodKeyDeclineInvitation = @"declineInvitation";
 static NSString *const EMMethodKeyGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatform";
@@ -50,6 +51,7 @@ static NSString *const EMMethodKeyOnContactChanged = @"onContactChanged";
 static NSString *const EMMethodKeySendMessage = @"sendMessage";
 static NSString *const EMMethodKeyResendMessage = @"resendMessage";
 static NSString *const EMMethodKeyAckMessageRead = @"ackMessageRead";
+static NSString *const EMMethodKeyAckGroupMessageRead = @"ackGroupMessageRead";
 static NSString *const EMMethodKeyAckConversationRead = @"ackConversationRead";
 static NSString *const EMMethodKeyRecallMessage = @"recallMessage";
 static NSString *const EMMethodKeyGetConversation = @"getConversation";
@@ -69,11 +71,13 @@ static NSString *const EMMethodKeyUpdateConversationsName = @"updateConversation
 static NSString *const EMMethodKeyFetchHistoryMessages = @"fetchHistoryMessages";
 static NSString *const EMMethodKeySearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString *const EMMethodKeyGetMessage = @"getMessage";
+static NSString *const EMMethodKeyAsyncFetchGroupAcks = @"asyncFetchGroupAcks";
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const EMMethodKeyOnMessagesReceived = @"onMessagesReceived";
 static NSString *const EMMethodKeyOnCmdMessagesReceived = @"onCmdMessagesReceived";
 static NSString *const EMMethodKeyOnMessagesRead = @"onMessagesRead";
+static NSString *const EMMethodKeyOnGroupMessageRead = @"onGroupMessageRead";
 static NSString *const EMMethodKeyOnMessagesDelivered = @"onMessagesDelivered";
 static NSString *const EMMethodKeyOnMessagesRecalled = @"onMessagesRecalled";
 

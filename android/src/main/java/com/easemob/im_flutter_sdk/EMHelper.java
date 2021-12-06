@@ -15,6 +15,7 @@ import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMGroupManager;
 import com.hyphenate.chat.EMGroupOptions;
+import com.hyphenate.chat.EMGroupReadAck;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
@@ -442,6 +443,11 @@ class EMMessageHelper {
             message.setUnread(!json.getBoolean("hasRead"));
         }
         message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
+        message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
+        if (json.has("groupAckCount")) {
+            message.setGroupAckCount(json.getInt("groupAckCount"));
+        }
+
         message.setLocalTime(json.getLong("localTime"));
         message.setMsgTime(json.getLong("serverTime"));
         message.setStatus(statusFromInt(json.getInt("status")));
@@ -534,6 +540,8 @@ class EMMessageHelper {
         data.put("conversationId", message.conversationId());
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
+        data.put("needGroupAck", message.isNeedGroupAck());
+        data.put("groupAckCount", message.groupAckCount());
 
         return data;
     }
@@ -591,6 +599,21 @@ class EMMessageHelper {
     }
 
 }
+
+class EMGroupAckHelper {
+    static Map<String, Object>toJson(EMGroupReadAck ack) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("msg_id", ack.getMsgId());
+        data.put("from", ack.getFrom());
+        data.put("count", ack.getCount());
+        data.put("timestamp", ack.getTimestamp());
+        if (ack.getContent() != null) {
+            data.put("content", ack.getContent());
+        }
+        return data;
+    }
+}
+
 
 class EMMessageBodyHelper {
 
@@ -950,6 +973,10 @@ class EMCursorResultHelper {
 
             if (obj instanceof EMChatRoom) {
                 jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
+            }
+
+            if (obj instanceof EMGroupReadAck) {
+                jsonList.add(EMGroupAckHelper.toJson((EMGroupReadAck) obj));
             }
 
             if (obj instanceof String) {

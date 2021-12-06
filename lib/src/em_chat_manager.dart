@@ -10,7 +10,7 @@ class EMChatManager implements EMMessageStatusListener {
   static const MethodChannel _channel =
       const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
 
-  final _messageListeners = [];
+  final List<EMChatManagerListener> _messageListeners = [];
 
   EMChatManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
@@ -20,6 +20,8 @@ class EMChatManager implements EMMessageStatusListener {
         return _onCmdMessagesReceived(call.arguments);
       } else if (call.method == EMSDKMethod.onMessagesRead) {
         return _onMessagesRead(call.arguments);
+      } else if (call.method == EMSDKMethod.onGroupMessageRead) {
+        return _onGroupMessageRead(call.arguments);
       } else if (call.method == EMSDKMethod.onMessagesDelivered) {
         return _onMessagesDelivered(call.arguments);
       } else if (call.method == EMSDKMethod.onMessagesRecalled) {
@@ -66,14 +68,33 @@ class EMChatManager implements EMMessageStatusListener {
   }
 
   /// 发送消息已读 [message].
-  Future<bool?> sendMessageReadAck(EMMessage message) async {
+  Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
     Map result = await _channel.invokeMethod(EMSDKMethod.ackMessageRead, req);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.ackMessageRead);
   }
 
-  Future<bool?> sendConversationReadAck(String conversationId) async {
+  Future<bool> sendGroupMessageReadAck(
+    String msgId,
+    String groupId, {
+    String? content,
+  }) async {
+    Map req = {
+      "msg_id": msgId,
+      "group_id": groupId,
+    };
+    if (content != null) {
+      req["content"] = content;
+    }
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.ackGroupMessageRead, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.ackMessageRead);
+  }
+
+  /// 发送会话已读 [conversationId]为会话Id
+  Future<bool> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.ackConversationRead, req);
@@ -82,7 +103,7 @@ class EMChatManager implements EMMessageStatusListener {
   }
 
   /// 撤回发送的消息(增值服务), 默认时效为2分钟，超过2分钟无法撤回.
-  Future<bool?> recallMessage(String messageId) async {
+  Future<bool> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
     Map result = await _channel.invokeMethod(EMSDKMethod.recallMessage, req);
     EMError.hasErrorFromResult(result);
@@ -119,7 +140,7 @@ class EMChatManager implements EMMessageStatusListener {
   }
 
   /// 将所有对话标记为已读.
-  Future<bool?> markAllConversationsAsRead() async {
+  Future<bool> markAllConversationsAsRead() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.markAllChatMsgAsRead);
     EMError.hasErrorFromResult(result);
     return result.boolValue(EMSDKMethod.markAllChatMsgAsRead);
@@ -142,7 +163,7 @@ class EMChatManager implements EMMessageStatusListener {
   }
 
   /// 导入消息 [messages].
-  Future<bool?> importMessages(List<EMMessage> messages) async {
+  Future<bool> importMessages(List<EMMessage> messages) async {
     List<Map> list = [];
     messages.forEach((element) {
       list.add(element.toJson());
@@ -202,7 +223,7 @@ class EMChatManager implements EMMessageStatusListener {
   // }
 
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
-  Future<bool?> deleteConversation(
+  Future<bool> deleteConversation(
     String conversationId, [
     bool deleteMessages = true,
   ]) async {
@@ -273,6 +294,37 @@ class EMChatManager implements EMMessageStatusListener {
     return list;
   }
 
+  /// 从服务器获取群组已读回执。
+  /// [msgId], 需要获取的群消息id。
+  /// [startAckId], 起始的ackId, 用于分页。
+  /// [pageSize], 返回的数量。
+  Future<EMCursorResult<EMGroupMessageAck?>> asyncFetchGroupAcks(
+    String msgId, {
+    String? startAckId,
+    int pageSize = 0,
+  }) async {
+    Map req = Map();
+    req["msg_id"] = msgId;
+    if (startAckId != null) {
+      req["ack_id"] = startAckId;
+    }
+    req["pageSize"] = pageSize;
+
+    Map data =
+        await _channel.invokeMethod(EMSDKMethod.asyncFetchGroupAcks, req);
+
+    EMError.hasErrorFromResult(data);
+
+    EMCursorResult<EMGroupMessageAck?> result = EMCursorResult.fromJson(
+      data[EMSDKMethod.asyncFetchGroupAcks],
+      dataItemCallback: (map) {
+        return EMGroupMessageAck.fromJson(map);
+      },
+    );
+
+    return result;
+  }
+
   /// @nodoc
   Future<void> _onMessagesReceived(List messages) async {
     List<EMMessage> messageList = [];
@@ -303,6 +355,17 @@ class EMChatManager implements EMMessageStatusListener {
     }
     for (var listener in _messageListeners) {
       listener.onMessagesRead(list);
+    }
+  }
+
+  /// @nodoc
+  Future<void> _onGroupMessageRead(List messages) async {
+    List<EMGroupMessageAck> list = [];
+    for (var message in messages) {
+      list.add(EMGroupMessageAck.fromJson(message));
+    }
+    for (var listener in _messageListeners) {
+      listener.onGroupMessageRead(list);
     }
   }
 
@@ -369,6 +432,9 @@ abstract class EMChatManagerListener {
 
   /// 收到[messages]消息已读
   void onMessagesRead(List<EMMessage> messages) {}
+
+  /// 收到[groupMessageAcks]群消息已读回调
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
 
   /// 收到[messages]消息已送达
   void onMessagesDelivered(List<EMMessage> messages) {}

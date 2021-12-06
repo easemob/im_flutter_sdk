@@ -28,6 +28,7 @@ class EMSDKMethod {
   static const String addUserToBlockList = 'addUserToBlockList';
   static const String removeUserFromBlockList = 'removeUserFromBlockList';
   static const String getBlockListFromServer = 'getBlockListFromServer';
+  static const String getBlockListFromDB = 'getBlockListFromDB';
   static const String acceptInvitation = 'acceptInvitation';
   static const String declineInvitation = 'declineInvitation';
   static const String getSelfIdsOnOtherPlatform = 'getSelfIdsOnOtherPlatform';
@@ -39,6 +40,7 @@ class EMSDKMethod {
   static const String sendMessage = 'sendMessage';
   static const String resendMessage = 'resendMessage';
   static const String ackMessageRead = 'ackMessageRead';
+  static const String ackGroupMessageRead = 'ackGroupMessageRead';
   static const String ackConversationRead = 'ackConversationRead';
   static const String recallMessage = 'recallMessage';
   static const String getConversation = 'getConversation';
@@ -55,11 +57,13 @@ class EMSDKMethod {
   static const String fetchHistoryMessages = 'fetchHistoryMessages';
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
   static const String getMessage = 'getMessage';
+  static const String asyncFetchGroupAcks = 'asyncFetchGroupAcks';
 
   /// EMChatManager listener
   static const String onMessagesReceived = 'onMessagesReceived';
   static const String onCmdMessagesReceived = 'onCmdMessagesReceived';
   static const String onMessagesRead = 'onMessagesRead';
+  static const String onGroupMessageRead = 'onGroupMessageRead';
   static const String onMessagesDelivered = 'onMessagesDelivered';
   static const String onMessagesRecalled = 'onMessagesRecalled';
   static const String onMessageChanged = 'onMessageChanged';
