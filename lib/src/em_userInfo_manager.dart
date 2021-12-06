@@ -134,46 +134,46 @@ class EMUserInfoManager {
 
   // 整型转化用户属性类型 【int => EMUserInfoType】
   static EMUserInfoType userInfoTypeFromInt(int type) {
-    EMUserInfoType ret = EMUserInfoType.EMUserInfoTypeNickName;
+    EMUserInfoType ret = EMUserInfoType.NickName;
     switch (type) {
       case 0:
         {
-          ret = EMUserInfoType.EMUserInfoTypeNickName;
+          ret = EMUserInfoType.NickName;
         }
         break;
       case 1:
         {
-          ret = EMUserInfoType.EMUserInfoTypeAvatarURL;
+          ret = EMUserInfoType.AvatarURL;
         }
         break;
       case 2:
         {
-          ret = EMUserInfoType.EMUserInfoTypePhone;
+          ret = EMUserInfoType.Phone;
         }
         break;
       case 3:
         {
-          ret = EMUserInfoType.EMUserInfoTypeMail;
+          ret = EMUserInfoType.Mail;
         }
         break;
       case 4:
         {
-          ret = EMUserInfoType.EMUserInfoTypeGender;
+          ret = EMUserInfoType.Gender;
         }
         break;
       case 5:
         {
-          ret = EMUserInfoType.EMUserInfoTypeSign;
+          ret = EMUserInfoType.Sign;
         }
         break;
       case 6:
         {
-          ret = EMUserInfoType.EMUserInfoTypeBirth;
+          ret = EMUserInfoType.Birth;
         }
         break;
       case 7:
         {
-          ret = EMUserInfoType.EMUserInfoTypeExt;
+          ret = EMUserInfoType.Ext;
         }
     }
     return ret;
@@ -183,42 +183,42 @@ class EMUserInfoManager {
   static int _userInfoTypeToInt(EMUserInfoType type) {
     int ret = 0;
     switch (type) {
-      case EMUserInfoType.EMUserInfoTypeNickName:
+      case EMUserInfoType.NickName:
         {
           ret = 0;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypeAvatarURL:
+      case EMUserInfoType.AvatarURL:
         {
           ret = 1;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypePhone:
+      case EMUserInfoType.Phone:
         {
           ret = 2;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypeMail:
+      case EMUserInfoType.Mail:
         {
           ret = 3;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypeGender:
+      case EMUserInfoType.Gender:
         {
           ret = 4;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypeSign:
+      case EMUserInfoType.Sign:
         {
           ret = 5;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypeBirth:
+      case EMUserInfoType.Birth:
         {
           ret = 6;
         }
         break;
-      case EMUserInfoType.EMUserInfoTypeExt:
+      case EMUserInfoType.Ext:
         {
           ret = 7;
         }

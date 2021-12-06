@@ -2,11 +2,20 @@ import 'dart:ui';
 
 import 'package:azlistview/azlistview.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:lpinyin/lpinyin.dart';
 
 class ContactModel with ISuspensionBean {
-  ContactModel.contact(EMContact contact)
-      : this._eid = contact.userInfo.userId,
+  EMUserInfo _userInfo;
+
+  ContactModel.fromUserId(String userId)
+      : this._eid = userId,
         this._isCustom = false;
+
+  ContactModel.fromUserInfo(EMUserInfo userInfo)
+      : this._userInfo = userInfo,
+        this._eid = userInfo.userId,
+        this._isCustom = false;
+
   ContactModel.custom(String name, [Image avatar])
       : this._eid = name,
         this._isCustom = true;
@@ -17,14 +26,16 @@ class ContactModel with ISuspensionBean {
   String _firstLetter;
 
   bool get isCustom => _isCustom;
-  String get name => _eid;
+  String get showName => _userInfo?.nickName ?? _userInfo?.userId ?? _eid;
   String get contactId => _eid;
   String get firstLetter {
     if (_firstLetter == null) {
       if (_isCustom) {
         return '☆';
       }
-      String str = _eid.substring(0, 1)?.toUpperCase();
+
+      String str = PinyinHelper.getShortPinyin(showName.substring(0, 1) ?? "")
+          .toUpperCase();
       if (!RegExp(r'[A-Z]').hasMatch(str)) {
         str = '#';
       }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:ease_call_kit/ease_call_kit.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +19,7 @@ import 'package:provider/provider.dart';
 import 'chat_face_view.dart';
 import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
+import 'dart:convert' as convert;
 
 class ChatPage extends StatefulWidget {
   ChatPage(
@@ -369,6 +372,13 @@ class _ChatPageState extends State<ChatPage>
   /// 消息长按
   _messageOnLongPress(EMMessage msg) async {
     print('长按消息 $msg');
+    String toAddUsername;
+    String reason;
+    try {
+      EMClient.getInstance.contactManager.addContact(toAddUsername, reason);
+    } on EMError catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   /// 发送文字消息
@@ -638,25 +648,6 @@ class _ChatPageState extends State<ChatPage>
       String roomId, String roomName, String participant) {}
 
   @override
-  void callDidEnd(String channelName, EaseCallEndReason reason, int time,
-      EaseCallType callType) {}
-
-  @override
-  void callDidOccurError(EaseCallError error) {
-    print('call error --- $error');
-  }
-
-  @override
-  void callDidReceive(EaseCallType callType, String inviter, Map ext) {}
-
-  @override
-  void callDidRequestRTCToken(
-      String appId, String channelName, String account) {}
-
-  @override
-  void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
-
-  @override
   void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted) {}
 
   @override
@@ -664,4 +655,61 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
+
+  @override
+  void callDidEnd(String channelName, EaseCallEndReason reason, int time,
+      EaseCallType callType) {}
+
+  @override
+  void callDidJoinChannel(String channelName, int uid) {}
+
+  @override
+  void callDidOccurError(EaseCallError error) {}
+
+  @override
+  void callDidReceive(EaseCallType callType, String inviter, Map ext) {}
+
+  @override
+  void callDidRequestRTCToken(
+      String appId, String channelName, String eid) async {
+    String emUsername = EMClient.getInstance.currentUsername;
+    await fetchRTCToken(channelName, emUsername);
+  }
+
+  @override
+  void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
+
+  Future<void> fetchRTCToken(String channelName, String username) async {
+    String token = EMClient.getInstance.accessToken;
+    if (token == null) return null;
+    var httpClient = new HttpClient();
+    var uri = Uri.http("a1.easemob.com", "/token/rtcToken/v1", {
+      "userAccount": username,
+      "channelName": channelName,
+      "appkey": EMClient.getInstance.options.appKey,
+    });
+    var request = await httpClient.getUrl(uri);
+    request.headers.add("Authorization", "Bearer $token");
+    HttpClientResponse response = await request.close();
+    httpClient.close();
+    if (response.statusCode == HttpStatus.ok) {
+      var _content = await response.transform(Utf8Decoder()).join();
+      debugPrint(_content);
+      Map<String, dynamic> map = convert.jsonDecode(_content);
+      if (map != null) {
+        if (map["code"] == "RES_0K") {
+          debugPrint("获取数据成功: $map");
+          String rtcToken = map["accessToken"];
+          int agoraUserId = map["agoraUserId"];
+          await EaseCallKit.setRTCToken(rtcToken, channelName, agoraUserId);
+        }
+      }
+    }
+  }
+
+  @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
+  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
 }
