@@ -3,7 +3,7 @@
 .dart_tool/
 .idea
 .vscode
-*.iml
+# *.iml
 gitpull.sh
 gitpush.sh
 
@@ -20,11 +20,11 @@ example/ios/Podfile.lock.classpath
 **/*.classpath
 
 # Android related
-**/android/**/gradle-wrapper.jar
+# **/android/**/gradle-wrapper.jar
 **/android/.gradle
 **/android/captures/
-**/android/gradlew
-**/android/gradlew.bat
+# **/android/gradlew
+# **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
@@ -56,7 +56,7 @@ example/ios/Podfile.lock.classpath
 **/ios/Flutter/flutter_export_environment.sh
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
-android/gradle/wrapper/gradle-wrapper.properties
+# android/gradle/wrapper/gradle-wrapper.properties
 
 .history/
 **/*/.flutter-plugins-dependencies
