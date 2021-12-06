@@ -28,6 +28,7 @@ class ContactModel with ISuspensionBean {
 
   bool get isCustom => _isCustom;
   String get showName {
+    if (_showName != null) return _showName;
     _showName = _userInfo?.nickName ?? _userInfo?.userId ?? _eid;
     if (_showName.length == 0) {
       _showName = _eid;
