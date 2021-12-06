@@ -6,6 +6,7 @@ import 'package:lpinyin/lpinyin.dart';
 
 class ContactModel with ISuspensionBean {
   EMUserInfo _userInfo;
+  String _showName;
 
   ContactModel.fromUserId(String userId)
       : this._eid = userId,
@@ -26,7 +27,15 @@ class ContactModel with ISuspensionBean {
   String _firstLetter;
 
   bool get isCustom => _isCustom;
-  String get showName => _userInfo?.nickName ?? _userInfo?.userId ?? _eid;
+  String get showName {
+    if (_showName != null) return _showName;
+    _showName = _userInfo?.nickName ?? _userInfo?.userId ?? _eid;
+    if (_showName.length == 0) {
+      _showName = _eid;
+    }
+    return _showName;
+  }
+
   String get contactId => _eid;
   String get firstLetter {
     if (_firstLetter == null) {
