@@ -49,6 +49,8 @@
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
     msg.isRead = [aJson[@"hasRead"] boolValue];
     msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
+    // read only
+    // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
     msg.ext = aJson[@"attributes"];
     return msg;
 }
@@ -65,6 +67,7 @@
     ret[@"hasReadAck"] = @(self.isReadAcked);
     ret[@"needGroupAck"] = @(self.isNeedGroupAck);
     ret[@"serverTime"] = @(self.timestamp);
+    ret[@"groupAckCount"] = @(self.groupAckCount);
     ret[@"attributes"] = self.ext ?: @{};
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = @([self statusToInt:self.status]);
