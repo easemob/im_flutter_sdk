@@ -394,7 +394,7 @@ class EMMessage {
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
-      ..groupAckCount = map["groupAckCount"] as int
+      ..groupAckCount = map["groupAckCount"] as int? ?? 0
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map['msgId'] as String?
       ..conversationId = map['conversationId'] as String?
