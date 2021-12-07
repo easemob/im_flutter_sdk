@@ -220,7 +220,7 @@ class EMChatRoomManager {
   }
 
   /// @nodoc 获取聊天室成员列表，[roomId] [cursor] [pageSize]
-  Future<EMCursorResult<EMChatRoom>> fetchChatRoomMembers(
+  Future<EMCursorResult<String?>> fetchChatRoomMembers(
     String roomId, {
     String cursor = '',
     int pageSize = 200,
@@ -229,7 +229,7 @@ class EMChatRoomManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMembers, req);
     EMError.hasErrorFromResult(result);
-    return EMCursorResult<EMChatRoom>.fromJson(
+    return EMCursorResult<String?>.fromJson(
         result[EMSDKMethod.fetchChatRoomMembers],
         dataItemCallback: (obj) => obj);
   }

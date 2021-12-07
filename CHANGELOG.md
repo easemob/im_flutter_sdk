@@ -3,8 +3,8 @@
 * 支持gcm推送点击
 
 ## 3.8.3+2
-增加群组已读回执；
-不在提供EMContact类，直接返回String类型username;
+* 增加群组已读回执；
+* 不在提供EMContact类，直接返回String类型username;
 
 ## 3.8.3
 * 增加用户属性；
