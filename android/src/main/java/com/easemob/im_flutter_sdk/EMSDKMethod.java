@@ -147,6 +147,7 @@ public class EMSDKMethod {
     static final String getGroupFileListFromServer = "getGroupFileList";
     static final String getGroupAnnouncementFromServer = "getGroupAnnouncementFromServer";
     static final String addMembers = "addMembers";
+    static final String inviterUser = "inviterUser";
     static final String removeMembers = "removeMembers";
     static final String blockMembers = "blockMembers";
     static final String unblockMembers = "unblockMembers";

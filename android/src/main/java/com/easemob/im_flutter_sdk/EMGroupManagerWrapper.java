@@ -78,6 +78,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 getGroupBlockListFromServer(param, EMSDKMethod.getGroupBlockListFromServer, result);
             } else if (EMSDKMethod.addMembers.equals(call.method)) {
                 addMembers(param, EMSDKMethod.addMembers, result);
+            } else if (EMSDKMethod.inviterUser.equals(call.method)){
+                inviterUser(param, EMSDKMethod.inviterUser, result);
             } else if (EMSDKMethod.removeMembers.equals(call.method)) {
                 removeMembers(param, EMSDKMethod.removeMembers, result);
             } else if (EMSDKMethod.blockMembers.equals(call.method)) {
@@ -335,6 +337,22 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 new EMValueWrapperCallBack<String>(result, channelName));
     }
 
+    private void inviterUser(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        String reason = null;
+        if (param.has("reason")) {
+            reason = param.getString("reason");
+        }
+        JSONArray array = param.getJSONArray("members");
+        String[] members = new String[array.length()];
+        for (int i = 0; i < array.length(); i++) {
+            members[i] = array.getString(i);
+        }
+
+        EMClient.getInstance().groupManager().asyncInviteUser(groupId, members, reason,
+                new EMWrapperCallBack(result, channelName, true));
+    }
+
     private void addMembers(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         JSONArray array = param.getJSONArray("members");
@@ -343,6 +361,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         for (int i = 0; i < array.length(); i++) {
             members[i] = array.getString(i);
         }
+
 
         EMClient.getInstance().groupManager().asyncAddUsersToGroup(groupId, members,
                 new EMWrapperCallBack(result, channelName, true));
