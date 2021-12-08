@@ -157,6 +157,7 @@ class EMSDKMethod {
   static const String getGroupAnnouncementFromServer =
       'getGroupAnnouncementFromServer';
   static const String addMembers = 'addMembers';
+  static const String inviterUser = 'inviterUser';
   static const String removeMembers = 'removeMembers';
   static const String blockMembers = 'blockMembers';
   static const String unblockMembers = 'unblockMembers';

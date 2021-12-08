@@ -158,6 +158,7 @@ static NSString *const EMMethodKeyIsMemberInWhiteListFromServer = @"isMemberInWh
 static NSString *const EMMethodKeyGetGroupFileListFromServer = @"getGroupFileListFromServer";
 static NSString *const EMMethodKeyGetGroupAnnouncementFromServer = @"getGroupAnnouncementFromServer";
 static NSString *const EMMethodKeyAddMembers = @"addMembers";
+static NSString *const EMMethodKeyInviterUser = @"inviterUser";
 static NSString *const EMMethodKeyRemoveMembers = @"removeMembers";
 static NSString *const EMMethodKeyBlockMembers = @"blockMembers";
 static NSString *const EMMethodKeyUnblockMembers = @"unblockMembers";
