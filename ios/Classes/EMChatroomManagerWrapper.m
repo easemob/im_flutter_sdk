@@ -103,6 +103,24 @@
     else if ([EMMethodKeyUpdateChatRoomAnnouncement isEqualToString:call.method]) {
         [self updateChatroomAnnouncement:call.arguments result:result];
     }
+    else if ([EMMethodKeyAddMembersToChatRoomWhiteList isEqualToString:call.method]) {
+        [self addMembersToChatRoomWhiteList:call.arguments result:result];
+    }
+    else if ([EMMethodKeyRemoveMembersFromChatRoomWhiteList isEqualToString:call.method]) {
+        [self removeMembersFromChatRoomWhiteList:call.arguments result:result];
+    }
+    else if ([EMMethodKeyFetchChatRoomWhiteListFromServer isEqualToString:call.method]) {
+        [self fetchChatRoomWhiteListFromServer:call.arguments result:result];
+    }
+    else if ([EMMethodKeyIsMemberInChatRoomWhiteListFromServer isEqualToString:call.method]) {
+        [self isMemberInChatRoomWhiteListFromServer:call.arguments result:result];
+    }
+    else if ([EMMethodKeyMuteAllChatRoomMembers isEqualToString:call.method]) {
+        [self muteAllChatRoomMembers:call.arguments result:result];
+    }
+    else if ([EMMethodKeyUnMuteAllChatRoomMembers isEqualToString:call.method]) {
+        [self unMuteAllChatRoomMembers:call.arguments result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -492,6 +510,31 @@
                             error:aError
                            object:@(!aError)];
     }];
+}
+
+// TODO: chatroom white list.
+- (void)addMembersToChatRoomWhiteList:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
+
+- (void)removeMembersFromChatRoomWhiteList:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
+
+- (void)isMemberInChatRoomWhiteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
+
+- (void)fetchChatRoomWhiteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
+
+- (void)muteAllChatRoomMembers:(NSDictionary *)param result:(FlutterResult)result {
+    
+}
+
+- (void)unMuteAllChatRoomMembers:(NSDictionary *)param result:(FlutterResult)result {
+    
 }
 
 #pragma mark - EMChatroomManagerWrapper

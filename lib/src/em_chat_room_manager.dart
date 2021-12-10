@@ -1,5 +1,6 @@
 import "dart:async";
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
 import "em_listeners.dart";
@@ -377,4 +378,74 @@ class EMChatRoomManager {
     EMError.hasErrorFromResult(result);
     return result[EMSDKMethod.fetchChatRoomAnnouncement];
   }
+
+  /*
+  /// 从服务器获取聊天室白名单列表 [roomId]: 聊天室id
+  Future<List<String?>> fetchChatRoomWhiteListFromServer(String roomId) async {
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.fetchChatRoomWhiteListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    List<String?> contacts = [];
+    result[EMSDKMethod.fetchChatRoomWhiteListFromServer]?.forEach((element) {
+      contacts.add(element);
+    });
+    return contacts;
+  }
+
+  /// 判断当前登录账号是否在聊天室白名单中 [roomId]: 聊天室id
+  Future<bool> isMemberInChatRoomWhiteList(String roomId) async {
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+        EMSDKMethod.isMemberInChatRoomWhiteListFromServer, req);
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(EMSDKMethod.isMemberInChatRoomWhiteListFromServer);
+  }
+
+  /// 向聊天室白名单中添加用户[roomId]: 聊天室id, [members]: 需要添加到聊天室的用户id。
+  Future<EMChatRoom?> addMembersToChatRoomWhiteList(
+      String roomId, List<String> members) async {
+    Map req = {
+      "roomId": roomId,
+      "members": members,
+    };
+    Map result = await _channel.invokeMethod(
+      EMSDKMethod.addMembersToChatRoomWhiteList,
+      req,
+    );
+
+    EMError.hasErrorFromResult(result);
+
+    return EMChatRoom.fromJson(
+        result[EMSDKMethod.addMembersToChatRoomWhiteList]);
+  }
+
+  /// 从聊天室中移除白名单成员,[roomId]: 聊天室id, [members]: 需要移除的用户列表。
+  Future<EMChatRoom> removeMembersFromChatRoomWhiteList(
+    String roomId,
+    List<String> members,
+  ) async {
+    Map req = {
+      "roomId": roomId,
+      "members": members,
+    };
+    Map result = await _channel.invokeMethod(
+      EMSDKMethod.addMembersToChatRoomWhiteList,
+      req,
+    );
+
+    EMError.hasErrorFromResult(result);
+
+    return EMChatRoom.fromJson(
+        result[EMSDKMethod.removeMembersFromChatRoomWhiteList]);
+  }
+
+  Future<bool> muteAllChatRoomMembers(String roomId) async {
+    return false;
+  }
+
+  Future<bool> unMuteAllChatRoomMembers(String roomId) async {
+    return false;
+  }
+  */
 }

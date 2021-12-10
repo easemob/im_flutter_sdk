@@ -10,6 +10,7 @@
 static NSString *const EMMethodKeyDebugLog = @"debugLog";
 static NSString *const EMMethodKeyErrorLog = @"errorLog";
 
+
 #pragma mark - EMClientWrapper
 static NSString *const EMMethodKeyInit = @"init";
 static NSString *const EMMethodKeyCreateAccount = @"createAccount";
@@ -138,6 +139,15 @@ static NSString *const EMMethodKeyChatRoomUnblockMembers = @"unBlockChatRoomMemb
 static NSString *const EMMethodKeyFetchChatroomBlockListFromServer = @"fetchChatRoomBlockList";
 static NSString *const EMMethodKeyUpdateChatRoomAnnouncement = @"updateChatRoomAnnouncement";
 static NSString *const EMMethodKeyFetchChatroomAnnouncement = @"fetchChatRoomAnnouncement";
+
+static const NSString *EMMethodKeyAddMembersToChatRoomWhiteList = @"addMembersToChatRoomWhiteList";
+static const NSString *EMMethodKeyRemoveMembersFromChatRoomWhiteList = @"removeMembersFromChatRoomWhiteList";
+static const NSString *EMMethodKeyFetchChatRoomWhiteListFromServer = @"fetchChatRoomWhiteListFromServer";
+static const NSString *EMMethodKeyIsMemberInChatRoomWhiteListFromServer = @"isMemberInChatRoomWhiteListFromServer";
+
+static const NSString *EMMethodKeyMuteAllChatRoomMembers = @"muteAllChatRoomMembers";
+static const NSString *EMMethodKeyUnMuteAllChatRoomMembers = @"umMuteAllChatRoomMembers";
+
 
 static NSString *const EMMethodKeyChatroomChanged = @"onChatRoomChanged";
 
