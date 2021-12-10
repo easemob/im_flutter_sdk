@@ -31,11 +31,6 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandler {
 
-    EMGroupManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-        registerEaseListener();
-    }
-
     EMGroupManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();

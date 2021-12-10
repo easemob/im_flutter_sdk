@@ -25,11 +25,6 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler {
 
-    EMChatRoomManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-        registerEaseListener();
-    }
-
     EMChatRoomManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();

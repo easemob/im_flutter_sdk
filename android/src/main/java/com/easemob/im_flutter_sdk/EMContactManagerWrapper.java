@@ -19,11 +19,6 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMContactManagerWrapper extends EMWrapper implements MethodCallHandler {
 
-    EMContactManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-        registerEaseListener();
-    }
-
     EMContactManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
