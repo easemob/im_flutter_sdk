@@ -130,6 +130,17 @@ class EMSDKMethod {
   static const String fetchChatRoomBlockList = 'fetchChatRoomBlockList';
   static const String updateChatRoomAnnouncement = 'updateChatRoomAnnouncement';
   static const String fetchChatRoomAnnouncement = 'fetchChatRoomAnnouncement';
+  static const String addMembersToChatRoomWhiteList =
+      "addMembersToChatRoomWhiteList";
+  static const String removeMembersFromChatRoomWhiteList =
+      "removeMembersFromChatRoomWhiteList";
+  static const String fetchChatRoomWhiteListFromServer =
+      "fetchChatRoomWhiteListFromServer";
+  static const String isMemberInChatRoomWhiteListFromServer =
+      "isMemberInChatRoomWhiteListFromServer";
+
+  static const String muteAllChatRoomMembers = "muteAllChatRoomMembers";
+  static const String unMuteAllChatRoomMembers = "umMuteAllChatRoomMembers";
 
   /// EMChatRoomManagerListener
   static const String chatRoomChange = 'onChatRoomChanged';

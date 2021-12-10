@@ -25,7 +25,8 @@ class EMChatRoom {
       .._blockList = map['blockList']
       .._muteList = map['muteList']
       .._announcement = map['announcement']
-      .._permissionType = EMChatRoom.permissionTypeFromInt(map['permissionType'])
+      .._permissionType =
+          EMChatRoom.permissionTypeFromInt(map['permissionType'])
       .._isAllMemberMuted = map.boolValue('isAllMemberMuted');
   }
 
