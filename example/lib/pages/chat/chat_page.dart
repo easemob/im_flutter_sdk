@@ -1,7 +1,7 @@
-import 'dart:convert';
+// import 'dart:convert';
 import 'dart:io';
 
-import 'package:ease_call_kit/ease_call_kit.dart';
+// import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -36,8 +36,9 @@ class _ChatPageState extends State<ChatPage>
     implements
         ChatInputBarListener,
         EMChatManagerListener,
-        EMChatRoomEventListener,
-        EaseCallKitListener {
+        EMChatRoomEventListener
+/* EaseCallKitListener*/
+{
   List<ChatMoreViewItem> items;
 
   final _scrollController = ScrollController();
@@ -61,7 +62,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void initState() {
     super.initState();
-    EaseCallKit.listener = this;
+    // EaseCallKit.listener = this;
     // 监听键盘弹起收回
     _subscribeId = KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
@@ -124,7 +125,7 @@ class _ChatPageState extends State<ChatPage>
     if (widget.conv?.type == EMConversationType.ChatRoom) {
       EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv?.id);
     }
-    EaseCallKit.dispose();
+    // EaseCallKit.dispose();
     super.dispose();
   }
 
@@ -481,14 +482,14 @@ class _ChatPageState extends State<ChatPage>
   /// 大头针按钮被点击
   _moreVoiceCallBtnOnTap() {
     if (widget.conv.type == EMConversationType.Chat) {
-      EaseCallKit.startSingleCall(widget.conv.id);
+      // EaseCallKit.startSingleCall(widget.conv.id);
     }
   }
 
   _moreVideoCallBtnOnTap() {
     if (widget.conv.type == EMConversationType.Chat) {
-      EaseCallKit.startSingleCall(widget.conv.id,
-          callType: EaseCallType.SingeVideo);
+      // EaseCallKit.startSingleCall(widget.conv.id,
+      //     callType: EaseCallType.SingeVideo);
     }
   }
 
@@ -606,6 +607,9 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
   onConversationsUpdate() {}
 
   @override
@@ -656,6 +660,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
 
+/*
   @override
   void callDidEnd(String channelName, EaseCallEndReason reason, int time,
       EaseCallType callType) {}
@@ -705,11 +710,9 @@ class _ChatPageState extends State<ChatPage>
         }
       }
     }
+    
   }
-
-  @override
-  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
-
   @override
   void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
+  */
 }
