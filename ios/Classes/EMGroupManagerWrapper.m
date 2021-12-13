@@ -92,6 +92,9 @@
     {
         [self addMembers:call.arguments result:result];
     }
+    else if ([EMMethodKeyInviterUser isEqualToString:call.method]){
+        [self inviterUsers:call.arguments result:result];
+    }
     else if ([EMMethodKeyRemoveMembers isEqualToString:call.method])
     {
         [self removeMembers:call.arguments result:result];
@@ -419,6 +422,20 @@
                             error:aError
                            object:[aGroup toJson]];
     }];
+}
+
+- (void)inviterUsers:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.groupManager addMembers:param[@"members"]
+                                            toGroup:param[@"groupId"]
+                                            message:param[@"reason"]
+                                         completion:^(EMGroup *aGroup, EMError *aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyInviterUser
+                            error:aError
+                           object:[aGroup toJson]];
+    }];
+    
 }
 
 - (void)removeMembers:(NSDictionary *)param result:(FlutterResult)result {

@@ -57,6 +57,7 @@ public class EMSDKMethod {
     static final String fetchHistoryMessages = "fetchHistoryMessages";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getMessage = "getMessage";
+    static final String asyncFetchGroupAcks = "asyncFetchGroupAcks";
 
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
@@ -126,7 +127,15 @@ public class EMSDKMethod {
     static final String fetchChatRoomBlockList = "fetchChatRoomBlockList";
     static final String updateChatRoomAnnouncement = "updateChatRoomAnnouncement";
     static final String fetchChatRoomAnnouncement = "fetchChatRoomAnnouncement";
-    static final String asyncFetchGroupAcks = "asyncFetchGroupAck";
+
+    static final String addMembersToChatRoomWhiteList = "addMembersToChatRoomWhiteList";
+    static final String removeMembersFromChatRoomWhiteList = "removeMembersFromChatRoomWhiteList";
+    static final String fetchChatRoomWhiteListFromServer = "fetchChatRoomWhiteListFromServer";
+    static final String isMemberInChatRoomWhiteListFromServer = "isMemberInChatRoomWhiteListFromServer";
+
+    static final String muteAllChatRoomMembers = "muteAllChatRoomMembers";
+    static final String unMuteAllChatRoomMembers = "umMuteAllChatRoomMembers";
+
 
     // EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChanged";
@@ -147,6 +156,7 @@ public class EMSDKMethod {
     static final String getGroupFileListFromServer = "getGroupFileList";
     static final String getGroupAnnouncementFromServer = "getGroupAnnouncementFromServer";
     static final String addMembers = "addMembers";
+    static final String inviterUser = "inviterUser";
     static final String removeMembers = "removeMembers";
     static final String blockMembers = "blockMembers";
     static final String unblockMembers = "unblockMembers";
