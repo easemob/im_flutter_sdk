@@ -1,6 +1,5 @@
 import "dart:async";
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
 import "em_listeners.dart";
