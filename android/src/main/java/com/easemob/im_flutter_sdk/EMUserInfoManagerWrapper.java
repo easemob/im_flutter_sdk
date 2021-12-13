@@ -27,9 +27,6 @@ import io.flutter.plugin.common.PluginRegistry;
 
 
 public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHandler {
-    EMUserInfoManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-    }
 
     EMUserInfoManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);

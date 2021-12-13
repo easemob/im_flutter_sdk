@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +24,6 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
 public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler {
-
-    EMChatRoomManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-        registerEaseListener();
-    }
 
     EMChatRoomManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -85,6 +81,18 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                 updateChatRoomAnnouncement(param, EMSDKMethod.updateChatRoomAnnouncement, result);
             } else if (EMSDKMethod.fetchChatRoomAnnouncement.equals(methodCall.method)) {
                 fetchChatRoomAnnouncement(param, EMSDKMethod.fetchChatRoomAnnouncement, result);
+            } else if (EMSDKMethod.addMembersToChatRoomWhiteList.equals(methodCall.method)) {
+                addMembersToChatRoomWhiteList(param, EMSDKMethod.addMembersToChatRoomWhiteList, result);
+            } else if (EMSDKMethod.removeMembersFromChatRoomWhiteList.equals(methodCall.method)) {
+                removeMembersFromChatRoomWhiteList(param, EMSDKMethod.removeMembersFromChatRoomWhiteList, result);
+            } else if (EMSDKMethod.isMemberInChatRoomWhiteListFromServer.equals(methodCall.method)) {
+                isMemberInChatRoomWhiteListFromServer(param, EMSDKMethod.isMemberInChatRoomWhiteListFromServer, result);
+            } else if (EMSDKMethod.fetchChatRoomWhiteListFromServer.equals(methodCall.method)) {
+                fetchChatRoomWhiteListFromServer(param, EMSDKMethod.fetchChatRoomWhiteListFromServer, result);
+            } else if (EMSDKMethod.muteAllChatRoomMembers.equals(methodCall.method)) {
+                muteAllChatRoomsMembers(param, EMSDKMethod.fetchChatRoomWhiteListFromServer, result);
+            } else if (EMSDKMethod.unMuteAllChatRoomMembers.equals(methodCall.method)) {
+                unMuteAllChatRoomsMembers(param, EMSDKMethod.fetchChatRoomWhiteListFromServer, result);
             } else {
                 super.onMethodCall(methodCall, result);
             }
@@ -457,6 +465,30 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                 onError(result, e);
             }
         });
+    }
+
+    private void addMembersToChatRoomWhiteList(JSONObject param, String channelName, MethodChannel.Result result) {
+
+    }
+
+    private void removeMembersFromChatRoomWhiteList(JSONObject param, String channelName, MethodChannel.Result result) {
+
+    }
+
+    private void isMemberInChatRoomWhiteListFromServer(JSONObject param, String channelName, MethodChannel.Result result) {
+
+    }
+
+    private void fetchChatRoomWhiteListFromServer(JSONObject param, String channelName, MethodChannel.Result result) {
+
+    }
+
+    private void muteAllChatRoomsMembers(JSONObject param, String channelName, MethodChannel.Result result) {
+
+    }
+
+    private void unMuteAllChatRoomsMembers(JSONObject param, String channelName, MethodChannel.Result result) {
+
     }
 
     private void registerEaseListener() {
