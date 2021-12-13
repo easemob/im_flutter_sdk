@@ -27,16 +27,10 @@ public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCa
     public ImFlutterSdkPlugin() {
     }
 
-    /**
-     * Plugin registration.
-     */
-    public static void registerWith(Registrar registrar) {
-        new EMClientWrapper(registrar, "em_client");
-    }
 
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "em_client");
+        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "em_client");
         channel.setMethodCallHandler(new EMClientWrapper(flutterPluginBinding, "em_client"));
     }
 
