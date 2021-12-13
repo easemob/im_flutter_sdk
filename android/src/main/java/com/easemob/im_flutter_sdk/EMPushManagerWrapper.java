@@ -23,10 +23,6 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler {
 
-    EMPushManagerWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-    }
-
     EMPushManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
     }

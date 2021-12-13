@@ -397,7 +397,7 @@ static EMClientWrapper *wrapper = nil;
     application.applicationIconBadgeNumber = 0;
     
     if (NSClassFromString(@"UNUserNotificationCenter")) {
-        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
+//        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
         [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert completionHandler:^(BOOL granted, NSError *error) {
             if (granted) {
 #if !TARGET_IPHONE_SIMULATOR
@@ -425,14 +425,14 @@ static EMClientWrapper *wrapper = nil;
 
 #pragma mark - AppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
-    return YES;
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    
-}
+//- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+//    
+//    return YES;
+//}
+//
+//- (void)applicationDidBecomeActive:(UIApplication *)application {
+//    
+//}
 
 
 @end

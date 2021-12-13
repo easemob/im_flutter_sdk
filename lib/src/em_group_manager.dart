@@ -205,7 +205,7 @@ class EMGroupManager {
     return result[EMSDKMethod.getGroupAnnouncementFromServer];
   }
 
-  /// 邀请用户加入私有群， 用于私有群: PrivateOnlyOwnerInvite / PrivateMemberCanInvite
+  /// 邀请用户加入私有群，用于公开群: PublicJoinNeedApproval / PublicOpenJoin
   Future<void> addMembers(
     String groupId,
     List<String> members, [
@@ -213,6 +213,28 @@ class EMGroupManager {
   ]) async {
     Map req = {'welcome': welcome, 'groupId': groupId, 'members': members};
     Map result = await _channel.invokeMethod(EMSDKMethod.addMembers, req);
+    EMError.hasErrorFromResult(result);
+  }
+
+  /// 邀请用户加入私有群，用于私有群: PrivateOnlyOwnerInvite / PrivateMemberCanInvite
+  Future<void> inviterUser(
+    String groupId,
+    List<String> members, [
+    String? reason,
+  ]) async {
+    Map req = {
+      'groupId': groupId,
+      'members': members,
+    };
+    if (reason != null) {
+      req["reason"] = reason;
+    }
+
+    Map result = await _channel.invokeMethod(
+      EMSDKMethod.inviterUser,
+      req,
+    );
+
     EMError.hasErrorFromResult(result);
   }
 

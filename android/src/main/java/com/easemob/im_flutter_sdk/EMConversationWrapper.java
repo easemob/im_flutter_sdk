@@ -22,10 +22,6 @@ import java.util.Map;
 
 public class EMConversationWrapper extends EMWrapper implements MethodCallHandler{
 
-    EMConversationWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-    }
-
     EMConversationWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
     }

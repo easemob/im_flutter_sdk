@@ -31,11 +31,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     static EMClientWrapper wrapper;
 
-    EMClientWrapper(PluginRegistry.Registrar registrar, String channelName) {
-        super(registrar, channelName);
-        wrapper = this;
-    }
-
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         wrapper = this;
@@ -265,15 +260,15 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         });
     }
 
-    private void registerManagers() {
-        new EMChatManagerWrapper(registrar, "em_chat_manager");
-        new EMContactManagerWrapper(registrar, "em_contact_manager");
-        new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
-        new EMGroupManagerWrapper(registrar, "em_group_manager");
-        new EMConversationWrapper(registrar, "em_conversation");
-        new EMPushManagerWrapper(registrar, "em_push_manager");
-        new EMUserInfoManagerWrapper(registrar, "em_userInfo_manager");
-    }
+//    private void registerManagers() {
+//        new EMChatManagerWrapper(registrar, "em_chat_manager");
+//        new EMContactManagerWrapper(registrar, "em_contact_manager");
+//        new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
+//        new EMGroupManagerWrapper(registrar, "em_group_manager");
+//        new EMConversationWrapper(registrar, "em_conversation");
+//        new EMPushManagerWrapper(registrar, "em_push_manager");
+//        new EMUserInfoManagerWrapper(registrar, "em_userInfo_manager");
+//    }
 
     private void bindingManagers() {
         new EMChatManagerWrapper(binging, "em_chat_manager");
@@ -288,11 +283,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
-        if (binging != null){
-            bindingManagers();
-        }else {
-            registerManagers();
-        }
+        bindingManagers();
         addEMListener();
 
         Map<String, Object> data = new HashMap<>();
