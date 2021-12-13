@@ -1,4 +1,4 @@
-import 'package:ease_call_kit/ease_call_kit.dart';
+// import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/conversations/conversation_item.dart';
 import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -76,7 +76,7 @@ class ConversationPageState extends State<ConversationPage>
                     (value) {
                       List<String> users = value as List<String>;
                       if (users.length > 0) {
-                        EaseCallKit.startInviteUsers(users);
+                        // EaseCallKit.startInviteUsers(users);
                       }
                     },
                   );
