@@ -144,13 +144,13 @@ static NSString *const EMMethodKeyFetchChatroomBlockListFromServer = @"fetchChat
 static NSString *const EMMethodKeyUpdateChatRoomAnnouncement = @"updateChatRoomAnnouncement";
 static NSString *const EMMethodKeyFetchChatroomAnnouncement = @"fetchChatRoomAnnouncement";
 
-static const NSString *EMMethodKeyAddMembersToChatRoomWhiteList = @"addMembersToChatRoomWhiteList";
-static const NSString *EMMethodKeyRemoveMembersFromChatRoomWhiteList = @"removeMembersFromChatRoomWhiteList";
-static const NSString *EMMethodKeyFetchChatRoomWhiteListFromServer = @"fetchChatRoomWhiteListFromServer";
-static const NSString *EMMethodKeyIsMemberInChatRoomWhiteListFromServer = @"isMemberInChatRoomWhiteListFromServer";
+static NSString *const EMMethodKeyAddMembersToChatRoomWhiteList = @"addMembersToChatRoomWhiteList";
+static NSString *const EMMethodKeyRemoveMembersFromChatRoomWhiteList = @"removeMembersFromChatRoomWhiteList";
+static NSString *const EMMethodKeyFetchChatRoomWhiteListFromServer = @"fetchChatRoomWhiteListFromServer";
+static NSString *const EMMethodKeyIsMemberInChatRoomWhiteListFromServer = @"isMemberInChatRoomWhiteListFromServer";
 
-static const NSString *EMMethodKeyMuteAllChatRoomMembers = @"muteAllChatRoomMembers";
-static const NSString *EMMethodKeyUnMuteAllChatRoomMembers = @"umMuteAllChatRoomMembers";
+static NSString *const EMMethodKeyMuteAllChatRoomMembers = @"muteAllChatRoomMembers";
+static NSString *const EMMethodKeyUnMuteAllChatRoomMembers = @"umMuteAllChatRoomMembers";
 
 
 static NSString *const EMMethodKeyChatroomChanged = @"onChatRoomChanged";
