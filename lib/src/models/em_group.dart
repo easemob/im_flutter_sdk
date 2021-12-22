@@ -156,7 +156,11 @@ class EMGroup {
 class EMGroupOptions {
   EMGroupOptions._private();
 
-  EMGroupOptions({required EMGroupStyle style, int count = 200, bool inviteNeedConfirm = false, String extension = ''}) {
+  EMGroupOptions(
+      {required EMGroupStyle style,
+      int count = 200,
+      bool inviteNeedConfirm = false,
+      String extension = ''}) {
     _style = style;
     _maxCount = count;
     _inviteNeedConfirm = inviteNeedConfirm;

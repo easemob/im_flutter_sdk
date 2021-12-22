@@ -20,8 +20,8 @@ class EMSDKMethod {
   static const String onConnected = 'onConnected';
   static const String onDisconnected = 'onDisconnected';
   static const String onSendDataToFlutter = "onSendDataToFlutter";
-  static const String onTokenWillExpire = 'tokenWillExpire';
-  static const String onTokenDidExpire = 'tokenDidExpire';
+  static const String onTokenWillExpire = 'onTokenWillExpire';
+  static const String onTokenDidExpire = 'onTokenDidExpire';
 
   /// EMContactManager methods
   static const String addContact = 'addContact';
