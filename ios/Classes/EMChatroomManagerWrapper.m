@@ -514,27 +514,82 @@
 
 // TODO: chatroom white list.
 - (void)addMembersToChatRoomWhiteList:(NSDictionary *)param result:(FlutterResult)result {
-    
+    NSString *roomId = param[@"roomId"];
+    NSArray *ary = param[@"members"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.roomManager addWhiteListMembers:ary
+                                               fromChatroom:roomId
+                                                 completion:^(EMChatroom *aChatroom, EMError *aError)
+      {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyAddMembersToChatRoomWhiteList
+                            error:aError
+                           object:nil];
+    }] ;
 }
 
 - (void)removeMembersFromChatRoomWhiteList:(NSDictionary *)param result:(FlutterResult)result {
-    
+    NSString *roomId = param[@"roomId"];
+    NSArray *ary = param[@"members"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.roomManager removeWhiteListMembers:ary fromChatroom:roomId completion:^(EMChatroom *aChatroom, EMError *aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyRemoveMembersFromChatRoomWhiteList
+                            error:aError
+                           object:nil];
+    }];
 }
 
 - (void)isMemberInChatRoomWhiteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    
+    NSString *roomId = param[@"roomId"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.roomManager isMemberInWhiteListFromServerWithChatroomId:roomId
+                                                                        completion:^(BOOL inWhiteList, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyIsMemberInChatRoomWhiteListFromServer
+                            error:aError
+                           object:@(inWhiteList)];
+    }];
 }
 
 - (void)fetchChatRoomWhiteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
-    
+    NSString *roomId = param[@"roomId"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.roomManager getChatroomWhiteListFromServerWithId:roomId
+                                                                 completion:^(NSArray *aList, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyFetchChatRoomWhiteListFromServer
+                            error:aError
+                           object:aList];
+    }];
 }
 
 - (void)muteAllChatRoomMembers:(NSDictionary *)param result:(FlutterResult)result {
-    
+    NSString *roomId = param[@"roomId"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.roomManager muteAllMembersFromChatroom:roomId
+                                                       completion:^(EMChatroom *aChatroom, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyMuteAllChatRoomMembers
+                            error:aError
+                           object:@(!aError)];
+    }];
 }
 
 - (void)unMuteAllChatRoomMembers:(NSDictionary *)param result:(FlutterResult)result {
-    
+    NSString *roomId = param[@"roomId"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.roomManager unmuteAllMembersFromChatroom:roomId
+                                                       completion:^(EMChatroom *aChatroom, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyUnMuteAllChatRoomMembers
+                            error:aError
+                           object:@(!aError)];
+    }];
 }
 
 #pragma mark - EMChatroomManagerWrapper
