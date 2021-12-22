@@ -3,6 +3,7 @@ class EMSDKMethod {
   static const String init = 'init';
   static const String createAccount = 'createAccount';
   static const String login = 'login';
+  static const String loginWithAgoraToken = 'loginWithAgoraToken';
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
   static const String isLoggedInBefore = 'isLoggedInBefore';
@@ -19,6 +20,8 @@ class EMSDKMethod {
   static const String onConnected = 'onConnected';
   static const String onDisconnected = 'onDisconnected';
   static const String onSendDataToFlutter = "onSendDataToFlutter";
+  static const String onTokenWillExpire = 'tokenWillExpire';
+  static const String onTokenDidExpire = 'tokenDidExpire';
 
   /// EMContactManager methods
   static const String addContact = 'addContact';

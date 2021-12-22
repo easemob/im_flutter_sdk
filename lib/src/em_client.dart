@@ -40,7 +40,7 @@ class EMClient {
 
   String? _currentUsername;
 
-  bool _isLoginBefore = false;
+  bool? _isLoginBefore;
 
   /// 获取配置信息[EMOptions].
   EMOptions? get options => _options;
@@ -55,7 +55,7 @@ class EMClient {
   String? get currentUsername => _currentUsername;
 
   /// 获取是否登录
-  bool get isLoginBefore => _isLoginBefore;
+  bool? get isLoginBefore => _isLoginBefore;
 
   static EMClient get getInstance =>
       _instance = _instance ?? EMClient._internal();
@@ -76,7 +76,12 @@ class EMClient {
         return _onMultiDeviceEvent(argMap!);
       } else if (call.method == EMSDKMethod.onSendDataToFlutter) {
         return _onReceiveCustomData(argMap!);
+      } else if (call.method == EMSDKMethod.onTokenWillExpire) {
+        return _onTokenWillExpire(argMap);
+      } else if (call.method == EMSDKMethod.onTokenDidExpire) {
+        return _onTokenDidExpire(argMap);
       }
+
       return null;
     });
   }
@@ -114,7 +119,7 @@ class EMClient {
 
   /// 使用用户名(环信id)和密码(或token)登录，[username], [pwdOrToken]
   /// 返回登录成功的id(环信id)
-  Future<String?> login(String username, String pwdOrToken,
+  Future<void> login(String username, String pwdOrToken,
       [bool isPassword = true]) async {
     EMLog.v('login: $username : $pwdOrToken, isPassword: $isPassword');
     Map req = {
@@ -128,8 +133,20 @@ class EMClient {
     _currentUsername = result[EMSDKMethod.login]['username'];
     _accessToken = result[EMSDKMethod.login]['token'];
     _isLoginBefore = true;
+  }
 
-    return _currentUsername;
+  Future<void> loginWithAgoraToken(String username, String agoraToken) async {
+    Map req = {
+      "username": username,
+      "agoratoken": agoraToken,
+    };
+
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.loginWithAgoraToken, req);
+    EMError.hasErrorFromResult(result);
+    _currentUsername = result[EMSDKMethod.loginWithAgoraToken]['username'];
+    _accessToken = result[EMSDKMethod.loginWithAgoraToken]['token'];
+    _isLoginBefore = true;
   }
 
   /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
@@ -240,10 +257,12 @@ class EMClient {
     }
   }
 
+  /// 添加从原生到flutter的监听
   void addCustomListener(EMCustomListener listener) {
     _customListeners.add(listener);
   }
 
+  /// 移除从原生到flutter的监听
   void removeCustomListener(EMCustomListener listener) {
     if (_customListeners.contains(listener)) {
       _customListeners.remove(listener);
@@ -285,6 +304,18 @@ class EMClient {
     debugPrint("map ---- $map");
     for (var listener in _customListeners) {
       listener.onDataReceived(map);
+    }
+  }
+
+  void _onTokenWillExpire(Map? map) {
+    for (EMConnectionListener listener in _connectionListeners) {
+      listener.onTokenWillExpire();
+    }
+  }
+
+  void _onTokenDidExpire(Map? map) {
+    for (EMConnectionListener listener in _connectionListeners) {
+      listener.onTokenDidExpire();
     }
   }
 

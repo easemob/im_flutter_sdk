@@ -103,6 +103,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             {
                 getCurrentUser(param, EMSDKMethod.getCurrentUser, result);
             }
+            else if (EMSDKMethod.loginWithAgoraToken.equals(call.method))
+            {
+                loginWithAgoraToken(param, EMSDKMethod.loginWithAgoraToken, result);
+            }
             else  {
                 super.onMethodCall(call, result);
             }
@@ -175,6 +179,26 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
         onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
+    }
+
+    private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
+
+        String username = param.getString("username");
+        String agoratoken = param.getString("agoratoken");
+        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
+            @Override
+            public void onSuccess() {
+                post(() -> {
+                    Map<String, String> param = new HashMap<>();
+                    param.put("username", EMClient.getInstance().getCurrentUser());
+                    param.put("token", EMClient.getInstance().getAccessToken());
+                    object = param;
+                    super.onSuccess();
+                });
+            }
+        };
+
+        EMClient.getInstance().loginWithAgoraToken(username, agoratoken, callBack);
     }
 
     private void updateCurrentUserNick(JSONObject param, String channelName, Result result) throws JSONException {
@@ -327,6 +351,16 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("errorCode", errorCode);
                 post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, data));
+            }
+
+            @Override
+            public void onTokenExpired() {
+                post(()-> channel.invokeMethod(EMSDKMethod.onTokenDidExpire, null));
+            }
+
+            @Override
+            public void onTokenWillExpire() {
+                post(()-> channel.invokeMethod(EMSDKMethod.onTokenWillExpire, null));
             }
         });
     }

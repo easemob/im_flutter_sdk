@@ -19,7 +19,6 @@ import 'package:provider/provider.dart';
 import 'chat_face_view.dart';
 import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
-import 'dart:convert' as convert;
 
 class ChatPage extends StatefulWidget {
   ChatPage(

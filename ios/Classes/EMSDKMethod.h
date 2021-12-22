@@ -16,6 +16,7 @@ static NSString *const EMMethodKeyInit = @"init";
 static NSString *const EMMethodKeyCreateAccount = @"createAccount";
 static NSString *const EMMethodKeyLogin = @"login";
 static NSString *const EMMethodKeyLogout = @"logout";
+static NSString *const EMMethodKeyLoginWithAgoraToken = @"loginWithAgoraToken";
 static NSString *const EMMethodKeyChangeAppKey = @"changeAppKey";
 static NSString *const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const EMMethodKeyUploadLog = @"uploadLog";
@@ -31,6 +32,9 @@ static NSString *const EMMethodKeyOnDisconnected = @"onDisconnected";
 static NSString *const EMMethodKeyOnMultiDeviceEvent = @"onMultiDeviceEvent";
 
 static NSString *const EMMethodKeySendDataToFlutter = @"onSendDataToFlutter";
+
+static NSString *const EMMethodKeyOnTokenWillExpire = @"onTokenWillExpire";
+static NSString *const EMMethodKeyOnTokenDidExpire = @"onTokenDidExpire";
 
 #pragma mark - EMContactManagerWrapper
 static NSString *const EMMethodKeyAddContact = @"addContact";
