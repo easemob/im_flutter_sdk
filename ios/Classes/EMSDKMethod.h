@@ -217,7 +217,7 @@ static NSString *const EMMethodKeyUpdateGroupPushService = @"updateGroupPushServ
 static NSString *const EMMethodKeyGetNoDisturbGroups = @"getNoDisturbGroups";
 static NSString *const EMMethodKeyBindDeviceToken = @"updateAPNsPushToken";
 static NSString *const EMMethodKeySetNoDisturbUsers = @"setNoDisturbUsers";
-static NSString *const EMMethodKeyGetNoDisturbUsers = @"getNoDisuturbUsers";
+static NSString *const EMMethodKeyGetNoDisturbUsersFromServer = @"getNoDisturbUsersFromServer";
 
 #pragma mark - EMUserInfoManagerWrapper
 static NSString *const EMMethodKeyUpdateOwnUserInfo = @"updateOwnUserInfo";

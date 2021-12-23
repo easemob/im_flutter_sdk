@@ -8,6 +8,7 @@ import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager.DisplayStyle;
 import com.hyphenate.exceptions.HyphenateException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,6 +58,12 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             }
             else if(EMSDKMethod.updateFCMPushToken.equals(call.method)){
                 updateFCMPushToken(param, EMSDKMethod.updateFCMPushToken, result);
+            }
+            else if(EMSDKMethod.setNoDisturbUsers.equals(call.method)) {
+                setNoDisturbUsers(param, EMSDKMethod.setNoDisturbUsers, result);
+            }
+            else if(EMSDKMethod.getNoDisturbUsersFromServer.equals(call.method)) {
+                getNoDisturbUsersFromServer(param, EMSDKMethod.getNoDisturbUsersFromServer, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -134,8 +141,47 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getNoDisturbGroups(JSONObject params, String channelName,  Result result) throws JSONException {
-        List<String> groupIds = EMClient.getInstance().pushManager().getNoPushGroups();
-        onSuccess(result, channelName, groupIds);
+
+        asyncRunnable(()->{
+            try{
+                EMClient.getInstance().pushManager().getPushConfigsFromServer();
+                List<String> groupIds = EMClient.getInstance().pushManager().getNoPushGroups();
+                onSuccess(result, channelName, groupIds);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void setNoDisturbUsers(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray jsonMembers = params.getJSONArray("members");
+        Boolean disable = params.getBoolean("disable");
+        List<String> members = new ArrayList<>();
+        for (int i = 0; i < jsonMembers.length(); i++) {
+            String memberId = jsonMembers.getString(i);
+            members.add(memberId);
+        }
+        asyncRunnable(()->{
+            try{
+                EMClient.getInstance().pushManager().updatePushServiceForUsers(members, disable);
+                onSuccess(result, channelName, null);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void getNoDisturbUsersFromServer(JSONObject params, String channelName, Result result) throws JSONException {
+        asyncRunnable(()->{
+            try{
+                EMClient.getInstance().pushManager().getPushConfigsFromServer();
+                List<String> userIds = EMClient.getInstance().pushManager().getNoPushUsers();
+                onSuccess(result, channelName, userIds);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+
     }
 
     private void updateHMSPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
