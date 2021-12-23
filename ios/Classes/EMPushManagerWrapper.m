@@ -56,6 +56,14 @@
         [self  bindDeviceToken:call.arguments
                    channelName:(NSString *)EMMethodKeyBindDeviceToken
                         result:result];
+    } else if ([EMMethodKeySetNoDisturbUsers isEqualToString:call.method]) {
+        [self setNoDisturbUsers:call.arguments
+                    channelName:EMMethodKeySetNoDisturbUsers
+                         result:result];
+    } else if ([EMMethodKeyGetNoDisturbUsers isEqualToString:call.method]) {
+        [self getNoDisturbUsersFromServer:call.arguments
+                              channelName:EMMethodKeyGetNoDisturbUsers
+                                   result:result];
     }
     else{
         [super handleMethodCall:call result:result];
@@ -176,6 +184,45 @@
         EMError *aError = nil;
         [EMClient.sharedClient.pushManager getPushOptionsFromServerWithError:&aError];
         NSArray *list = [EMClient.sharedClient.pushManager noPushGroups];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:list];
+        });
+    });
+}
+
+- (void)setNoDisturbUsers:(NSDictionary *)param
+              channelName:(NSString *)aChannelName
+                   result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSArray *members = param[@"members"];
+    BOOL disablePush = [param[@"disable"] boolValue];
+    [EMClient.sharedClient.pushManager updatePushServiceForUsers:members
+                                                     disablePush:disablePush
+                                                      completion:^(EMError * _Nonnull aError)
+     {
+        [EMClient.sharedClient.pushManager updatePushServiceForUsers:members
+                                                         disablePush:disablePush
+                                                          completion:^(EMError * _Nonnull aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }];
+}
+
+- (void)getNoDisturbUsersFromServer:(NSDictionary *)param
+                      channelName:(NSString *)aChannelName
+                           result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        EMError *aError = nil;
+        [EMClient.sharedClient.pushManager getPushOptionsFromServerWithError:&aError];
+        NSArray *list = [EMClient.sharedClient.pushManager noPushUIds];
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName

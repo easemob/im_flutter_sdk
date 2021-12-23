@@ -219,6 +219,7 @@ class EMSDKMethod {
   static const String updateImPushStyle = 'updateImPushStyle';
   static const String updateGroupPushService = 'updateGroupPushService';
   static const String getNoDisturbGroups = 'getNoDisturbGroups';
+  static const String getNoDisturbUsers = 'getNoDisuturbUsers';
 
   /// EMUserInfoManager methods
   static const String updateOwnUserInfo = 'updateOwnUserInfo';
