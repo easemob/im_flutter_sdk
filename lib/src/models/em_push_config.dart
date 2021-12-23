@@ -109,14 +109,23 @@ extension EMPushConfigExtension on EMImPushConfig {
   }
 
   /// 设置免打扰用户列表
-  Future<void> setUserToDisturb(String username, bool disturb) async {}
+  Future<void> setUsersToDisturb(List<String> userIds, bool disablePush) async {
+    Map req = {
+      "members": userIds,
+      "disable": disablePush,
+    };
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.setNoDisturbUsers, req);
+    EMError.hasErrorFromResult(result);
+  }
 
   /// 从服务器获取免打扰用户列表
   Future<List<String?>> noDisturbUsersFromServer() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbUsers);
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getNoDisturbUsersFromServer);
     EMError.hasErrorFromResult(result);
     _noDisturbUsers = [];
-    result[EMSDKMethod.getNoDisturbUsers]?.forEach((element) {
+    result[EMSDKMethod.getNoDisturbUsersFromServer]?.forEach((element) {
       _noDisturbUsers.add(element);
     });
     return _noDisturbUsers;
