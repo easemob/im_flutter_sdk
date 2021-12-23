@@ -206,6 +206,8 @@ public class EMSDKMethod {
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updateGroupPushService = "updateGroupPushService";
     static final String getNoDisturbGroups = "getNoDisturbGroups";
+    static final String setNoDisturbUsers = "setNoDisturbUsers";
+    static final String getNoDisturbUsersFromServer = "getNoDisturbUsersFromServer";
 
 
     /// EMUserInfoManager 

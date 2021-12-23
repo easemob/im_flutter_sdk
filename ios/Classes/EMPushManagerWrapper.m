@@ -60,9 +60,9 @@
         [self setNoDisturbUsers:call.arguments
                     channelName:EMMethodKeySetNoDisturbUsers
                          result:result];
-    } else if ([EMMethodKeyGetNoDisturbUsers isEqualToString:call.method]) {
+    } else if ([EMMethodKeyGetNoDisturbUsersFromServer isEqualToString:call.method]) {
         [self getNoDisturbUsersFromServer:call.arguments
-                              channelName:EMMethodKeyGetNoDisturbUsers
+                              channelName:EMMethodKeyGetNoDisturbUsersFromServer
                                    result:result];
     }
     else{
