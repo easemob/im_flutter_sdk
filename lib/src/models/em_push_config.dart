@@ -11,7 +11,8 @@ class EMImPushConfig {
   bool? _noDisturb;
   int? _noDisturbStartHour;
   int? _noDisturbEndHour;
-  List<String?>? _noDisturbGroups = [];
+  List<String?> _noDisturbGroups = [];
+  List<String?> _noDisturbUsers = [];
 
   EMImPushStyle? get pushStyle => _pushStyle;
   bool? get noDisturb => _noDisturb;
@@ -91,16 +92,33 @@ extension EMPushConfigExtension on EMImPushConfig {
     EMError.hasErrorFromResult(result);
     EMGroup group =
         EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
-    _noDisturbGroups!.removeWhere((e) => e == group.groupId);
-    if (isNoDisturb) _noDisturbGroups!.add(group.groupId);
+    _noDisturbGroups.removeWhere((e) => e == group.groupId);
+    if (isNoDisturb) _noDisturbGroups.add(group.groupId);
     return group;
   }
 
   /// 获取免打扰群组列表
-  Future<List<String?>?> noDisturbGroupsFromServer() async {
+  Future<List<String?>> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
-    _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>();
+    _noDisturbGroups = [];
+    result[EMSDKMethod.getNoDisturbGroups]?.forEach((element) {
+      _noDisturbGroups.add(element);
+    });
     return _noDisturbGroups;
+  }
+
+  /// 设置免打扰用户列表
+  Future<void> setUserToDisturb(String username, bool disturb) async {}
+
+  /// 从服务器获取免打扰用户列表
+  Future<List<String?>> noDisturbUsersFromServer() async {
+    Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbUsers);
+    EMError.hasErrorFromResult(result);
+    _noDisturbUsers = [];
+    result[EMSDKMethod.getNoDisturbUsers]?.forEach((element) {
+      _noDisturbUsers.add(element);
+    });
+    return _noDisturbUsers;
   }
 }
