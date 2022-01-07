@@ -23,7 +23,23 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
 
 进入console -> 添加应用 -> Appkey 获取`Appkey`。
 
-#### 通过git集成  
+#### 通过pubdev集成
+
+1. 修改 `pubspec.yaml`;
+```dart
+dependencies:
+  im_flutter_sdk: ^3.8.3+3
+```
+
+2. 执行`flutter pub get`;
+3. 导入头文件:
+
+```dart
+import 'package:im_flutter_sdk/im_flutter_sdk.dart'
+```
+
+
+####  通过git集成  
 
 1. 修改 `pubspec.yaml`;
 
@@ -42,22 +58,6 @@ dependencies:
 import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 ```
 
-#### 本地集成  
-
-1. 先将SDK clone 或者 download 到本地项目中;
-2. 修改 `pubspec.yaml`;
-
-```dart
-dependencies:
-  im_flutter_sdk:  
-    path : /本地路径/im_flutter_sdk
-```
-3. 执行`flutter pub get`;
-4. 导入头文件:
-
-``` dart
-import 'package:im_flutter_sdk/im_flutter_sdk.dart'
-```
 ## SDK讲解
 
 - `EMClient` 用于管理sdk各个模块和一些账号相关的操作，如注册，登录，退出;
