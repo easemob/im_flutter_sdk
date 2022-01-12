@@ -1565,7 +1565,7 @@ class _RoomPageState extends State<RoomPage> implements EMChatRoomEventListener 
 
 ```dart
 try{
-  String announcement = await EMClient.getInstance.pushManager.updatePushNickname(pushName);
+  await EMClient.getInstance.pushManager.updatePushNickname(pushName);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
