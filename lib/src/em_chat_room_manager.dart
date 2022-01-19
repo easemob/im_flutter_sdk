@@ -3,9 +3,6 @@ import "dart:async";
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
 import "em_listeners.dart";
-import 'em_sdk_method.dart';
-import 'package:im_flutter_sdk/src/models/em_cursor_result.dart';
-import 'package:im_flutter_sdk/src/models/em_page_result.dart';
 
 class EMChatRoomManager {
   static const _channelPrefix = 'com.easemob.im';

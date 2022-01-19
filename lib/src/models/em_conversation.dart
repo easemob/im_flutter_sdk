@@ -1,10 +1,6 @@
 import 'dart:core';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/models/em_error.dart';
-import 'package:im_flutter_sdk/src/models/em_message.dart';
-
-import '../em_sdk_method.dart';
 
 enum EMConversationType {
   Chat, // 单聊消息
