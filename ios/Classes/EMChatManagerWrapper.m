@@ -395,7 +395,8 @@
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMMessage *msg = [EMMessage fromJson:param[@"message"]];
-    [EMClient.sharedClient.chatManager downloadMessageAttachment:msg
+    EMMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageAttachment:needDownMSg
                                                         progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
@@ -432,7 +433,8 @@
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMMessage *msg = [EMMessage fromJson:param[@"message"]];
-    [EMClient.sharedClient.chatManager downloadMessageThumbnail:msg
+    EMMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMSg
                                                        progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
@@ -638,6 +640,7 @@
 - (void)messagesDidReceive:(NSArray *)aMessages {
     NSMutableArray *msgList = [NSMutableArray array];
     for (EMMessage *msg in aMessages) {
+        
         [msgList addObject:[msg toJson]];
     }
     [self.channel invokeMethod:EMMethodKeyOnMessagesReceived
