@@ -10,10 +10,9 @@ import 'em_userInfo_manager.dart';
 import 'em_group_manager.dart';
 import 'em_listeners.dart';
 import 'em_push_manager.dart';
-import 'em_sdk_method.dart';
 
 import 'models/em_domain_terms.dart';
-import 'models/em_options.dart';
+
 import 'tools/em_log.dart';
 
 class EMClient {
