@@ -526,44 +526,7 @@ class EMMessageHelper {
         }
 
         if (message.ext().size() > 0 && null != message.ext()) {
-            HashMap<String, Object> map = new HashMap<>();
-            for (Map.Entry entry:message.ext().entrySet()) {
-                String key = entry.getKey().toString();
-                try {
-                    JSONObject value = message.getJSONObjectAttribute(key);
-                    map.put(key, value);
-                    continue;
-                }
-                catch (HyphenateException e) {
-                }
-                try {
-                    boolean value =  message.getBooleanAttribute(key);
-                    map.put(key, value);
-                    continue;
-                } catch (HyphenateException e) {
-                }
-
-                try {
-                    JSONArray value = message.getJSONArrayAttribute(key);
-                    map.put(key, value);
-                    continue;
-                } catch (HyphenateException e) {
-                }
-                try {
-                    int value = message.getIntAttribute(key);
-                    map.put(key, value);
-                    continue;
-                } catch (HyphenateException e){
-                }
-
-                try {
-                    String value = message.getStringAttribute(key);
-                    map.put(key, value);
-                    continue;
-                } catch (HyphenateException e) {
-                }
-            }
-            data.put("attributes", map);
+            data.put("attributes", message.ext());
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
