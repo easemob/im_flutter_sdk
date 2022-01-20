@@ -851,7 +851,10 @@ class EMCustomMessageBody extends EMMessageBody {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
     data['event'] = event;
-    data['params'] = params;
+    if (params != null) {
+      data['params'] = params;
+    }
+
     return data;
   }
 
