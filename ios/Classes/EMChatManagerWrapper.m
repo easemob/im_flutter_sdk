@@ -375,7 +375,7 @@
                 result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSArray *dictAry = param[@"messages"];
-    NSMutableArray *messages;
+    NSMutableArray *messages = [NSMutableArray array];
     for (NSDictionary *dict in dictAry) {
         [messages addObject:[EMMessage fromJson:dict]];
     }
