@@ -1656,25 +1656,18 @@ try{
 #### 更新自己的用户属性
 ```dart
  try {
-     
-      Map aMap = {'nickName': 'gagaga', 'mail': 'xxx@easemob.com'};
-      EMUserInfo updateUserInfo =
-          await EMClient.getInstance.userInfoManager.updateOwnUserInfo(aMap);
+    EMUserInfo info = EMUserInfo(EMClient.getInstance.currentUsername);
+    info.copyWith(
+      sign: "修改签名",
+      nickName: "用户属性昵称",
+      mail: "xxx@easemob.com",
+    );
+    await EMClient.getInstance.userInfoManager.updateOwnUserInfo(info);
     } on EMError catch (e) {
       print('操作失败，原因是: $e');
     }
 ```
-#### 更新自己的某一个用户属性
-```dart
-   try {
-      EMUserInfoType infoType = EMUserInfoType.EMUserInfoTypeBirth;
-      String updateValue = '2021.01.01';
-      EMUserInfo updateUserInfo = await EMClient.getInstance.userInfoManager
-          .updateOwnUserInfoWithType(infoType, updateValue);
-    } on EMError catch (e) {
-      print('操作失败，原因是: $e');
-    }
-```
+
 #### 获取多用户的用户属性
 ```dart
   try {
