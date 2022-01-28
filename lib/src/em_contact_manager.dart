@@ -3,10 +3,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-import 'em_listeners.dart';
-import 'em_sdk_method.dart';
-import 'models/em_domain_terms.dart';
-
 class EMContactManager {
   static const _channelPrefix = 'com.easemob.im';
   static const MethodChannel _channel = const MethodChannel(

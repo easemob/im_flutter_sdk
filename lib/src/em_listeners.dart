@@ -11,11 +11,18 @@ abstract class EMConnectionListener {
 /// @nodoc
 abstract class EMMultiDeviceListener {
   /// @nodoc
-  void onContactEvent(EMContactGroupEvent? event, String? target, String? ext);
+  void onContactEvent(
+    EMContactGroupEvent? event,
+    String? target,
+    String? ext,
+  );
 
   /// @nodoc
   void onGroupEvent(
-      EMContactGroupEvent? event, String? target, List<String>? usernames);
+    EMContactGroupEvent? event,
+    String? target,
+    List<String>? usernames,
+  );
 }
 
 abstract class EMCustomListener {
@@ -164,7 +171,85 @@ class EMGroupChangeEvent {
       "onAllMemberMuteStateChanged";
 }
 
+@Deprecated('Use EMGroupEventListener.')
 abstract class EMGroupChangeListener {
+  /// id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
+  void onInvitationReceivedFromGroup(
+      String groupId, String? groupName, String inviter, String? reason);
+
+  /// 收到用户[applicant]申请加入id是[groupId], 名称是[groupName]的群，原因是[reason]
+  void onRequestToJoinReceivedFromGroup(
+      String groupId, String? groupName, String applicant, String? reason);
+
+  /// 入群申请被同意
+  void onRequestToJoinAcceptedFromGroup(
+      String groupId, String? groupName, String accepter);
+
+  /// 入群申请被拒绝
+  void onRequestToJoinDeclinedFromGroup(
+      String groupId, String? groupName, String decliner, String? reason);
+
+  /// 入群邀请被同意
+  void onInvitationAcceptedFromGroup(
+      String groupId, String invitee, String? reason);
+
+  /// 入群邀请被拒绝
+  void onInvitationDeclinedFromGroup(
+      String groupId, String invitee, String? reason);
+
+  /// 被移出群组
+  void onUserRemovedFromGroup(String groupId, String? groupName);
+
+  /// 群组解散
+  void onGroupDestroyed(String groupId, String? groupName);
+
+  /// @nodoc 自动同意加群
+  void onAutoAcceptInvitationFromGroup(
+      String groupId, String inviter, String? inviteMessage);
+
+  /// 群禁言列表增加
+  void onMuteListAddedFromGroup(
+      String groupId, List<String> mutes, int? muteExpire);
+
+  /// 群禁言列表减少
+  void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
+
+  /// 群管理增加
+  void onAdminAddedFromGroup(String groupId, String admin);
+
+  /// 群管理被移除
+  void onAdminRemovedFromGroup(String groupId, String admin);
+
+  /// 群所有者变更
+  void onOwnerChangedFromGroup(
+      String groupId, String newOwner, String oldOwner);
+
+  /// 有用户加入群
+  void onMemberJoinedFromGroup(String groupId, String member);
+
+  /// 有用户离开群
+  void onMemberExitedFromGroup(String groupId, String member);
+
+  /// 群公告变更
+  void onAnnouncementChangedFromGroup(String groupId, String announcement);
+
+  /// 群共享文件增加
+  void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
+
+  /// 群共享文件被删除
+  void onSharedFileDeletedFromGroup(String groupId, String fileId);
+
+  /// 有用户被添加到群组白名单
+  void onWhiteListAddedFromGroup(String groupId, List<String> members);
+
+  /// 有用户从群组白名单被移除
+  void onWhiteListRemovedFromGroup(String groupId, List<String> members);
+
+  /// 群组禁言状态发生变化
+  void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
+}
+
+abstract class EMGroupEventListener {
   /// id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
   void onInvitationReceivedFromGroup(
       String groupId, String? groupName, String inviter, String? reason);

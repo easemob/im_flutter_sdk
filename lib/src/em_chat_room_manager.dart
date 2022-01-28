@@ -3,9 +3,6 @@ import "dart:async";
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
 import "em_listeners.dart";
-import 'em_sdk_method.dart';
-import 'package:im_flutter_sdk/src/models/em_cursor_result.dart';
-import 'package:im_flutter_sdk/src/models/em_page_result.dart';
 
 class EMChatRoomManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -65,13 +62,13 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> mutes = event['mutes'];
+          List<String> mutes = List.from(event['mutes']);
           String? expireTime = event['expireTime'];
           listener.onMuteListAddedFromChatRoom(roomId, mutes, expireTime);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> mutes = event['mutes'];
+          List<String> mutes = List.from(event['mutes']);
           listener.onMuteListRemovedFromChatRoom(roomId, mutes);
           break;
         case EMChatRoomEvent.ON_ADMIN_ADDED:
@@ -97,12 +94,12 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> members = event["whitelist"];
+          List<String> members = List.from(event["whitelist"]);
           listener.onWhiteListAddedFromChatRoom(roomId, members);
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> members = event["whitelist"];
+          List<String> members = List.from(event["whitelist"]);
           listener.onWhiteListRemovedFromChatRoom(roomId, members);
           break;
         case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
