@@ -28,7 +28,7 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
 1. 修改 `pubspec.yaml`;
 ```dart
 dependencies:
-  im_flutter_sdk: ^3.8.3+3
+  im_flutter_sdk: ^3.8.3+4
 ```
 
 2. 执行`flutter pub get`;

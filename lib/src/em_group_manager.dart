@@ -555,12 +555,12 @@ class EMGroupManager {
   }
 
   /// @nodoc addGroupChangeListener - Adds [listener] to be aware of group change events.
-  void addGroupChangeListener(EMGroupChangeListener listener) {
+  void addGroupChangeListener(EMGroupEventListener listener) {
     _groupChangeListeners.add(listener);
   }
 
   /// @nodoc removeGroupChangeListener - Remove [listener] from the listener list.
-  void removeGroupChangeListener(EMGroupChangeListener listener) {
+  void removeGroupChangeListener(EMGroupEventListener listener) {
     if (_groupChangeListeners.contains(listener)) {
       _groupChangeListeners.remove(listener);
     }
@@ -568,7 +568,7 @@ class EMGroupManager {
 
   /// @nodoc
   Future<void> _onGroupChanged(Map? map) async {
-    for (EMGroupChangeListener listener in _groupChangeListeners) {
+    for (EMGroupEventListener listener in _groupChangeListeners) {
       var type = map!['type'];
       switch (type) {
         case EMGroupChangeEvent.ON_INVITATION_RECEIVED:

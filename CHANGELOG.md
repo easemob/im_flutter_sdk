@@ -4,10 +4,13 @@
 * 修复消息attribute类型变为bool类型；
 * 修复群组免打扰属性不准；
 * 修复ios importMessages方法bug；
+* 修复群、聊天室禁言时不执行回调的bug；
 * 构造文件消息提供设置文件大小属性；
+* 修改`EMGroupChangeListener` 为 `EMGroupEventListener`
 
 ## 3.8.3+3
-* 修复安卓下resendMessage方法发送失败时不回调onError。
+* 修复安卓下resendMessage方法发送失败时不回调onError；
+* 修复fetchChatRoomMembers返回类型错误；
 
 ## 3.8.3+2
 * 增加群组已读回执；
