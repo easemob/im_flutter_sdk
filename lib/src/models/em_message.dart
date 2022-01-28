@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/em_sdk_method.dart';
 
 // 消息类型
 enum EMMessageChatType {
@@ -99,9 +98,7 @@ class MessageCallBackManager {
   }
 
   addMessage(EMMessage message) {
-    if (message.status != EMMessageStatus.SUCCESS) {
-      cacheMessageMap[message.localTime.toString()] = message;
-    }
+    cacheMessageMap[message.localTime.toString()] = message;
   }
 
   removeMessage(EMMessage message) {
@@ -213,10 +210,12 @@ class EMMessage {
     required String username,
     required String filePath,
     String displayName = '',
+    int? fileSize,
   }) : this.createSendMessage(
             to: username,
             body: EMFileMessageBody(
               localPath: filePath,
+              fileSize: fileSize,
               displayName: displayName,
             ));
 
@@ -227,6 +226,7 @@ class EMMessage {
     String displayName = '',
     String thumbnailLocalPath = '',
     bool sendOriginalImage = false,
+    int? fileSize,
     double width = 0,
     double height = 0,
   }) : this.createSendMessage(
@@ -246,6 +246,7 @@ class EMMessage {
     required String filePath,
     String displayName = '',
     int duration = 0,
+    int? fileSize,
     String thumbnailLocalPath = '',
     double width = 0,
     double height = 0,
@@ -255,6 +256,7 @@ class EMMessage {
               localPath: filePath,
               displayName: displayName,
               duration: duration,
+              fileSize: fileSize,
               thumbnailLocalPath: thumbnailLocalPath,
               width: width,
               height: height,
@@ -265,12 +267,14 @@ class EMMessage {
     required String username,
     required String filePath,
     int duration = 0,
+    int? fileSize,
     String displayName = '',
   }) : this.createSendMessage(
             to: username,
             body: EMVoiceMessageBody(
                 localPath: filePath,
                 duration: duration,
+                fileSize: fileSize,
                 displayName: displayName));
 
   /// 构造发送的位置消息
@@ -584,8 +588,11 @@ class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody({
     this.localPath,
     this.displayName,
+    int? fileSize,
     EMMessageBodyType type = EMMessageBodyType.FILE,
-  }) : super(type: type);
+  }) : super(type: type) {
+    this.fileSize = fileSize ?? 0;
+  }
 
   EMFileMessageBody.fromJson(
       {required Map map, EMMessageBodyType type = EMMessageBodyType.FILE})
@@ -664,11 +671,13 @@ class EMImageMessageBody extends EMFileMessageBody {
     String? displayName,
     this.thumbnailLocalPath,
     this.sendOriginalImage,
+    int? fileSize,
     this.width,
     this.height,
   }) : super(
           localPath: localPath,
           displayName: displayName,
+          fileSize: fileSize,
           type: EMMessageBodyType.IMAGE,
         );
 
@@ -727,12 +736,14 @@ class EMVideoMessageBody extends EMFileMessageBody {
     String? localPath,
     String? displayName,
     this.duration,
+    int? fileSize,
     this.thumbnailLocalPath,
     this.height,
     this.width,
   }) : super(
           localPath: localPath,
           displayName: displayName,
+          fileSize: fileSize,
           type: EMMessageBodyType.VIDEO,
         );
 
@@ -790,10 +801,12 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   EMVoiceMessageBody({
     localPath,
     String? displayName,
+    int? fileSize,
     this.duration,
   }) : super(
           localPath: localPath,
           displayName: displayName,
+          fileSize: fileSize,
           type: EMMessageBodyType.VOICE,
         );
 
@@ -854,7 +867,10 @@ class EMCustomMessageBody extends EMMessageBody {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
     data['event'] = event;
-    data['params'] = params;
+    if (params != null) {
+      data['params'] = params;
+    }
+
     return data;
   }
 
