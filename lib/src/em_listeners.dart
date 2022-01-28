@@ -19,7 +19,7 @@ abstract class EMMultiDeviceListener {
 
   /// @nodoc
   void onGroupEvent(
-    EMGroupChangeEvent? event,
+    EMContactGroupEvent? event,
     String? target,
     List<String>? usernames,
   );
