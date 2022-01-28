@@ -7,10 +7,8 @@ class MePage extends StatefulWidget {
 }
 
 class MePageState extends State<MePage> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  
+  EMUserInfo userInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +25,118 @@ class MePageState extends State<MePage> {
         ),
         child: Column(
           children: [
+            InkWell(
+              onTap: _didClickUserInfo,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  this.userInfo == null || this.userInfo.avatarUrl == null ?
+                  Image.asset(
+                    'images/contact_default_avatar.png',
+                    width: 50,
+                    height: 50,
+                  ) : 
+                  Image.network(
+                    this.userInfo.avatarUrl,
+                    width: 50,
+                    height: 50,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: this._showNameWidgets(),
+                  )
+                ],
+              ),
+            ),
             Container(
-              height: 30,
+              height: 20,
+            ),
+            /*InkWell(
+              onTap: null,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    'images/me_settings.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    "设置",
+                    style: TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 5,
+            ),
+            InkWell(
+              onTap: null,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    'images/me_aboutHX.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    "关于环信",
+                    style: TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 5,
+            ),
+            InkWell(
+              onTap: null,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    'images/me_developerService.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    "开发者服务",
+                    style: TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
+                ],
+              ),
+            ),*/
+            Container(
+              height: 5,
+            ),
+            Container(
+              height: 24,
               margin: EdgeInsets.only(left: 10, top: 10, right: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -75,6 +183,54 @@ class MePageState extends State<MePage> {
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+    this.loadUserInfo();
+  }
+
+  void loadUserInfo() async {
+    var userInfo = await EMClient.getInstance.userInfoManager.fetchOwnInfo();
+    if (userInfo != null) {
+      this.userInfo = userInfo;
+      this.setState(() {
+        
+      });
+    }
+  }
+
+  List<Widget> _showNameWidgets() {
+    List<Widget> list = [];
+    if (this.userInfo != null && this.userInfo.nickName != null && this.userInfo.nickName == this.userInfo.userId) {
+      list.add(Text(
+        "${this.userInfo.userId}",
+        style: TextStyle(
+          fontSize: 14.0,
+          color: Colors.black,
+        ),
+        textAlign: TextAlign.left,
+      ));
+    } else {
+      list.add(Text(
+        "${this.userInfo.nickName}",
+        style: TextStyle(
+          fontSize: 14.0,
+          color: Colors.black,
+        ),
+        textAlign: TextAlign.left,
+      ));
+      list.add(Text(
+        "${EMClient.getInstance.currentUsername}",
+        style: TextStyle(
+          fontSize: 14.0,
+          color: Colors.grey,
+        ),
+        textAlign: TextAlign.left,
+      ));
+    }
+    return list;
+  }
+
   _loggout() async {
     try {
       await EMClient.getInstance.logout(true);
@@ -84,7 +240,9 @@ class MePageState extends State<MePage> {
     } on EMError {}
   }
 
-  goUserInfoPage() {
-    Navigator.of(context).pushNamed('/userInfoPage').then((value) {});
+  _didClickUserInfo() {
+    Navigator.of(context).pushNamed('/meDetailPage').then((value) {
+      this.loadUserInfo();
+    });
   }
 }

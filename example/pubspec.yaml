@@ -183,7 +183,13 @@ flutter:
     - images/contact_select_check.png
     - images/contact_select_uncheck.png
 
+    - images/me_settings.png
+    - images/me_aboutHX.png
+    - images/me_developerService.png
+
     - images/expression/
+
+    - images/icon_enter.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

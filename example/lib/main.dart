@@ -1,3 +1,4 @@
+
 import 'package:easeim_flutter_demo/pages/account/register_page.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_page.dart';
 import 'package:easeim_flutter_demo/pages/chatroom/chat_room_list_page.dart';
@@ -11,6 +12,7 @@ import 'package:easeim_flutter_demo/pages/group/public_groups_page.dart';
 import 'package:easeim_flutter_demo/pages/index_page.dart';
 import 'package:easeim_flutter_demo/pages/home_page.dart';
 import 'package:easeim_flutter_demo/pages/account/login_page.dart';
+import 'package:easeim_flutter_demo/pages/me/me_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/screenutil_init.dart';
@@ -79,6 +81,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
         ),
     '/rooms': (context) => ChatroomsListPages(),
     '/contactSelect': (context) => ContactSelectPage(),
+    '/meDetailPage': (context) => MeDetailPage(),
   };
 
   WidgetBuilder builder = routes[settings.name];
