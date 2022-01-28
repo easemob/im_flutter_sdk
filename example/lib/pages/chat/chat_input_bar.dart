@@ -1,5 +1,4 @@
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 enum ChatInputBarType {
