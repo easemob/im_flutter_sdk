@@ -1,5 +1,6 @@
 
 import 'package:easeim_flutter_demo/pages/me/me_choose_header.dart';
+import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -19,78 +20,47 @@ class MeDetailPageState extends State<MeDetailPage> {
       appBar: AppBar(
         title: Text("个人资料"),
       ),
-      body: Container(
-        margin: EdgeInsets.only(
-          left: 10,
-          top: 10,
-          right: 10,
-          bottom: 10,
-        ),
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(builder: (ctx) {
-                    return MeChooseHeaderPage();
-                  }),
-                ).then((value){
-                  this.loadUserInfo();
-                });
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "头像",
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  this.userInfo == null || this.userInfo.avatarUrl == null ?
-                  Image.asset(
-                    'images/me_developerService.png',
-                    width: 40,
-                    height: 40,
-                  ) : 
-                  Image.network(
-                    this.userInfo.avatarUrl,
-                    width: 40,
-                    height: 40,
-                  ),
-                ],
+      body: Column(
+        children: [
+          SizedBox(
+            height: 10,
+          ),
+          commonCellWidget(
+            "头像", 
+            onTap: (){
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (ctx) {
+                  return MeChooseHeaderPage();
+                }),
+              ).then((value){
+                this.loadUserInfo();
+              });
+            },
+            rightChildren: [
+              this.userInfo == null || this.userInfo.avatarUrl == null ?
+              Image.asset(
+                'images/me_developerService.png',
+                width: 40,
+                height: 40,
+              ) : 
+              Image.network(
+                this.userInfo.avatarUrl,
+                width: 40,
+                height: 40,
               ),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            InkWell(
-              onTap: _changeNickname,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "昵称",
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                  Image.asset(
-                    'images/icon_enter.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        )
-      ),
+            ],
+            arrowShow: false,
+          ),
+          SizedBox(
+            height: 15,
+          ),
+          commonCellWidget(
+            "昵称", 
+            onTap: _changeNickname,
+          ),
+        ],
+      )
     );
   }
 

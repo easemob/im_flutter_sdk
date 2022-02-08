@@ -1,5 +1,7 @@
+import 'package:easeim_flutter_demo/pages/me/me_about_page.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:easeim_flutter_demo/pages/me/me_setting_page.dart';
 
 class MePage extends StatefulWidget {
   @override
@@ -54,8 +56,15 @@ class MePageState extends State<MePage> {
             Container(
               height: 20,
             ),
-            /*InkWell(
-              onTap: null,
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (ctx) {
+                    return MeSettingPage();
+                  }),
+                );
+              },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -82,7 +91,14 @@ class MePageState extends State<MePage> {
               height: 5,
             ),
             InkWell(
-              onTap: null,
+              onTap: (){
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (ctx) {
+                    return MeAboutPage();
+                  }),
+                );
+              },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -105,33 +121,6 @@ class MePageState extends State<MePage> {
                 ],
               ),
             ),
-            Container(
-              height: 5,
-            ),
-            InkWell(
-              onTap: null,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Image.asset(
-                    'images/me_developerService.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "开发者服务",
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.black,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                ],
-              ),
-            ),*/
             Container(
               height: 5,
             ),

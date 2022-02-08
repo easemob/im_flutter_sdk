@@ -96,6 +96,8 @@ dependencies:
   # 长按菜单
   w_popup_menu: ^0.3.1
 
+  url_launcher: ^5.0.2
+
   #ease_call_kit
   ease_call_kit:
     git:

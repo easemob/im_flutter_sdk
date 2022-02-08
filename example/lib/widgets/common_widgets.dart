@@ -254,4 +254,41 @@ String timeStrByMs(int ms, {bool showTime = false}) {
   return ret;
 }
 
+Widget commonCellWidget(String title, {Function onTap, List<Widget> leftChildren, List<Widget> rightChildren, bool arrowShow = true, Color backgroundColor = Colors.white, double height = 44}) {
+  List<Widget> children = [];
+  children.add(SizedBox(
+    width: 10,
+  ));
+  if (leftChildren != null && leftChildren.length > 0) {
+    children.addAll(leftChildren);
+  }
+  children.add(Text(
+    title
+  ));
+  children.add(Spacer());
+  if (rightChildren != null && rightChildren.length > 0) {
+    children.addAll(rightChildren);
+  }
+  if (arrowShow) {
+    children.add(Image.asset(
+      'images/icon_enter.png',
+      width: 24,
+      height: 24,
+    ));
+  }
+  children.add(SizedBox(
+    width: 10,
+  ));
+  return Container(
+    color: backgroundColor,
+    height: height,
+    child: InkWell(
+      onTap: onTap,
+      child: Row(
+        children: children,
+      ),
+    )  
+  );
+}
+
 /// 时间转换string
