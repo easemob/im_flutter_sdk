@@ -18,6 +18,12 @@ class MeMultiDeviceListPageState extends State<MeMultiDeviceListPage> {
   List<EMDeviceInfo> deviceInfoList;
 
   @override
+  void initState() {
+    super.initState();
+    this._refresh();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

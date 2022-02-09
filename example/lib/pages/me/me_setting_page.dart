@@ -1,5 +1,7 @@
 
 import 'package:easeim_flutter_demo/pages/me/me_account_and_safe_page.dart';
+import 'package:easeim_flutter_demo/pages/me/me_currency_page.dart';
+import 'package:easeim_flutter_demo/pages/me/me_new_message_remind_page.dart';
 import 'package:easeim_flutter_demo/pages/me/me_privacy_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +12,7 @@ class MeSettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("我"),
+        title: Text("设置"),
       ),
       body: Column(
         children: [
@@ -30,12 +32,34 @@ class MeSettingPage extends StatelessWidget {
               );
             }
           ),
-          commonCellWidget("新消息提醒"),
+          commonCellWidget(
+            "新消息提醒",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (ctx){
+                  return MeNewMessageRemindPage();
+                })
+              );
+            },
+          ),
           Container(
             color: Color(0xFFEEEEEE),
             height: 15,
           ),
-          commonCellWidget("通用"),
+          commonCellWidget(
+            "通用",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (ctx) {
+                    return MeCurrencyPage();
+                  }
+                )
+              );
+            }
+          ),
           commonCellWidget(
             "隐私",
             onTap: () {
