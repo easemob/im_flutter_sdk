@@ -98,6 +98,8 @@ dependencies:
 
   url_launcher: ^5.0.2
 
+  flutter_picker:
+
   #ease_call_kit
   ease_call_kit:
     git:

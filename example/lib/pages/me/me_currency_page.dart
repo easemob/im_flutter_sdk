@@ -1,4 +1,5 @@
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
+import 'package:easeim_flutter_demo/widgets/time_range_picker_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -13,6 +14,9 @@ class MeCurrencyPageState extends State<MeCurrencyPage> {
   bool showInput = false;
   bool autoAcceptGroupInvitation = EMClient.getInstance.options.autoAcceptGroupInvitation;
   bool deleteMessagesAsExitGroup = EMClient.getInstance.options.deleteMessagesAsExitGroup;
+
+  int beginTime = 0;
+  int endTime = 24;
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +62,22 @@ class MeCurrencyPageState extends State<MeCurrencyPage> {
         commonCellWidget(
           "起止时间不能相同",
           rightChildren: [
-            Text("全天"),
+            Text(this.noDisturbTimeString()),
           ],
           onTap: () {
             // TODO: 差一个时间段选择器
+            showTimeRangePickerDialog(
+              context,
+              (begin, end) {
+                this.beginTime = begin;
+                this.endTime = end;
+                this.setState(() {
+                  
+                });
+              },
+              beginTime: this.beginTime,
+              endTime: this.endTime,
+            );
           }
         )
       );
@@ -120,5 +136,12 @@ class MeCurrencyPageState extends State<MeCurrencyPage> {
       ),
     ]);
     return contents;
+  }
+
+  String noDisturbTimeString() {
+    if (this.beginTime == 0 && this.endTime == 24) {
+      return "全天";
+    }
+    return "${this.beginTime}:00 ~ ${this.endTime}:00";
   }
 }
