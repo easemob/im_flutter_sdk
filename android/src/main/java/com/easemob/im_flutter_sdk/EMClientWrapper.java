@@ -15,6 +15,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
+import com.heytap.msp.push.HeytapPushManager;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
@@ -282,6 +283,8 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
+        //OPPO SDK升级到2.1.0后需要进行初始化
+        HeytapPushManager.init(context, true);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
         bindingManagers();
         addEMListener();
