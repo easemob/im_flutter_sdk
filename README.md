@@ -26,20 +26,21 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
 #### 通过pubdev集成
 
 1. 修改 `pubspec.yaml`;
-```dart
-dependencies:
-  im_flutter_sdk: ^3.8.3+4
-```
+   
+   ```dart
+   dependencies:
+   im_flutter_sdk: ^3.8.3+4
+   ```
 
 2. 执行`flutter pub get`;
+
 3. 导入头文件:
 
 ```dart
 import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 ```
 
-
-####  通过git集成  
+#### 通过git集成
 
 1. 修改 `pubspec.yaml`;
 
@@ -68,7 +69,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 - `EMPushManager`用于管理推送配置，如设置推送昵称，推送免打扰时间段等;
 - `EMUserInfoManager`用于更新自己的用户属性，设置用户属性，获取其他用户的用户属性等;
 
-
 ### EMClient
 
 #### 初始化
@@ -87,8 +87,8 @@ options.pushConfig = config;
 await EMClient.getInstance.init(options);
 ```
 
->环信的推送只针对离线设备，如果您的app只是后台且没有被系统挂起，此时客户端的长连接仍然还在，这时消息仍然会直接走收消息的方法，并不会触发推送，这就要求您在收消息时判断App的状态，并实现本地推送。  
->推送证书申请上传，安卓端请参考文档[第三方推送集成](http://docs-im.easemob.com/im/android/push/thirdpartypush#%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%A8%E9%80%81%E9%9B%86%E6%88%90)，iOS请参考文档[APNs推送](http://docs-im.easemob.com/im/ios/apns/deploy)。
+> 环信的推送只针对离线设备，如果您的app只是后台且没有被系统挂起，此时客户端的长连接仍然还在，这时消息仍然会直接走收消息的方法，并不会触发推送，这就要求您在收消息时判断App的状态，并实现本地推送。  
+> 推送证书申请上传，安卓端请参考文档[第三方推送集成](http://docs-im.easemob.com/im/android/push/thirdpartypush#%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8E%A8%E9%80%81%E9%9B%86%E6%88%90)，iOS请参考文档[APNs推送](http://docs-im.easemob.com/im/ios/apns/deploy)。
 
 #### 注册
 
@@ -100,7 +100,7 @@ try {
 }
 ```
 
->客户端注册需要将注册方式设置为`开放注册`，具体说明请参考文档[用户管理](http://docs-im.easemob.com/im/server/ready/user#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86)。
+> 客户端注册需要将注册方式设置为`开放注册`，具体说明请参考文档[用户管理](http://docs-im.easemob.com/im/server/ready/user#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86)。
 
 #### 登录
 
@@ -127,18 +127,16 @@ try {
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
->退出也有失败的情况，需要确定是否失败。  
->注册环信id详细说明请参考文档[用户体系集成](http://docs-im.easemob.com/im/server/ready/user)。
-
+> 退出也有失败的情况，需要确定是否失败。  
+> 注册环信id详细说明请参考文档[用户体系集成](http://docs-im.easemob.com/im/server/ready/user)。
 
 #### 监听服务器连接状态
 
 ```dart
 class _MyAppState extends State<MyApp> implements EMConnectionListener{
-	
+
   @override
   void initState() {
     super.initState();
@@ -146,7 +144,7 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     EMClient.getInstance.addConnectionListener(this);
   }
 
-	...
+    ...
 
   @override
   void onConnected() {
@@ -156,11 +154,11 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
 
   @override
   void onDisconnected(int errorCode) {
-    // 连接失败，原因是[errorCode]	
+    // 连接失败，原因是[errorCode]    
   }
-	
-	...
-	
+
+    ...
+
   @override
   void dispose() {
     // 移除连接监听
@@ -168,7 +166,6 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
     super.dispose();
   }
 }
-
 ```
 
 #### 获取当前连接状态
@@ -185,7 +182,7 @@ EMClient.getInstance.flutterSDKVersion;
 
 ### EMChatManager
 
-#### 获取会话列表	
+#### 获取会话列表
 
 ```dart
 try {
@@ -195,10 +192,9 @@ try {
 }
 ```
 
->会话列表是存在本地的一种消息管理对象，如果您会话中没有消息，则表示会话不存在。
+> 会话列表是存在本地的一种消息管理对象，如果您会话中没有消息，则表示会话不存在。
 
-
-#### 创建会话
+#### 获取会话
 
 ```dart
 try {
@@ -207,8 +203,9 @@ try {
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
+
+> 获取会话，如果会话目前不存在会创建。
 
 #### 获取会话中的消息
 
@@ -219,6 +216,7 @@ try {
   print('操作失败，原因是: $e');
 }
 ```
+
 #### 获取会话中未读消息数
 
 ```dart
@@ -264,7 +262,6 @@ try{
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
 #### 插入消息
@@ -276,7 +273,6 @@ try{
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
 > SDK在您发送和接收消息(_cmd类型消息除外_)后会自动将消息插入数据库中，并不需要您自己将消息插入数据库，但如果您需要自己插入一条消息时可以调用该api。  
@@ -289,7 +285,6 @@ try{
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
 #### 删除消息
@@ -301,7 +296,6 @@ try{
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
 #### 删除会话
@@ -312,30 +306,31 @@ try {
 } on EMError catch (e) {
   print('操作失败，原因是: $e');
 }
-
 ```
-​	
+
+​    
+
 #### 构建要发送的消息
 
 ```dart
 // 文本消息
 EMMessage msg = EMMessage.createTxtSendMessage(username: '接收方id', content: '消息内容');
-	
+
 // 图片消息
 EMMessage msg = EMMessage.createImageSendMessage(username: '接收方id', filePath: '图片路径');
-	
+
 // 视频消息
 EMMessage msg = EMMessage.createVideoSendMessage(username: '接收方id', filePath: '视频路径');
-	
+
 // 音频消息
 EMMessage msg = EMMessage.createVoiceSendMessage(username: '接收方id', filePath: '语音路径');
-	
+
 // 位置消息
 EMMessage msg = EMMessage.createLocationSendMessage(username: '接收方id', latitude: '纬度', longitude: '经度', address: '地址名称');
-	
+
 // cmd消息
 EMMessage msg = EMMessage.createCmdSendMessage(username: '接收方id', action: '自定义事件');
-	
+
 // 自定义消息
 EMMessage msg = EMMessage.createCustomSendMessage(username: '接收方id', event: '自定义事件');
 ```
@@ -359,16 +354,16 @@ try{
 class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   EMMessage msg;
-  ...	
-			
+  ...    
+
   void initState() {
     super.initState();
     // 添加监听
     msg.setMessageListener(this);
   }
 
-	...
-	
+    ...
+
   // 消息进度
   @override
   void onProgress(int progress) {
@@ -382,8 +377,8 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
   // 消息发送成功
   @override
   void onSuccess() {
-	}
-  
+    }
+
   // 消息已读
   @override
   void onReadAck() {
@@ -393,19 +388,18 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
   @override
   void onDeliveryAck() {
   }
-  
+
   // 消息状态发生改变
   @override
   void onStatusChanged() {
   }
-	
+
   dispose(){
     msg.setMessageListener(null);
     super.dispose();
   }
-	
-}
 
+}
 ```
 
 #### 重发消息
@@ -417,6 +411,7 @@ try{
   print('操作失败，原因是: $e');
 }
 ```
+
 #### 撤回消息
 
 ```dart
@@ -425,16 +420,13 @@ try{
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
->消息撤回为增值服务，您只能撤回2分钟内的消息，如需开通，请[咨询商务](https://www.easemob.com/pricing/im#p08)。
-
+> 消息撤回为增值服务，您只能撤回2分钟内的消息，如需开通，请[咨询商务](https://www.easemob.com/pricing/im#p08)。
 
 #### 收消息监听
 
 ```dart
-
 class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
 
   @override
@@ -444,7 +436,7 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
     EMClient.getInstance.chatManager.addListener(this);
   }
 
- 
+
   // 收到cmd消息回调
   @override
   onCmdMessagesReceived(List<EMMessage> messages) {
@@ -474,17 +466,17 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
   @override
   onConversationRead(String from, String to) { 
   }
-  
+
   // 收消息回调
   @override
   onMessagesReceived(List<EMMessage> messages) {
   }
-  
+
   // 群消息已读回执
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {
   }
-  
+
   @override
   void dispose() {
     // 移除收消息监听
@@ -492,7 +484,6 @@ class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
     super.dispose();
   }
 }
-
 ```
 
 #### 会话列表漫游
@@ -521,8 +512,6 @@ try {
 
 > 消息漫游为增值服务，需要单独开通。
 
-
-
 ### EMContactManager
 
 #### 从服务器获取通讯录中的用户列表
@@ -535,8 +524,7 @@ try{
 }
 ```
 
->环信收发消息并不需要对方是您通讯录中的成员，只要知道对方的环信id就可以发送消息。
-
+> 环信收发消息并不需要对方是您通讯录中的成员，只要知道对方的环信id就可以发送消息。
 
 #### 发送添加申请
 
@@ -548,7 +536,7 @@ try{
 }
 ```
 
->添加申请不会发推送，如果用户不在线，等上线后会收到。
+> 添加申请不会发推送，如果用户不在线，等上线后会收到。
 
 #### 删除通讯录中的成员
 
@@ -570,7 +558,6 @@ try{
 }
 ```
 
-
 #### 添加用户到黑名单中
 
 ```dart
@@ -581,7 +568,7 @@ try{
 }
 ```
 
->黑名单和通讯录是独立的，被添加人不需要在您的通讯录中，如果是通讯录中成员被加入到黑名单后，他仍然会出现在您的通讯录名单中，同时他也会出现在您的黑名单中。被添加到黑名单后，您双方均无法收发对方的消息。
+> 黑名单和通讯录是独立的，被添加人不需要在您的通讯录中，如果是通讯录中成员被加入到黑名单后，他仍然会出现在您的通讯录名单中，同时他也会出现在您的黑名单中。被添加到黑名单后，您双方均无法收发对方的消息。
 
 #### 将用户从黑名单中删除
 
@@ -592,7 +579,6 @@ try{
   print('操作失败，原因是: $e');
 }
 ```
-
 
 #### 通讯录监听
 
@@ -616,17 +602,17 @@ class _ContactPageState extends State<ContactPage> implements EMContactEventList
   @override
   onContactDeleted(String userName) {
   }
-  
+
   // 收到[userName]的好友申请，原因是[reason]
   @override
   onContactInvited(String userName, String reason) {
   }
-  
+
   // 发出的好友申请被[userName]同意
   @override
   onFriendRequestAccepted(String userName) {
   }
-  
+
   // 发出的好友申请被[userName]拒绝
   @override
   onFriendRequestDeclined(String userName) {
@@ -671,7 +657,6 @@ try{
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
 #### 从缓存中获取已加入群组列表
@@ -682,7 +667,6 @@ try{
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
-
 ```
 
 #### 从服务器获取公开群组列表
@@ -710,7 +694,6 @@ try{
 > `PrivateMemberCanInvite`私有群，所有人都可以邀请他人进群，被邀请人会收到邀请信息，同意后可入群;    
 > `PublicJoinNeedApproval`公开群，可以通过获取公开群列表api取的，申请加入时需要群主或管理员同意;    
 > `PublicOpenJoin`公开群，可以通过获取公开群列表api取，可以直接进入;    
-
 
 #### 获取群组详情
 
@@ -742,7 +725,7 @@ try{
 }
 ```
 
->需要群组类型是`PublicOpenJoin `,调用后直接加入群组。
+> 需要群组类型是`PublicOpenJoin `,调用后直接加入群组。
 
 #### 申请加入公开群
 
@@ -754,22 +737,38 @@ try{
 }
 ```
 
->需要群组类型是`PublicJoinNeedApproval`,申请后，群主和管理员会收到加群邀请，同意后入群。
+> 需要群组类型是`PublicJoinNeedApproval`,申请后，群主和管理员会收到加群邀请，同意后入群。
 
 #### 邀请用户入群
 
 ```dart
 try{
-  await EMClient.getInstance.groupManager.addMembers(groupId, inviteMembers);
+  await EMClient.getInstance.groupManager.inviterUser(groupId, inviteMembers);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
 ```
 
->需要群组类型是`PrivateOnlyOwnerInvite`或`PrivateMemberCanInvite`,     
->`PrivateOnlyOwnerInvite`时，群主和管理员可以调用；     
->`PrivateMemberCanInvite `是，群中任何人都可以调用；    
->被邀请方会收到邀请通知，同意后进群。邀请通知并不会以推送的形式发出，如果用户不在线，等上线后会收到，用户同意后入群。
+> 需要群组类型是`PrivateOnlyOwnerInvite`或`PrivateMemberCanInvite`,     
+> `PrivateOnlyOwnerInvite`时，群主和管理员可以调用`；`     
+> `PrivateMemberCanInvite 时，群中任何人都可以调用；    
+> 被邀请方会收到邀请通知，同意后进群。邀请通知并不会以推送的形式发出，如果用户不在线，等上线后会收到，用户同意后入群。
+
+```dart
+try{
+    EMClient.getInstance.groupManager.addMembers(groupId, members);
+} on EMError catch(e){
+    print('操作失败，原因是: $e');
+}
+```
+
+> 需要群组类型是PublicJoinNeedApproval 或 PublicOpenJoin，
+> 
+> `PublicJoinNeedApproval`时,被邀请人同意后会进群；
+> 
+> 
+
+
 
 #### 从群组中移除用户
 
@@ -781,7 +780,7 @@ try{
 }
 ```
 
->群主和管理员可以调用。
+> 群主和管理员可以调用。
 
 #### 添加管理员
 
@@ -793,8 +792,7 @@ try{
 }
 ```
 
->群主可以调用。被操作人会收到被添加为管理员回调，该回调无推送，如用户不在线，上线后会收到。
-
+> 群主可以调用。被操作人会收到被添加为管理员回调，该回调无推送，如用户不在线，上线后会收到。
 
 #### 移除管理员
 
@@ -806,7 +804,7 @@ try{
 }
 ```
 
->群主可以调用。被操作人会收到被移除管理员回调，该回调无推送，如用户不在线，上线后会收到。
+> 群主可以调用。被操作人会收到被移除管理员回调，该回调无推送，如用户不在线，上线后会收到。
 
 #### 退出群组
 
@@ -828,7 +826,7 @@ try{
 }
 ```
 
->只有群主可以调用。
+> 只有群主可以调用。
 
 #### 转移群组
 
@@ -840,7 +838,7 @@ try{
 }
 ```
 
->只有群主可以调用。
+> 只有群主可以调用。
 
 #### 获取群组黑名单列表
 
@@ -862,7 +860,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用，被操作用户当前必须是群成员，当用户被加入到群黑名单后，该用户将从群成员中移除并加入到当前群的黑名单中。同时该用户将无法再进入该群。
+> 该方法只有群主和管理员可以调用，被操作用户当前必须是群成员，当用户被加入到群黑名单后，该用户将从群成员中移除并加入到当前群的黑名单中。同时该用户将无法再进入该群。
 
 #### 将用户从黑名单移除
 
@@ -874,7 +872,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用，当账号从黑名单中移除后可以再允许申请加群。
+> 该方法只有群主和管理员可以调用，当账号从黑名单中移除后可以再允许申请加群。
 
 #### 获取群禁言列表
 
@@ -896,7 +894,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用，被禁言的用户仍然可以收到群中的消息，但是无法发出消息， 白名单中的用户即使被加入到禁言列表中也不受影响。
+> 该方法只有群主和管理员可以调用，被禁言的用户仍然可以收到群中的消息，但是无法发出消息， 白名单中的用户即使被加入到禁言列表中也不受影响。
 
 #### 对成员解除禁言
 
@@ -908,7 +906,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用。
+> 该方法只有群主和管理员可以调用。
 
 #### 对所有成员禁言
 
@@ -920,7 +918,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用，对群主，管理员，白名单中的成员无效，且针对所有人的`禁言`操作与`muteMembers`、`unMuteMembers`接口不冲突，该接口的操作并不会导致`getGroupMuteListFromServer`接口的返回的数据变化。
+> 该方法只有群主和管理员可以调用，对群主，管理员，白名单中的成员无效，且针对所有人的`禁言`操作与`muteMembers`、`unMuteMembers`接口不冲突，该接口的操作并不会导致`getGroupMuteListFromServer`接口的返回的数据变化。
 
 #### 对所有成员解除禁言
 
@@ -932,7 +930,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用，且针对所有人的`解除禁言`操作与`muteMembers`、`unMuteMembers`接口不冲突，该接口的操作并不会导致`getGroupMuteListFromServer`接口的返回的数据变化。当调用该方法后，之前在禁言列表中的用户仍在禁言列表中，且仍处于禁言状态。
+> 该方法只有群主和管理员可以调用，且针对所有人的`解除禁言`操作与`muteMembers`、`unMuteMembers`接口不冲突，该接口的操作并不会导致`getGroupMuteListFromServer`接口的返回的数据变化。当调用该方法后，之前在禁言列表中的用户仍在禁言列表中，且仍处于禁言状态。
 
 #### 获取白名单列表
 
@@ -954,7 +952,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用，当用户被加入到白名单后，当群组全部禁言或者被添加到禁言列表后仍可以发言。
+> 该方法只有群主和管理员可以调用，当用户被加入到白名单后，当群组全部禁言或者被添加到禁言列表后仍可以发言。
 
 #### 将用户从白名单中移除
 
@@ -966,7 +964,7 @@ try{
 }
 ```
 
->该方法只有群主和管理员可以调用。
+> 该方法只有群主和管理员可以调用。
 
 #### 判断自己是否在白名单中
 
@@ -988,7 +986,7 @@ try{
 }
 ```
 
->设置后群组中的所有消息都无法收到，用户不在线时也不会有推送告知。
+> 设置后群组中的所有消息都无法收到，用户不在线时也不会有推送告知。
 
 #### 恢复接收群消息
 
@@ -1010,7 +1008,7 @@ try{
 }
 ```
 
->设置后用户在线时可以正常接收群消息，当用户不在线时，该群组有新消息时不会有推送告知。
+> 设置后用户在线时可以正常接收群消息，当用户不在线时，该群组有新消息时不会有推送告知。
 
 #### 更新群名称
 
@@ -1022,7 +1020,7 @@ try{
 }
 ```
 
->群主或管理员可以调用。
+> 群主或管理员可以调用。
 
 #### 更新群描述
 
@@ -1034,8 +1032,7 @@ try{
 }
 ```
 
->群主或管理员可以调用。
-
+> 群主或管理员可以调用。
 
 #### 获取群组公告
 
@@ -1057,7 +1054,7 @@ try{
 }
 ```
 
->群主或管理员可以调用。
+> 群主或管理员可以调用。
 
 #### 获取群共享文件列表
 
@@ -1099,12 +1096,12 @@ try{
 }
 ```
 
->群主，管理员，文件上传者可以调用。
+> 群主，管理员，文件上传者可以调用。
 
 #### 群回调监听
 
 ```dart
-class _GroupPageState extends State<GroupPage> implements EMGroupChangeListener {
+class _GroupPageState extends State<GroupPage> implements EMGroupEventListener {
 
   @override
   void initState() {
@@ -1113,7 +1110,7 @@ class _GroupPageState extends State<GroupPage> implements EMGroupChangeListener 
     EMClient.getInstance.groupManager.addGroupChangeListener(this);
   }
 
-	...
+    ...
 
   // id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
   void onInvitationReceived(String groupId, String groupName, String inviter, String reason) {
@@ -1191,8 +1188,8 @@ class _GroupPageState extends State<GroupPage> implements EMGroupChangeListener 
   void onSharedFileDeleted(String groupId, String fileId) {
   }
 
-	...
-   
+    ...
+
   @override
   void dispose() {
     // 移除群组监听
@@ -1200,7 +1197,6 @@ class _GroupPageState extends State<GroupPage> implements EMGroupChangeListener 
     super.dispose();
   }
 }
-
 ```
 
 #### 同意加群申请
@@ -1213,7 +1209,7 @@ try{
 }
 ```
 
->群主和管理员可以调用。
+> 群主和管理员可以调用。
 
 #### 拒绝加群申请
 
@@ -1225,7 +1221,7 @@ try{
 }
 ```
 
->群主和管理员可以调用。
+> 群主和管理员可以调用。
 
 #### 同意加群邀请
 
@@ -1279,7 +1275,7 @@ try{
 }
 ```
 
->聊天室创建需要单独拥有权限，具体可以参考文档[聊天室管理](http://docs-im.easemob.com/im/server/basics/chatroom)。
+> 聊天室创建需要单独拥有权限，具体可以参考文档[聊天室管理](http://docs-im.easemob.com/im/server/basics/chatroom)。
 
 #### 加入聊天室
 
@@ -1311,7 +1307,7 @@ try{
 }
 ```
 
->聊天室销毁需要单独拥有权限，具体可以参考文档[聊天室管理](http://docs-im.easemob.com/im/server/basics/chatroom)。
+> 聊天室销毁需要单独拥有权限，具体可以参考文档[聊天室管理](http://docs-im.easemob.com/im/server/basics/chatroom)。
 
 #### 转移聊天室
 
@@ -1323,7 +1319,7 @@ try{
 }
 ```
 
->聊天室转移需要单独拥有权限，具体可以参考文档[聊天室管理](http://docs-im.easemob.com/im/server/basics/chatroom)。
+> 聊天室转移需要单独拥有权限，具体可以参考文档[聊天室管理](http://docs-im.easemob.com/im/server/basics/chatroom)。
 
 #### 获取聊天室详情
 
@@ -1367,7 +1363,7 @@ try{
 }
 ```
 
->创建者调用，被操作者会收到回调。
+> 创建者调用，被操作者会收到回调。
 
 #### 移除管理员
 
@@ -1379,7 +1375,7 @@ try{
 }
 ```
 
->创建者调用，被操作者会收到回调。
+> 创建者调用，被操作者会收到回调。
 
 #### 获取禁言列表
 
@@ -1401,7 +1397,7 @@ try{
 }
 ```
 
->创建者或者管理员调用。
+> 创建者或者管理员调用。
 
 #### 解除禁言
 
@@ -1413,7 +1409,7 @@ try{
 }
 ```
 
->创建者或者管理员调用。
+> 创建者或者管理员调用。
 
 #### 获取黑名单列表
 
@@ -1435,7 +1431,7 @@ try{
 }
 ```
 
->创建者或管理员调用。
+> 创建者或管理员调用。
 
 #### 移除黑名单
 
@@ -1447,8 +1443,7 @@ try{
 }
 ```
 
->创建者或管理员调用。
-
+> 创建者或管理员调用。
 
 #### 修改聊天室标题
 
@@ -1460,7 +1455,7 @@ try{
 }
 ```
 
->创建者或管理员调用。
+> 创建者或管理员调用。
 
 #### 修改聊天室描述
 
@@ -1472,7 +1467,7 @@ try{
 }
 ```
 
->创建者或管理员调用。
+> 创建者或管理员调用。
 
 #### 获取聊天室公告
 
@@ -1494,12 +1489,11 @@ try{
 }
 ```
 
->创建者或管理员调用
+> 创建者或管理员调用
 
 #### 添加聊天室监听
 
 ```dart
-
 class _RoomPageState extends State<RoomPage> implements EMChatRoomEventListener {
 
   @override
@@ -1508,7 +1502,7 @@ class _RoomPageState extends State<RoomPage> implements EMChatRoomEventListener 
     // 添加聊天室监听
     EMClient.getInstance.roomManager.addChatRoomChangeListener(this);
   }
-  
+
   /// id是[roomId],名称是[roomName]的聊天室被销毁
   void onChatRoomDestroyed(String roomId, String roomName) {
   }
@@ -1556,7 +1550,6 @@ class _RoomPageState extends State<RoomPage> implements EMChatRoomEventListener 
     super.dispose();
   }
 }
-
 ```
 
 ### 推送
@@ -1571,8 +1564,7 @@ try{
 }
 ```
 
->推送昵称是指当前账号给其他用户发消息，对方不在线，收到推送时显示在推送中的名字，如果没设置，将显示环信id。
-
+> 推送昵称是指当前账号给其他用户发消息，对方不在线，收到推送时显示在推送中的名字，如果没设置，将显示环信id。
 
 #### 从服务器获取推送配置
 
@@ -1604,10 +1596,9 @@ try{
 }
 ```
 
->`EMImPushStyle`是收推送时样式，目前有两种样式：    
->`Simple`显示“您有一条新消息”;     
->`Summary`显示推送详情;  
-
+> `EMImPushStyle`是收推送时样式，目前有两种样式：    
+> `Simple`显示“您有一条新消息”;     
+> `Summary`显示推送详情;  
 
 #### 设置消息免打扰
 
@@ -1619,7 +1610,7 @@ try{
 }
 ```
 
->10点到22点之间不接收消息推送。如果是全天不想接收推送，可以设置时间为`0`到`24`。
+> 10点到22点之间不接收消息推送。如果是全天不想接收推送，可以设置时间为`0`到`24`。
 
 #### 关闭消息免打扰
 
@@ -1654,6 +1645,7 @@ try{
 ### EMUserInfoManager
 
 #### 更新自己的用户属性
+
 ```dart
  try {
     EMUserInfo info = EMUserInfo(EMClient.getInstance.currentUsername);
@@ -1669,13 +1661,14 @@ try{
 ```
 
 #### 获取多用户的用户属性
+
 ```dart
   try {
       String userId = EMClient.getInstance.currentUsername;
       List<String> userIds =[];
       userIds.add(userId);
       userIds.add('xxx');
-    
+
       Map userInfoMap = await EMClient.getInstance.userInfoManager
           .fetchUserInfoByIdWithExpireTime(userIds, expireTime: 3600);
 
@@ -1683,4 +1676,3 @@ try{
       print('操作失败，原因是: $e');
     }
 ```
-
