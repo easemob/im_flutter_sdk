@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -19,7 +17,6 @@ import 'package:provider/provider.dart';
 import 'chat_face_view.dart';
 import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
-import 'dart:convert' as convert;
 
 class ChatPage extends StatefulWidget {
   ChatPage(
@@ -36,8 +33,7 @@ class _ChatPageState extends State<ChatPage>
     implements
         ChatInputBarListener,
         EMChatManagerListener,
-        EMChatRoomEventListener,
-        EaseCallKitListener {
+        EMChatRoomEventListener {
   List<ChatMoreViewItem> items;
 
   final _scrollController = ScrollController();
@@ -61,7 +57,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void initState() {
     super.initState();
-    EaseCallKit.listener = this;
     // 监听键盘弹起收回
     _subscribeId = KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
@@ -124,7 +119,6 @@ class _ChatPageState extends State<ChatPage>
     if (widget.conv?.type == EMConversationType.ChatRoom) {
       EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv?.id);
     }
-    EaseCallKit.dispose();
     super.dispose();
   }
 
@@ -444,12 +438,9 @@ class _ChatPageState extends State<ChatPage>
 
   /// 相册按钮被点击
   _moreViewPhotoBtnOnTap() async {
-    PickedFile pickedFile =
-        await ImagePicker().getImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      _sendImageMessage(
-        pickedFile.path,
-      );
+    XFile pf = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pf != null) {
+      _sendImageMessage(pf.path);
     }
   }
 
@@ -474,14 +465,13 @@ class _ChatPageState extends State<ChatPage>
   /// 大头针按钮被点击
   _moreVoiceCallBtnOnTap() {
     if (widget.conv.type == EMConversationType.Chat) {
-      EaseCallKit.startSingleCall(widget.conv.id);
+      // TODO: call
     }
   }
 
   _moreVideoCallBtnOnTap() {
     if (widget.conv.type == EMConversationType.Chat) {
-      EaseCallKit.startSingleCall(widget.conv.id,
-          callType: EaseCallType.SingeVideo);
+      // TODO: call
     }
   }
 
@@ -650,59 +640,5 @@ class _ChatPageState extends State<ChatPage>
   void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
 
   @override
-  void callDidEnd(String channelName, EaseCallEndReason reason, int time,
-      EaseCallType callType) {}
-
-  @override
-  void callDidJoinChannel(String channelName, int uid) {}
-
-  @override
-  void callDidOccurError(EaseCallError error) {}
-
-  @override
-  void callDidReceive(EaseCallType callType, String inviter, Map ext) {}
-
-  @override
-  void callDidRequestRTCToken(
-      String appId, String channelName, String eid) async {
-    String emUsername = EMClient.getInstance.currentUsername;
-    await fetchRTCToken(channelName, emUsername);
-  }
-
-  @override
-  void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
-
-  Future<void> fetchRTCToken(String channelName, String username) async {
-    String token = EMClient.getInstance.accessToken;
-    if (token == null) return null;
-    var httpClient = new HttpClient();
-    var uri = Uri.http("a1.easemob.com", "/token/rtcToken/v1", {
-      "userAccount": username,
-      "channelName": channelName,
-      "appkey": EMClient.getInstance.options.appKey,
-    });
-    var request = await httpClient.getUrl(uri);
-    request.headers.add("Authorization", "Bearer $token");
-    HttpClientResponse response = await request.close();
-    httpClient.close();
-    if (response.statusCode == HttpStatus.ok) {
-      var _content = await response.transform(Utf8Decoder()).join();
-      debugPrint(_content);
-      Map<String, dynamic> map = convert.jsonDecode(_content);
-      if (map != null) {
-        if (map["code"] == "RES_0K") {
-          debugPrint("获取数据成功: $map");
-          String rtcToken = map["accessToken"];
-          int agoraUserId = map["agoraUserId"];
-          await EaseCallKit.setRTCToken(rtcToken, channelName, agoraUserId);
-        }
-      }
-    }
-  }
-
-  @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
-
-  @override
-  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
 }

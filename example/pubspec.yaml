@@ -71,7 +71,7 @@ dependencies:
   keyboard_visibility: 0.5.6
 
   # 图片选择
-  image_picker: 0.6.7+17
+  image_picker: ^0.8.4+10
 
   # 存储图片
   image_gallery_saver: '^1.7.0'
@@ -85,7 +85,7 @@ dependencies:
   tuple: ^1.0.3
 
   # 权限管理
-  permission_handler: 5.0.1+1
+  permission_handler: ^8.3.0
 
   # dialog
   flutter_smart_dialog: 1.2.6
@@ -95,15 +95,6 @@ dependencies:
 
   # 长按菜单
   w_popup_menu: ^0.3.1
-
-  #ease_call_kit
-  ease_call_kit:
-    git:
-      url: https://github.com/easemob/ease_call_kit.git
-      ref: 33bb9e7
-
-  # ease_call_kit:
-  #   path: ../../ease_call_kit/
 
   # 环信 sdk
   im_flutter_sdk:
@@ -144,7 +135,7 @@ flutter:
     - images/login_icon.png
     - images/login_pwd_show.png
     - images/login_pwd_hidden.png
-    - images/login_usename_clear.png
+    - images/login_username_clear.png
     - images/login_protocal_selected.png
     - images/login_protocal_unselected.png
 

@@ -172,7 +172,7 @@ _slidableActionItem(String caption, IconData icon) {
 }
 
 /// 未读数
-unreadCoundWidget(int unreadCount) {
+unreadCountWidget(int unreadCount) {
   if (unreadCount == 0) return Container();
   String count;
   if (unreadCount > 99) {
