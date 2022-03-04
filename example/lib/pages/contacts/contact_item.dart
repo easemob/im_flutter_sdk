@@ -55,7 +55,7 @@ class ContactItem extends StatelessWidget {
             color: Colors.red,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: unreadCoundWidget(unreadCount),
+          child: unreadCountWidget(unreadCount),
         ),
       ],
     );

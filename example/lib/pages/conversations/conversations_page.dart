@@ -1,4 +1,3 @@
-import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/conversations/conversation_item.dart';
 import 'package:easeim_flutter_demo/unit/event_bus_manager.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -36,7 +35,7 @@ class ConversationPageState extends State<ConversationPage>
     // 添加环信回调监听
     EMClient.getInstance.chatManager.addListener(this);
     notifier = eventBus.on<EventBusManager>().listen((event) {
-      if (event.eventKey == EventBusManager.updateConversaitonsList) {
+      if (event.eventKey == EventBusManager.updateConversationsList) {
         _reLoadAllConversations();
       }
     });
@@ -76,7 +75,7 @@ class ConversationPageState extends State<ConversationPage>
                     (value) {
                       List<String> users = value as List<String>;
                       if (users.length > 0) {
-                        EaseCallKit.startInviteUsers(users);
+                        // TODO: call
                       }
                     },
                   );
@@ -162,8 +161,8 @@ class ConversationPageState extends State<ConversationPage>
       _conversationsList.addAll(list);
       _refreshController.refreshCompleted();
       num count = 0;
-      for (var conv in _conversationsList) {
-        count += conv.unreadCount;
+      for (var conversation in _conversationsList) {
+        count += conversation.unreadCount;
       }
       widget.updateCount(count);
     } on Error {
@@ -177,7 +176,7 @@ class ConversationPageState extends State<ConversationPage>
   Widget conversationWidgetForIndex(int index) {
     return slidableItem(
       child: ConversationItem(
-        conv: _conversationsList[index],
+        conversation: _conversationsList[index],
         onTap: () => {_conversationItemOnPress(index)},
       ),
       // 侧滑事件，有必要可以加上置顶之类的
