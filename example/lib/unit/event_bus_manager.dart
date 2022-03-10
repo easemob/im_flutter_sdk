@@ -9,7 +9,7 @@ class EventBusManager {
   EventBusManager(this.eventKey);
 
   /// 更新会话通知
-  EventBusManager.updateConversations() {
-    eventKey = updateConversationsList;
+  static updateConversations() {
+    EventBusManager(updateConversationsList);
   }
 }

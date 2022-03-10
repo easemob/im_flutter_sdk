@@ -9,8 +9,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController _usernameController;
-  TextEditingController _pwdController;
+  late TextEditingController _usernameController;
+  late TextEditingController _pwdController;
   bool _hiddenPwd = true;
   bool _agreeProtocal = false;
   @override
@@ -70,13 +70,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       Container(
                         padding: EdgeInsets.fromLTRB(33, 38, 33, 0),
-                        child: loginRegistTextField(
+                        child: loginRegisterTextField(
                           hintText: '用户名',
                           controller: _usernameController,
                           rightIcon: IconButton(
                             padding: EdgeInsets.zero,
                             icon: Image.asset(
-                              'images/login_usename_clear.png',
+                              'images/login_username_clear.png',
                             ),
                             onPressed: () {
                               _usernameController.text = '';
@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       Container(
                         padding: EdgeInsets.fromLTRB(33, 20, 33, 0),
-                        child: loginRegistTextField(
+                        child: loginRegisterTextField(
                           hintText: '确认密码',
                           isPwd: _hiddenPwd,
                           controller: _pwdController,
@@ -158,9 +158,9 @@ class _LoginPageState extends State<LoginPage> {
                       loginRegisterButton(
                         enable: _agreeProtocal,
                         margin: EdgeInsets.only(left: 33, right: 33),
-                        beginColor: Colors.blue[400],
-                        endColor: Colors.blue[800],
-                        disabelColor: Colors.black38,
+                        beginColor: Colors.blue[400]!,
+                        endColor: Colors.blue[800]!,
+                        disableColor: Colors.black38,
                         onPressed: () => loginAction(),
                         title: '登录',
                       ),

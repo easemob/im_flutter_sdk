@@ -9,9 +9,9 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  TextEditingController _usernameController;
-  TextEditingController _pwdController;
-  TextEditingController _confPwdController;
+  late TextEditingController _usernameController;
+  late TextEditingController _pwdController;
+  late TextEditingController _confPwdController;
   bool _agreeProtocal = false;
 
   @override
@@ -79,13 +79,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         // 用户名
                         Container(
                           padding: EdgeInsets.fromLTRB(33, 38, 33, 0),
-                          child: loginRegistTextField(
+                          child: loginRegisterTextField(
                             hintText: '用户名',
                             controller: _usernameController,
                             rightIcon: IconButton(
                               padding: EdgeInsets.zero,
                               icon: Image.asset(
-                                'images/login_usename_clear.png',
+                                'images/login_username_clear.png',
                               ),
                               onPressed: () {
                                 _usernameController.text = '';
@@ -96,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         // 密码
                         Container(
                           padding: EdgeInsets.fromLTRB(33, 20, 33, 0),
-                          child: loginRegistTextField(
+                          child: loginRegisterTextField(
                             hintText: '密码',
                             isPwd: true,
                             controller: _pwdController,
@@ -105,7 +105,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         // 确认密码
                         Container(
                           padding: EdgeInsets.fromLTRB(33, 20, 33, 0),
-                          child: loginRegistTextField(
+                          child: loginRegisterTextField(
                             hintText: '确认密码',
                             isPwd: true,
                             controller: _confPwdController,
@@ -160,9 +160,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           margin: EdgeInsets.only(left: 33, right: 33),
                           onPressed: _doRegisterAction,
                           title: '注册',
-                          beginColor: Colors.blue[400],
-                          endColor: Colors.blue[800],
-                          disabelColor: Colors.black38,
+                          beginColor: Colors.blue[400]!,
+                          endColor: Colors.blue[800]!,
+                          disableColor: Colors.black38,
                         ),
                       ],
                     ),

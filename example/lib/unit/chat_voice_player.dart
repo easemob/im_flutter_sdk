@@ -3,7 +3,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 // import 'package:record_amr/record_amr.dart';
 
 class ChatVoicePlayer extends ChangeNotifier {
-  String currentMsgId = '';
+  String? currentMsgId;
   bool isPlaying = false;
 
   playVoice(EMMessage msg) async {

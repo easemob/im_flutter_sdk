@@ -6,7 +6,7 @@ import 'dart:math' as math;
 class ChatVoiceBubble extends StatefulWidget {
   ChatVoiceBubble(
     this.body, [
-    this.isSend,
+    this.isSend = false,
     this.isPlaying = false,
   ]);
   final EMVoiceMessageBody body;
@@ -25,8 +25,8 @@ class ChatVoiceBubbleState extends State<ChatVoiceBubble>
   /// 最小长度, 设置最小长度时要注意波纹图片的长度可能大于最小长度，所以不能设置的太小。
   final double minSize = sWidth(65);
 
-  Animation<double> animation;
-  AnimationController controller;
+  late Animation<double> animation;
+  late AnimationController controller;
 
   initState() {
     super.initState();
@@ -48,7 +48,7 @@ class ChatVoiceBubbleState extends State<ChatVoiceBubble>
       controller.stop();
       controller.reverse(from: 0);
     }
-    double width = minSize * widget.body.duration / 15;
+    double width = minSize * widget.body.duration! / 15;
     if (width < minSize) width = minSize;
     if (width > maxSize) width = maxSize;
     return Container(
@@ -96,11 +96,13 @@ class ChatVoiceBubbleState extends State<ChatVoiceBubble>
 }
 
 class AnimatedImage extends AnimatedWidget {
-  AnimatedImage({Key key, Animation<double> animation})
-      : super(key: key, listenable: animation);
+  AnimatedImage({
+    required Animation<double> animation,
+    Key? key,
+  }) : super(key: key, listenable: animation);
 
   Widget build(BuildContext context) {
-    final Animation<double> animation = listenable;
+    Animation<double> animation = listenable as Animation<double>;
 
     String imgName = 'images/chat_bubble_voice_ripple00.png';
     switch (animation.value.toInt()) {

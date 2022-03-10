@@ -7,13 +7,17 @@ typedef OnSendTap = void Function();
 typedef OnDeleteTap = void Function();
 
 class ChatFaceView extends StatefulWidget {
-  ChatFaceView(this.canDelete,
-      {this.onFaceTap, this.onSendTap, this.onDeleteTap});
+  ChatFaceView(
+    this.canDelete, {
+    this.onFaceTap,
+    this.onSendTap,
+    this.onDeleteTap,
+  });
 
   final bool canDelete;
-  final OnFaceTap onFaceTap;
-  final OnSendTap onSendTap;
-  final OnDeleteTap onDeleteTap;
+  final OnFaceTap? onFaceTap;
+  final OnSendTap? onSendTap;
+  final OnDeleteTap? onDeleteTap;
 
   @override
   State<StatefulWidget> createState() => ChatFaceViewState();
@@ -35,7 +39,7 @@ class ChatFaceViewState extends State<ChatFaceView> {
             child: WeChatExpression(
               (Expression expression) {
                 if (widget.onFaceTap != null) {
-                  widget.onFaceTap(expression);
+                  widget.onFaceTap?.call(expression);
                 }
               },
             ),
@@ -83,7 +87,7 @@ class ChatFaceViewState extends State<ChatFaceView> {
                       ),
                       onPressed: () {
                         if (widget.onDeleteTap != null) {
-                          widget.onDeleteTap();
+                          widget.onDeleteTap?.call();
                         }
                       },
                     ),
@@ -109,7 +113,7 @@ class ChatFaceViewState extends State<ChatFaceView> {
                       ),
                       onPressed: () {
                         if (widget.onSendTap != null) {
-                          widget.onSendTap();
+                          widget.onSendTap?.call();
                         }
                       },
                       child: Text(

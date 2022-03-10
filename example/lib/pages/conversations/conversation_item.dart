@@ -5,11 +5,12 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class ConversationItem extends StatefulWidget {
   @override
-  const ConversationItem({EMConversation conversation, VoidCallback onTap})
-      : _conversation = conversation,
-        _onTap = onTap;
-  final EMConversation _conversation;
-  final VoidCallback _onTap;
+  const ConversationItem({
+    required this.conversation,
+    this.onTap,
+  });
+  final EMConversation conversation;
+  final VoidCallback? onTap;
 
   _ConversationItemState createState() => _ConversationItemState();
 }
@@ -24,7 +25,7 @@ class _ConversationItemState extends State<ConversationItem> {
   Widget build(BuildContext context) {
     return InkWell(
       highlightColor: Colors.grey[300],
-      onTap: () => this.widget._onTap(),
+      onTap: () => this.widget.onTap?.call(),
       child: Container(
         height: sWidth(74),
         child: Row(
@@ -124,15 +125,15 @@ class _ConversationItemState extends State<ConversationItem> {
   /// 消息详情
   String _showInfo() {
     String showInfo = '';
-    EMMessage _latestMessage = this.widget._conversation.latestMessage;
+    EMMessage? _latestMessage = this.widget.conversation.latestMessage;
     if (_latestMessage == null) {
       return showInfo;
     }
 
-    switch (_latestMessage.body.type) {
+    switch (_latestMessage.body!.type) {
       case EMMessageBodyType.TXT:
         var body = _latestMessage.body as EMTextMessageBody;
-        showInfo = body.content;
+        showInfo = body.content!;
         break;
       case EMMessageBodyType.IMAGE:
         showInfo = '[图片]';
@@ -157,20 +158,19 @@ class _ConversationItemState extends State<ConversationItem> {
 
   /// 显示的名称
   String _showName() {
-    return this.widget._conversation.name;
+    return this.widget.conversation.name;
   }
 
   /// 未读数
   int _unreadCount() {
-    return this.widget._conversation.unreadCount;
+    return this.widget.conversation.unreadCount ?? 0;
   }
 
   /// 消息时间
   String _latestMessageTime() {
-    if (this.widget._conversation.latestMessage == null) {
+    if (this.widget.conversation.latestMessage == null) {
       return '';
     }
-    return timeStrByMs(
-        this.widget._conversation.latestMessage?.serverTime ?? 0);
+    return timeStrByMs(this.widget.conversation.latestMessage?.serverTime ?? 0);
   }
 }

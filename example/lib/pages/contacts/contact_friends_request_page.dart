@@ -5,21 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-class ContactFirendsRequestPage extends StatefulWidget {
+class ContactFriendsRequestPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => ContactFirendsRequestPageState();
+  State<StatefulWidget> createState() => ContactFriendsRequestPageState();
 }
 
-class ContactFirendsRequestPageState extends State<ContactFirendsRequestPage> {
+class ContactFriendsRequestPageState extends State<ContactFriendsRequestPage> {
   List<String> requestList = [];
   RegExp requestExp = RegExp(r' ');
   @override
   void initState() {
     super.initState();
-    String currentUser = EMClient.getInstance.currentUsername;
-    SharePreferenceManager.load(currentUser, callback: () {
-      setState(() {});
-    });
+    String? currentUser = EMClient.getInstance.currentUsername;
+    if (currentUser != null) {
+      SharePreferenceManager.load(currentUser, callback: () {
+        setState(() {});
+      });
+    }
   }
 
   @override

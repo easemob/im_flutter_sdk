@@ -237,7 +237,7 @@ class ExpressionText extends StatelessWidget {
   final int maxLine;
 
   const ExpressionText(this._text, this._textStyle,
-      {Key key, this.maxLine = -1})
+      {Key? key, this.maxLine = -1})
       : super(key: key);
 
   @override

@@ -5,17 +5,17 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-class ChatroomsListPages extends StatefulWidget {
+class ChatRoomsListPages extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => ChatroomsListPagesState();
+  State<StatefulWidget> createState() => ChatRoomsListPagesState();
 }
 
-class ChatroomsListPagesState extends State<ChatroomsListPages> {
+class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
   List<EMChatRoom> _roomsList = [];
   int _pageCount = 0;
   bool _isEnd = false;
   String _searchName = '';
-  EMChatRoom _searchdRoom;
+  EMChatRoom? _searchedRoom;
   final _pageSize = 30;
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
@@ -42,7 +42,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
                     onChanged: (text) {
                       _searchName = text;
                       if (_searchName.length == 0) {
-                        _searchdRoom = null;
+                        _searchedRoom = null;
                         setState(() {});
                       }
                     },
@@ -83,8 +83,8 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
                 controller: _refreshController,
                 child: ListView.separated(
                   itemBuilder: ((_, index) {
-                    if (_searchdRoom != null) {
-                      return _chatRoomItem(_searchdRoom);
+                    if (_searchedRoom != null) {
+                      return _chatRoomItem(_searchedRoom!);
                     } else {
                       EMChatRoom room = _roomsList[index];
                       return _chatRoomItem(room);
@@ -96,7 +96,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
                       height: 0.3,
                     );
                   }),
-                  itemCount: _searchName.length != 0 && _searchdRoom != null
+                  itemCount: _searchName.length != 0 && _searchedRoom != null
                       ? 1
                       : _roomsList.length,
                 ),
@@ -155,11 +155,13 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
       if (!isMore) {
         _roomsList.clear();
       }
-      _roomsList.addAll(result.data);
-      if (_pageSize > result.data.length) {
-        _isEnd = true;
-      } else {
-        _isEnd = false;
+      if (result.data != null) {
+        _roomsList.addAll(result.data!);
+        if (_pageSize > result.data!.length) {
+          _isEnd = true;
+        } else {
+          _isEnd = false;
+        }
       }
       setState(() {});
       SmartDialog.showToast('获取成功');
@@ -177,8 +179,11 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
   }
 
   _chatToRoom(EMChatRoom room) async {
-    EMConversation con = await EMClient.getInstance.chatManager
-        .getConversation(room.roomId, EMConversationType.ChatRoom);
+    EMConversation? con =
+        await EMClient.getInstance.chatManager.getConversation(
+      room.roomId,
+      EMConversationType.ChatRoom,
+    );
     if (con == null) {
       SmartDialog.showToast('会话创建失败');
       return;
@@ -195,7 +200,7 @@ class ChatroomsListPagesState extends State<ChatroomsListPages> {
     if (std.length == 0) return;
     try {
       SmartDialog.showLoading(msg: '搜索中...');
-      _searchdRoom = await EMClient.getInstance.chatRoomManager
+      _searchedRoom = await EMClient.getInstance.chatRoomManager
           .fetchChatRoomInfoFromServer(std);
     } on EMError catch (e) {
       SmartDialog.showToast('搜索失败: $e');

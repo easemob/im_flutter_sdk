@@ -4,15 +4,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart' as screen_util;
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 /// 注册登录用的输入框
-loginRegistTextField(
-    {String hintText,
-    Color hintColor = Colors.black12,
-    double fontSize = 18,
-    double height = 100,
-    Color textColor = Colors.black45,
-    TextEditingController controller,
-    bool isPwd = false,
-    Widget rightIcon}) {
+Widget loginRegisterTextField({
+  required String hintText,
+  Color hintColor = Colors.black12,
+  double fontSize = 18,
+  double height = 100,
+  Color textColor = Colors.black45,
+  TextEditingController? controller,
+  bool isPwd = false,
+  Widget? rightIcon,
+}) {
   return TextField(
     obscureText: isPwd,
     controller: controller,
@@ -43,12 +44,12 @@ loginRegistTextField(
 }
 
 /// 注册登录的按钮
-loginRegisterButton({
-  @required VoidCallback onPressed,
-  @required String title,
-  @required Color beginColor,
-  Color endColor,
-  Color disabelColor,
+Widget loginRegisterButton({
+  required VoidCallback onPressed,
+  required String title,
+  required Color beginColor,
+  Color? endColor,
+  Color? disableColor,
   double titleFontSize = 20,
   double letterSpacing = 10,
   Color titleColor = Colors.white,
@@ -69,8 +70,8 @@ loginRegisterButton({
                 endColor ?? beginColor,
               ]
             : [
-                disabelColor ?? beginColor,
-                disabelColor ?? beginColor,
+                disableColor ?? beginColor,
+                disableColor ?? beginColor,
               ],
       ),
     ),
@@ -97,82 +98,40 @@ loginRegisterButton({
 }
 
 /// 侧滑的Item
-slidableItem({
-  @required Widget child,
+Widget slidableItem({
+  required Widget child,
+  required List<SlidableAction> actions,
   EdgeInsets margin = EdgeInsets.zero,
-  List<IconSlideAction> actions,
 }) {
   return Container(
     margin: margin,
     child: Slidable(
-      actionPane: SlidableScrollActionPane(), // 滑出选项的面板 动画
-      actionExtentRatio: 0.25,
+      key: ValueKey(0),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: actions,
+      ),
       child: child,
-      secondaryActions: actions,
     ),
   );
 }
 
 /// 侧滑的"删除"类型action
-slidableDeleteAction({
-  VoidCallback onTap,
-}) {
-  return IconSlideAction(
-    color: Colors.red,
-    iconWidget: _slidableActionItem(
-      '删除',
-      Icons.delete,
-    ),
-    closeOnTap: true,
-    onTap: onTap,
-  );
-}
-
-/// 侧滑的"更多"类型action
-slidableNormalAction({
-  VoidCallback onTap,
-  String label = '更多',
-  IconData icon,
-  Color color = Colors.black45,
-}) {
-  return IconSlideAction(
-    color: Colors.red,
-    iconWidget: _slidableActionItem(
-      label,
-      icon ?? Icons.more_horiz,
-    ),
-    closeOnTap: true,
-    onTap: onTap,
-  );
-}
-
-/// 侧滑按钮样式
-_slidableActionItem(String caption, IconData icon) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Flexible(
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: sWidth(28),
-        ),
-      ),
-      Flexible(
-        child: Text(
-          caption,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: sFontSize(16),
-          ),
-        ),
-      ),
-    ],
+SlidableAction slidableDeleteAction(
+    {VoidCallback? onTap,
+    Color? backgroundColor,
+    Color foregroundColor = Colors.white}) {
+  return SlidableAction(
+    backgroundColor: Colors.red,
+    foregroundColor: foregroundColor,
+    icon: Icons.delete,
+    label: "删除",
+    onPressed: (context) => onTap?.call(),
   );
 }
 
 /// 未读数
-unreadCountWidget(int unreadCount) {
+Widget unreadCountWidget(int unreadCount) {
   if (unreadCount == 0) return Container();
   String count;
   if (unreadCount > 99) {

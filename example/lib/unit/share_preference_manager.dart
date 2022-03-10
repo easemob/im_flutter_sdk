@@ -1,24 +1,20 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharePreferenceManager {
-  static SharePreferenceManager _instance;
-  SharedPreferences _prefs;
-  Function _callback;
-  String _eid;
-  static load(eid, {Function callback}) {
+  static SharePreferenceManager _instance =
+      SharePreferenceManager._getInstance();
+  SharedPreferences? _preferences;
+  Function? _callback;
+  late String _eid;
+  static load(eid, {Function? callback}) {
     SharePreferenceManager.shareInstance._eid = eid;
     SharePreferenceManager.shareInstance._callback = callback;
-    if (callback != null) {
-      Future.delayed(Duration(seconds: 2)).then((value) {
-        if (SharePreferenceManager.shareInstance._callback != null) {
-          SharePreferenceManager.shareInstance._callback();
-        }
-      });
-    }
+    Future.delayed(Duration(seconds: 2)).then((value) {
+      SharePreferenceManager.shareInstance._callback?.call();
+    });
   }
 
-  static SharePreferenceManager get shareInstance =>
-      _instance = _instance ?? SharePreferenceManager._getInstance();
+  static SharePreferenceManager get shareInstance => _instance;
 
   static clear() {
     SharePreferenceManager.shareInstance._callback = null;
@@ -35,11 +31,11 @@ class SharePreferenceManager {
   }
 
   static int loadUnreadCount() {
-    List<String> list = loadAllRequests();
+    List<String?> list = loadAllRequests();
     RegExp eidExp = RegExp(r' ');
     int count = 0;
     for (var requestId in list) {
-      if (!eidExp.hasMatch(requestId)) {
+      if (!eidExp.hasMatch(requestId!)) {
         count++;
       }
     }
@@ -57,53 +53,53 @@ class SharePreferenceManager {
   }
 
   SharePreferenceManager._getInstance() {
-    _loadSharePerference();
+    _loadSharePreference();
   }
 
-  _loadSharePerference() async {
-    if (_prefs == null) {
-      _prefs = await SharedPreferences.getInstance();
-    }
+  _loadSharePreference() async {
+    _preferences ??= await SharedPreferences.getInstance();
   }
 
   // 收到好友申请时调用
   _addRequest(String eid) {
-    List<String> list = loadAllRequests();
+    List<String?> list = loadAllRequests();
     for (var requestId in list) {
-      if (requestId.contains(eid)) {
+      if (requestId!.contains(eid)) {
         list.remove(requestId);
         break;
       }
     }
     list.insert(0, eid);
-    _prefs?.setStringList(this._eid, list);
+    _preferences?.setStringList(this._eid, list.cast<String>());
   }
 
   // 获取所有好友申请
   List<String> _loadAllRequests() {
-    List<String> list = _prefs?.getStringList(this._eid);
+    List<String>? list = _preferences?.getStringList(this._eid);
     return list ?? [];
   }
 
   // 处理好友申请
   _updateRequest(String eid, bool agree) {
     List<String> list = loadAllRequests();
-    for (int i = 0; i < list.length; i++) {
-      String requestId = list[i];
-      if (requestId == eid) {
-        // eid ==> eid 0
-        requestId = '$requestId ${!agree ? 0 : 1}';
-        list[i] = requestId;
-        break;
+    if (list.isNotEmpty) {
+      for (int i = 0; i < list.length; i++) {
+        String requestId = list[i];
+        if (requestId == eid) {
+          // eid ==> eid 0
+          requestId = '$requestId ${!agree ? 0 : 1}';
+          list[i] = requestId;
+          break;
+        }
       }
     }
 
-    _prefs?.setStringList(this._eid, list);
+    _preferences?.setStringList(this._eid, list);
   }
 
   // 删除所有好有申请
   _removeAllRequest() {
     List<String> list = [];
-    _prefs?.setStringList(this._eid, list);
+    _preferences?.setStringList(this._eid, list);
   }
 }

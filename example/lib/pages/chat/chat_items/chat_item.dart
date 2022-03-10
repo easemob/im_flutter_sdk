@@ -26,16 +26,16 @@ class ChatItem extends StatefulWidget {
   final EMMessage msg;
 
   /// 长按消息bubble
-  final OnMessageLongPress longPress;
+  final OnMessageLongPress? longPress;
 
   /// 点击消息bubble
-  final OnMessageTap onTap;
+  final OnMessageTap? onTap;
 
   /// 重发按钮点击
-  final OnErrorMessageTap errorBtnOnTap;
+  final OnErrorMessageTap? errorBtnOnTap;
 
   /// 头像按钮点击
-  final Function(String eid) avatarOnTap;
+  final Function(String eid)? avatarOnTap;
 
   @override
   State<StatefulWidget> createState() => ChatItemState();
@@ -83,7 +83,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
                   left: sWidth(25),
                 ),
                 child: Text(
-                  widget.msg.from,
+                  widget.msg.from!,
                   style: TextStyle(
                     fontSize: sFontSize(11),
                     color: Colors.grey,
@@ -118,9 +118,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
         ),
       ),
       onPressed: () {
-        if (widget.avatarOnTap != null) {
-          widget.avatarOnTap(widget.msg.from);
-        }
+        widget.avatarOnTap?.call(widget.msg.from!);
       },
       child: Image.asset(
         'images/contact_default_avatar.png',
@@ -135,13 +133,11 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
-            if (widget.onTap != null) {
-              widget.onTap(widget.msg);
-            }
+            widget.onTap?.call(widget.msg);
           },
           onLongPress: () {
             if (widget.longPress != null) {
-              widget.longPress(widget.msg);
+              widget.longPress?.call(widget.msg);
             }
           },
           child: Container(
@@ -216,7 +212,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
                 ),
                 onPressed: () {
                   if (widget.errorBtnOnTap != null) {
-                    widget.errorBtnOnTap(widget.msg);
+                    widget.errorBtnOnTap?.call(widget.msg);
                   }
                 },
               );
@@ -259,38 +255,39 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
   }
 
   _messageBubble() {
-    EMMessageBody body = widget.msg.body;
+    EMMessageBody body = widget.msg.body!;
     bool isSend = widget.msg.direction != EMMessageDirection.RECEIVE;
     return Builder(builder: (_) {
       Widget bubble;
-      switch (widget.msg.body.type) {
+      switch (widget.msg.body!.type!) {
         case EMMessageBodyType.TXT:
-          bubble = ChatTextBubble(body);
+          bubble = ChatTextBubble(body as EMTextMessageBody);
           break;
         case EMMessageBodyType.LOCATION:
-          bubble = ChatLocationBubble(body);
+          bubble = ChatLocationBubble(body as EMLocationMessageBody);
           break;
         case EMMessageBodyType.IMAGE:
-          bubble = ChatImageBubble(body, isSend);
+          bubble = ChatImageBubble(body as EMImageMessageBody, isSend);
           break;
         case EMMessageBodyType.VOICE:
           bubble = Builder(builder: (context) {
             return Selector(
-              selector: (_, ChatVoicePlayer player) =>
-                  Tuple2<String, bool>(player.currentMsgId, player.isPlaying),
+              selector: (_, ChatVoicePlayer player) {
+                Tuple2<String, bool>(player.currentMsgId!, player.isPlaying);
+              },
               builder: (_, data, __) => ChatVoiceBubble(
-                body,
+                body as EMVoiceMessageBody,
                 isSend,
-                (data.item1 == widget.msg.msgId) && data.item2,
+                true, //(data!.item1 == widget.msg.msgId) && data.item2,
               ),
             );
           });
           break;
         case EMMessageBodyType.VIDEO:
-          bubble = ChatVideoBubble(body);
+          bubble = ChatVideoBubble(body as EMVideoMessageBody);
           break;
         case EMMessageBodyType.FILE:
-          bubble = ChatFileBubble(body);
+          bubble = ChatFileBubble(body as EMFileMessageBody);
           break;
         case EMMessageBodyType.CMD:
         case EMMessageBodyType.CUSTOM:

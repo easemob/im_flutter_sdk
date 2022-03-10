@@ -13,7 +13,7 @@ class GroupInfoPage extends StatefulWidget {
 }
 
 class GroupInfoPageState extends State<GroupInfoPage> {
-  EMGroup _group;
+  EMGroup? _group;
 
   @override
   void initState() {
@@ -26,7 +26,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   Widget build(BuildContext context) {
     bool needApproval = false;
     if (_group != null) {
-      if (_group.settings?.style == EMGroupStyle.PublicJoinNeedApproval) {
+      if (_group!.settings?.style == EMGroupStyle.PublicJoinNeedApproval) {
         needApproval = true;
       } else {
         needApproval = false;
@@ -80,7 +80,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            widget.group.name,
+                            widget.group.name!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -98,7 +98,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            widget.group.groupId,
+                            widget.group.groupId!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -153,7 +153,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
                     Expanded(
                       child: Text('成员数'),
                     ),
-                    Text(_group != null ? _group?.memberCount.toString() : ''),
+                    Text(_group != null ? _group!.memberCount.toString() : ''),
                   ],
                 ),
               ),
@@ -167,7 +167,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   _joinPublicGroup() {
     try {
       SmartDialog.showLoading(msg: '加入中...');
-      EMClient.getInstance.groupManager.joinPublicGroup(_group.groupId);
+      EMClient.getInstance.groupManager.joinPublicGroup(_group!.groupId!);
       SmartDialog.showToast('加入成功');
     } on EMError catch (e) {
       SmartDialog.showToast('加入失败: $e');
@@ -179,23 +179,26 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   _approvalJoinPublicGroup() async {
     try {
       SmartDialog.showLoading(msg: '申请中...');
-      EMClient.getInstance.groupManager
-          .requestToJoinPublicGroup(_group.groupId);
+      if (_group != null) {
+        EMClient.getInstance.groupManager.requestToJoinPublicGroup(
+          _group!.groupId!,
+        );
+      }
       SmartDialog.showToast('申请已发送');
     } on EMError catch (e) {
       SmartDialog.showToast('申请失败: $e');
     } finally {
       SmartDialog.dismiss();
     }
-    await EMClient.getInstance.groupManager
-        .requestToJoinPublicGroup(_group.groupId);
   }
 
   _fetchGroupInfo() async {
     try {
       SmartDialog.showLoading(msg: '获取中...');
       _group = await EMClient.getInstance.groupManager
-          .getGroupSpecificationFromServer(widget.group.groupId);
+          .getGroupSpecificationFromServer(
+        widget.group.groupId!,
+      );
       setState(() {});
       SmartDialog.showToast('获取成功');
     } on EMError catch (e) {

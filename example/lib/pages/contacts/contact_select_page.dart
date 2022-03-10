@@ -38,13 +38,6 @@ class ContactSelectPageState extends State<ContactSelectPage> {
         data: _contactList,
         itemCount: _contactList.length,
         itemBuilder: (_, index) => getContactRow(index),
-        separatorBuilder: (_, __) {
-          return Container(
-            color: Colors.grey[300],
-            height: 0.5,
-            margin: EdgeInsets.only(left: 20, right: 10),
-          );
-        },
         susItemHeight: 30,
         susItemBuilder: (_, index) {
           ContactModel model = _contactList[index];
@@ -68,7 +61,7 @@ class ContactSelectPageState extends State<ContactSelectPage> {
               width: 60.0,
               height: 60.0,
               decoration: BoxDecoration(
-                color: Colors.blue[700].withAlpha(200),
+                color: Colors.blue[700]?.withAlpha(200),
                 shape: BoxShape.circle,
               ),
               child: Text(
@@ -145,11 +138,17 @@ class ContactSelectPageState extends State<ContactSelectPage> {
 
     count--;
     try {
-      List<String> contacts =
+      List<String?> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromServer();
-      List<ContactModel> list = await _fetchUsersInfo(contacts);
+      List<ContactModel>? list;
+      if (contacts.isNotEmpty) {
+        list = await _fetchUsersInfo(contacts.cast<String>());
+      }
       _contactList.clear();
-      _contactList.addAll(list);
+      if (list != null) {
+        _contactList.addAll(list);
+      }
+
       setState(() {});
     } on EMError {
       SmartDialog.showToast('获取失败');
@@ -163,12 +162,15 @@ class ContactSelectPageState extends State<ContactSelectPage> {
 
   Future<void> _loadLocalContacts([int count = 1]) async {
     try {
-      List<String> contacts =
+      List<String?> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromDB();
-      List<ContactModel> list = await _fetchUsersInfo(contacts);
-      _contactList.clear();
-      _contactList.addAll(list);
-      setState(() {});
+      if (contacts.isNotEmpty) {
+        List<ContactModel> list =
+            await _fetchUsersInfo(contacts.cast<String>());
+        _contactList.clear();
+        _contactList.addAll(list);
+        setState(() {});
+      }
     } on EMError {
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
@@ -210,7 +212,7 @@ class SelectContactItem extends StatelessWidget {
     this.selected = false,
   });
   final String title;
-  final Image avatar;
+  final Image? avatar;
   final bool selected;
 
   @override

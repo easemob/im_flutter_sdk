@@ -8,7 +8,7 @@ class ContactItem extends StatelessWidget {
     this.unreadCount = 0,
   });
   final String title;
-  final Image avatar;
+  final Image? avatar;
   final unreadCount;
   @override
   Widget build(BuildContext context) {

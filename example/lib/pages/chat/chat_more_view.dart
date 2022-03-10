@@ -45,7 +45,7 @@ class _ChatMoreViewState extends State<ChatMoreView> {
   @override
   void initState() {
     super.initState();
-    num pageItemCount = widget.rowCount * widget.columnCount;
+    int pageItemCount = widget.rowCount * widget.columnCount;
 
     _pageNum = widget.list.length ~/ (widget.rowCount * widget.columnCount) + 1;
     for (var i = 0; i < _pageNum; i++) {
@@ -115,7 +115,7 @@ class _ChatMoreViewState extends State<ChatMoreView> {
       // color: Colors.blue,
       child: GestureDetector(
         onTapUp: (TapUpDetails details) {
-          if (item.onTap != null) item.onTap();
+          item.onTap?.call();
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -153,5 +153,5 @@ class ChatMoreViewItem {
   ChatMoreViewItem(this.imageName, this.label, this.onTap);
   final String imageName;
   final String label;
-  VoidCallback onTap;
+  VoidCallback? onTap;
 }

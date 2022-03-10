@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DemoAppBar extends AppBar {
-  DemoAppBar(String title, {List<Widget> rightWidgets})
+  DemoAppBar(String title, {List<Widget>? rightWidgets})
       : super(
           title: Title(
             color: Colors.white,

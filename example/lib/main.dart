@@ -13,7 +13,7 @@ import 'package:easeim_flutter_demo/pages/home_page.dart';
 import 'package:easeim_flutter_demo/pages/account/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/screenutil_init.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
@@ -32,29 +32,36 @@ void main() {
 }
 
 class EaseIMDemo extends StatelessWidget {
+  final FocusNode focusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    return ScreenUtilInit(
-      designSize: Size(375, 667),
-      builder: () {
-        return MaterialApp(
-          builder: (context, child) => FlutterSmartDialog(child: child),
-          debugShowCheckedModeBanner: false,
-          onGenerateRoute: onGenerateRoute,
-          theme: ThemeData(
-              appBarTheme: AppBarTheme(elevation: 1),
-              buttonTheme: ButtonThemeData(
-                  minWidth: 44.0,
-                  highlightColor: Color.fromRGBO(0, 0, 0, 0),
-                  splashColor: Color.fromRGBO(0, 0, 0, 0)),
-              highlightColor: Color.fromRGBO(0, 0, 0, 0),
-              splashColor: Color.fromRGBO(0, 0, 0, 0)),
-          home: IndexPage(),
-        );
+    return GestureDetector(
+      onTap: () {
+        focusNode.unfocus();
       },
+      child: ScreenUtilInit(
+        designSize: Size(375, 667),
+        builder: () {
+          return MaterialApp(
+            builder: (context, child) => FlutterSmartDialog(child: child),
+            debugShowCheckedModeBanner: false,
+            onGenerateRoute: onGenerateRoute,
+            theme: ThemeData(
+                appBarTheme: AppBarTheme(elevation: 1),
+                buttonTheme: ButtonThemeData(
+                    minWidth: 44.0,
+                    highlightColor: Color.fromRGBO(0, 0, 0, 0),
+                    splashColor: Color.fromRGBO(0, 0, 0, 0)),
+                highlightColor: Color.fromRGBO(0, 0, 0, 0),
+                splashColor: Color.fromRGBO(0, 0, 0, 0)),
+            home: IndexPage(),
+          );
+        },
+      ),
     );
   }
 }
@@ -64,7 +71,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
     '/login': (context) => LoginPage(),
     '/register': (context) => RegisterPage(),
     '/home': (context) => HomePage(),
-    '/friendsRequest': (context) => ContactFirendsRequestPage(),
+    '/friendsRequest': (context) => ContactFriendsRequestPage(),
     '/addFriends': (context) => ContactAddFriendsPage(),
     '/publicGroups': (context) => PublicGroupsPage(),
     '/joinedGroups': (context) => JoinedGroupsPage(),
@@ -72,15 +79,15 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           (settings.arguments as List)[0],
           (settings.arguments as List)[1],
         ),
-    '/groupInfo': (context) => GroupInfoPage(settings.arguments),
+    '/groupInfo': (context) => GroupInfoPage(settings.arguments as EMGroup),
     '/groupMemberList': (context) => GroupMembersPage(
           (settings.arguments as List)[0],
           (settings.arguments as List)[1],
         ),
-    '/rooms': (context) => ChatroomsListPages(),
+    '/rooms': (context) => ChatRoomsListPages(),
     '/contactSelect': (context) => ContactSelectPage(),
   };
 
-  WidgetBuilder builder = routes[settings.name];
+  WidgetBuilder? builder = routes[settings.name] as WidgetBuilder;
   return MaterialPageRoute(builder: (ctx) => builder(ctx));
 }
