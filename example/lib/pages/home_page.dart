@@ -38,10 +38,10 @@ class _HomePageState extends State<HomePage>
   void _setupCallKit() async {
     // 初始化 EaseCallKit插件
     await EaseCallKit.initWithConfig(
-      EaseCallConfig('15cb0d28b87b425ea613fc46f7c9f974')..userMap = {},
+      EaseCallConfig('15cb0d28b87b425ea613fc46f7c9f974'),
     );
     EaseCallKit.listener = this;
-    _requestPermiss();
+    _requestPermission();
   }
 
   @override
@@ -168,7 +168,7 @@ class _HomePageState extends State<HomePage>
   }
 
   /// 获取麦克风权限
-  _requestPermiss() async {
+  _requestPermission() async {
     Future.delayed(Duration(seconds: 3)).then((value) {
       Permission.microphone.request();
     });
@@ -229,5 +229,19 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
-  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
+  void remoteUserDidJoinChannel(String channelName, int uid, String eid) async {
+    if (eid == null) return;
+    try {
+      Map<String, EMUserInfo> map = await EMClient.getInstance.userInfoManager
+          .fetchUserInfoByIdWithExpireTime([eid]);
+      for (MapEntry<String, EMUserInfo> entire in map.entries) {
+        Map<String, EaseCallUser> infoMapper = {};
+        infoMapper[entire.key] =
+            EaseCallUser(entire.value.nickName ?? entire.key);
+        await EaseCallKit.setUserInfoMapper(infoMapper);
+      }
+    } on EMError catch (e) {
+      debugPrint(e.toString());
+    }
+  }
 }
