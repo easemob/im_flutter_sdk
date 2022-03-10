@@ -9,7 +9,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 class ChatImageBubble extends StatelessWidget {
   ChatImageBubble(
     this.body, [
-    this.isSend,
+    this.isSend = false,
   ]);
   final EMImageMessageBody body;
   final bool isSend;
@@ -22,8 +22,8 @@ class ChatImageBubble extends StatelessWidget {
     Widget image;
 
     // 作为接收方，是有图片size的，需要先根据size缩放
-    double width = body.width;
-    double height = body.height;
+    double width = body.width!;
+    double height = body.height!;
 
     if (height > width) {
       width = maxSize / height * width;
@@ -32,7 +32,7 @@ class ChatImageBubble extends StatelessWidget {
       height = maxSize / width * height;
       width = maxSize;
     }
-    File localPath = File(body.localPath);
+    File localPath = File(body.localPath!);
     if (isSend && localPath.existsSync()) {
       image = Image.file(
         localPath,
@@ -41,7 +41,7 @@ class ChatImageBubble extends StatelessWidget {
         height: height,
       );
     } else {
-      File thumbnailLocalPath = File(body.thumbnailLocalPath);
+      File thumbnailLocalPath = File(body.thumbnailLocalPath!);
       if (thumbnailLocalPath.existsSync()) {
         image = Image.file(
           thumbnailLocalPath,
@@ -50,7 +50,7 @@ class ChatImageBubble extends StatelessWidget {
       } else {
         image = FadeInImage.assetNetwork(
           placeholder: 'images/chat_bubble_img_broken.png',
-          image: body.thumbnailRemotePath,
+          image: body.thumbnailRemotePath!,
           width: width,
           height: height,
         );

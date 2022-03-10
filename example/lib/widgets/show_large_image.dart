@@ -68,17 +68,21 @@ class ShowLargeImage extends StatelessWidget {
       if (hasPermission) {
         SmartDialog.showLoading(msg: '存储中');
         ui.Image img = await _loadImageByProvider(image.image);
-        ByteData byteData = await img.toByteData(
+        ByteData? byteData = await img.toByteData(
           format: ui.ImageByteFormat.png,
         );
-        final result = await ImageGallerySaver.saveImage(
-          byteData.buffer.asUint8List(),
-        );
-        SmartDialog.dismiss();
-        if (result['isSuccess'] == true) {
-          SmartDialog.showToast('存储成功');
+        if (byteData != null) {
+          final result = await ImageGallerySaver.saveImage(
+            byteData.buffer.asUint8List(),
+          );
+          SmartDialog.dismiss();
+          if (result['isSuccess'] == true) {
+            SmartDialog.showToast('存储成功');
+          } else {
+            SmartDialog.showToast('存储失败');
+          }
         } else {
-          SmartDialog.showToast('存储失败');
+          SmartDialog.showToast('读取失败');
         }
       } else {
         SmartDialog.showToast('没有权限');
@@ -103,18 +107,18 @@ class ShowLargeImage extends StatelessWidget {
   }
 
   Future<ui.Image> _loadImageByProvider(
-    ImageProvider provider, {
-    ImageConfiguration config = ImageConfiguration.empty,
-  }) async {
+    ImageProvider provider,
+  ) async {
     Completer<ui.Image> completer = Completer<ui.Image>();
-    ImageStreamListener listener;
-    ImageStream stream = provider.resolve(config);
-    listener = ImageStreamListener((ImageInfo frame, bool sync) {
+    // ImageStreamListener listener;
+    // ImageStream stream = provider.resolve(config);
+    // listener = ImageStreamListener((ImageInfo frame, bool sync) {
+    ImageStreamListener((ImageInfo frame, bool sync) {
       final ui.Image image = frame.image;
       completer.complete(image);
-      stream.removeListener(listener);
+      // stream.removeListener(listener);
     });
-    stream.addListener(listener); //添加监听
+    // stream.addListener(listener); //添加监听
     return completer.future; //返回
   }
 }

@@ -12,8 +12,8 @@ class IndexPage extends StatefulWidget {
 /// 欢迎页
 class IndexPageState extends State<IndexPage> {
   final _totalTime = 3.0;
-  Timer _timer;
-  num _value;
+  late Timer _timer;
+  late num _value;
 
   @override
   void initState() {

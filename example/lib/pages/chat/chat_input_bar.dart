@@ -21,8 +21,8 @@ class ChatInputBar extends StatefulWidget {
   });
 
   final ChatInputBarType barType;
-  final ChatInputBarListener listener;
-  final TextEditingController textController;
+  final ChatInputBarListener? listener;
+  final TextEditingController? textController;
   @override
   State<StatefulWidget> createState() => _ChatInputBarState();
 }
@@ -45,7 +45,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
       // 获取焦点
       if (_inputFocusNode.hasFocus) {
         if (widget.listener != null) {
-          widget.listener.textFieldOnTap();
+          widget.listener?.textFieldOnTap.call();
         }
       }
     });
@@ -90,7 +90,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
               ),
               onPressed: () {
                 if (widget.listener != null)
-                  widget.listener.recordOrTextBtnOnTap(isRecord: _showVoiceBtn);
+                  widget.listener
+                      ?.recordOrTextBtnOnTap(isRecord: _showVoiceBtn);
                 setState(() {
                   _showVoiceBtn = !_showVoiceBtn;
                 });
@@ -164,12 +165,14 @@ class _ChatInputBarState extends State<ChatInputBar> {
         _touchDown();
       },
       onPointerMove: (PointerMoveEvent event) {
-        RenderBox renderBox = _gestureKey.currentContext.findRenderObject();
+        RenderBox renderBox =
+            _gestureKey.currentContext?.findRenderObject() as RenderBox;
         Offset offset = event.localPosition;
         _voiceDragUp(renderBox.size, offset);
       },
       onPointerUp: (PointerUpEvent event) {
-        RenderBox renderBox = _gestureKey.currentContext.findRenderObject();
+        RenderBox renderBox =
+            _gestureKey.currentContext?.findRenderObject() as RenderBox;
         Offset offset = event.localPosition;
         _voiceTouchUp(renderBox.size, offset);
       },
@@ -263,7 +266,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     ),
                   ),
                   onPressed: () {
-                    _sendBtnDidClicked(widget.textController.text);
+                    _sendBtnDidClicked(widget.textController?.text);
                   },
                   child: Text(
                     '发送',
@@ -350,7 +353,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
     _voiceBtnSelected = false;
     FocusScope.of(context).requestFocus(FocusNode());
     if (widget.listener != null) {
-      widget.listener.emojiBtnOnTap();
+      widget.listener?.emojiBtnOnTap();
     }
   }
 
@@ -358,13 +361,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
     _showVoiceBtn = false;
     _voiceBtnSelected = false;
     if (widget.listener != null) {
-      widget.listener.moreBtnOnTap();
+      widget.listener?.moreBtnOnTap();
     }
   }
 
   _touchDown() {
     if (widget.listener != null) {
-      widget.listener.voiceBtnTouchDown();
+      widget.listener?.voiceBtnTouchDown();
     }
     setState(() {
       _voiceBtnSelected = true;
@@ -374,38 +377,34 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   _touchUpInside() {
     if (widget.listener != null) {
-      widget.listener.voiceBtnTouchUpInside();
+      widget.listener?.voiceBtnTouchUpInside();
     }
   }
 
   _touchUpOutside() {
     if (widget.listener != null) {
-      widget.listener.voiceBtnTouchUpOutside();
+      widget.listener?.voiceBtnTouchUpOutside();
     }
   }
 
   _dragInside() {
     setState(() => _voiceMoveIn = true);
     if (widget.listener != null) {
-      widget.listener.voiceBtnDragInside();
+      widget.listener?.voiceBtnDragInside();
     }
   }
 
   _dragOutside() {
     setState(() => _voiceMoveIn = false);
-    if (widget.listener != null) {
-      widget.listener.voiceBtnDragOutside();
-    }
+    widget.listener?.voiceBtnDragOutside();
   }
 
-  _sendBtnDidClicked(String txt) {
-    if (widget.listener != null && txt.length > 0) {
-      widget.listener.sendBtnOnTap(txt);
-    }
+  void _sendBtnDidClicked(String? txt) {
+    widget.listener?.sendBtnOnTap(txt);
   }
 
-  _updateInputBarType() {
-    _showSendBtn = widget.textController.text.length > 0;
+  void _updateInputBarType() {
+    _showSendBtn = widget.textController?.text.length != 0;
     setState(() {});
   }
 }
@@ -439,5 +438,5 @@ abstract class ChatInputBarListener {
   void textFieldOnTap();
 
   /// 发送按钮被点击
-  void sendBtnOnTap(String str);
+  void sendBtnOnTap(String? str);
 }

@@ -11,13 +11,13 @@ class PopMenu {
     Color bgColor = Colors.black87,
     Color textColor = Colors.white,
     Color lineColor = Colors.transparent,
-    PopMenuValueChange callback,
+    PopMenuValueChange? callback,
   }) {
     // 定义item
     Widget _menuViewItem(PopMenuItem item) {
       List<Widget> widgetsList = [];
       if (item.imageName != null) {
-        widgetsList.add(Image.asset(item.imageName));
+        widgetsList.add(Image.asset(item.imageName!));
       }
       widgetsList.add(
         Container(
@@ -56,7 +56,7 @@ class PopMenu {
           return InkWell(
             onTap: () {
               Navigator.pop(context);
-              callback(index);
+              callback?.call(index);
             },
             child: _menuViewItem(items[index]),
           );
@@ -111,8 +111,8 @@ class PopMenu {
 
 class BasePopMenus extends Dialog {
   BasePopMenus({
-    Key key,
-    this.child,
+    required this.child,
+    Key? key,
   }) : super(key: key);
 
   final Widget child;
@@ -136,7 +136,7 @@ class BasePopMenus extends Dialog {
 class PopMenuItem {
   PopMenuItem(this.title, {this.imageName});
   final String title;
-  final String imageName;
+  final String? imageName;
 }
 
 class DialogRouter extends PageRouteBuilder {

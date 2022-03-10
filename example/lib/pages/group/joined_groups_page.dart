@@ -16,7 +16,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
 
   bool _isEnd = false;
   String _searchName = '';
-  List<EMGroup> _searchdGroups = [];
+  List<EMGroup> _searchedGroups = [];
   final _pageSize = 30;
   int _pageNumber = 0;
   RefreshController _refreshController =
@@ -92,7 +92,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                 child: ListView.separated(
                   itemBuilder: ((_, index) {
                     if (_isSearch) {
-                      EMGroup group = _searchdGroups[index];
+                      EMGroup group = _searchedGroups[index];
                       return _groupItem(group);
                     } else {
                       EMGroup group = _groupsList[index];
@@ -106,7 +106,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                     );
                   }),
                   itemCount:
-                      _isSearch ? _searchdGroups.length : _groupsList.length,
+                      _isSearch ? _searchedGroups.length : _groupsList.length,
                 ),
               ),
             ),
@@ -137,7 +137,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                 ? Text.rich(
                     TextSpan(
                       children: _groupItemText(
-                        group.name,
+                        group.name!,
                         fontSize: sFontSize(15),
                         defaultColor: Colors.black87,
                       ),
@@ -145,7 +145,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                     maxLines: 1,
                   )
                 : Text(
-                    group.name,
+                    group.name!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -160,7 +160,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
               ? Text.rich(
                   TextSpan(
                     children: _groupItemText(
-                      group.groupId,
+                      group.groupId!,
                       fontSize: sFontSize(13),
                       defaultColor: Colors.grey,
                     ),
@@ -168,7 +168,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                   maxLines: 1,
                 )
               : Text(
-                  group.groupId,
+                  group.groupId!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -272,13 +272,16 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   }
 
   _chat(EMGroup group) async {
-    EMConversation con = await EMClient.getInstance.chatManager
-        .getConversation(group.groupId, EMConversationType.GroupChat);
+    EMConversation? con =
+        await EMClient.getInstance.chatManager.getConversation(
+      group.groupId!,
+      EMConversationType.GroupChat,
+    );
     if (con == null) {
       SmartDialog.showToast('会话创建失败');
       return;
     }
-    con.name = group.name;
+    con.name = group.name!;
     Navigator.of(context).pushNamed(
       '/chat',
       arguments: [con.name, con],
@@ -290,18 +293,18 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   _searchGroupId(String std) async {
     _searchName = std;
     if (std.length == 0) {
-      _searchdGroups.clear();
+      _searchedGroups.clear();
       setState(() {});
       return;
     }
-    _searchdGroups.clear();
+    _searchedGroups.clear();
 
     for (EMGroup group in _groupsList) {
-      if (group.name.contains(std)) {
-        _searchdGroups.add(group);
+      if (group.name!.contains(std)) {
+        _searchedGroups.add(group);
         continue;
-      } else if (group.groupId.contains(std)) {
-        _searchdGroups.add(group);
+      } else if (group.groupId!.contains(std)) {
+        _searchedGroups.add(group);
         continue;
       }
     }

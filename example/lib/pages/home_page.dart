@@ -12,9 +12,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
-  num _selectedPageIndex = 0;
-  ConversationPage _conversationListPage;
-  List<Widget> _pages;
+  int _selectedPageIndex = 0;
+  late ConversationPage _conversationListPage;
+  late List<Widget> _pages;
 
   @override
   void initState() {
@@ -68,8 +68,12 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  BottomNavigationBarItem bottomItem(String title, String unSelectedImageName,
-      [String selectedImageName, bool needUnreadCount = false]) {
+  BottomNavigationBarItem bottomItem(
+    String title,
+    String unSelectedImageName, [
+    String? selectedImageName,
+    bool needUnreadCount = false,
+  ]) {
     return BottomNavigationBarItem(
       activeIcon: SizedBox(
         child: Stack(
@@ -91,7 +95,7 @@ class _HomePageState extends State<HomePage>
                     child: ChangeNotifierProvider<ConversationPage>(
                       create: (_) => _conversationListPage,
                       child: Selector(
-                        builder: (context, num data, Widget child) {
+                        builder: (context, int data, Widget? child) {
                           return unreadCountWidget(data);
                         },
                         selector: (_, ConversationPage state) {
@@ -127,7 +131,7 @@ class _HomePageState extends State<HomePage>
                     child: ChangeNotifierProvider<ConversationPage>(
                       create: (_) => _conversationListPage,
                       child: Selector(
-                        builder: (context, num data, Widget child) {
+                        builder: (context, int data, Widget? child) {
                           return unreadCountWidget(data);
                         },
                         selector: (_, ConversationPage state) {

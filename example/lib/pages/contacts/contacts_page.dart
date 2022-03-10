@@ -32,10 +32,12 @@ class ContactsPageState extends State<ContactsPage>
     super.initState();
     EMClient.getInstance.contactManager.addContactListener(this);
 
-    String currentUser = EMClient.getInstance.currentUsername;
-    SharePreferenceManager.load(currentUser, callback: () {
-      setState(() {});
-    });
+    String? currentUser = EMClient.getInstance.currentUsername;
+    if (currentUser != null) {
+      SharePreferenceManager.load(currentUser, callback: () {
+        setState(() {});
+      });
+    }
   }
 
   void didChangeDependencies() {
@@ -77,13 +79,6 @@ class ContactsPageState extends State<ContactsPage>
         data: _contactList,
         itemCount: _contactList.length,
         itemBuilder: (_, index) => getContactRow(index),
-        separatorBuilder: (_, __) {
-          return Container(
-            color: Colors.grey[300],
-            height: 0.5,
-            margin: EdgeInsets.only(left: 20, right: 10),
-          );
-        },
         susItemHeight: 30,
         susItemBuilder: (_, index) {
           ContactModel model = _contactList[index];
@@ -107,7 +102,7 @@ class ContactsPageState extends State<ContactsPage>
               width: 60.0,
               height: 60.0,
               decoration: BoxDecoration(
-                color: Colors.blue[700].withAlpha(200),
+                color: Colors.blue[700]!.withAlpha(200),
                 shape: BoxShape.circle,
               ),
               child: Text(
@@ -217,15 +212,17 @@ class ContactsPageState extends State<ContactsPage>
         });
       }
     } else {
-      EMConversation conv = await EMClient.getInstance.chatManager
-          .getConversation(contact.contactId);
-      if (conv == null) {
+      EMConversation? conversation =
+          await EMClient.getInstance.chatManager.getConversation(
+        contact.contactId,
+      );
+      if (conversation == null) {
         SmartDialog.showToast('会话创建失败');
         return;
       }
       Navigator.of(context).pushNamed(
         '/chat',
-        arguments: [contact.contactId, conv],
+        arguments: [contact.contactId, conversation],
       ).then((value) {
         eventBus.fire(EventBusManager.updateConversations());
       });
@@ -239,11 +236,16 @@ class ContactsPageState extends State<ContactsPage>
 
     count--;
     try {
-      List<String> contacts =
+      List<String?> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromServer();
-      List<ContactModel> list = await _fetchUserInfo(contacts);
+      List<ContactModel>? list;
+      if (contacts.isNotEmpty) {
+        list = await _fetchUserInfo(contacts.cast<String>());
+      }
       _contactList.clear();
-      _contactList.addAll(list);
+      if (list != null) {
+        _contactList.addAll(list);
+      }
     } on EMError {
       SmartDialog.showToast('获取失败');
       _loadLocalContacts(count);
@@ -257,11 +259,16 @@ class ContactsPageState extends State<ContactsPage>
 
   Future<void> _loadLocalContacts([int count = 1]) async {
     try {
-      List<String> contacts =
+      List<String?> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromDB();
-      List<ContactModel> list = await _fetchUserInfo(contacts);
+      List<ContactModel>? list;
+      if (contacts.isNotEmpty) {
+        list = await _fetchUserInfo(contacts.cast<String>());
+      }
       _contactList.clear();
-      _contactList.addAll(list);
+      if (list != null) {
+        _contactList.addAll(list);
+      }
     } on EMError {
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
@@ -282,7 +289,7 @@ class ContactsPageState extends State<ContactsPage>
 
     List<String> hasInfoIds = map.keys.toList();
     for (var hasInfoId in hasInfoIds) {
-      ret.add(ContactModel.fromUserInfo(map[hasInfoId]));
+      ret.add(ContactModel.fromUserInfo(map[hasInfoId]!));
     }
 
     List<String> noInfoIds = emIds.toList();
@@ -298,32 +305,32 @@ class ContactsPageState extends State<ContactsPage>
   }
 
   @override
-  void onContactAdded(String userName) {
+  void onContactAdded(String? userName) {
     _fetchContactsFromServer();
     SmartDialog.showToast('已被$userName加为好友');
   }
 
   @override
-  void onContactDeleted(String userName) {
+  void onContactDeleted(String? userName) {
     _fetchContactsFromServer();
     SmartDialog.showToast('已被$userName删除好友');
   }
 
   @override
-  void onContactInvited(String userName, String reason) {
-    SharePreferenceManager.addRequest(userName);
+  void onContactInvited(String? userName, String? reason) {
+    SharePreferenceManager.addRequest(userName!);
     _friendRequestCount = SharePreferenceManager.loadUnreadCount();
     setState(() {});
   }
 
   @override
-  void onFriendRequestAccepted(String userName) {
+  void onFriendRequestAccepted(String? userName) {
     SmartDialog.showToast('好友申请被$userName同意');
     _fetchContactsFromServer();
   }
 
   @override
-  void onFriendRequestDeclined(String userName) {
+  void onFriendRequestDeclined(String? userName) {
     SmartDialog.showToast('好友申请被$userName拒绝');
   }
 

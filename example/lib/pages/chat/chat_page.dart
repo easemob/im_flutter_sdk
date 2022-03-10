@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'package:image_picker/image_picker.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 // import 'package:record_amr/record_amr.dart';
 import 'chat_face_view.dart';
@@ -22,8 +21,8 @@ class ChatPage extends StatefulWidget {
   ChatPage(
     this.titleStr,
     EMConversation conversation,
-  ) : conv = conversation;
-  final EMConversation conv;
+  ) : conversation = conversation;
+  final EMConversation conversation;
   final String titleStr;
   @override
   State<StatefulWidget> createState() => _ChatPageState();
@@ -34,21 +33,20 @@ class _ChatPageState extends State<ChatPage>
         ChatInputBarListener,
         EMChatManagerListener,
         EMChatRoomEventListener {
-  List<ChatMoreViewItem> items;
+  late List<ChatMoreViewItem> items;
 
   final _scrollController = ScrollController();
 
   /// 时间显示间隔为1分钟
   final int _timeInterval = 60 * 1000;
 
-  ChatInputBar _inputBar;
+  late ChatInputBar _inputBar;
   // 用来决定是否显示时间
   int _adjacentTime = 0;
   ChatInputBarType _inputBarType = ChatInputBarType.normal;
   ChatVoicePlayer _voicePlayer = ChatVoicePlayer();
-  ChatMoreView _moreView;
+  late ChatMoreView _moreView;
   TextEditingController _inputBarEditingController = TextEditingController();
-  int _subscribeId;
   bool _keyboardVisible = false;
 
   /// 消息List
@@ -57,14 +55,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void initState() {
     super.initState();
-    // 监听键盘弹起收回
-    _subscribeId = KeyboardVisibilityNotification().addNewListener(
-      onChange: (bool visible) {
-        _keyboardVisible = visible;
-        _setStateAndMoreToListViewEnd();
-      },
-    );
-
     items = [
       ChatMoreViewItem(
           'images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
@@ -85,7 +75,7 @@ class _ChatPageState extends State<ChatPage>
     EMClient.getInstance.chatManager.addListener(this);
     EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
-    widget.conv?.markAllMessagesAsRead();
+    widget.conversation.markAllMessagesAsRead();
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
@@ -93,7 +83,7 @@ class _ChatPageState extends State<ChatPage>
         _loadMessages(moveBottom: false);
       }
     });
-    if (widget.conv?.type == EMConversationType.ChatRoom) {
+    if (widget.conversation.type == EMConversationType.ChatRoom) {
       joinChatRoom();
     } else {
       _loadMessages();
@@ -102,7 +92,8 @@ class _ChatPageState extends State<ChatPage>
 
   void joinChatRoom() async {
     try {
-      await EMClient.getInstance.chatRoomManager.joinChatRoom(widget.conv?.id);
+      await EMClient.getInstance.chatRoomManager
+          .joinChatRoom(widget.conversation.id);
       _loadMessages();
     } on EMError catch (e) {
       print("加入房间失败 -- " + e.toString());
@@ -110,14 +101,13 @@ class _ChatPageState extends State<ChatPage>
   }
 
   void dispose() {
-    // 移除键盘监听
-    KeyboardVisibilityNotification().removeListener(_subscribeId);
     // 移除环信回调监听
     EMClient.getInstance.chatManager.removeListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
-    if (widget.conv?.type == EMConversationType.ChatRoom) {
-      EMClient.getInstance.chatRoomManager.leaveChatRoom(widget.conv?.id);
+    if (widget.conversation.type == EMConversationType.ChatRoom) {
+      EMClient.getInstance.chatRoomManager
+          .leaveChatRoom(widget.conversation.id);
     }
     super.dispose();
   }
@@ -256,7 +246,7 @@ class _ChatPageState extends State<ChatPage>
       }
       if (msg.hasRead == false) {
         try {
-          await widget.conv.markMessageAsRead(msg.msgId);
+          await widget.conversation.markMessageAsRead(msg.msgId!);
         } on EMError {}
       }
     }
@@ -290,9 +280,10 @@ class _ChatPageState extends State<ChatPage>
   /// 下拉加载更多消息
   _loadMessages({int count = 20, bool moveBottom = true}) async {
     try {
-      List<EMMessage> msgs = await widget.conv.loadMessages(
-          startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
-          loadCount: count);
+      List<EMMessage> msgs = await widget.conversation.loadMessages(
+        startMsgId: _msgList.length > 0 ? _msgList.first.msgId! : '',
+        loadCount: count,
+      );
       _msgList.insertAll(0, msgs);
     } on EMError {
     } finally {
@@ -314,7 +305,7 @@ class _ChatPageState extends State<ChatPage>
 
   /// 点击bubble
   _messageBubbleOnTap(EMMessage msg) async {
-    switch (msg.body.type) {
+    switch (msg.body!.type!) {
       case EMMessageBodyType.TXT:
         break;
       case EMMessageBodyType.IMAGE:
@@ -323,12 +314,12 @@ class _ChatPageState extends State<ChatPage>
           Image img;
           if (body.fileStatus != EMDownloadStatus.SUCCESS) {
             img = Image.network(
-              body.remotePath,
+              body.remotePath!,
               fit: BoxFit.cover,
             );
           } else {
             img = Image.file(
-              File(body.localPath),
+              File(body.localPath!),
               fit: BoxFit.cover,
             );
           }
@@ -372,7 +363,7 @@ class _ChatPageState extends State<ChatPage>
   _sendTextMessage(String txt) async {
     if (txt.length == 0) return;
     EMMessage msg = EMMessage.createTxtSendMessage(
-      widget.conv.id,
+      widget.conversation.id,
       txt,
     );
 
@@ -391,11 +382,11 @@ class _ChatPageState extends State<ChatPage>
         .resolve(ImageConfiguration())
         .addListener(ImageStreamListener((ImageInfo info, bool _) {
       EMMessage msg = EMMessage.createImageSendMessage(
-        username: widget.conv.id,
+        username: widget.conversation.id,
         filePath: imagePath,
         displayName: fileName,
       );
-      EMImageMessageBody body = msg.body;
+      EMImageMessageBody body = msg.body! as EMImageMessageBody;
       body.height = info.image.height.toDouble();
       body.width = info.image.width.toDouble();
       msg.body = body;
@@ -407,7 +398,7 @@ class _ChatPageState extends State<ChatPage>
   _sendMessage(EMMessage msg) async {
     _chatType() {
       EMMessageChatType type = EMMessageChatType.Chat;
-      switch (widget.conv.type) {
+      switch (widget.conversation.type) {
         case EMConversationType.Chat:
           type = EMMessageChatType.Chat;
           break;
@@ -438,7 +429,7 @@ class _ChatPageState extends State<ChatPage>
 
   /// 相册按钮被点击
   _moreViewPhotoBtnOnTap() async {
-    XFile pf = await ImagePicker().pickImage(source: ImageSource.gallery);
+    XFile? pf = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pf != null) {
       _sendImageMessage(pf.path);
     }
@@ -447,7 +438,7 @@ class _ChatPageState extends State<ChatPage>
   /// 拍照按钮被点击
   _moreCameraBtnOnTap() {
     print('_moreCameraBtnOnTap');
-    widget.conv.deleteAllMessages();
+    widget.conversation.deleteAllMessages();
     _msgList.clear();
     setState(() {});
   }
@@ -464,13 +455,13 @@ class _ChatPageState extends State<ChatPage>
 
   /// 大头针按钮被点击
   _moreVoiceCallBtnOnTap() {
-    if (widget.conv.type == EMConversationType.Chat) {
+    if (widget.conversation.type == EMConversationType.Chat) {
       // TODO: call
     }
   }
 
   _moreVideoCallBtnOnTap() {
-    if (widget.conv.type == EMConversationType.Chat) {
+    if (widget.conversation.type == EMConversationType.Chat) {
       // TODO: call
     }
   }
@@ -564,7 +555,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
-  void sendBtnOnTap(String str) => _sendTextMessage(str);
+  void sendBtnOnTap(String? str) => _sendTextMessage(str ?? "");
 
   @override
   onCmdMessagesReceived(List<EMMessage> messages) {}
@@ -581,7 +572,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   onMessagesReceived(List<EMMessage> messages) {
     for (var msg in messages) {
-      if (msg.conversationId == widget.conv.id) {
+      if (msg.conversationId == widget.conversation.id) {
         _msgList.add(msg);
       }
     }
@@ -590,9 +581,6 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   onConversationsUpdate() {}
-
-  @override
-  onConversationRead(String from, String to) {}
 
   @override
   void onAdminAddedFromChatRoom(String roomId, String admin) {}
@@ -604,20 +592,7 @@ class _ChatPageState extends State<ChatPage>
   void onAnnouncementChangedFromChatRoom(String roomId, String announcement) {}
 
   @override
-  void onChatRoomDestroyed(String roomId, String roomName) {
-    print('聊天室解散 -- $roomId, $roomName');
-  }
-
-  @override
-  void onMemberExitedFromChatRoom(
-      String roomId, String roomName, String participant) {}
-
-  @override
   void onMemberJoinedFromChatRoom(String roomId, String participant) {}
-
-  @override
-  void onMuteListAddedFromChatRoom(
-      String roomId, List<String> mutes, String expireTime) {}
 
   @override
   void onMuteListRemovedFromChatRoom(String roomId, List<String> mutes) {}
@@ -625,10 +600,6 @@ class _ChatPageState extends State<ChatPage>
   @override
   void onOwnerChangedFromChatRoom(
       String roomId, String newOwner, String oldOwner) {}
-
-  @override
-  void onRemovedFromChatRoom(
-      String roomId, String roomName, String participant) {}
 
   @override
   void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted) {}
@@ -641,4 +612,24 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
+  void onChatRoomDestroyed(String roomId, String? roomName) {
+    // TODO: implement onChatRoomDestroyed
+  }
+
+  @override
+  void onConversationRead(String? from, String? to) {}
+
+  @override
+  void onMemberExitedFromChatRoom(
+      String roomId, String? roomName, String participant) {}
+
+  @override
+  void onMuteListAddedFromChatRoom(
+      String roomId, List<String> mutes, String? expireTime) {}
+
+  @override
+  void onRemovedFromChatRoom(
+      String roomId, String? roomName, String? participant) {}
 }

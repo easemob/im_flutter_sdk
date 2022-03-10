@@ -42,7 +42,7 @@ class ChatTextBubble extends StatelessWidget {
         bottom: sHeight(9),
       ),
       child: ExpressionText(
-        body.content,
+        body.content!,
         TextStyle(
           color: Color.fromRGBO(51, 51, 51, 1),
           fontSize: sFontSize(17),

@@ -10,9 +10,9 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 // ignore: must_be_immutable
 class ConversationPage extends StatefulWidget with ChangeNotifier {
-  num totalUnreadCount = 0;
+  int totalUnreadCount = 0;
 
-  updateCount(num count) {
+  updateCount(int count) {
     totalUnreadCount = count;
     notifyListeners();
   }
@@ -160,9 +160,9 @@ class ConversationPageState extends State<ConversationPage>
       _conversationsList.clear();
       _conversationsList.addAll(list);
       _refreshController.refreshCompleted();
-      num count = 0;
+      int count = 0;
       for (var conversation in _conversationsList) {
-        count += conversation.unreadCount;
+        count += conversation.unreadCount ?? 0;
       }
       widget.updateCount(count);
     } on Error {
@@ -237,7 +237,7 @@ class ConversationPageState extends State<ConversationPage>
   }
 
   @override
-  void onConversationRead(String from, String to) {}
+  void onConversationRead(String? from, String? to) {}
 
   @override
   void onConversationsUpdate() {}
