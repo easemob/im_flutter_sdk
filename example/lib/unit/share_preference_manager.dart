@@ -31,11 +31,11 @@ class SharePreferenceManager {
   }
 
   static int loadUnreadCount() {
-    List<String?> list = loadAllRequests();
+    List<String> list = loadAllRequests();
     RegExp eidExp = RegExp(r' ');
     int count = 0;
     for (var requestId in list) {
-      if (!eidExp.hasMatch(requestId!)) {
+      if (!eidExp.hasMatch(requestId)) {
         count++;
       }
     }
@@ -62,9 +62,9 @@ class SharePreferenceManager {
 
   // 收到好友申请时调用
   _addRequest(String eid) {
-    List<String?> list = loadAllRequests();
+    List<String> list = loadAllRequests();
     for (var requestId in list) {
-      if (requestId!.contains(eid)) {
+      if (requestId.contains(eid)) {
         list.remove(requestId);
         break;
       }

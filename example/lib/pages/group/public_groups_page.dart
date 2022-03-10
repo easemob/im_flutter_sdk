@@ -128,7 +128,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
           ),
         ),
         subtitle: Text(
-          group.groupId!,
+          group.groupId,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -166,7 +166,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
   _loadPublicGroups() async {
     try {
       _isEnd = false;
-      SmartDialog.showLoading(msg: '获取中...');
+
       EMCursorResult<EMGroup> cursor =
           await EMClient.getInstance.groupManager.getPublicGroupsFromServer(
         pageSize: _pageSize,
@@ -183,9 +183,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
       _refreshController.refreshFailed();
-    } finally {
-      SmartDialog.dismiss();
-    }
+    } finally {}
   }
 
   _fetchGroupInfo(EMGroup group) {

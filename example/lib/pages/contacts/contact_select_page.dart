@@ -138,7 +138,7 @@ class ContactSelectPageState extends State<ContactSelectPage> {
 
     count--;
     try {
-      List<String?> contacts =
+      List<String> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromServer();
       List<ContactModel>? list;
       if (contacts.isNotEmpty) {
@@ -162,7 +162,7 @@ class ContactSelectPageState extends State<ContactSelectPage> {
 
   Future<void> _loadLocalContacts([int count = 1]) async {
     try {
-      List<String?> contacts =
+      List<String> contacts =
           await EMClient.getInstance.contactManager.getAllContactsFromDB();
       if (contacts.isNotEmpty) {
         List<ContactModel> list =

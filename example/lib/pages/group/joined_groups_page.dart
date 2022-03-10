@@ -160,7 +160,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
               ? Text.rich(
                   TextSpan(
                     children: _groupItemText(
-                      group.groupId!,
+                      group.groupId,
                       fontSize: sFontSize(13),
                       defaultColor: Colors.grey,
                     ),
@@ -168,7 +168,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
                   maxLines: 1,
                 )
               : Text(
-                  group.groupId!,
+                  group.groupId,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -238,7 +238,6 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
         _pageNumber = 0;
       }
 
-      SmartDialog.showLoading(msg: '获取中...');
       List<EMGroup> groups =
           await EMClient.getInstance.groupManager.getJoinedGroupsFromServer(
         pageSize: _pageSize,
@@ -266,15 +265,13 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       isMore
           ? _refreshController.loadFailed()
           : _refreshController.refreshFailed();
-    } finally {
-      SmartDialog.dismiss();
-    }
+    } finally {}
   }
 
   _chat(EMGroup group) async {
     EMConversation? con =
         await EMClient.getInstance.chatManager.getConversation(
-      group.groupId!,
+      group.groupId,
       EMConversationType.GroupChat,
     );
     if (con == null) {
@@ -303,7 +300,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       if (group.name!.contains(std)) {
         _searchedGroups.add(group);
         continue;
-      } else if (group.groupId!.contains(std)) {
+      } else if (group.groupId.contains(std)) {
         _searchedGroups.add(group);
         continue;
       }
