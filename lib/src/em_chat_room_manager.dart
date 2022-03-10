@@ -377,12 +377,12 @@ class EMChatRoomManager {
 
   /*
   /// 从服务器获取聊天室白名单列表 [roomId]: 聊天室id
-  Future<List<String?>> fetchChatRoomWhiteListFromServer(String roomId) async {
+  Future<List<String>> fetchChatRoomWhiteListFromServer(String roomId) async {
     Map req = {"roomId": roomId};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.fetchChatRoomWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    List<String?> contacts = [];
+    List<String> contacts = [];
     result[EMSDKMethod.fetchChatRoomWhiteListFromServer]?.forEach((element) {
       contacts.add(element);
     });

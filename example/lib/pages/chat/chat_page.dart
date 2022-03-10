@@ -438,9 +438,6 @@ class _ChatPageState extends State<ChatPage>
   /// 拍照按钮被点击
   _moreCameraBtnOnTap() {
     print('_moreCameraBtnOnTap');
-    widget.conversation.deleteAllMessages();
-    _msgList.clear();
-    setState(() {});
   }
 
   /// 位置按钮被点击

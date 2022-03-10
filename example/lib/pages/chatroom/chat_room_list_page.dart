@@ -146,7 +146,6 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       _isEnd = false;
     }
     try {
-      SmartDialog.showLoading(msg: '获取中...');
       EMPageResult<EMChatRoom> result = await EMClient
           .getInstance.chatRoomManager
           .fetchPublicChatRoomsFromServer(pageSize: 30, pageNum: _pageCount);
@@ -173,9 +172,7 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       isMore
           ? _refreshController.loadComplete()
           : _refreshController.refreshCompleted();
-    } finally {
-      SmartDialog.dismiss();
-    }
+    } finally {}
   }
 
   _chatToRoom(EMChatRoom room) async {

@@ -72,11 +72,11 @@ class EMContactManager {
   }
 
   /// 从服务器获取所有的好友
-  Future<List<String?>> getAllContactsFromServer() async {
+  Future<List<String>> getAllContactsFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
     EMError.hasErrorFromResult(result);
-    List<String?> contacts = [];
+    List<String> contacts = [];
     result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
       contacts.add(element);
@@ -86,10 +86,10 @@ class EMContactManager {
   }
 
   /// 从本地获取所有的好友
-  Future<List<String?>> getAllContactsFromDB() async {
+  Future<List<String>> getAllContactsFromDB() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
     EMError.hasErrorFromResult(result);
-    List<String?> contacts = [];
+    List<String> contacts = [];
     result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
       contacts.add(element);
@@ -119,11 +119,11 @@ class EMContactManager {
   }
 
   /// 从服务器获取黑名单列表
-  Future<List<String?>> getBlockListFromServer() async {
+  Future<List<String>> getBlockListFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
     EMError.hasErrorFromResult(result);
-    List<String?> blockList = [];
+    List<String> blockList = [];
     result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
       // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
       blockList.add(element);
@@ -132,10 +132,10 @@ class EMContactManager {
   }
 
   /// 从本地数据库中获取黑名单列表
-  Future<List<String?>> getBlockListFromDB() async {
+  Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromDB);
     EMError.hasErrorFromResult(result);
-    List<String?> blockList = [];
+    List<String> blockList = [];
     result[EMSDKMethod.getBlockListFromDB]?.forEach((element) {
       blockList.add(element);
     });

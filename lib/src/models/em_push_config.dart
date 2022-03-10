@@ -13,13 +13,13 @@ class EMImPushConfig {
   bool? _noDisturb;
   int? _noDisturbStartHour;
   int? _noDisturbEndHour;
-  List<String?>? _noDisturbGroups = [];
+  List<String>? _noDisturbGroups = [];
 
   EMImPushStyle? get pushStyle => _pushStyle;
   bool? get noDisturb => _noDisturb;
   int? get noDisturbStartHour => _noDisturbStartHour;
   int? get noDisturbEndHour => _noDisturbEndHour;
-  List<String?>? get noDisturbGroups => _noDisturbGroups;
+  List<String>? get noDisturbGroups => _noDisturbGroups;
 
   factory EMImPushConfig.fromJson(Map map) {
     return EMImPushConfig._private()
@@ -99,7 +99,7 @@ extension EMPushConfigExtension on EMImPushConfig {
   }
 
   /// 获取免打扰群组列表
-  Future<List<String?>?> noDisturbGroupsFromServer() async {
+  Future<List<String>?> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
     _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>();

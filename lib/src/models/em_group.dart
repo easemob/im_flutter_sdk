@@ -17,7 +17,7 @@ enum EMGroupPermissionType {
 class EMGroup {
   EMGroup._private();
 
-  String? _groupId;
+  late String _groupId;
   String? _name = '';
   String? _description = '';
   String? _owner = '';
@@ -34,7 +34,7 @@ class EMGroup {
   EMGroupOptions? _options;
   EMGroupPermissionType? _permissionType;
 
-  String? get groupId => _groupId;
+  String get groupId => _groupId;
   String? get name => _name;
   String? get description => _description;
   String? get owner => _owner;
@@ -156,7 +156,11 @@ class EMGroup {
 class EMGroupOptions {
   EMGroupOptions._private();
 
-  EMGroupOptions({required EMGroupStyle style, int count = 200, bool inviteNeedConfirm = false, String extension = ''}) {
+  EMGroupOptions(
+      {required EMGroupStyle style,
+      int count = 200,
+      bool inviteNeedConfirm = false,
+      String extension = ''}) {
     _style = style;
     _maxCount = count;
     _inviteNeedConfirm = inviteNeedConfirm;
