@@ -106,10 +106,19 @@ static EMClientWrapper *wrapper = nil;
     else if([EMMethodKeyCurrentUser isEqualToString:call.method])
     {
         [self getCurrentUser:call.arguments result:result];
+    }else if([EMMethodKeyGetToken isEqualToString:call.method]){
+        [self getToken:call.arguments result:result];
     }
     else {
         [super handleMethodCall:call result:result];
     }
+}
+
+- (void)getToken:(NSDictionary *)param result:(FlutterResult)result{
+    [self wrapperCallBack:result
+                  channelName:EMMethodKeyGetToken
+                        error:nil
+                       object:EMClient.sharedClient.accessUserToken];
 }
 
 #pragma mark - Actions

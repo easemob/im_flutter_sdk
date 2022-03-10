@@ -24,6 +24,7 @@ static NSString *const EMMethodKeyKickDevice = @"kickDevice";
 static NSString *const EMMethodKeyKickAllDevices = @"kickAllDevices";
 static NSString *const EMMethodKeyCurrentUser = @"currentUser";
 static NSString *const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
+static NSString *const EMMethodKeyGetToken = @"getToken";
 
 #pragma mark - EMClientDelegate
 static NSString *const EMMethodKeyOnConnected = @"onConnected";
