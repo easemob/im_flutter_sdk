@@ -673,7 +673,7 @@ class _ChatPageState extends State<ChatPage>
   void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
 
   Future<void> fetchRTCToken(String channelName, String username) async {
-    String token = EMClient.getInstance.accessToken;
+    String token = await EMClient.getInstance.getAccessToken();
     if (token == null) return null;
     var httpClient = new HttpClient();
     var uri = Uri.http("a1.easemob.com", "/token/rtcToken/v1", {
