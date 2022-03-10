@@ -1,18 +1,24 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:ease_call_kit/ease_call_kit.dart';
 import 'package:easeim_flutter_demo/pages/contacts/contacts_page.dart';
 import 'package:easeim_flutter_demo/pages/conversations/conversations_page.dart';
 import 'package:easeim_flutter_demo/pages/me/me_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert' as convert;
 
 class HomePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin
+    implements EaseCallKitListener {
   num _selectedPageIndex = 0;
   ConversationPage _convPage;
   List<Widget> _pages;
@@ -20,22 +26,22 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   @override
   void initState() {
     super.initState();
-
-    // 初始化 EaseCallKit插件
-    EaseCallKit.initWithConfig(
-      EaseCallConfig('15cb0d28b87b425ea613fc46f7c9f974')
-        ..userMap = {
-          'du001': EaseCallUser('nick001', ''),
-          'du002': EaseCallUser('nick002', ''),
-        },
-    );
-    _requestPermiss();
+    _setupCallKit();
     _convPage = ConversationPage();
     _pages = [
       _convPage,
       ContactsPage(),
       MePage(),
     ];
+  }
+
+  void _setupCallKit() async {
+    // 初始化 EaseCallKit插件
+    await EaseCallKit.initWithConfig(
+      EaseCallConfig('15cb0d28b87b425ea613fc46f7c9f974')..userMap = {},
+    );
+    EaseCallKit.listener = this;
+    _requestPermiss();
   }
 
   @override
@@ -76,7 +82,8 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  BottomNavigationBarItem bottomItem(String title, String unSelectedImageName, [String selectedImageName, bool needUnreadCount = false]) {
+  BottomNavigationBarItem bottomItem(String title, String unSelectedImageName,
+      [String selectedImageName, bool needUnreadCount = false]) {
     return BottomNavigationBarItem(
       activeIcon: SizedBox(
         child: Stack(
@@ -169,4 +176,58 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void callDidEnd(String channelName, EaseCallEndReason reason, int time,
+      EaseCallType callType) {}
+
+  @override
+  void callDidJoinChannel(String channelName, int uid) {}
+
+  @override
+  void callDidOccurError(EaseCallError error) {}
+
+  @override
+  void callDidReceive(EaseCallType callType, String inviter, Map ext) {}
+
+  @override
+  void callDidRequestRTCToken(
+      String appId, String channelName, String eid) async {
+    String emUsername = EMClient.getInstance.currentUsername;
+    await fetchRTCToken(channelName, emUsername);
+  }
+
+  @override
+  void multiCallDidInviting(List<String> excludeUsers, Map ext) {}
+
+  Future<void> fetchRTCToken(String channelName, String username) async {
+    String token = await EMClient.getInstance.getAccessToken();
+    if (token == null) return null;
+    var httpClient = new HttpClient();
+    var uri = Uri.http("a1.easemob.com", "/token/rtcToken/v1", {
+      "userAccount": username,
+      "channelName": channelName,
+      "appkey": EMClient.getInstance.options.appKey,
+    });
+    var request = await httpClient.getUrl(uri);
+    request.headers.add("Authorization", "Bearer $token");
+    HttpClientResponse response = await request.close();
+    httpClient.close();
+    if (response.statusCode == HttpStatus.ok) {
+      var _content = await response.transform(Utf8Decoder()).join();
+      debugPrint(_content);
+      Map<String, dynamic> map = convert.jsonDecode(_content);
+      if (map != null) {
+        if (map["code"] == "RES_0K") {
+          debugPrint("获取数据成功: $map");
+          String rtcToken = map["accessToken"];
+          int agoraUserId = map["agoraUserId"];
+          await EaseCallKit.setRTCToken(rtcToken, channelName, agoraUserId);
+        }
+      }
+    }
+  }
+
+  @override
+  void remoteUserDidJoinChannel(String channelName, int uid, String eid) {}
 }
