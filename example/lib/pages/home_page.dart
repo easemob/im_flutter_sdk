@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  updatePages() {
+  Widget updatePages() {
     return IndexedStack(
       children: _pages,
       index: _selectedPageIndex,

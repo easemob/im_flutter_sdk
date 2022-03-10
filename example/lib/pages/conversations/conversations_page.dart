@@ -187,8 +187,9 @@ class ConversationPageState extends State<ConversationPage>
   /// 侧滑删除按钮点击
   _deleteConversation(int index) async {
     try {
-      await EMClient.getInstance.chatManager
-          .deleteConversation(_conversationsList[index].id);
+      await EMClient.getInstance.chatManager.deleteConversation(
+        _conversationsList[index].id,
+      );
       _conversationsList.removeAt(index);
     } on Error {
     } finally {
