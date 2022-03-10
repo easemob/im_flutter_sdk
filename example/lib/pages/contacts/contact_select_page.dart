@@ -135,7 +135,9 @@ class ContactSelectPageState extends State<ContactSelectPage> {
     } else {
       _selectedUsers.add(contact.contactId);
     }
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _fetchContactsFromServer([int count = 1]) async {
@@ -150,14 +152,18 @@ class ContactSelectPageState extends State<ContactSelectPage> {
       List<ContactModel> list = await _fetchUsersInfo(contacts);
       _contactList.clear();
       _contactList.addAll(list);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } on EMError {
       SmartDialog.showToast('获取失败');
-      _loadLocalContacts();
+      _loadLocalContacts(count);
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -168,12 +174,16 @@ class ContactSelectPageState extends State<ContactSelectPage> {
       List<ContactModel> list = await _fetchUsersInfo(contacts);
       _contactList.clear();
       _contactList.addAll(list);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } on EMError {
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       Future.delayed(Duration(seconds: 3)).then((value) {
         _fetchContactsFromServer(count);
       });
