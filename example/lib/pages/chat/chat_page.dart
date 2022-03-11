@@ -11,7 +11,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-// import 'package:record_amr/record_amr.dart';
 import 'chat_face_view.dart';
 import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
