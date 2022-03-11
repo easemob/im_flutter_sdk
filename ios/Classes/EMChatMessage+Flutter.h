@@ -1,5 +1,5 @@
 //
-//  EMMessage+Flutter.h
+//  EMChatMessage+Flutter.h
 //  Pods
 //
 //  Created by 杜洁鹏 on 2020/9/11.
@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMMessage (Flutter) <EaseToFlutterJson>
-+ (EMMessage *)fromJson:(NSDictionary *)aJson;
+@interface EMChatMessage (Flutter) <EaseToFlutterJson>
++ (EMChatMessage *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 

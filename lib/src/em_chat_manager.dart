@@ -323,6 +323,29 @@ class EMChatManager implements EMMessageStatusListener {
     return result;
   }
 
+  /// 删除远程会话列表
+  Future<void> asyncDeleteRemoteConversation(
+    String conversationId, {
+    EMConversationType conversationType = EMConversationType.Chat,
+    bool isDeleteMessage = true,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    if (conversationType == EMConversationType.Chat) {
+      req["conversationType"] = 0;
+    } else if (conversationType == EMConversationType.GroupChat) {
+      req["conversationType"] = 1;
+    } else {
+      req["conversationType"] = 2;
+    }
+    req["isDeleteRemoteMessage"] = isDeleteMessage;
+
+    Map data =
+        await _channel.invokeMethod(EMSDKMethod.deleteRemoteConversation, req);
+
+    EMError.hasErrorFromResult(data);
+  }
+
   /// @nodoc
   Future<void> _onMessagesReceived(List messages) async {
     List<EMMessage> messageList = [];
