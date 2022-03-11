@@ -49,7 +49,7 @@ dependencies:
   im_flutter_sdk:  
     git:  
       url: https://github.com/easemob/im_flutter_sdk.git 
-      ref: release/3.8.3+5
+      ref: dev_3.9.0
 ```
 
 2. 执行`flutter pub get`;
