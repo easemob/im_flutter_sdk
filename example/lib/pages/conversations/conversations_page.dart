@@ -72,7 +72,7 @@ class ConversationPageState extends State<ConversationPage>
                       .then((value) {});
                 } else if (index == 2) {
                   Navigator.of(context).pushNamed('/contactSelect').then(
-                    (value) {
+                    (value) async {
                       List<String> users = value as List<String>;
                       if (users.length > 0) {
                         // TODO: call

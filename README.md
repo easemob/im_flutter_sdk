@@ -29,7 +29,7 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
    
    ```dart
    dependencies:
-   im_flutter_sdk: ^3.8.3+4
+   im_flutter_sdk: ^3.8.3+5
    ```
 
 2. 执行`flutter pub get`;
@@ -49,7 +49,7 @@ dependencies:
   im_flutter_sdk:  
     git:  
       url: https://github.com/easemob/im_flutter_sdk.git 
-      ref: flutter2_stable
+      ref: release/3.8.3+5
 ```
 
 2. 执行`flutter pub get`;
@@ -765,10 +765,6 @@ try{
 > 需要群组类型是PublicJoinNeedApproval 或 PublicOpenJoin，
 > 
 > `PublicJoinNeedApproval`时,被邀请人同意后会进群；
-> 
-> 
-
-
 
 #### 从群组中移除用户
 

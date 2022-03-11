@@ -107,6 +107,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             {
                 loginWithAgoraToken(param, EMSDKMethod.loginWithAgoraToken, result);
             }
+            else if (EMSDKMethod.getToken.equals(call.method))
+            {
+                getToken(param, EMSDKMethod.getToken, result);
+            }
             else  {
                 super.onMethodCall(call, result);
             }
@@ -114,6 +118,11 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }catch (JSONException ignored) {
 
         }
+    }
+
+    private void getToken(JSONObject param, String channelName, Result result) throws JSONException
+    {
+        onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
     }
 
     private void createAccount(JSONObject param, String channelName, Result result) throws JSONException {
@@ -312,6 +321,8 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
         Map<String, Object> data = new HashMap<>();
         data.put("isLoginBefore", EMClient.getInstance().isLoggedInBefore());
+        data.put("username", EMClient.getInstance().getCurrentUser());
+        data.put("token", EMClient.getInstance().getAccessToken());
         data.put("currentUsername", EMClient.getInstance().getCurrentUser());
         onSuccess(result, channelName, data);
     }
