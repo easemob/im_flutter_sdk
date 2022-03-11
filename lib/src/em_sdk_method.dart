@@ -62,6 +62,7 @@ class EMSDKMethod {
   static const String searchChatMsgFromDB = 'searchChatMsgFromDB';
   static const String getMessage = 'getMessage';
   static const String asyncFetchGroupAcks = 'asyncFetchGroupAcks';
+  static const String deleteRemoteConversation = "deleteRemoteConversation";
 
   /// EMChatManager listener
   static const String onMessagesReceived = 'onMessagesReceived';

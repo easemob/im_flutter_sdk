@@ -6,7 +6,7 @@
 //
 
 #import "EMConversation+Flutter.h"
-#import "EMMessage+Flutter.h"
+#import "EMChatMessage+Flutter.h"
 
 @implementation EMConversation (Flutter)
 - (NSDictionary *)toJson {

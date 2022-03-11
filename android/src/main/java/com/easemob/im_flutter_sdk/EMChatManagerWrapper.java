@@ -48,46 +48,49 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         JSONObject param = (JSONObject) call.arguments;
         try {
             if (EMSDKMethod.sendMessage.equals(call.method)) {
-                sendMessage(param, EMSDKMethod.sendMessage, result);
+                sendMessage(param, call.method, result);
             } else if (EMSDKMethod.resendMessage.equals(call.method)) {
-                resendMessage(param, EMSDKMethod.resendMessage, result);
+                resendMessage(param, call.method, result);
             } else if (EMSDKMethod.ackMessageRead.equals(call.method)) {
-                ackMessageRead(param, EMSDKMethod.ackMessageRead, result);
+                ackMessageRead(param, call.method, result);
             } else if (EMSDKMethod.ackGroupMessageRead.equals(call.method)) {
-                ackGroupMessageRead(param, EMSDKMethod.ackGroupMessageRead, result);
+                ackGroupMessageRead(param, call.method, result);
             } else if (EMSDKMethod.ackConversationRead.equals(call.method)) {
-                ackConversationRead(param, EMSDKMethod.ackConversationRead, result);
+                ackConversationRead(param, call.method, result);
             } else if (EMSDKMethod.recallMessage.equals(call.method)) {
-                recallMessage(param, EMSDKMethod.recallMessage, result);
+                recallMessage(param, call.method, result);
             } else if (EMSDKMethod.getConversation.equals(call.method)) {
-                getConversation(param, EMSDKMethod.getConversation, result);
+                getConversation(param, call.method, result);
             } else if (EMSDKMethod.markAllChatMsgAsRead.equals(call.method)) {
-                markAllChatMsgAsRead(param, EMSDKMethod.markAllChatMsgAsRead, result);
+                markAllChatMsgAsRead(param, call.method, result);
             } else if (EMSDKMethod.getUnreadMessageCount.equals(call.method)) {
-                getUnreadMessageCount(param, EMSDKMethod.getUnreadMessageCount, result);
+                getUnreadMessageCount(param, call.method, result);
             } else if (EMSDKMethod.updateChatMessage.equals(call.method)) {
-                updateChatMessage(param, EMSDKMethod.updateChatMessage, result);
+                updateChatMessage(param, call.method, result);
             } else if (EMSDKMethod.downloadAttachment.equals(call.method)) {
-                downloadAttachment(param, EMSDKMethod.downloadAttachment, result);
+                downloadAttachment(param, call.method, result);
             } else if (EMSDKMethod.downloadThumbnail.equals(call.method)) {
-                downloadThumbnail(param, EMSDKMethod.downloadThumbnail, result);
+                downloadThumbnail(param, call.method, result);
             } else if (EMSDKMethod.importMessages.equals(call.method)) {
-                importMessages(param, EMSDKMethod.importMessages, result);
+                importMessages(param, call.method, result);
             } else if (EMSDKMethod.loadAllConversations.equals(call.method)) {
-                loadAllConversations(param, EMSDKMethod.loadAllConversations, result);
+                loadAllConversations(param, call.method, result);
             } else if (EMSDKMethod.getConversationsFromServer.equals(call.method)) {
-                getConversationsFromServer(param, EMSDKMethod.getConversationsFromServer, result);
+                getConversationsFromServer(param, call.method, result);
             } else if (EMSDKMethod.deleteConversation.equals(call.method)) {
-                deleteConversation(param, EMSDKMethod.deleteConversation, result);
+                deleteConversation(param, call.method, result);
             } else if (EMSDKMethod.fetchHistoryMessages.equals(call.method)) {
-                fetchHistoryMessages(param, EMSDKMethod.fetchHistoryMessages, result);
+                fetchHistoryMessages(param, call.method, result);
             } else if (EMSDKMethod.searchChatMsgFromDB.equals(call.method)) {
-                searchChatMsgFromDB(param, EMSDKMethod.searchChatMsgFromDB, result);
+                searchChatMsgFromDB(param, call.method, result);
             } else if (EMSDKMethod.getMessage.equals(call.method)) {
-                getMessage(param, EMSDKMethod.getMessage, result);
+                getMessage(param, call.method, result);
             } else if (EMSDKMethod.asyncFetchGroupAcks.equals(call.method)){
-                asyncFetchGroupMessageAckFromServer(param, EMSDKMethod.asyncFetchGroupAcks, result);
-            } else {
+                asyncFetchGroupMessageAckFromServer(param, call.method, result);
+            } else if (EMSDKMethod.deleteRemoteConversation.equals(call.method)){
+                deleteRemoteConversation(param, call.method, result);
+            }
+            else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException ignored) {
@@ -495,6 +498,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().asyncFetchGroupReadAcks(msgId, pageSize, ackId, callBack);
     }
 
+
+    private void deleteRemoteConversation(JSONObject param, String channelName, Result result) throws JSONException {
+        String conversationId = param.getString("conversationId");
+        EMConversationType type = typeFromInt(param.getInt("conversationType"));
+        boolean isDeleteRemoteMessage = param.getBoolean("isDeleteRemoteMessage");
+        EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
+    }
+
+
     private void registerEaseListener() {
         EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
             @Override
@@ -589,5 +601,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
         return direction == "up" ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
+    }
+
+    private EMConversation.EMConversationType typeFromInt(int intType) {
+        if (intType == 0){
+            return EMConversationType.Chat;
+        }else if(intType == 1){
+            return EMConversationType.GroupChat;
+        }else {
+            return EMConversationType.ChatRoom;
+        }
     }
 }

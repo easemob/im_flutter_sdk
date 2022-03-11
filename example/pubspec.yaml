@@ -80,9 +80,6 @@ dependencies:
   # 数字输出格式化
   sprintf: ^6.0.0
 
-  # 声网音视频
-  agora_rtc_engine: ^4.2.0
-
   # 权限管理
   permission_handler: ^8.3.0
 

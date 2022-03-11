@@ -62,6 +62,7 @@ public class EMSDKMethod {
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getMessage = "getMessage";
     static final String asyncFetchGroupAcks = "asyncFetchGroupAcks";
+    static final String deleteRemoteConversation = "deleteRemoteConversation";
 
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
