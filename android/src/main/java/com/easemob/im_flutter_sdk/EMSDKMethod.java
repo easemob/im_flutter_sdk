@@ -5,6 +5,7 @@ public class EMSDKMethod {
     static final String init = "init";
     static final String createAccount = "createAccount";
     static final String login = "login";
+    static final String loginWithAgoraToken = "loginWithAgoraToken";
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
     static final String isLoggedInBefore = "isLoggedInBefore";
@@ -20,6 +21,8 @@ public class EMSDKMethod {
     static final String onDisconnected = "onDisconnected";
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String onSendDataToFlutter = "onSendDataToFlutter";
+    static final String onTokenWillExpire = "onTokenWillExpire";
+    static final String onTokenDidExpire = "onTokenDidExpire";
 
     /// EMContactManager methods
     static final String addContact = "addContact";
@@ -203,6 +206,8 @@ public class EMSDKMethod {
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updateGroupPushService = "updateGroupPushService";
     static final String getNoDisturbGroups = "getNoDisturbGroups";
+    static final String setNoDisturbUsers = "setNoDisturbUsers";
+    static final String getNoDisturbUsersFromServer = "getNoDisturbUsersFromServer";
 
 
     /// EMUserInfoManager 

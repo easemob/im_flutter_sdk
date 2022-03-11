@@ -25,12 +25,6 @@ dependencies:
     sdk: flutter
 
 
-  # 通讯录 listView
-  # azlistview:
-  #   git:
-  #     url: https://github.com/dujiepeng/azlistview.git
-  #     ref: master
-
   azlistview: ^2.0.0
 
   # The following adds the Cupertino Icons font to your application.
@@ -101,19 +95,10 @@ dependencies:
   # 长按菜单
   w_popup_menu: ^0.3.1
 
+
   # 环信 sdk
   im_flutter_sdk:
     path: ../
-
-  # flutter_sound: ^7.8.4
-
-  # 音频录制转换和播放
-  # record_amr:
-  #   git:
-  #     url: https://github.com/dujiepeng/record_amr.git
-  #     ref: 8409dfc
-# record_amr:
-    # path: ../../record_amr/
 
 dev_dependencies:
   flutter_test:

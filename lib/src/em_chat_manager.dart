@@ -396,8 +396,8 @@ class EMChatManager implements EMMessageStatusListener {
 
   Future<void> _onConversationHasRead(dynamic obj) async {
     for (var listener in _messageListeners) {
-      String? from = (obj as Map)['from'];
-      String? to = obj['to'];
+      String from = (obj as Map)['from'];
+      String to = obj['to'];
       listener.onConversationRead(from, to);
     }
   }
@@ -444,5 +444,5 @@ abstract class EMChatManagerListener {
   void onConversationsUpdate() {}
 
   /// 会话已读`from`是已读的发送方, `to`是已读的接收方
-  void onConversationRead(String? from, String? to) {}
+  void onConversationRead(String from, String to) {}
 }

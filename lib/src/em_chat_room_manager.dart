@@ -375,7 +375,6 @@ class EMChatRoomManager {
     return result[EMSDKMethod.fetchChatRoomAnnouncement];
   }
 
-  /*
   /// 从服务器获取聊天室白名单列表 [roomId]: 聊天室id
   Future<List<String>> fetchChatRoomWhiteListFromServer(String roomId) async {
     Map req = {"roomId": roomId};
@@ -399,7 +398,7 @@ class EMChatRoomManager {
   }
 
   /// 向聊天室白名单中添加用户[roomId]: 聊天室id, [members]: 需要添加到聊天室的用户id。
-  Future<EMChatRoom?> addMembersToChatRoomWhiteList(
+  Future<void> addMembersToChatRoomWhiteList(
       String roomId, List<String> members) async {
     Map req = {
       "roomId": roomId,
@@ -411,13 +410,10 @@ class EMChatRoomManager {
     );
 
     EMError.hasErrorFromResult(result);
-
-    return EMChatRoom.fromJson(
-        result[EMSDKMethod.addMembersToChatRoomWhiteList]);
   }
 
   /// 从聊天室中移除白名单成员,[roomId]: 聊天室id, [members]: 需要移除的用户列表。
-  Future<EMChatRoom> removeMembersFromChatRoomWhiteList(
+  Future<void> removeMembersFromChatRoomWhiteList(
     String roomId,
     List<String> members,
   ) async {
@@ -429,19 +425,30 @@ class EMChatRoomManager {
       EMSDKMethod.addMembersToChatRoomWhiteList,
       req,
     );
-
     EMError.hasErrorFromResult(result);
-
-    return EMChatRoom.fromJson(
-        result[EMSDKMethod.removeMembersFromChatRoomWhiteList]);
   }
 
   Future<bool> muteAllChatRoomMembers(String roomId) async {
-    return false;
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+      EMSDKMethod.muteAllChatRoomMembers,
+      req,
+    );
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(
+      EMSDKMethod.muteAllChatRoomMembers,
+    );
   }
 
   Future<bool> unMuteAllChatRoomMembers(String roomId) async {
-    return false;
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+      EMSDKMethod.unMuteAllChatRoomMembers,
+      req,
+    );
+    EMError.hasErrorFromResult(result);
+    return result.boolValue(
+      EMSDKMethod.unMuteAllChatRoomMembers,
+    );
   }
-  */
 }

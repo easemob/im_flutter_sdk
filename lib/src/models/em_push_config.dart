@@ -1,7 +1,5 @@
 import 'package:flutter/services.dart';
-
 import '../tools/em_log.dart';
-
 import 'em_domain_terms.dart';
 
 enum EMImPushStyle { Simple, Summary }
@@ -13,7 +11,8 @@ class EMImPushConfig {
   bool? _noDisturb;
   int? _noDisturbStartHour;
   int? _noDisturbEndHour;
-  List<String>? _noDisturbGroups = [];
+  List<String> _noDisturbGroups = [];
+  List<String> _noDisturbUsers = [];
 
   EMImPushStyle? get pushStyle => _pushStyle;
   bool? get noDisturb => _noDisturb;
@@ -93,16 +92,42 @@ extension EMPushConfigExtension on EMImPushConfig {
     EMError.hasErrorFromResult(result);
     EMGroup group =
         EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
-    _noDisturbGroups!.removeWhere((e) => e == group.groupId);
-    if (isNoDisturb) _noDisturbGroups!.add(group.groupId);
+    _noDisturbGroups.removeWhere((e) => e == group.groupId);
+    if (isNoDisturb) _noDisturbGroups.add(group.groupId);
     return group;
   }
 
   /// 获取免打扰群组列表
-  Future<List<String>?> noDisturbGroupsFromServer() async {
+  Future<List<String>> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
-    _noDisturbGroups = result[EMSDKMethod.getNoDisturbGroups]?.cast<String>();
+    _noDisturbGroups = [];
+    result[EMSDKMethod.getNoDisturbGroups]?.forEach((element) {
+      _noDisturbGroups.add(element);
+    });
     return _noDisturbGroups;
+  }
+
+  /// 设置免打扰用户列表
+  Future<void> setUsersToDisturb(List<String> userIds, bool disablePush) async {
+    Map req = {
+      "members": userIds,
+      "disable": disablePush,
+    };
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.setNoDisturbUsers, req);
+    EMError.hasErrorFromResult(result);
+  }
+
+  /// 从服务器获取免打扰用户列表
+  Future<List<String>> noDisturbUsersFromServer() async {
+    Map result =
+        await _channel.invokeMethod(EMSDKMethod.getNoDisturbUsersFromServer);
+    EMError.hasErrorFromResult(result);
+    _noDisturbUsers = [];
+    result[EMSDKMethod.getNoDisturbUsersFromServer]?.forEach((element) {
+      _noDisturbUsers.add(element);
+    });
+    return _noDisturbUsers;
   }
 }
