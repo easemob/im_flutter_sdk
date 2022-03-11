@@ -6,6 +6,12 @@ abstract class EMConnectionListener {
 
   /// 连接失败，原因是[errorCode]
   void onDisconnected(int? errorCode);
+
+  /// token 即将过期
+  void onTokenWillExpire();
+
+  /// token 已经过期
+  void onTokenDidExpire();
 }
 
 /// @nodoc

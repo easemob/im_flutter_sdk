@@ -107,6 +107,10 @@ static EMClientWrapper *wrapper = nil;
     {
         [self getCurrentUser:call.arguments result:result];
     }
+    else if ([EMMethodKeyLoginWithAgoraToken isEqualToString:call.method])
+    {
+        [self loginWithAgoraToken:call.arguments result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -118,7 +122,7 @@ static EMClientWrapper *wrapper = nil;
     __weak typeof(self) weakSelf = self;
     
     EMOptions *options = [EMOptions fromJson:param];
-//    options.enableConsoleLog = YES;
+    //    options.enableConsoleLog = YES;
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
@@ -131,9 +135,9 @@ static EMClientWrapper *wrapper = nil;
                   channelName:EMMethodKeyInit
                         error:nil
                        object:@{
-                           @"currentUsername": EMClient.sharedClient.currentUsername ?: @"",
-                           @"isLoginBefore": @(EMClient.sharedClient.isLoggedIn)
-                       }];
+        @"currentUsername": EMClient.sharedClient.currentUsername ?: @"",
+        @"isLoginBefore": @(EMClient.sharedClient.isLoggedIn)
+    }];
 }
 
 
@@ -163,9 +167,9 @@ static EMClientWrapper *wrapper = nil;
     NSString *username = param[@"username"];
     NSString *password = param[@"password"];
     [EMClient.sharedClient registerWithUsername:username
-                                         password:password
-                                       completion:^(NSString *aUsername, EMError *aError)
-    {
+                                       password:password
+                                     completion:^(NSString *aUsername, EMError *aError)
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyCreateAccount
                             error:aError
@@ -183,28 +187,28 @@ static EMClientWrapper *wrapper = nil;
         [EMClient.sharedClient loginWithUsername:username
                                         password:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError)
-        {
+         {
             
             [weakSelf wrapperCallBack:result
                           channelName:EMMethodKeyLogin
                                 error:aError
                                object:@{
-                                   @"username": aUsername,
-                                   @"token": EMClient.sharedClient.accessUserToken
+                @"username": aUsername,
+                @"token": EMClient.sharedClient.accessUserToken
             }];
         }];
     }else {
         [EMClient.sharedClient loginWithUsername:username
                                            token:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError)
-        {
+         {
             [weakSelf wrapperCallBack:result
                           channelName:EMMethodKeyLogin
                                 error:aError
                                object:@{
-                                   @"username": aUsername,
-                                   @"token": EMClient.sharedClient.accessUserToken
-                               }];
+                @"username": aUsername,
+                @"token": EMClient.sharedClient.accessUserToken
+            }];
         }];
     }
 }
@@ -238,7 +242,7 @@ static EMClientWrapper *wrapper = nil;
                   channelName:EMMethodKeyCurrentUser
                         error:nil
                        object:username];
-
+    
 }
 
 - (void)uploadLog:(NSDictionary *)param result:(FlutterResult)result {
@@ -271,7 +275,7 @@ static EMClientWrapper *wrapper = nil;
                                          password:password
                                          resource:resource
                                        completion:^(EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyKickDevice
                             error:aError
@@ -286,7 +290,7 @@ static EMClientWrapper *wrapper = nil;
     [EMClient.sharedClient kickAllDevicesWithUsername:username
                                              password:password
                                            completion:^(EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyKickAllDevices
                             error:aError
@@ -300,8 +304,27 @@ static EMClientWrapper *wrapper = nil;
                   channelName:EMMethodKeyIsLoggedInBefore
                         error:nil
                        object:@(EMClient.sharedClient.isLoggedIn)];
-
+    
 }
+
+- (void)loginWithAgoraToken:(NSDictionary *)param result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *username = param[@"username"];
+    NSString *agoraToken = param[@"agoratoken"];
+    [EMClient.sharedClient loginWithUsername:username
+                                  agoraToken:agoraToken
+                                  completion:^(NSString *aUsername, EMError *aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:EMMethodKeyLoginWithAgoraToken
+                            error:aError
+                           object:@{
+            @"username": aUsername,
+            @"token": EMClient.sharedClient.accessUserToken
+        }];
+    }];
+}
+
 
 - (void)onMultiDeviceEvent:(NSDictionary *)param result:(FlutterResult)result {
     
@@ -315,7 +338,7 @@ static EMClientWrapper *wrapper = nil;
     [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
                                                            password:password
                                                          completion:^(NSArray *aList, EMError *aError)
-    {
+     {
         
         NSMutableArray *list = [NSMutableArray array];
         for (EMDeviceConfig *deviceInfo in aList) {
@@ -349,6 +372,18 @@ static EMClientWrapper *wrapper = nil;
     }
 }
 
+// 声网token即将过期
+- (void)tokenWillExpire:(int)aErrorCode {
+    [self.channel invokeMethod:EMMethodKeyOnTokenWillExpire
+                     arguments:nil];
+}
+
+// 声网token过期
+- (void)tokenDidExpire:(int)aErrorCode {
+    [self.channel invokeMethod:EMMethodKeyOnTokenDidExpire
+                     arguments:nil];
+}
+
 - (void)userAccountDidLoginFromOtherDevice {
     [self onDisconnected:206];
 }
@@ -370,7 +405,7 @@ static EMClientWrapper *wrapper = nil;
 - (void)multiDevicesContactEventDidReceive:(EMMultiDevicesEvent)aEvent
                                   username:(NSString *)aUsername
                                        ext:(NSString *)aExt {
-        
+    
 }
 
 - (void)multiDevicesGroupEventDidReceive:(EMMultiDevicesEvent)aEvent
@@ -397,7 +432,7 @@ static EMClientWrapper *wrapper = nil;
     application.applicationIconBadgeNumber = 0;
     
     if (NSClassFromString(@"UNUserNotificationCenter")) {
-//        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
+        //        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
         [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert completionHandler:^(BOOL granted, NSError *error) {
             if (granted) {
 #if !TARGET_IPHONE_SIMULATOR

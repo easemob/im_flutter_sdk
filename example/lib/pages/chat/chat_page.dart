@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -55,6 +54,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void initState() {
     super.initState();
+
     items = [
       ChatMoreViewItem(
           'images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
@@ -458,9 +458,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   _moreVideoCallBtnOnTap() {
-    if (widget.conversation.type == EMConversationType.Chat) {
-      // TODO: call
-    }
+    if (widget.conversation.type == EMConversationType.Chat) {}
   }
 
   @override
@@ -577,6 +575,9 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
   onConversationsUpdate() {}
 
   @override
@@ -608,15 +609,10 @@ class _ChatPageState extends State<ChatPage>
   void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
 
   @override
-  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+  void onChatRoomDestroyed(String roomId, String? roomName) {}
 
   @override
-  void onChatRoomDestroyed(String roomId, String? roomName) {
-    // TODO: implement onChatRoomDestroyed
-  }
-
-  @override
-  void onConversationRead(String? from, String? to) {}
+  void onConversationRead(String from, String to) {}
 
   @override
   void onMemberExitedFromChatRoom(
