@@ -12,17 +12,25 @@ class EMPushManager {
   /// 从本地获取ImPushConfig
   Future<EMImPushConfig> getImPushConfig() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getImPushConfig);
-    EMError.hasErrorFromResult(result);
-    return EMImPushConfig.fromJson(result[EMSDKMethod.getImPushConfig]);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMImPushConfig.fromJson(result[EMSDKMethod.getImPushConfig]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从服务器获取ImPushConfig
   Future<EMImPushConfig> getImPushConfigFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getImPushConfigFromServer);
-    EMError.hasErrorFromResult(result);
-    return EMImPushConfig.fromJson(
-        result[EMSDKMethod.getImPushConfigFromServer]);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMImPushConfig.fromJson(
+          result[EMSDKMethod.getImPushConfigFromServer]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新当前用户的[nickname],这样离线消息推送的时候可以显示用户昵称而不是id，需要登录环信服务器成功后调用才生效
@@ -30,8 +38,12 @@ class EMPushManager {
     Map req = {'nickname': nickname};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updatePushNickname, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.updatePushNickname);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(EMSDKMethod.updatePushNickname);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 上传华为推送token, 需要确保登录成功后再调用(可以是进入home页面后)
@@ -40,8 +52,12 @@ class EMPushManager {
       Map req = {'token': token};
       Map result =
           await _channel.invokeMethod(EMSDKMethod.updateHMSPushToken, req);
-      EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.updateHMSPushToken);
+      try {
+        EMError.hasErrorFromResult(result);
+        return result.boolValue(EMSDKMethod.updateHMSPushToken);
+      } on EMError catch (e) {
+        throw e;
+      }
     }
     return true;
   }
@@ -52,8 +68,12 @@ class EMPushManager {
       Map req = {'token': token};
       Map result =
           await _channel.invokeMethod(EMSDKMethod.updateFCMPushToken, req);
-      EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.updateFCMPushToken);
+      try {
+        EMError.hasErrorFromResult(result);
+        return result.boolValue(EMSDKMethod.updateFCMPushToken);
+      } on EMError catch (e) {
+        throw e;
+      }
     }
     return true;
   }
@@ -64,8 +84,12 @@ class EMPushManager {
       Map req = {'token': token};
       Map result =
           await _channel.invokeMethod(EMSDKMethod.updateAPNsPushToken, req);
-      EMError.hasErrorFromResult(result);
-      return true;
+      try {
+        EMError.hasErrorFromResult(result);
+        return true;
+      } on EMError catch (e) {
+        throw e;
+      }
     }
     return true;
   }

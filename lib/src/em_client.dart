@@ -107,8 +107,12 @@ class EMClient {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(EMSDKMethod.createAccount, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.createAccount];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.createAccount];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 使用用户名(环信id)和密码(或token)登录，[username], [pwdOrToken]
@@ -122,13 +126,15 @@ class EMClient {
       'isPassword': isPassword
     };
     Map result = await _channel.invokeMethod(EMSDKMethod.login, req);
-    EMError.hasErrorFromResult(result);
-
-    _currentUsername = result[EMSDKMethod.login]['username'];
-    _accessToken = result[EMSDKMethod.login]['token'];
-    _isLoginBefore = true;
-
-    return _currentUsername;
+    try {
+      EMError.hasErrorFromResult(result);
+      _currentUsername = result[EMSDKMethod.login]['username'];
+      _accessToken = result[EMSDKMethod.login]['token'];
+      _isLoginBefore = true;
+      return _currentUsername;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
@@ -139,9 +145,13 @@ class EMClient {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
     Map req = {'unbindToken': unbindDeviceToken};
     Map result = await _channel.invokeMethod(EMSDKMethod.logout, req);
-    EMError.hasErrorFromResult(result);
-    _clearAllInfo();
-    return result.boolValue(EMSDKMethod.logout);
+    try {
+      EMError.hasErrorFromResult(result);
+      _clearAllInfo();
+      return result.boolValue(EMSDKMethod.logout);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 修改appKey [newAppKey].
@@ -149,8 +159,12 @@ class EMClient {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
     Map result = await _channel.invokeMethod(EMSDKMethod.changeAppKey, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.changeAppKey);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(EMSDKMethod.changeAppKey);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   // /// @nodoc 上传日志到环信, 不对外暴露
@@ -165,8 +179,12 @@ class EMClient {
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
     Map result = await _channel.invokeMethod(EMSDKMethod.compressLogs);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.compressLogs];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.compressLogs];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取账号名下登陆的在线设备列表
@@ -177,12 +195,16 @@ class EMClient {
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(
         EMSDKMethod.getLoggedInDevicesFromServer, req);
-    EMError.hasErrorFromResult(result);
-    List<EMDeviceInfo> list = [];
-    result[EMSDKMethod.getLoggedInDevicesFromServer]?.forEach((info) {
-      list.add(EMDeviceInfo.fromJson(info));
-    });
-    return list;
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMDeviceInfo> list = [];
+      result[EMSDKMethod.getLoggedInDevicesFromServer]?.forEach((info) {
+        list.add(EMDeviceInfo.fromJson(info));
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 根据设备ID，将该设备下线,
@@ -198,8 +220,12 @@ class EMClient {
       'resource': resource
     };
     Map result = await _channel.invokeMethod(EMSDKMethod.kickDevice, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.kickDevice);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(EMSDKMethod.kickDevice);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 将该账号下的所有设备都踢下线
@@ -209,8 +235,12 @@ class EMClient {
     EMLog.v('kickAllDevices: $username, "******"');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(EMSDKMethod.kickAllDevices, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.kickAllDevices);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(EMSDKMethod.kickAllDevices);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /* Listeners*/
