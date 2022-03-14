@@ -13,6 +13,7 @@ class EMSDKMethod {
   static const String currentUser = 'currentUser';
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
+  static const String getToken = 'getToken';
 
   /// EMClient listener
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';

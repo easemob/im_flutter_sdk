@@ -1,6 +1,14 @@
 ## NEXT
 
+
+
+## 3.8.3+5
+
+- 更新安卓依赖原生sdk版本；
+- 修复获取本地群组crash；
+
 ## 3.8.3+4
+
 * 修复消息attribute类型变为bool类型；
 * 修复群组免打扰属性不准；
 * 修复ios importMessages方法bug；
@@ -10,14 +18,17 @@
 * 修改`EMGroupChangeListener` 为 `EMGroupEventListener`
 
 ## 3.8.3+3
+
 * 修复安卓下resendMessage方法发送失败时不回调onError；
 * 修复fetchChatRoomMembers返回类型错误；
 
 ## 3.8.3+2
+
 * 增加群组已读回执；
 * 不在提供EMContact类，直接返回String类型username;
 
 ## 3.8.3
+
 * 增加用户属性；
 * 修复已知bug；
 

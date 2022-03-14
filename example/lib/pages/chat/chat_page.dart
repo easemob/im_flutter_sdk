@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:easeim_flutter_demo/pages/chat/chat_input_bar.dart';
 import 'package:easeim_flutter_demo/unit/chat_voice_player.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
@@ -12,7 +11,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-// import 'package:record_amr/record_amr.dart';
 import 'chat_face_view.dart';
 import 'chat_items/chat_item.dart';
 import 'chat_more_view.dart';
@@ -609,7 +607,6 @@ class _ChatPageState extends State<ChatPage>
 
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
-
   @override
   void onChatRoomDestroyed(String roomId, String? roomName) {
     // TODO: implement onChatRoomDestroyed

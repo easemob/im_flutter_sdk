@@ -20,8 +20,6 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
 
-    //TODO: 初始化 EaseCallKit插件
-
     _conversationListPage = ConversationPage();
     _pages = [
       _conversationListPage,
