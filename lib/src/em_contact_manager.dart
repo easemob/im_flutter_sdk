@@ -55,8 +55,12 @@ class EMContactManager {
   ]) async {
     Map req = {'username': username, 'reason': reason};
     Map result = await _channel.invokeMethod(EMSDKMethod.addContact, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.addContact];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.addContact];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 删除联系人 [username]
@@ -67,35 +71,46 @@ class EMContactManager {
   ]) async {
     Map req = {'username': username, 'keepConversation': keepConversation};
     Map result = await _channel.invokeMethod(EMSDKMethod.deleteContact, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.deleteContact];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.deleteContact];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从服务器获取所有的好友
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
-    EMError.hasErrorFromResult(result);
-    List<String> contacts = [];
-    result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
-      // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      contacts.add(element);
-    });
-
-    return contacts;
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> contacts = [];
+      result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+        // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
+        contacts.add(element);
+      });
+      return contacts;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从本地获取所有的好友
   Future<List<String>> getAllContactsFromDB() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
-    EMError.hasErrorFromResult(result);
-    List<String> contacts = [];
-    result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
-      // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      contacts.add(element);
-    });
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> contacts = [];
+      result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
+        // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
+        contacts.add(element);
+      });
 
-    return contacts;
+      return contacts;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 把指定用户加入到黑名单中 [username] .
@@ -105,8 +120,12 @@ class EMContactManager {
     Map req = {'username': username};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.addUserToBlockList];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.addUserToBlockList];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 把用户从黑名单中移除 [username].
@@ -114,40 +133,56 @@ class EMContactManager {
     Map req = {'username': username};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.removeUserFromBlockList];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.removeUserFromBlockList];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从服务器获取黑名单列表
   Future<List<String>> getBlockListFromServer() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
-    EMError.hasErrorFromResult(result);
-    List<String> blockList = [];
-    result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
-      // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
-      blockList.add(element);
-    });
-    return blockList;
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> blockList = [];
+      result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
+        // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
+        blockList.add(element);
+      });
+      return blockList;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从本地数据库中获取黑名单列表
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromDB);
-    EMError.hasErrorFromResult(result);
-    List<String> blockList = [];
-    result[EMSDKMethod.getBlockListFromDB]?.forEach((element) {
-      blockList.add(element);
-    });
-    return blockList;
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> blockList = [];
+      result[EMSDKMethod.getBlockListFromDB]?.forEach((element) {
+        blockList.add(element);
+      });
+      return blockList;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 接受加好友的邀请[username].
   Future<String?> acceptInvitation(String username) async {
     Map req = {'username': username};
     Map result = await _channel.invokeMethod(EMSDKMethod.acceptInvitation, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.acceptInvitation];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.acceptInvitation];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 拒绝加好友的邀请 [username].
@@ -155,18 +190,26 @@ class EMContactManager {
     Map req = {'username': username};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.declineInvitation, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.declineInvitation];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[EMSDKMethod.declineInvitation];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从服务器获取登录用户在其他设备上登录的ID
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
-    EMError.hasErrorFromResult(result);
-    List<String>? devices =
-        result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
-    return devices;
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String>? devices =
+          result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
+      return devices;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 设置好友监听器 [contactListener]

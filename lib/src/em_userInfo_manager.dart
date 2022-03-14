@@ -19,8 +19,12 @@ class EMUserInfoManager {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
-    EMError.hasErrorFromResult(result);
-    return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新自己用户属性
@@ -32,22 +36,30 @@ class EMUserInfoManager {
     };
     Map result =
         await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfoWithType, req);
-    EMError.hasErrorFromResult(result);
-    if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
-      _ownUserInfo =
-          EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
-      _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
-    }
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
+        _ownUserInfo =
+            EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
+        _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
+      }
 
-    return _ownUserInfo;
+      return _ownUserInfo;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 3600}) async {
     if (EMClient.getInstance.currentUsername != null) {
-      Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
-          [EMClient.getInstance.currentUsername!],
-          expireTime: expireTime);
-      _ownUserInfo = ret.values.first;
+      try {
+        Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
+            [EMClient.getInstance.currentUsername!],
+            expireTime: expireTime);
+        _ownUserInfo = ret.values.first;
+      } on EMError catch (e) {
+        throw e;
+      }
     }
     return _ownUserInfo;
   }
@@ -80,14 +92,18 @@ class EMUserInfoManager {
     Map req = {'userIds': needReqIds};
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
-    EMError.hasErrorFromResult(result);
-    result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
-      EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
-      resultMap[key] = eUserInfo;
-      _effectiveUserInfoMap[key] = eUserInfo;
-    });
 
-    return resultMap;
+    try {
+      EMError.hasErrorFromResult(result);
+      result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
+        EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
+        resultMap[key] = eUserInfo;
+        _effectiveUserInfoMap[key] = eUserInfo;
+      });
+      return resultMap;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取指定id的用户的指定类型的用户属性
@@ -119,15 +135,19 @@ class EMUserInfoManager {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.fetchUserInfoByIdWithType, req);
 
-    EMError.hasErrorFromResult(result);
-    result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
-      EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
-      resultMap[key] = eUserInfo;
+    try {
+      EMError.hasErrorFromResult(result);
+      result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
+        EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
+        resultMap[key] = eUserInfo;
 
-      _effectiveUserInfoMap[key] = eUserInfo;
-    });
+        _effectiveUserInfoMap[key] = eUserInfo;
+      });
 
-    return resultMap as FutureOr<Map<String, EMUserInfo>>;
+      return resultMap as FutureOr<Map<String, EMUserInfo>>;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   // 整型转化用户属性类型 【int => EMUserInfoType】
