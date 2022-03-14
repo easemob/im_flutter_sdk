@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
 
 import 'em_chat_manager.dart';
 import 'em_contact_manager.dart';
@@ -33,7 +34,6 @@ class EMClient {
   /// instance fields
   bool _connected = false;
   EMOptions? _options;
-  String? _accessToken;
 
   String _sdkVersion = '1.0.0';
 
@@ -43,9 +43,6 @@ class EMClient {
 
   /// 获取配置信息[EMOptions].
   EMOptions? get options => _options;
-
-  /// 获取当前登录用户token
-  String? get accessToken => _accessToken;
 
   /// 获取当前是否连接到服务器
   bool get connected => _connected;
@@ -80,6 +77,13 @@ class EMClient {
     });
   }
 
+  /// 获取已登录账号的环信Token
+  Future<String?> getAccessToken() async {
+    Map result = await _channel.invokeMethod(EMSDKMethod.getToken);
+    EMError.hasErrorFromResult(result);
+    return result[EMSDKMethod.getToken];
+  }
+
   /// 初始化SDK 指定[options].
   Future<void> init(EMOptions options) async {
     _options = options;
@@ -88,7 +92,7 @@ class EMClient {
     Map result =
         await _channel.invokeMethod(EMSDKMethod.init, options.toJson());
     Map map = result[EMSDKMethod.init];
-    _currentUsername = map['currentUsername'];
+    _currentUsername = map['username'];
     _isLoginBefore = () {
       if (map.containsKey("isLoginBefore")) {
         return map['isLoginBefore'] as bool;
@@ -129,7 +133,6 @@ class EMClient {
     try {
       EMError.hasErrorFromResult(result);
       _currentUsername = result[EMSDKMethod.login]['username'];
-      _accessToken = result[EMSDKMethod.login]['token'];
       _isLoginBefore = true;
       return _currentUsername;
     } on EMError catch (e) {
@@ -409,7 +412,6 @@ class EMClient {
   void _clearAllInfo() {
     _isLoginBefore = false;
     _connected = false;
-    _accessToken = '';
     _currentUsername = '';
     _userInfoManager.clearUserInfoCache();
   }
