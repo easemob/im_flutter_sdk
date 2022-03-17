@@ -1,4 +1,4 @@
-import "models/em_domain_terms.dart";
+import 'models/em_group.dart';
 
 abstract class EMConnectionListener {
   /// 网络已连接

@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
-import '../tools/em_log.dart';
-import 'em_domain_terms.dart';
+import '../../im_flutter_sdk.dart';
+import '../chat_method_keys.dart';
+import '../tools/em_extension.dart';
 
 enum EMImPushStyle { Simple, Summary }
 
@@ -57,9 +58,10 @@ extension EMPushConfigExtension on EMImPushConfig {
       'startTime': startTime,
       'endTime': endTime
     };
-    Map result = await _channel.invokeMethod(EMSDKMethod.imPushNoDisturb, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.imPushNoDisturb, req);
     EMError.hasErrorFromResult(result);
-    bool success = result.boolValue(EMSDKMethod.imPushNoDisturb);
+    bool success = result.boolValue(ChatMethodKeys.imPushNoDisturb);
     if (success) {
       _noDisturb = isNoDisturb;
       _noDisturbStartHour = startTime;
@@ -73,9 +75,9 @@ extension EMPushConfigExtension on EMImPushConfig {
     EMLog.v('setPushStyle: ' + pushStyle.toString());
     Map req = {'pushStyle': pushStyle == EMImPushStyle.Simple ? 0 : 1};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateImPushStyle, req);
+        await _channel.invokeMethod(ChatMethodKeys.updateImPushStyle, req);
     EMError.hasErrorFromResult(result);
-    bool success = result.boolValue(EMSDKMethod.updateImPushStyle);
+    bool success = result.boolValue(ChatMethodKeys.updateImPushStyle);
     if (success) _pushStyle = pushStyle;
     return success;
   }
@@ -88,10 +90,10 @@ extension EMPushConfigExtension on EMImPushConfig {
     Map req = {'noDisturb': isNoDisturb, 'group_id': groupId};
     EMLog.v('setGroupToDisturb: ' + req.toString());
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateGroupPushService, req);
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupPushService, req);
     EMError.hasErrorFromResult(result);
     EMGroup group =
-        EMGroup.fromJson(result[EMSDKMethod.updateGroupPushService]);
+        EMGroup.fromJson(result[ChatMethodKeys.updateGroupPushService]);
     _noDisturbGroups.removeWhere((e) => e == group.groupId);
     if (isNoDisturb) _noDisturbGroups.add(group.groupId);
     return group;
@@ -99,10 +101,10 @@ extension EMPushConfigExtension on EMImPushConfig {
 
   /// 获取免打扰群组列表
   Future<List<String>> noDisturbGroupsFromServer() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getNoDisturbGroups);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getNoDisturbGroups);
     EMError.hasErrorFromResult(result);
     _noDisturbGroups = [];
-    result[EMSDKMethod.getNoDisturbGroups]?.forEach((element) {
+    result[ChatMethodKeys.getNoDisturbGroups]?.forEach((element) {
       _noDisturbGroups.add(element);
     });
     return _noDisturbGroups;
@@ -115,17 +117,17 @@ extension EMPushConfigExtension on EMImPushConfig {
       "disable": disablePush,
     };
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.setNoDisturbUsers, req);
+        await _channel.invokeMethod(ChatMethodKeys.setNoDisturbUsers, req);
     EMError.hasErrorFromResult(result);
   }
 
   /// 从服务器获取免打扰用户列表
   Future<List<String>> noDisturbUsersFromServer() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getNoDisturbUsersFromServer);
+        await _channel.invokeMethod(ChatMethodKeys.getNoDisturbUsersFromServer);
     EMError.hasErrorFromResult(result);
     _noDisturbUsers = [];
-    result[EMSDKMethod.getNoDisturbUsersFromServer]?.forEach((element) {
+    result[ChatMethodKeys.getNoDisturbUsersFromServer]?.forEach((element) {
       _noDisturbUsers.add(element);
     });
     return _noDisturbUsers;

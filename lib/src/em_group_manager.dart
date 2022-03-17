@@ -1,7 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'em_listeners.dart';
+import 'models/em_cursor_result.dart';
+import 'models/em_error.dart';
+import 'models/em_group.dart';
+import 'tools/em_extension.dart';
+
+import 'chat_method_keys.dart';
 
 class EMGroupManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -12,7 +18,7 @@ class EMGroupManager {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
       print('[EMGroupChange:]' + argMap.toString());
-      if (call.method == EMSDKMethod.onGroupChanged) {
+      if (call.method == ChatMethodKeys.onGroupChanged) {
         return _onGroupChanged(argMap);
       }
       return null;
@@ -24,17 +30,18 @@ class EMGroupManager {
   /// 根据群组id获取群实例
   Future<EMGroup> getGroupWithId(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.getGroupWithId, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getGroupWithId, req);
     EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.getGroupWithId]);
+    return EMGroup.fromJson(result[ChatMethodKeys.getGroupWithId]);
   }
 
   /// 从本地缓存中获取已加入的群组列表
   Future<List<EMGroup>> getJoinedGroups() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getJoinedGroups);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getJoinedGroups);
     EMError.hasErrorFromResult(result);
     List<EMGroup> list = [];
-    result[EMSDKMethod.getJoinedGroups]
+    result[ChatMethodKeys.getJoinedGroups]
         ?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
@@ -42,10 +49,10 @@ class EMGroupManager {
   /// 获取免打扰的群组列表id
   Future<List<String>?> getGroupsWithoutNotice() async {
     Map result = await _channel
-        .invokeMethod(EMSDKMethod.getGroupsWithoutPushNotification);
+        .invokeMethod(ChatMethodKeys.getGroupsWithoutPushNotification);
     EMError.hasErrorFromResult(result);
     var list =
-        result[EMSDKMethod.getGroupsWithoutPushNotification]?.cast<String>();
+        result[ChatMethodKeys.getGroupsWithoutPushNotification]?.cast<String>();
     return list;
   }
 
@@ -55,11 +62,11 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'pageSize': pageSize, 'pageNum': pageNum};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.getJoinedGroupsFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getJoinedGroupsFromServer, req);
     EMError.hasErrorFromResult(result);
     List<EMGroup> list = [];
-    result[EMSDKMethod.getJoinedGroupsFromServer]
+    result[ChatMethodKeys.getJoinedGroupsFromServer]
         ?.forEach((element) => list.add(EMGroup.fromJson(element)));
     return list;
   }
@@ -70,15 +77,18 @@ class EMGroupManager {
     String cursor = '',
   }) async {
     Map req = {'pageSize': pageSize, 'cursor': cursor};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.getPublicGroupsFromServer, req);
-    EMError.hasErrorFromResult(result);
-
-    return EMCursorResult<EMGroup>.fromJson(
-        result[EMSDKMethod.getPublicGroupsFromServer],
-        dataItemCallback: (value) {
-      return EMGroup.fromJson(value);
-    });
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getPublicGroupsFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<EMGroup>.fromJson(
+          result[ChatMethodKeys.getPublicGroupsFromServer],
+          dataItemCallback: (value) {
+        return EMGroup.fromJson(value);
+      });
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 创建群组
@@ -94,19 +104,27 @@ class EMGroupManager {
       'inviteReason': inviteReason,
       'options': settings.toJson()
     };
-    Map result = await _channel.invokeMethod(EMSDKMethod.createGroup, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.createGroup]);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.createGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.createGroup]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取群组详情
   Future<EMGroup> getGroupSpecificationFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupSpecificationFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(
-        result[EMSDKMethod.getGroupSpecificationFromServer]);
+        ChatMethodKeys.getGroupSpecificationFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(
+          result[ChatMethodKeys.getGroupSpecificationFromServer]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取群组成员列表
@@ -121,13 +139,17 @@ class EMGroupManager {
       'pageSize': pageSize,
     };
     Map result = await _channel.invokeMethod(
-      EMSDKMethod.getGroupMemberListFromServer,
+      ChatMethodKeys.getGroupMemberListFromServer,
       req,
     );
-    EMError.hasErrorFromResult(result);
-    return EMCursorResult<String>.fromJson(
-        result[EMSDKMethod.getGroupMemberListFromServer],
-        dataItemCallback: (value) => value);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<String>.fromJson(
+          result[ChatMethodKeys.getGroupMemberListFromServer],
+          dataItemCallback: (value) => value);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取黑名单列表
@@ -138,9 +160,13 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupBlockListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupBlockListFromServer]?.cast<String>();
+        ChatMethodKeys.getGroupBlockListFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.getGroupBlockListFromServer]?.cast<String>();
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取禁言列表
@@ -151,27 +177,39 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupMuteListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupMuteListFromServer]?.cast<String>();
+        ChatMethodKeys.getGroupMuteListFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.getGroupMuteListFromServer]?.cast<String>();
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取白名单列表
   Future<List<String>?> getGroupWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupWhiteListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupWhiteListFromServer]?.cast<String>();
+        ChatMethodKeys.getGroupWhiteListFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.getGroupWhiteListFromServer]?.cast<String>();
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 判断自己是否在白名单中
   Future<bool> isMemberInWhiteListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.isMemberInWhiteListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.isMemberInWhiteListFromServer);
+        ChatMethodKeys.isMemberInWhiteListFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isMemberInWhiteListFromServer);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取群共享文件列表
@@ -182,22 +220,30 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupFileListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    List<EMGroupSharedFile> list = [];
-    result[EMSDKMethod.getGroupFileListFromServer]?.forEach((element) {
-      list.add(EMGroupSharedFile.fromJson(element));
-    });
-    return list;
+        ChatMethodKeys.getGroupFileListFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMGroupSharedFile> list = [];
+      result[ChatMethodKeys.getGroupFileListFromServer]?.forEach((element) {
+        list.add(EMGroupSharedFile.fromJson(element));
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从服务器获取群公告
   Future<String?> getGroupAnnouncementFromServer(String groupId) async {
     Map req = {'groupId': groupId};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getGroupAnnouncementFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getGroupAnnouncementFromServer];
+        ChatMethodKeys.getGroupAnnouncementFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.getGroupAnnouncementFromServer];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 邀请用户加入私有群，用于公开群: PublicJoinNeedApproval / PublicOpenJoin
@@ -207,8 +253,12 @@ class EMGroupManager {
     String welcome = '',
   ]) async {
     Map req = {'welcome': welcome, 'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addMembers, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.addMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 邀请用户加入私有群，用于私有群: PrivateOnlyOwnerInvite / PrivateMemberCanInvite
@@ -226,11 +276,15 @@ class EMGroupManager {
     }
 
     Map result = await _channel.invokeMethod(
-      EMSDKMethod.inviterUser,
+      ChatMethodKeys.inviterUser,
       req,
     );
 
-    EMError.hasErrorFromResult(result);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 从群组中移除用户
@@ -239,8 +293,12 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.removeMembers, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.removeMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 将用户加入到群组黑名单中
@@ -249,8 +307,12 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.blockMembers, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.blockMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 将用户从黑名单中移除
@@ -259,8 +321,13 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.unblockMembers, req);
-    EMError.hasErrorFromResult(result);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.unblockMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新群组名称
@@ -270,9 +337,13 @@ class EMGroupManager {
   ) async {
     Map req = {'name': name, 'groupId': groupId};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateGroupSubject, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.updateGroupSubject]);
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupSubject, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.updateGroupSubject]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新群描述
@@ -282,37 +353,57 @@ class EMGroupManager {
   ) async {
     Map req = {'desc': desc, 'groupId': groupId};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateDescription, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.updateDescription]);
+        await _channel.invokeMethod(ChatMethodKeys.updateDescription, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.updateDescription]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 退出群组
   Future<void> leaveGroup(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.leaveGroup, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.leaveGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 解散群组
   Future<void> destroyGroup(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.destroyGroup, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.destroyGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 不接收群消息
   Future<void> blockGroup(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.blockGroup, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.blockGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 恢复接收群消息
   Future<void> unblockGroup(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.unblockGroup, req);
-    EMError.hasErrorFromResult(result);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.unblockGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 将群转给其他人，需要群主调用
@@ -321,9 +412,14 @@ class EMGroupManager {
     String newOwner,
   ) async {
     Map req = {'groupId': groupId, 'owner': newOwner};
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupOwner, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.updateGroupOwner]);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupOwner, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.updateGroupOwner]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 添加管理员
@@ -332,9 +428,13 @@ class EMGroupManager {
     String memberId,
   ) async {
     Map req = {'groupId': groupId, 'admin': memberId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addAdmin, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.addAdmin]);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.addAdmin, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.addAdmin]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 移除管理员
@@ -343,9 +443,13 @@ class EMGroupManager {
     String adminId,
   ) async {
     Map req = {'groupId': groupId, 'admin': adminId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.removeAdmin, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.removeAdmin]);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.removeAdmin, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.removeAdmin]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 对群成员禁言，白名单中的用户不会被限制
@@ -355,9 +459,13 @@ class EMGroupManager {
     int duration = -1,
   }) async {
     Map req = {'groupId': groupId, 'members': members, 'duration': duration};
-    Map result = await _channel.invokeMethod(EMSDKMethod.muteMembers, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.muteMembers]);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.muteMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.muteMembers]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 对群成员取消禁言
@@ -366,23 +474,37 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.unMuteMembers, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.unMuteMembers]);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.unMuteMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.unMuteMembers]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 对所有群成员禁言，白名单中的用户不会被限制
   Future<void> muteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.muteAllMembers, req);
-    EMError.hasErrorFromResult(result);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.muteAllMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 取消对所有群成员禁言
   Future<void> unMuteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.unMuteAllMembers, req);
-    EMError.hasErrorFromResult(result);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.unMuteAllMembers, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 将用户添加到白名单
@@ -391,9 +513,13 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addWhiteList, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.addWhiteList]);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.addWhiteList, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.addWhiteList]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 将用户移出白名单
@@ -402,9 +528,14 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(EMSDKMethod.removeWhiteList, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.removeWhiteList]);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.removeWhiteList, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.removeWhiteList]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 上传群共享文件
@@ -414,9 +545,13 @@ class EMGroupManager {
   ) async {
     Map req = {'groupId': groupId, 'filePath': filePath};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.uploadGroupSharedFile, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.uploadGroupSharedFile);
+        await _channel.invokeMethod(ChatMethodKeys.uploadGroupSharedFile, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.uploadGroupSharedFile);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 下载群共享文件
@@ -426,10 +561,14 @@ class EMGroupManager {
     String savePath,
   ) async {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.downloadGroupSharedFile, req);
-    EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.downloadGroupSharedFile);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.downloadGroupSharedFile, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.downloadGroupSharedFile);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 删除群共享文件
@@ -439,9 +578,13 @@ class EMGroupManager {
   ) async {
     Map req = {'groupId': groupId, 'fileId': fileId};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.removeGroupSharedFile, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.removeGroupSharedFile]);
+        await _channel.invokeMethod(ChatMethodKeys.removeGroupSharedFile, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.removeGroupSharedFile]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新群公告
@@ -450,10 +593,14 @@ class EMGroupManager {
     String announcement,
   ) async {
     Map req = {'groupId': groupId, 'announcement': announcement};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateGroupAnnouncement, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.updateGroupAnnouncement]);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.updateGroupAnnouncement, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.updateGroupAnnouncement]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新群扩展
@@ -462,9 +609,14 @@ class EMGroupManager {
     String ext,
   ) async {
     Map req = {'groupId': groupId, 'ext': ext};
-    Map result = await _channel.invokeMethod(EMSDKMethod.updateGroupExt, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.updateGroupExt]);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupExt, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.updateGroupExt]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 加入公开群，用于加入不需要群主/管理员同意的公开群: EMGroupStyle.PublicOpenJoin
@@ -472,9 +624,14 @@ class EMGroupManager {
     String groupId,
   ) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.joinPublicGroup, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.joinPublicGroup]);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.joinPublicGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.joinPublicGroup]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 申请加入公开群，用于加入需要群主/管理员同意的公开群: EMGroupStyle.PublicJoinNeedApproval
@@ -483,10 +640,14 @@ class EMGroupManager {
     String reason = '',
   ]) async {
     Map req = {'groupId': groupId, 'reason': reason};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.requestToJoinPublicGroup, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.requestToJoinPublicGroup]);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.requestToJoinPublicGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.requestToJoinPublicGroup]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 同意公开群组申请，当群类型是EMGroupStyle.PublicJoinNeedApproval，
@@ -497,9 +658,13 @@ class EMGroupManager {
   ) async {
     Map req = {'groupId': groupId, 'username': username};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.acceptJoinApplication, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.acceptJoinApplication]);
+        await _channel.invokeMethod(ChatMethodKeys.acceptJoinApplication, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.acceptJoinApplication]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 拒绝公开群组申请，当群类型是EMGroupStyle.PublicJoinNeedApproval，
@@ -511,9 +676,13 @@ class EMGroupManager {
   ]) async {
     Map req = {'groupId': groupId, 'username': username, 'reason': reason};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.declineJoinApplication, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.declineJoinApplication]);
+        await _channel.invokeMethod(ChatMethodKeys.declineJoinApplication, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.declineJoinApplication]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 同意群邀请，当群组是PrivateOnlyOwnerInvite / PrivateMemberCanInvite时，
@@ -523,10 +692,14 @@ class EMGroupManager {
     String inviter,
   ) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.acceptInvitationFromGroup, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.acceptInvitationFromGroup]);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.acceptInvitationFromGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.acceptInvitationFromGroup]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 拒绝群邀请，当群组是PrivateOnlyOwnerInvite / PrivateMemberCanInvite时，
@@ -538,9 +711,13 @@ class EMGroupManager {
   ]) async {
     Map req = {'groupId': groupId, 'inviter': inviter, 'reason': reason};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.declineInvitationFromGroup, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.acceptInvitationFromGroup]);
+        ChatMethodKeys.declineInvitationFromGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.acceptInvitationFromGroup]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 设置群组免打扰，设置后，当您不在线时您不会收到群推送
@@ -549,9 +726,14 @@ class EMGroupManager {
     bool enable = true,
   ]) async {
     Map req = {'groupId': groupId, 'enable': enable};
-    Map result = await _channel.invokeMethod(EMSDKMethod.ignoreGroupPush, req);
-    EMError.hasErrorFromResult(result);
-    return EMGroup.fromJson(result[EMSDKMethod.ignoreGroupPush]);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.ignoreGroupPush, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.ignoreGroupPush]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// @nodoc addGroupChangeListener - Adds [listener] to be aware of group change events.

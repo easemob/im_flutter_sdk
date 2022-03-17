@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import 'chat_method_keys.dart';
+import 'em_client.dart';
+import 'models/em_error.dart';
+import 'models/em_userInfo.dart';
 
 class EMUserInfoManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -18,9 +22,13 @@ class EMUserInfoManager {
   Future<EMUserInfo?> updateOwnUserInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
-    EMError.hasErrorFromResult(result);
-    return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
+        await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMUserInfo.fromJson(result[ChatMethodKeys.updateOwnUserInfo]);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 更新自己用户属性
@@ -30,24 +38,32 @@ class EMUserInfoManager {
       'userInfoType': _userInfoTypeToInt(type),
       'userInfoValue': userInfoValue
     };
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfoWithType, req);
-    EMError.hasErrorFromResult(result);
-    if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
-      _ownUserInfo =
-          EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
-      _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
-    }
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.updateOwnUserInfoWithType, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result[ChatMethodKeys.updateOwnUserInfoWithType] != null) {
+        _ownUserInfo = EMUserInfo.fromJson(
+            result[ChatMethodKeys.updateOwnUserInfoWithType]);
+        _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
+      }
 
-    return _ownUserInfo;
+      return _ownUserInfo;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 3600}) async {
     if (EMClient.getInstance.currentUsername != null) {
-      Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
-          [EMClient.getInstance.currentUsername!],
-          expireTime: expireTime);
-      _ownUserInfo = ret.values.first;
+      try {
+        Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
+            [EMClient.getInstance.currentUsername!],
+            expireTime: expireTime);
+        _ownUserInfo = ret.values.first;
+      } on EMError catch (e) {
+        throw e;
+      }
     }
     return _ownUserInfo;
   }
@@ -79,15 +95,19 @@ class EMUserInfoManager {
 
     Map req = {'userIds': needReqIds};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
-    EMError.hasErrorFromResult(result);
-    result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
-      EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
-      resultMap[key] = eUserInfo;
-      _effectiveUserInfoMap[key] = eUserInfo;
-    });
+        await _channel.invokeMethod(ChatMethodKeys.fetchUserInfoById, req);
 
-    return resultMap;
+    try {
+      EMError.hasErrorFromResult(result);
+      result[ChatMethodKeys.fetchUserInfoById]?.forEach((key, value) {
+        EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
+        resultMap[key] = eUserInfo;
+        _effectiveUserInfoMap[key] = eUserInfo;
+      });
+      return resultMap;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 获取指定id的用户的指定类型的用户属性
@@ -116,18 +136,22 @@ class EMUserInfoManager {
     Map resultMap = Map();
 
     Map req = {'userIds': reqIds, 'userInfoTypes': userInfoTypes};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchUserInfoByIdWithType, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchUserInfoByIdWithType, req);
 
-    EMError.hasErrorFromResult(result);
-    result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
-      EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
-      resultMap[key] = eUserInfo;
+    try {
+      EMError.hasErrorFromResult(result);
+      result[ChatMethodKeys.fetchUserInfoByIdWithType].forEach((key, value) {
+        EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
+        resultMap[key] = eUserInfo;
 
-      _effectiveUserInfoMap[key] = eUserInfo;
-    });
+        _effectiveUserInfoMap[key] = eUserInfo;
+      });
 
-    return resultMap as FutureOr<Map<String, EMUserInfo>>;
+      return resultMap as FutureOr<Map<String, EMUserInfo>>;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   // 整型转化用户属性类型 【int => EMUserInfoType】

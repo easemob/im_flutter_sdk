@@ -435,8 +435,13 @@ class _ChatPageState extends State<ChatPage>
   }
 
   /// 拍照按钮被点击
-  _moreCameraBtnOnTap() {
+  _moreCameraBtnOnTap() async {
     print('_moreCameraBtnOnTap');
+
+    var curser = await EMClient.getInstance.groupManager
+        .getGroupMemberListFromServer(widget.conversation.id);
+
+    debugPrint(curser.data.toString());
   }
 
   /// 位置按钮被点击
