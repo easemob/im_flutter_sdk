@@ -7,9 +7,9 @@ import 'models/em_error.dart';
 import 'models/em_userInfo.dart';
 
 class EMUserInfoManager {
-  static const _channelPrefix = 'com.easemob.im';
+  static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
-      '$_channelPrefix/em_userInfo_manager', JSONMethodCodec());
+      '$_channelPrefix/chat_userInfo_manager', JSONMethodCodec());
 
   EMUserInfo? _ownUserInfo;
 

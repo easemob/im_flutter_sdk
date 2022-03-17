@@ -6,9 +6,9 @@ import '../im_flutter_sdk.dart';
 import 'chat_method_keys.dart';
 
 class EMContactManager {
-  static const _channelPrefix = 'com.easemob.im';
+  static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
-      '$_channelPrefix/em_contact_manager', JSONMethodCodec());
+      '$_channelPrefix/chat_contact_manager', JSONMethodCodec());
 
   /// @nodoc
   EMContactManager() {
