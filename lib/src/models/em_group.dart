@@ -1,4 +1,4 @@
-import 'em_domain_terms.dart';
+import '../tools/em_extension.dart';
 
 enum EMGroupStyle {
   PrivateOnlyOwnerInvite, // 私有群，只有群主能邀请他人进群，被邀请人会收到邀请信息，同意后可入群；

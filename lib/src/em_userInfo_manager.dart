@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import 'chat_method_keys.dart';
+import 'em_client.dart';
+import 'models/em_error.dart';
+import 'models/em_userInfo.dart';
 
 class EMUserInfoManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -18,10 +22,10 @@ class EMUserInfoManager {
   Future<EMUserInfo?> updateOwnUserInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfo, req);
+        await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfo]);
+      return EMUserInfo.fromJson(result[ChatMethodKeys.updateOwnUserInfo]);
     } on EMError catch (e) {
       throw e;
     }
@@ -34,13 +38,13 @@ class EMUserInfoManager {
       'userInfoType': _userInfoTypeToInt(type),
       'userInfoValue': userInfoValue
     };
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateOwnUserInfoWithType, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.updateOwnUserInfoWithType, req);
     try {
       EMError.hasErrorFromResult(result);
-      if (result[EMSDKMethod.updateOwnUserInfoWithType] != null) {
-        _ownUserInfo =
-            EMUserInfo.fromJson(result[EMSDKMethod.updateOwnUserInfoWithType]);
+      if (result[ChatMethodKeys.updateOwnUserInfoWithType] != null) {
+        _ownUserInfo = EMUserInfo.fromJson(
+            result[ChatMethodKeys.updateOwnUserInfoWithType]);
         _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
       }
 
@@ -91,11 +95,11 @@ class EMUserInfoManager {
 
     Map req = {'userIds': needReqIds};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchUserInfoById, req);
+        await _channel.invokeMethod(ChatMethodKeys.fetchUserInfoById, req);
 
     try {
       EMError.hasErrorFromResult(result);
-      result[EMSDKMethod.fetchUserInfoById]?.forEach((key, value) {
+      result[ChatMethodKeys.fetchUserInfoById]?.forEach((key, value) {
         EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
         resultMap[key] = eUserInfo;
         _effectiveUserInfoMap[key] = eUserInfo;
@@ -132,12 +136,12 @@ class EMUserInfoManager {
     Map resultMap = Map();
 
     Map req = {'userIds': reqIds, 'userInfoTypes': userInfoTypes};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchUserInfoByIdWithType, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchUserInfoByIdWithType, req);
 
     try {
       EMError.hasErrorFromResult(result);
-      result[EMSDKMethod.fetchUserInfoByIdWithType].forEach((key, value) {
+      result[ChatMethodKeys.fetchUserInfoByIdWithType].forEach((key, value) {
         EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
         resultMap[key] = eUserInfo;
 

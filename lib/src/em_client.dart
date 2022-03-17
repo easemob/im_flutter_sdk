@@ -1,20 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
-
-import 'em_chat_manager.dart';
-import 'em_contact_manager.dart';
+import 'tools/em_extension.dart';
+import '../im_flutter_sdk.dart';
+import 'chat_method_keys.dart';
 import 'em_chat_room_manager.dart';
-import 'em_userInfo_manager.dart';
-
-import 'em_group_manager.dart';
-import 'em_listeners.dart';
-import 'em_push_manager.dart';
-
-import 'models/em_domain_terms.dart';
-
-import 'tools/em_log.dart';
 
 class EMClient {
   static const _channelPrefix = 'com.easemob.im';
@@ -64,13 +54,13 @@ class EMClient {
   void _addNativeMethodCallHandler() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
-      if (call.method == EMSDKMethod.onConnected) {
+      if (call.method == ChatMethodKeys.onConnected) {
         return _onConnected();
-      } else if (call.method == EMSDKMethod.onDisconnected) {
+      } else if (call.method == ChatMethodKeys.onDisconnected) {
         return _onDisconnected(argMap);
-      } else if (call.method == EMSDKMethod.onMultiDeviceEvent) {
+      } else if (call.method == ChatMethodKeys.onMultiDeviceEvent) {
         return _onMultiDeviceEvent(argMap!);
-      } else if (call.method == EMSDKMethod.onSendDataToFlutter) {
+      } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
         return _onReceiveCustomData(argMap!);
       }
       return null;
@@ -79,9 +69,9 @@ class EMClient {
 
   /// 获取已登录账号的环信Token
   Future<String?> getAccessToken() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getToken);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getToken);
     EMError.hasErrorFromResult(result);
-    return result[EMSDKMethod.getToken];
+    return result[ChatMethodKeys.getToken];
   }
 
   /// 初始化SDK 指定[options].
@@ -90,8 +80,8 @@ class EMClient {
     EMLog.v('init: $options');
     // 直接返回当前登录账号和是否登陆过
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.init, options.toJson());
-    Map map = result[EMSDKMethod.init];
+        await _channel.invokeMethod(ChatMethodKeys.init, options.toJson());
+    Map map = result[ChatMethodKeys.init];
     _currentUsername = map['username'];
     _isLoginBefore = () {
       if (map.containsKey("isLoginBefore")) {
@@ -110,10 +100,10 @@ class EMClient {
   Future<String> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
-    Map result = await _channel.invokeMethod(EMSDKMethod.createAccount, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.createAccount, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.createAccount];
+      return result[ChatMethodKeys.createAccount];
     } on EMError catch (e) {
       throw e;
     }
@@ -129,10 +119,10 @@ class EMClient {
       'pwdOrToken': pwdOrToken,
       'isPassword': isPassword
     };
-    Map result = await _channel.invokeMethod(EMSDKMethod.login, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.login, req);
     try {
       EMError.hasErrorFromResult(result);
-      _currentUsername = result[EMSDKMethod.login]['username'];
+      _currentUsername = result[ChatMethodKeys.login]['username'];
       _isLoginBefore = true;
       return _currentUsername;
     } on EMError catch (e) {
@@ -147,11 +137,11 @@ class EMClient {
   ]) async {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
     Map req = {'unbindToken': unbindDeviceToken};
-    Map result = await _channel.invokeMethod(EMSDKMethod.logout, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.logout, req);
     try {
       EMError.hasErrorFromResult(result);
       _clearAllInfo();
-      return result.boolValue(EMSDKMethod.logout);
+      return result.boolValue(ChatMethodKeys.logout);
     } on EMError catch (e) {
       throw e;
     }
@@ -161,10 +151,10 @@ class EMClient {
   Future<bool> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
-    Map result = await _channel.invokeMethod(EMSDKMethod.changeAppKey, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.changeAppKey, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.changeAppKey);
+      return result.boolValue(ChatMethodKeys.changeAppKey);
     } on EMError catch (e) {
       throw e;
     }
@@ -172,7 +162,7 @@ class EMClient {
 
   // /// @nodoc 上传日志到环信, 不对外暴露
   // Future<bool> _uploadLog() async {
-  //   Map result = await _channel.invokeMethod(EMSDKMethod.uploadLog);
+  //   Map result = await _channel.invokeMethod(ChatMethodKeys.uploadLog);
   //   EMError.hasErrorFromResult(result);
   //   return true;
   // }
@@ -181,10 +171,10 @@ class EMClient {
   /// 返回日志路径
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
-    Map result = await _channel.invokeMethod(EMSDKMethod.compressLogs);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.compressLogs);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.compressLogs];
+      return result[ChatMethodKeys.compressLogs];
     } on EMError catch (e) {
       throw e;
     }
@@ -197,11 +187,11 @@ class EMClient {
     EMLog.v('getLoggedInDevicesFromServer: $username, "******"');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.getLoggedInDevicesFromServer, req);
+        ChatMethodKeys.getLoggedInDevicesFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMDeviceInfo> list = [];
-      result[EMSDKMethod.getLoggedInDevicesFromServer]?.forEach((info) {
+      result[ChatMethodKeys.getLoggedInDevicesFromServer]?.forEach((info) {
         list.add(EMDeviceInfo.fromJson(info));
       });
       return list;
@@ -222,10 +212,10 @@ class EMClient {
       'password': password,
       'resource': resource
     };
-    Map result = await _channel.invokeMethod(EMSDKMethod.kickDevice, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.kickDevice, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.kickDevice);
+      return result.boolValue(ChatMethodKeys.kickDevice);
     } on EMError catch (e) {
       throw e;
     }
@@ -237,10 +227,11 @@ class EMClient {
       {required String username, required String password}) async {
     EMLog.v('kickAllDevices: $username, "******"');
     Map req = {'username': username, 'password': password};
-    Map result = await _channel.invokeMethod(EMSDKMethod.kickAllDevices, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.kickAllDevices, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.kickAllDevices);
+      return result.boolValue(ChatMethodKeys.kickAllDevices);
     } on EMError catch (e) {
       throw e;
     }

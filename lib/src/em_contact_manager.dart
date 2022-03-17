@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import '../im_flutter_sdk.dart';
+import 'chat_method_keys.dart';
 
 class EMContactManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -12,7 +14,7 @@ class EMContactManager {
   EMContactManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
-      if (call.method == EMSDKMethod.onContactChanged) {
+      if (call.method == ChatMethodKeys.onContactChanged) {
         return _onContactChanged(argMap!);
       }
       return null;
@@ -54,10 +56,10 @@ class EMContactManager {
     String reason = '',
   ]) async {
     Map req = {'username': username, 'reason': reason};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addContact, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.addContact, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.addContact];
+      return result[ChatMethodKeys.addContact];
     } on EMError catch (e) {
       throw e;
     }
@@ -70,10 +72,10 @@ class EMContactManager {
     bool keepConversation = false,
   ]) async {
     Map req = {'username': username, 'keepConversation': keepConversation};
-    Map result = await _channel.invokeMethod(EMSDKMethod.deleteContact, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.deleteContact, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.deleteContact];
+      return result[ChatMethodKeys.deleteContact];
     } on EMError catch (e) {
       throw e;
     }
@@ -82,11 +84,11 @@ class EMContactManager {
   /// 从服务器获取所有的好友
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getAllContactsFromServer);
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<String> contacts = [];
-      result[EMSDKMethod.getAllContactsFromServer]?.forEach((element) {
+      result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
         // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
         contacts.add(element);
       });
@@ -98,11 +100,12 @@ class EMContactManager {
 
   /// 从本地获取所有的好友
   Future<List<String>> getAllContactsFromDB() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getAllContactsFromDB);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
     try {
       EMError.hasErrorFromResult(result);
       List<String> contacts = [];
-      result[EMSDKMethod.getAllContactsFromDB]?.forEach((element) {
+      result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
         // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
         contacts.add(element);
       });
@@ -119,10 +122,10 @@ class EMContactManager {
   ) async {
     Map req = {'username': username};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.addUserToBlockList, req);
+        await _channel.invokeMethod(ChatMethodKeys.addUserToBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.addUserToBlockList];
+      return result[ChatMethodKeys.addUserToBlockList];
     } on EMError catch (e) {
       throw e;
     }
@@ -131,11 +134,11 @@ class EMContactManager {
   /// 把用户从黑名单中移除 [username].
   Future<String?> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.removeUserFromBlockList, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.removeUserFromBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.removeUserFromBlockList];
+      return result[ChatMethodKeys.removeUserFromBlockList];
     } on EMError catch (e) {
       throw e;
     }
@@ -144,11 +147,11 @@ class EMContactManager {
   /// 从服务器获取黑名单列表
   Future<List<String>> getBlockListFromServer() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getBlockListFromServer);
+        await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<String> blockList = [];
-      result[EMSDKMethod.getBlockListFromServer]?.forEach((element) {
+      result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
         // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
         blockList.add(element);
       });
@@ -160,11 +163,11 @@ class EMContactManager {
 
   /// 从本地数据库中获取黑名单列表
   Future<List<String>> getBlockListFromDB() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getBlockListFromDB);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
     try {
       EMError.hasErrorFromResult(result);
       List<String> blockList = [];
-      result[EMSDKMethod.getBlockListFromDB]?.forEach((element) {
+      result[ChatMethodKeys.getBlockListFromDB]?.forEach((element) {
         blockList.add(element);
       });
       return blockList;
@@ -176,10 +179,11 @@ class EMContactManager {
   /// 接受加好友的邀请[username].
   Future<String?> acceptInvitation(String username) async {
     Map req = {'username': username};
-    Map result = await _channel.invokeMethod(EMSDKMethod.acceptInvitation, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.acceptInvitation, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.acceptInvitation];
+      return result[ChatMethodKeys.acceptInvitation];
     } on EMError catch (e) {
       throw e;
     }
@@ -189,10 +193,10 @@ class EMContactManager {
   Future<String?> declineInvitation(String username) async {
     Map req = {'username': username};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.declineInvitation, req);
+        await _channel.invokeMethod(ChatMethodKeys.declineInvitation, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.declineInvitation];
+      return result[ChatMethodKeys.declineInvitation];
     } on EMError catch (e) {
       throw e;
     }
@@ -201,11 +205,11 @@ class EMContactManager {
   /// 从服务器获取登录用户在其他设备上登录的ID
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getSelfIdsOnOtherPlatform);
+        await _channel.invokeMethod(ChatMethodKeys.getSelfIdsOnOtherPlatform);
     try {
       EMError.hasErrorFromResult(result);
       List<String>? devices =
-          result[EMSDKMethod.getSelfIdsOnOtherPlatform]?.cast<String>();
+          result[ChatMethodKeys.getSelfIdsOnOtherPlatform]?.cast<String>();
       return devices;
     } on EMError catch (e) {
       throw e;

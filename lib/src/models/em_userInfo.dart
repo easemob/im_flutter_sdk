@@ -1,5 +1,4 @@
 //用户属性类型
-
 enum EMUserInfoType {
   NickName,
   AvatarURL,
