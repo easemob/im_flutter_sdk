@@ -1,4 +1,4 @@
-import 'em_domain_terms.dart';
+import '../tools/em_extension.dart';
 
 class EMOptions {
   /// 环信 appKey, 必须设置。
