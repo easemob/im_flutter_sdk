@@ -6,9 +6,9 @@ import '../im_flutter_sdk.dart';
 import 'chat_method_keys.dart';
 
 class EMChatManager implements EMMessageStatusListener {
-  static const _channelPrefix = 'com.easemob.im';
+  static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel =
-      const MethodChannel('$_channelPrefix/em_chat_manager', JSONMethodCodec());
+      const MethodChannel('$_channelPrefix/chat_manager', JSONMethodCodec());
 
   final List<EMChatManagerListener> _messageListeners = [];
 

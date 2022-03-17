@@ -5,9 +5,9 @@ import 'chat_method_keys.dart';
 import '../im_flutter_sdk.dart';
 
 class EMChatRoomManager {
-  static const _channelPrefix = 'com.easemob.im';
+  static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
-      '$_channelPrefix/em_chat_room_manager', JSONMethodCodec());
+      '$_channelPrefix/chat_room_manager', JSONMethodCodec());
 
   EMChatRoomManager() {
     _channel.setMethodCallHandler((MethodCall call) async {

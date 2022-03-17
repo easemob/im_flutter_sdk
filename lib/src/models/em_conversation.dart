@@ -93,7 +93,7 @@ class EMConversation {
 
 extension EMConversationExtension on EMConversation {
   static const MethodChannel _emConversationChannel =
-      const MethodChannel('com.easemob.im/em_conversation', JSONMethodCodec());
+      const MethodChannel('com.chat.im/chat_conversation', JSONMethodCodec());
 
   int? get unreadCount {
     return _unreadCount;
