@@ -1,4 +1,4 @@
-class EMSDKMethod {
+class ChatMethodKeys {
   /// EMClient methods
   static const String init = 'init';
   static const String createAccount = 'createAccount';

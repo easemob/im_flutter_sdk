@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
-import 'models/em_domain_terms.dart';
+import 'tools/em_extension.dart';
+import 'chat_method_keys.dart';
+import 'models/em_error.dart';
+import 'models/em_push_config.dart';
 
 class EMPushManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -11,10 +14,10 @@ class EMPushManager {
 
   /// 从本地获取ImPushConfig
   Future<EMImPushConfig> getImPushConfig() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getImPushConfig);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
     try {
       EMError.hasErrorFromResult(result);
-      return EMImPushConfig.fromJson(result[EMSDKMethod.getImPushConfig]);
+      return EMImPushConfig.fromJson(result[ChatMethodKeys.getImPushConfig]);
     } on EMError catch (e) {
       throw e;
     }
@@ -23,11 +26,11 @@ class EMPushManager {
   /// 从服务器获取ImPushConfig
   Future<EMImPushConfig> getImPushConfigFromServer() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getImPushConfigFromServer);
+        await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
     try {
       EMError.hasErrorFromResult(result);
       return EMImPushConfig.fromJson(
-          result[EMSDKMethod.getImPushConfigFromServer]);
+          result[ChatMethodKeys.getImPushConfigFromServer]);
     } on EMError catch (e) {
       throw e;
     }
@@ -37,10 +40,10 @@ class EMPushManager {
   Future<bool> updatePushNickname(String nickname) async {
     Map req = {'nickname': nickname};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updatePushNickname, req);
+        await _channel.invokeMethod(ChatMethodKeys.updatePushNickname, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.updatePushNickname);
+      return result.boolValue(ChatMethodKeys.updatePushNickname);
     } on EMError catch (e) {
       throw e;
     }
@@ -51,10 +54,10 @@ class EMPushManager {
     if (Platform.isAndroid) {
       Map req = {'token': token};
       Map result =
-          await _channel.invokeMethod(EMSDKMethod.updateHMSPushToken, req);
+          await _channel.invokeMethod(ChatMethodKeys.updateHMSPushToken, req);
       try {
         EMError.hasErrorFromResult(result);
-        return result.boolValue(EMSDKMethod.updateHMSPushToken);
+        return result.boolValue(ChatMethodKeys.updateHMSPushToken);
       } on EMError catch (e) {
         throw e;
       }
@@ -67,10 +70,10 @@ class EMPushManager {
     if (Platform.isAndroid) {
       Map req = {'token': token};
       Map result =
-          await _channel.invokeMethod(EMSDKMethod.updateFCMPushToken, req);
+          await _channel.invokeMethod(ChatMethodKeys.updateFCMPushToken, req);
       try {
         EMError.hasErrorFromResult(result);
-        return result.boolValue(EMSDKMethod.updateFCMPushToken);
+        return result.boolValue(ChatMethodKeys.updateFCMPushToken);
       } on EMError catch (e) {
         throw e;
       }
@@ -83,7 +86,7 @@ class EMPushManager {
     if (Platform.isIOS) {
       Map req = {'token': token};
       Map result =
-          await _channel.invokeMethod(EMSDKMethod.updateAPNsPushToken, req);
+          await _channel.invokeMethod(ChatMethodKeys.updateAPNsPushToken, req);
       try {
         EMError.hasErrorFromResult(result);
         return true;

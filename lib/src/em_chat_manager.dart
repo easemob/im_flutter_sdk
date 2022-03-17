@@ -1,7 +1,9 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'tools/em_extension.dart';
+import '../im_flutter_sdk.dart';
+import 'chat_method_keys.dart';
 
 class EMChatManager implements EMMessageStatusListener {
   static const _channelPrefix = 'com.easemob.im';
@@ -12,21 +14,21 @@ class EMChatManager implements EMMessageStatusListener {
 
   EMChatManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
-      if (call.method == EMSDKMethod.onMessagesReceived) {
+      if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
-      } else if (call.method == EMSDKMethod.onCmdMessagesReceived) {
+      } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {
         return _onCmdMessagesReceived(call.arguments);
-      } else if (call.method == EMSDKMethod.onMessagesRead) {
+      } else if (call.method == ChatMethodKeys.onMessagesRead) {
         return _onMessagesRead(call.arguments);
-      } else if (call.method == EMSDKMethod.onGroupMessageRead) {
+      } else if (call.method == ChatMethodKeys.onGroupMessageRead) {
         return _onGroupMessageRead(call.arguments);
-      } else if (call.method == EMSDKMethod.onMessagesDelivered) {
+      } else if (call.method == ChatMethodKeys.onMessagesDelivered) {
         return _onMessagesDelivered(call.arguments);
-      } else if (call.method == EMSDKMethod.onMessagesRecalled) {
+      } else if (call.method == ChatMethodKeys.onMessagesRecalled) {
         return _onMessagesRecalled(call.arguments);
-      } else if (call.method == EMSDKMethod.onConversationUpdate) {
+      } else if (call.method == ChatMethodKeys.onConversationUpdate) {
         return _onConversationsUpdate(call.arguments);
-      } else if (call.method == EMSDKMethod.onConversationHasRead) {
+      } else if (call.method == ChatMethodKeys.onConversationHasRead) {
         return _onConversationHasRead(call.arguments);
       }
       return null;
@@ -39,11 +41,11 @@ class EMChatManager implements EMMessageStatusListener {
       message.listener = this;
     }
     message.status = EMMessageStatus.PROGRESS;
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.sendMessage, message.toJson());
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.sendMessage, message.toJson());
     try {
       EMError.hasErrorFromResult(result);
-      EMMessage msg = EMMessage.fromJson(result[EMSDKMethod.sendMessage]);
+      EMMessage msg = EMMessage.fromJson(result[ChatMethodKeys.sendMessage]);
       message.from = msg.from;
       message.to = msg.to;
       message.status = msg.status;
@@ -60,10 +62,10 @@ class EMChatManager implements EMMessageStatusListener {
     }
     message.status = EMMessageStatus.PROGRESS;
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.resendMessage, message.toJson());
+        ChatMethodKeys.resendMessage, message.toJson());
     try {
       EMError.hasErrorFromResult(result);
-      EMMessage msg = EMMessage.fromJson(result[EMSDKMethod.resendMessage]);
+      EMMessage msg = EMMessage.fromJson(result[ChatMethodKeys.resendMessage]);
       message.from = msg.from;
       message.to = msg.to;
       message.status = msg.status;
@@ -76,10 +78,11 @@ class EMChatManager implements EMMessageStatusListener {
   /// 发送消息已读 [message].
   Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.ackMessageRead, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.ackMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.ackMessageRead);
+      return result.boolValue(ChatMethodKeys.ackMessageRead);
     } on EMError catch (e) {
       throw e;
     }
@@ -98,10 +101,10 @@ class EMChatManager implements EMMessageStatusListener {
       req["content"] = content;
     }
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.ackGroupMessageRead, req);
+        await _channel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.ackMessageRead);
+      return result.boolValue(ChatMethodKeys.ackMessageRead);
     } on EMError catch (e) {
       throw e;
     }
@@ -111,10 +114,10 @@ class EMChatManager implements EMMessageStatusListener {
   Future<bool> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.ackConversationRead, req);
+        await _channel.invokeMethod(ChatMethodKeys.ackConversationRead, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.ackConversationRead);
+      return result.boolValue(ChatMethodKeys.ackConversationRead);
     } on EMError catch (e) {
       throw e;
     }
@@ -123,10 +126,10 @@ class EMChatManager implements EMMessageStatusListener {
   /// 撤回发送的消息(增值服务), 默认时效为2分钟，超过2分钟无法撤回.
   Future<bool> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.recallMessage, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.recallMessage, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.recallMessage);
+      return result.boolValue(ChatMethodKeys.recallMessage);
     } on EMError catch (e) {
       throw e;
     }
@@ -136,10 +139,10 @@ class EMChatManager implements EMMessageStatusListener {
   Future<EMMessage> loadMessage(String messageId) async {
     Map req = {"msg_id": messageId};
     Map<String, dynamic> result =
-        await _channel.invokeMethod(EMSDKMethod.getMessage, req);
+        await _channel.invokeMethod(ChatMethodKeys.getMessage, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMMessage.fromJson(result[EMSDKMethod.getMessage]);
+      return EMMessage.fromJson(result[ChatMethodKeys.getMessage]);
     } on EMError catch (e) {
       throw e;
     }
@@ -156,12 +159,13 @@ class EMChatManager implements EMMessageStatusListener {
       "type": EMConversation.typeToInt(type),
       "createIfNeed": createIfNeed
     };
-    Map result = await _channel.invokeMethod(EMSDKMethod.getConversation, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getConversation, req);
     try {
       EMError.hasErrorFromResult(result);
       EMConversation? ret;
-      if (result[EMSDKMethod.getConversation] != null) {
-        ret = EMConversation.fromJson(result[EMSDKMethod.getConversation]);
+      if (result[ChatMethodKeys.getConversation] != null) {
+        ret = EMConversation.fromJson(result[ChatMethodKeys.getConversation]);
       }
       return ret;
     } on EMError catch (e) {
@@ -171,10 +175,11 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 将所有对话标记为已读.
   Future<bool> markAllConversationsAsRead() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.markAllChatMsgAsRead);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.markAllChatMsgAsRead);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.markAllChatMsgAsRead);
+      return result.boolValue(ChatMethodKeys.markAllChatMsgAsRead);
     } on EMError catch (e) {
       throw e;
     }
@@ -182,10 +187,11 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 获取未读消息的计数.
   Future<int?> getUnreadMessageCount() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getUnreadMessageCount);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getUnreadMessageCount);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.getUnreadMessageCount] as int?;
+      return result[ChatMethodKeys.getUnreadMessageCount] as int?;
     } on EMError catch (e) {
       throw e;
     }
@@ -195,10 +201,10 @@ class EMChatManager implements EMMessageStatusListener {
   Future<EMMessage> updateMessage(EMMessage message) async {
     Map req = {"message": message.toJson()};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.updateChatMessage, req);
+        await _channel.invokeMethod(ChatMethodKeys.updateChatMessage, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMMessage.fromJson(result[EMSDKMethod.updateChatMessage]);
+      return EMMessage.fromJson(result[ChatMethodKeys.updateChatMessage]);
     } on EMError catch (e) {
       throw e;
     }
@@ -211,10 +217,11 @@ class EMChatManager implements EMMessageStatusListener {
       list.add(element.toJson());
     });
     Map req = {"messages": list};
-    Map result = await _channel.invokeMethod(EMSDKMethod.importMessages, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.importMessages, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.importMessages);
+      return result.boolValue(ChatMethodKeys.importMessages);
     } on EMError catch (e) {
       throw e;
     }
@@ -223,10 +230,10 @@ class EMChatManager implements EMMessageStatusListener {
   /// 下载附件 [message].
   Future<EMMessage> downloadAttachment(EMMessage message) async {
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.downloadAttachment, {"message": message.toJson()});
+        ChatMethodKeys.downloadAttachment, {"message": message.toJson()});
     try {
       EMError.hasErrorFromResult(result);
-      return EMMessage.fromJson(result[EMSDKMethod.downloadAttachment]);
+      return EMMessage.fromJson(result[ChatMethodKeys.downloadAttachment]);
     } on EMError catch (e) {
       throw e;
     }
@@ -235,10 +242,10 @@ class EMChatManager implements EMMessageStatusListener {
   /// 下载缩略图 [message].
   Future<EMMessage> downloadThumbnail(EMMessage message) async {
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.downloadThumbnail, {"message": message.toJson()});
+        ChatMethodKeys.downloadThumbnail, {"message": message.toJson()});
     try {
       EMError.hasErrorFromResult(result);
-      return EMMessage.fromJson(result[EMSDKMethod.downloadThumbnail]);
+      return EMMessage.fromJson(result[ChatMethodKeys.downloadThumbnail]);
     } on EMError catch (e) {
       throw e;
     }
@@ -246,11 +253,12 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 获取所有会话
   Future<List<EMConversation>> loadAllConversations() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.loadAllConversations);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.loadAllConversations);
     try {
       EMError.hasErrorFromResult(result);
       List<EMConversation> conversationList = [];
-      result[EMSDKMethod.loadAllConversations]?.forEach((element) {
+      result[ChatMethodKeys.loadAllConversations]?.forEach((element) {
         conversationList.add(EMConversation.fromJson(element));
       });
       return conversationList;
@@ -262,11 +270,11 @@ class EMChatManager implements EMMessageStatusListener {
   /// 从服务器获取会话
   Future<List<EMConversation>> getConversationsFromServer() async {
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.getConversationsFromServer);
+        await _channel.invokeMethod(ChatMethodKeys.getConversationsFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<EMConversation> conversationList = [];
-      result[EMSDKMethod.getConversationsFromServer]?.forEach((element) {
+      result[ChatMethodKeys.getConversationsFromServer]?.forEach((element) {
         conversationList.add(EMConversation.fromJson(element));
       });
       return conversationList;
@@ -279,9 +287,9 @@ class EMChatManager implements EMMessageStatusListener {
   // Future<bool> updateConversationsName(Map<String, String> nameMap) async {
   //   Map req = {"name_map": nameMap};
   //   Map result =
-  //       await _channel.invokeMethod(EMSDKMethod.updateConversationsName, req);
+  //       await _channel.invokeMethod(ChatMethodKeys.updateConversationsName, req);
   //   EMError.hasErrorFromResult(result);
-  //   return result.boolValue(EMSDKMethod.updateConversationsName);
+  //   return result.boolValue(ChatMethodKeys.updateConversationsName);
   // }
 
   /// 删除会话, 如果[deleteMessages]设置为true，则同时删除消息。
@@ -291,10 +299,10 @@ class EMChatManager implements EMMessageStatusListener {
   ]) async {
     Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.deleteConversation, req);
+        await _channel.invokeMethod(ChatMethodKeys.deleteConversation, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(EMSDKMethod.deleteConversation);
+      return result.boolValue(ChatMethodKeys.deleteConversation);
     } on EMError catch (e) {
       throw e;
     }
@@ -326,11 +334,12 @@ class EMChatManager implements EMMessageStatusListener {
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchHistoryMessages, req);
+        await _channel.invokeMethod(ChatMethodKeys.fetchHistoryMessages, req);
     try {
       EMError.hasErrorFromResult(result);
       return EMCursorResult<EMMessage?>.fromJson(
-          result[EMSDKMethod.fetchHistoryMessages], dataItemCallback: (value) {
+          result[ChatMethodKeys.fetchHistoryMessages],
+          dataItemCallback: (value) {
         return EMMessage.fromJson(value);
       });
     } on EMError catch (e) {
@@ -354,11 +363,11 @@ class EMChatManager implements EMMessageStatusListener {
     req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.searchChatMsgFromDB, req);
+        await _channel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMMessage> list = [];
-      result[EMSDKMethod.searchChatMsgFromDB]?.forEach((element) {
+      result[ChatMethodKeys.searchChatMsgFromDB]?.forEach((element) {
         list.add(EMMessage.fromJson(element));
       });
       return list;
@@ -384,12 +393,12 @@ class EMChatManager implements EMMessageStatusListener {
     req["pageSize"] = pageSize;
 
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.asyncFetchGroupAcks, req);
+        await _channel.invokeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
 
     try {
       EMError.hasErrorFromResult(result);
       EMCursorResult<EMGroupMessageAck?> cursorResult = EMCursorResult.fromJson(
-        result[EMSDKMethod.asyncFetchGroupAcks],
+        result[ChatMethodKeys.asyncFetchGroupAcks],
         dataItemCallback: (map) {
           return EMGroupMessageAck.fromJson(map);
         },

@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
+import '../../src/tools/em_extension.dart';
 
 enum EMChatRoomPermissionType {
   None,

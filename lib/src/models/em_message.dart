@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import '../tools/em_extension.dart';
+import '../../im_flutter_sdk.dart';
+import '../chat_method_keys.dart';
 
 // 消息类型
 enum EMMessageChatType {
@@ -80,17 +82,17 @@ class MessageCallBackManager {
       if (msg == null) {
         return null;
       }
-      if (call.method == EMSDKMethod.onMessageProgressUpdate) {
+      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
         return msg._onMessageProgressChanged(argMap);
-      } else if (call.method == EMSDKMethod.onMessageError) {
+      } else if (call.method == ChatMethodKeys.onMessageError) {
         return msg._onMessageError(argMap);
-      } else if (call.method == EMSDKMethod.onMessageSuccess) {
+      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
         return msg._onMessageSuccess(argMap);
-      } else if (call.method == EMSDKMethod.onMessageReadAck) {
+      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
         return msg._onMessageReadAck(argMap);
-      } else if (call.method == EMSDKMethod.onMessageDeliveryAck) {
+      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
         return msg._onMessageDeliveryAck(argMap);
-      } else if (call.method == EMSDKMethod.onMessageStatusChanged) {
+      } else if (call.method == ChatMethodKeys.onMessageStatusChanged) {
         return msg._onMessageStatusChanged(argMap);
       }
       return null;

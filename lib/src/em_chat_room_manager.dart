@@ -1,8 +1,8 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/src/models/em_domain_terms.dart';
-import "em_listeners.dart";
+import 'chat_method_keys.dart';
+import '../im_flutter_sdk.dart';
 
 class EMChatRoomManager {
   static const _channelPrefix = 'com.easemob.im';
@@ -12,7 +12,7 @@ class EMChatRoomManager {
   EMChatRoomManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
-      if (call.method == EMSDKMethod.chatRoomChange) {
+      if (call.method == ChatMethodKeys.chatRoomChange) {
         return _chatRoomChange(argMap!);
       }
       return null;
@@ -114,7 +114,7 @@ class EMChatRoomManager {
   /// 加入聊天室[roomId].
   Future<void> joinChatRoom(String roomId) async {
     Map result = await _channel
-        .invokeMethod(EMSDKMethod.joinChatRoom, {"roomId": roomId});
+        .invokeMethod(ChatMethodKeys.joinChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -125,7 +125,7 @@ class EMChatRoomManager {
   /// 离开聊天室[roomId].
   Future<void> leaveChatRoom(String roomId) async {
     Map result = await _channel
-        .invokeMethod(EMSDKMethod.leaveChatRoom, {"roomId": roomId});
+        .invokeMethod(ChatMethodKeys.leaveChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -139,12 +139,12 @@ class EMChatRoomManager {
     int pageSize = 200,
   }) async {
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.fetchPublicChatRoomsFromServer,
+        ChatMethodKeys.fetchPublicChatRoomsFromServer,
         {"pageNum": pageNum, "pageSize": pageSize});
     try {
       EMError.hasErrorFromResult(result);
       return EMPageResult<EMChatRoom>.fromJson(
-          result[EMSDKMethod.fetchPublicChatRoomsFromServer],
+          result[ChatMethodKeys.fetchPublicChatRoomsFromServer],
           dataItemCallback: (map) {
         return EMChatRoom.fromJson(map);
       });
@@ -156,11 +156,11 @@ class EMChatRoomManager {
   /// 获取聊天室详情[roomId].
   Future<EMChatRoom> fetchChatRoomInfoFromServer(String roomId) async {
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.fetchChatRoomInfoFromServer, {"roomId": roomId});
+        ChatMethodKeys.fetchChatRoomInfoFromServer, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
       return EMChatRoom.fromJson(
-          result[EMSDKMethod.fetchChatRoomInfoFromServer]);
+          result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
     } on EMError catch (e) {
       throw e;
     }
@@ -169,11 +169,11 @@ class EMChatRoomManager {
   /// 从本地获取聊天室 [roomId].
   Future<EMChatRoom> getChatRoomWithId(String roomId) async {
     Map result = await _channel
-        .invokeMethod(EMSDKMethod.getChatRoom, {"roomId": roomId});
+        .invokeMethod(ChatMethodKeys.getChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
       return EMChatRoom.fromJson(
-          result[EMSDKMethod.fetchChatRoomInfoFromServer]);
+          result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
     } on EMError catch (e) {
       throw e;
     }
@@ -181,11 +181,11 @@ class EMChatRoomManager {
 
   /// 获取所有聊天室
   Future<List<EMChatRoom>> getAllChatRooms() async {
-    Map result = await _channel.invokeMethod(EMSDKMethod.getAllChatRooms);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getAllChatRooms);
     try {
       EMError.hasErrorFromResult(result);
       List<EMChatRoom> list = [];
-      result[EMSDKMethod.getAllChatRooms]
+      result[ChatMethodKeys.getAllChatRooms]
           ?.forEach((element) => list.add(EMChatRoom.fromJson(element)));
       return list;
     } on EMError catch (e) {
@@ -206,10 +206,11 @@ class EMChatRoomManager {
     req['welcomeMsg'] = welcomeMsg;
     req['maxUserCount'] = maxUserCount;
     req['members'] = members;
-    Map result = await _channel.invokeMethod(EMSDKMethod.createChatRoom, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.createChatRoom, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMChatRoom.fromJson(result[EMSDKMethod.createChatRoom]);
+      return EMChatRoom.fromJson(result[ChatMethodKeys.createChatRoom]);
     } on EMError catch (e) {
       throw e;
     }
@@ -220,7 +221,8 @@ class EMChatRoomManager {
     String roomId,
   ) async {
     Map req = {"roomId": roomId};
-    Map result = await _channel.invokeMethod(EMSDKMethod.destroyChatRoom, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.destroyChatRoom, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -235,7 +237,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "subject": subject};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.changeChatRoomSubject, req);
+        await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -249,8 +251,8 @@ class EMChatRoomManager {
     String description,
   ) async {
     Map req = {"roomId": roomId, "description": description};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.changeChatRoomDescription, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.changeChatRoomDescription, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -266,11 +268,11 @@ class EMChatRoomManager {
   }) async {
     Map req = {"roomId": roomId, "cursor": cursor, "pageSize": pageSize};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMembers, req);
+        await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
       return EMCursorResult<String?>.fromJson(
-          result[EMSDKMethod.fetchChatRoomMembers],
+          result[ChatMethodKeys.fetchChatRoomMembers],
           dataItemCallback: (obj) => obj);
     } on EMError catch (e) {
       throw e;
@@ -290,7 +292,7 @@ class EMChatRoomManager {
       "duration": duration
     };
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.muteChatRoomMembers, req);
+        await _channel.invokeMethod(ChatMethodKeys.muteChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -305,7 +307,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "unMuteMembers": unMuteMembers};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.unMuteChatRoomMembers, req);
+        await _channel.invokeMethod(ChatMethodKeys.unMuteChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -321,7 +323,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "newOwner": newOwner};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.changeChatRoomOwner, req);
+        await _channel.invokeMethod(ChatMethodKeys.changeChatRoomOwner, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -336,7 +338,8 @@ class EMChatRoomManager {
     String admin,
   ) async {
     Map req = {"roomId": roomId, "admin": admin};
-    Map result = await _channel.invokeMethod(EMSDKMethod.addChatRoomAdmin, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.addChatRoomAdmin, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -352,7 +355,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "admin": admin};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.removeChatRoomAdmin, req);
+        await _channel.invokeMethod(ChatMethodKeys.removeChatRoomAdmin, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -368,10 +371,10 @@ class EMChatRoomManager {
   }) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchChatRoomMuteList, req);
+        await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMuteList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.fetchChatRoomMuteList]?.cast<String>();
+      return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>();
     } on EMError catch (e) {
       throw e;
     }
@@ -384,7 +387,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.removeChatRoomMembers, req);
+        await _channel.invokeMethod(ChatMethodKeys.removeChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -399,7 +402,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.blockChatRoomMembers, req);
+        await _channel.invokeMethod(ChatMethodKeys.blockChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -414,7 +417,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.unBlockChatRoomMembers, req);
+        await _channel.invokeMethod(ChatMethodKeys.unBlockChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -430,10 +433,10 @@ class EMChatRoomManager {
   ]) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchChatRoomBlockList, req);
+        await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.fetchChatRoomBlockList]?.cast<String>();
+      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>();
     } on EMError catch (e) {
       throw e;
     }
@@ -446,7 +449,7 @@ class EMChatRoomManager {
   ) async {
     Map req = {"roomId": roomId, "announcement": announcement};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.updateChatRoomAnnouncement, req);
+        ChatMethodKeys.updateChatRoomAnnouncement, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -459,11 +462,11 @@ class EMChatRoomManager {
     String roomId,
   ) async {
     Map req = {"roomId": roomId};
-    Map result =
-        await _channel.invokeMethod(EMSDKMethod.fetchChatRoomAnnouncement, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchChatRoomAnnouncement, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[EMSDKMethod.fetchChatRoomAnnouncement];
+      return result[ChatMethodKeys.fetchChatRoomAnnouncement];
     } on EMError catch (e) {
       throw e;
     }
@@ -474,10 +477,10 @@ class EMChatRoomManager {
   Future<List<String>> fetchChatRoomWhiteListFromServer(String roomId) async {
     Map req = {"roomId": roomId};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.fetchChatRoomWhiteListFromServer, req);
+        ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
     List<String> contacts = [];
-    result[EMSDKMethod.fetchChatRoomWhiteListFromServer]?.forEach((element) {
+    result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]?.forEach((element) {
       contacts.add(element);
     });
     return contacts;
@@ -487,9 +490,9 @@ class EMChatRoomManager {
   Future<bool> isMemberInChatRoomWhiteList(String roomId) async {
     Map req = {"roomId": roomId};
     Map result = await _channel.invokeMethod(
-        EMSDKMethod.isMemberInChatRoomWhiteListFromServer, req);
+        ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
     EMError.hasErrorFromResult(result);
-    return result.boolValue(EMSDKMethod.isMemberInChatRoomWhiteListFromServer);
+    return result.boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
   }
 
   /// 向聊天室白名单中添加用户[roomId]: 聊天室id, [members]: 需要添加到聊天室的用户id。
@@ -500,14 +503,14 @@ class EMChatRoomManager {
       "members": members,
     };
     Map result = await _channel.invokeMethod(
-      EMSDKMethod.addMembersToChatRoomWhiteList,
+      ChatMethodKeys.addMembersToChatRoomWhiteList,
       req,
     );
 
     EMError.hasErrorFromResult(result);
 
     return EMChatRoom.fromJson(
-        result[EMSDKMethod.addMembersToChatRoomWhiteList]);
+        result[ChatMethodKeys.addMembersToChatRoomWhiteList]);
   }
 
   /// 从聊天室中移除白名单成员,[roomId]: 聊天室id, [members]: 需要移除的用户列表。
@@ -520,14 +523,14 @@ class EMChatRoomManager {
       "members": members,
     };
     Map result = await _channel.invokeMethod(
-      EMSDKMethod.addMembersToChatRoomWhiteList,
+      ChatMethodKeys.addMembersToChatRoomWhiteList,
       req,
     );
 
     EMError.hasErrorFromResult(result);
 
     return EMChatRoom.fromJson(
-        result[EMSDKMethod.removeMembersFromChatRoomWhiteList]);
+        result[ChatMethodKeys.removeMembersFromChatRoomWhiteList]);
   }
 
   Future<bool> muteAllChatRoomMembers(String roomId) async {
