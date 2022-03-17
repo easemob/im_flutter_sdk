@@ -304,13 +304,13 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 //    }
 
     private void bindingManagers() {
-        new EMChatManagerWrapper(binging, "em_chat_manager");
-        new EMContactManagerWrapper(binging, "em_contact_manager");
-        new EMChatRoomManagerWrapper(binging, "em_chat_room_manager");
-        new EMGroupManagerWrapper(binging, "em_group_manager");
-        new EMConversationWrapper(binging, "em_conversation");
-        new EMPushManagerWrapper(binging, "em_push_manager");
-        new EMUserInfoManagerWrapper(binging, "em_userInfo_manager");
+        new EMChatManagerWrapper(binging, "chat_manager");
+        new EMContactManagerWrapper(binging, "chat_contact_manager");
+        new EMChatRoomManagerWrapper(binging, "chat_room_manager");
+        new EMGroupManagerWrapper(binging, "chat_group_manager");
+        new EMConversationWrapper(binging, "chat_conversation");
+        new EMPushManagerWrapper(binging, "chat_push_manager");
+        new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
     }
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);

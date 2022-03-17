@@ -10,9 +10,9 @@ import 'tools/em_extension.dart';
 import 'chat_method_keys.dart';
 
 class EMGroupManager {
-  static const _channelPrefix = 'com.easemob.im';
+  static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
-      '$_channelPrefix/em_group_manager', JSONMethodCodec());
+      '$_channelPrefix/chat_group_manager', JSONMethodCodec());
 
   EMGroupManager() {
     _channel.setMethodCallHandler((MethodCall call) async {

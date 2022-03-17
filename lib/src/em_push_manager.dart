@@ -8,9 +8,9 @@ import 'models/em_error.dart';
 import 'models/em_push_config.dart';
 
 class EMPushManager {
-  static const _channelPrefix = 'com.easemob.im';
-  static const MethodChannel _channel =
-      const MethodChannel('$_channelPrefix/em_push_manager', JSONMethodCodec());
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _channel = const MethodChannel(
+      '$_channelPrefix/chat_push_manager', JSONMethodCodec());
 
   /// 从本地获取ImPushConfig
   Future<EMImPushConfig> getImPushConfig() async {

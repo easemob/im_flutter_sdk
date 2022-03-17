@@ -21,7 +21,7 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMWrapper implements MethodChannel.MethodCallHandler {
 
-  private static final String CHANNEL_PREFIX = "com.easemob.im/";
+  private static final String CHANNEL_PREFIX = "com.chat.im/";
 
   private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
