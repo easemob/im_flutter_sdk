@@ -7,9 +7,9 @@ import 'chat_method_keys.dart';
 import 'em_chat_room_manager.dart';
 
 class EMClient {
-  static const _channelPrefix = 'com.easemob.im';
+  static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel =
-      const MethodChannel('$_channelPrefix/em_client', JSONMethodCodec());
+      const MethodChannel('$_channelPrefix/chat_client', JSONMethodCodec());
   static EMClient? _instance;
   final EMChatManager _chatManager = EMChatManager();
   final EMContactManager _contactManager = EMContactManager();
