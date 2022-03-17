@@ -69,7 +69,7 @@ abstract class EMMessageStatusListener {
 class MessageCallBackManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _emMessageChannel =
-      const MethodChannel('$_channelPrefix/em_message', JSONMethodCodec());
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
   Map<String, EMMessage> cacheMessageMap = {};
   static MessageCallBackManager? _instance;
   static MessageCallBackManager get getInstance =>

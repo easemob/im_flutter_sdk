@@ -1,4 +1,4 @@
-import 'models/em_group.dart';
+import '../im_flutter_sdk.dart';
 
 abstract class EMConnectionListener {
   /// 网络已连接
@@ -324,4 +324,30 @@ abstract class EMGroupEventListener {
 
   /// 群组禁言状态发生变化
   void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
+}
+
+abstract class EMChatManagerListener {
+  /// 收到消息[messages]
+  void onMessagesReceived(List<EMMessage> messages) {}
+
+  /// 收到cmd消息[messages]
+  void onCmdMessagesReceived(List<EMMessage> messages) {}
+
+  /// 收到[messages]消息已读
+  void onMessagesRead(List<EMMessage> messages) {}
+
+  /// 收到[groupMessageAcks]群消息已读回调
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  /// 收到[messages]消息已送达
+  void onMessagesDelivered(List<EMMessage> messages) {}
+
+  /// 收到[messages]消息被撤回
+  void onMessagesRecalled(List<EMMessage> messages) {}
+
+  /// 会话列表变化
+  void onConversationsUpdate() {}
+
+  /// 会话已读`from`是已读的发送方, `to`是已读的接收方
+  void onConversationRead(String? from, String? to) {}
 }
