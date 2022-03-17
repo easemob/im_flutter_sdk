@@ -1,6 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'em_chat_manager.dart';
+import 'em_contact_manager.dart';
+import 'em_group_manager.dart';
+import 'em_push_manager.dart';
+import 'em_userInfo_manager.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'chat_method_keys.dart';

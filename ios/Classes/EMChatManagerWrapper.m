@@ -28,7 +28,7 @@
         [EMClient.sharedClient.chatManager addDelegate:self delegateQueue:nil];
         
         FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
-        self.messageChannel = [FlutterMethodChannel methodChannelWithName:@"com.easemob.im/em_message"
+        self.messageChannel = [FlutterMethodChannel methodChannelWithName:@"com.chat.im/chat_message"
                                                           binaryMessenger:[registrar messenger]
                                                                     codec:codec];
         

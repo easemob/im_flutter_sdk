@@ -39,7 +39,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     EMChatManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        messageChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
+        messageChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.chat.im/chat_message", JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
 
