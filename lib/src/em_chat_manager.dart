@@ -483,8 +483,8 @@ class EMChatManager implements EMMessageStatusListener {
 
   Future<void> _onConversationHasRead(dynamic obj) async {
     for (var listener in _messageListeners) {
-      String? from = (obj as Map)['from'];
-      String? to = obj['to'];
+      String from = (obj as Map)['from'];
+      String to = obj['to'];
       listener.onConversationRead(from, to);
     }
   }
