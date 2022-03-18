@@ -349,5 +349,5 @@ abstract class EMChatManagerListener {
   void onConversationsUpdate() {}
 
   /// 会话已读`from`是已读的发送方, `to`是已读的接收方
-  void onConversationRead(String? from, String? to) {}
+  void onConversationRead(String from, String to) {}
 }
