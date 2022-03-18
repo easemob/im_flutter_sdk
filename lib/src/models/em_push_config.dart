@@ -43,7 +43,7 @@ class EMImPushConfig {
 extension EMPushConfigExtension on EMImPushConfig {
   // channel的命名与pushManager中的channel一致，本质上还是一个channel。
   static const MethodChannel _channel =
-      const MethodChannel('com.easemob.im/em_push_manager', JSONMethodCodec());
+      const MethodChannel('com.chat.im/chat_push_manager', JSONMethodCodec());
 
   /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
   Future<bool> setNoDisturb(
