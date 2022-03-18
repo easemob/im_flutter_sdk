@@ -103,11 +103,17 @@ static EMClientWrapper *wrapper = nil;
     {
         [self isLoggedInBefore:call.arguments result:result];
     }
-    else if([EMMethodKeyCurrentUser isEqualToString:call.method])
+    else if([EMMethodKeyGetCurrentUser isEqualToString:call.method])
     {
         [self getCurrentUser:call.arguments result:result];
-    }else if([EMMethodKeyGetToken isEqualToString:call.method]){
+    }
+    else if([EMMethodKeyGetToken isEqualToString:call.method])
+    {
         [self getToken:call.arguments result:result];
+    }
+    else if([EMMethodKeyIsConnected isEqualToString:call.method])
+    {
+        [self isConnected:call.arguments result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -119,6 +125,14 @@ static EMClientWrapper *wrapper = nil;
                   channelName:EMMethodKeyGetToken
                         error:nil
                        object:EMClient.sharedClient.accessUserToken];
+}
+
+
+- (void)isConnected:(NSDictionary *)param result:(FlutterResult)result{
+    [self wrapperCallBack:result
+                  channelName:EMMethodKeyIsConnected
+                        error:nil
+                       object:@(EMClient.sharedClient.isConnected)];
 }
 
 #pragma mark - Actions
@@ -189,10 +203,7 @@ static EMClientWrapper *wrapper = nil;
             [weakSelf wrapperCallBack:result
                           channelName:EMMethodKeyLogin
                                 error:aError
-                               object:@{
-                                   @"username": aUsername,
-                                   @"token": EMClient.sharedClient.accessUserToken
-            }];
+                               object:EMClient.sharedClient.currentUsername];
         }];
     }else {
         [EMClient.sharedClient loginWithUsername:username
@@ -236,7 +247,7 @@ static EMClientWrapper *wrapper = nil;
     __weak typeof(self) weakSelf = self;
     NSString* username = EMClient.sharedClient.currentUsername;
     [weakSelf wrapperCallBack:result
-                  channelName:EMMethodKeyCurrentUser
+                  channelName:EMMethodKeyGetCurrentUser
                         error:nil
                        object:username];
 

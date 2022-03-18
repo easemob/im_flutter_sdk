@@ -199,10 +199,10 @@ class EMMessage {
   }
 
   /// 构造发送的文字消息
-  EMMessage.createTxtSendMessage(
-    String username,
-    String content,
-  ) : this.createSendMessage(
+  EMMessage.createTxtSendMessage({
+    required String username,
+    required String content,
+  }) : this.createSendMessage(
           to: username,
           body: EMTextMessageBody(content: content),
         );
