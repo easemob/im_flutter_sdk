@@ -55,11 +55,13 @@ class EMUserInfoManager {
   }
 
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 3600}) async {
-    if (EMClient.getInstance.currentUsername != null) {
+    String? currentUser = await EMClient.getInstance.getCurrentUsername();
+    if (currentUser != null) {
       try {
         Map<String, EMUserInfo> ret = await fetchUserInfoByIdWithExpireTime(
-            [EMClient.getInstance.currentUsername!],
-            expireTime: expireTime);
+          [currentUser],
+          expireTime: expireTime,
+        );
         _ownUserInfo = ret.values.first;
       } on EMError catch (e) {
         throw e;

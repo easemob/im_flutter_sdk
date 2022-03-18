@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class MePage extends StatefulWidget {
@@ -40,12 +41,6 @@ class MePageState extends State<MePage> {
                     ),
                     textAlign: TextAlign.left,
                   ),
-                  Text(
-                    EMClient.getInstance.flutterSDKVersion,
-                    style: TextStyle(
-                      fontSize: 14.0,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -58,7 +53,7 @@ class MePageState extends State<MePage> {
                         Colors.red,
                       ),
                     ),
-                    onPressed: _loggout,
+                    onPressed: _logout,
                     child: Text(
                       '退出[${EMClient.getInstance.currentUsername}]',
                       style: TextStyle(
@@ -75,13 +70,18 @@ class MePageState extends State<MePage> {
     );
   }
 
-  _loggout() async {
+  _logout() async {
     try {
+      SmartDialog.showLoading(msg: '退出中...');
       await EMClient.getInstance.logout(true);
       Navigator.of(context).pushReplacementNamed(
         '/login',
       );
-    } on EMError {}
+    } on EMError catch (e) {
+      SmartDialog.showToast('登录失败 $e');
+    } finally {
+      SmartDialog.dismiss();
+    }
   }
 
   goUserInfoPage() {

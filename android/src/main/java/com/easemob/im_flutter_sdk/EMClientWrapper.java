@@ -107,6 +107,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             {
                 getToken(param, EMSDKMethod.getToken, result);
             }
+            else if (EMSDKMethod.isConnected.equals(call.method)) {
+                isConnected(param, call.method, result);
+            }
             else  {
                 super.onMethodCall(call, result);
             }
@@ -116,10 +119,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }
     }
 
-    private void getToken(JSONObject param, String channelName, Result result) throws JSONException
-    {
-        onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
-    }
 
     private void createAccount(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
@@ -142,10 +141,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onSuccess() {
                 post(() -> {
-                    Map<String, String> param = new HashMap<>();
-                    param.put("username", EMClient.getInstance().getCurrentUser());
-                    param.put("token", EMClient.getInstance().getAccessToken());
-                    object = param;
+                    object = EMClient.getInstance().getCurrentUser();
                     super.onSuccess();
                 });
             }
@@ -184,6 +180,19 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
         onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
+    }
+
+    private void getToken(JSONObject param, String channelName, Result result) throws JSONException
+    {
+        onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
+    }
+
+    private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
+        onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore());
+    }
+
+    private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
+        onSuccess(result, channelName, EMClient.getInstance().isConnected());
     }
 
     private void updateCurrentUserNick(JSONObject param, String channelName, Result result) throws JSONException {
@@ -244,9 +253,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     }
 
-    private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
-            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore());
-    }
 
     private void onMultiDeviceEvent(JSONObject param, String channelName, Result result) throws JSONException {
 
@@ -269,16 +275,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         });
     }
 
-//    private void registerManagers() {
-//        new EMChatManagerWrapper(registrar, "em_chat_manager");
-//        new EMContactManagerWrapper(registrar, "em_contact_manager");
-//        new EMChatRoomManagerWrapper(registrar, "em_chat_room_manager");
-//        new EMGroupManagerWrapper(registrar, "em_group_manager");
-//        new EMConversationWrapper(registrar, "em_conversation");
-//        new EMPushManagerWrapper(registrar, "em_push_manager");
-//        new EMUserInfoManagerWrapper(registrar, "em_userInfo_manager");
-//    }
-
     private void bindingManagers() {
         new EMChatManagerWrapper(binging, "chat_manager");
         new EMContactManagerWrapper(binging, "chat_contact_manager");
@@ -294,13 +290,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
         bindingManagers();
         addEMListener();
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("isLoginBefore", EMClient.getInstance().isLoggedInBefore());
-        data.put("username", EMClient.getInstance().getCurrentUser());
-        data.put("token", EMClient.getInstance().getAccessToken());
-        data.put("currentUsername", EMClient.getInstance().getCurrentUser());
-        onSuccess(result, channelName, data);
+        onSuccess(result, channelName, null);
     }
 
     private void addEMListener() {
