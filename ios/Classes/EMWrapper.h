@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define EMChannelName(name) [NSString stringWithFormat:@"com.easemob.im/%@", name]
+#define EMChannelName(name) [NSString stringWithFormat:@"com.chat.im/%@", name]
 
 
 @interface EMWrapper : NSObject <FlutterPlugin>
