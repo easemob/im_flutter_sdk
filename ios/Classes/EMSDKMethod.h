@@ -18,14 +18,16 @@ static NSString *const EMMethodKeyLogin = @"login";
 static NSString *const EMMethodKeyLogout = @"logout";
 static NSString *const EMMethodKeyLoginWithAgoraToken = @"loginWithAgoraToken";
 static NSString *const EMMethodKeyChangeAppKey = @"changeAppKey";
-static NSString *const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const EMMethodKeyUploadLog = @"uploadLog";
 static NSString *const EMMethodKeyCompressLogs = @"compressLogs";
 static NSString *const EMMethodKeyKickDevice = @"kickDevice";
 static NSString *const EMMethodKeyKickAllDevices = @"kickAllDevices";
-static NSString *const EMMethodKeyCurrentUser = @"currentUser";
 static NSString *const EMMethodKeyGetLoggedInDevicesFromServer = @"getLoggedInDevicesFromServer";
+
 static NSString *const EMMethodKeyGetToken = @"getToken";
+static NSString *const EMMethodKeyGetCurrentUser = @"getCurrentUser";
+static NSString *const EMMethodKeyIsLoggedInBefore = @"isLoggedInBefore";
+static NSString *const EMMethodKeyIsConnected = @"isConnected";
 
 #pragma mark - EMClientDelegate
 static NSString *const EMMethodKeyOnConnected = @"onConnected";

@@ -68,12 +68,17 @@ abstract class EMMessageStatusListener {
 
 class MessageCallBackManager {
   static const _channelPrefix = 'com.chat.im';
+
   static const MethodChannel _emMessageChannel =
       const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+
   Map<String, EMMessage> cacheMessageMap = {};
+
   static MessageCallBackManager? _instance;
+
   static MessageCallBackManager get getInstance =>
       _instance = _instance ?? MessageCallBackManager._internal();
+
   MessageCallBackManager._internal() {
     _emMessageChannel.setMethodCallHandler((MethodCall call) async {
       Map<String, dynamic> argMap = call.arguments;
@@ -199,10 +204,10 @@ class EMMessage {
   }
 
   /// 构造发送的文字消息
-  EMMessage.createTxtSendMessage(
-    String username,
-    String content,
-  ) : this.createSendMessage(
+  EMMessage.createTxtSendMessage({
+    required String username,
+    required String content,
+  }) : this.createSendMessage(
           to: username,
           body: EMTextMessageBody(content: content),
         );
