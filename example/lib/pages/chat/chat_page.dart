@@ -613,7 +613,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   @override
-  void onConversationRead(String? from, String? to) {}
+  void onConversationRead(String from, String to) {}
 
   @override
   void onMemberExitedFromChatRoom(
