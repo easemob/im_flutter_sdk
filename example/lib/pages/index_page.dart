@@ -35,12 +35,14 @@ class IndexPageState extends State<IndexPage> {
     });
   }
 
-  void toNextPage() {
-    if (EMClient.getInstance.isLoginBefore == true) {
-      Navigator.of(context).pushReplacementNamed('/home');
-    } else {
-      Navigator.of(context).pushReplacementNamed('/login');
-    }
+  void toNextPage() async {
+    await EMClient.getInstance.isLoginBefore().then((value) {
+      if (value == true) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    });
   }
 
   @override
