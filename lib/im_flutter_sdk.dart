@@ -18,3 +18,5 @@ export 'src/models/em_push_configs.dart';
 export 'src/models/em_page_result.dart';
 export 'src/models/em_userInfo.dart';
 export 'src/models/em_group_shared_file.dart';
+export 'src/models/em_group_options.dart';
+export 'src/models/em_chat_enums.dart';

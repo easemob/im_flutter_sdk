@@ -609,9 +609,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
   @override
-  void onChatRoomDestroyed(String roomId, String? roomName) {
-    // TODO: implement onChatRoomDestroyed
-  }
+  void onChatRoomDestroyed(String roomId, String? roomName) {}
 
   @override
   void onConversationRead(String from, String to) {}

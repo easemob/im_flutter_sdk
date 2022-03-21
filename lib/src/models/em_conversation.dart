@@ -5,12 +5,6 @@ import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
 import '../chat_method_keys.dart';
 
-enum EMConversationType {
-  Chat, // 单聊消息
-  GroupChat, // 群聊消息
-  ChatRoom, // 聊天室消息
-}
-
 enum EMMessageSearchDirection { Up, Down }
 
 class EMConversation {
