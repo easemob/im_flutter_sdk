@@ -26,23 +26,23 @@
                   result:(FlutterResult)result {
     if ([EMMethodKeyGetImPushConfig isEqualToString:call.method]) {
         [self getImPushConfig:call.arguments
-                   channelName:EMMethodKeyGetImPushConfig
+                   channelName:call.method
                         result:result];
     } else if ([EMMethodKeyGetImPushConfigFromServer isEqualToString:call.method]) {
         [self getImPushConfigFromServer:call.arguments
-                             channelName:EMMethodKeyGetImPushConfigFromServer
+                             channelName:call.method
                                   result:result];
     } else if ([EMMethodKeyUpdatePushNickname isEqualToString:call.method]) {
         [self updatePushNickname:call.arguments
-                     channelName:EMMethodKeyUpdatePushNickname
+                     channelName:call.method
                           result:result];
     } else if ([EMMethodKeyImPushNoDisturb isEqualToString:call.method]) {
         [self setImPushNoDisturb:call.arguments
-                     channelName:EMMethodKeyImPushNoDisturb
+                     channelName:call.method
                           result:result];
     } else if ([EMMethodKeyUpdateImPushStyle isEqualToString:call.method]) {
         [self updateImPushStyle:call.arguments
-                    channelName:EMMethodKeyUpdateImPushStyle
+                    channelName:call.method
                          result:result];
     } else if ([EMMethodKeyUpdateGroupPushService isEqualToString:call.method]) {
         [self updateGroupPushService:call.arguments
@@ -50,11 +50,11 @@
                               result:result];
     } else if ([EMMethodKeyGetNoDisturbGroups isEqualToString:call.method]) {
         [self getNoDisturbGroups:call.arguments
-                     channelName:EMMethodKeyGetNoDisturbGroups
+                     channelName:call.method
                           result:result];
     } else if ([EMMethodKeyBindDeviceToken isEqualToString:call.method]) {
         [self  bindDeviceToken:call.arguments
-                   channelName:(NSString *)EMMethodKeyBindDeviceToken
+                   channelName:call.method
                         result:result];
     } else if ([EMMethodKeySetNoDisturbUsers isEqualToString:call.method]) {
         [self setNoDisturbUsers:call.arguments

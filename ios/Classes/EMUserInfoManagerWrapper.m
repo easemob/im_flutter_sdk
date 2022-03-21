@@ -27,39 +27,45 @@
 #pragma mark - FlutterPlugin
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     if ([call.method isEqualToString:EMMethodKeyUpdateOwnUserInfo]) {
-        [self updateOwnUserInfo:call.arguments result:result];
+        [self updateOwnUserInfo:call.arguments channelName:call.method result:result];
     }
     
     if ([call.method isEqualToString:EMMethodKeyUpdateOwnUserInfoWithType]) {
-        [self updateOwnUserInfoWithType:call.arguments result:result];
+        [self updateOwnUserInfoWithType:call.arguments
+                            channelName:call.method
+                                 result:result];
     }
     
     if ([call.method isEqualToString:EMMethodKeyFetchUserInfoById]) {
-        [self fetchUserInfoById:call.arguments result:result];
+        [self fetchUserInfoById:call.arguments
+                    channelName:call.method
+                         result:result];
     }
     
     if ([call.method isEqualToString:EMMethodKeyFetchUserInfoByIdWithType]) {
-        [self fetchUserInfoByIdWithType:call.arguments result:result];
+        [self fetchUserInfoByIdWithType:call.arguments
+                            channelName:call.method
+                                 result:result];
     }
     
 }
 
 
-- (void)updateOwnUserInfo:(NSDictionary *)param result:(FlutterResult)result {
+- (void)updateOwnUserInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     EMUserInfo *userInfo = [EMUserInfo fromJson:param[@"userInfo"]];
     [EMClient.sharedClient.userInfoManager updateOwnUserInfo:userInfo completion:^(EMUserInfo *aUserInfo, EMError *aError) {
         NSDictionary *objDic = [aUserInfo toJson];
 
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateOwnUserInfo
+                      channelName:aChannelName
                             error:aError
                            object:objDic];
     }];
 }
 
 
-- (void)updateOwnUserInfoWithType:(NSDictionary *)param  result:(FlutterResult)result {
+- (void)updateOwnUserInfoWithType:(NSDictionary *)param channelName:(NSString *)aChannelName  result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     
     int typeValue = [param[@"userInfoType"] intValue];
@@ -71,7 +77,7 @@
         
         NSDictionary *objDic = [aUserInfo toJson];
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateOwnUserInfoWithType
+                      channelName:aChannelName
                             error:aError
                            object:objDic];
     }];
@@ -79,7 +85,7 @@
 }
 
 
-- (void)fetchUserInfoById:(NSDictionary *)param result:(FlutterResult)result {
+- (void)fetchUserInfoById:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSArray *userIds = param[@"userIds"];
     
@@ -91,7 +97,7 @@
         }];
                 
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyFetchUserInfoById
+                      channelName:aChannelName
                             error:aError
                            object:[dic copy]];
     }];
@@ -100,7 +106,7 @@
 
 
 
-- (void)fetchUserInfoByIdWithType:(NSDictionary *)param result:(FlutterResult)result {
+- (void)fetchUserInfoByIdWithType:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSArray *userIds = param[@"userIds"];
     NSArray<NSNumber *> *userInfoTypes = param[@"userInfoTypes"];

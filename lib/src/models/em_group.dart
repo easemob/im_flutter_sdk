@@ -18,16 +18,16 @@ class EMGroup {
   EMGroup._private();
 
   late String _groupId;
-  String? _name = '';
+  String? _name;
   String? _description = '';
   String? _owner = '';
   String? _announcement = '';
   int? _memberCount;
-  List? _memberList;
-  List? _adminList;
-  List? _blockList;
-  List? _muteList;
-  List? _sharedFileList;
+  List<String>? _memberList;
+  List<String>? _adminList;
+  List<String>? _blockList;
+  List<String>? _muteList;
+
   bool? _noticeEnable = true;
   bool? _messageBlocked = false;
   bool? _isAllMemberMuted = false;
@@ -44,7 +44,6 @@ class EMGroup {
   List? get adminList => _adminList;
   List? get blockList => _blockList;
   List? get muteList => _muteList;
-  List? get sharedFileList => _sharedFileList;
   bool? get noticeEnable => _noticeEnable;
   bool? get messageBlocked => _messageBlocked;
   bool? get isAllMemberMuted => _isAllMemberMuted;
@@ -54,16 +53,15 @@ class EMGroup {
   factory EMGroup.fromJson(Map map) {
     return EMGroup._private()
       .._groupId = map['groupId']
-      .._name = map['name']
-      .._description = map['desc']
-      .._owner = map['owner']
-      .._announcement = map['announcement']
+      .._name = map.stringValue("name")
+      .._description = map.stringValue("desc")
+      .._owner = map.stringValue("owner")
+      .._announcement = map.stringValue("announcement")
       .._memberCount = map['memberCount']
-      .._memberList = map['memberList']
-      .._adminList = map['adminList']
-      .._blockList = map['blockList']
-      .._muteList = map['muteList']
-      .._sharedFileList = map['sharedFileList']
+      .._memberList = map.listValue<String>("memberList")
+      .._adminList = map.listValue<String>("adminList")
+      .._blockList = map.listValue<String>("blockList")
+      .._muteList = map.listValue<String>("muteList")
       .._noticeEnable = map.boolValue('noticeEnable')
       .._messageBlocked = map.boolValue('messageBlocked')
       .._isAllMemberMuted = map.boolValue('isAllMemberMuted')
@@ -73,22 +71,23 @@ class EMGroup {
 
   Map toJson() {
     Map data = Map();
-    data['id'] = _groupId;
-    data['name'] = _name;
-    data['desc'] = _description;
-    data['owner'] = _owner;
-    data['announcement'] = _announcement;
-    data['memberCount'] = _memberCount;
-    data['memberList'] = _memberList;
-    data['adminList'] = _adminList;
-    data['blockList'] = _blockList;
-    data['muteList'] = _muteList;
-    data['sharedFileList'] = _sharedFileList;
-    data['noticeEnable'] = _noticeEnable;
-    data['messageBlocked'] = _messageBlocked;
-    data['isAllMemberMuted'] = _isAllMemberMuted;
-    data['options'] = _options!.toJson();
-    data['permissionType'] = EMGroup.permissionTypeToInt(_permissionType);
+    data.setValueWithOutNull("id", _groupId);
+    data.setValueWithOutNull("name", _name);
+    data.setValueWithOutNull("desc", _description);
+    data.setValueWithOutNull("owner", _owner);
+    data.setValueWithOutNull("announcement", _announcement);
+    data.setValueWithOutNull("memberCount", _memberCount);
+    data.setValueWithOutNull("memberList", _memberList);
+    data.setValueWithOutNull("adminList", _adminList);
+    data.setValueWithOutNull("blockList", _blockList);
+    data.setValueWithOutNull("muteList", _muteList);
+    data.setValueWithOutNull("owner", _owner);
+    data.setValueWithOutNull("noticeEnable", _noticeEnable);
+    data.setValueWithOutNull("messageBlocked", _messageBlocked);
+    data.setValueWithOutNull("isAllMemberMuted", _isAllMemberMuted);
+    data.setValueWithOutNull("options", _options?.toJson());
+    data.setValueWithOutNull(
+        "permissionType", EMGroup.permissionTypeToInt(_permissionType));
     return data;
   }
 
@@ -252,40 +251,5 @@ class EMGroupOptions {
   @override
   String toString() {
     return this.toJson().toString();
-  }
-}
-
-class EMGroupSharedFile {
-  EMGroupSharedFile._private();
-
-  String? _fileId;
-  String? _fileName;
-  String? _fileOwner;
-  int? _createTime;
-  int? _fileSize;
-
-  String? get fileId => _fileId;
-  String? get fileName => _fileName;
-  String? get fileOwner => _fileOwner;
-  int? get createTime => _createTime;
-  int? get fileSize => _fileSize;
-
-  factory EMGroupSharedFile.fromJson(Map? map) {
-    return EMGroupSharedFile._private()
-      .._fileId = map?["fileId"]
-      .._fileName = map?["name"]
-      .._fileOwner = map?["owner"]
-      .._createTime = map?["createTime"]
-      .._fileSize = map?["fileSize"];
-  }
-
-  Map toJson() {
-    Map data = Map();
-    data['fileId'] = _fileId;
-    data['name'] = _fileName;
-    data['owner'] = _fileOwner;
-    data['createTime'] = _createTime;
-    data['fileSize'] = _fileSize;
-    return data;
   }
 }

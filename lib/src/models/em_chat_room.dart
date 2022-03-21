@@ -14,17 +14,17 @@ class EMChatRoom {
 
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private()
-      .._roomId = map['roomId'] as String?
-      .._name = map['name']
-      .._description = map['desc']
-      .._owner = map['owner']
-      .._memberCount = map['memberCount']
-      .._maxUsers = map['maxUsers']
-      .._adminList = map['adminList']
-      .._memberList = map['memberList']
-      .._blockList = map['blockList']
-      .._muteList = map['muteList']
-      .._announcement = map['announcement']
+      .._roomId = map['roomId'] as String
+      .._name = map.stringValue("name")
+      .._description = map.stringValue("desc")
+      .._owner = map.stringValue("owner")
+      .._memberCount = map.intValue("memberCount")
+      .._maxUsers = map.intValue("maxUsers")
+      .._adminList = map.listValue<String>("adminList")
+      .._memberList = map.listValue<String>("memberList")
+      .._blockList = map.listValue<String>("blockList")
+      .._muteList = map.listValue<String>("muteList")
+      .._announcement = map.stringValue("announcement")
       .._permissionType =
           EMChatRoom.permissionTypeFromInt(map['permissionType'])
       .._isAllMemberMuted = map.boolValue('isAllMemberMuted');
@@ -33,24 +33,24 @@ class EMChatRoom {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['roomId'] = _roomId;
-    data['name'] = _name;
-    data['desc'] = _description;
-    data['owner'] = _owner;
-    data['memberCount'] = _memberCount;
-    data['maxUsers'] = _maxUsers;
-    data['adminList'] = _adminList;
-    data['memberList'] = _memberList;
-    data['blockList'] = _blockList;
-    data['muteList'] = _muteList;
-    data['announcement'] = _announcement;
+    data.setValueWithOutNull("name", _name);
+    data.setValueWithOutNull("desc", _description);
+    data.setValueWithOutNull("owner", owner);
+    data.setValueWithOutNull("memberCount", _memberCount);
+    data.setValueWithOutNull("maxUsers", _maxUsers);
+    data.setValueWithOutNull("adminList", _adminList);
+    data.setValueWithOutNull("memberList", _memberList);
+    data.setValueWithOutNull("blockList", _blockList);
+    data.setValueWithOutNull("muteList", _muteList);
+    data.setValueWithOutNull("announcement", _announcement);
+    data.setValueWithOutNull("isAllMemberMuted", _isAllMemberMuted);
     data['permissionType'] = EMChatRoom.permissionTypeToInt(_permissionType);
-    data['isAllMemberMuted'] = _isAllMemberMuted;
 
     return data;
   }
 
   // 房间id
-  String? _roomId = '';
+  late String _roomId;
   // 房间名称
   String? _name = '';
   // 房间描述
@@ -76,7 +76,7 @@ class EMChatRoom {
   // 在聊天室中的角色
   EMChatRoomPermissionType _permissionType = EMChatRoomPermissionType.None;
 
-  get roomId => _roomId;
+  String get roomId => _roomId;
   get name => _name;
   get description => _description;
   get owner => _owner;
