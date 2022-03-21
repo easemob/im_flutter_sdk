@@ -124,6 +124,9 @@ FILE_dict = {
     "em_userInfo.dart":"chat_userInfo.dart",
     "em_group_shared_file.dart":"chat_group_shared_file.dart",
     "em_push_configs.dart":"chat_push_configs.dart",
+    "em_chat_enums.dart":"chat_enums.dart",
+    "em_group_options.dart":"chat_group_options.dart",
+    
     # /lib/src/tools/
     "em_extension.dart":"chat_extension.dart",
     "em_log.dart":"chat_log.dart",    
@@ -219,6 +222,7 @@ UPDATE_dict = {
     "em_push_config":"chat_push_config",
     "em_page_result":"chat_page_result",
     "em_userInfo":"chat_userInfo",
+    "em_chat_enums":"chat_enums",
 
     
     "em_extension":"chat_extension",

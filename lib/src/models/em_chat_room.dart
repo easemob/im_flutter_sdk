@@ -1,11 +1,5 @@
 import '../../src/tools/em_extension.dart';
-
-enum EMChatRoomPermissionType {
-  None,
-  Member,
-  Admin,
-  Owner,
-}
+import 'em_chat_enums.dart';
 
 class EMChatRoom {
   EMChatRoom._private();
