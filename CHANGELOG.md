@@ -1,6 +1,12 @@
 ## NEXT
 
 
+## 3.8.3+6
+
+- 修改EMImPushConfig为EMPushConfigs;
+- 删除EMOptions中的EMPushConfig.设置推送证书时直接调用EMOptions即可;
+- EMGroup中移除ShareFiles，如果需要获取共享文件，请调用Api:
+  ```EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId)```
 
 ## 3.8.3+5
 

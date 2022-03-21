@@ -42,99 +42,97 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         JSONObject param = (JSONObject) call.arguments;
         try {
             if (EMSDKMethod.getGroupWithId.equals(call.method)) {
-                getGroupWithId(param, EMSDKMethod.getGroupWithId, result);
+                getGroupWithId(param, call.method, result);
             } else if (EMSDKMethod.getJoinedGroups.equals(call.method)) {
-                getJoinedGroups(param, EMSDKMethod.getJoinedGroups, result);
+                getJoinedGroups(param, call.method, result);
             } else if (EMSDKMethod.getGroupsWithoutPushNotification.equals(call.method)) {
-                getGroupsWithoutPushNotification(param, EMSDKMethod.getGroupsWithoutPushNotification, result);
+                getGroupsWithoutPushNotification(param, call.method, result);
             } else if (EMSDKMethod.getJoinedGroupsFromServer.equals(call.method)) {
-                getJoinedGroupsFromServer(param, EMSDKMethod.getJoinedGroupsFromServer, result);
+                getJoinedGroupsFromServer(param, call.method, result);
             } else if (EMSDKMethod.getPublicGroupsFromServer.equals(call.method)) {
-                getPublicGroupsFromServer(param, EMSDKMethod.getPublicGroupsFromServer, result);
+                getPublicGroupsFromServer(param, call.method, result);
             } else if (EMSDKMethod.createGroup.equals(call.method)) {
-                createGroup(param, EMSDKMethod.createGroup, result);
+                createGroup(param, call.method, result);
             } else if (EMSDKMethod.getGroupSpecificationFromServer.equals(call.method)) {
-                getGroupSpecificationFromServer(param, EMSDKMethod.getGroupSpecificationFromServer, result);
+                getGroupSpecificationFromServer(param, call.method, result);
             } else if (EMSDKMethod.getGroupMemberListFromServer.equals(call.method)) {
-                getGroupMemberListFromServer(param, EMSDKMethod.getGroupMemberListFromServer, result);
+                getGroupMemberListFromServer(param, call.method, result);
             } else if (EMSDKMethod.getGroupMuteListFromServer.equals(call.method)) {
-                getGroupMuteListFromServer(param, EMSDKMethod.getGroupMuteListFromServer, result);
-            } else if (EMSDKMethod.getGroupBlockListFromServer.equals(call.method)) {
-                getGroupBlockListFromServer(param, EMSDKMethod.getGroupBlockListFromServer, result);
+                getGroupMuteListFromServer(param, call.method, result);
             } else if (EMSDKMethod.getGroupWhiteListFromServer.equals(call.method)) {
-                getGroupWhiteListFromServer(param, EMSDKMethod.getGroupWhiteListFromServer, result);
+                getGroupWhiteListFromServer(param, call.method, result);
             } else if (EMSDKMethod.isMemberInWhiteListFromServer.equals(call.method)) {
-                isMemberInWhiteListFromServer(param, EMSDKMethod.isMemberInWhiteListFromServer, result);
+                isMemberInWhiteListFromServer(param, call.method, result);
             } else if (EMSDKMethod.getGroupFileListFromServer.equals(call.method)) {
-                getGroupFileListFromServer(param, EMSDKMethod.getGroupFileListFromServer, result);
+                getGroupFileListFromServer(param, call.method, result);
             } else if (EMSDKMethod.getGroupAnnouncementFromServer.equals(call.method)) {
-                getGroupAnnouncementFromServer(param, EMSDKMethod.getGroupAnnouncementFromServer, result);
+                getGroupAnnouncementFromServer(param, call.method, result);
             } else if (EMSDKMethod.getGroupBlockListFromServer.equals(call.method)) {
-                getGroupBlockListFromServer(param, EMSDKMethod.getGroupBlockListFromServer, result);
+                getGroupBlockListFromServer(param, call.method, result);
             } else if (EMSDKMethod.addMembers.equals(call.method)) {
-                addMembers(param, EMSDKMethod.addMembers, result);
+                addMembers(param, call.method, result);
             } else if (EMSDKMethod.inviterUser.equals(call.method)){
-                inviterUser(param, EMSDKMethod.inviterUser, result);
+                inviterUser(param, call.method, result);
             } else if (EMSDKMethod.removeMembers.equals(call.method)) {
-                removeMembers(param, EMSDKMethod.removeMembers, result);
+                removeMembers(param, call.method, result);
             } else if (EMSDKMethod.blockMembers.equals(call.method)) {
-                blockMembers(param, EMSDKMethod.blockMembers, result);
+                blockMembers(param, call.method, result);
             } else if (EMSDKMethod.unblockMembers.equals(call.method)) {
-                unblockMembers(param, EMSDKMethod.unblockMembers, result);
+                unblockMembers(param, call.method, result);
             } else if (EMSDKMethod.updateGroupSubject.equals(call.method)) {
-                updateGroupSubject(param, EMSDKMethod.updateGroupSubject, result);
+                updateGroupSubject(param, call.method, result);
             } else if (EMSDKMethod.updateDescription.equals(call.method)) {
-                updateDescription(param, EMSDKMethod.updateDescription, result);
+                updateDescription(param, call.method, result);
             } else if (EMSDKMethod.leaveGroup.equals(call.method)) {
-                leaveGroup(param, EMSDKMethod.leaveGroup, result);
+                leaveGroup(param, call.method, result);
             } else if (EMSDKMethod.destroyGroup.equals(call.method)) {
-                destroyGroup(param, EMSDKMethod.destroyGroup, result);
+                destroyGroup(param, call.method, result);
             } else if (EMSDKMethod.blockGroup.equals(call.method)) {
-                blockGroup(param, EMSDKMethod.blockGroup, result);
+                blockGroup(param, call.method, result);
             } else if (EMSDKMethod.unblockGroup.equals(call.method)) {
-                unblockGroup(param, EMSDKMethod.unblockGroup, result);
+                unblockGroup(param, call.method, result);
             } else if (EMSDKMethod.updateGroupOwner.equals(call.method)) {
-                updateGroupOwner(param, EMSDKMethod.updateGroupOwner, result);
+                updateGroupOwner(param, call.method, result);
             } else if (EMSDKMethod.addAdmin.equals(call.method)) {
-                addAdmin(param, EMSDKMethod.addAdmin, result);
+                addAdmin(param, call.method, result);
             } else if (EMSDKMethod.removeAdmin.equals(call.method)) {
-                removeAdmin(param, EMSDKMethod.removeAdmin, result);
+                removeAdmin(param, call.method, result);
             } else if (EMSDKMethod.muteMembers.equals(call.method)) {
-                muteMembers(param, EMSDKMethod.muteMembers, result);
+                muteMembers(param, call.method, result);
             } else if (EMSDKMethod.unMuteMembers.equals(call.method)) {
-                unMuteMembers(param, EMSDKMethod.unMuteMembers, result);
+                unMuteMembers(param, call.method, result);
             } else if (EMSDKMethod.muteAllMembers.equals(call.method)) {
-                muteAllMembers(param, EMSDKMethod.muteAllMembers, result);
+                muteAllMembers(param, call.method, result);
             } else if (EMSDKMethod.unMuteAllMembers.equals(call.method)) {
-                unMuteAllMembers(param, EMSDKMethod.unMuteAllMembers, result);
+                unMuteAllMembers(param, call.method, result);
             } else if (EMSDKMethod.addWhiteList.equals(call.method)) {
-                addWhiteList(param, EMSDKMethod.addWhiteList, result);
+                addWhiteList(param, call.method, result);
             } else if (EMSDKMethod.removeWhiteList.equals(call.method)) {
-                removeWhiteList(param, EMSDKMethod.removeWhiteList, result);
+                removeWhiteList(param, call.method, result);
             } else if (EMSDKMethod.uploadGroupSharedFile.equals(call.method)) {
-                uploadGroupSharedFile(param, EMSDKMethod.uploadGroupSharedFile, result);
+                uploadGroupSharedFile(param, call.method, result);
             } else if (EMSDKMethod.downloadGroupSharedFile.equals(call.method)) {
-                downloadGroupSharedFile(param, EMSDKMethod.downloadGroupSharedFile, result);
+                downloadGroupSharedFile(param, call.method, result);
             } else if (EMSDKMethod.removeGroupSharedFile.equals(call.method)) {
-                removeGroupSharedFile(param, EMSDKMethod.removeGroupSharedFile, result);
+                removeGroupSharedFile(param, call.method, result);
             } else if (EMSDKMethod.updateGroupAnnouncement.equals(call.method)) {
-                updateGroupAnnouncement(param, EMSDKMethod.updateGroupExt, result);
+                updateGroupAnnouncement(param, call.method, result);
             } else if (EMSDKMethod.updateGroupExt.equals(call.method)) {
-                updateGroupExt(param, EMSDKMethod.updateGroupExt, result);
+                updateGroupExt(param, call.method, result);
             } else if (EMSDKMethod.joinPublicGroup.equals(call.method)) {
-                joinPublicGroup(param, EMSDKMethod.joinPublicGroup, result);
+                joinPublicGroup(param, call.method, result);
             } else if (EMSDKMethod.requestToJoinPublicGroup.equals(call.method)) {
-                requestToJoinPublicGroup(param, EMSDKMethod.requestToJoinPublicGroup, result);
+                requestToJoinPublicGroup(param, call.method, result);
             } else if (EMSDKMethod.acceptJoinApplication.equals(call.method)) {
-                acceptJoinApplication(param, EMSDKMethod.acceptJoinApplication, result);
+                acceptJoinApplication(param, call.method, result);
             } else if (EMSDKMethod.declineJoinApplication.equals(call.method)) {
-                declineJoinApplication(param, EMSDKMethod.declineJoinApplication, result);
+                declineJoinApplication(param, call.method, result);
             } else if (EMSDKMethod.acceptInvitationFromGroup.equals(call.method)) {
-                acceptInvitationFromGroup(param, EMSDKMethod.acceptInvitationFromGroup, result);
+                acceptInvitationFromGroup(param, call.method, result);
             } else if (EMSDKMethod.declineInvitationFromGroup.equals(call.method)) {
-                declineInvitationFromGroup(param, EMSDKMethod.declineInvitationFromGroup, result);
+                declineInvitationFromGroup(param, call.method, result);
             } else if (EMSDKMethod.ignoreGroupPush.equals(call.method)) {
-                ignoreGroupPush(param, EMSDKMethod.ignoreGroupPush, result);
+                ignoreGroupPush(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }

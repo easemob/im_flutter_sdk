@@ -22,13 +22,17 @@ void main() {
 
   SystemUiOverlayStyle uiStyle = SystemUiOverlayStyle.light;
   SystemChrome.setSystemUIOverlayStyle(uiStyle);
-  EMPushConfig config = EMPushConfig()..enableAPNs('EaseIM_APNS_Product');
+  initSDK();
+  return runApp(EaseIMDemo());
+}
+
+void initSDK() async {
   var options = EMOptions(appKey: 'easemob-demo#easeim');
   options.debugModel = true;
+  options.enableAPNs("EaseIM_APNS_Product");
 
-  options.pushConfig = config;
-  EMClient.getInstance.init(options).then((value) => null);
-  return runApp(EaseIMDemo());
+  await EMClient.getInstance.init(options);
+  debugPrint("has init");
 }
 
 class EaseIMDemo extends StatelessWidget {

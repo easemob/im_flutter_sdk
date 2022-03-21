@@ -43,88 +43,88 @@
                   result:(FlutterResult)result {
     if ([EMMethodKeySendMessage isEqualToString:call.method]) {
         [self sendMessage:call.arguments
-              channelName:EMMethodKeySendMessage
+              channelName:call.method
                    result:result];
     } else if ([EMMethodKeyResendMessage isEqualToString:call.method]) {
         [self resendMessage:call.arguments
-                channelName:EMMethodKeyResendMessage
+                channelName:call.method
                      result:result];
     } else if ([EMMethodKeyAckMessageRead isEqualToString:call.method]) {
         [self ackMessageRead:call.arguments
-                 channelName:EMMethodKeyAckMessageRead
+                 channelName:call.method
                       result:result];
     } else if ([EMMethodKeyAckGroupMessageRead isEqualToString:call.method]) {
         [self ackMessageRead:call.arguments
-                 channelName:EMMethodKeyAckMessageRead
+                 channelName:call.method
                       result:result];
     } else if ([EMMethodKeyAckConversationRead isEqualToString:call.method]) {
         [self ackConversationRead:call.arguments
-                      channelName:EMMethodKeyAckConversationRead
+                      channelName:call.method
                            result:result];
     }
     else if ([EMMethodKeyRecallMessage isEqualToString:call.method]) {
         [self recallMessage:call.arguments
-                channelName:EMMethodKeyRecallMessage
+                channelName:call.method
                      result:result];
     } else if ([EMMethodKeyGetConversation isEqualToString:call.method]) {
         [self getConversation:call.arguments
-                  channelName:EMMethodKeyGetConversation
+                  channelName:call.method
                        result:result];
     } else if ([EMMethodKeyGetMessage isEqualToString:call.method]) {
         [self getMessageWithMessageId:call.arguments
-                          channelName:EMMethodKeyGetMessage
+                          channelName:call.method
                                result:result];
     }  else if ([EMMethodKeyMarkAllChatMsgAsRead isEqualToString:call.method]) {
         [self markAllMessagesAsRead:call.arguments
-                        channelName:EMMethodKeyMarkAllChatMsgAsRead
+                        channelName:call.method
                              result:result];
     } else if ([EMMethodKeyGetUnreadMessageCount isEqualToString:call.method]) {
         [self getUnreadMessageCount:call.arguments
-                        channelName:EMMethodKeyGetUnreadMessageCount
+                        channelName:call.method
                              result:result];
     } else if ([EMMethodKeyUpdateChatMessage isEqualToString:call.method]) {
         [self updateChatMessage:call.arguments
-                    channelName:EMMethodKeyUpdateChatMessage
+                    channelName:call.method
                          result:result];
     } else if ([EMMethodKeyDownloadAttachment isEqualToString:call.method]) {
         [self downloadAttachment:call.arguments
-                     channelName:EMMethodKeyDownloadAttachment
+                     channelName:call.method
                           result:result];
     } else if ([EMMethodKeyDownloadThumbnail isEqualToString:call.method]) {
         [self downloadThumbnail:call.arguments
-                    channelName:EMMethodKeyDownloadThumbnail
+                    channelName:call.method
                          result:result];
     } else if ([EMMethodKeyImportMessages isEqualToString:call.method]) {
         [self importMessages:call.arguments
-                 channelName:EMMethodKeyImportMessages
+                 channelName:call.method
                       result:result];
     } else if ([EMMethodKeyLoadAllConversations isEqualToString:call.method]) {
         [self loadAllConversations:call.arguments
-                       channelName:EMMethodKeyLoadAllConversations
+                       channelName:call.method
                             result:result];
     } else if ([EMMethodKeyGetConversationsFromServer isEqualToString:call.method]) {
         [self getConversationsFromServer:call.arguments
-                             channelName:EMMethodKeyGetConversationsFromServer
+                             channelName:call.method
                                   result:result];
     } else if ([EMMethodKeyDeleteConversation isEqualToString:call.method]) {
         [self deleteConversation:call.arguments
-                     channelName:EMMethodKeyDeleteConversation
+                     channelName:call.method
                           result:result];
     } else if ([EMMethodKeyFetchHistoryMessages isEqualToString:call.method]) {
         [self fetchHistoryMessages:call.arguments
-                       channelName:EMMethodKeyFetchHistoryMessages
+                       channelName:call.method
                             result:result];
     } else if ([EMMethodKeySearchChatMsgFromDB isEqualToString:call.method]) {
         [self searchChatMsgFromDB:call.arguments
-                      channelName:EMMethodKeySearchChatMsgFromDB
+                      channelName:call.method
                            result:result];
     } else if ([EMMethodKeyUpdateConversationsName isEqualToString:call.method]) {
         [self updateConversationsName:call.arguments
-                          channelName:EMMethodKeyUpdateConversationsName
+                          channelName:call.method
                                result:result];
     } else if ([EMMethodKeyAsyncFetchGroupAcks isEqualToString:call.method]) {
         [self fetchGroupReadAck:call.arguments
-                    channelName:EMMethodKeyAsyncFetchGroupAcks
+                    channelName:call.method
                          result:result];
     }
     else {
