@@ -5,6 +5,7 @@ import 'em_listeners.dart';
 import 'models/em_cursor_result.dart';
 import 'models/em_error.dart';
 import 'models/em_group.dart';
+import 'models/em_group_options.dart';
 import 'models/em_group_shared_file.dart';
 import 'tools/em_extension.dart';
 

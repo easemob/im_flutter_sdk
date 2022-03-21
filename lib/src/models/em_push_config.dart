@@ -28,13 +28,13 @@ class EMPushConfig {
   EMPushConfig();
 
   void updateFromJson(Map<String, dynamic> json) {
-    miAppId = json['mzAppId'];
-    mzAppKey = json['mzAppKey'];
-    oppoAppKey = json['oppoAppKey'];
-    oppoAppSecret = json['oppoAppSecret'];
-    miAppId = json['miAppId'];
-    miAppKey = json['miAppKey'];
-    fcmId = json['fcmId'];
+    miAppId = json.stringValue("mzAppId");
+    mzAppKey = json.stringValue("mzAppKey");
+    oppoAppKey = json.stringValue("oppoAppKey");
+    oppoAppSecret = json.stringValue("oppoAppSecret");
+    miAppId = json.stringValue("miAppId");
+    miAppKey = json.stringValue("miAppKey");
+    fcmId = json.stringValue("fcmId");
     apnsCertName = json['apnsCertName'];
     enableMeiZuPush = json.boolValue('enableMeiZuPush');
     enableOppoPush = json.boolValue('enableOppoPush');
