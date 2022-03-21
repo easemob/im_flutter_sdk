@@ -33,56 +33,56 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         try { 
             if (EMSDKMethod.getUnreadMsgCount.equals(call.method)) {
-                getUnreadMsgCount(param, EMSDKMethod.getUnreadMsgCount, result);
+                getUnreadMsgCount(param, call.method, result);
             }
             else if (EMSDKMethod.markAllMessagesAsRead.equals(call.method)) {
-                markAllMessagesAsRead(param, EMSDKMethod.markAllMessagesAsRead, result);
+                markAllMessagesAsRead(param, call.method, result);
             }
             else if (EMSDKMethod.markMessageAsRead.equals(call.method)) {
-                markMessageAsRead(param, EMSDKMethod.markMessageAsRead, result);
+                markMessageAsRead(param, call.method, result);
             }
             else if (EMSDKMethod.syncConversationExt.equals(call.method)){
-                syncConversationExt(param, EMSDKMethod.syncConversationExt, result);
+                syncConversationExt(param, call.method, result);
             }
             else if (EMSDKMethod.syncConversationName.equals(call.method)){
-                syncConversationName(param, EMSDKMethod.syncConversationName, result);
+                syncConversationName(param, call.method, result);
             }
             else if (EMSDKMethod.removeMessage.equals(call.method))
             {
-                removeMessage(param, EMSDKMethod.removeMessage, result);
+                removeMessage(param, call.method, result);
             }
             else if (EMSDKMethod.getLatestMessage.equals(call.method)) {
-                getLatestMessage(param, EMSDKMethod.getLatestMessage, result);
+                getLatestMessage(param, call.method, result);
             }
             else if (EMSDKMethod.getLatestMessageFromOthers.equals(call.method)) {
-                getLatestMessageFromOthers(param, EMSDKMethod.getLatestMessageFromOthers, result);
+                getLatestMessageFromOthers(param, call.method, result);
             }
             else if (EMSDKMethod.clearAllMessages.equals(call.method)) {
-                clearAllMessages(param, EMSDKMethod.clearAllMessages, result);
+                clearAllMessages(param, call.method, result);
             }
             else if (EMSDKMethod.insertMessage.equals((call.method))) {
-                insertMessage(param, EMSDKMethod.insertMessage, result);
+                insertMessage(param, call.method, result);
             }
             else if (EMSDKMethod.appendMessage.equals(call.method)) {
-                appendMessage(param, EMSDKMethod.appendMessage, result);
+                appendMessage(param, call.method, result);
             }
             else if (EMSDKMethod.updateConversationMessage.equals(call.method)) {
-                updateConversationMessage(param, EMSDKMethod.updateConversationMessage, result);
+                updateConversationMessage(param, call.method, result);
             }
             else if (EMSDKMethod.loadMsgWithId.equals(call.method)) {
-                loadMsgWithId(param, EMSDKMethod.loadMsgWithId, result);
+                loadMsgWithId(param, call.method, result);
             }
             else if (EMSDKMethod.loadMsgWithStartId.equals(call.method)) {
-                loadMsgWithStartId(param, EMSDKMethod.loadMsgWithStartId, result);
+                loadMsgWithStartId(param, call.method, result);
             }
             else if (EMSDKMethod.loadMsgWithKeywords.equals(call.method)) {
-                loadMsgWithKeywords(param, EMSDKMethod.loadMsgWithKeywords, result);
+                loadMsgWithKeywords(param, call.method, result);
             }
             else if (EMSDKMethod.loadMsgWithMsgType.equals(call.method)) {
-                loadMsgWithMsgType(param, EMSDKMethod.loadMsgWithMsgType, result);
+                loadMsgWithMsgType(param, call.method, result);
             }
             else if (EMSDKMethod.loadMsgWithTime.equals(call.method)) {
-                loadMsgWithTime(param, EMSDKMethod.loadMsgWithTime, result);
+                loadMsgWithTime(param, call.method, result);
             }
 
             else

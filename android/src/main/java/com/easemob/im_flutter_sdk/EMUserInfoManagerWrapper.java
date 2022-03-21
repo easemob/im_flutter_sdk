@@ -37,13 +37,13 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
         JSONObject param = (JSONObject) call.arguments;
         try {
             if (EMSDKMethod.updateOwnUserInfo.equals(call.method)) {
-                updateOwnUserInfo(param, EMSDKMethod.updateOwnUserInfo, result);
+                updateOwnUserInfo(param, call.method, result);
             } else if (EMSDKMethod.updateOwnUserInfoWithType.equals(call.method)) {
-                updateOwnUserInfoWithType(param, EMSDKMethod.updateOwnUserInfoWithType, result);
+                updateOwnUserInfoWithType(param, call.method, result);
             }else if (EMSDKMethod.fetchUserInfoById.equals(call.method)) {
-                fetchUserInfoByUserId(param, EMSDKMethod.fetchUserInfoById, result);
+                fetchUserInfoByUserId(param, call.method, result);
             }else if (EMSDKMethod.fetchUserInfoByIdWithType.equals(call.method)) {
-                fetchUserInfoByIdWithType(param, EMSDKMethod.fetchUserInfoByIdWithType, result);
+                fetchUserInfoByIdWithType(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }

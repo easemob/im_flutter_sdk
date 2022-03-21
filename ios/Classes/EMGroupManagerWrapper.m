@@ -34,186 +34,278 @@
                   result:(FlutterResult)result {
     
     if([EMMethodKeyGetGroupWithId isEqualToString:call.method]) {
-        [self getGroupWithId:call.arguments result:result];
+        [self getGroupWithId:call.arguments
+                      channelName:call.method
+                      result:result];
     }
     else if ([EMMethodKeyGetJoinedGroups isEqualToString:call.method])
     {
-        [self getJoinedGroups:call.arguments result:result];
+        [self getJoinedGroups:call.arguments
+                  channelName:call.method
+                       result:result];
     }
     else if ([EMMethodKeyGetGroupsWithoutPushNotification isEqualToString:call.method])
     {
-        [self getGroupsWithoutPushNotification:call.arguments result:result];
+        [self getGroupsWithoutPushNotification:call.arguments
+                                   channelName:call.method
+                                        result:result];
     }
     else if ([EMMethodKeyGetJoinedGroupsFromServer isEqualToString:call.method])
     {
-        [self getJoinedGroupsFromServer:call.arguments result:result];
+        [self getJoinedGroupsFromServer:call.arguments
+                            channelName:call.method
+                                 result:result];
     }
     else if ([EMMethodKeyGetPublicGroupsFromServer isEqualToString:call.method])
     {
-        [self getPublicGroupsFromServer:call.arguments result:result];
+        [self getPublicGroupsFromServer:call.arguments
+                            channelName:call.method
+                                 result:result];
     }
     else if ([EMMethodKeyCreateGroup isEqualToString:call.method])
     {
-        [self createGroup:call.arguments result:result];
+        [self createGroup:call.arguments
+              channelName:call.method
+                   result:result];
     }
     else if ([EMMethodKeyGetGroupSpecificationFromServer isEqualToString:call.method])
     {
-        [self getGroupSpecificationFromServer:call.arguments result:result];
+        [self getGroupSpecificationFromServer:call.arguments
+                                  channelName:call.method
+                                       result:result];
     }
     else if ([EMMethodKeyGetGroupMemberListFromServer isEqualToString:call.method])
     {
-        [self getGroupMemberListFromServer:call.arguments result:result];
+        [self getGroupMemberListFromServer:call.arguments
+                               channelName:call.method
+                                    result:result];
     }
     else if ([EMMethodKeyGetGroupBlockListFromServer isEqualToString:call.method])
     {
-        [self getGroupBlockListFromServer:call.arguments result:result];
+        [self getGroupBlockListFromServer:call.arguments
+                              channelName:call.method
+                                   result:result];
     }
     else if ([EMMethodKeyGetGroupMuteListFromServer isEqualToString:call.method])
     {
-        [self getGroupMuteListFromServer:call.arguments result:result];
+        [self getGroupMuteListFromServer:call.arguments
+                             channelName:call.method
+                                  result:result];
     }
     else if ([EMMethodKeyGetGroupWhiteListFromServer isEqualToString:call.method])
     {
-        [self getGroupWhiteListFromServer:call.arguments result:result];
+        [self getGroupWhiteListFromServer:call.arguments
+                              channelName:call.method
+                                   result:result];
     }
     else if ([EMMethodKeyIsMemberInWhiteListFromServer isEqualToString:call.method])
     {
-        [self isMemberInWhiteListFromServer:call.arguments result:result];
+        [self isMemberInWhiteListFromServer:call.arguments
+                                channelName:call.method
+                                     result:result];
     }
     else if ([EMMethodKeyGetGroupFileListFromServer isEqualToString:call.method])
     {
-        [self getGroupFileListFromServer:call.arguments result:result];
+        [self getGroupFileListFromServer:call.arguments
+                             channelName:call.method
+                                  result:result];
     }
     else if ([EMMethodKeyGetGroupAnnouncementFromServer isEqualToString:call.method])
     {
-        [self getGroupAnnouncementFromServer:call.arguments result:result];
+        [self getGroupAnnouncementFromServer:call.arguments
+                                 channelName:call.method
+                                      result:result];
     }
     else if ([EMMethodKeyAddMembers isEqualToString:call.method])
     {
-        [self addMembers:call.arguments result:result];
+        [self addMembers:call.arguments
+             channelName:call.method
+                  result:result];
     }
     else if ([EMMethodKeyInviterUser isEqualToString:call.method]){
-        [self inviterUsers:call.arguments result:result];
+        [self inviterUsers:call.arguments
+               channelName:call.method
+                    result:result];
     }
     else if ([EMMethodKeyRemoveMembers isEqualToString:call.method])
     {
-        [self removeMembers:call.arguments result:result];
+        [self removeMembers:call.arguments
+                channelName:call.method
+                     result:result];
     }
     else if ([EMMethodKeyBlockMembers isEqualToString:call.method])
     {
-        [self blockMembers:call.arguments result:result];
+        [self blockMembers:call.arguments
+               channelName:call.method
+                    result:result];
     }
     else if ([EMMethodKeyUnblockMembers isEqualToString:call.method])
     {
-        [self unblockMembers:call.arguments result:result];
+        [self unblockMembers:call.arguments
+                 channelName:call.method
+                      result:result];
     }
     else if([EMMethodKeyUpdateGroupSubject isEqualToString:call.method])
     {
-        [self updateGroupSubject:call.arguments result:result];
+        [self updateGroupSubject:call.arguments
+                     channelName:call.method
+                          result:result];
     }
     else if([EMMethodKeyUpdateDescription isEqualToString:call.method])
     {
-        [self updateDescription:call.arguments result:result];
+        [self updateDescription:call.arguments
+                    channelName:call.method
+                         result:result];
     }
     else if([EMMethodKeyLeaveGroup isEqualToString:call.method])
     {
-        [self leaveGroup:call.arguments result:result];
+        [self leaveGroup:call.arguments
+             channelName:call.method
+                  result:result];
     }
     else if([EMMethodKeyDestroyGroup isEqualToString:call.method])
     {
-        [self destroyGroup:call.arguments result:result];
+        [self destroyGroup:call.arguments
+               channelName:call.method
+                    result:result];
     }
     else if([EMMethodKeyBlockGroup isEqualToString:call.method])
     {
-        [self blockGroup:call.arguments result:result];
+        [self blockGroup:call.arguments
+             channelName:call.method
+                  result:result];
     }
     else if([EMMethodKeyUnblockGroup isEqualToString:call.method])
     {
-        [self unblockGroup:call.arguments result:result];
+        [self unblockGroup:call.arguments
+               channelName:call.method
+                    result:result];
     }
     else if([EMMethodKeyUpdateGroupOwner isEqualToString:call.method])
     {
-        [self updateGroupOwner:call.arguments result:result];
+        [self updateGroupOwner:call.arguments
+                   channelName:call.method
+                        result:result];
     }
     else if([EMMethodKeyAddAdmin isEqualToString:call.method])
     {
-        [self addAdmin:call.arguments result:result];
+        [self addAdmin:call.arguments
+           channelName:call.method
+                result:result];
     }
     else if([EMMethodKeyRemoveAdmin isEqualToString:call.method])
     {
-        [self removeAdmin:call.arguments result:result];
+        [self removeAdmin:call.arguments
+              channelName:call.method
+                   result:result];
     }
     else if([EMMethodKeyMuteMembers isEqualToString:call.method])
     {
-        [self muteMembers:call.arguments result:result];
+        [self muteMembers:call.arguments
+              channelName:call.method
+                   result:result];
     }
     else if([EMMethodKeyUnMuteMembers isEqualToString:call.method])
     {
-        [self unMuteMembers:call.arguments result:result];
+        [self unMuteMembers:call.arguments
+                channelName:call.method
+                     result:result];
     }
     else if([EMMethodKeyMuteAllMembers isEqualToString:call.method])
     {
-        [self muteAllMembers:call.arguments result:result];
+        [self muteAllMembers:call.arguments
+                 channelName:call.method
+                      result:result];
     }
     else if([EMMethodKeyUnMuteAllMembers isEqualToString:call.method])
     {
-        [self unMuteAllMembers:call.arguments result:result];
+        [self unMuteAllMembers:call.arguments
+                   channelName:call.method
+                        result:result];
     }
     else if([EMMethodKeyAddWhiteList isEqualToString:call.method])
     {
-        [self addWhiteList:call.arguments result:result];
+        [self addWhiteList:call.arguments
+               channelName:call.method
+                    result:result];
     }
     else if([EMMethodKeyRemoveWhiteList isEqualToString:call.method])
     {
-        [self removeWhiteList:call.arguments result:result];
+        [self removeWhiteList:call.arguments
+                  channelName:call.method
+                       result:result];
     }
     else if([EMMethodKeyUploadGroupSharedFile isEqualToString:call.method])
     {
-        [self uploadGroupSharedFile:call.arguments result:result];
+        [self uploadGroupSharedFile:call.arguments
+                        channelName:call.method
+                             result:result];
     }
     else if([EMMethodKeyDownloadGroupSharedFile isEqualToString:call.method])
     {
-        [self downloadGroupSharedFile:call.arguments result:result];
+        [self downloadGroupSharedFile:call.arguments
+                          channelName:call.method
+                               result:result];
     }
     else if([EMMethodKeyRemoveGroupSharedFile isEqualToString:call.method])
     {
-        [self removeGroupSharedFile:call.arguments result:result];
+        [self removeGroupSharedFile:call.arguments
+                        channelName:call.method
+                             result:result];
     }
     else if([EMMethodKeyUpdateGroupAnnouncement isEqualToString:call.method])
     {
-        [self updateGroupAnnouncement:call.arguments result:result];
+        [self updateGroupAnnouncement:call.arguments
+                          channelName:call.method
+                               result:result];
     }
     else if([EMMethodKeyUpdateGroupExt isEqualToString:call.method])
     {
-        [self updateGroupExt:call.arguments result:result];
+        [self updateGroupExt:call.arguments
+                 channelName:call.method
+                      result:result];
     }
     else if([EMMethodKeyJoinPublicGroup isEqualToString:call.method])
     {
-        [self joinPublicGroup:call.arguments result:result];
+        [self joinPublicGroup:call.arguments
+                  channelName:call.method
+                       result:result];
     }
     else if([EMMethodKeyRequestToJoinPublicGroup isEqualToString:call.method])
     {
-        [self requestToJoinPublicGroup:call.arguments result:result];
+        [self requestToJoinPublicGroup:call.arguments
+                           channelName:call.method
+                                result:result];
     }
     else if([EMMethodKeyAcceptJoinApplication isEqualToString:call.method])
     {
-        [self acceptJoinApplication:call.arguments result:result];
+        [self acceptJoinApplication:call.arguments
+                        channelName:call.method
+                             result:result];
     }
     else if([EMMethodKeyDeclineJoinApplication isEqualToString:call.method])
     {
-        [self declineJoinApplication:call.arguments result:result];
+        [self declineJoinApplication:call.arguments
+                         channelName:call.method
+                              result:result];
     }
     else if([EMMethodKeyAcceptInvitationFromGroup isEqualToString:call.method])
     {
-        [self acceptInvitationFromGroup:call.arguments result:result];
+        [self acceptInvitationFromGroup:call.arguments
+                            channelName:call.method
+                                 result:result];
     }
     else if([EMMethodKeyDeclineInvitationFromGroup isEqualToString:call.method])
     {
-        [self declineInvitationFromGroup:call.arguments result:result];
+        [self declineInvitationFromGroup:call.arguments
+                             channelName:call.method
+                                  result:result];
     }
     else if([EMMethodKeyIgnoreGroupPush isEqualToString:call.method])
     {
-        [self ignoreGroupPush:call.arguments result:result];
+        [self ignoreGroupPush:call.arguments
+                  channelName:call.method
+                       result:result];
     }
     else
     {
@@ -223,17 +315,17 @@
 
 #pragma mark - Actions
 
-- (void)getGroupWithId:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupWithId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     EMGroup *group = [EMGroup groupWithId:param[@"groupId"]];
     [weakSelf wrapperCallBack:result
-                  channelName:EMMethodKeyGetGroupWithId
+                  channelName:aChannelName
                         error:nil
                        object:[group toJson]];
 }
 
 
-- (void)getJoinedGroups:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getJoinedGroups:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSArray *joinedGroups = [EMClient.sharedClient.groupManager getJoinedGroups];
     NSMutableArray *list = [NSMutableArray array];
@@ -241,12 +333,12 @@
         [list addObject:[group toJson]];
     }
     [weakSelf wrapperCallBack:result
-                  channelName:EMMethodKeyGetJoinedGroups
+                  channelName:aChannelName
                         error:nil
                        object:list];
 }
 
-- (void)getGroupsWithoutPushNotification:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupsWithoutPushNotification:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     EMError *error = nil;
     NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&error];
@@ -255,12 +347,12 @@
         [list addObject:[group toJson]];
     }
     [weakSelf wrapperCallBack:result
-                  channelName:EMMethodKeyGetJoinedGroups
+                  channelName:aChannelName
                         error:error
                        object:list];
 }
 
-- (void)getJoinedGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getJoinedGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:[param[@"pageNum"] intValue]
                                                                  pageSize:[param[@"pageSize"] intValue]
@@ -271,27 +363,27 @@
             [list addObject:[group toJson]];
         }
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetJoinedGroupsFromServer
+                      channelName:aChannelName
                             error:aError
                            object:list];
         
     }];
 }
 
-- (void)getPublicGroupsFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getPublicGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getPublicGroupsFromServerWithCursor:param[@"cursor"]
                                                                    pageSize:[param[@"pageSize"] integerValue]
                                                                  completion:^(EMCursorResult *aResult, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetPublicGroupsFromServer
+                      channelName:aChannelName
                             error:aError
                            object:[aResult toJson]];
     }];
 }
 
-- (void)createGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)createGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager createGroupWithSubject:param[@"groupName"]
                                                    description:param[@"desc"]
@@ -301,25 +393,25 @@
                                                     completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyCreateGroup
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)getGroupSpecificationFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupSpecificationFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:param[@"groupId"]
                                                                    completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupSpecificationFromServer
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)getGroupMemberListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupMemberListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupMemberListFromServerWithId:param[@"groupId"]
                                                                     cursor:param[@"cursor"]
@@ -327,13 +419,13 @@
                                                                 completion:^(EMCursorResult *aResult, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupMemberListFromServer
+                      channelName:aChannelName
                             error:aError
                            object:[aResult toJson]];
     }];
 }
 
-- (void)getGroupBlockListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupBlockListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupBlacklistFromServerWithId:param[@"groupId"]
                                                                pageNumber:[param[@"pageNum"] intValue]
@@ -341,13 +433,13 @@
                                                                completion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupBlockListFromServer
+                      channelName:aChannelName
                             error:aError
                            object:aList];
     }];
 }
 
-- (void)getGroupMuteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupMuteListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupMuteListFromServerWithId:param[@"groupId"]
                                                               pageNumber:[param[@"pageNum"] intValue]
@@ -355,62 +447,68 @@
                                                               completion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupMuteListFromServer
+                      channelName:aChannelName
                             error:aError
                            object:aList];
     }];
 }
 
-- (void)getGroupWhiteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupWhiteListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupWhiteListFromServerWithId:param[@"groupId"]
                                                                completion:^(NSArray *aList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupWhiteListFromServer
+                      channelName:aChannelName
                             error:aError
                            object:aList];
     }];
 }
 
-- (void)isMemberInWhiteListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)isMemberInWhiteListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager isMemberInWhiteListFromServerWithGroupId:param[@"groupId"]
                                                                       completion:^(BOOL inWhiteList, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyIsMemberInWhiteListFromServer
+                      channelName:aChannelName
                             error:aError
                            object:@(inWhiteList)];
     }];
 }
 
-- (void)getGroupFileListFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupFileListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupFileListWithId:param[@"groupId"]
                                                     pageNumber:[param[@"pageNum"] intValue]
                                                       pageSize:[param[@"pageSize"] intValue]
                                                     completion:^(NSArray *aList, EMError *aError)
      {
+        
+        NSMutableArray *array = [NSMutableArray array];
+        for (EMGroupSharedFile *file in aList) {
+            [array addObject:[file toJson]];
+        }
+        
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupFileListFromServer
+                      channelName:aChannelName
                             error:aError
-                           object:aList];
+                           object:array];
     }];
 }
-- (void)getGroupAnnouncementFromServer:(NSDictionary *)param result:(FlutterResult)result {
+- (void)getGroupAnnouncementFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager getGroupAnnouncementWithId:param[@"groupId"]
                                                         completion:^(NSString *aAnnouncement, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyGetGroupAnnouncementFromServer
+                      channelName:aChannelName
                             error:aError
                            object:aAnnouncement];
     }];
 }
 
-- (void)addMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)addMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager addMembers:param[@"members"]
                                            toGroup:param[@"groupId"]
@@ -418,182 +516,182 @@
                                         completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAddMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)inviterUsers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)inviterUsers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager addMembers:param[@"members"]
                                             toGroup:param[@"groupId"]
                                             message:param[@"reason"]
                                          completion:^(EMGroup *aGroup, EMError *aError) {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyInviterUser
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
     
 }
 
-- (void)removeMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)removeMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager removeMembers:param[@"members"]
                                             fromGroup:param[@"groupId"]
                                            completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyRemoveMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
     
 }
 
-- (void)blockMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)blockMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager blockMembers:param[@"members"]
                                            fromGroup:param[@"groupId"]
                                           completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyBlockMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)unblockMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)unblockMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager unblockMembers:param[@"members"]
                                              fromGroup:param[@"groupId"]
                                             completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUnblockMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)updateGroupSubject:(NSDictionary *)param result:(FlutterResult)result {
+- (void)updateGroupSubject:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateGroupSubject:param[@"name"]
                                                   forGroup:param[@"groupId"]
                                                 completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateGroupSubject
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)updateDescription:(NSDictionary *)param result:(FlutterResult)result {
+- (void)updateDescription:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateDescription:param[@"desc"]
                                                  forGroup:param[@"groupId"]
                                                completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateDescription
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)leaveGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)leaveGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager leaveGroup:param[@"groupId"]
                                         completion:^(EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyLeaveGroup
+                      channelName:aChannelName
                             error:aError
                            object:nil];
     }];
 }
 
-- (void)destroyGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)destroyGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager destroyGroup:param[@"groupId"]
                                     finishCompletion:^(EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyDestroyGroup
+                      channelName:aChannelName
                             error:aError
                            object:nil];
         
     }];
 }
 
-- (void)blockGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)blockGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager blockGroup:param[@"groupId"]
                                         completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyBlockGroup
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
         
     }];
 }
 
-- (void)unblockGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)unblockGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager unblockGroup:param[@"groupId"]
                                           completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUnblockGroup
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)updateGroupOwner:(NSDictionary *)param result:(FlutterResult)result {
+- (void)updateGroupOwner:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateGroupOwner:param[@"groupId"]
                                                 newOwner:param[@"owner"]
                                               completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateGroupOwner
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)addAdmin:(NSDictionary *)param result:(FlutterResult)result {
+- (void)addAdmin:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager addAdmin:param[@"admin"]
                                          toGroup:param[@"groupId"]
                                       completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAddAdmin
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)removeAdmin:(NSDictionary *)param result:(FlutterResult)result {
+- (void)removeAdmin:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager removeAdmin:param[@"admin"]
                                           fromGroup:param[@"groupId"]
                                          completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyRemoveAdmin
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)muteMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)muteMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager muteMembers:param[@"members"]
                                    muteMilliseconds:[param[@"duration"] integerValue]
@@ -601,75 +699,75 @@
                                          completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyMuteMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)unMuteMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)unMuteMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager unmuteMembers:param[@"members"]
                                             fromGroup:param[@"groupId"]
                                            completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUnMuteMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)muteAllMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)muteAllMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager muteAllMembersFromGroup:param[@"groupId"]
                                                      completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyMuteAllMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)unMuteAllMembers:(NSDictionary *)param result:(FlutterResult)result {
+- (void)unMuteAllMembers:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager unmuteAllMembersFromGroup:param[@"groupId"]
                                                        completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUnMuteAllMembers
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)addWhiteList:(NSDictionary *)param result:(FlutterResult)result {
+- (void)addWhiteList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager addWhiteListMembers:param[@"members"]
                                                   fromGroup:param[@"groupId"]
                                                  completion:^(EMGroup *aGroup, EMError *aError) {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAddWhiteList
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)removeWhiteList:(NSDictionary *)param result:(FlutterResult)result {
-    //    __weak typeof(self) weakSelf = self;
-    //    [EMClient.sharedClient.groupManager removeWhiteListMembers:param[@"members"]
-    //                                                     fromGroup:param[@"groupId"]
-    //                                                    completion:^(EMGroup *aGroup, EMError *aError) {
-    //        [weakSelf wrapperCallBack:result
-    //                      channelName:EMMethodKeyAddWhiteList
-    //                            error:aError
-    //                           object:[aGroup toJson]];
-    //    }];
+- (void)removeWhiteList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+        __weak typeof(self) weakSelf = self;
+        [EMClient.sharedClient.groupManager removeWhiteListMembers:param[@"members"]
+                                                         fromGroup:param[@"groupId"]
+                                                        completion:^(EMGroup *aGroup, EMError *aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:[aGroup toJson]];
+        }];
 }
 
-// TODO: dujiepeng.
-- (void)uploadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
+
+- (void)uploadGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager uploadGroupSharedFileWithId:param[@"groupId"]
                                                            filePath:param[@"filePath"]
@@ -679,13 +777,13 @@
     } completion:^(EMGroupSharedFile *aSharedFile, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUploadGroupSharedFile
+                      channelName:aChannelName
                             error:aError
                            object:@(!aError)];
     }];
 }
 
-- (void)downloadGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
+- (void)downloadGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager downloadGroupSharedFileWithId:param[@"groupId"]
                                                              filePath:param[@"savePath"]
@@ -696,91 +794,91 @@
     } completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyDownloadGroupSharedFile
+                      channelName:aChannelName
                             error:aError
                            object:@(!aError)];
     }];
 }
 
-- (void)removeGroupSharedFile:(NSDictionary *)param result:(FlutterResult)result {
+- (void)removeGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager removeGroupSharedFileWithId:param[@"groupId"]
                                                        sharedFileId:param[@"fileId"]
                                                          completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyRemoveGroupSharedFile
+                      channelName:aChannelName
                             error:aError
                            object:@(!aError)];
     }];
 }
 
-- (void)updateGroupAnnouncement:(NSDictionary *)param result:(FlutterResult)result {
+- (void)updateGroupAnnouncement:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateGroupAnnouncementWithId:param[@"groupId"]
                                                          announcement:param[@"announcement"]
                                                            completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateGroupAnnouncement
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
     
 }
 
-- (void)updateGroupExt:(NSDictionary *)param result:(FlutterResult)result {
+- (void)updateGroupExt:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager updateGroupExtWithId:param[@"groupId"]
                                                          ext:param[@"ext"]
                                                   completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyUpdateGroupExt
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)joinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)joinPublicGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager joinPublicGroup:param[@"groupId"]
                                              completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyJoinPublicGroup
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)requestToJoinPublicGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)requestToJoinPublicGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager requestToJoinPublicGroup:param[@"groupId"]
                                                          message:param[@"reason"]
                                                       completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyRequestToJoinPublicGroup
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)acceptJoinApplication:(NSDictionary *)param result:(FlutterResult)result {
+- (void)acceptJoinApplication:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager approveJoinGroupRequest:param[@"groupId"]
                                                          sender:param[@"username"]
                                                      completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAcceptJoinApplication
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)declineJoinApplication:(NSDictionary *)param result:(FlutterResult)result {
+- (void)declineJoinApplication:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager declineJoinGroupRequest:param[@"groupId"]
                                                          sender:param[@"username"]
@@ -788,26 +886,26 @@
                                                      completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyDeclineJoinApplication
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)acceptInvitationFromGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)acceptInvitationFromGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager acceptInvitationFromGroup:param[@"groupId"]
                                                           inviter:param[@"inviter"]
                                                        completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyAcceptInvitationFromGroup
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
 }
 
-- (void)declineInvitationFromGroup:(NSDictionary *)param result:(FlutterResult)result {
+- (void)declineInvitationFromGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager declineGroupInvitation:param[@"groupId"]
                                                        inviter:param[@"inviter"]
@@ -815,13 +913,13 @@
                                                     completion:^(EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyDeclineInvitationFromGroup
+                      channelName:aChannelName
                             error:aError
                            object:nil];
     }];
 }
 
-- (void)ignoreGroupPush:(NSDictionary *)param result:(FlutterResult)result {
+- (void)ignoreGroupPush:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     
     __block NSString *groupId = param[@"groupId"];
@@ -830,7 +928,7 @@
                                                        completion:^(EMError * _Nonnull aError) {
         EMGroup *aGroup = [EMGroup groupWithId:groupId];
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyIgnoreGroupPush
+                      channelName:aChannelName
                             error:aError
                            object:[aGroup toJson]];
     }];
