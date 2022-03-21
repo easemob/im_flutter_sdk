@@ -53,55 +53,55 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         JSONObject param = (JSONObject)call.arguments;
         try {
             if (EMSDKMethod.init.equals(call.method)) {
-                init(param, EMSDKMethod.init, result);
+                init(param, call.method, result);
             }
             else if (EMSDKMethod.createAccount.equals(call.method))
             {
-                createAccount(param, EMSDKMethod.createAccount, result);
+                createAccount(param, call.method, result);
             }
             else if (EMSDKMethod.login.equals(call.method))
             {
-                login(param, EMSDKMethod.login, result);
+                login(param, call.method, result);
             }
             else if (EMSDKMethod.logout.equals(call.method))
             {
-                logout(param, EMSDKMethod.logout, result);
+                logout(param, call.method, result);
             }
             else if (EMSDKMethod.changeAppKey.equals(call.method))
             {
-                changeAppKey(param, EMSDKMethod.changeAppKey, result);
+                changeAppKey(param, call.method, result);
             }
             else if (EMSDKMethod.updateCurrentUserNick.equals(call.method))
             {
-                updateCurrentUserNick(param, EMSDKMethod.updateCurrentUserNick, result);
+                updateCurrentUserNick(param, call.method, result);
             }
             else if (EMSDKMethod.uploadLog.equals(call.method))
             {
-                uploadLog(param, EMSDKMethod.uploadLog, result);
+                uploadLog(param, call.method, result);
             }
             else if (EMSDKMethod.compressLogs.equals(call.method))
             {
-                compressLogs(param, EMSDKMethod.compressLogs, result);
+                compressLogs(param, call.method, result);
             }
             else if (EMSDKMethod.getLoggedInDevicesFromServer.equals(call.method))
             {
-                getLoggedInDevicesFromServer(param, EMSDKMethod.getLoggedInDevicesFromServer, result);
+                getLoggedInDevicesFromServer(param, call.method, result);
             }
             else if (EMSDKMethod.kickDevice.equals(call.method))
             {
-                kickDevice(param, EMSDKMethod.kickDevice, result);
+                kickDevice(param, call.method, result);
             }
             else if (EMSDKMethod.kickAllDevices.equals(call.method))
             {
-                kickAllDevices(param, EMSDKMethod.kickAllDevices, result);
+                kickAllDevices(param, call.method, result);
             }
             else if (EMSDKMethod.isLoggedInBefore.equals(call.method))
             {
-                isLoggedInBefore(param, EMSDKMethod.isLoggedInBefore, result);
+                isLoggedInBefore(param, call.method, result);
             }
             else if (EMSDKMethod.getCurrentUser.equals(call.method))
             {
-                getCurrentUser(param, EMSDKMethod.getCurrentUser, result);
+                getCurrentUser(param, call.method, result);
             }
             else if (EMSDKMethod.loginWithAgoraToken.equals(call.method))
             {
@@ -109,7 +109,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
             else if (EMSDKMethod.getToken.equals(call.method))
             {
-                getToken(param, EMSDKMethod.getToken, result);
+                getToken(param, call.method, result);
             }
             else if (EMSDKMethod.isConnected.equals(call.method)) {
                 isConnected(param, call.method, result);

@@ -48,10 +48,10 @@ class EMConversation {
     return data;
   }
 
-  String id = '';
-  EMConversationType? type;
+  late String id;
+  late EMConversationType type;
 
-  int? _unreadCount;
+  int _unreadCount = 0;
   Map<String, String>? _ext;
   String? _name;
   EMMessage? _latestMessage;
@@ -95,7 +95,7 @@ extension EMConversationExtension on EMConversation {
   static const MethodChannel _emConversationChannel =
       const MethodChannel('com.chat.im/chat_conversation', JSONMethodCodec());
 
-  int? get unreadCount {
+  int get unreadCount {
     return _unreadCount;
   }
 
