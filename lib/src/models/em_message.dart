@@ -636,7 +636,7 @@ class EMFileMessageBody extends EMMessageBody {
   EMDownloadStatus fileStatus = EMDownloadStatus.PENDING;
 
   /// 文件大小
-  int? fileSize = 0;
+  int fileSize = 0;
 
   /// 文件名称
   String? displayName = '';

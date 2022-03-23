@@ -180,7 +180,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
     try {
       SmartDialog.showLoading(msg: '申请中...');
       if (_group != null) {
-        EMClient.getInstance.groupManager.requestToJoinPublicGroup(
+        await EMClient.getInstance.groupManager.requestToJoinPublicGroup(
           _group!.groupId,
         );
       }
