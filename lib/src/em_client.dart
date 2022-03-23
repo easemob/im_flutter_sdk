@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/services.dart';
 import 'em_chat_manager.dart';
 import 'em_contact_manager.dart';
@@ -26,27 +26,15 @@ class EMClient {
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
   final List<EMCustomListener> _customListeners = [];
 
-  /// instance fields
-  bool _connected = false;
   EMOptions? _options;
-
-  String _sdkVersion = '1.0.0';
-
-  String? _currentUsername;
-
-  bool _isLoginBefore = false;
 
   /// 获取配置信息[EMOptions].
   EMOptions? get options => _options;
 
-  /// 获取当前是否连接到服务器
-  bool get connected => _connected;
+  String? _currentUsername;
 
   /// 获取当前登录的环信id
   String? get currentUsername => _currentUsername;
-
-  /// 获取是否登录
-  bool get isLoginBefore => _isLoginBefore;
 
   static EMClient get getInstance =>
       _instance = _instance ?? EMClient._internal();
@@ -72,31 +60,59 @@ class EMClient {
     });
   }
 
+  Future<bool> isConnected() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.isConnected);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isConnected);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<bool> isLoginBefore() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.isLoggedInBefore);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isLoggedInBefore);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<String?> getCurrentUsername() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getCurrentUser);
+    try {
+      EMError.hasErrorFromResult(result);
+      _currentUsername = result[ChatMethodKeys.getCurrentUser];
+      if (_currentUsername != null) {
+        if (_currentUsername!.length == 0) {
+          _currentUsername = null;
+        }
+      }
+      return _currentUsername;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   /// 获取已登录账号的环信Token
-  Future<String?> getAccessToken() async {
+  Future<String> getAccessToken() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getToken);
-    EMError.hasErrorFromResult(result);
-    return result[ChatMethodKeys.getToken];
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.getToken];
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// 初始化SDK 指定[options].
   Future<void> init(EMOptions options) async {
     _options = options;
     EMLog.v('init: $options');
-    // 直接返回当前登录账号和是否登陆过
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.init, options.toJson());
-    Map map = result[ChatMethodKeys.init];
-    _currentUsername = map['username'];
-    _isLoginBefore = () {
-      if (map.containsKey("isLoginBefore")) {
-        return map['isLoginBefore'] as bool;
-      } else {
-        return false;
-      }
-    }();
-
-    return null;
+    await _channel.invokeMethod(ChatMethodKeys.init, options.toJson());
+    _currentUsername = await getCurrentUsername();
   }
 
   /// 注册环信id，[username],[password],
@@ -116,7 +132,7 @@ class EMClient {
 
   /// 使用用户名(环信id)和密码(或token)登录，[username], [pwdOrToken]
   /// 返回登录成功的id(环信id)
-  Future<String?> login(String username, String pwdOrToken,
+  Future<void> login(String username, String pwdOrToken,
       [bool isPassword = true]) async {
     EMLog.v('login: $username : $pwdOrToken, isPassword: $isPassword');
     Map req = {
@@ -127,9 +143,7 @@ class EMClient {
     Map result = await _channel.invokeMethod(ChatMethodKeys.login, req);
     try {
       EMError.hasErrorFromResult(result);
-      _currentUsername = result[ChatMethodKeys.login]['username'];
-      _isLoginBefore = true;
-      return _currentUsername;
+      _currentUsername = result[ChatMethodKeys.login];
     } on EMError catch (e) {
       throw e;
     }
@@ -278,24 +292,19 @@ class EMClient {
     }
   }
 
-  /// @nodoc once connection changed, listeners to be informed.
   Future<void> _onConnected() async {
-    _connected = true;
     for (var listener in _connectionListeners) {
       listener.onConnected();
     }
   }
 
-  /// @nodoc
   Future<void> _onDisconnected(Map? map) async {
-    _connected = false;
     for (var listener in _connectionListeners) {
       int? errorCode = map!['errorCode'];
       listener.onDisconnected(errorCode);
     }
   }
 
-  /// @nodoc on multi device event emitted, call listeners func.
   Future<void> _onMultiDeviceEvent(Map map) async {
     var event = map['event'];
     for (var listener in _multiDeviceListeners) {
@@ -310,33 +319,27 @@ class EMClient {
   }
 
   void _onReceiveCustomData(Map map) {
-    debugPrint("map ---- $map");
     for (var listener in _customListeners) {
       listener.onDataReceived(map);
     }
   }
 
-  /// @nodoc chatManager - retrieve [EMChat Manager] handle.
   EMChatManager get chatManager {
     return _chatManager;
   }
 
-  /// @nodoc  contactManager - retrieve [EMContactManager] handle.
   EMContactManager get contactManager {
     return _contactManager;
   }
 
-  /// @nodoc
   EMChatRoomManager get chatRoomManager {
     return _chatRoomManager;
   }
 
-  /// @nodoc  groupManager - retrieve [EMGroupManager] handle.
   EMGroupManager get groupManager {
     return _groupManager;
   }
 
-  /// @nodoc  pushManager - retrieve [EMPushManager] handle.
   EMPushManager get pushManager {
     return _pushManager;
   }
@@ -345,7 +348,6 @@ class EMClient {
     return _userInfoManager;
   }
 
-  /// @nodoc
   EMContactGroupEvent? convertIntToEMContactGroupEvent(int? i) {
     switch (i) {
       case 2:
@@ -403,12 +405,8 @@ class EMClient {
     }
   }
 
-  String get flutterSDKVersion => _sdkVersion;
-
   void _clearAllInfo() {
-    _isLoginBefore = false;
-    _connected = false;
-    _currentUsername = '';
+    _currentUsername = null;
     _userInfoManager.clearUserInfoCache();
   }
 }

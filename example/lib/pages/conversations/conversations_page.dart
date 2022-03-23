@@ -160,13 +160,15 @@ class ConversationPageState extends State<ConversationPage>
       _refreshController.refreshCompleted();
       int count = 0;
       for (var conversation in _conversationsList) {
-        count += conversation.unreadCount ?? 0;
+        count += conversation.unreadCount;
       }
       widget.updateCount(count);
     } on Error {
       _refreshController.refreshFailed();
     } finally {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -191,7 +193,9 @@ class ConversationPageState extends State<ConversationPage>
       _conversationsList.removeAt(index);
     } on Error {
     } finally {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 

@@ -53,6 +53,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void initState() {
     super.initState();
+
     items = [
       ChatMoreViewItem(
           'images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),
@@ -129,7 +130,9 @@ class _ChatPageState extends State<ChatPage>
           if (_keyboardVisible) {
             _inputBarType = ChatInputBarType.normal;
             SystemChannels.textInput.invokeMethod('TextInput.hide');
-            setState(() {});
+            if (mounted) {
+              setState(() {});
+            }
           }
         },
         child: SafeArea(
@@ -260,7 +263,9 @@ class _ChatPageState extends State<ChatPage>
         onFaceTap: (expression) {
           _inputBarEditingController.text =
               _inputBarEditingController.text + '[${expression.name}]';
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         },
         onDeleteTap: () {
           if (_inputBarEditingController.text.length > 0) {
@@ -295,7 +300,9 @@ class _ChatPageState extends State<ChatPage>
 
   /// 刷新View并滑动到最底部
   _setStateAndMoreToListViewEnd() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
     Future.delayed(Duration(milliseconds: 100), () {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
@@ -361,8 +368,8 @@ class _ChatPageState extends State<ChatPage>
   _sendTextMessage(String txt) async {
     if (txt.length == 0) return;
     EMMessage msg = EMMessage.createTxtSendMessage(
-      widget.conversation.id,
-      txt,
+      username: widget.conversation.id,
+      content: txt,
     );
 
     _sendMessage(msg);
@@ -608,9 +615,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
   @override
-  void onChatRoomDestroyed(String roomId, String? roomName) {
-    // TODO: implement onChatRoomDestroyed
-  }
+  void onChatRoomDestroyed(String roomId, String? roomName) {}
 
   @override
   void onConversationRead(String from, String to) {}

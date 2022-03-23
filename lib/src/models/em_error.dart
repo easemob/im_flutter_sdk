@@ -1,27 +1,22 @@
 class EMError {
-  EMError._private([this._code, this._description]);
+  EMError._private([int? code, String? desc])
+      : _code = code ?? 0,
+        _description = desc ?? "";
 
-  int? _code = 0;
-  String? _description;
+  late int _code;
+  late String _description;
 
-  get code {
+  int get code {
     return _code;
   }
 
-  get description {
+  String get description {
     return _description;
   }
 
   factory EMError.fromJson(Map map) {
-    return EMError._private()
-      .._code = map['code']
-      .._description = map['description'];
+    return EMError._private(map['code'], map['description']);
   }
-
-//  static EMError hasErrorFromResult(Map map) {
-//    EMError error = EMError.fromJson(map['error']);
-//    return error;
-//  }
 
   static hasErrorFromResult(Map map) {
     if (map['error'] == null) {
@@ -35,6 +30,6 @@ class EMError {
 
   @override
   String toString() {
-    return "code: " + _code.toString() + " desc: " + _description!;
+    return "code: " + code.toString() + " desc: " + description;
   }
 }
