@@ -27,7 +27,7 @@
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"options"] = [self.setting toJson];
     ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
-    
+
     return ret;
 }
 

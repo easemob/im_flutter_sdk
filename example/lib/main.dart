@@ -28,6 +28,8 @@ void main() {
 
 void initSDK() async {
   var options = EMOptions(appKey: 'easemob-demo#easeim');
+  options.deleteMessagesAsExitGroup = false;
+  options.deleteMessagesAsExitChatRoom = false;
   options.debugModel = true;
   options.enableAPNs("EaseIM_APNS_Product");
 
