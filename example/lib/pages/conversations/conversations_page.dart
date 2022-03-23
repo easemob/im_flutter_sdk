@@ -166,7 +166,9 @@ class ConversationPageState extends State<ConversationPage>
     } on Error {
       _refreshController.refreshFailed();
     } finally {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -191,7 +193,9 @@ class ConversationPageState extends State<ConversationPage>
       _conversationsList.removeAt(index);
     } on Error {
     } finally {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
