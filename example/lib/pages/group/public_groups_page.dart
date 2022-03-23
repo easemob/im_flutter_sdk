@@ -43,7 +43,9 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                       _searchName = text;
                       if (_searchName.length == 0) {
                         _searchedGroup = null;
-                        setState(() {});
+                        if (mounted) {
+                          setState(() {});
+                        }
                       }
                     },
                     style: TextStyle(
@@ -154,7 +156,9 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
         // 返回数据小于pageSize,说明是最后一页
         if (_pageSize > cursor.data!.length) {
           _isEnd = true;
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         }
       }
     } on EMError catch (e) {
@@ -178,8 +182,10 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
       _cursor = cursor.cursor;
       _groupsList.clear();
       _groupsList.addAll(cursor.data!);
-      setState(() {});
       SmartDialog.showToast('获取成功');
+      if (mounted) {
+        setState(() {});
+      }
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
       _refreshController.refreshFailed();
@@ -203,7 +209,9 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
       SmartDialog.showToast('搜索失败: $e');
     } finally {
       SmartDialog.dismiss();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 }
