@@ -32,31 +32,31 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
         JSONObject param = (JSONObject)call.arguments;
         try {
             if (EMSDKMethod.getImPushConfig.equals(call.method)) {
-                getImPushConfig(param, EMSDKMethod.getImPushConfig, result);
+                getImPushConfig(param, call.method, result);
             }
             else if(EMSDKMethod.getImPushConfigFromServer.equals(call.method)){
-                getImPushConfigFromServer(param, EMSDKMethod.getImPushConfigFromServer, result);
+                getImPushConfigFromServer(param, call.method, result);
             }
             else if(EMSDKMethod.updatePushNickname.equals(call.method)){
-                updatePushNickname(param, EMSDKMethod.updatePushNickname, result);
+                updatePushNickname(param, call.method, result);
             }
             else if(EMSDKMethod.imPushNoDisturb.equals(call.method)){
-                imPushNoDisturb(param, EMSDKMethod.imPushNoDisturb, result);
+                imPushNoDisturb(param, call.method, result);
             }
             else if(EMSDKMethod.updateImPushStyle.equals(call.method)){
-                updateImPushStyle(param, EMSDKMethod.updateImPushStyle, result);
+                updateImPushStyle(param, call.method, result);
             }
             else if(EMSDKMethod.updateGroupPushService.equals(call.method)){
-                updateGroupPushService(param, EMSDKMethod.updateGroupPushService, result);
+                updateGroupPushService(param, call.method, result);
             }
             else if(EMSDKMethod.getNoDisturbGroups.equals(call.method)){
-                getNoDisturbGroups(param, EMSDKMethod.getNoDisturbGroups, result);
+                getNoDisturbGroups(param, call.method, result);
             }
             else if(EMSDKMethod.updateHMSPushToken.equals(call.method)){
-                updateHMSPushToken(param, EMSDKMethod.updateHMSPushToken, result);
+                updateHMSPushToken(param, call.method, result);
             }
             else if(EMSDKMethod.updateFCMPushToken.equals(call.method)){
-                updateFCMPushToken(param, EMSDKMethod.updateFCMPushToken, result);
+                updateFCMPushToken(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -119,7 +119,7 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void updateGroupPushService(JSONObject params, String channelName,  Result result) throws JSONException {
         String groupId = params.getString("group_id");
-        boolean enablePush = params.getBoolean("enablePush");
+        boolean enablePush = params.getBoolean("noDisturb");
         List<String> groupList = new ArrayList<>();
         groupList.add(groupId);
         asyncRunnable(()-> {

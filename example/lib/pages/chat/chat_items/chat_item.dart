@@ -230,7 +230,9 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   @override
   void onError(EMError error) {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
     print('发送失败');
   }
 
@@ -241,8 +243,9 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   @override
   void onReadAck() {
-    setState(() {});
-    print('收到已读回调');
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -250,8 +253,9 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
 
   @override
   void onSuccess() {
-    setState(() {});
-    print('发送成功');
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   _messageBubble() {

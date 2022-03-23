@@ -405,7 +405,9 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   void _updateInputBarType() {
     _showSendBtn = widget.textController?.text.length != 0;
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
 

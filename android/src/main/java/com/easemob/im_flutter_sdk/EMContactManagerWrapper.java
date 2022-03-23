@@ -30,27 +30,27 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
         JSONObject param = (JSONObject) call.arguments;
         try {
             if (EMSDKMethod.addContact.equals(call.method)) {
-                addContact(param, EMSDKMethod.addContact, result);
+                addContact(param, call.method, result);
             } else if (EMSDKMethod.deleteContact.equals(call.method)) {
-                deleteContact(param, EMSDKMethod.deleteContact, result);
+                deleteContact(param, call.method, result);
             } else if (EMSDKMethod.getAllContactsFromServer.equals(call.method)) {
-                getAllContactsFromServer(param, EMSDKMethod.getAllContactsFromServer, result);
+                getAllContactsFromServer(param, call.method, result);
             } else if (EMSDKMethod.getAllContactsFromDB.equals(call.method)) {
-                getAllContactsFromDB(param, EMSDKMethod.getAllContactsFromDB, result);
+                getAllContactsFromDB(param, call.method, result);
             } else if (EMSDKMethod.addUserToBlockList.equals(call.method)) {
-                addUserToBlockList(param, EMSDKMethod.addUserToBlockList, result);
+                addUserToBlockList(param, call.method, result);
             } else if (EMSDKMethod.removeUserFromBlockList.equals(call.method)) {
-                removeUserFromBlockList(param, EMSDKMethod.removeUserFromBlockList, result);
+                removeUserFromBlockList(param, call.method, result);
             } else if (EMSDKMethod.getBlockListFromServer.equals(call.method)) {
-                getBlockListFromServer(param, EMSDKMethod.getBlockListFromServer, result);
+                getBlockListFromServer(param, call.method, result);
             } else if (EMSDKMethod.getBlockListFromDB.equals(call.method)) {
-                getBlockListFromDB(param, EMSDKMethod.getBlockListFromDB, result);
+                getBlockListFromDB(param, call.method, result);
             } else if (EMSDKMethod.acceptInvitation.equals(call.method)) {
-                acceptInvitation(param, EMSDKMethod.acceptInvitation, result);
+                acceptInvitation(param, call.method, result);
             } else if (EMSDKMethod.declineInvitation.equals(call.method)) {
-                declineInvitation(param, EMSDKMethod.declineInvitation, result);
+                declineInvitation(param, call.method, result);
             } else if (EMSDKMethod.getSelfIdsOnOtherPlatform.equals(call.method)) {
-                getSelfIdsOnOtherPlatform(param, EMSDKMethod.getSelfIdsOnOtherPlatform, result);
+                getSelfIdsOnOtherPlatform(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }

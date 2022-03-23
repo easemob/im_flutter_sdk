@@ -163,7 +163,7 @@ class _ConversationItemState extends State<ConversationItem> {
 
   /// 未读数
   int _unreadCount() {
-    return this.widget.conversation.unreadCount ?? 0;
+    return this.widget.conversation.unreadCount;
   }
 
   /// 消息时间

@@ -5,7 +5,7 @@ class ChatMethodKeys {
   static const String login = 'login';
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
-  static const String isLoggedInBefore = 'isLoggedInBefore';
+
   static const String uploadLog = 'uploadLog';
   static const String compressLogs = 'compressLogs';
   static const String kickDevice = 'kickDevice';
@@ -13,7 +13,11 @@ class ChatMethodKeys {
   static const String currentUser = 'currentUser';
   static const String getLoggedInDevicesFromServer =
       'getLoggedInDevicesFromServer';
+
   static const String getToken = 'getToken';
+  static const String getCurrentUser = 'getCurrentUser';
+  static const String isLoggedInBefore = 'isLoggedInBefore';
+  static const String isConnected = 'isConnected';
 
   /// EMClient listener
   static const String onMultiDeviceEvent = 'onMultiDeviceEvent';

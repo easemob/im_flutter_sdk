@@ -7,15 +7,17 @@ public class EMSDKMethod {
     static final String login = "login";
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
-    static final String isLoggedInBefore = "isLoggedInBefore";
     static final String updateCurrentUserNick = "updateCurrentUserNick";
     static final String uploadLog = "uploadLog";
     static final String compressLogs = "compressLogs";
     static final String kickDevice = "kickDevice";
     static final String kickAllDevices = "kickAllDevices";
     static final String getLoggedInDevicesFromServer = "getLoggedInDevicesFromServer";
-    static final String getCurrentUser = "getCurrentUser";
+
     static final String getToken = "getToken";
+    static final String getCurrentUser = "getCurrentUser";
+    static final String isLoggedInBefore = "isLoggedInBefore";
+    static final String isConnected = "isConnected";
 
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";

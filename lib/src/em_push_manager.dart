@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'tools/em_extension.dart';
 import 'chat_method_keys.dart';
 import 'models/em_error.dart';
-import 'models/em_push_config.dart';
+import 'models/em_push_configs.dart';
 
 class EMPushManager {
   static const _channelPrefix = 'com.chat.im';
@@ -13,23 +13,23 @@ class EMPushManager {
       '$_channelPrefix/chat_push_manager', JSONMethodCodec());
 
   /// 从本地获取ImPushConfig
-  Future<EMImPushConfig> getImPushConfig() async {
+  Future<EMPushConfigs> getImPushConfig() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
     try {
       EMError.hasErrorFromResult(result);
-      return EMImPushConfig.fromJson(result[ChatMethodKeys.getImPushConfig]);
+      return EMPushConfigs.fromJson(result[ChatMethodKeys.getImPushConfig]);
     } on EMError catch (e) {
       throw e;
     }
   }
 
   /// 从服务器获取ImPushConfig
-  Future<EMImPushConfig> getImPushConfigFromServer() async {
+  Future<EMPushConfigs> getImPushConfigFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
     try {
       EMError.hasErrorFromResult(result);
-      return EMImPushConfig.fromJson(
+      return EMPushConfigs.fromJson(
           result[ChatMethodKeys.getImPushConfigFromServer]);
     } on EMError catch (e) {
       throw e;
