@@ -75,15 +75,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 
 ```dart
 EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
-EMPushConfig config = EMPushConfig();
-// 配置推送信息
-config
-  ..enableAPNs("chatdemoui_dev")
-  ..enableHWPush()
-  ..enableFCM('')
-  ..enableMeiZuPush('', '')
-  ..enableMiPush('', '');
-options.pushConfig = config;        
+options.enableAPNs("chatdemoui_dev");
 await EMClient.getInstance.init(options);
 ```
 
