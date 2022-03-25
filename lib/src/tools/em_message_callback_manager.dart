@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/src/models/em_message_state_handle.dart';
+import 'package:im_flutter_sdk/src/internal/em_message_state_handle.dart';
 
-import '../chat_method_keys.dart';
+import '../internal/chat_method_keys.dart';
 
 class MessageCallBackManager {
   static const _channelPrefix = 'com.chat.im';
