@@ -1,15 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'em_chat_manager.dart';
-import 'em_contact_manager.dart';
-import 'em_group_manager.dart';
-import 'em_push_manager.dart';
-import 'em_userInfo_manager.dart';
+
+import 'internal/chat_method_keys.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
-import 'chat_method_keys.dart';
-import 'em_chat_room_manager.dart';
+import 'tools/em_log.dart';
 
 class EMClient {
   static const _channelPrefix = 'com.chat.im';

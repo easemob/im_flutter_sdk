@@ -241,10 +241,7 @@ static EMClientWrapper *wrapper = nil;
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
-                               object:@{
-                                   @"username": aUsername,
-                                   @"token": EMClient.sharedClient.accessUserToken
-                               }];
+                               object:EMClient.sharedClient.accessUserToken];
         }];
     }
 }

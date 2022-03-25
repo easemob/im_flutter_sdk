@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 import '../im_flutter_sdk.dart';
-import 'chat_method_keys.dart';
+import 'internal/chat_method_keys.dart';
 
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';

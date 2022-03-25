@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
-import '../chat_method_keys.dart';
+import '../internal/chat_method_keys.dart';
 
 enum EMMessageSearchDirection { Up, Down }
 

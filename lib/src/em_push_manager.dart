@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'chat_method_keys.dart';
+import 'internal/chat_method_keys.dart';
 import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 

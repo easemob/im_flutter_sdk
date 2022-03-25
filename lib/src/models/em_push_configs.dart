@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-import '../chat_method_keys.dart';
+import '../internal/chat_method_keys.dart';
 import '../tools/em_extension.dart';
 import 'em_chat_enums.dart';
 import 'em_error.dart';
