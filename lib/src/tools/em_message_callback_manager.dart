@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/src/internal/em_message_state_handle.dart';
+import '../internal/em_message_state_handle.dart';
 
 import '../internal/chat_method_keys.dart';
 
@@ -17,7 +16,6 @@ class MessageCallBackManager {
     _emMessageChannel.setMethodCallHandler((MethodCall call) async {
       Map<String, dynamic> argMap = call.arguments;
       int? localTime = argMap['localTime'];
-      debugPrint("------- handle: $localTime");
       EMMessageStateHandle? handle = cacheHandleMap[localTime.toString()];
 
       if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
@@ -38,12 +36,10 @@ class MessageCallBackManager {
   }
 
   addMessage(String key, EMMessageStateHandle message) {
-    debugPrint("----- flutter 添加: " + key);
     cacheHandleMap[key] = message;
   }
 
   removeMessage(String key) {
-    debugPrint("----- flutter 删除: " + key);
     cacheHandleMap.remove(key);
   }
 }
