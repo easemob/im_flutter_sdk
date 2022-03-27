@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-import 'internal/chat_method_keys.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
+import 'internal/chat_method_keys.dart';
 import 'tools/em_log.dart';
 
+///
+/// The EMClient, which is the entry point of the Chat SDK. You can log in, log out, and access other functionalities such as group and chatroom with this class.
+///
 class EMClient {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel =
@@ -35,7 +38,6 @@ class EMClient {
   static EMClient get getInstance =>
       _instance = _instance ?? EMClient._internal();
 
-  /// @nodoc private constructor
   EMClient._internal() {
     _addNativeMethodCallHandler();
   }
@@ -103,7 +105,11 @@ class EMClient {
     }
   }
 
-  /// 初始化SDK 指定[options].
+  ///
+  /// Initializes the SDK.
+  ///
+  /// Param [options] The configurations. Make sure to set the param.
+  ///
   Future<void> init(EMOptions options) async {
     _options = options;
     EMLog.v('init: $options');
@@ -111,23 +117,42 @@ class EMClient {
     _currentUsername = await getCurrentUsername();
   }
 
-  /// 注册环信id，[username],[password],
-  /// 需要在环信后台的console中设置为开放注册才能通过sdk注册，否则只能使用rest api注册。
-  /// 返回注册成功的环信id
-  Future<String> createAccount(String username, String password) async {
+  ///
+  /// Register a new user with your chat network.
+  ///
+  /// Param [username] The username. The maximum length is 64 characters. Ensure that you set this parameter.
+  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-),
+  /// and the English period (.). This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
+  /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
+  ///
+  /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(ChatMethodKeys.createAccount, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.createAccount];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 使用用户名(环信id)和密码(或token)登录，[username], [pwdOrToken]
-  /// 返回登录成功的id(环信id)
+  ///
+  /// An app user logs in to the chat server with a password or token
+  ///
+  /// Param [username] The unique chat user ID, the same as username.
+  ///
+  /// Param [pwdOrToken] The password or token.
+  ///
+  /// Param [isPassword] login With password or token.
+  /// `true`: (default) login with password.
+  /// `false`: login with token.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
   Future<void> login(String username, String pwdOrToken,
       [bool isPassword = true]) async {
     EMLog.v('login: $username : $pwdOrToken, isPassword: $isPassword');
@@ -139,15 +164,22 @@ class EMClient {
     Map result = await _channel.invokeMethod(ChatMethodKeys.login, req);
     try {
       EMError.hasErrorFromResult(result);
-      _currentUsername = result[ChatMethodKeys.login];
+      _currentUsername = username;
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
-  /// 返回退出是否成功
-  Future<bool> logout([
+  ///
+  /// An app user logs out.
+  ///
+  /// Param [unbindDeviceToken] Whether to unbind the token.
+  /// `true`: (default) unbind the device token when logout.
+  /// `false`: not unbind the device token when logout.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> logout([
     bool unbindDeviceToken = true,
   ]) async {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
@@ -156,7 +188,6 @@ class EMClient {
     try {
       EMError.hasErrorFromResult(result);
       _clearAllInfo();
-      return result.boolValue(ChatMethodKeys.logout);
     } on EMError catch (e) {
       throw e;
     }
