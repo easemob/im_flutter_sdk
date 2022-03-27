@@ -227,7 +227,6 @@ static EMClientWrapper *wrapper = nil;
                                         password:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError)
         {
-            
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
@@ -241,7 +240,7 @@ static EMClientWrapper *wrapper = nil;
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
-                               object:EMClient.sharedClient.accessUserToken];
+                               object:EMClient.sharedClient.currentUsername];
         }];
     }
 }
