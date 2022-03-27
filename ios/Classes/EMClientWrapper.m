@@ -227,7 +227,6 @@ static EMClientWrapper *wrapper = nil;
                                         password:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError)
         {
-            
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
