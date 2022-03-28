@@ -6,6 +6,18 @@ import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
 import 'tools/em_message_callback_manager.dart';
 
+///
+/// The chat manager. This class is responsible for managing conversations.
+/// (such as: load, delete), sending messages, downloading attachments and so on.
+///
+/// Such as, send a text message:
+///
+/// ```dart
+///    EMMessage msg = EMMessage.createTxtSendMessage(
+///        username: toChatUsername, content: content);
+///    await EMClient.getInstance.chatManager.sendMessage(msg);
+/// ```
+///
 class EMChatManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel =
@@ -13,6 +25,7 @@ class EMChatManager {
 
   final List<EMChatManagerListener> _messageListeners = [];
 
+  /// @nodoc
   EMChatManager() {
     MessageCallBackManager.getInstance;
     _channel.setMethodCallHandler((MethodCall call) async {
