@@ -2,9 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-import '../im_flutter_sdk.dart';
-import 'chat_method_keys.dart';
+import 'em_listeners.dart';
+import 'internal/chat_method_keys.dart';
+import 'internal/em_event_keys.dart';
+import 'models/em_error.dart';
 
+///
+/// The `EMContactManager` is used to record, query, and modify contacts.
+///
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -23,7 +28,6 @@ class EMContactManager {
 
   final List<EMContactEventListener> _contactChangeEventListeners = [];
 
-  /// @nodoc
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
     String? username = event['username'];
@@ -50,8 +54,16 @@ class EMContactManager {
     }
   }
 
-  /// 添加联系人[username] with [reason].
-  Future<String?> addContact(
+  ///
+  /// Adds a new contact.
+  ///
+  /// Param [username] The user to be added.
+  ///
+  /// Param [reason] (optional) The invitation message. Set the parameter as null if you want to ignore the information.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> addContact(
     String username, [
     String reason = '',
   ]) async {
@@ -59,15 +71,23 @@ class EMContactManager {
     Map result = await _channel.invokeMethod(ChatMethodKeys.addContact, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.addContact];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 删除联系人 [username]
-  /// [keepConversation] true 保留会话和消息  false 不保留, 默认为false
-  Future<String?> deleteContact(
+  ///
+  /// Deletes a contact and all the conversations associated.
+  ///
+  /// Param [username] The contact to be deleted.
+  ///
+  /// Param [keepConversation] Whether to keep the associated conversation and messages.
+  /// `true`: keep conversation and messages.
+  /// `false`: (default) delete conversation and messages.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> deleteContact(
     String username, [
     bool keepConversation = false,
   ]) async {
@@ -75,13 +95,18 @@ class EMContactManager {
     Map result = await _channel.invokeMethod(ChatMethodKeys.deleteContact, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.deleteContact];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 从服务器获取所有的好友
+  ///
+  /// Get all contacts from the server.
+  ///
+  /// **return** The list of contacts.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
@@ -89,7 +114,6 @@ class EMContactManager {
       EMError.hasErrorFromResult(result);
       List<String> contacts = [];
       result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
-        // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
         contacts.add(element);
       });
       return contacts;
@@ -98,7 +122,13 @@ class EMContactManager {
     }
   }
 
-  /// 从本地获取所有的好友
+  ///
+  /// Gets the contact list from the local database.
+  ///
+  /// **return** The contact list.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
@@ -106,7 +136,6 @@ class EMContactManager {
       EMError.hasErrorFromResult(result);
       List<String> contacts = [];
       result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
-        // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
         contacts.add(element);
       });
 
@@ -116,35 +145,54 @@ class EMContactManager {
     }
   }
 
-  /// 把指定用户加入到黑名单中 [username] .
-  Future<String?> addUserToBlockList(
+  ///
+  /// Adds a user to block list.
+  /// You can send message to the user in block list, but you can not receive the message sent by the other.
+  ///
+  /// Param [username] The user to be blocked.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> addUserToBlockList(
     String username,
   ) async {
     Map req = {'username': username};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.addUserToBlockList, req);
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.addUserToBlockList,
+      req,
+    );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.addUserToBlockList];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 把用户从黑名单中移除 [username].
-  Future<String?> removeUserFromBlockList(String username) async {
+  ///
+  /// Removes the contact from the block list.
+  ///
+  /// Param [username] The user to be removed from the block list.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.removeUserFromBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.removeUserFromBlockList];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 从服务器获取黑名单列表
+  ///
+  /// Get all block list from the server.
+  ///
+  /// **return** The block list from the server.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
   Future<List<String>> getBlockListFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
@@ -152,7 +200,6 @@ class EMContactManager {
       EMError.hasErrorFromResult(result);
       List<String> blockList = [];
       result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
-        // 此处做了一个适配，目前native 返回的都是String, 为了避免以后出现进一步扩展，flutter直接返回contact对象
         blockList.add(element);
       });
       return blockList;
@@ -161,7 +208,13 @@ class EMContactManager {
     }
   }
 
-  /// 从本地数据库中获取黑名单列表
+  ///
+  /// Gets the local database block list.
+  ///
+  /// **return** The block list.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
     try {
@@ -176,33 +229,49 @@ class EMContactManager {
     }
   }
 
-  /// 接受加好友的邀请[username].
-  Future<String?> acceptInvitation(String username) async {
+  ///
+  /// Accepts a friend invitation。
+  ///
+  /// Param [username] The user who initiates the friend request.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.acceptInvitation, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.acceptInvitation];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 拒绝加好友的邀请 [username].
-  Future<String?> declineInvitation(String username) async {
+  ///
+  /// Declines a friend invitation.
+  ///
+  /// Param [username] The user who initiates the invitation.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
+  Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.declineInvitation, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.declineInvitation];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 从服务器获取登录用户在其他设备上登录的ID
+  ///
+  /// Get the unique IDs of current user on the other devices. The ID is username + "/" + resource.
+  ///
+  /// **return** The unique device ID list on the other devices if the method succeeds.
+  ///
+  /// **Throws** [EMError] A description of the issue that caused this error.
+  ///
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getSelfIdsOnOtherPlatform);
@@ -216,23 +285,23 @@ class EMContactManager {
     }
   }
 
-  /// 设置好友监听器 [contactListener]
+  ///
+  /// Registers a new contact listener.
+  ///
+  /// Param [contactListener] The contact listener to be registered.
+  ///
   void addContactListener(EMContactEventListener contactListener) {
     _contactChangeEventListeners.add(contactListener);
   }
 
-  /// 移除好友监听器  [contactListener]
+  ///
+  /// Removes the contact listener.
+  ///
+  /// Param [contactListener] The contact listener to be removed.
+  ///
   void removeContactListener(EMContactEventListener contactListener) {
     if (_contactChangeEventListeners.contains(contactListener)) {
       _contactChangeEventListeners.remove(contactListener);
     }
   }
-}
-
-class EMContactChangeEvent {
-  static const String CONTACT_ADD = 'onContactAdded';
-  static const String CONTACT_DELETE = 'onContactDeleted';
-  static const String INVITED = 'onContactInvited';
-  static const String INVITATION_ACCEPTED = 'onFriendRequestAccepted';
-  static const String INVITATION_DECLINED = 'onFriendRequestDeclined';
 }

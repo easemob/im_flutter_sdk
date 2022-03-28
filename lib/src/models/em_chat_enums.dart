@@ -16,3 +16,8 @@ enum EMConversationType {
   GroupChat, // 群聊消息
   ChatRoom, // 聊天室消息
 }
+
+enum EMPushStyle {
+  Simple,
+  Summary,
+}

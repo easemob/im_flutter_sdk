@@ -2,7 +2,7 @@ import "dart:async";
 
 import 'package:flutter/services.dart';
 import 'tools/em_extension.dart';
-import 'chat_method_keys.dart';
+import 'internal/chat_method_keys.dart';
 import '../im_flutter_sdk.dart';
 
 class EMChatRoomManager {

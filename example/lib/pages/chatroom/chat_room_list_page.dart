@@ -43,7 +43,9 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
                       _searchName = text;
                       if (_searchName.length == 0) {
                         _searchedRoom = null;
-                        setState(() {});
+                        if (mounted) {
+                          setState(() {});
+                        }
                       }
                     },
                     style: TextStyle(
@@ -162,11 +164,14 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
           _isEnd = false;
         }
       }
-      setState(() {});
+
       SmartDialog.showToast('获取成功');
       isMore
           ? _refreshController.loadComplete()
           : _refreshController.refreshCompleted();
+      if (mounted) {
+        setState(() {});
+      }
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
       isMore
@@ -203,7 +208,9 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       SmartDialog.showToast('搜索失败: $e');
     } finally {
       SmartDialog.dismiss();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 }

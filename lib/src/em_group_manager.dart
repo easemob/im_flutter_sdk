@@ -9,7 +9,7 @@ import 'models/em_group_options.dart';
 import 'models/em_group_shared_file.dart';
 import 'tools/em_extension.dart';
 
-import 'chat_method_keys.dart';
+import 'internal/chat_method_keys.dart';
 
 class EMGroupManager {
   static const _channelPrefix = 'com.chat.im';

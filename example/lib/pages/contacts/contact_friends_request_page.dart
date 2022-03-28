@@ -19,7 +19,9 @@ class ContactFriendsRequestPageState extends State<ContactFriendsRequestPage> {
     String? currentUser = EMClient.getInstance.currentUsername;
     if (currentUser != null) {
       SharePreferenceManager.load(currentUser, callback: () {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
     }
   }
@@ -39,7 +41,9 @@ class ContactFriendsRequestPageState extends State<ContactFriendsRequestPage> {
         TextButton(
           onPressed: () {
             SharePreferenceManager.removeAllRequest();
-            setState(() {});
+            if (mounted) {
+              setState(() {});
+            }
           },
           child: Text(
             '清空',
@@ -104,7 +108,9 @@ class ContactFriendsRequestPageState extends State<ContactFriendsRequestPage> {
                                     reqestId,
                                     true,
                                   );
-                                  setState(() {});
+                                  if (mounted) {
+                                    setState(() {});
+                                  }
                                 },
                               ),
                               TextButton(
@@ -121,7 +127,9 @@ class ContactFriendsRequestPageState extends State<ContactFriendsRequestPage> {
                                     reqestId,
                                     false,
                                   );
-                                  setState(() {});
+                                  if (mounted) {
+                                    setState(() {});
+                                  }
                                 },
                               ),
                             ],

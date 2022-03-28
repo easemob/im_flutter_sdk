@@ -4,7 +4,7 @@ export 'src/em_client.dart';
 
 export 'src/models/em_message.dart';
 export 'src/models/em_group_message_ack.dart';
-export 'src/tools/em_log.dart';
+// export 'src/tools/em_log.dart';
 export 'src/em_listeners.dart';
 export 'src/models/em_chat_room.dart';
 export 'src/models/em_conversation.dart';
@@ -20,3 +20,10 @@ export 'src/models/em_userInfo.dart';
 export 'src/models/em_group_shared_file.dart';
 export 'src/models/em_group_options.dart';
 export 'src/models/em_chat_enums.dart';
+
+export 'src/em_chat_manager.dart';
+export 'src/em_contact_manager.dart';
+export 'src/em_group_manager.dart';
+export 'src/em_chat_room_manager.dart';
+export 'src/em_push_manager.dart';
+export 'src/em_userInfo_manager.dart';
