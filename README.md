@@ -29,7 +29,7 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
    
    ```dart
    dependencies:
-   im_flutter_sdk: ^3.8.3+5
+   im_flutter_sdk: ^3.8.3+7
    ```
 
 2. 执行`flutter pub get`;
@@ -75,15 +75,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 
 ```dart
 EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
-EMPushConfig config = EMPushConfig();
-// 配置推送信息
-config
-  ..enableAPNs("chatdemoui_dev")
-  ..enableHWPush()
-  ..enableFCM('')
-  ..enableMeiZuPush('', '')
-  ..enableMiPush('', '');
-options.pushConfig = config;        
+options.enableAPNs("chatdemoui_dev");
 await EMClient.getInstance.init(options);
 ```
 

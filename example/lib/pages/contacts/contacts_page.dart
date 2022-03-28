@@ -35,7 +35,9 @@ class ContactsPageState extends State<ContactsPage>
     String? currentUser = EMClient.getInstance.currentUsername;
     if (currentUser != null) {
       SharePreferenceManager.load(currentUser, callback: () {
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
     }
   }
@@ -253,7 +255,9 @@ class ContactsPageState extends State<ContactsPage>
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       _contactList.insertAll(0, _topList);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -274,7 +278,9 @@ class ContactsPageState extends State<ContactsPage>
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);
       _contactList.insertAll(0, _topList);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       Future.delayed(Duration(seconds: 3)).then((value) {
         _fetchContactsFromServer(count);
       });
@@ -320,7 +326,9 @@ class ContactsPageState extends State<ContactsPage>
   void onContactInvited(String? userName, String? reason) {
     SharePreferenceManager.addRequest(userName!);
     _friendRequestCount = SharePreferenceManager.loadUnreadCount();
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

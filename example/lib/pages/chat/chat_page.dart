@@ -130,7 +130,9 @@ class _ChatPageState extends State<ChatPage>
           if (_keyboardVisible) {
             _inputBarType = ChatInputBarType.normal;
             SystemChannels.textInput.invokeMethod('TextInput.hide');
-            setState(() {});
+            if (mounted) {
+              setState(() {});
+            }
           }
         },
         child: SafeArea(
@@ -261,7 +263,9 @@ class _ChatPageState extends State<ChatPage>
         onFaceTap: (expression) {
           _inputBarEditingController.text =
               _inputBarEditingController.text + '[${expression.name}]';
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         },
         onDeleteTap: () {
           if (_inputBarEditingController.text.length > 0) {
@@ -296,7 +300,9 @@ class _ChatPageState extends State<ChatPage>
 
   /// 刷新View并滑动到最底部
   _setStateAndMoreToListViewEnd() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
     Future.delayed(Duration(milliseconds: 100), () {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });

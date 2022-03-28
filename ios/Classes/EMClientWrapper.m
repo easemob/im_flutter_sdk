@@ -229,9 +229,8 @@ static EMClientWrapper *wrapper = nil;
     if (isPwd) {
         [EMClient.sharedClient loginWithUsername:username
                                         password:pwdOrToken
-                                      completion:^(NSString *aUsername, EMError *aError)
-         {
-            
+                                      completion:^(NSString *aUsername, EMError *aError){
+
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError

@@ -14,12 +14,27 @@
 - 默认使用https；
 - 优化登录速度；
 
+## 3.8.3+8
+
+- 修复ios使用token登录失败；
+- 修改Login方法和Logout方法返回值；
+
+
 ## 3.8.3+6
 
 - 修改EMImPushConfig为EMPushConfigs;
 - 删除EMOptions中的EMPushConfig.设置推送证书时直接调用EMOptions即可;
 - EMGroup中移除ShareFiles，如果需要获取共享文件，请调用Api:
-  `EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId)`
+  `EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId)` 
+- 将isConnected和isLoginBefore、Token改为从原生获取；
+- 修复安卓设置群组免打扰失效的问题；
+- 修复获取公开群crash的问题；
+- 修改throw error的逻辑；
+- 修改构造文本消息时的方法，需要传入参数名；
+- 修改部分原生方法逻辑；
+- 调整项目目录结构；
+- 将`onConversationRead`回调方法参数改为必选；
+- 
 
 ## 3.8.3+5
 

@@ -3,16 +3,31 @@ import "dart:async";
 import 'package:flutter/services.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
-import 'chat_method_keys.dart';
+import 'internal/chat_method_keys.dart';
+import 'tools/em_message_callback_manager.dart';
 
-class EMChatManager implements EMMessageStatusListener {
+///
+/// The chat manager. This class is responsible for managing conversations.
+/// (such as: load, delete), sending messages, downloading attachments and so on.
+///
+/// Such as, send a text message:
+///
+/// ```dart
+///    EMMessage msg = EMMessage.createTxtSendMessage(
+///        username: toChatUsername, content: content);
+///    await EMClient.getInstance.chatManager.sendMessage(msg);
+/// ```
+///
+class EMChatManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel =
       const MethodChannel('$_channelPrefix/chat_manager', JSONMethodCodec());
 
   final List<EMChatManagerListener> _messageListeners = [];
 
+  /// @nodoc
   EMChatManager() {
+    MessageCallBackManager.getInstance;
     _channel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -37,9 +52,6 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 发送消息 [message].
   Future<EMMessage> sendMessage(EMMessage message) async {
-    if (message.listener == null) {
-      message.listener = this;
-    }
     message.status = EMMessageStatus.PROGRESS;
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
@@ -57,9 +69,6 @@ class EMChatManager implements EMMessageStatusListener {
 
   /// 重发消息 [message].
   Future<EMMessage> resendMessage(EMMessage message) async {
-    if (message.listener == null) {
-      message.listener = this;
-    }
     message.status = EMMessageStatus.PROGRESS;
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.resendMessage, message.toJson());
@@ -511,22 +520,4 @@ class EMChatManager implements EMMessageStatusListener {
       listener.onConversationRead(from, to);
     }
   }
-
-  @override
-  void onDeliveryAck() {}
-
-  @override
-  void onError(EMError error) {}
-
-  @override
-  void onProgress(int progress) {}
-
-  @override
-  void onReadAck() {}
-
-  @override
-  void onStatusChanged() {}
-
-  @override
-  void onSuccess() {}
 }
