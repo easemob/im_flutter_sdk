@@ -1558,7 +1558,7 @@ try{
 
 ```dart
 try{
-  EMImPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getPushConfigsFromServer();
+  EMPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getPushConfigsFromServer();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1568,7 +1568,7 @@ try{
 
 ```dart
 try{
-  EMImPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getPushConfigsFromCache();
+  EMPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getPushConfigsFromCache();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
