@@ -1,5 +1,9 @@
 ## NEXT
 
+## 3.8.3+9
+
+- 将设置推送相关操作从EMPushConfigs中移到EMPushManager中；
+
 ## 3.8.3+8
 
 - 修复ios使用token登录失败；

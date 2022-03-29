@@ -17,6 +17,7 @@ class EMPushConfigs {
   int? _noDisturbEndHour;
   List<String>? _noDisturbGroups = [];
 
+  @Deprecated("Switch to using DisplayStyle instead")
   EMPushStyle? get pushStyle => _pushStyle;
 
   DisplayStyle? get displayStyle => _displayStyle;
@@ -30,8 +31,6 @@ class EMPushConfigs {
     return EMPushConfigs._private()
       .._displayStyle =
           map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary
-      .._pushStyle =
-          map['pushStyle'] == 0 ? EMPushStyle.Simple : EMPushStyle.Summary
       .._noDisturb = map.boolValue('noDisturb')
       .._noDisturbStartHour = map['noDisturbStartHour']
       .._noDisturbEndHour = map['noDisturbEndHour'];

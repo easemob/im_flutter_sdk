@@ -87,7 +87,8 @@ class EMPushManager {
   }
 
   /// 从本地获取不接收推送的群组
-  Future<List<String>?> getNoPushGroups() async {
+  /// 如果需要从服务器获取，需要调用{@link #getPushConfigsFromServer}后再调用本方法
+  Future<List<String>?> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
     if (result.containsKey(ChatMethodKeys.getNoDisturbGroups)) {
