@@ -61,7 +61,7 @@ class EMContactManager {
   ///
   /// Param [reason] (optional) The invitation message. Set the parameter as null if you want to ignore the information.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> addContact(
     String username, [
@@ -85,7 +85,7 @@ class EMContactManager {
   /// `true`: keep conversation and messages.
   /// `false`: (default) delete conversation and messages.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> deleteContact(
     String username, [
@@ -105,7 +105,7 @@ class EMContactManager {
   ///
   /// **return** The list of contacts.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -127,7 +127,7 @@ class EMContactManager {
   ///
   /// **return** The contact list.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -151,7 +151,7 @@ class EMContactManager {
   ///
   /// Param [username] The user to be blocked.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> addUserToBlockList(
     String username,
@@ -173,7 +173,7 @@ class EMContactManager {
   ///
   /// Param [username] The user to be removed from the block list.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
@@ -191,7 +191,7 @@ class EMContactManager {
   ///
   /// **return** The block list from the server.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -213,7 +213,7 @@ class EMContactManager {
   ///
   /// **return** The block list.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
@@ -234,7 +234,7 @@ class EMContactManager {
   ///
   /// Param [username] The user who initiates the friend request.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
@@ -252,7 +252,7 @@ class EMContactManager {
   ///
   /// Param [username] The user who initiates the invitation.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
@@ -270,7 +270,7 @@ class EMContactManager {
   ///
   /// **return** The unique device ID list on the other devices if the method succeeds.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
     Map result =

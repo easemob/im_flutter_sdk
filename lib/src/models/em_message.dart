@@ -68,6 +68,9 @@ abstract class EMMessageStatusListener {
   void onStatusChanged() {}
 }
 
+///
+///
+///
 class EMMessage {
   EMMessage._private() {
     _tmpKey = localTime.toString();
@@ -277,7 +280,7 @@ class EMMessage {
 
   EMMessageStatusListener? listener;
 
-  void setMessageListener(EMMessageStatusListener? listener) {
+  void setMessageStatusListener(EMMessageStatusListener? listener) {
     this.listener = listener;
   }
 

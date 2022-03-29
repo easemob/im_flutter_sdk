@@ -71,7 +71,7 @@ class _ChatPageState extends State<ChatPage>
 
     _moreView = ChatMoreView(items);
     // 添加环信回调监听
-    EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatManager.addChatManagerListener(this);
     EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
     widget.conversation.markAllMessagesAsRead();
@@ -95,13 +95,13 @@ class _ChatPageState extends State<ChatPage>
           .joinChatRoom(widget.conversation.id);
       _loadMessages();
     } on EMError catch (e) {
-      print("加入房间失败 -- " + e.toString());
+      debugPrint("加入房间失败 -- " + e.toString());
     }
   }
 
   void dispose() {
     // 移除环信回调监听
-    EMClient.getInstance.chatManager.removeListener(this);
+    EMClient.getInstance.chatManager.removeChatManagerListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
     if (widget.conversation.type == EMConversationType.ChatRoom) {

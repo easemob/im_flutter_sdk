@@ -5,6 +5,9 @@ import 'internal/chat_method_keys.dart';
 import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 
+///
+///  The message push configuration options.
+///
 class EMPushManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
