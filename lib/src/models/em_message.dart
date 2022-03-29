@@ -7,25 +7,52 @@ import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
 import '../internal/em_message_state_handle.dart';
 
-// 消息类型
-enum EMMessageChatType {
-  Chat, // 单聊消息
-  GroupChat, // 群聊消息
-  ChatRoom, // 聊天室消息
+///
+/// The enumeration of the chat type.
+///
+/// There are three chat types: one-to-one chat, group chat, and chat room.
+///
+enum ChatType {
+  /// One-to-one chat.
+  Chat,
+
+  /// Group chat.
+  GroupChat,
+
+  /// Chat room.
+  ChatRoom,
 }
 
-// 消息方向
-enum EMMessageDirection {
-  SEND, // 发送的消息
-  RECEIVE, // 接收的消息
+///
+/// The enumeration of the message MessageDirection.
+///
+/// Whether the message is sent or received.
+///
+enum MessageDirection {
+  /// This message is sent from the local client.
+  SEND,
+
+  /// The message is received by the local client.
+  RECEIVE,
 }
 
-// 消息状态
-enum EMMessageStatus {
-  CREATE, // 创建
-  PROGRESS, // 发送中
-  SUCCESS, // 发送成功
-  FAIL, // 发送失败
+///
+/// The enumeration of the message sending/reception status.
+///
+/// The states include success, failure, being sent/being received, and created to be sent.
+///
+enum Status {
+  /// The message is created to be sent.
+  CREATE,
+
+  /// The message is being delivered/receiving.
+  PROGRESS,
+
+  /// The message is successfully delivered/received.
+  SUCCESS,
+
+  /// The message fails to be delivered/received.
+  FAIL,
 }
 
 // 附件状态
@@ -36,19 +63,36 @@ enum EMDownloadStatus {
   FAILED, // 下载失败
 }
 
-/// body类型
-enum EMMessageBodyType {
-  TXT, // 文字消息
-  IMAGE, // 图片消息
-  VIDEO, // 视频消息
-  LOCATION, // 位置消息
-  VOICE, // 音频消息
-  FILE, // 文件消息
-  CMD, // CMD消息
-  CUSTOM, // CUSTOM消息
+///
+/// The enumeration of the message type.
+///
+enum MessageType {
+  /// Text message.
+  TXT,
+
+  /// Image message.
+  IMAGE,
+
+  /// Video message.
+  VIDEO,
+
+  /// Location message.
+  LOCATION,
+
+  /// Voice message.
+  VOICE,
+
+  /// File message.
+  FILE,
+
+  /// Command message.
+  CMD,
+
+  /// Customized message.
+  CUSTOM,
 }
 
-abstract class EMMessageStatusListener {
+abstract class StatusListener {
   /// 消息进度
   void onProgress(int progress) {}
 
@@ -69,7 +113,17 @@ abstract class EMMessageStatusListener {
 }
 
 ///
+/// The message instance, which represents a sent/received message.
 ///
+/// For example:
+/// Constructs a text message to send:
+///
+/// ```dart
+///   EMMessage msg = EMMessage.createTxtSendMessage(
+///      username: "user1",
+///      content: "hello",
+///    );
+/// ```
 ///
 class EMMessage {
   EMMessage._private() {
@@ -81,7 +135,7 @@ class EMMessage {
   /// 构造接收的消息
   EMMessage.createReceiveMessage({
     required this.body,
-    this.direction = EMMessageDirection.RECEIVE,
+    this.direction = MessageDirection.RECEIVE,
   }) {
     _tmpKey = localTime.toString();
     _handle = EMMessageStateHandle(
@@ -99,7 +153,7 @@ class EMMessage {
   /// 构造发送的消息
   EMMessage.createSendMessage({
     required this.body,
-    this.direction = EMMessageDirection.SEND,
+    this.direction = MessageDirection.SEND,
     this.to,
     this.hasRead = true,
   })  : this.from = EMClient.getInstance.currentUsername,
@@ -278,9 +332,9 @@ class EMMessage {
             to: username,
             body: EMCustomMessageBody(event: event, params: params));
 
-  EMMessageStatusListener? listener;
+  StatusListener? listener;
 
-  void setMessageStatusListener(EMMessageStatusListener? listener) {
+  void setMessageStatusListener(StatusListener? listener) {
     this.listener = listener;
   }
 
@@ -324,13 +378,13 @@ class EMMessage {
   bool hasRead = false;
 
   /// 消息类型
-  EMMessageChatType chatType = EMMessageChatType.Chat;
+  ChatType chatType = ChatType.Chat;
 
   /// 消息方向
-  EMMessageDirection direction = EMMessageDirection.SEND;
+  MessageDirection direction = MessageDirection.SEND;
 
-  /// 消息状态
-  EMMessageStatus status = EMMessageStatus.CREATE;
+  /// Gets the message sending/reception status.
+  Status status = Status.CREATE;
 
   /// 消息扩展
   Map attributes = {};
@@ -344,8 +398,8 @@ class EMMessage {
     data['to'] = this.to;
     data['body'] = this.body!.toJson();
     data['attributes'] = this.attributes;
-    data['direction'] =
-        this.direction == EMMessageDirection.SEND ? 'send' : 'rec';
+    data['MessageDirection'] =
+        this.direction == MessageDirection.SEND ? 'send' : 'rec';
     data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
     data['hasDeliverAck'] = this.hasDeliverAck;
@@ -367,9 +421,9 @@ class EMMessage {
       ..from = map['from'] as String?
       ..body = _bodyFromMap(map['body'])
       ..attributes = map['attributes'] ?? {}
-      ..direction = map['direction'] == 'send'
-          ? EMMessageDirection.SEND
-          : EMMessageDirection.RECEIVE
+      ..direction = map['MessageDirection'] == 'send'
+          ? MessageDirection.SEND
+          : MessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
@@ -383,47 +437,47 @@ class EMMessage {
       ..status = _chatStatusFromInt(map['status'] as int?);
   }
 
-  static int chatTypeToInt(EMMessageChatType type) {
-    if (type == EMMessageChatType.ChatRoom) {
+  static int chatTypeToInt(ChatType type) {
+    if (type == ChatType.ChatRoom) {
       return 2;
-    } else if (type == EMMessageChatType.GroupChat) {
+    } else if (type == ChatType.GroupChat) {
       return 1;
     } else {
       return 0;
     }
   }
 
-  static EMMessageChatType chatTypeFromInt(int? type) {
+  static ChatType chatTypeFromInt(int? type) {
     if (type == 2) {
-      return EMMessageChatType.ChatRoom;
+      return ChatType.ChatRoom;
     } else if (type == 1) {
-      return EMMessageChatType.GroupChat;
+      return ChatType.GroupChat;
     } else {
-      return EMMessageChatType.Chat;
+      return ChatType.Chat;
     }
   }
 
-  static int _chatStatusToInt(EMMessageStatus status) {
-    if (status == EMMessageStatus.FAIL) {
+  static int _chatStatusToInt(Status status) {
+    if (status == Status.FAIL) {
       return 3;
-    } else if (status == EMMessageStatus.SUCCESS) {
+    } else if (status == Status.SUCCESS) {
       return 2;
-    } else if (status == EMMessageStatus.PROGRESS) {
+    } else if (status == Status.PROGRESS) {
       return 1;
     } else {
       return 0;
     }
   }
 
-  static EMMessageStatus _chatStatusFromInt(int? status) {
+  static Status _chatStatusFromInt(int? status) {
     if (status == 3) {
-      return EMMessageStatus.FAIL;
+      return Status.FAIL;
     } else if (status == 2) {
-      return EMMessageStatus.SUCCESS;
+      return Status.SUCCESS;
     } else if (status == 1) {
-      return EMMessageStatus.PROGRESS;
+      return Status.PROGRESS;
     } else {
-      return EMMessageStatus.CREATE;
+      return Status.CREATE;
     }
   }
 
@@ -474,7 +528,7 @@ abstract class EMMessageBody {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = EMMessageBody.bodyTypeToTypeStr(this.type!);
+    data['type'] = EMMessageBody.messageTypeToTypeStr(this.type!);
     return data;
   }
 
@@ -483,38 +537,37 @@ abstract class EMMessageBody {
     return toJson().toString();
   }
 
-  static String bodyTypeToTypeStr(EMMessageBodyType type) {
+  static String messageTypeToTypeStr(MessageType type) {
     switch (type) {
-      case EMMessageBodyType.TXT:
+      case MessageType.TXT:
         return 'txt';
-      case EMMessageBodyType.LOCATION:
+      case MessageType.LOCATION:
         return 'loc';
-      case EMMessageBodyType.CMD:
+      case MessageType.CMD:
         return 'cmd';
-      case EMMessageBodyType.CUSTOM:
+      case MessageType.CUSTOM:
         return 'custom';
-      case EMMessageBodyType.FILE:
+      case MessageType.FILE:
         return 'file';
-      case EMMessageBodyType.IMAGE:
+      case MessageType.IMAGE:
         return 'img';
-      case EMMessageBodyType.VIDEO:
+      case MessageType.VIDEO:
         return 'video';
-      case EMMessageBodyType.VOICE:
+      case MessageType.VOICE:
         return 'voice';
     }
   }
 
-  // body 类型
-  EMMessageBodyType? type;
+  /// Gets the chat message type.
+  MessageType? type;
 }
 
 /// text body
 class EMTextMessageBody extends EMMessageBody {
-  EMTextMessageBody({required this.content})
-      : super(type: EMMessageBodyType.TXT);
+  EMTextMessageBody({required this.content}) : super(type: MessageType.TXT);
 
   EMTextMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.TXT) {
+      : super.fromJson(map: map, type: MessageType.TXT) {
     this.content = map['content'];
   }
 
@@ -532,10 +585,10 @@ class EMTextMessageBody extends EMMessageBody {
 class EMLocationMessageBody extends EMMessageBody {
   EMLocationMessageBody(
       {required this.latitude, required this.longitude, this.address})
-      : super(type: EMMessageBodyType.LOCATION);
+      : super(type: MessageType.LOCATION);
 
   EMLocationMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.LOCATION) {
+      : super.fromJson(map: map, type: MessageType.LOCATION) {
     this.latitude = map['latitude'];
     this.longitude = map['longitude'];
     this.address = map['address'];
@@ -564,13 +617,13 @@ class EMFileMessageBody extends EMMessageBody {
     this.localPath,
     this.displayName,
     int? fileSize,
-    EMMessageBodyType type = EMMessageBodyType.FILE,
+    MessageType type = MessageType.FILE,
   }) : super(type: type) {
     this.fileSize = fileSize ?? 0;
   }
 
   EMFileMessageBody.fromJson(
-      {required Map map, EMMessageBodyType type = EMMessageBodyType.FILE})
+      {required Map map, MessageType type = MessageType.FILE})
       : super.fromJson(map: map, type: type) {
     this.secret = map['secret'];
     this.remotePath = map['remotePath'];
@@ -653,11 +706,11 @@ class EMImageMessageBody extends EMFileMessageBody {
           localPath: localPath,
           displayName: displayName,
           fileSize: fileSize,
-          type: EMMessageBodyType.IMAGE,
+          type: MessageType.IMAGE,
         );
 
   EMImageMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.IMAGE) {
+      : super.fromJson(map: map, type: MessageType.IMAGE) {
     this.thumbnailLocalPath = map['thumbnailLocalPath'];
     this.thumbnailRemotePath = map['thumbnailRemotePath'];
     this.thumbnailSecret = map['thumbnailSecret'];
@@ -719,11 +772,11 @@ class EMVideoMessageBody extends EMFileMessageBody {
           localPath: localPath,
           displayName: displayName,
           fileSize: fileSize,
-          type: EMMessageBodyType.VIDEO,
+          type: MessageType.VIDEO,
         );
 
   EMVideoMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.VIDEO) {
+      : super.fromJson(map: map, type: MessageType.VIDEO) {
     this.duration = map['duration'] as int?;
     this.thumbnailLocalPath = map['thumbnailLocalPath'] as String?;
     this.thumbnailRemotePath = map['thumbnailRemotePath'] as String?;
@@ -782,11 +835,11 @@ class EMVoiceMessageBody extends EMFileMessageBody {
           localPath: localPath,
           displayName: displayName,
           fileSize: fileSize,
-          type: EMMessageBodyType.VOICE,
+          type: MessageType.VOICE,
         );
 
   EMVoiceMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.VOICE) {
+      : super.fromJson(map: map, type: MessageType.VOICE) {
     this.duration = map['duration'];
   }
 
@@ -804,10 +857,10 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 /// cmd body
 class EMCmdMessageBody extends EMMessageBody {
   EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
-      : super(type: EMMessageBodyType.CMD);
+      : super(type: MessageType.CMD);
 
   EMCmdMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.CMD) {
+      : super.fromJson(map: map, type: MessageType.CMD) {
     this.action = map['action'];
     this.deliverOnlineOnly = map['deliverOnlineOnly'] == 0 ? false : true;
   }
@@ -830,10 +883,10 @@ class EMCmdMessageBody extends EMMessageBody {
 /// custom body
 class EMCustomMessageBody extends EMMessageBody {
   EMCustomMessageBody({required this.event, this.params})
-      : super(type: EMMessageBodyType.CUSTOM);
+      : super(type: MessageType.CUSTOM);
 
   EMCustomMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.CUSTOM) {
+      : super.fromJson(map: map, type: MessageType.CUSTOM) {
     this.event = map['event'];
     this.params = map['params']?.cast<String, String>();
   }

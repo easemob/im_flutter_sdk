@@ -216,18 +216,19 @@ extension EMConversationExtension on EMConversation {
 
   /// 根据类型获取当前会话汇总的消息
   Future<List<EMMessage?>> loadMessagesWithMsgType({
-    required EMMessageBodyType type,
+    required MessageType type,
     int timestamp = -1,
     int count = 20,
     String? sender,
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
   }) async {
     Map req = this.toJson();
-    req['type'] = EMMessageBody.bodyTypeToTypeStr(type);
+    req['type'] = EMMessageBody.messageTypeToTypeStr(type);
     req['timestamp'] = timestamp;
     req['count'] = count;
     req['sender'] = sender;
-    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['MessageDirection'] =
+        direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
@@ -249,7 +250,8 @@ extension EMConversationExtension on EMConversation {
     Map req = this.toJson();
     req["startId"] = startMsgId;
     req['count'] = loadCount;
-    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['MessageDirection'] =
+        direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithStartId, req);
@@ -277,7 +279,8 @@ extension EMConversationExtension on EMConversation {
       req['sender'] = sender;
     }
     req['timestamp'] = timestamp;
-    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['MessageDirection'] =
+        direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);

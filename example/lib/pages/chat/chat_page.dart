@@ -238,8 +238,8 @@ class _ChatPageState extends State<ChatPage>
 
   /// 发送消息已读回执
   _makeMessageAsRead(EMMessage msg) async {
-    if (msg.chatType == EMMessageChatType.Chat &&
-        msg.direction == EMMessageDirection.RECEIVE) {
+    if (msg.chatType == ChatType.Chat &&
+        msg.direction == MessageDirection.RECEIVE) {
       if (msg.hasReadAck == false) {
         try {
           await EMClient.getInstance.chatManager.sendMessageReadAck(msg);
@@ -311,9 +311,9 @@ class _ChatPageState extends State<ChatPage>
   /// 点击bubble
   _messageBubbleOnTap(EMMessage msg) async {
     switch (msg.body!.type!) {
-      case EMMessageBodyType.TXT:
+      case MessageType.TXT:
         break;
-      case EMMessageBodyType.IMAGE:
+      case MessageType.IMAGE:
         {
           EMImageMessageBody body = msg.body as EMImageMessageBody;
           Image img;
@@ -337,7 +337,7 @@ class _ChatPageState extends State<ChatPage>
           );
         }
         break;
-      case EMMessageBodyType.VOICE:
+      case MessageType.VOICE:
         {
           if (_voicePlayer.currentMsgId == msg.msgId) {
             _voicePlayer.stopPlay();
@@ -346,15 +346,15 @@ class _ChatPageState extends State<ChatPage>
           }
         }
         break;
-      case EMMessageBodyType.VIDEO:
+      case MessageType.VIDEO:
         break;
-      case EMMessageBodyType.LOCATION:
+      case MessageType.LOCATION:
         break;
-      case EMMessageBodyType.FILE:
+      case MessageType.FILE:
         break;
-      case EMMessageBodyType.CMD:
+      case MessageType.CMD:
         break;
-      case EMMessageBodyType.CUSTOM:
+      case MessageType.CUSTOM:
         break;
     }
   }
@@ -402,16 +402,16 @@ class _ChatPageState extends State<ChatPage>
   /// 发消息方法
   _sendMessage(EMMessage msg) async {
     _chatType() {
-      EMMessageChatType type = EMMessageChatType.Chat;
+      ChatType type = ChatType.Chat;
       switch (widget.conversation.type) {
         case EMConversationType.Chat:
-          type = EMMessageChatType.Chat;
+          type = ChatType.Chat;
           break;
         case EMConversationType.ChatRoom:
-          type = EMMessageChatType.ChatRoom;
+          type = ChatType.ChatRoom;
           break;
         case EMConversationType.GroupChat:
-          type = EMMessageChatType.GroupChat;
+          type = ChatType.GroupChat;
           break;
         default:
       }
