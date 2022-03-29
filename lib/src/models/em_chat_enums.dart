@@ -17,6 +17,7 @@ enum EMConversationType {
   ChatRoom, // 聊天室消息
 }
 
+@Deprecated('Switch to using EMPushManager#DisplayStyle instead')
 enum EMPushStyle {
   Simple,
   Summary,
