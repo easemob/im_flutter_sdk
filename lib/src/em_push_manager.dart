@@ -70,13 +70,13 @@ class EMPushManager {
   }
 
   /// 设置群组不接收推送
-  /// [groupId] 群组id
+  /// [groupIds] 群组ids
   /// [enablePush] 是否接收离线推送
   Future<void> updatePushServiceForGroup({
-    required List<String> groupId,
+    required List<String> groupIds,
     required bool enablePush,
   }) async {
-    Map req = {'noPush': !enablePush, 'group_id': groupId};
+    Map req = {'noPush': !enablePush, 'group_ids': groupIds};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updateGroupPushService, req);
     try {
