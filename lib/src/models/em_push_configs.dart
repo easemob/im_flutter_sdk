@@ -15,6 +15,7 @@ class EMPushConfigs {
   List<String>? _noDisturbGroups = [];
 
   EMPushStyle? get pushStyle => _pushStyle;
+
   bool? get noDisturb => _noDisturb;
   int? get noDisturbStartHour => _noDisturbStartHour;
   int? get noDisturbEndHour => _noDisturbEndHour;
@@ -44,7 +45,8 @@ extension EMPushConfigsExtension on EMPushConfigs {
   static const MethodChannel _channel =
       const MethodChannel('com.chat.im/chat_push_manager', JSONMethodCodec());
 
-  /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
+  @Deprecated(
+      "Switch to using EMPushManager#enableOfflinePush and EMPushManager#disableOfflinePush instead")
   Future<void> setNoDisturb(
     bool isNoDisturb, [
     int startTime = 0,
@@ -72,7 +74,7 @@ extension EMPushConfigsExtension on EMPushConfigs {
     }
   }
 
-  /// 设置消息推送显示样式[pushStyle]
+  @Deprecated("Switch to using EMPushManager#updatePushDisplayStyle instead")
   Future<void> setPushStyle(EMPushStyle pushStyle) async {
     Map req = {'pushStyle': pushStyle == EMPushStyle.Simple ? 0 : 1};
     Map result =
@@ -84,7 +86,7 @@ extension EMPushConfigsExtension on EMPushConfigs {
     }
   }
 
-  /// 通过群id[groupId]设置群组是否免打扰[isNoDisturb]
+  @Deprecated("Switch to using EMPushManager#updatePushServiceForGroup instead")
   Future<void> setGroupToDisturb(
     String groupId,
     bool isNoDisturb,
@@ -99,7 +101,7 @@ extension EMPushConfigsExtension on EMPushConfigs {
     }
   }
 
-  /// 获取免打扰群组列表
+  @Deprecated("Switch to using EMPushManager#getNoPushGroups instead")
   Future<List<String>?> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoDisturbGroups);
     try {

@@ -112,6 +112,16 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
         });
     }
 
+    private void enableOfflinePush(JSONObject params, String channelName, Result result) throws JSONException
+    {
+
+    }
+
+    private void disableOfflinePush(JSONObject params, String channelName, Result result) throws JSONException
+    {
+
+    }
+
     private void updateImPushStyle(JSONObject params, String channelName,  Result result) throws JSONException {
         DisplayStyle style = params.getInt("pushStyle") == 0 ? DisplayStyle.SimpleBanner : DisplayStyle.MessageSummary;
         EMClient.getInstance().pushManager().asyncUpdatePushDisplayStyle(style, new EMWrapperCallBack(result, channelName, true));

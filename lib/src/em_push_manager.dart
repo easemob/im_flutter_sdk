@@ -5,6 +5,11 @@ import 'internal/chat_method_keys.dart';
 import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 
+enum DisplayStyle {
+  Simple,
+  Summary,
+}
+
 class EMPushManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -32,11 +37,45 @@ class EMPushManager {
     }
   }
 
+  Future<void> enableOfflinePush() async {}
+
+  Future<void> disableOfflinePush({
+    required int start,
+    required int to,
+  }) async {}
+
+  Future<void> updatePushServiceForGroup({
+    required List<String> groupId,
+    required bool noPush,
+  }) async {
+    Map req = {'noDisturb': noPush, 'group_id': groupId};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupPushService, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<List<String>?> getNoPushGroups() async {}
+
   /// 更新当前用户的[nickname],这样离线消息推送的时候可以显示用户昵称而不是id，需要登录环信服务器成功后调用才生效
   Future<void> updatePushNickname(String nickname) async {
     Map req = {'nickname': nickname};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updatePushNickname, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updatePushDisplayStyle(DisplayStyle displayStyle) async {
+    Map req = {'pushStyle': displayStyle == DisplayStyle.Simple ? 0 : 1};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateImPushStyle, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
