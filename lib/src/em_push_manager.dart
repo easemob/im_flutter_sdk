@@ -89,9 +89,11 @@ class EMPushManager {
   ///
   /// Sets wether to turn on or turn off the push notification for the the specified groups.
   ///
-  /// [groupId] 群组id
+  /// [groupIds]  The list of groups to be set.
   ///
-  /// [enablePush] 是否接收离线推送
+  /// [enablePush] enable push notification.
+  /// `true`: Turns on the notification;
+  /// `false`: Turns off the notification;
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
@@ -109,8 +111,13 @@ class EMPushManager {
     }
   }
 
-  /// 从本地获取不接收推送的群组
-  /// 如果需要从服务器获取，需要调用{@link #getPushConfigsFromServer}后再调用本方法
+  ///
+  /// Gets the list of groups which have blocked the push notification.
+  ///
+  /// **return** The list of groups that blocked the push notification.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<List<String>?> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
@@ -120,7 +127,17 @@ class EMPushManager {
     return list;
   }
 
-  /// 更新当前用户的[nickname],这样离线消息推送的时候可以显示用户昵称而不是id，需要登录环信服务器成功后调用才生效
+  ///
+  /// Updates the push display nickname of the current user.
+  ///
+  /// This method can be used to set a push display nickname, the push display nickname will be used to show for offline push notification.
+  /// When the app user changes the nickname in the user profile(use {@link EMUserInfoManager#updateOwnInfo(EMUserInfo, int?)
+  /// be sure to also call this method to update to prevent the display differences.
+  ///
+  /// Param [nickname] The push display nickname, which is different from the nickname in the user profile.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updatePushNickname(String nickname) async {
     Map req = {'nickname': nickname};
     Map result =
@@ -132,7 +149,13 @@ class EMPushManager {
     }
   }
 
-  /// 设置推送样式
+  ///
+  /// Update the push message style. The default value is {@link DisplayStyle#Simple}.
+  ///
+  /// Param [displayStyle] The push message display style.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updatePushDisplayStyle(DisplayStyle displayStyle) async {
     Map req = {'pushStyle': displayStyle == DisplayStyle.Simple ? 0 : 1};
     Map result =
@@ -144,7 +167,13 @@ class EMPushManager {
     }
   }
 
-  /// 上传华为推送token, 需要确保登录成功后再调用(可以是进入home页面后)
+  ///
+  /// Update the HMS push token.
+  ///
+  /// Param [token] The HMS push token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateHMSPushToken(String token) async {
     if (Platform.isAndroid) {
       Map req = {'token': token};
@@ -158,7 +187,13 @@ class EMPushManager {
     }
   }
 
-  /// 上传FCM推送token, 需要确保登录成功后再调用(可以是进入home页面后)
+  ///
+  /// Update the FCM push token.
+  ///
+  /// Param [token] The FCM push token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateFCMPushToken(String token) async {
     if (Platform.isAndroid) {
       Map req = {'token': token};
@@ -172,7 +207,13 @@ class EMPushManager {
     }
   }
 
-  /// 上传iOS推送deviceToken
+  ///
+  /// Update the APNs push token.
+  ///
+  /// Param [token] The APNs push token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateAPNsDeviceToken(String token) async {
     if (Platform.isIOS) {
       Map req = {'token': token};
