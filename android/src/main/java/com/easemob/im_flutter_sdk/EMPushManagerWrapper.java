@@ -58,6 +58,15 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if(EMSDKMethod.updateFCMPushToken.equals(call.method)){
                 updateFCMPushToken(param, call.method, result);
             }
+            else if (EMSDKMethod.enableOfflinePush.equals(call.method)) {
+                enableOfflinePush(param, call.method, result);
+            }
+            else if (EMSDKMethod.disableOfflinePush.equals(call.method)){
+                disableOfflinePush(param, call.method, result);
+            }
+            else if (EMSDKMethod.getNoPushGroups.equals(call.method)) {
+                getNoPushGroups(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -114,11 +123,35 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void enableOfflinePush(JSONObject params, String channelName, Result result) throws JSONException
     {
-
+        asyncRunnable(()-> {
+            try {
+                EMClient.getInstance().pushManager().enableOfflinePush();
+                onSuccess(result, channelName, null);
+            } catch(HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
     private void disableOfflinePush(JSONObject params, String channelName, Result result) throws JSONException
     {
+        int startTime = params.getInt("start");
+        int endTime = params.getInt("end");
+        asyncRunnable(()-> {
+            try {
+                EMClient.getInstance().pushManager().disableOfflinePush(startTime, endTime);
+                onSuccess(result, channelName, null);
+            } catch(HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void getNoPushGroups(JSONObject params, String channelName, Result result)  {
+        asyncRunnable(()-> {
+            List<String> groups = EMClient.getInstance().pushManager().getNoPushGroups();
+            onSuccess(result, channelName, groups);
+        });
 
     }
 
@@ -129,12 +162,12 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void updateGroupPushService(JSONObject params, String channelName,  Result result) throws JSONException {
         String groupId = params.getString("group_id");
-        boolean enablePush = params.getBoolean("noDisturb");
+        boolean noPush = params.getBoolean("noPush");
         List<String> groupList = new ArrayList<>();
         groupList.add(groupId);
         asyncRunnable(()-> {
             try {
-                EMClient.getInstance().pushManager().updatePushServiceForGroup(groupList, !enablePush);
+                EMClient.getInstance().pushManager().updatePushServiceForGroup(groupList, noPush);
                 EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
                 onSuccess(result, channelName, EMGroupHelper.toJson(group));
             } catch(HyphenateException e) {
