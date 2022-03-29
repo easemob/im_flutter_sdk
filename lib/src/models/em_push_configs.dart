@@ -4,17 +4,24 @@ import '../internal/chat_method_keys.dart';
 import '../tools/em_extension.dart';
 import 'em_chat_enums.dart';
 import 'em_error.dart';
+import '../em_push_manager.dart';
 
 class EMPushConfigs {
   EMPushConfigs._private();
 
+  DisplayStyle? _displayStyle;
+  @Deprecated("Switch to using DisplayStyle instead")
   EMPushStyle? _pushStyle;
   bool? _noDisturb;
   int? _noDisturbStartHour;
   int? _noDisturbEndHour;
   List<String>? _noDisturbGroups = [];
 
+  @Deprecated("Switch to using DisplayStyle instead")
   EMPushStyle? get pushStyle => _pushStyle;
+
+  DisplayStyle? get displayStyle => _displayStyle;
+
   bool? get noDisturb => _noDisturb;
   int? get noDisturbStartHour => _noDisturbStartHour;
   int? get noDisturbEndHour => _noDisturbEndHour;
@@ -22,8 +29,8 @@ class EMPushConfigs {
 
   factory EMPushConfigs.fromJson(Map map) {
     return EMPushConfigs._private()
-      .._pushStyle =
-          map['pushStyle'] == 0 ? EMPushStyle.Simple : EMPushStyle.Summary
+      .._displayStyle =
+          map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary
       .._noDisturb = map.boolValue('noDisturb')
       .._noDisturbStartHour = map['noDisturbStartHour']
       .._noDisturbEndHour = map['noDisturbEndHour'];
@@ -31,7 +38,7 @@ class EMPushConfigs {
 
   Map toJson() {
     Map data = Map();
-    data['pushStyle'] = _pushStyle == EMPushStyle.Simple;
+    data['pushStyle'] = _displayStyle == DisplayStyle.Simple;
     data['noDisturb'] = _noDisturb;
     data['noDisturbStartHour'] = _noDisturbStartHour;
     data['noDisturbEndHour'] = _noDisturbEndHour;
@@ -44,7 +51,8 @@ extension EMPushConfigsExtension on EMPushConfigs {
   static const MethodChannel _channel =
       const MethodChannel('com.chat.im/chat_push_manager', JSONMethodCodec());
 
-  /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
+  @Deprecated(
+      "Switch to using EMPushManager#enableOfflinePush and EMPushManager#disableOfflinePush instead")
   Future<void> setNoDisturb(
     bool isNoDisturb, [
     int startTime = 0,
@@ -72,7 +80,7 @@ extension EMPushConfigsExtension on EMPushConfigs {
     }
   }
 
-  /// 设置消息推送显示样式[pushStyle]
+  @Deprecated("Switch to using EMPushManager#updatePushDisplayStyle instead")
   Future<void> setPushStyle(EMPushStyle pushStyle) async {
     Map req = {'pushStyle': pushStyle == EMPushStyle.Simple ? 0 : 1};
     Map result =
@@ -84,7 +92,7 @@ extension EMPushConfigsExtension on EMPushConfigs {
     }
   }
 
-  /// 通过群id[groupId]设置群组是否免打扰[isNoDisturb]
+  @Deprecated("Switch to using EMPushManager#updatePushServiceForGroup instead")
   Future<void> setGroupToDisturb(
     String groupId,
     bool isNoDisturb,
@@ -99,7 +107,7 @@ extension EMPushConfigsExtension on EMPushConfigs {
     }
   }
 
-  /// 获取免打扰群组列表
+  @Deprecated("Switch to using EMPushManager#getNoPushGroups instead")
   Future<List<String>?> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoDisturbGroups);
     try {

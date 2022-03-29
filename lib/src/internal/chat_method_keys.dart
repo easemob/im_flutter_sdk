@@ -219,6 +219,9 @@ class ChatMethodKeys {
   static const String updateHMSPushToken = 'updateHMSPushToken';
   static const String updateFCMPushToken = 'updateFCMPushToken';
   static const String updateAPNsPushToken = 'updateAPNsPushToken';
+  static const String enableOfflinePush = 'enableOfflinePush';
+  static const String disableOfflinePush = 'disableOfflinePush';
+  static const String getNoPushGroups = 'getNoPushGroups';
 
   /// ImPushConfig
   static const String imPushNoDisturb = 'imPushNoDisturb';
