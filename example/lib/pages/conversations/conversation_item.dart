@@ -131,23 +131,23 @@ class _ConversationItemState extends State<ConversationItem> {
     }
 
     switch (_latestMessage.body!.type) {
-      case EMMessageBodyType.TXT:
+      case MessageType.TXT:
         var body = _latestMessage.body as EMTextMessageBody;
         showInfo = body.content!;
         break;
-      case EMMessageBodyType.IMAGE:
+      case MessageType.IMAGE:
         showInfo = '[图片]';
         break;
-      case EMMessageBodyType.VIDEO:
+      case MessageType.VIDEO:
         showInfo = '[视频]';
         break;
-      case EMMessageBodyType.FILE:
+      case MessageType.FILE:
         showInfo = '[文件]';
         break;
-      case EMMessageBodyType.VOICE:
+      case MessageType.VOICE:
         showInfo = '[语音]';
         break;
-      case EMMessageBodyType.LOCATION:
+      case MessageType.LOCATION:
         showInfo = '[位置]';
         break;
       default:

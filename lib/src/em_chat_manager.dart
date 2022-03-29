@@ -57,14 +57,14 @@ class EMChatManager {
   /// If the message is voice, picture and other message with attachment, the SDK will automatically upload the attachment.
   /// You can set whether to upload the attachment to the chat sever by {@link EMOptions#serverTransfer(boolean)}.
   ///
-  /// To listen for the status of sending messages, call {@link EMMessage#setMessageStatusListener(EMMessageStatusListener)}.
+  /// To listen for the status of sending messages, call {@link EMMessage#setMessageStatusListener(StatusListener)}.
   ///
   /// Param [message] The message object to be sent
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<EMMessage> sendMessage(EMMessage message) async {
-    message.status = EMMessageStatus.PROGRESS;
+    message.status = Status.PROGRESS;
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
     try {
@@ -81,7 +81,7 @@ class EMChatManager {
 
   /// 重发消息 [message].
   Future<EMMessage> resendMessage(EMMessage message) async {
-    message.status = EMMessageStatus.PROGRESS;
+    message.status = Status.PROGRESS;
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.resendMessage, message.toJson());
     try {
@@ -565,7 +565,8 @@ class EMChatManager {
     req['timeStamp'] = timeStamp;
     req['maxCount'] = maxCount;
     req['from'] = from;
-    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['MessageDirection'] =
+        direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
