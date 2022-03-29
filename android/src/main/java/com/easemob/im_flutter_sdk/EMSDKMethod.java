@@ -200,6 +200,9 @@ public class EMSDKMethod {
     static final String updatePushNickname = "updatePushNickname";
     static final String updateHMSPushToken = "updateHMSPushToken";
     static final String updateFCMPushToken = "updateFCMPushToken";
+    static final String enableOfflinePush = "enableOfflinePush";
+    static final String disableOfflinePush = "disableOfflinePush";
+    static final String getNoPushGroups = "getNoPushGroups";
 
     /// ImPushConfig
     static final String imPushNoDisturb = "imPushNoDisturb";

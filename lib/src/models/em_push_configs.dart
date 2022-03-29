@@ -4,10 +4,13 @@ import '../internal/chat_method_keys.dart';
 import '../tools/em_extension.dart';
 import 'em_chat_enums.dart';
 import 'em_error.dart';
+import '../em_push_manager.dart';
 
 class EMPushConfigs {
   EMPushConfigs._private();
 
+  DisplayStyle? _displayStyle;
+  @Deprecated("Switch to using DisplayStyle instead")
   EMPushStyle? _pushStyle;
   bool? _noDisturb;
   int? _noDisturbStartHour;
@@ -16,6 +19,8 @@ class EMPushConfigs {
 
   EMPushStyle? get pushStyle => _pushStyle;
 
+  DisplayStyle? get displayStyle => _displayStyle;
+
   bool? get noDisturb => _noDisturb;
   int? get noDisturbStartHour => _noDisturbStartHour;
   int? get noDisturbEndHour => _noDisturbEndHour;
@@ -23,6 +28,8 @@ class EMPushConfigs {
 
   factory EMPushConfigs.fromJson(Map map) {
     return EMPushConfigs._private()
+      .._displayStyle =
+          map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary
       .._pushStyle =
           map['pushStyle'] == 0 ? EMPushStyle.Simple : EMPushStyle.Summary
       .._noDisturb = map.boolValue('noDisturb')
@@ -32,7 +39,7 @@ class EMPushConfigs {
 
   Map toJson() {
     Map data = Map();
-    data['pushStyle'] = _pushStyle == EMPushStyle.Simple;
+    data['pushStyle'] = _displayStyle == DisplayStyle.Simple;
     data['noDisturb'] = _noDisturb;
     data['noDisturbStartHour'] = _noDisturbStartHour;
     data['noDisturbEndHour'] = _noDisturbEndHour;
