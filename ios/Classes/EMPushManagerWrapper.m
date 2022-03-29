@@ -65,7 +65,9 @@
               channelName:call.method
                    result:result];
     } else if ([EMMethodKeyGetNoPushGroups isEqualToString:call.method]) {
-        
+        [self getNoPushGroups:call.arguments
+                  channelName:call.method
+                       result:result];
     }
     else{
         [super handleMethodCall:call result:result];
