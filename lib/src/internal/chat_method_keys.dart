@@ -4,6 +4,7 @@ class ChatMethodKeys {
   static const String createAccount = 'createAccount';
   static const String login = 'login';
   static const String loginWithAgoraToken = 'loginWithAgoraToken';
+  static const String renewToken = 'renewToken';
   static const String logout = 'logout';
   static const String changeAppKey = 'changeAppKey';
 

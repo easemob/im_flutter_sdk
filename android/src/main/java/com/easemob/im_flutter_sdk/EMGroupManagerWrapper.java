@@ -152,6 +152,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private void getJoinedGroups(JSONObject param, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().groupManager().loadAllGroups();
         List<EMGroup> groups = EMClient.getInstance().groupManager().getAllGroups();
         List<Map> groupList = new ArrayList<>();
         for (EMGroup group : groups) {
@@ -190,8 +191,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void getPublicGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         int pageSize = param.getInt("pageSize");
-        String cursor = param.getString("cursor");
-
+        String cursor = null;
+        if (param.has("cursor")){
+            cursor = param.getString("cursor");
+        }
         EMValueWrapperCallBack<EMCursorResult<EMGroupInfo>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMGroupInfo>>(
                 result, channelName) {
             @Override
@@ -204,14 +207,34 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private void createGroup(JSONObject param, String channelName, Result result) throws JSONException {
-        String groupName = param.getString("groupName");
-        String desc = param.getString("desc");
-        JSONArray inviteMembers = param.getJSONArray("inviteMembers");
-        String[] members = new String[inviteMembers.length()];
-        for (int i = 0; i < inviteMembers.length(); i++) {
-            members[i] = inviteMembers.getString(i);
+        String groupName = null;
+
+        if (param.has("groupName")){
+            groupName = param.getString("groupName");
         }
-        String inviteReason = param.getString("inviteReason");
+
+        String desc = null;
+        if(param.has("desc")){
+            desc = param.getString("desc");
+        }
+
+        String[] members = null;
+        if(param.has("inviteMembers")){
+            JSONArray inviteMembers = param.getJSONArray("inviteMembers");
+            members = new String[inviteMembers.length()];
+            for (int i = 0; i < inviteMembers.length(); i++) {
+                members[i] = inviteMembers.getString(i);
+            }
+        }
+        if (members == null) {
+            members = new String[0];
+        }
+        String inviteReason = null;
+
+        if (param.has("inviteReason")){
+            inviteReason = param.getString("inviteReason");
+        }
+
         EMGroupOptions options = EMGroupOptionsHelper.fromJson(param.getJSONObject("options"));
 
         EMValueWrapperCallBack<EMGroup> callBack = new EMValueWrapperCallBack<EMGroup>(result, channelName) {
@@ -242,7 +265,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void getGroupMemberListFromServer(JSONObject param, String channelName, Result result)
             throws JSONException {
         String groupId = param.getString("groupId");
-        String cursor = param.getString("cursor");
+        String cursor = null;
+        if(param.has("cursor")){
+            cursor = param.getString("cursor");
+        }
         int pageSize = param.getInt("pageSize");
 
         EMValueWrapperCallBack<EMCursorResult<String>> callBack = new EMValueWrapperCallBack<EMCursorResult<String>>(
@@ -347,9 +373,19 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             members[i] = array.getString(i);
         }
 
-
-        EMClient.getInstance().groupManager().asyncAddUsersToGroup(groupId, members,
-                new EMWrapperCallBack(result, channelName, true));
+        String welcome = null;
+        if (param.has("welcome")){
+            welcome = param.getString("welcome");
+        }
+        String finalWelcome = welcome;
+        asyncRunnable(() -> {
+            try {
+                EMClient.getInstance().groupManager().addUsersToGroup(groupId, members, finalWelcome);
+                onSuccess(result, channelName, true);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
     }
 
     private void removeMembers(JSONObject param, String channelName, Result result) throws JSONException {
@@ -664,7 +700,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void requestToJoinPublicGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-
+        String reason = null;
+        if (param.has("reason")){
+            reason = param.getString("reason");
+        }
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -674,7 +713,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().asyncJoinGroup(groupId, callBack);
+        EMClient.getInstance().groupManager().asyncApplyJoinToGroup(groupId, reason, callBack);
     }
 
     private void acceptJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
@@ -696,7 +735,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void declineJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String username = param.getString("username");
-        String reason = param.getString("reason");
+        String reason = null;
+        if (param.has("reason")){
+            reason = param.getString("reason");
+        }
 
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
@@ -727,7 +769,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void declineInvitationFromGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String username = param.getString("username");
-        String reason = param.getString("reason");
+        String reason = null;
+        if (param.has("reason")){
+            reason = param.getString("reason");
+        }
 
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override

@@ -271,6 +271,12 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   }
 
   _chat(EMGroup group) async {
+    EMCursorResult<String> result = await EMClient.getInstance.groupManager
+        .getGroupMemberListFromServer("groupId", cursor: null);
+
+    result = await EMClient.getInstance.groupManager
+        .getGroupMemberListFromServer("groupId", cursor: result.cursor);
+
     EMConversation? con =
         await EMClient.getInstance.chatManager.getConversation(
       group.groupId,

@@ -33,7 +33,7 @@ class ConversationPageState extends State<ConversationPage>
   void initState() {
     super.initState();
     // 添加环信回调监听
-    EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatManager.addChatManagerListener(this);
     notifier = eventBus.on<EventBusManager>().listen((event) {
       if (event.eventKey == EventBusManager.updateConversationsList) {
         _reLoadAllConversations();
@@ -44,7 +44,7 @@ class ConversationPageState extends State<ConversationPage>
   void dispose() {
     _refreshController.dispose();
     // 移除环信回调监听
-    EMClient.getInstance.chatManager.removeListener(this);
+    EMClient.getInstance.chatManager.removeChatManagerListener(this);
     notifier.cancel();
     super.dispose();
   }

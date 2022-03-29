@@ -44,7 +44,7 @@ class ChatItem extends StatefulWidget {
 class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
   void initState() {
     super.initState();
-    widget.msg.setMessageListener(this);
+    widget.msg.setMessageStatusListener(this);
   }
 
   @override

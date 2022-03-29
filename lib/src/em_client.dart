@@ -133,7 +133,7 @@ class EMClient {
   ///
   /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
@@ -157,7 +157,7 @@ class EMClient {
   /// `true`: (default) login with password.
   /// `false`: login with token.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> login(String username, String pwdOrToken,
       [bool isPassword = true]) async {
@@ -176,6 +176,17 @@ class EMClient {
     }
   }
 
+  ///
+  /// An app user logs in to the chat server by user ID and Agora token. This method supports automatic login.
+  ///
+  /// Reference: Another method to login to chat server is to login with user ID and token, see {@link #login(String, String, bool)}.
+  ///
+  /// Param [username] The user ID.
+  ///
+  /// Param [agoraToken] The Agora token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> loginWithAgoraToken(String username, String agoraToken) async {
     Map req = {
       "username": username,
@@ -192,8 +203,36 @@ class EMClient {
     }
   }
 
-  /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
-  /// 返回退出是否成功
+  ///
+  /// When a user is in the Agora token login state and receives a callback notification of the token is to be expired
+  /// in the {@link EMConnectionListener} implementation class,
+  /// this API can be called to update the token to avoid unknown problems caused by the token invalidation.
+  ///
+  /// Param [agoraToken] The new token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
+  Future<void> renewAgoraToken(String agoraToken) async {
+    Map req = {"agora_token": agoraToken};
+
+    Map result = await _channel.invokeMethod(ChatMethodKeys.renewToken, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// An app user logs out and returns the result.
+  ///
+  /// Param [unbindDeviceToken] Whether to unbind the token.
+  ///
+  /// `true` (default) means to unbind the device token when logout.
+  /// `false` means to not unbind the device token when logout.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> logout([
     bool unbindDeviceToken = true,
   ]) async {
@@ -215,8 +254,9 @@ class EMClient {
   ///
   /// As this key controls all access to Agora Chat for your app, you can only update the key when the current user is logged out.
   ///
-  ///
   /// Param [newAppKey] The App Key, make sure to set the param.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<bool> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
@@ -237,7 +277,7 @@ class EMClient {
   ///
   /// **return** The path of the compressed gz file.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
@@ -259,7 +299,7 @@ class EMClient {
   ///
   /// **return** The list of the online devices.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String username, required String password}) async {
@@ -288,7 +328,7 @@ class EMClient {
   ///
   /// Param [resource] The device ID, see {@link EMDeviceInfo#resource}.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<bool> kickDevice(
       {required String username,
@@ -316,7 +356,7 @@ class EMClient {
   ///
   /// Param [password] The account's password.
   ///
-  /// **Throws** [EMError] A description of the issue that caused this error.
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
   Future<void> kickAllDevices(
       {required String username, required String password}) async {

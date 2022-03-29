@@ -4,11 +4,12 @@ import '../tools/em_extension.dart';
 class EMGroupOptions {
   EMGroupOptions._private();
 
-  EMGroupOptions(
-      {required EMGroupStyle style,
-      int count = 200,
-      bool inviteNeedConfirm = false,
-      String extension = ''}) {
+  EMGroupOptions({
+    EMGroupStyle style = EMGroupStyle.PrivateOnlyOwnerInvite,
+    int count = 200,
+    bool inviteNeedConfirm = false,
+    String? extension,
+  }) {
     _style = style;
     _maxCount = count;
     _inviteNeedConfirm = inviteNeedConfirm;
@@ -38,7 +39,7 @@ class EMGroupOptions {
     data['style'] = EMGroupOptions.styleTypeToInt(_style);
     data['maxCount'] = _maxCount;
     data['inviteNeedConfirm'] = _inviteNeedConfirm;
-    data['ext'] = _ext;
+    data.setValueWithOutNull("ext", _ext);
     return data;
   }
 
