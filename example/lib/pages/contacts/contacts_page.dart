@@ -290,8 +290,8 @@ class ContactsPageState extends State<ContactsPage>
   Future<List<ContactModel>> _fetchUserInfo(List<String> emIds) async {
     List<ContactModel> ret = [];
 
-    Map<String, EMUserInfo> map = await EMClient.getInstance.userInfoManager
-        .fetchUserInfoByIdWithExpireTime(emIds);
+    Map<String, EMUserInfo> map =
+        await EMClient.getInstance.userInfoManager.fetchUserInfoById(emIds);
 
     List<String> hasInfoIds = map.keys.toList();
     for (var hasInfoId in hasInfoIds) {
