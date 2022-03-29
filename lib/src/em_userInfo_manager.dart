@@ -26,7 +26,7 @@ class EMUserInfoManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
-  Future<void> updateOwnUserInfo(EMUserInfo userInfo) async {
+  Future<void> updateOwnInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
