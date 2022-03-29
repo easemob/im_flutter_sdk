@@ -5,6 +5,11 @@ import 'internal/chat_method_keys.dart';
 import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 
+///
+/// The push message presentation style: Simple represents the presentation of a simple message,
+///
+/// and Summary represents the presentation of message content.
+///
 enum DisplayStyle {
   /// 显示 ”您有一条新消息“
   Simple,
@@ -44,7 +49,11 @@ class EMPushManager {
     }
   }
 
-  /// 开启离线推送
+  ///
+  /// Turns on the push notification.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> enableOfflinePush() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.enableOfflinePush);
     try {
@@ -54,15 +63,20 @@ class EMPushManager {
     }
   }
 
-  /// 关闭离线推送
-  /// [start]: 开始时间
-  /// [to]: 结束时间
-  /// 如果需要设置24小时免打扰，可以设置start:0, to:24
+  ///
+  /// Do not push the offline messages within the specified time period (24-hour clock).
+  ///
+  /// Param [start] The start hour.
+  ///
+  /// Param [end] The end hour.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> disableOfflinePush({
     required int start,
-    required int to,
+    required int end,
   }) async {
-    Map req = {'start': start, 'end': to};
+    Map req = {'start': start, 'end': end};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.disableOfflinePush, req);
     try {
@@ -72,14 +86,20 @@ class EMPushManager {
     }
   }
 
-  /// 设置群组不接收推送
+  ///
+  /// Sets wether to turn on or turn off the push notification for the the specified groups.
+  ///
   /// [groupId] 群组id
+  ///
   /// [enablePush] 是否接收离线推送
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updatePushServiceForGroup({
-    required List<String> groupId,
+    required List<String> groupIds,
     required bool enablePush,
   }) async {
-    Map req = {'noPush': !enablePush, 'group_id': groupId};
+    Map req = {'noPush': !enablePush, 'group_ids': groupIds};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updateGroupPushService, req);
     try {
