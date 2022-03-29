@@ -173,18 +173,17 @@
                    channelName:(NSString *)aChannelName
                         result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *groupId = param[@"group_id"];
+    NSArray *groupIds = param[@"group_ids"];
     bool noPush = [param[@"noPush"] boolValue];
     
-    [EMClient.sharedClient.pushManager updatePushServiceForGroups:@[groupId]
+    [EMClient.sharedClient.pushManager updatePushServiceForGroups:groupIds
                                                       disablePush:noPush
                                                        completion:^(EMError * _Nonnull aError)
     {
-        EMGroup *aGroup = [EMGroup groupWithId:groupId];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
