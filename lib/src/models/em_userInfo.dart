@@ -11,7 +11,7 @@ enum EMUserInfoType {
 }
 
 class EMUserInfo {
-  EMUserInfo(String aUserId);
+  EMUserInfo(this.userId);
 
   EMUserInfo._private({
     required this.userId,
@@ -98,7 +98,7 @@ class EMUserInfo {
     return data;
   }
 
-  String userId = '';
+  final String userId;
   String? nickName;
   String? avatarUrl;
   String? mail;
@@ -107,5 +107,5 @@ class EMUserInfo {
   String? sign;
   String? birth;
   String? ext;
-  int expireTime = DateTime.now().millisecondsSinceEpoch;
+  final int expireTime = DateTime.now().millisecondsSinceEpoch;
 }
