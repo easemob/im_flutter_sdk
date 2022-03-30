@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
 import '../internal/chat_method_keys.dart';
+import '../internal/em_enum_transform_tools.dart';
 
 enum EMMessageSearchDirection { Up, Down }
 
@@ -223,12 +224,11 @@ extension EMConversationExtension on EMConversation {
     EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
   }) async {
     Map req = this.toJson();
-    req['type'] = EMMessageBody.messageTypeToTypeStr(type);
+    req['type'] = messageTypeToTypeStr(type);
     req['timestamp'] = timestamp;
     req['count'] = count;
     req['sender'] = sender;
-    req['MessageDirection'] =
-        direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
@@ -250,8 +250,7 @@ extension EMConversationExtension on EMConversation {
     Map req = this.toJson();
     req["startId"] = startMsgId;
     req['count'] = loadCount;
-    req['MessageDirection'] =
-        direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithStartId, req);
@@ -279,8 +278,7 @@ extension EMConversationExtension on EMConversation {
       req['sender'] = sender;
     }
     req['timestamp'] = timestamp;
-    req['MessageDirection'] =
-        direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);

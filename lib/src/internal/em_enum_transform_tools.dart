@@ -1,3 +1,5 @@
+import '../models/em_message.dart';
+
 import '../em_listeners.dart';
 
 EMContactGroupEvent? convertIntToEMContactGroupEvent(int? i) {
@@ -54,5 +56,82 @@ EMContactGroupEvent? convertIntToEMContactGroupEvent(int? i) {
       return EMContactGroupEvent.GROUP_REMOVE_MUTE;
     default:
       return null;
+  }
+}
+
+String messageTypeToTypeStr(MessageType type) {
+  switch (type) {
+    case MessageType.TXT:
+      return 'txt';
+    case MessageType.LOCATION:
+      return 'loc';
+    case MessageType.CMD:
+      return 'cmd';
+    case MessageType.CUSTOM:
+      return 'custom';
+    case MessageType.FILE:
+      return 'file';
+    case MessageType.IMAGE:
+      return 'img';
+    case MessageType.VIDEO:
+      return 'video';
+    case MessageType.VOICE:
+      return 'voice';
+  }
+}
+
+int chatTypeToInt(ChatType type) {
+  if (type == ChatType.ChatRoom) {
+    return 2;
+  } else if (type == ChatType.GroupChat) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+ChatType chatTypeFromInt(int? type) {
+  if (type == 2) {
+    return ChatType.ChatRoom;
+  } else if (type == 1) {
+    return ChatType.GroupChat;
+  } else {
+    return ChatType.Chat;
+  }
+}
+
+int messageStatusToInt(MessageStatus status) {
+  if (status == MessageStatus.FAIL) {
+    return 3;
+  } else if (status == MessageStatus.SUCCESS) {
+    return 2;
+  } else if (status == MessageStatus.PROGRESS) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+MessageStatus messageStatusFromInt(int? status) {
+  if (status == 3) {
+    return MessageStatus.FAIL;
+  } else if (status == 2) {
+    return MessageStatus.SUCCESS;
+  } else if (status == 1) {
+    return MessageStatus.PROGRESS;
+  } else {
+    return MessageStatus.CREATE;
+  }
+}
+
+int downloadStatusToInt(EMDownloadStatus status) {
+  if (status == EMDownloadStatus.DOWNLOADING) {
+    return 0;
+  } else if (status == EMDownloadStatus.SUCCESS) {
+    return 1;
+  } else if (status == EMDownloadStatus.FAILED) {
+    return 2;
+  } else {
+    return 3;
   }
 }

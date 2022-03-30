@@ -1,5 +1,10 @@
 import 'dart:math';
 
+import 'package:im_flutter_sdk/src/em_message_status_callback.dart';
+
+import '../em_status_listener.dart';
+import '../internal/em_enum_transform_tools.dart';
+
 import '../tools/em_log.dart';
 
 import '../tools/em_message_callback_manager.dart';
@@ -41,7 +46,7 @@ enum MessageDirection {
 ///
 /// The states include success, failure, being sent/being received, and created to be sent.
 ///
-enum Status {
+enum MessageStatus {
   /// The message is created to be sent.
   CREATE,
 
@@ -90,26 +95,6 @@ enum MessageType {
 
   /// Customized message.
   CUSTOM,
-}
-
-abstract class StatusListener {
-  /// 消息进度
-  void onProgress(int progress) {}
-
-  /// 消息发送失败
-  void onError(EMError error) {}
-
-  /// 消息发送成功
-  void onSuccess() {}
-
-  /// 消息已读
-  void onReadAck() {}
-
-  /// 消息已送达
-  void onDeliveryAck() {}
-
-  /// 消息状态发生改变
-  void onStatusChanged() {}
 }
 
 ///
@@ -173,7 +158,6 @@ class EMMessage {
 
   void dispose() {
     MessageCallBackManager.getInstance.removeMessage(_tmpKey);
-    // listener = null;
   }
 
   void _onMessageError(Map<String, dynamic> map) {
@@ -182,7 +166,7 @@ class EMMessage {
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    listener?.onError(EMError.fromJson(map['error']));
+    messageStatusCallBack?.onError?.call(EMError.fromJson(map['error']));
     return null;
   }
 
@@ -191,7 +175,7 @@ class EMMessage {
       '发送 -- ' + ' msg_id: ' + this.msgId! + ' ' + map['progress'].toString(),
     );
     int progress = map['progress'];
-    listener?.onProgress(progress);
+    messageStatusCallBack?.onProgress?.call(progress);
     return null;
   }
 
@@ -200,7 +184,7 @@ class EMMessage {
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    listener?.onSuccess();
+    messageStatusCallBack?.onSuccess?.call();
     EMLog.v('发送成功 -- ' + this.toString());
     return null;
   }
@@ -209,7 +193,7 @@ class EMMessage {
     EMLog.v('消息已读 -- ' + ' msg_id: ' + this.msgId!);
     EMMessage msg = EMMessage.fromJson(map);
     this.hasReadAck = msg.hasReadAck;
-    listener?.onReadAck();
+    messageStatusCallBack?.onReadAck?.call();
 
     return null;
   }
@@ -217,14 +201,14 @@ class EMMessage {
   void _onMessageDeliveryAck(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
-    listener?.onDeliveryAck();
+    messageStatusCallBack?.onDeliveryAck?.call();
     return null;
   }
 
   void _onMessageStatusChanged(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.status = msg.status;
-    listener?.onStatusChanged();
+    messageStatusCallBack?.onStatusChanged?.call();
     return null;
   }
 
@@ -332,11 +316,15 @@ class EMMessage {
             to: username,
             body: EMCustomMessageBody(event: event, params: params));
 
+  @Deprecated("Switch to using messageStatusCallBack instead.")
   StatusListener? listener;
 
+  @Deprecated("Switch to using messageStatusCallBack instead.")
   void setMessageStatusListener(StatusListener? listener) {
     this.listener = listener;
   }
+
+  MessageStatusCallBack? messageStatusCallBack;
 
   late String _tmpKey;
 
@@ -384,7 +372,7 @@ class EMMessage {
   MessageDirection direction = MessageDirection.SEND;
 
   /// Gets the message sending/reception status.
-  Status status = Status.CREATE;
+  MessageStatus status = MessageStatus.CREATE;
 
   /// 消息扩展
   Map attributes = {};
@@ -398,7 +386,7 @@ class EMMessage {
     data['to'] = this.to;
     data['body'] = this.body!.toJson();
     data['attributes'] = this.attributes;
-    data['MessageDirection'] =
+    data['direction'] =
         this.direction == MessageDirection.SEND ? 'send' : 'rec';
     data['hasRead'] = this.hasRead;
     data['hasReadAck'] = this.hasReadAck;
@@ -410,7 +398,7 @@ class EMMessage {
     data['chatType'] = chatTypeToInt(this.chatType);
     data['localTime'] = this.localTime;
     data['serverTime'] = this.serverTime;
-    data['status'] = _chatStatusToInt(this.status);
+    data['status'] = messageStatusToInt(this.status);
 
     return data;
   }
@@ -421,7 +409,7 @@ class EMMessage {
       ..from = map['from'] as String?
       ..body = _bodyFromMap(map['body'])
       ..attributes = map['attributes'] ?? {}
-      ..direction = map['MessageDirection'] == 'send'
+      ..direction = map['direction'] == 'send'
           ? MessageDirection.SEND
           : MessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
@@ -434,51 +422,7 @@ class EMMessage {
       ..chatType = chatTypeFromInt(map['chatType'] as int?)
       ..localTime = map['localTime'] as int
       ..serverTime = map['serverTime'] as int
-      ..status = _chatStatusFromInt(map['status'] as int?);
-  }
-
-  static int chatTypeToInt(ChatType type) {
-    if (type == ChatType.ChatRoom) {
-      return 2;
-    } else if (type == ChatType.GroupChat) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  static ChatType chatTypeFromInt(int? type) {
-    if (type == 2) {
-      return ChatType.ChatRoom;
-    } else if (type == 1) {
-      return ChatType.GroupChat;
-    } else {
-      return ChatType.Chat;
-    }
-  }
-
-  static int _chatStatusToInt(Status status) {
-    if (status == Status.FAIL) {
-      return 3;
-    } else if (status == Status.SUCCESS) {
-      return 2;
-    } else if (status == Status.PROGRESS) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  static Status _chatStatusFromInt(int? status) {
-    if (status == 3) {
-      return Status.FAIL;
-    } else if (status == 2) {
-      return Status.SUCCESS;
-    } else if (status == 1) {
-      return Status.PROGRESS;
-    } else {
-      return Status.CREATE;
-    }
+      ..status = messageStatusFromInt(map['status'] as int?);
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {
@@ -528,34 +472,13 @@ abstract class EMMessageBody {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = EMMessageBody.messageTypeToTypeStr(this.type!);
+    data['type'] = messageTypeToTypeStr(this.type!);
     return data;
   }
 
   @override
   String toString() {
     return toJson().toString();
-  }
-
-  static String messageTypeToTypeStr(MessageType type) {
-    switch (type) {
-      case MessageType.TXT:
-        return 'txt';
-      case MessageType.LOCATION:
-        return 'loc';
-      case MessageType.CMD:
-        return 'cmd';
-      case MessageType.CUSTOM:
-        return 'custom';
-      case MessageType.FILE:
-        return 'file';
-      case MessageType.IMAGE:
-        return 'img';
-      case MessageType.VIDEO:
-        return 'video';
-      case MessageType.VOICE:
-        return 'voice';
-    }
   }
 
   /// Gets the chat message type.
@@ -645,7 +568,7 @@ class EMFileMessageBody extends EMMessageBody {
     // }
     data['localPath'] = this.localPath;
     data['displayName'] = this.displayName ?? '';
-    data['fileStatus'] = EMFileMessageBody.downloadStatusToInt(this.fileStatus);
+    data['fileStatus'] = downloadStatusToInt(this.fileStatus);
     return data;
   }
 
@@ -676,18 +599,6 @@ class EMFileMessageBody extends EMMessageBody {
       return EMDownloadStatus.FAILED;
     } else {
       return EMDownloadStatus.PENDING;
-    }
-  }
-
-  static int downloadStatusToInt(EMDownloadStatus status) {
-    if (status == EMDownloadStatus.DOWNLOADING) {
-      return 0;
-    } else if (status == EMDownloadStatus.SUCCESS) {
-      return 1;
-    } else if (status == EMDownloadStatus.FAILED) {
-      return 2;
-    } else {
-      return 3;
     }
   }
 }
@@ -731,8 +642,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data['sendOriginalImage'] = this.sendOriginalImage;
     data['height'] = this.height;
     data['width'] = this.width;
-    data['thumbnailStatus'] =
-        EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
+    data['thumbnailStatus'] = downloadStatusToInt(this.thumbnailStatus);
     return data;
   }
 
@@ -797,8 +707,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
     data['thumbnailSecret'] = this.thumbnailSecret;
     data['height'] = this.height;
     data['width'] = this.width;
-    data['thumbnailStatus'] =
-        EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
+    data['thumbnailStatus'] = downloadStatusToInt(this.thumbnailStatus);
     return data;
   }
 
