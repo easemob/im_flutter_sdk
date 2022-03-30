@@ -121,8 +121,8 @@ class EMPushManager {
   Future<List<String>?> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
-    if (result.containsKey(ChatMethodKeys.getNoDisturbGroups)) {
-      list = result[ChatMethodKeys.getNoDisturbGroups]?.cast<String>();
+    if (result.containsKey(ChatMethodKeys.getNoPushGroups)) {
+      list = result[ChatMethodKeys.getNoPushGroups]?.cast<String>();
     }
     return list;
   }
