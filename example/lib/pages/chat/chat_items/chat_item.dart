@@ -41,10 +41,26 @@ class ChatItem extends StatefulWidget {
   State<StatefulWidget> createState() => ChatItemState();
 }
 
-class ChatItemState extends State<ChatItem> implements StatusListener {
+class ChatItemState extends State<ChatItem> {
   void initState() {
     super.initState();
-    widget.msg.setMessageStatusListener(this);
+    widget.msg.messageStatusCallBack = MessageStatusCallBack(
+      onSuccess: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      onReadAck: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
   }
 
   @override
@@ -190,7 +206,7 @@ class ChatItemState extends State<ChatItem> implements StatusListener {
       } else {
         return Builder(
           builder: (_) {
-            if (widget.msg.status == Status.PROGRESS) {
+            if (widget.msg.status == MessageStatus.PROGRESS) {
               return Padding(
                 padding: EdgeInsets.all(sWidth(10)),
                 child: SizedBox(
@@ -201,8 +217,8 @@ class ChatItemState extends State<ChatItem> implements StatusListener {
                   ),
                 ),
               );
-            } else if (widget.msg.status == Status.FAIL ||
-                widget.msg.status == Status.CREATE) {
+            } else if (widget.msg.status == MessageStatus.FAIL ||
+                widget.msg.status == MessageStatus.CREATE) {
               return IconButton(
                 padding: EdgeInsets.zero,
                 icon: Icon(
@@ -223,39 +239,6 @@ class ChatItemState extends State<ChatItem> implements StatusListener {
       }
     }
     return Container();
-  }
-
-  @override
-  void onDeliveryAck() {}
-
-  @override
-  void onError(EMError error) {
-    if (mounted) {
-      setState(() {});
-    }
-    print('发送失败');
-  }
-
-  @override
-  void onProgress(int progress) {
-    print('progress --- $progress');
-  }
-
-  @override
-  void onReadAck() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  void onStatusChanged() {}
-
-  @override
-  void onSuccess() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   _messageBubble() {
