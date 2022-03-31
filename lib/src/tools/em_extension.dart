@@ -53,11 +53,9 @@ extension MapExtension on Map {
       return null;
     }
   }
-}
 
-extension MapWithoutNull on Map {
-  setValueWithOutNull<T>(String key, T? value,
-      [Object Function(T object)? callback]) {
+  void setValueWithOutNull<T>(String key, T? value,
+      {Object Function(T object)? callback, T? defaultValue}) {
     if (value != null) {
       if (callback != null) {
         Object v = callback(value);
@@ -65,6 +63,34 @@ extension MapWithoutNull on Map {
       } else {
         this[key] = value;
       }
+    } else {
+      if (defaultValue != null) {
+        this[key] = defaultValue;
+      }
     }
+  }
+
+  T getValueWithOutNull<T>(String key, T defaultValue) {
+    T ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is T) {
+        ret = value;
+      }
+    }
+    return ret;
+  }
+
+  T? getValue<T>(String key) {
+    T? ret;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is T) {
+        ret = value;
+      } else {
+        ret = null;
+      }
+    }
+    return ret;
   }
 }

@@ -242,11 +242,11 @@ class ChatItemState extends State<ChatItem> {
   }
 
   _messageBubble() {
-    EMMessageBody body = widget.msg.body!;
+    EMMessageBody body = widget.msg.body;
     bool isSend = widget.msg.direction != MessageDirection.RECEIVE;
     return Builder(builder: (_) {
       Widget bubble;
-      switch (widget.msg.body!.type!) {
+      switch (widget.msg.body.type) {
         case MessageType.TXT:
           bubble = ChatTextBubble(body as EMTextMessageBody);
           break;

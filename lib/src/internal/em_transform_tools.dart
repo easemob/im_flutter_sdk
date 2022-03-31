@@ -1,4 +1,4 @@
-import '../models/em_message.dart';
+import '../models/em_chat_enums.dart';
 
 import '../em_listeners.dart';
 
@@ -124,14 +124,69 @@ MessageStatus messageStatusFromInt(int? status) {
   }
 }
 
-int downloadStatusToInt(EMDownloadStatus status) {
-  if (status == EMDownloadStatus.DOWNLOADING) {
+int downloadStatusToInt(DownloadStatus status) {
+  if (status == DownloadStatus.DOWNLOADING) {
     return 0;
-  } else if (status == EMDownloadStatus.SUCCESS) {
+  } else if (status == DownloadStatus.SUCCESS) {
     return 1;
-  } else if (status == EMDownloadStatus.FAILED) {
+  } else if (status == DownloadStatus.FAILED) {
     return 2;
   } else {
     return 3;
   }
+}
+
+EMGroupPermissionType permissionTypeFromInt(int? type) {
+  EMGroupPermissionType ret = EMGroupPermissionType.Member;
+  switch (type) {
+    case -1:
+      {
+        ret = EMGroupPermissionType.None;
+      }
+      break;
+    case 0:
+      {
+        ret = EMGroupPermissionType.Member;
+      }
+      break;
+    case 1:
+      {
+        ret = EMGroupPermissionType.Admin;
+      }
+      break;
+    case 2:
+      {
+        ret = EMGroupPermissionType.Owner;
+      }
+      break;
+  }
+  return ret;
+}
+
+int permissionTypeToInt(EMGroupPermissionType? type) {
+  int ret = 0;
+  if (type == null) return ret;
+  switch (type) {
+    case EMGroupPermissionType.None:
+      {
+        ret = -1;
+      }
+      break;
+    case EMGroupPermissionType.Member:
+      {
+        ret = 0;
+      }
+      break;
+    case EMGroupPermissionType.Admin:
+      {
+        ret = 1;
+      }
+      break;
+    case EMGroupPermissionType.Owner:
+      {
+        ret = 2;
+      }
+      break;
+  }
+  return ret;
 }

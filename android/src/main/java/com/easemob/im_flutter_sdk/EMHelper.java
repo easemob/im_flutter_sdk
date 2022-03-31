@@ -436,7 +436,8 @@ class EMMessageHelper {
         message.setStatus(statusFromInt(json.getInt("status")));
         message.setChatType(chatTypeFromInt(json.getInt("chatType")));
         message.setMsgId(json.getString("msgId"));
-        if (null != json.getJSONObject("attributes")) {
+
+        if(json.has("attributes")){
             JSONObject data = json.getJSONObject("attributes");
             Iterator iterator = data.keys();
             while (iterator.hasNext()) {

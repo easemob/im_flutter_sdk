@@ -1,13 +1,10 @@
+import '../internal/em_transform_tools.dart';
+
 import '../tools/em_extension.dart';
+import 'em_chat_enums.dart';
 import 'em_group_options.dart';
 
-enum EMGroupPermissionType {
-  None,
-  Member,
-  Admin,
-  Owner,
-}
-
+/// The group class.
 class EMGroup {
   EMGroup._private();
 
@@ -28,22 +25,64 @@ class EMGroup {
   EMGroupOptions? _options;
   EMGroupPermissionType? _permissionType;
 
+  /// The group ID.
   String get groupId => _groupId;
+
+  /// The group name.
   String? get name => _name;
+
+  /// The group description.
   String? get description => _description;
+
+  /// The user ID of the group owner.
   String? get owner => _owner;
+
+  ///  The content of the group announcement.
   String? get announcement => _announcement;
+
+  /// The member count of the group.
   int? get memberCount => _memberCount;
   List? get memberList => _memberList;
+
+  ///
+  /// The admin list of the group.
+  ///
+  /// Be sure to fetch the detail specification of the group from the server first, see {@link EMGroupManager#getGroupSpecificationFromServer(String)}.
+  ///
   List? get adminList => _adminList;
+
+  ///
+  /// The block list of the group.
+  ///
+  /// If no block list is found from the server, the return may be empty.
+  ///
+  /// Reference:
+  /// To fetch the block list, call {@link EMGroupManager#getBlockListFromServer(String, int?, int?)}
+  ///
+  /// Only the group owner or admin can call this method.
+  ///
   List? get blockList => _blockList;
+
+  ///
+  /// The mute list of the group.
+  ///
+  /// Reference:
+  /// You can also fetch the mute list by calling {@link}
+  ///
+  /// And only the group owner or admin can call this method.
+  ///
   List? get muteList => _muteList;
   bool? get noticeEnable => _noticeEnable;
+
+  ///
+  /// Gets whether the group message is blocked.
+  ///
   bool? get messageBlocked => _messageBlocked;
   bool? get isAllMemberMuted => _isAllMemberMuted;
   EMGroupOptions? get settings => _options;
   EMGroupPermissionType? get permissionType => _permissionType;
 
+  /// @nodoc
   factory EMGroup.fromJson(Map map) {
     return EMGroup._private()
       .._groupId = map['groupId']
@@ -60,7 +99,7 @@ class EMGroup {
       .._messageBlocked = map.boolValue('messageBlocked')
       .._isAllMemberMuted = map.boolValue('isAllMemberMuted')
       .._options = EMGroupOptions.fromJson(map['options'])
-      .._permissionType = EMGroup.permissionTypeFromInt(map['permissionType']);
+      .._permissionType = permissionTypeFromInt(map['permissionType']);
   }
 
   Map toJson() {
@@ -81,63 +120,8 @@ class EMGroup {
     data.setValueWithOutNull("isAllMemberMuted", _isAllMemberMuted);
     data.setValueWithOutNull("options", _options?.toJson());
     data.setValueWithOutNull(
-        "permissionType", EMGroup.permissionTypeToInt(_permissionType));
+        "permissionType", permissionTypeToInt(_permissionType));
     return data;
-  }
-
-  static EMGroupPermissionType permissionTypeFromInt(int? type) {
-    EMGroupPermissionType ret = EMGroupPermissionType.Member;
-    switch (type) {
-      case -1:
-        {
-          ret = EMGroupPermissionType.None;
-        }
-        break;
-      case 0:
-        {
-          ret = EMGroupPermissionType.Member;
-        }
-        break;
-      case 1:
-        {
-          ret = EMGroupPermissionType.Admin;
-        }
-        break;
-      case 2:
-        {
-          ret = EMGroupPermissionType.Owner;
-        }
-        break;
-    }
-    return ret;
-  }
-
-  static int permissionTypeToInt(EMGroupPermissionType? type) {
-    int ret = 0;
-    if (type == null) return ret;
-    switch (type) {
-      case EMGroupPermissionType.None:
-        {
-          ret = -1;
-        }
-        break;
-      case EMGroupPermissionType.Member:
-        {
-          ret = 0;
-        }
-        break;
-      case EMGroupPermissionType.Admin:
-        {
-          ret = 1;
-        }
-        break;
-      case EMGroupPermissionType.Owner:
-        {
-          ret = 2;
-        }
-        break;
-    }
-    return ret;
   }
 
   @override

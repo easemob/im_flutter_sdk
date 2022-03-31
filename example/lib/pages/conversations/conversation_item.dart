@@ -130,10 +130,10 @@ class _ConversationItemState extends State<ConversationItem> {
       return showInfo;
     }
 
-    switch (_latestMessage.body!.type) {
+    switch (_latestMessage.body.type) {
       case MessageType.TXT:
         var body = _latestMessage.body as EMTextMessageBody;
-        showInfo = body.content!;
+        showInfo = body.content;
         break;
       case MessageType.IMAGE:
         showInfo = '[图片]';
