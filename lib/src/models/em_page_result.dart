@@ -1,5 +1,11 @@
 typedef PageResultCallback = Object Function(dynamic obj);
 
+///
+///This object instance is returned when calling the method of fetching by pages.
+/// Returns the next page count and the data count of next page. If the pageCount is less than the count you set, there is no more data on server.
+///
+/// Param [T] Generics.
+///
 class EMPageResult<T> {
   EMPageResult._private();
 
@@ -18,6 +24,9 @@ class EMPageResult<T> {
   int? _pageCount;
   List<T>? _data;
 
+  /// The page count.
   get pageCount => _pageCount;
+
+  /// The result data.
   List<T>? get data => _data;
 }

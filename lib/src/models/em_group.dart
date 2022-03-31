@@ -72,15 +72,84 @@ class EMGroup {
   /// And only the group owner or admin can call this method.
   ///
   List? get muteList => _muteList;
+
+  @Deprecated("")
   bool? get noticeEnable => _noticeEnable;
 
   ///
   /// Gets whether the group message is blocked.
   ///
   bool? get messageBlocked => _messageBlocked;
+
+  ///
+  /// Whether all members are muted.
+  ///
+  /// This method has limitations and is recommended to be used with caution.
+  ///
+  /// The state is updated when a all-muted/all-unmuted callback is received, but only for the in-memory object.
+  /// After the in-memory object is collected and pulled again from the database or server, the state becomes unreliable.
+  ///
   bool? get isAllMemberMuted => _isAllMemberMuted;
+
+  @Deprecated(
+      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead.")
   EMGroupOptions? get settings => _options;
+
+  /// The current user's role in group.
   EMGroupPermissionType? get permissionType => _permissionType;
+
+  ///
+  /// The max number of group members allowed in a group. The param is set when the group is created.
+  ///
+  /// Be sure to fetch the detail specification of the group from the server first, see {@link EMGroupManager#getGroupSpecificationFromServer(String)}. If not, the SDK returns nil.
+  ///
+  /// **return** The allowed max number of group members.
+  ///
+  int? get maxUserCount => _options?.maxCount;
+
+  ///
+  /// Fetches the group property: whether users can auto join the group VS need requesting or invitation from a group member to join the group.
+  ///
+  /// There are four types of group properties used to define the style of a group,
+  /// and `isMemberOnly` contains three types including:
+  /// PrivateOnlyOwnerInvite,
+  /// PrivateMemberCanInvite,
+  /// PublicJoinNeedApproval.
+  /// And do not include {@link EMGroupManager.EMGroupStyle#PublicOpenJoin}.
+  ///
+  /// **return**
+  /// `true`: Users can not join the group freely. Needs the invitation from the group owner or members, or the application been approved by the group owner or admins.
+  /// `false`: Users can join freely without the group owner or member‘s invitation or the new joiner’s application been approved.
+  bool get isMemberOnly {
+    if (_options == null) {
+      return true;
+    }
+
+    if (_options?.style == EMGroupStyle.PrivateMemberCanInvite ||
+        _options?.style == EMGroupStyle.PrivateOnlyOwnerInvite ||
+        _options?.style == EMGroupStyle.PublicJoinNeedApproval) {
+      return true;
+    }
+    return false;
+  }
+
+  ///
+  /// Gets whether the group member is allowed to invite other users to join the group.
+  ///
+  /// **return**
+  /// `true`: The group member can invite other users to join the group;
+  /// `false`: Do not allow the group member invite other users to join the group.
+  ///
+  bool get isMemberAllowToInvite {
+    if (_options == null) {
+      return true;
+    }
+    if (_options?.style == EMGroupStyle.PrivateMemberCanInvite) {
+      return true;
+    }
+
+    return false;
+  }
 
   /// @nodoc
   factory EMGroup.fromJson(Map map) {

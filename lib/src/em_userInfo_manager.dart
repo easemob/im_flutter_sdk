@@ -37,29 +37,6 @@ class EMUserInfoManager {
     }
   }
 
-  @Deprecated("")
-  Future<EMUserInfo?> updateOwnUserInfoWithType(
-      EMUserInfoType type, String userInfoValue) async {
-    Map req = {
-      'userInfoType': _userInfoTypeToInt(type),
-      'userInfoValue': userInfoValue
-    };
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.updateOwnUserInfoWithType, req);
-    try {
-      EMError.hasErrorFromResult(result);
-      if (result[ChatMethodKeys.updateOwnUserInfoWithType] != null) {
-        _ownUserInfo = EMUserInfo.fromJson(
-            result[ChatMethodKeys.updateOwnUserInfoWithType]);
-        _effectiveUserInfoMap[_ownUserInfo!.userId] = _ownUserInfo!;
-      }
-
-      return _ownUserInfo;
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
   ///
   /// Get the current user's information from server.
   ///
@@ -136,92 +113,6 @@ class EMUserInfoManager {
     } on EMError catch (e) {
       throw e;
     }
-  }
-
-  @Deprecated(
-      'Use userInfoManager.fetchUserInfoByIdWithExpireTime() method instead.')
-  Future<Map<String, EMUserInfo>> fetchUserInfoByIdWithType(
-      List<String> userIds, List<EMUserInfoType> types,
-      {int expireTime = 3600}) async {
-    List<int> userInfoTypes = [];
-    types.forEach((element) {
-      int type = _userInfoTypeToInt(element);
-      userInfoTypes.add(type);
-    });
-
-    List<String> reqIds = userIds
-        .where((element) =>
-            !_effectiveUserInfoMap.containsKey(element) ||
-            (_effectiveUserInfoMap.containsKey(element) &&
-                DateTime.now().millisecondsSinceEpoch -
-                        _effectiveUserInfoMap[element]!.expireTime >
-                    expireTime * 1000))
-        .toList();
-    Map resultMap = Map();
-
-    Map req = {'userIds': reqIds, 'userInfoTypes': userInfoTypes};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchUserInfoByIdWithType, req);
-
-    try {
-      EMError.hasErrorFromResult(result);
-      result[ChatMethodKeys.fetchUserInfoByIdWithType].forEach((key, value) {
-        EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
-        resultMap[key] = eUserInfo;
-
-        _effectiveUserInfoMap[key] = eUserInfo;
-      });
-
-      return resultMap as FutureOr<Map<String, EMUserInfo>>;
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  static int _userInfoTypeToInt(EMUserInfoType type) {
-    int ret = 0;
-    switch (type) {
-      case EMUserInfoType.NickName:
-        {
-          ret = 0;
-        }
-        break;
-      case EMUserInfoType.AvatarURL:
-        {
-          ret = 1;
-        }
-        break;
-      case EMUserInfoType.Phone:
-        {
-          ret = 2;
-        }
-        break;
-      case EMUserInfoType.Mail:
-        {
-          ret = 3;
-        }
-        break;
-      case EMUserInfoType.Gender:
-        {
-          ret = 4;
-        }
-        break;
-      case EMUserInfoType.Sign:
-        {
-          ret = 5;
-        }
-        break;
-      case EMUserInfoType.Birth:
-        {
-          ret = 6;
-        }
-        break;
-      case EMUserInfoType.Ext:
-        {
-          ret = 7;
-        }
-    }
-    return ret;
   }
 
   void clearUserInfoCache() {

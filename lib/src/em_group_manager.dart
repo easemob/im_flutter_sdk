@@ -145,8 +145,8 @@ class EMGroupManager {
   ///
   /// After the group is created, the data in the cache and database will be updated and multiple devices will receive the notification event and
   /// update the group to the cache and database.
-  /// You can set {@link com.hyphenate.EMMultiDeviceListener} to listen on the event. The event callback function
-  /// is {@link EMMultiDeviceListener#onGroupEvent(int, String, List)}, where the first parameter is the event,
+  /// You can set {@link EMMultiDeviceListener} to listen on the event. The event callback function
+  /// is {@link EMMultiDeviceListener#onGroupEvent(EMContactGroupEvent, String, List)}, where the first parameter is the event,
   /// for example, {@link EMContactGroupEvent#GROUP_CREATE} for the group creation event.
   ///
   /// Param [groupName] The group name.
@@ -453,8 +453,7 @@ class EMGroupManager {
   ///
   /// Adds users to the group.
   ///
-  /// Only the group owner or admin can call this method.
-  /// 邀请用户加入私有群，用于私有群: PrivateOnlyOwnerInvite / PrivateMemberCanInvite ????
+  /// 群类型是 PrivateOnlyOwnerInvite / PrivateMemberCanInvite / PublicJoinNeedApproval 的群组可以邀请用户加入
   ///
   /// Param [groupId] The group ID.
   ///

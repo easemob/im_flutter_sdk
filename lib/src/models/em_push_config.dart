@@ -1,5 +1,6 @@
 import '../tools/em_extension.dart';
 
+/// @nodoc
 class EMPushConfig {
   String? mzAppId = '';
   String? mzAppKey = '';

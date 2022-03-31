@@ -1,137 +1,275 @@
 import '../tools/em_extension.dart';
 import 'em_push_config.dart';
 
+///
+/// The settings of the chat SDK.
+/// You can set parameters and options of the SDK.
+/// For example, whether to encrypt the messages before sending, whether to automatically accept the friend invitations.
+///
 class EMOptions {
-  /// 环信 appKey, 必须设置。
-  String? appKey = '';
+  /// The app key you got from the console when create an app.
+  late final String appKey;
 
-  /// 是否自动登录，当为`true`时，首次登录成功后，您再次启动App时，sdk会在
-  /// 初始化后自定为您登录上一次登录的账号。
-  bool? autoLogin = true;
+  ///
+  /// Enables/Disables automatic login.
+  ///
+  /// `true`: (default) Enables automatic login;
+  /// `false`: Disables automatic login.
+  ///
+  final bool autoLogin;
 
-  bool? debugModel = false;
+  final bool debugModel;
 
-  /// 自动同意好友申请，当设置为`true`时，
-  /// 您在线时收到好友申请将自动同意,
-  /// 如您不在线，等您上线后会自动同意。
-  bool? acceptInvitationAlways = false;
+  ///
+  /// Whether to accept friend invitations from other users automatically.
+  ///
+  /// `true`: (default) Accepts friend invitations automatically;
+  /// `false`: Do not accept friend invitations automatically.
+  final bool acceptInvitationAlways;
 
-  /// 是否自动同意群邀请，当设置为`true`时，
-  /// 您在线时收到加群邀请会自动同意，
-  /// 如您不在线，等您上线后会自动同意。
-  bool? autoAcceptGroupInvitation = false;
+  ///
+  /// Whether to accept group invitations automatically.
+  ///
+  /// `true`: (default) Accepts group invitations automatically;
+  /// `false`: Do not accept group invitations automatically.
+  ///
+  final bool autoAcceptGroupInvitation;
 
-  /// 是否允许发送已读回执,默认值为`ture`,
-  /// 当为false时,当您通过EMChatManager调用sendMessageReadAck无效；
-  bool? requireAck = true;
+  ///
+  /// Whether the read receipt is required.
+  ///
+  /// `true`: (default) The read receipt is required;
+  /// `false`: The read receipt is not required.
+  ///
+  final bool requireAck;
 
-  /// 是否发送已送达回执，默认为`false`, 当为`ture`时，
-  /// 您收到消息后会自动相对方发送已送达回执。
-  /// 对方可以通过`onMessagesDelivered()`方法监听；
-  bool? requireDeliveryAck = false;
+  ///
+  /// Whether the delivery receipt is required.
+  ///
+  /// `true`: (default) The read receipt is required;
+  /// `false`: The read receipt is not required.
+  ///
+  final bool requireDeliveryAck;
 
-  /// 退出群组时是否删除相应会话, 当为`true`时，
-  /// 您离开群组后对应的群消息会被删除。
-  bool? deleteMessagesAsExitGroup = true;
+  ///
+  /// Whether to delete the group message when leaving a group.
+  ///
+  /// `true`: (default) Delete the messages when leaving the group.
+  /// `false`: Do not delete the messages when leaving a group.
+  ///
+  final bool deleteMessagesAsExitGroup;
 
-  /// 退出聊天室时是否删除相应会话, 当为`true`时，
-  /// 您离开聊天室后对应的聊天室消息会被删除。
-  bool? deleteMessagesAsExitChatRoom = true;
+  ///
+  /// Whether to delete the chat room message when leaving the chat room.
+  ///
+  /// `true`: (default) Delete the chat room related message record when leaving the chat room.
+  /// `false`: Do not delete the chat room related message record when leaving the chat room.
+  ///
+  final bool deleteMessagesAsExitChatRoom;
 
-  /// 是否允许聊天室创建者退出聊天室，当为`true`时，
-  /// 聊天室创建者可以退出聊天室。
-  bool? isChatRoomOwnerLeaveAllowed = true;
+  ///
+  /// Whether to allow the chat room owner to leave the chat room.
+  ///
+  /// `true`: (default) Allow the chat room owner to leave the chat room.
+  /// `false`: Do not allow the chat room owner to leave the chat room.
+  ///
+  final bool isChatRoomOwnerLeaveAllowed;
 
-  /// 消息按照服务器时间排序, 当为`true`时，您从数据库中
-  /// 获取的消息是按照服务器时间排序的，否则是按照消息的本地时间排序。
-  bool? sortMessageByServerTime = true;
+  ///
+  /// Whether to sort messages by the server received time.
+  ///
+  /// `true`: (default) Sort messages by the server received time;
+  /// `false`: Do not sort messages by the server received time.
+  ///
+  final bool sortMessageByServerTime;
 
-  bool? usingHttpsOnly = false;
-  bool? serverTransfer = true;
-  bool? isAutoDownload = true;
+  ///
+  /// Sets whether only HTTPS is used for REST operations.
+  ///
+  /// `true`: (default) Only HTTPS is used.
+  /// `false`: Allow to use both HTTP and HTTPS.
+  ///
+  final bool usingHttpsOnly;
+
+  ///
+  /// Whether to upload the message attachments automatically to the chat server.
+  ///
+  /// `true`: (default) Use the default way to upload and download the message attachments by chat server;
+  /// `false`: Do not use the default way to upload and download the message attachments by chat server, using a customized path instead.
+  ///
+  final bool serverTransfer;
+
+  ///
+  /// Whether to auto download the thumbnail.
+  ///
+  /// `true`: (default) Download the thumbnail automatically;
+  /// `false`: Do not download the thumbnail automatically.
+  ///
+  final bool isAutoDownloadThumbnail;
+
+  ///
+  /// Sets whether to disable DNS.
+  ///
+  ///
+  /// `true`: (default) Disable DNS;
+  /// `false`: Do not disable DNS.
+  final bool enableDNSConfig;
+
+  /// The DNS url.
+  final String? dnsUrl;
+
+  /// The custom REST server.
+  final String? restServer;
+
+  /// The custom im message server url.
+  final String? imServer;
+
+  /// The custom im server port.
+  final int? imPort;
 
   EMPushConfig _pushConfig = EMPushConfig();
 
-  bool? enableDNSConfig = true;
-  String? dnsUrl = '';
-  String? restServer = '';
-  String? imServer = '';
-  int? imPort = 0;
-
-  /// 开启Oppo推送，`appkey`是Oppo的appkey，`secret`是Oppo的secret。申请流程访问
-  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
-  void enableOppPush(String appKey, String secret) {
+  ///
+  void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
     _pushConfig.oppoAppKey = appKey;
     _pushConfig.oppoAppSecret = secret;
   }
 
-  /// 开启小米推送, `appId`是推送用AppId, `appKey`是推送用AppKey。申请流程请访问
-  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
+  ///
+  /// Passes the app ID and app key of Mi push to enable Mi push on Mi devices.
+  ///
+  /// Param [appId] The Xiaomi Push App ID.
+  ///
+  /// Param [appKey] The Xiaomi push app key.
+  ///
   void enableMiPush(String appId, String appKey) {
     _pushConfig.enableMiPush = true;
     _pushConfig.miAppId = appId;
     _pushConfig.miAppKey = appKey;
   }
 
+  ///
+  /// Sets the FCM sender ID.
+  ///
   void enableFCM(String appId) {
     _pushConfig.enableFCM = true;
     _pushConfig.fcmId = appId;
   }
 
+  ///
+  /// Be sure to set the app ID and app key in AndroidManifest in order to make Vivo push available on Vivo devices.
+  ///
   void enableVivoPush() {
     _pushConfig.enableVivoPush = true;
   }
 
-  /// 华为推送，具体流程请访问
-  /// `http://docs-im.easemob.com/im/android/push/thirdpartypush`
+  ///
+  /// Enables Huawei push on Huawei devices.
+  ///
+  /// Be sure to set app ID in AndroidManifest or to set agconnect-services.json.
+  ///
   void enableHWPush() {
     _pushConfig.enableHWPush = true;
   }
 
-  /// 开启苹果推送，具体申请证书和上传流程请参考文档
-  /// `http://docs-im.easemob.com/im/ios/apns/deploy`
+  ///
+  /// Enables ios push on ios devices.
+  ///
+  /// Param [certName] The ios device push cert name.
   void enableAPNs(String certName) {
     _pushConfig.enableAPNS = true;
     _pushConfig.apnsCertName = certName;
   }
 
-  EMOptions({required this.appKey});
-
-  /// 设置自定义server地址
-  void customServerInfo({
-    required String customRestServer,
-    required String customImServer,
-    required int customImPort,
-  }) {
-    restServer = customRestServer;
-    imServer = customImServer;
-    imPort = customImPort;
-    enableDNSConfig = false;
-  }
+  ///
+  /// Sets the app options.
+  ///
+  /// Param [appKey] The app key you got from the console when create an app.
+  ///
+  /// Param [autoLogin] Enables/Disables automatic login. default is `true`.
+  ///
+  /// Param [debugModel]
+  ///
+  /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically. default is `false`.
+  ///
+  /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically. default is `false`.
+  ///
+  /// Param [requireAck] Whether the read receipt is required. default is `true`.
+  ///
+  /// Param [requireDeliveryAck] Whether the delivery receipt is required. default is `true`.
+  ///
+  /// Param [deleteMessagesAsExitGroup] Whether to delete the group message when leaving a group. default is `true`.
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] Whether to delete the chat room message when leaving the chat room. default is `true`.
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room. default is `true`.
+  ///
+  /// Param [sortMessageByServerTime] Whether to sort messages by the server received time. default is `true`.
+  ///
+  /// Param [usingHttpsOnly] Sets whether only HTTPS is used for REST operations. default is `true`.
+  ///
+  /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server. default is `true`.
+  ///
+  /// Param [isAutoDownloadThumbnail] Whether to auto download the thumbnail. default is `true`.
+  ///
+  /// Param [enableDNSConfig] Sets whether to disable DNS.
+  ///
+  /// Param [dnsUrl] The DNS url.
+  ///
+  /// Param [restServer] The custom REST server.
+  ///
+  /// Param [imPort] The custom im server port.
+  ///
+  /// Param [imServer] The custom im message server url.
+  ///
+  ///
+  EMOptions(
+      {required this.appKey,
+      this.autoLogin = true,
+      this.debugModel = false,
+      this.acceptInvitationAlways = false,
+      this.autoAcceptGroupInvitation = false,
+      this.requireAck = false,
+      this.requireDeliveryAck = false,
+      this.deleteMessagesAsExitGroup = true,
+      this.deleteMessagesAsExitChatRoom = true,
+      this.isChatRoomOwnerLeaveAllowed = true,
+      this.sortMessageByServerTime = true,
+      this.usingHttpsOnly = true,
+      this.serverTransfer = true,
+      this.isAutoDownloadThumbnail = true,
+      this.enableDNSConfig = true,
+      this.dnsUrl,
+      this.restServer,
+      this.imPort,
+      this.imServer});
 
   factory EMOptions.fromJson(Map<String, dynamic> json) {
-    var ret = EMOptions(appKey: json['appKey'])
-      ..autoLogin = json.boolValue('autoLogin')
-      ..debugModel = json.boolValue('debugModel')
-      ..requireAck = json.boolValue('requireAck')
-      ..requireDeliveryAck = json.boolValue('requireDeliveryAck')
-      ..sortMessageByServerTime = json.boolValue('sortMessageByServerTime')
-      ..acceptInvitationAlways = json.boolValue('acceptInvitationAlways')
-      ..autoAcceptGroupInvitation = json.boolValue('autoAcceptGroupInvitation')
-      ..deleteMessagesAsExitGroup = json.boolValue('deleteMessagesAsExitGroup')
-      ..deleteMessagesAsExitChatRoom =
-          json.boolValue('deleteMessagesAsExitChatRoom')
-      ..isAutoDownload = json.boolValue('isAutoDownload')
-      ..isChatRoomOwnerLeaveAllowed =
-          json.boolValue('isChatRoomOwnerLeaveAllowed')
-      ..serverTransfer = json.boolValue('serverTransfer')
-      ..usingHttpsOnly = json.boolValue('usingHttpsOnly')
-      ..enableDNSConfig = json.boolValue('enableDNSConfig')
-      ..imPort = json.intValue("imPort")
-      ..imServer = json.stringValue("imServer")
-      ..restServer = json.stringValue("restServer")
-      ..dnsUrl = json.stringValue("dnsUrl");
+    var ret = EMOptions(
+      appKey: json['appKey'],
+      autoLogin: json.boolValue('autoLogin'),
+      debugModel: json.boolValue('debugModel'),
+      requireAck: json.boolValue('requireAck'),
+      requireDeliveryAck: json.boolValue('requireDeliveryAck'),
+      sortMessageByServerTime: json.boolValue('sortMessageByServerTime'),
+      acceptInvitationAlways: json.boolValue('acceptInvitationAlways'),
+      autoAcceptGroupInvitation: json.boolValue('autoAcceptGroupInvitation'),
+      deleteMessagesAsExitGroup: json.boolValue('deleteMessagesAsExitGroup'),
+      deleteMessagesAsExitChatRoom:
+          json.boolValue('deleteMessagesAsExitChatRoom'),
+      isAutoDownloadThumbnail: json.boolValue('isAutoDownload'),
+      isChatRoomOwnerLeaveAllowed:
+          json.boolValue('isChatRoomOwnerLeaveAllowed'),
+      serverTransfer: json.boolValue('serverTransfer'),
+      usingHttpsOnly: json.boolValue('usingHttpsOnly'),
+      enableDNSConfig: json.boolValue('enableDNSConfig'),
+      imPort: json.intValue("imPort"),
+      imServer: json.stringValue("imServer"),
+      restServer: json.stringValue("restServer"),
+      dnsUrl: json.stringValue("dnsUrl"),
+    );
+
     ret._pushConfig = EMPushConfig();
     if (json['pushConfig'] != null) {
       ret._pushConfig.updateFromJson(json);
@@ -158,7 +296,7 @@ class EMOptions {
     data.setValueWithOutNull("enableDNSConfig", enableDNSConfig);
     data.setValueWithOutNull("imPort", imPort);
     data.setValueWithOutNull("imServer", imServer);
-    data.setValueWithOutNull("isAutoDownload", isAutoDownload);
+    data.setValueWithOutNull("isAutoDownload", isAutoDownloadThumbnail);
     data.setValueWithOutNull(
         "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
     data.setValueWithOutNull("requireAck", requireAck);

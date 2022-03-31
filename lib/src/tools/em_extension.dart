@@ -1,4 +1,3 @@
-// 思考： 是否要把所有格式转换的部分都放到这个extension中？
 import '../models/em_group_shared_file.dart';
 
 Type typeOf<T>() => T;
