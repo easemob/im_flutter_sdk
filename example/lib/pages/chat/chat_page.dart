@@ -247,7 +247,7 @@ class _ChatPageState extends State<ChatPage>
       }
       if (msg.hasRead == false) {
         try {
-          await widget.conversation.markMessageAsRead(msg.msgId!);
+          await widget.conversation.markMessageAsRead(msg.msgId);
         } on EMError {}
       }
     }
@@ -284,7 +284,7 @@ class _ChatPageState extends State<ChatPage>
   _loadMessages({int count = 20, bool moveBottom = true}) async {
     try {
       List<EMMessage> msgs = await widget.conversation.loadMessages(
-        startMsgId: _msgList.length > 0 ? _msgList.first.msgId! : '',
+        startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
         loadCount: count,
       );
       _msgList.insertAll(0, msgs);
@@ -310,21 +310,21 @@ class _ChatPageState extends State<ChatPage>
 
   /// 点击bubble
   _messageBubbleOnTap(EMMessage msg) async {
-    switch (msg.body!.type!) {
+    switch (msg.body.type) {
       case MessageType.TXT:
         break;
       case MessageType.IMAGE:
         {
           EMImageMessageBody body = msg.body as EMImageMessageBody;
           Image img;
-          if (body.fileStatus != EMDownloadStatus.SUCCESS) {
+          if (body.fileStatus != DownloadStatus.SUCCESS) {
             img = Image.network(
               body.remotePath!,
               fit: BoxFit.cover,
             );
           } else {
             img = Image.file(
-              File(body.localPath!),
+              File(body.localPath),
               fit: BoxFit.cover,
             );
           }
@@ -391,7 +391,7 @@ class _ChatPageState extends State<ChatPage>
         filePath: imagePath,
         displayName: fileName,
       );
-      EMImageMessageBody body = msg.body! as EMImageMessageBody;
+      EMImageMessageBody body = msg.body as EMImageMessageBody;
       body.height = info.image.height.toDouble();
       body.width = info.image.width.toDouble();
       msg.body = body;

@@ -32,7 +32,7 @@ class ChatImageBubble extends StatelessWidget {
       height = maxSize / width * height;
       width = maxSize;
     }
-    File localPath = File(body.localPath!);
+    File localPath = File(body.localPath);
     if (isSend && localPath.existsSync()) {
       image = Image.file(
         localPath,
