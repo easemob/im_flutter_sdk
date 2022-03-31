@@ -26,7 +26,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   Widget build(BuildContext context) {
     bool needApproval = false;
     if (_group != null) {
-      if (_group!.settings?.style == EMGroupStyle.PublicJoinNeedApproval) {
+      if (_group!.isMemberOnly == false) {
         needApproval = true;
       } else {
         needApproval = false;

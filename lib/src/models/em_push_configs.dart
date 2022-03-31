@@ -6,6 +6,7 @@ import 'em_chat_enums.dart';
 import 'em_error.dart';
 import '../em_push_manager.dart';
 
+/// The push configs info class.
 class EMPushConfigs {
   EMPushConfigs._private();
 

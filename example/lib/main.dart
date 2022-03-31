@@ -27,12 +27,14 @@ void main() {
 }
 
 void initSDK() async {
-  var options = EMOptions(appKey: 'easemob-demo#easeim');
-  options.deleteMessagesAsExitGroup = false;
-  options.deleteMessagesAsExitChatRoom = false;
-  options.debugModel = true;
-  options.enableAPNs("EaseIM_APNS_Product");
+  var options = EMOptions(
+    appKey: 'easemob-demo#easeim',
+    deleteMessagesAsExitGroup: false,
+    deleteMessagesAsExitChatRoom: false,
+    debugModel: true,
+  );
 
+  options.enableAPNs("EaseIM_APNS_Product");
   await EMClient.getInstance.init(options);
   debugPrint("has init");
 }
