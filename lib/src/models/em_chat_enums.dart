@@ -1,8 +1,19 @@
+///
+/// The group styles.
+///
 enum EMGroupStyle {
-  PrivateOnlyOwnerInvite, // 私有群，只有群主能邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
-  PrivateMemberCanInvite, // 私有群，所有人都可以邀请他人进群，被邀请人会收到邀请信息，同意后可入群；
-  PublicJoinNeedApproval, // 公开群，可以通过获取公开群列表api取的，申请加入时需要管理员以上权限用户同意；
-  PublicOpenJoin, // 公开群，可以通过获取公开群列表api取的，可以直接进入；
+  /// Private groups. Only the group owner can invite users to join.
+  PrivateOnlyOwnerInvite,
+
+  /// Private groups. Both the group owner and group members can invite users to join.
+  PrivateMemberCanInvite,
+
+  /// Public groups. Only the owner can invite users to join.
+  /// A user can join a group only after the owner approves the user's group request;
+  PublicJoinNeedApproval,
+
+  /// Public groups. A user can join a group without the group owner approving user's group request.
+  PublicOpenJoin,
 }
 
 enum EMChatRoomPermissionType {

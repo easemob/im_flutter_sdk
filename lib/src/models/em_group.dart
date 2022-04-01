@@ -4,15 +4,17 @@ import '../tools/em_extension.dart';
 import 'em_chat_enums.dart';
 import 'em_group_options.dart';
 
+///
 /// The group class.
+///
 class EMGroup {
   EMGroup._private();
 
   late String _groupId;
   String? _name;
-  String? _description = '';
-  String? _owner = '';
-  String? _announcement = '';
+  String? _description;
+  String? _owner;
+  String? _announcement;
   int? _memberCount;
   List<String>? _memberList;
   List<String>? _adminList;

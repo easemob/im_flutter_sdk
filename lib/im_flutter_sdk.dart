@@ -35,6 +35,7 @@ export 'src/models/em_location_message_body.dart' show EMLocationMessageBody;
 @Deprecated("Switch to using MessageStatusCallBack instead.")
 export 'src/em_status_listener.dart';
 export 'src/em_message_status_callback.dart';
+
 export 'src/em_chat_manager.dart';
 export 'src/em_contact_manager.dart';
 export 'src/em_group_manager.dart';
