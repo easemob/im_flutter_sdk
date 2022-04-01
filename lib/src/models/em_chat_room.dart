@@ -1,3 +1,5 @@
+import '../internal/em_transform_tools.dart';
+
 import '../../src/tools/em_extension.dart';
 import 'em_chat_enums.dart';
 
@@ -37,7 +39,7 @@ class EMChatRoom {
         blockList: map.listValue<String>("blockList"),
         muteList: map.listValue<String>("muteList"),
         announcement: map.getValue("announcement"),
-        permissionType: EMChatRoom.permissionTypeFromInt(map.getValue("key")),
+        permissionType: chatRoomPermissionTypeFromInt(map.getValue("key")),
         isAllMemberMuted: map.boolValue('isAllMemberMuted'));
   }
 
@@ -56,7 +58,7 @@ class EMChatRoom {
     data.setValueWithOutNull("muteList", muteList);
     data.setValueWithOutNull("announcement", announcement);
     data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
-    data['permissionType'] = EMChatRoom.permissionTypeToInt(permissionType);
+    data['permissionType'] = chatRoomPermissionTypeToInt(permissionType);
 
     return data;
   }
@@ -124,41 +126,17 @@ class EMChatRoom {
   ///
   /// Checks whether all members are muted.
   ///
+  /// This method has use limitations and should be used with caution.
+  /// Pay attention to the following when using this method：
+  /// Upon your receipt of the callback of one-click mute or unmute after you join the chat room, the status will be updated and the staus obtained using this method is correct.
+  ///
+  /// After you exit from the chat room before reentering it, the status obtained using this method is not trustworthy.
+  /// **return** Whether all members are muted.
+  /// `true`: All members are muted.
+  /// `false`: Not all members are muted.
+  ///
   final bool? isAllMemberMuted;
-  // 在聊天室中的角色
+
+  /// The current user's role in the chat room, see {@link EMChatRoomPermissionType}.
   final EMChatRoomPermissionType permissionType;
-
-  static EMChatRoomPermissionType permissionTypeFromInt(int? type) {
-    EMChatRoomPermissionType ret = EMChatRoomPermissionType.Member;
-    switch (type) {
-      case -1:
-        return EMChatRoomPermissionType.None;
-      case 0:
-        return EMChatRoomPermissionType.Member;
-      case 1:
-        return EMChatRoomPermissionType.Admin;
-      case 2:
-        return EMChatRoomPermissionType.Owner;
-    }
-    return ret;
-  }
-
-  static int permissionTypeToInt(EMChatRoomPermissionType type) {
-    int ret = 0;
-    switch (type) {
-      case EMChatRoomPermissionType.None:
-        ret = -1;
-        break;
-      case EMChatRoomPermissionType.Member:
-        ret = 0;
-        break;
-      case EMChatRoomPermissionType.Admin:
-        ret = 1;
-        break;
-      case EMChatRoomPermissionType.Owner:
-        ret = 2;
-        break;
-    }
-    return ret;
-  }
 }

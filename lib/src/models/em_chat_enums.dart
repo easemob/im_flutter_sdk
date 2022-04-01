@@ -134,3 +134,8 @@ enum EMGroupPermissionType {
   Admin,
   Owner,
 }
+
+enum EMMessageSearchDirection {
+  Up,
+  Down,
+}
