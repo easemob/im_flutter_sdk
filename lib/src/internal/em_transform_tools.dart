@@ -190,3 +190,58 @@ int permissionTypeToInt(EMGroupPermissionType? type) {
   }
   return ret;
 }
+
+EMGroupStyle groupStyleTypeFromInt(int? type) {
+  EMGroupStyle ret = EMGroupStyle.PrivateOnlyOwnerInvite;
+  switch (type) {
+    case 0:
+      {
+        ret = EMGroupStyle.PrivateOnlyOwnerInvite;
+      }
+      break;
+    case 1:
+      {
+        ret = EMGroupStyle.PrivateMemberCanInvite;
+      }
+      break;
+    case 2:
+      {
+        ret = EMGroupStyle.PublicJoinNeedApproval;
+      }
+      break;
+    case 3:
+      {
+        ret = EMGroupStyle.PublicOpenJoin;
+      }
+      break;
+  }
+  return ret;
+}
+
+int groupStyleTypeToInt(EMGroupStyle? type) {
+  int ret = 0;
+  if (type == null) return ret;
+  switch (type) {
+    case EMGroupStyle.PrivateOnlyOwnerInvite:
+      {
+        ret = 0;
+      }
+      break;
+    case EMGroupStyle.PrivateMemberCanInvite:
+      {
+        ret = 1;
+      }
+      break;
+    case EMGroupStyle.PublicJoinNeedApproval:
+      {
+        ret = 2;
+      }
+      break;
+    case EMGroupStyle.PublicOpenJoin:
+      {
+        ret = 3;
+      }
+      break;
+  }
+  return ret;
+}

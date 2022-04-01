@@ -122,7 +122,7 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       child: ListTile(
         onTap: () => _chatToRoom(room),
         title: Text(
-          room.name,
+          room.name ?? room.roomId,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -190,7 +190,7 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       SmartDialog.showToast('会话创建失败');
       return;
     }
-    con.name = room.name;
+    con.name = room.name ?? room.roomId;
     Navigator.of(context).pushNamed(
       '/chat',
       arguments: [con.name, con],

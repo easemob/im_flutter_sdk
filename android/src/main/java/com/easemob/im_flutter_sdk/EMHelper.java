@@ -588,6 +588,7 @@ class EMGroupAckHelper {
     static Map<String, Object>toJson(EMGroupReadAck ack) {
         Map<String, Object> data = new HashMap<>();
         data.put("msg_id", ack.getMsgId());
+        data.put("ack_id", ack.getAckId());
         data.put("from", ack.getFrom());
         data.put("count", ack.getCount());
         data.put("timestamp", ack.getTimestamp());

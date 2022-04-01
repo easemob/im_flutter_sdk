@@ -203,16 +203,26 @@ class EMChatRoomManager {
 
   ///
   /// Gets details of a chat room from the server, excluding the member list by default.
+  /// The member list, if required, can contain at most 200 members if need. For more members,
+  /// call {@link EMChatRoomManager#fetchChatRoomMembers(String, String?, int?)}.
   ///
   /// Param [roomId] The chat room ID.
+  ///
+  /// Param [fetchMembers] Whether to get chat room members, default is false.
   ///
   /// **return** The chat room instance.
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
-  Future<EMChatRoom> fetchChatRoomInfoFromServer(String roomId) async {
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchChatRoomInfoFromServer, {"roomId": roomId});
+  Future<EMChatRoom> fetchChatRoomInfoFromServer(
+    String roomId, {
+    bool fetchMembers = false,
+  }) async {
+    Map result = await _channel
+        .invokeMethod(ChatMethodKeys.fetchChatRoomInfoFromServer, {
+      "roomId": roomId,
+      "fetchMembers": fetchMembers,
+    });
     try {
       EMError.hasErrorFromResult(result);
       return EMChatRoom.fromJson(
@@ -394,10 +404,11 @@ class EMChatRoomManager {
   ///
   Future<EMCursorResult<String?>> fetchChatRoomMembers(
     String roomId, {
-    String cursor = '',
+    String? cursor,
     int pageSize = 200,
   }) async {
-    Map req = {"roomId": roomId, "cursor": cursor, "pageSize": pageSize};
+    Map req = {"roomId": roomId, "pageSize": pageSize};
+    req.setValueWithOutNull("cursor", cursor);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
     try {

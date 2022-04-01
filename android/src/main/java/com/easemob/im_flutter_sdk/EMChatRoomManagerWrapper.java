@@ -145,10 +145,15 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     private void fetchChatRoomInfoFromServer(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String roomId = param.getString("roomId");
-
+        boolean fetchMembers = param.getBoolean("fetchMembers");
         asyncRunnable(() -> {
+            EMChatRoom room = null;
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().fetchChatRoomFromServer(roomId);
+                if (fetchMembers) {
+                    room = EMClient.getInstance().chatroomManager().fetchChatRoomFromServer(roomId, true);
+                }else {
+                    room = EMClient.getInstance().chatroomManager().fetchChatRoomFromServer(roomId);
+                }
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);
@@ -247,13 +252,17 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     private void fetchChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String roomId = param.getString("roomId");
-        String cursor = param.getString("cursor");
+        String cursor = null;
+        if(param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
         int pageSize = param.getInt("pageSize");
 
+        String finalCursor = cursor;
         asyncRunnable(() -> {
             try {
                 EMCursorResult<String> cursorResult = EMClient.getInstance().chatroomManager()
-                        .fetchChatRoomMembers(roomId, cursor, pageSize);
+                        .fetchChatRoomMembers(roomId, finalCursor, pageSize);
                 onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
             } catch (HyphenateException e) {
                 onError(result, e);

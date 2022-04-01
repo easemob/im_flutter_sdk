@@ -1,30 +1,78 @@
+import '../tools/em_extension.dart';
+
+///
+/// Returns read recipients for group messages.
+///
+/// Calls {@link EMChatManager#fetchGroupAcks(String, String?, int)} to return the requested result, for example:
+///
+/// ```dart
+///   EMCursorResult<EMGroupMessageAck?> result = await EMClient.getInstance.chatManager.fetchGroupAcks("msgId");
+/// ```
+///
 class EMGroupMessageAck {
-  /// 对应的消息id
-  late String messageId;
+  ///
+  /// Gets the group message ID.
+  ///
+  /// **return** The group message ID.
+  ///
+  final String messageId;
 
-  /// 已读发送方id
-  late String from;
+  ///
+  /// Gets the read receipt ID of group messages.
+  ///
+  /// **return** The read receipt ID.
+  ///
+  final String ackId;
 
-  /// 已读回复内容
-  String? content;
+  ///
+  /// Gets the ID of user who sends the read receipt.
+  ///
+  /// **return** The read receipt sender ID.
+  ///
+  final String from;
 
-  /// 群消息已读人数
-  int readCount = 0;
+  ///
+  /// Gets the read receipt extension.
+  ///
+  /// Sends the read receipt passed as the third parameter in {@link EMChatManager#sendGroupMessageReadAck(String, String, String?)}.
+  ///
+  /// **return** The read receipt extension.
+  ///
+  final String? content;
 
-  /// 本条已读发送时间
-  int timestamp = 0;
+  ///
+  /// Gets the count in which read receipts of group messages are sent.
+  ///
+  /// **return** The count in which read receipts of group messages are sent.
+  ///
+  final int readCount;
 
+  ///
+  /// Gets the timestamp of sending read receipts of group messages.
+  ///
+  /// **return** The timestamp of sending read receipts of group messages.
+  final int timestamp;
+
+  /// @nodoc
   factory EMGroupMessageAck.fromJson(Map map) {
-    EMGroupMessageAck ack = EMGroupMessageAck._private();
-    ack.messageId = map["msg_id"] as String;
-    ack.from = map["from"] as String;
-    if (map.containsKey("content")) {
-      ack.content = map["content"] as String;
-    }
-    ack.readCount = map["count"] as int;
-    ack.timestamp = map["timestamp"] as int;
+    EMGroupMessageAck ack = EMGroupMessageAck._private(
+      ackId: map["ack_id"] as String,
+      messageId: map["msg_id"] as String,
+      from: map["from"] as String,
+      content: map.getValue("content"),
+      readCount: map.getValueWithOutNull("count", 0),
+      timestamp: map.getValueWithOutNull("timestamp", 0),
+    );
+
     return ack;
   }
 
-  EMGroupMessageAck._private();
+  EMGroupMessageAck._private({
+    required this.ackId,
+    required this.messageId,
+    required this.from,
+    required this.content,
+    required this.readCount,
+    required this.timestamp,
+  });
 }
