@@ -245,3 +245,37 @@ int groupStyleTypeToInt(EMGroupStyle? type) {
   }
   return ret;
 }
+
+EMChatRoomPermissionType chatRoomPermissionTypeFromInt(int? type) {
+  EMChatRoomPermissionType ret = EMChatRoomPermissionType.Member;
+  switch (type) {
+    case -1:
+      return EMChatRoomPermissionType.None;
+    case 0:
+      return EMChatRoomPermissionType.Member;
+    case 1:
+      return EMChatRoomPermissionType.Admin;
+    case 2:
+      return EMChatRoomPermissionType.Owner;
+  }
+  return ret;
+}
+
+int chatRoomPermissionTypeToInt(EMChatRoomPermissionType type) {
+  int ret = 0;
+  switch (type) {
+    case EMChatRoomPermissionType.None:
+      ret = -1;
+      break;
+    case EMChatRoomPermissionType.Member:
+      ret = 0;
+      break;
+    case EMChatRoomPermissionType.Admin:
+      ret = 1;
+      break;
+    case EMChatRoomPermissionType.Owner:
+      ret = 2;
+      break;
+  }
+  return ret;
+}
