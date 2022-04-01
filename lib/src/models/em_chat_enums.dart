@@ -16,12 +16,6 @@ enum EMGroupStyle {
   PublicOpenJoin,
 }
 
-enum EMChatRoomPermissionType {
-  None,
-  Member,
-  Admin,
-  Owner,
-}
 enum EMConversationType {
   Chat, // 单聊消息
   GroupChat, // 群聊消息
@@ -129,6 +123,13 @@ enum MessageType {
 }
 
 enum EMGroupPermissionType {
+  None,
+  Member,
+  Admin,
+  Owner,
+}
+
+enum EMChatRoomPermissionType {
   None,
   Member,
   Admin,
