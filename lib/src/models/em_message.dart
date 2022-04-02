@@ -349,14 +349,14 @@ class EMMessage {
 
   /// 消息id
   String? _msgId;
-  String msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
+  String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
       Random().nextInt(99999).toString();
 
   ///
   /// Gets the message ID.
   ///
   /// **return** The message ID.
-  String get msgId => _msgId ?? msgLocalId;
+  String get msgId => _msgId ?? _msgLocalId;
 
   ///
   /// The conversation ID.

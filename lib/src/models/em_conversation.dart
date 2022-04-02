@@ -36,7 +36,7 @@ class EMConversation {
   }
 
   /// @nodoc
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> _toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['type'] = conversationTypeToInt(this.type);
     data['con_id'] = this.id;
@@ -70,7 +70,7 @@ extension EMConversationExtension on EMConversation {
   Map<String, String>? get ext => _ext;
 
   Future<void> setExt(Map<String, String>? ext) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req.setValueWithOutNull("ext", ext);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.syncConversationExt, req);
@@ -82,8 +82,17 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
+  ///
+  /// Gets the last message from the conversation.
+  ///
+  /// The operation does not change the unread message count.
+  ///
+  /// Gets from the cache first, if no message is found, loads from the local database and then put it in the cache.
+  ///
+  /// **return** The message instance.
+  ///
   Future<EMMessage?> latestMessage() async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.getLatestMessage, req);
     try {
@@ -98,8 +107,13 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  Future<EMMessage?> lastReceivedMessageMessage() async {
-    Map req = this.toJson();
+  ///
+  /// Gets the latest message from the conversation.
+  ///
+  /// **return** The message instance.
+  ///
+  Future<EMMessage?> lastReceivedMessage() async {
+    Map req = this._toJson();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.getLatestMessageFromOthers, req);
     try {
@@ -115,8 +129,15 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
+  ///
+  /// Gets the number of unread messages of the conversation.
+  ///
+  /// **return** The unread message count of the conversation.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<int> unreadCount() async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.getUnreadMsgCount, req);
     try {
@@ -131,9 +152,15 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 根据消息id设置消息已读，如果消息不属于当前会话则设置无效
+  ///
+  /// Marks a message as read.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> markMessageAsRead(String messageId) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['msg_id'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.markMessageAsRead, req);
@@ -144,10 +171,12 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 设置当前会话中所有消息为已读
+  ///
+  /// Marks all messages as read.
+  ///
   Future<void> markAllMessagesAsRead() async {
     Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.markAllMessagesAsRead, this.toJson());
+        ChatMethodKeys.markAllMessagesAsRead, this._toJson());
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -155,9 +184,17 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 插入消息，插入的消息会根据消息时间插入到对应的位置
+  ///
+  /// Inserts a message to a conversation in local database and SDK will update the last message automatically.
+  ///
+  /// The conversation ID of the message should be the same as conversation ID of the conversation in order to insert the message into the conversation correctly. The inserting message will be inserted based on timestamp.
+  ///
+  /// Param [message] The message instance.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> insertMessage(EMMessage message) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['msg'] = message.toJson();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.insertMessage, req);
@@ -168,9 +205,17 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 添加消息，添加的消息会添加到最后一条消息的位置
+  ///
+  /// Inserts a message to the end of a conversation in the local database.
+  ///
+  /// The `conversationId` of the message should be the same as the `conversationId` of the conversation in order to insert the message into the conversation correctly. And the `latestMessage` and other properties of the session should be updated.
+  ///
+  /// Param [message] The message instance.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> appendMessage(EMMessage message) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['msg'] = message.toJson();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.appendMessage, req);
@@ -181,9 +226,17 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 更新消息
+  ///
+  /// Uses this method to update a message in local database. Changing properties will affect data in database.
+  ///
+  /// The latestMessage of the conversation and other properties will be updated accordingly. The messageID of the message cannot be updated.
+  ///
+  /// Param [message] The message to be updated.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateMessage(EMMessage message) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['msg'] = message.toJson();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.updateConversationMessage, req);
@@ -195,9 +248,17 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 根据消息id [messageId] 删除消息
+  ///
+  /// Deletes a message in the local database.
+  ///
+  /// Note: Operates only on the local database.
+  ///
+  /// Param [messageId] The message id to be deleted.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> deleteMessage(String messageId) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['msg_id'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.removeMessage, req);
@@ -208,10 +269,14 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  // 删除当前会话中所有消息
+  ///
+  /// Deletes all the messages of the conversation from the memory cache and local database.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.clearAllMessages, this.toJson());
+        ChatMethodKeys.clearAllMessages, this._toJson());
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -219,9 +284,20 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 根据消息id获取消息，如果消息id不属于当前会话，则无法获取到
+  ///
+  /// Gets the message with message ID.
+  ///
+  /// If the message already loaded into the memory cache, the message will be directly returned,
+  /// otherwise the message will be loaded from the local database, and be set into the cache.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// **return** The message instance.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<EMMessage?> loadMessage(String messageId) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['msg_id'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithId, req);
@@ -237,7 +313,28 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 根据类型获取当前会话汇总的消息
+  ///
+  /// Searches messages from the local database according the following parameters: the message type, the Unix timestamp, max count, sender.
+  ///
+  /// Note:
+  /// Be cautious about the memory usage when the maxCount is large.
+  ///
+  /// Param [type] The message type, including TXT、VOICE、IMAGE and so on.
+  ///
+  /// Param [timestamp] The Unix timestamp for search.
+  ///
+  /// Param [count] The max number of message to search.
+  ///
+  /// Param [sender] The sender of the message. The param can also be used to search in group chat.
+  ///
+  /// Param [direction]  The direction in which the message is loaded: EMSearchDirection.
+  /// `EMSearchDirection.Up`: get aCount of messages before the timestamp of the specified message ID;
+  /// `EMSearchDirection.Down`: get aCount of messages after the timestamp of the specified message ID.
+  ///
+  /// **return** The message list.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<List<EMMessage>?> loadMessagesWithMsgType({
     required MessageType type,
     int timestamp = -1,
@@ -245,7 +342,7 @@ extension EMConversationExtension on EMConversation {
     String? sender,
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req['type'] = messageTypeToTypeStr(type);
     req['timestamp'] = timestamp;
     req['count'] = count;
@@ -266,13 +363,32 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
-  /// 根据起始消息id获取消息
+  ///
+  /// Loads more messages from the local database.
+  ///
+  /// Loads messages from the local database before the specified message.
+  ///
+  /// The messages will also be stored in to current conversation's memory cache.
+  /// So when next time calling {@link #getAllMessages()}, the result will contain those messages.
+  ///
+  /// Param [startMsgId] The specified message ID. If the `startMsgId` is set as "" or null, the SDK will load latest messages in database.
+  ///
+  /// Param [loadCount] The number of records in a page.
+  ///
+  /// Param [direction]  The direction in which the message is loaded: EMSearchDirection.
+  /// `EMSearchDirection.Up`: get aCount of messages before the timestamp of the specified message ID;
+  /// `EMSearchDirection.Down`: get aCount of messages after the timestamp of the specified message ID.
+  ///
+  /// **return** The message list.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<List<EMMessage>?> loadMessages({
     String startMsgId = '',
     int loadCount = 20,
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req["startId"] = startMsgId;
     req['count'] = loadCount;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
@@ -292,6 +408,27 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
+  ///
+  /// Searches messages from the local database by the following parameters: keywords, timestamp, max count, sender, search direction.
+  ///
+  /// Note: Be cautious about memory usage when the maxCount is large.
+  ///
+  /// Param [keywords] The keywords in message.
+  ///
+  /// Param [sender] The message sender. The param can also be used to search in group chat.
+  ///
+  /// Param [timestamp] The timestamp for search.
+  ///
+  /// Param [count] The max number of message to search.
+  ///
+  /// Param [direction] The direction in which the message is loaded: EMSearchDirection.
+  /// `EMSearchDirection.Up`: get aCount of messages before the timestamp of the specified message ID;
+  /// `EMSearchDirection.Down`: get aCount of messages after the timestamp of the specified message ID.
+  ///
+  /// **returns** The list of searched messages.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
     String? sender,
@@ -299,7 +436,7 @@ extension EMConversationExtension on EMConversation {
     int count = 20,
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req["keywords"] = keywords;
     req['count'] = count;
     if (sender != null) {
@@ -323,12 +460,27 @@ extension EMConversationExtension on EMConversation {
     }
   }
 
+  ///
+  /// Searches messages from the local database according the following parameters.
+  ///
+  /// Note: Be cautious about the memory usage when the maxCount is large.
+  ///
+  ///  Param [startTime] The start Unix timestamp to search.
+  ///
+  ///  Param [endTime] The end Unix timestamp to search.
+  ///
+  ///  Param [count] The max number of message to search.
+  ///
+  /// **returns** The list of searched messages.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<List<EMMessage>> loadMessagesFromTime({
     required int startTime,
     required int endTime,
     int count = 20,
   }) async {
-    Map req = this.toJson();
+    Map req = this._toJson();
     req["startTime"] = startTime;
     req['endTime'] = endTime;
     req['count'] = count;
