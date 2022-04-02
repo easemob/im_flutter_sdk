@@ -2,7 +2,6 @@ library im_flutter_sdk;
 
 export 'src/em_client.dart';
 
-export 'src/models/em_message.dart';
 export 'src/models/em_group_message_ack.dart';
 // export 'src/tools/em_log.dart';
 export 'src/em_listeners.dart';

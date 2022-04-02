@@ -280,10 +280,10 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       SmartDialog.showToast('会话创建失败');
       return;
     }
-    con.name = group.name!;
+    // con.name = group.name!;
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [con.name, con],
+      arguments: [con.id, con],
     ).then((value) {
       eventBus.fire(EventBusManager.updateConversations());
     });

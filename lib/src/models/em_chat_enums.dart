@@ -16,10 +16,16 @@ enum EMGroupStyle {
   PublicOpenJoin,
 }
 
+/// The conversation types.
 enum EMConversationType {
-  Chat, // 单聊消息
-  GroupChat, // 群聊消息
-  ChatRoom, // 聊天室消息
+  /// One-to-one chat.
+  Chat,
+
+  /// Group chat.
+  GroupChat,
+
+  /// Chat room.
+  ChatRoom,
 }
 
 @Deprecated('Switch to using EMPushManager#DisplayStyle instead')
@@ -136,7 +142,7 @@ enum EMChatRoomPermissionType {
   Owner,
 }
 
-enum EMMessageSearchDirection {
+enum EMSearchDirection {
   Up,
   Down,
 }

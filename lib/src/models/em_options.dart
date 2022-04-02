@@ -110,9 +110,9 @@ class EMOptions {
   ///
   /// Sets whether to disable DNS.
   ///
+  /// `true`: (default) Enable DNS;
+  /// `false`: Do not enable DNS.
   ///
-  /// `true`: (default) Disable DNS;
-  /// `false`: Do not disable DNS.
   final bool enableDNSConfig;
 
   /// The DNS url.

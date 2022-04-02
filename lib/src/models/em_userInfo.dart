@@ -68,7 +68,7 @@ class EMUserInfo {
   ///
   /// Param [ext] The user's extension information. You can set it to an empty string or type custom information and encapsulate them as a JSON string.
   ///
-  /// **return** The userInfo instance.
+  /// **return** The new userInfo instance.
   ///
   EMUserInfo copyWith({
     String? nickName,

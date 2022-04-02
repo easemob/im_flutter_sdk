@@ -155,15 +155,13 @@ class ConversationPageState extends State<ConversationPage>
   /// 更新会话列表
   void _reLoadAllConversations() async {
     try {
+      int count =
+          await EMClient.getInstance.chatManager.getUnreadMessageCount();
       List<EMConversation> list =
           await EMClient.getInstance.chatManager.loadAllConversations();
       _conversationsList.clear();
       _conversationsList.addAll(list);
       _refreshController.refreshCompleted();
-      int count = 0;
-      for (var conversation in _conversationsList) {
-        count += conversation.unreadCount;
-      }
       widget.updateCount(count);
     } on Error {
       _refreshController.refreshFailed();
@@ -206,7 +204,7 @@ class ConversationPageState extends State<ConversationPage>
     EMConversation con = _conversationsList[index];
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [con.name, con],
+      arguments: [con.id, con],
     ).then((value) {
       // 返回时刷新页面
       _reLoadAllConversations();

@@ -54,8 +54,11 @@ class _ConversationItemState extends State<ConversationItem> {
                 Positioned(
                   top: sHeight(10),
                   right: sWidth(5),
-                  child: unreadCountWidget(
-                    _unreadCount(),
+                  child: FutureBuilder<int>(
+                    future: _unreadCount(),
+                    builder: (context, snapshot) {
+                      return unreadCountWidget(snapshot.data ?? 0);
+                    },
                   ),
                 ),
               ],
@@ -86,13 +89,18 @@ class _ConversationItemState extends State<ConversationItem> {
                         Container(
                           margin: EdgeInsets.only(
                               left: sWidth(5), right: sWidth(12)),
-                          child: Text(
-                            _latestMessageTime(),
-                            maxLines: 1,
-                            style: TextStyle(
-                              color: Color.fromRGBO(153, 153, 153, 1),
-                              fontSize: sFontSize(12),
-                            ),
+                          child: FutureBuilder<String>(
+                            future: _latestMessageTime(),
+                            builder: (context, snapshot) {
+                              return Text(
+                                snapshot.data ?? "",
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: Color.fromRGBO(153, 153, 153, 1),
+                                  fontSize: sFontSize(12),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -102,16 +110,20 @@ class _ConversationItemState extends State<ConversationItem> {
                   Expanded(
                     flex: 1,
                     child: Container(
-                      padding: EdgeInsets.only(right: sWidth(10)),
-                      child: ExpressionText(
-                        _showInfo(),
-                        TextStyle(
-                          color: Color.fromRGBO(153, 153, 153, 1),
-                          fontSize: sFontSize(14),
-                        ),
-                        maxLine: 1,
-                      ),
-                    ),
+                        padding: EdgeInsets.only(right: sWidth(10)),
+                        child: FutureBuilder<String?>(
+                          future: _showInfo(),
+                          builder: (context, snapshot) {
+                            return ExpressionText(
+                              snapshot.data ?? "",
+                              TextStyle(
+                                color: Color.fromRGBO(153, 153, 153, 1),
+                                fontSize: sFontSize(14),
+                              ),
+                              maxLine: 1,
+                            );
+                          },
+                        )),
                   ),
                 ],
               ),
@@ -123,9 +135,9 @@ class _ConversationItemState extends State<ConversationItem> {
   }
 
   /// 消息详情
-  String _showInfo() {
+  Future<String> _showInfo() async {
     String showInfo = '';
-    EMMessage? _latestMessage = this.widget.conversation.latestMessage;
+    EMMessage? _latestMessage = await this.widget.conversation.latestMessage();
     if (_latestMessage == null) {
       return showInfo;
     }
@@ -158,19 +170,17 @@ class _ConversationItemState extends State<ConversationItem> {
 
   /// 显示的名称
   String _showName() {
-    return this.widget.conversation.name;
+    return this.widget.conversation.id;
   }
 
   /// 未读数
-  int _unreadCount() {
-    return this.widget.conversation.unreadCount;
+  Future<int> _unreadCount() async {
+    return this.widget.conversation.unreadCount();
   }
 
   /// 消息时间
-  String _latestMessageTime() {
-    if (this.widget.conversation.latestMessage == null) {
-      return '';
-    }
-    return timeStrByMs(this.widget.conversation.latestMessage?.serverTime ?? 0);
+  Future<String> _latestMessageTime() async {
+    EMMessage? msg = await this.widget.conversation.latestMessage();
+    return timeStrByMs(msg?.serverTime ?? 0);
   }
 }
