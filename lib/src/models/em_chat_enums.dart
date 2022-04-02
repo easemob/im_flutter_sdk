@@ -128,21 +128,47 @@ enum MessageType {
   CUSTOM,
 }
 
+///
+/// The enum of the group permission types.
+///
 enum EMGroupPermissionType {
+  /// The unknown type.
   None,
+
+  /// The group member.
   Member,
+
+  /// The group admin.
   Admin,
+
+  /// The group owner.
   Owner,
 }
 
+///
+/// Chat room role types.
+///
 enum EMChatRoomPermissionType {
+  /// Unknown type.
   None,
+
+  /// Regular member.
   Member,
+
+  /// Chat room admin.
   Admin,
+
+  /// Chat room owner.
   Owner,
 }
 
+///
+/// The message search direction type.
+///
 enum EMSearchDirection {
+  /// The search older messages type
   Up,
+
+  /// The search newer messages type.
   Down,
 }
