@@ -283,11 +283,13 @@ class _ChatPageState extends State<ChatPage>
   /// 下拉加载更多消息
   _loadMessages({int count = 20, bool moveBottom = true}) async {
     try {
-      List<EMMessage> msgs = await widget.conversation.loadMessages(
+      List<EMMessage>? msgs = await widget.conversation.loadMessages(
         startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
         loadCount: count,
       );
-      _msgList.insertAll(0, msgs);
+      if (msgs != null) {
+        _msgList.insertAll(0, msgs);
+      }
     } on EMError {
     } finally {
       if (moveBottom) {

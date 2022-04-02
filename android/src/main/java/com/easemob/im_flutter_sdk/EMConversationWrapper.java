@@ -84,6 +84,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.loadMsgWithTime.equals(call.method)) {
                 loadMsgWithTime(param, call.method, result);
             }
+            else if (EMSDKMethod.getLatestMessage.equals(call.method)){
+
+            }
 
             else
             {
@@ -310,7 +313,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             onSuccess(result, channelName, messages);
         });
     }
-
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
         String con_id = params.getString("con_id");

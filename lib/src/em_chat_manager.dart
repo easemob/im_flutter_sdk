@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'internal/em_transform_tools.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
@@ -256,7 +257,7 @@ class EMChatManager {
   ]) async {
     Map req = {
       "con_id": conversationId,
-      "type": EMConversation.typeToInt(type),
+      "type": conversationTypeToInt(type),
       "createIfNeed": createIfNeed
     };
     Map result =
@@ -519,7 +520,7 @@ class EMChatManager {
   }) async {
     Map req = Map();
     req['con_id'] = conversationId;
-    req['type'] = EMConversation.typeToInt(type);
+    req['type'] = conversationTypeToInt(type);
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
     Map result =
@@ -558,14 +559,14 @@ class EMChatManager {
     int timeStamp = -1,
     int maxCount = 20,
     String from = '',
-    EMMessageSearchDirection direction = EMMessageSearchDirection.Up,
+    EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
     Map req = Map();
     req['keywords'] = keywords;
     req['timeStamp'] = timeStamp;
     req['maxCount'] = maxCount;
     req['from'] = from;
-    req['direction'] = direction == EMMessageSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
 
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);

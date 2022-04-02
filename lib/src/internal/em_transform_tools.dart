@@ -279,3 +279,36 @@ int chatRoomPermissionTypeToInt(EMChatRoomPermissionType type) {
   }
   return ret;
 }
+
+int conversationTypeToInt(EMConversationType? type) {
+  int ret = 0;
+  if (type == null) return ret;
+  switch (type) {
+    case EMConversationType.Chat:
+      ret = 0;
+      break;
+    case EMConversationType.GroupChat:
+      ret = 1;
+      break;
+    case EMConversationType.ChatRoom:
+      ret = 2;
+      break;
+  }
+  return ret;
+}
+
+EMConversationType conversationTypeFromInt(int? type) {
+  EMConversationType ret = EMConversationType.Chat;
+  switch (type) {
+    case 0:
+      ret = EMConversationType.Chat;
+      break;
+    case 1:
+      ret = EMConversationType.GroupChat;
+      break;
+    case 2:
+      ret = EMConversationType.ChatRoom;
+      break;
+  }
+  return ret;
+}

@@ -190,10 +190,10 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       SmartDialog.showToast('会话创建失败');
       return;
     }
-    con.name = room.name ?? room.roomId;
+
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [con.name, con],
+      arguments: [con.id, con],
     ).then((value) =>
         EMClient.getInstance.chatRoomManager.leaveChatRoom(room.roomId));
   }
