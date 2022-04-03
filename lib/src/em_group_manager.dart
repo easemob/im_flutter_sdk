@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'em_listeners.dart';
+import 'internal/em_event_keys.dart';
 import 'models/em_cursor_result.dart';
 import 'models/em_error.dart';
 import 'models/em_group.dart';

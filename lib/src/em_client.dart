@@ -452,11 +452,17 @@ class EMClient {
     var event = map['event'];
     for (var listener in _multiDeviceListeners) {
       if (event >= 10) {
-        listener.onGroupEvent(convertIntToEMContactGroupEvent(event),
-            map['target'], map['userNames']);
+        listener.onGroupEvent(
+          convertIntToEMContactGroupEvent(event)!,
+          map['target'],
+          map['userNames'],
+        );
       } else {
         listener.onContactEvent(
-            convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
+          convertIntToEMContactGroupEvent(event)!,
+          map['target'],
+          map['ext'],
+        );
       }
     }
   }
