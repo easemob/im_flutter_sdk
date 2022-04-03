@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'internal/em_event_keys.dart';
 import 'tools/em_extension.dart';
 import 'internal/chat_method_keys.dart';
 import '../im_flutter_sdk.dart';

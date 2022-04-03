@@ -26,13 +26,13 @@ class EMContactManager {
     });
   }
 
-  final List<EMContactEventListener> _contactChangeEventListeners = [];
+  final List<EMContactManagerListener> _contactManagerListeners = [];
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
-    String? username = event['username'];
+    String username = event['username'];
     String? reason = event['reason'];
-    for (var listener in _contactChangeEventListeners) {
+    for (var listener in _contactManagerListeners) {
       switch (type) {
         case EMContactChangeEvent.CONTACT_ADD:
           listener.onContactAdded(username);
@@ -290,8 +290,8 @@ class EMContactManager {
   ///
   /// Param [contactListener] The contact listener to be registered.
   ///
-  void addContactListener(EMContactEventListener contactListener) {
-    _contactChangeEventListeners.add(contactListener);
+  void addContactListener(EMContactManagerListener contactListener) {
+    _contactManagerListeners.add(contactListener);
   }
 
   ///
@@ -299,9 +299,9 @@ class EMContactManager {
   ///
   /// Param [contactListener] The contact listener to be removed.
   ///
-  void removeContactListener(EMContactEventListener contactListener) {
-    if (_contactChangeEventListeners.contains(contactListener)) {
-      _contactChangeEventListeners.remove(contactListener);
+  void removeContactListener(EMContactManagerListener contactListener) {
+    if (_contactManagerListeners.contains(contactListener)) {
+      _contactManagerListeners.remove(contactListener);
     }
   }
 }

@@ -172,3 +172,85 @@ enum EMSearchDirection {
   /// The search newer messages type.
   Down,
 }
+
+///
+/// Multi-device event types.
+///
+/// This enumeration takes user A logged into both DeviceA1 and DeviceA2 as an example to illustrate the various multi-device event types and when these events are triggered.
+///
+enum EMMultiDevicesEvent {
+  /// The current user removed a contact on another device.
+  CONTACT_REMOVE,
+
+  /// The current user accepted a friend request on another device.
+  CONTACT_ACCEPT,
+
+  /// The current user declined a friend request on another device.
+  CONTACT_DECLINE,
+
+  /// The current user added a contact to the block list on another device.
+  CONTACT_BAN,
+
+  /// The current user removed a contact from the block list on another device.
+  CONTACT_ALLOW,
+
+  /// The current user created a group on another device.
+  GROUP_CREATE,
+
+  /// The current user destroyed a group on another device.
+  GROUP_DESTROY,
+
+  /// The current user joined a group on another device.
+  GROUP_JOIN,
+
+  /// The current user left a group on another device.
+  GROUP_LEAVE,
+
+  /// The current user requested to join a group on another device.
+  GROUP_APPLY,
+
+  /// The current user accepted a group request on another device.
+  GROUP_APPLY_ACCEPT,
+
+  /// The current user declined a group request on another device.
+  GROUP_APPLY_DECLINE,
+
+  /// The current user invited a user to join the group on another device.
+  GROUP_INVITE,
+
+  /// The current user accepted a group invitation on another device.
+  GROUP_INVITE_ACCEPT,
+
+  /// The current user declined a group invitation on another device.
+  GROUP_INVITE_DECLINE,
+
+  /// The current user kicked a member out of a group on another device.
+  GROUP_KICK,
+
+  /// The current user added a member to a group block list on another device.
+  GROUP_BAN,
+
+  /// The current user removed a member from a group block list on another device.
+  GROUP_ALLOW,
+
+  /// The current user blocked a group on another device.
+  GROUP_BLOCK,
+
+  /// The current user unblocked a group on another device.
+  GROUP_UNBLOCK,
+
+  /// The current user transferred the group ownership on another device.
+  GROUP_ASSIGN_OWNER,
+
+  /// The current user added an admin on another device.
+  GROUP_ADD_ADMIN,
+
+  /// The current user removed an admin on another device.
+  GROUP_REMOVE_ADMIN,
+
+  /// The current user muted a member on another device.
+  GROUP_ADD_MUTE,
+
+  /// The current user unmuted a member on another device.
+  GROUP_REMOVE_MUTE,
+}

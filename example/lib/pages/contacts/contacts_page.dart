@@ -17,7 +17,7 @@ class ContactsPage extends StatefulWidget {
 }
 
 class ContactsPageState extends State<ContactsPage>
-    implements EMContactEventListener {
+    implements EMContactManagerListener {
   List<ContactModel> _contactList = [];
   List<ContactModel> _topList = [
     ContactModel.custom('新的好友'),
