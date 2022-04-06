@@ -51,9 +51,8 @@ extension MapExtension on Map {
         }
         return fileList as List<T>;
       }
-    } else {
-      return null;
     }
+    return null;
   }
 }
 
