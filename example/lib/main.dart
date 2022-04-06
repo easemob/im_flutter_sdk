@@ -31,6 +31,7 @@ void initSDK() async {
     appKey: 'easemob-demo#easeim',
     deleteMessagesAsExitGroup: false,
     deleteMessagesAsExitChatRoom: false,
+    autoAcceptGroupInvitation: true,
     debugModel: true,
   );
 
