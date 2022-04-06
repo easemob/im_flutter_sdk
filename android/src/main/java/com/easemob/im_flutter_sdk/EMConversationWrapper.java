@@ -84,10 +84,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.loadMsgWithTime.equals(call.method)) {
                 loadMsgWithTime(param, call.method, result);
             }
-            else if (EMSDKMethod.getLatestMessage.equals(call.method)){
-
-            }
-
             else
             {
                 super.onMethodCall(call, result);
