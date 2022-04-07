@@ -150,7 +150,7 @@ class ChatMethodKeys {
       "isMemberInChatRoomWhiteListFromServer";
 
   static const String muteAllChatRoomMembers = "muteAllChatRoomMembers";
-  static const String unMuteAllChatRoomMembers = "umMuteAllChatRoomMembers";
+  static const String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
 
   /// EMChatRoomManagerListener
   static const String chatRoomChange = 'onChatRoomChanged';

@@ -153,7 +153,7 @@ static NSString *const EMMethodKeyFetchChatRoomWhiteListFromServer = @"fetchChat
 static NSString *const EMMethodKeyIsMemberInChatRoomWhiteListFromServer = @"isMemberInChatRoomWhiteListFromServer";
 
 static NSString *const EMMethodKeyMuteAllChatRoomMembers = @"muteAllChatRoomMembers";
-static NSString *const EMMethodKeyUnMuteAllChatRoomMembers = @"umMuteAllChatRoomMembers";
+static NSString *const EMMethodKeyUnMuteAllChatRoomMembers = @"unMuteAllChatRoomMembers";
 
 
 static NSString *const EMMethodKeyChatroomChanged = @"onChatRoomChanged";
