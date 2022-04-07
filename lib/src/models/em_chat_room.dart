@@ -63,35 +63,50 @@ class EMChatRoom {
     return data;
   }
 
+  ///
   /// The chat room ID.
+  ///
   final String roomId;
 
-  /// The chat room name.
+  ///
+  /// The chat room name from the memory.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
   final String? name;
 
-  /// The chat room description.
+  ///
+  /// The the chat room description from the memory.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
   final String? description;
 
+  ///
   /// The chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
   final String? owner;
 
-  /// The chat room announcement.
   ///
-  /// To get the chat room announcement, you can call {@link EMChatRoomManager#fetchChatRoomAnnouncement(String)}
+  /// Get the chat room announcement in the chat room from the memory.
   ///
-  /// **return** The chat room announcement. If this method returns an empty string, the SDK fails to get the chat room announcement.
+  /// Ensure that you call {@ link EMChatRoomManager#fetchChatRoomAnnouncement(String)} before calling this method. Otherwise, the return value may not be correct.
   ///
   final String? announcement;
 
   ///
-  /// The number of online members.
+  /// The number of online members from the memory.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final int? memberCount;
 
   ///
-  /// The maximum number of members in the chat room which is determined during chat room creation.
+  /// Gets the maximum number of members in the chat room from the memory, which is set/specified when the chat room is created.
   ///
-  /// This method can return a correct value only after you call EMChatRoomManager#fetchChatRoomInfoFromServer(String) to get chat room details.
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final int? maxUsers;
 
@@ -124,19 +139,16 @@ class EMChatRoom {
   final List<String>? muteList;
 
   ///
-  /// Checks whether all members are muted.
+  /// Checks whether all members are muted in the chat room from the memory.
   ///
-  /// This method has use limitations and should be used with caution.
-  /// Pay attention to the following when using this method：
-  /// Upon your receipt of the callback of one-click mute or unmute after you join the chat room, the status will be updated and the staus obtained using this method is correct.
-  ///
-  /// After you exit from the chat room before reentering it, the status obtained using this method is not trustworthy.
-  /// **return** Whether all members are muted.
-  /// `true`: All members are muted.
-  /// `false`: Not all members are muted.
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final bool? isAllMemberMuted;
 
+  ///
   /// The current user's role in the chat room, see {@link EMChatRoomPermissionType}.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
   final EMChatRoomPermissionType permissionType;
 }

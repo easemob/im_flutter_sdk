@@ -88,7 +88,7 @@ class EMGroupManager {
   ///
   /// Gets all groups of the current user from the server.
   ///
-  /// This method returns a group list which does not contain member information. If you want to update information of a group to include its member information, call {@link #getGroupSpecificationFromServer(String groupId)}.
+  /// This method returns a group list which does not contain member information. If you want to update information of a group to include its member information, call {@link getGroupSpecificationFromServer(String groupId)}.
   ///
   /// **return** The list of groups that the current user joins.
   ///
