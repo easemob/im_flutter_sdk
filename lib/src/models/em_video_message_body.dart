@@ -42,14 +42,14 @@ class EMVideoMessageBody extends EMFileMessageBody {
 
   EMVideoMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VIDEO) {
-    this.duration = map.getValue("duration");
-    this.thumbnailLocalPath = map.getValue("thumbnailLocalPath");
-    this.thumbnailRemotePath = map.getValue("thumbnailRemotePath");
-    this.thumbnailSecret = map.getValue("thumbnailSecret");
-    this.height = map.getValue("height");
-    this.width = map.getValue("width");
+    this.duration = map.getIntValue("duration");
+    this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
+    this.thumbnailRemotePath = map.getStringValue("thumbnailRemotePath");
+    this.thumbnailSecret = map.getStringValue("thumbnailSecret");
+    this.height = map.getDoubleValue("height")?.toDouble();
+    this.width = map.getDoubleValue("width")?.toDouble();
     this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
-        map.getValue("thumbnailStatus"));
+        map.getIntValue("thumbnailStatus"));
   }
 
   @override

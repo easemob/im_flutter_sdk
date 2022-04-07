@@ -739,12 +739,22 @@ class EMMessageBodyHelper {
         if (json.has("thumbnailSecret")){
             body.setThumbnailSecret(json.getString("thumbnailSecret"));
         }
-        body.setFileLength(json.getInt("fileSize"));
-        int width = json.getInt("width");
-        int height = json.getInt("height");
-        body.setThumbnailSize(width, height);
-        body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
-        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        if (json.has("fileSize")){
+            body.setFileLength(json.getInt("fileSize"));
+        }
+        if (json.has("width") && json.has("height")){
+            int width = json.getInt("width");
+            int height = json.getInt("height");
+            body.setThumbnailSize(width, height);
+        }
+        if (json.has("sendOriginalImage")){
+            body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
+        }
+
+        if (json.has("fileStatus")){
+            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        }
+
         return body;
     }
 

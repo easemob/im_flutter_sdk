@@ -15,8 +15,8 @@ class EMCustomMessageBody extends EMMessageBody {
 
   EMCustomMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.CUSTOM) {
-    this.event = map.getValue("event");
-    this.params = map.getValue("params")?.cast<String, String>();
+    this.event = map["event"];
+    this.params = map["params"]?.cast<String, String>();
   }
 
   @override

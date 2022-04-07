@@ -30,10 +30,10 @@ class EMLocationMessageBody extends EMMessageBody {
 
   EMLocationMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.LOCATION) {
-    this.latitude = map.getValueWithOutNull("latitude", 0.0);
-    this.longitude = map.getValueWithOutNull("longitude", 0.0);
-    this._address = map.getValue("address");
-    this._buildingName = map.getValue("buildingName");
+    this.latitude = map.getDoubleValue("latitude", defaultValue: 0.0)!;
+    this.longitude = map.getDoubleValue("longitude", defaultValue: 0.0)!;
+    this._address = map.getStringValue("address");
+    this._buildingName = map.getStringValue("buildingName");
   }
 
   @override

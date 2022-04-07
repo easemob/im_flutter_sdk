@@ -15,9 +15,9 @@ class EMCmdMessageBody extends EMMessageBody {
 
   EMCmdMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.CMD) {
-    this.action = map.getValue("action");
+    this.action = map["action"];
     this.deliverOnlineOnly =
-        map.getValueWithOutNull("deliverOnlineOnly", false);
+        map.getBoolValue("deliverOnlineOnly", defaultValue: false)!;
   }
 
   @override
