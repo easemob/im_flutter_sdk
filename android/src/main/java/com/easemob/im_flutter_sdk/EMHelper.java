@@ -732,8 +732,8 @@ class EMMessageBodyHelper {
         body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         body.setThumbnailSecret(json.getString("thumbnailSecret"));
         body.setFileLength(json.getInt("fileSize"));
-        int width = json.getInt("height");
-        int height = json.getInt("width");
+        int width = json.getInt("width");
+        int height = json.getInt("height");
         body.setThumbnailSize(width, height);
         body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
 
@@ -770,8 +770,8 @@ class EMMessageBodyHelper {
         }
         body.setThumbnailSecret(json.getString("thumbnailSecret"));
         body.setFileName(json.getString("displayName"));
-        int width = json.getInt("height");
-        int height = json.getInt("width");
+        int width = json.getInt("width");
+        int height = json.getInt("height");
         body.setThumbnailSize(width, height);
         body.setRemoteUrl(json.getString("remotePath"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
