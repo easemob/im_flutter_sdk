@@ -1,11 +1,9 @@
 import 'dart:math';
 
-import '../tools/em_log.dart';
-
-import '../tools/em_message_callback_manager.dart';
+import 'package:flutter/services.dart';
+import '../internal/chat_method_keys.dart';
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
-import '../internal/em_message_state_handle.dart';
 
 // 消息类型
 enum EMMessageChatType {
@@ -68,30 +66,58 @@ abstract class EMMessageStatusListener {
   void onStatusChanged() {}
 }
 
-class EMMessage {
-  EMMessage._private() {
-    _tmpKey = localTime.toString();
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  Map<String, EMMessage> cacheMessageMap = {};
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      int? localTime = argMap['localTime'];
+      EMMessage? msg = cacheMessageMap[localTime.toString()];
+      if (msg == null) {
+        return null;
+      }
+      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+        return msg._onMessageProgressChanged(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageError) {
+        return msg._onMessageError(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+        return msg._onMessageSuccess(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
+        return msg._onMessageReadAck(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
+        return msg._onMessageDeliveryAck(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageStatusChanged) {
+        return msg._onMessageStatusChanged(argMap);
+      }
+      return null;
+    });
   }
 
-  late EMMessageStateHandle _handle;
+  addMessage(EMMessage message) {
+    cacheMessageMap[message.localTime.toString()] = message;
+  }
+
+  removeMessage(EMMessage message) {
+    if (cacheMessageMap.containsKey(message.localTime.toString())) {
+      cacheMessageMap.remove(message.localTime.toString());
+    }
+  }
+}
+
+class EMMessage {
+  EMMessage._private();
 
   /// 构造接收的消息
   EMMessage.createReceiveMessage({
     required this.body,
     this.direction = EMMessageDirection.RECEIVE,
-  }) {
-    _tmpKey = localTime.toString();
-    _handle = EMMessageStateHandle(
-      _tmpKey,
-      onMessageDeliveryAck: _onMessageDeliveryAck,
-      onMessageError: _onMessageError,
-      onMessageProgressChanged: _onMessageProgressChanged,
-      onMessageReadAck: _onMessageReadAck,
-      onMessageSuccess: _onMessageSuccess,
-      onMessageStatusChanged: _onMessageStatusChanged,
-    );
-    MessageCallBackManager.getInstance.addMessage(_tmpKey, _handle);
-  }
+  });
 
   /// 构造发送的消息
   EMMessage.createSendMessage({
@@ -100,74 +126,70 @@ class EMMessage {
     this.to,
     this.hasRead = true,
   })  : this.from = EMClient.getInstance.currentUsername,
-        this.conversationId = to {
-    _tmpKey = localTime.toString();
-    _handle = EMMessageStateHandle(
-      _tmpKey,
-      onMessageDeliveryAck: _onMessageDeliveryAck,
-      onMessageError: _onMessageError,
-      onMessageProgressChanged: _onMessageProgressChanged,
-      onMessageReadAck: _onMessageReadAck,
-      onMessageSuccess: _onMessageSuccess,
-      onMessageStatusChanged: _onMessageStatusChanged,
-    );
-    MessageCallBackManager.getInstance.addMessage(_tmpKey, _handle);
-  }
+        this.conversationId = to;
 
   void dispose() {
-    MessageCallBackManager.getInstance.removeMessage(_tmpKey);
-    // listener = null;
+    MessageCallBackManager.getInstance.removeMessage(this);
   }
 
-  void _onMessageError(Map<String, dynamic> map) {
-    EMLog.v('发送失败 -- ' + map.toString());
+  Future<void>? _onMessageError(Map map) {
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    listener?.onError(EMError.fromJson(map['error']));
+    if (listener != null) {
+      listener!.onError(EMError.fromJson(map['error']));
+    }
     return null;
   }
 
-  void _onMessageProgressChanged(Map<String, dynamic> map) {
-    EMLog.v(
-      '发送 -- ' + ' msg_id: ' + this.msgId! + ' ' + map['progress'].toString(),
-    );
-    int progress = map['progress'];
-    listener?.onProgress(progress);
+  Future<void>? _onMessageProgressChanged(Map map) {
+    if (this.listener != null) {
+      int progress = map['progress'];
+      listener!.onProgress(progress);
+    }
     return null;
   }
 
-  void _onMessageSuccess(Map<String, dynamic> map) {
+  Future<void>? _onMessageSuccess(Map map) {
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    listener?.onSuccess();
-    EMLog.v('发送成功 -- ' + this.toString());
+    if (listener != null) {
+      listener!.onSuccess();
+    }
+
     return null;
   }
 
-  void _onMessageReadAck(Map<String, dynamic> map) {
-    EMLog.v('消息已读 -- ' + ' msg_id: ' + this.msgId!);
+  Future<void>? _onMessageReadAck(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.hasReadAck = msg.hasReadAck;
-    listener?.onReadAck();
 
+    if (listener != null) {
+      listener!.onReadAck();
+    }
     return null;
   }
 
-  void _onMessageDeliveryAck(Map<String, dynamic> map) {
+  Future<void>? _onMessageDeliveryAck(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
-    listener?.onDeliveryAck();
+
+    if (listener != null) {
+      listener!.onDeliveryAck();
+    }
     return null;
   }
 
-  void _onMessageStatusChanged(Map<String, dynamic> map) {
+  Future<void>? _onMessageStatusChanged(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.status = msg.status;
-    listener?.onStatusChanged();
+
+    if (listener != null) {
+      listener!.onStatusChanged();
+    }
     return null;
   }
 
@@ -279,9 +301,12 @@ class EMMessage {
 
   void setMessageListener(EMMessageStatusListener? listener) {
     this.listener = listener;
+    if (listener != null) {
+      MessageCallBackManager.getInstance.addMessage(this);
+    } else {
+      MessageCallBackManager.getInstance.removeMessage(this);
+    }
   }
-
-  late String _tmpKey;
 
   /// 消息id
   String? _msgId,
