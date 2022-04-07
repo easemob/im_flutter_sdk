@@ -197,7 +197,7 @@ class EMClient {
         await _channel.invokeMethod(ChatMethodKeys.loginWithAgoraToken, req);
     try {
       EMError.hasErrorFromResult(result);
-      _currentUsername = result[ChatMethodKeys.loginWithAgoraToken];
+      _currentUsername = username;
     } on EMError catch (e) {
       throw e;
     }

@@ -230,7 +230,7 @@ class EMOptions {
       this.debugModel = false,
       this.acceptInvitationAlways = false,
       this.autoAcceptGroupInvitation = false,
-      this.requireAck = false,
+      this.requireAck = true,
       this.requireDeliveryAck = false,
       this.deleteMessagesAsExitGroup = true,
       this.deleteMessagesAsExitChatRoom = true,

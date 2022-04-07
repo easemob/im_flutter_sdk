@@ -141,7 +141,7 @@ public class EMSDKMethod {
     static final String isMemberInChatRoomWhiteListFromServer = "isMemberInChatRoomWhiteListFromServer";
 
     static final String muteAllChatRoomMembers = "muteAllChatRoomMembers";
-    static final String unMuteAllChatRoomMembers = "umMuteAllChatRoomMembers";
+    static final String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
 
 
     // EMChatRoomManagerListener

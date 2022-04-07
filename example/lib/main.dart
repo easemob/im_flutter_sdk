@@ -41,8 +41,6 @@ void initSDK() async {
 }
 
 class EaseIMDemo extends StatelessWidget {
-  final FocusNode focusNode = FocusNode();
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
@@ -50,7 +48,7 @@ class EaseIMDemo extends StatelessWidget {
     ]);
     return GestureDetector(
       onTap: () {
-        focusNode.unfocus();
+        FocusScope.of(context).requestFocus(FocusNode());
       },
       child: ScreenUtilInit(
         designSize: Size(375, 667),

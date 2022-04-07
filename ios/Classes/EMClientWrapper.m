@@ -354,10 +354,7 @@ static EMClientWrapper *wrapper = nil;
         [weakSelf wrapperCallBack:result
                       channelName:EMMethodKeyLoginWithAgoraToken
                             error:aError
-                           object:@{
-            @"username": aUsername,
-            @"token": EMClient.sharedClient.accessUserToken
-        }];
+                           object:EMClient.sharedClient.currentUsername];
     }];
 }
 
