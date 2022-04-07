@@ -27,51 +27,70 @@ class EMGroup {
   EMGroupOptions? _options;
   EMGroupPermissionType? _permissionType;
 
-  /// The group ID.
+  ///
+  /// Gets the group ID.
+  ///
   String get groupId => _groupId;
 
-  /// The group name.
+  ///
+  /// Gets the group name.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  ///
   String? get name => _name;
 
-  /// The group description.
+  ///
+  /// Gets the group description.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  ///
   String? get description => _description;
 
-  /// The user ID of the group owner.
+  ///
+  /// Gets the user ID of the group owner.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  ///
   String? get owner => _owner;
 
   ///  The content of the group announcement.
   String? get announcement => _announcement;
 
-  /// The member count of the group.
+  ///
+  /// Get the member count of the group.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  ///
   int? get memberCount => _memberCount;
+
+  ///
+  /// Get the member list of the group.
+  ///
+  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupMemberListFromServer(String, int?, String?)} before calling this method.
+  ///
   List? get memberList => _memberList;
 
   ///
-  /// The admin list of the group.
+  /// Get the admin list of the group.
   ///
-  /// Be sure to fetch the detail specification of the group from the server first, see {@link EMGroupManager#getGroupSpecificationFromServer(String)}.
+  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   List? get adminList => _adminList;
 
   ///
-  /// The block list of the group.
+  /// Get the block list of the group.
   ///
   /// If no block list is found from the server, the return may be empty.
   ///
   /// Reference:
-  /// To fetch the block list, call {@link EMGroupManager#getBlockListFromServer(String, int?, int?)}
-  ///
-  /// Only the group owner or admin can call this method.
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getBlockListFromServer(String, int?, int?)} before calling this method.
   ///
   List? get blockList => _blockList;
 
   ///
-  /// The mute list of the group.
+  /// Get the mute list of the group.
   ///
-  /// Reference:
-  /// You can also fetch the mute list by calling {@link}
-  ///
-  /// And only the group owner or admin can call this method.
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getMuteListFromServer(String, int?, int?)} before calling this method.
   ///
   List? get muteList => _muteList;
 
@@ -81,15 +100,14 @@ class EMGroup {
   ///
   /// Gets whether the group message is blocked.
   ///
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
+  ///
   bool? get messageBlocked => _messageBlocked;
 
   ///
-  /// Whether all members are muted.
+  /// Gets Whether all members are muted.
   ///
-  /// This method has limitations and is recommended to be used with caution.
-  ///
-  /// The state is updated when a all-muted/all-unmuted callback is received, but only for the in-memory object.
-  /// After the in-memory object is collected and pulled again from the database or server, the state becomes unreliable.
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   bool? get isAllMemberMuted => _isAllMemberMuted;
 
@@ -97,20 +115,25 @@ class EMGroup {
       "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead.")
   EMGroupOptions? get settings => _options;
 
-  /// The current user's role in group.
+  ///
+  /// Get the current user's role in group.
+  ///
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
+  ///
   EMGroupPermissionType? get permissionType => _permissionType;
 
   ///
-  /// The max number of group members allowed in a group. The param is set when the group is created.
+  /// Get the max number of group members allowed in a group. The param is set when the group is created.
   ///
-  /// Be sure to fetch the detail specification of the group from the server first, see {@link EMGroupManager#getGroupSpecificationFromServer(String)}. If not, the SDK returns nil.
-  ///
-  /// **return** The allowed max number of group members.
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   int? get maxUserCount => _options?.maxCount;
 
   ///
   /// Fetches the group property: whether users can auto join the group VS need requesting or invitation from a group member to join the group.
+  ///
+  ///
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   /// There are four types of group properties used to define the style of a group,
   /// and `isMemberOnly` contains three types including:
@@ -122,6 +145,7 @@ class EMGroup {
   /// **return**
   /// `true`: Users can not join the group freely. Needs the invitation from the group owner or members, or the application been approved by the group owner or admins.
   /// `false`: Users can join freely without the group owner or member‘s invitation or the new joiner’s application been approved.
+  ///
   bool get isMemberOnly {
     if (_options == null) {
       return true;
@@ -137,6 +161,9 @@ class EMGroup {
 
   ///
   /// Gets whether the group member is allowed to invite other users to join the group.
+  ///
+  ///
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   /// **return**
   /// `true`: The group member can invite other users to join the group;

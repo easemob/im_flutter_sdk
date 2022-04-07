@@ -740,8 +740,8 @@ class EMMessageBodyHelper {
             body.setThumbnailSecret(json.getString("thumbnailSecret"));
         }
         body.setFileLength(json.getInt("fileSize"));
-        int width = json.getInt("height");
-        int height = json.getInt("width");
+        int width = json.getInt("width");
+        int height = json.getInt("height");
         body.setThumbnailSize(width, height);
         body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
@@ -791,8 +791,8 @@ class EMMessageBodyHelper {
         }
 
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        int width = json.getInt("height");
-        int height = json.getInt("width");
+        int width = json.getInt("width");
+        int height = json.getInt("height");
         body.setThumbnailSize(width, height);
         return body;
     }
