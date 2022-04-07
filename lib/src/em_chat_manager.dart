@@ -27,7 +27,6 @@ class EMChatManager {
 
   /// @nodoc
   EMChatManager() {
-    MessageCallBackManager.getInstance;
     _channel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
