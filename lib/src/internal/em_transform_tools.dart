@@ -53,6 +53,7 @@ EMMultiDevicesEvent? convertIntToEMContactGroupEvent(int? i) {
     case 29:
       return EMMultiDevicesEvent.GROUP_REMOVE_MUTE;
   }
+  return null;
 }
 
 String messageTypeToTypeStr(MessageType type) {

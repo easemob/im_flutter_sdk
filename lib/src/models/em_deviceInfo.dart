@@ -23,9 +23,9 @@ class EMDeviceInfo {
   /// @nodoc
   factory EMDeviceInfo.fromJson(Map map) {
     return EMDeviceInfo._private(
-      map.getValue("resource"),
-      map.getValue("deviceUUID"),
-      map.getValue("deviceName"),
+      map.getStringValue("resource"),
+      map.getStringValue("deviceUUID"),
+      map.getStringValue("deviceName"),
     );
   }
 

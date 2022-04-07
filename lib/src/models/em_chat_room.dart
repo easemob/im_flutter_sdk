@@ -28,18 +28,18 @@ class EMChatRoom {
   /// @nodoc
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private(
-        roomId: map.getValue('roomId'),
-        name: map.getValue("name"),
-        description: map.getValue("desc"),
-        owner: map.getValue("owner"),
-        memberCount: map.getValue("memberCount"),
-        maxUsers: map.getValue("maxUsers"),
+        roomId: map["roomId"],
+        name: map.getStringValue("name"),
+        description: map.getStringValue("desc"),
+        owner: map.getStringValue("owner"),
+        memberCount: map.getIntValue("memberCount"),
+        maxUsers: map.getIntValue("maxUsers"),
         adminList: map.listValue<String>("adminList"),
         memberList: map.listValue<String>("memberList"),
         blockList: map.listValue<String>("blockList"),
         muteList: map.listValue<String>("muteList"),
-        announcement: map.getValue("announcement"),
-        permissionType: chatRoomPermissionTypeFromInt(map.getValue("key")),
+        announcement: map.getStringValue("announcement"),
+        permissionType: chatRoomPermissionTypeFromInt(map.getIntValue("key")),
         isAllMemberMuted: map.boolValue('isAllMemberMuted'));
   }
 

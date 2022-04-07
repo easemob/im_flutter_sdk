@@ -32,7 +32,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 
   EMVoiceMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VOICE) {
-    this.duration = map.getValue("duration");
+    this.duration = map.getIntValue("duration");
   }
 
   @override

@@ -44,23 +44,21 @@ class ChatItem extends StatefulWidget {
 class ChatItemState extends State<ChatItem> {
   void initState() {
     super.initState();
-    widget.msg.messageStatusCallBack = MessageStatusCallBack(
-      onSuccess: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-      onError: (error) {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-      onReadAck: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-    );
+    widget.msg.messageStatusCallBack = MessageStatusCallBack(onSuccess: () {
+      if (mounted) {
+        setState(() {});
+      }
+    }, onError: (error) {
+      if (mounted) {
+        setState(() {});
+      }
+    }, onReadAck: () {
+      if (mounted) {
+        setState(() {});
+      }
+    }, onProgress: (progress) {
+      debugPrint("progress --- $progress");
+    });
   }
 
   @override

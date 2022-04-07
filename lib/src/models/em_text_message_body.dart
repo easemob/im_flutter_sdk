@@ -16,7 +16,7 @@ class EMTextMessageBody extends EMMessageBody {
 
   EMTextMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.TXT) {
-    this.content = map.getValueWithOutNull("content", "");
+    this.content = map.getStringValue("content", defaultValue: "")!;
   }
 
   @override

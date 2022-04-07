@@ -28,13 +28,13 @@ class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody.fromJson(
       {required Map map, MessageType type = MessageType.FILE})
       : super.fromJson(map: map, type: type) {
-    this.secret = map.getValue("secret");
-    this.remotePath = map.getValue("remotePath");
-    this.fileSize = map.getValue("fileSize");
-    this.localPath = map.getValue("localPath");
-    this.displayName = map.getValue("displayName");
+    this.secret = map.getStringValue("secret");
+    this.remotePath = map.getStringValue("remotePath");
+    this.fileSize = map.getIntValue("fileSize");
+    this.localPath = map.getStringValue("localPath", defaultValue: "")!;
+    this.displayName = map.getStringValue("displayName");
     this.fileStatus = EMFileMessageBody.downloadStatusFromInt(
-      map.getValue("fileStatus"),
+      map.getIntValue("fileStatus"),
     );
   }
 

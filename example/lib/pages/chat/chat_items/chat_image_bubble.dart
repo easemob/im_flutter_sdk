@@ -22,8 +22,8 @@ class ChatImageBubble extends StatelessWidget {
     Widget image;
 
     // 作为接收方，是有图片size的，需要先根据size缩放
-    double width = body.width!;
-    double height = body.height!;
+    double width = body.width ?? 100;
+    double height = body.height ?? 100;
 
     if (height > width) {
       width = maxSize / height * width;

@@ -70,25 +70,58 @@ extension MapExtension on Map {
     }
   }
 
-  T getValueWithOutNull<T>(String key, T defaultValue) {
-    T ret = defaultValue;
+  int? getIntValue(String key, {int? defaultValue}) {
+    int? ret = defaultValue;
     if (this.containsKey(key)) {
       dynamic value = this[key];
-      if (value is T) {
+      if (value is int) {
         ret = value;
       }
     }
     return ret;
   }
 
-  T? getValue<T>(String key) {
-    T? ret;
+  bool? getBoolValue(String key, {bool? defaultValue}) {
+    bool? ret = defaultValue;
     if (this.containsKey(key)) {
       dynamic value = this[key];
-      if (value is T) {
+      if (value is bool) {
         ret = value;
-      } else {
-        ret = null;
+      }
+    }
+    return ret;
+  }
+
+  String? getStringValue(String key, {String? defaultValue}) {
+    String? ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is String) {
+        ret = value;
+      }
+    }
+    return ret;
+  }
+
+  double? getDoubleValue(String key, {double? defaultValue}) {
+    double? ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is double) {
+        ret = value;
+      } else if (value is int) {
+        ret = value.toDouble();
+      }
+    }
+    return ret;
+  }
+
+  Map? getMapValue(String key, {Map? defaultValue}) {
+    Map? ret = defaultValue;
+    if (this.containsKey(key)) {
+      Map? value = this[key];
+      if (value is double) {
+        ret = value;
       }
     }
     return ret;

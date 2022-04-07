@@ -36,15 +36,15 @@ class EMUserInfo {
   /// @nodac
   factory EMUserInfo.fromJson(Map map) {
     EMUserInfo info = EMUserInfo(
-      map.getValue("userId"),
-      nickName: map.getValue("nickName"),
-      avatarUrl: map.getValue("avatarUrl"),
-      mail: map.getValue("mail"),
-      phone: map.getValue("phone"),
-      gender: map.getValueWithOutNull("gender", 0),
-      sign: map.getValue("sign"),
-      birth: map.getValue("birth"),
-      ext: map.getValue("ext"),
+      map["userId"],
+      nickName: map.getStringValue("nickName"),
+      avatarUrl: map.getStringValue("avatarUrl"),
+      mail: map.getStringValue("mail"),
+      phone: map.getStringValue("phone"),
+      gender: map.getIntValue("gender", defaultValue: 0)!,
+      sign: map.getStringValue("sign"),
+      birth: map.getStringValue("birth"),
+      ext: map.getStringValue("ext"),
     );
     return info;
   }

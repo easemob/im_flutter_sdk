@@ -380,7 +380,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   /// 发送图片消息
-  _sendImageMessage(String imagePath, [String fileName = '']) {
+  _sendImageMessage(String imagePath, {String? fileName}) {
     Image.file(
       File(imagePath),
       fit: BoxFit.contain,

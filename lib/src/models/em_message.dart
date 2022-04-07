@@ -1,11 +1,12 @@
 import 'dart:math';
 
+import 'package:flutter/services.dart';
+
+import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
-import '../tools/em_log.dart';
-import '../tools/em_message_callback_manager.dart';
+
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
-import '../internal/em_message_state_handle.dart';
 
 ///
 /// The message instance, which represents a sent/received message.
@@ -21,11 +22,122 @@ import '../internal/em_message_state_handle.dart';
 /// ```
 ///
 class EMMessage {
-  EMMessage._private() {
-    _tmpKey = localTime.toString();
+  int _groupAckCount = 0;
+
+  /// 消息id
+  String? _msgId;
+  String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
+      Random().nextInt(99999).toString();
+
+  ///
+  /// Gets the message ID.
+  ///
+  /// **return** The message ID.
+  String get msgId => _msgId ?? _msgLocalId;
+
+  ///
+  /// The conversation ID.
+  ///
+  String? conversationId;
+
+  ///
+  /// The user ID of the message sender.
+  ///
+  String? from = '';
+
+  ///
+  /// The user ID of the message recipient.
+  ///
+  String? to = '';
+
+  ///
+  /// The local timestamp of the message.
+  ///
+  int localTime = DateTime.now().millisecondsSinceEpoch;
+
+  ///
+  /// The local timestamp of the message.
+  ///
+  int serverTime = DateTime.now().millisecondsSinceEpoch;
+
+  ///
+  /// The delivery receipt, which is to check whether the other party has received the message.
+  ///
+  /// Whether the other party has received the message.
+  /// `true`:the message has been delivered to the other party.
+  ///
+  bool hasDeliverAck = false;
+
+  ///
+  /// Whether the other party has read the message.
+  /// `true`: The message has been read by the other party.
+  ///
+  bool hasReadAck = false;
+
+  ///
+  /// Sets whether read receipts are required for group messages.
+  ///
+  /// `true`: Read receipts are required;
+  /// `false`: Read receipts are NOT required.
+  ///
+  bool needGroupAck = false;
+
+  ///
+  /// Gets the number of members that have read the group message.
+  ///
+  int get groupAckCount => _groupAckCount;
+
+  ///
+  /// Checks whether the message is read.
+  ///
+  /// `true`: The message is read.
+  /// `false`: The message is unread.
+  ///
+  bool hasRead = false;
+
+  ///
+  /// The enumeration of the chat type.
+  ///
+  /// There are three chat types: one-to-one chat, group chat, and chat room.
+  ///
+  ChatType chatType = ChatType.Chat;
+
+  ///
+  /// The message direction. see {@link MessageDirection}
+  ///
+  MessageDirection direction = MessageDirection.SEND;
+
+  ///
+  /// Gets the message sending/reception status. see {@link MessageStatus}
+  ///
+  MessageStatus status = MessageStatus.CREATE;
+
+  ///
+  /// Message's extension attribute.
+  ///
+  Map? attributes;
+
+  ///
+  /// Message body. We recommend you use {@link EMMessageBody)}.
+  ///
+  late EMMessageBody body;
+
+  ///
+  /// Sets the message status change callback.
+  /// Your app should set messageStatusCallBack to get the message status and then refresh the UI accordingly.
+  ///
+  MessageStatusCallBack? _messageStatusCallBack;
+
+  set messageStatusCallBack(MessageStatusCallBack? callback) {
+    _messageStatusCallBack = callback;
+    if (callback != null) {
+      MessageCallBackManager.getInstance.addMessage(this);
+    } else {
+      MessageCallBackManager.getInstance.removeMessage(localTime.toString());
+    }
   }
 
-  late EMMessageStateHandle _handle;
+  EMMessage._private();
 
   ///
   /// Creates a new received message instance.
@@ -37,18 +149,7 @@ class EMMessage {
   EMMessage.createReceiveMessage({
     required this.body,
   }) {
-    _tmpKey = localTime.toString();
-    _handle = EMMessageStateHandle(
-      _tmpKey,
-      onMessageDeliveryAck: _onMessageDeliveryAck,
-      onMessageError: _onMessageError,
-      onMessageProgressChanged: _onMessageProgressChanged,
-      onMessageReadAck: _onMessageReadAck,
-      onMessageSuccess: _onMessageSuccess,
-      onMessageStatusChanged: _onMessageStatusChanged,
-    );
     this.direction = MessageDirection.RECEIVE;
-    MessageCallBackManager.getInstance.addMessage(_tmpKey, _handle);
   }
 
   ///
@@ -65,41 +166,26 @@ class EMMessage {
     this.to,
   })  : this.from = EMClient.getInstance.currentUsername,
         this.conversationId = to {
-    _tmpKey = localTime.toString();
-    _handle = EMMessageStateHandle(
-      _tmpKey,
-      onMessageDeliveryAck: _onMessageDeliveryAck,
-      onMessageError: _onMessageError,
-      onMessageProgressChanged: _onMessageProgressChanged,
-      onMessageReadAck: _onMessageReadAck,
-      onMessageSuccess: _onMessageSuccess,
-      onMessageStatusChanged: _onMessageStatusChanged,
-    );
     this.hasRead = true;
     this.direction = MessageDirection.SEND;
-    MessageCallBackManager.getInstance.addMessage(_tmpKey, _handle);
   }
 
   void dispose() {
-    MessageCallBackManager.getInstance.removeMessage(_tmpKey);
+    MessageCallBackManager.getInstance.removeMessage(localTime.toString());
   }
 
   void _onMessageError(Map<String, dynamic> map) {
-    EMLog.v('发送失败 -- ' + map.toString());
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    messageStatusCallBack?.onError?.call(EMError.fromJson(map['error']));
+    _messageStatusCallBack?.onError?.call(EMError.fromJson(map['error']));
     return null;
   }
 
   void _onMessageProgressChanged(Map<String, dynamic> map) {
-    EMLog.v(
-      '发送 -- ' + ' msg_id: ' + this.msgId + ' ' + map['progress'].toString(),
-    );
     int progress = map['progress'];
-    messageStatusCallBack?.onProgress?.call(progress);
+    _messageStatusCallBack?.onProgress?.call(progress);
     return null;
   }
 
@@ -108,16 +194,15 @@ class EMMessage {
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    messageStatusCallBack?.onSuccess?.call();
-    EMLog.v('发送成功 -- ' + this.toString());
+    _messageStatusCallBack?.onSuccess?.call();
+
     return null;
   }
 
   void _onMessageReadAck(Map<String, dynamic> map) {
-    EMLog.v('消息已读 -- ' + ' msg_id: ' + this.msgId);
     EMMessage msg = EMMessage.fromJson(map);
     this.hasReadAck = msg.hasReadAck;
-    messageStatusCallBack?.onReadAck?.call();
+    _messageStatusCallBack?.onReadAck?.call();
 
     return null;
   }
@@ -125,14 +210,14 @@ class EMMessage {
   void _onMessageDeliveryAck(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
-    messageStatusCallBack?.onDeliveryAck?.call();
+    _messageStatusCallBack?.onDeliveryAck?.call();
     return null;
   }
 
   void _onMessageStatusChanged(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.status = msg.status;
-    messageStatusCallBack?.onStatusChanged?.call();
+    _messageStatusCallBack?.onStatusChanged?.call();
     return null;
   }
 
@@ -337,114 +422,6 @@ class EMMessage {
     this.listener = listener;
   }
 
-  ///
-  /// Sets the message status change callback.
-  /// Your app should set messageStatusCallBack to get the message status and then refresh the UI accordingly.
-  ///
-  MessageStatusCallBack? messageStatusCallBack;
-
-  late String _tmpKey;
-
-  int _groupAckCount = 0;
-
-  /// 消息id
-  String? _msgId;
-  String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
-      Random().nextInt(99999).toString();
-
-  ///
-  /// Gets the message ID.
-  ///
-  /// **return** The message ID.
-  String get msgId => _msgId ?? _msgLocalId;
-
-  ///
-  /// The conversation ID.
-  ///
-  String? conversationId;
-
-  ///
-  /// The user ID of the message sender.
-  ///
-  String? from = '';
-
-  ///
-  /// The user ID of the message recipient.
-  ///
-  String? to = '';
-
-  ///
-  /// The local timestamp of the message.
-  ///
-  int localTime = DateTime.now().millisecondsSinceEpoch;
-
-  ///
-  /// The local timestamp of the message.
-  ///
-  int serverTime = DateTime.now().millisecondsSinceEpoch;
-
-  ///
-  /// The delivery receipt, which is to check whether the other party has received the message.
-  ///
-  /// Whether the other party has received the message.
-  /// `true`:the message has been delivered to the other party.
-  ///
-  bool hasDeliverAck = false;
-
-  ///
-  /// Whether the other party has read the message.
-  /// `true`: The message has been read by the other party.
-  ///
-  bool hasReadAck = false;
-
-  ///
-  /// Sets whether read receipts are required for group messages.
-  ///
-  /// `true`: Read receipts are required;
-  /// `false`: Read receipts are NOT required.
-  ///
-  bool needGroupAck = false;
-
-  ///
-  /// Gets the number of members that have read the group message.
-  ///
-  int get groupAckCount => _groupAckCount;
-
-  ///
-  /// Checks whether the message is read.
-  ///
-  /// `true`: The message is read.
-  /// `false`: The message is unread.
-  ///
-  bool hasRead = false;
-
-  ///
-  /// The enumeration of the chat type.
-  ///
-  /// There are three chat types: one-to-one chat, group chat, and chat room.
-  ///
-  ChatType chatType = ChatType.Chat;
-
-  ///
-  /// The message direction. see {@link MessageDirection}
-  ///
-  MessageDirection direction = MessageDirection.SEND;
-
-  ///
-  /// Gets the message sending/reception status. see {@link MessageStatus}
-  ///
-  MessageStatus status = MessageStatus.CREATE;
-
-  ///
-  /// Message's extension attribute.
-  ///
-  Map? attributes;
-
-  ///
-  /// Message body. We recommend you use {@link EMMessageBody)}.
-  ///
-  late EMMessageBody body;
-
   /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -472,24 +449,24 @@ class EMMessage {
   /// @nodoc
   factory EMMessage.fromJson(Map<String, dynamic> map) {
     return EMMessage._private()
-      ..to = map.getValue("to")
-      ..from = map.getValue("from")
-      ..body = _bodyFromMap(map.getValue("body"))!
-      ..attributes = map.getValue("attributes")
-      ..direction = map.getValue("direction") == 'send'
+      ..to = map.getStringValue("to")
+      ..from = map.getStringValue("from")
+      ..body = _bodyFromMap(map["body"])!
+      ..attributes = map.getMapValue("attributes")
+      ..direction = map.getStringValue("direction") == 'send'
           ? MessageDirection.SEND
           : MessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
-      .._groupAckCount = map.getValue("groupAckCount")
+      .._groupAckCount = map.getIntValue("groupAckCount", defaultValue: 0)!
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
-      .._msgId = map.getValue("msgId")
-      ..conversationId = map.getValue("conversationId")
-      ..chatType = chatTypeFromInt(map.getValue("chatType"))
-      ..localTime = map.getValue("localTime")
-      ..serverTime = map.getValue("serverTime")
-      ..status = messageStatusFromInt(map.getValue("status"));
+      .._msgId = map.getStringValue("msgId")
+      ..conversationId = map.getStringValue("conversationId")
+      ..chatType = chatTypeFromInt(map.getIntValue("chatType"))
+      ..localTime = map.getIntValue("localTime", defaultValue: 0)!
+      ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
+      ..status = messageStatusFromInt(map.intValue("status"));
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {
@@ -528,5 +505,48 @@ class EMMessage {
   @override
   String toString() {
     return toJson().toString();
+  }
+}
+
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  Map<String, EMMessage> cacheHandleMap = {};
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
+
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      int? localTime = argMap['localTime'];
+      EMMessage? handle = cacheHandleMap[localTime.toString()];
+
+      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+        return handle?._onMessageProgressChanged(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageError) {
+        return handle?._onMessageError(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+        return handle?._onMessageSuccess(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
+        return handle?._onMessageReadAck(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
+        return handle?._onMessageDeliveryAck(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageStatusChanged) {
+        return handle?._onMessageStatusChanged(argMap);
+      }
+      return null;
+    });
+  }
+
+  void addMessage(EMMessage message) {
+    cacheHandleMap[message.localTime.toString()] = message;
+  }
+
+  void removeMessage(String key) {
+    if (cacheHandleMap.containsKey(key)) {
+      cacheHandleMap.remove(key);
+    }
   }
 }

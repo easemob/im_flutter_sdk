@@ -43,17 +43,17 @@ class EMImageMessageBody extends EMFileMessageBody {
 
   EMImageMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.IMAGE) {
-    this.thumbnailLocalPath = map.getValue<String>("thumbnailLocalPath");
-    this.thumbnailRemotePath = map.getValue<String>("thumbnailRemotePath");
-    this.thumbnailSecret = map.getValue<String>("thumbnailSecret");
-    this.sendOriginalImage = map.getValueWithOutNull(
+    this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
+    this.thumbnailRemotePath = map.getStringValue("thumbnailRemotePath");
+    this.thumbnailSecret = map.getStringValue("thumbnailSecret");
+    this.sendOriginalImage = map.getBoolValue(
       "sendOriginalImage",
-      false,
-    );
-    this.height = map.getValue("height");
-    this.width = map.getValue("width");
+      defaultValue: false,
+    )!;
+    this.height = map.getDoubleValue("height");
+    this.width = map.getDoubleValue("width");
     this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
-      map.getValue("thumbnailStatus"),
+      map.getIntValue("thumbnailStatus"),
     );
   }
 

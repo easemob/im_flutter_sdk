@@ -27,7 +27,7 @@ class EMConversation {
   factory EMConversation.fromJson(Map<String, dynamic> map) {
     Map<String, String>? ext = map['ext']?.cast<String, String>();
     EMConversation ret = EMConversation._private(
-      map.getValueWithOutNull<String>("con_id", ""),
+      map["con_id"],
       conversationTypeFromInt(map['type']),
       ext,
     );
