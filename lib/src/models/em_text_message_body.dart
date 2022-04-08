@@ -4,11 +4,11 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// Text message body.
+/// The text message class.
 ///
 class EMTextMessageBody extends EMMessageBody {
   ///
-  /// Creates a text message body.
+  /// Creates a text message.
   ///
   /// Param [content] The text content.
   ///

@@ -2,133 +2,144 @@ import '../tools/em_extension.dart';
 import 'em_push_config.dart';
 
 ///
-/// The settings of the chat SDK.
-/// You can set parameters and options of the SDK.
-/// For example, whether to encrypt the messages before sending, whether to automatically accept the friend invitations.
+/// The EMOptions class, which contains the settings of the Chat SDK.
+///
+/// For example, whether to encrypt the messages before sending and whether to automatically accept the friend invitations.
 ///
 class EMOptions {
-  /// The app key you got from the console when create an app.
+  /// The app key that you get from the console when creating the app.
   late final String appKey;
 
   ///
-  /// Enables/Disables automatic login.
+  /// Whether to enable automatic login.
   ///
-  /// `true`: (default) Enables automatic login;
-  /// `false`: Disables automatic login.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool autoLogin;
 
+  ///
+  /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using {@link #init(Context, EMOptions)}.
+  ///
+  /// - `true`: Yes.
+  /// - `false`: (Default)No.
+  ///
   final bool debugModel;
 
   ///
   /// Whether to accept friend invitations from other users automatically.
   ///
-  /// `true`: (default) Accepts friend invitations automatically;
-  /// `false`: Do not accept friend invitations automatically.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   final bool acceptInvitationAlways;
 
   ///
   /// Whether to accept group invitations automatically.
   ///
-  /// `true`: (default) Accepts group invitations automatically;
-  /// `false`: Do not accept group invitations automatically.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool autoAcceptGroupInvitation;
 
   ///
-  /// Whether the read receipt is required.
+  /// Whether to require read receipt after sending a message.
   ///
-  /// `true`: (default) The read receipt is required;
-  /// `false`: The read receipt is not required.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool requireAck;
 
   ///
-  /// Whether the delivery receipt is required.
+  /// Whether to require the delivery receipt after sending a message.
   ///
-  /// `true`: (default) The read receipt is required;
-  /// `false`: The read receipt is not required.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool requireDeliveryAck;
 
   ///
-  /// Whether to delete the group message when leaving a group.
+  /// Whether to delete the group messages when leaving a group.
   ///
-  /// `true`: (default) Delete the messages when leaving the group.
-  /// `false`: Do not delete the messages when leaving a group.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool deleteMessagesAsExitGroup;
 
   ///
-  /// Whether to delete the chat room message when leaving the chat room.
+  /// Whether to delete the chat room messages when leaving the chat room.
   ///
-  /// `true`: (default) Delete the chat room related message record when leaving the chat room.
-  /// `false`: Do not delete the chat room related message record when leaving the chat room.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool deleteMessagesAsExitChatRoom;
 
   ///
   /// Whether to allow the chat room owner to leave the chat room.
   ///
-  /// `true`: (default) Allow the chat room owner to leave the chat room.
-  /// `false`: Do not allow the chat room owner to leave the chat room.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool isChatRoomOwnerLeaveAllowed;
 
   ///
-  /// Whether to sort messages by the server received time.
+  /// Whether to sort the messages by the time when the messages are received by the server.
   ///
-  /// `true`: (default) Sort messages by the server received time;
-  /// `false`: Do not sort messages by the server received time.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool sortMessageByServerTime;
 
   ///
-  /// Sets whether only HTTPS is used for REST operations.
+  /// Whether only HTTPS is used for REST operations.
   ///
-  /// `true`: (default) Only HTTPS is used.
-  /// `false`: Allow to use both HTTP and HTTPS.
+  /// - `true`: (Default) Only HTTPS is used.
+  /// - `false`: Both HTTP and HTTPS are allowed.
   ///
   final bool usingHttpsOnly;
 
   ///
   /// Whether to upload the message attachments automatically to the chat server.
   ///
-  /// `true`: (default) Use the default way to upload and download the message attachments by chat server;
-  /// `false`: Do not use the default way to upload and download the message attachments by chat server, using a customized path instead.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No. Message attachments are uploaded to a custom path.
   ///
   final bool serverTransfer;
 
   ///
-  /// Whether to auto download the thumbnail.
+  /// Whether to automatically download the thumbnail.
   ///
-  /// `true`: (default) Download the thumbnail automatically;
-  /// `false`: Do not download the thumbnail automatically.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool isAutoDownloadThumbnail;
 
   ///
-  /// Sets whether to disable DNS.
+  /// Whether to enable DNS.
   ///
-  /// `true`: (default) Enable DNS;
-  /// `false`: Do not enable DNS.
+  /// - `true`: (Default) Yes;
+  /// - `false`: No.
   ///
   final bool enableDNSConfig;
 
-  /// The DNS url.
+  /// The DNS URL.
   final String? dnsUrl;
 
   /// The custom REST server.
   final String? restServer;
 
-  /// The custom im message server url.
+  /// The custom IM message server url.
   final String? imServer;
 
-  /// The custom im server port.
+  /// The custom IM server port.
   final int? imPort;
 
   EMPushConfig _pushConfig = EMPushConfig();
 
+  /// Enable OPPO PUSH on OPPO devices.
+  ///
+  /// Param [appId] The app ID for OPPO PUSH.
+  ///
+  /// Param [appKey] The app key for OPPO PUSH.
   ///
   void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
@@ -137,11 +148,11 @@ class EMOptions {
   }
 
   ///
-  /// Passes the app ID and app key of Mi push to enable Mi push on Mi devices.
+  /// Enable Mi Push on Mi devices.
   ///
-  /// Param [appId] The Xiaomi Push App ID.
+  /// Param [appId] The app ID for Mi Push.
   ///
-  /// Param [appKey] The Xiaomi push app key.
+  /// Param [appKey] The app key for Mi Push.
   ///
   void enableMiPush(String appId, String appKey) {
     _pushConfig.enableMiPush = true;
@@ -150,33 +161,39 @@ class EMOptions {
   }
 
   ///
-  /// Sets the FCM sender ID.
+  /// Enable Firebase Cloud Messaging (FCM) push on devices that support Google Play.
+  ///
+  /// Param [appId] The app ID for FCM push.
   ///
   void enableFCM(String appId) {
     _pushConfig.enableFCM = true;
     _pushConfig.fcmId = appId;
   }
 
+  /// Enable vivo Push on vivo devices.
   ///
-  /// Be sure to set the app ID and app key in AndroidManifest in order to make Vivo push available on Vivo devices.
+  /// Param [appId] The app ID for vivo Push.
+  ///
+  /// Param [appKey] The app key for vivo Push.
   ///
   void enableVivoPush() {
     _pushConfig.enableVivoPush = true;
   }
 
+  /// Enable Huawei Push on Huawei devices.
   ///
-  /// Enables Huawei push on Huawei devices.
+  /// Param [appId] The app ID for HuaWei Push.
   ///
-  /// Be sure to set app ID in AndroidManifest or to set agconnect-services.json.
+  /// Param [appKey] The app key for HuaWei Push.
   ///
   void enableHWPush() {
     _pushConfig.enableHWPush = true;
   }
 
   ///
-  /// Enables ios push on ios devices.
+  /// Enables Apple Push Notification service (APNs) on iOS devices.
   ///
-  /// Param [certName] The ios device push cert name.
+  /// Param [certName] The APNs certificate name.
   void enableAPNs(String certName) {
     _pushConfig.enableAPNS = true;
     _pushConfig.apnsCertName = certName;
@@ -185,64 +202,92 @@ class EMOptions {
   ///
   /// Sets the app options.
   ///
-  /// Param [appKey] The app key you got from the console when create an app.
-  ///
-  /// Param [autoLogin] Enables/Disables automatic login. default is `true`.
-  ///
-  /// Param [debugModel]
-  ///
-  /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically. default is `false`.
-  ///
-  /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically. default is `false`.
-  ///
-  /// Param [requireAck] Whether the read receipt is required. default is `true`.
-  ///
-  /// Param [requireDeliveryAck] Whether the delivery receipt is required. default is `true`.
-  ///
-  /// Param [deleteMessagesAsExitGroup] Whether to delete the group message when leaving a group. default is `true`.
-  ///
-  /// Param [deleteMessagesAsExitChatRoom] Whether to delete the chat room message when leaving the chat room. default is `true`.
-  ///
-  /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room. default is `true`.
-  ///
-  /// Param [sortMessageByServerTime] Whether to sort messages by the server received time. default is `true`.
-  ///
-  /// Param [usingHttpsOnly] Sets whether only HTTPS is used for REST operations. default is `true`.
-  ///
-  /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server. default is `true`.
-  ///
-  /// Param [isAutoDownloadThumbnail] Whether to auto download the thumbnail. default is `true`.
-  ///
-  /// Param [enableDNSConfig] Sets whether to disable DNS.
-  ///
-  /// Param [dnsUrl] The DNS url.
-  ///
-  /// Param [restServer] The custom REST server.
-  ///
-  /// Param [imPort] The custom im server port.
-  ///
-  /// Param [imServer] The custom im message server url.
-  ///
-  ///
   EMOptions(
-      {required this.appKey,
+      {
+
+      /// Param [appKey] The app key that you get from the console when creating an app.
+      required this.appKey,
+
+      /// Param [autoLogin] Whether to enable automatic login.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.autoLogin = true,
+
+      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See {@link #init(Context, EMOptions)}.
+      /// - `true`: Yes.
+      /// - `false`: (Default) No.
       this.debugModel = false,
+
+      /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
+      /// - `true`: Yes;
+      /// - `false`: (Default) No.
       this.acceptInvitationAlways = false,
+
+      /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+      /// - `true`: Yes;
+      /// - `false`: (Default) No.
       this.autoAcceptGroupInvitation = false,
+
+      /// Param [requireAck] Whether the read receipt is required.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.requireAck = true,
+
+      /// Param [requireDeliveryAck] Whether the delivery receipt is required.
+      /// - `true`: Yes;
+      /// - `false`: (Default) No.
       this.requireDeliveryAck = false,
+
+      /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.deleteMessagesAsExitGroup = true,
+
+      /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.deleteMessagesAsExitChatRoom = true,
+
+      /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.isChatRoomOwnerLeaveAllowed = true,
+
+      /// Param [sortMessageByServerTime] Whether to sort the messages by the time the server receives messages.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.sortMessageByServerTime = true,
+
+      /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.usingHttpsOnly = true,
+
+      /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.serverTransfer = true,
+
+      /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.isAutoDownloadThumbnail = true,
+
+      /// Param [enableDNSConfig] Whether to enable DNS.
+      /// - `true`: (Default) Yes;
+      /// - `false`: No.
       this.enableDNSConfig = true,
+
+      /// Param [dnsUrl] The DNS url.
       this.dnsUrl,
+
+      /// Param [restServer] The REST server for private deployments.
       this.restServer,
+
+      /// Param [imPort] The IM server port for private deployments.
       this.imPort,
+
+      /// Param [imServer] The IM server URL for private deployment.
       this.imServer});
 
   factory EMOptions.fromJson(Map<String, dynamic> json) {

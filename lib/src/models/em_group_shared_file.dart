@@ -1,11 +1,9 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The shared file info class.
+/// The EMGroupSharedFile class, which manages the chat group shared files.
 ///
-/// For example:
-/// You can use the following method to get information about the group shared file
-/// through {@link EMGroupManager#getGroupFileListFromServer(String, int?, int?)}
+/// To get the information of the chat group shared file, call {@link EMGroupManager#getGroupFileListFromServer(String, int?, int?)}.
 ///
 /// ```dart
 ///   List<EMGroupSharedFile>? list = await EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId);
@@ -22,35 +20,35 @@ class EMGroupSharedFile {
   ///
   /// Gets the shared file ID.
   ///
-  /// **return** The shared file ID.
+  /// **Return** The shared file ID.
   ///
   String? get fileId => _fileId;
 
   ///
   /// Gets the shared file name.
   ///
-  /// **return** The shared file name.
+  /// **Return** The shared file name.
   ///
   String? get fileName => _fileName;
 
   ///
-  /// Gets the username who uploads the shared file.
+  /// Gets the username that uploads the shared file.
   ///
-  /// **return** The username who uploads the shared file.
+  /// **Return** The username that uploads the shared file.
   ///
   String? get fileOwner => _fileOwner;
 
   ///
-  /// Gets the update Unix timestamp of the shared file, in ms.
+  /// Gets the Unix timestamp for uploading the shared file, in milliseconds.
   ///
-  /// **return** The update Unix timestamp of the shared file, in ms.
+  /// **Return** The Unix timestamp for uploading the shared file, in milliseconds.
   ///
   int? get createTime => _createTime;
 
   ///
   /// Gets the data length of the shared file, in bytes.
   ///
-  /// **return** The data length of the shared file, in bytes.
+  /// **Return** The data length of the shared file, in bytes.
   ///
   int? get fileSize => _fileSize;
 

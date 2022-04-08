@@ -5,12 +5,12 @@ import 'internal/em_transform_tools.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
+import 'tools/em_message_callback_manager.dart';
 
 ///
-/// The chat manager. This class is responsible for managing conversations.
-/// (such as: load, delete), sending messages, downloading attachments and so on.
+/// The chat manager class, responsible for sending and receiving messages, loading and deleting conversations, and downloading attachments.
 ///
-/// Such as, send a text message:
+/// The sample code for sending a text message:
 ///
 /// ```dart
 ///    EMMessage msg = EMMessage.createTxtSendMessage(
@@ -27,6 +27,7 @@ class EMChatManager {
 
   /// @nodoc
   EMChatManager() {
+    MessageCallBackManager.getInstance;
     _channel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -52,15 +53,15 @@ class EMChatManager {
   ///
   /// Sends a message.
   ///
-  /// Reference:
-  /// If the message is voice, picture and other message with attachment, the SDK will automatically upload the attachment.
-  /// You can set whether to upload the attachment to the chat sever by {@link EMOptions#serverTransfer(boolean)}.
+  /// **Note**
+  /// For attachment messages such as voice, image, or video messages, the SDK automatically uploads the attachment.
+  /// You can set whether to upload the attachment to the chat sever using {@link EMOptions#serverTransfer(boolean)}.
   ///
-  /// To listen for the status of sending messages, call {@link EMMessage#setMessageStatusListener(StatusListener)}.
+  /// To listen for the status of sending messages, call {@link EMMessage#setMessageStatusListener(EMMessageStatusListener)}.
   ///
-  /// Param [message] The message object to be sent
+  /// Param [message] The message object to be sent: {@link EMMessage}.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMMessage> sendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
@@ -78,7 +79,8 @@ class EMChatManager {
     }
   }
 
-  /// 重发消息 [message].
+  /// Resends a message.
+  /// Param [message] The message object to be resent: {@link EMMessage}.
   Future<EMMessage> resendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
     Map result = await _channel.invokeMethod(
@@ -100,16 +102,17 @@ class EMChatManager {
   ///
   /// This method applies to one-to-one chats only.
   ///
-  /// Precondition: set {@link EMOptions#requireAck(bool)}.
+  /// **Warning**
+  /// This method only takes effect if you set {@link EMOptions#requireAck(bool)} as `true`.
   ///
-  /// Reference:
+  /// **Note**
   /// To send the group message read receipt, call {@link #sendGroupMessageReadAck(String, String, String)}.
   ///
-  /// We recommend that you call {@link #sendConversationReadAck(String)} when entering a chat page, and call this method in other cases to reduce the number of method calls.
+  /// We recommend that you call {@link #sendConversationReadAck(String)} when entering a chat page, and call this method to reduce the number of method calls.
   ///
-  /// Param [message] The message.
+  /// Param [message] The message body: {@link EMMessage}.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
@@ -126,19 +129,20 @@ class EMChatManager {
   ///
   /// Sends the group message receipt to the server.
   ///
-  /// You can only call the method after setting the following method: {@link EMOptions#requireAck(bool)} and {@link EMMessage#needGroupAck(bool)}.
+  /// You can call the method only after setting the following method: {@link EMOptions#requireAck(bool)} and {@link EMMessage#needGroupAck(bool)}.
   ///
-  /// Reference:
-  /// To send the one-to-one chat message receipt to server, call {@link #sendMessageReadAck(EMMessage)};
-  /// To send the conversation receipt to the server, call {@link #sendConversationReadAck(String)}.
+  /// **Note**
+  /// - This method takes effect only after you set {@link EMOptions#requireAck} and {@link EMMessage#needGroupAck} as `true`.
+  /// - This method applies to group messages only. To send a one-to-one chat message receipt, call `sendMessageReadAck`; to send a conversation receipt, call `sendConversationReadAck`.
+  ///
   ///
   /// Param [msgId] The message ID.
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [content] The extension information. Developer self-defined command string that can be used for specifying custom action/command.
+  /// Param [content] The extension information, which is a custom keyword that specifies a custom action or command.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> sendGroupMessageReadAck(
     String msgId,
@@ -163,17 +167,16 @@ class EMChatManager {
   }
 
   ///
-  /// Sends the conversation read receipt to the server. This method is only for one-to-one chat conversation.
+  /// Sends the conversation read receipt to the server. This method is only for one-to-one chat conversations.
   ///
-  /// This method will inform the sever to set the unread message count of the conversation to 0, and conversation list (with multiple devices) will receive
-  /// a callback method from {@link EMChatManagerListener#onConversationRead(String, String)}.
+  /// This method informs the server to set the unread message count of the conversation to 0. In multi-device scenarios, all the devices receive the {@link EMChatManagerListener#onConversationRead(String, String)} callback.
   ///
-  /// Reference：
-  /// To send the group message read receipt, call {@link #sendGroupMessageReadAck(String, String, String)}.
+  /// **Note**
+  /// This method applies to one-to-one chat conversations only. To send a group message read receipt, call `sendGroupMessageReadAck`.
   ///
   /// Param [conversationId] The conversation ID.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
@@ -190,9 +193,9 @@ class EMChatManager {
   ///
   /// Recalls the sent message.
   ///
-  /// Param [messageId] The message id.
+  /// Param [messageId] The message ID.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
@@ -206,13 +209,13 @@ class EMChatManager {
   }
 
   ///
-  /// Fetches message for local database by message ID.
+  /// Loads a message from the local database by message ID.
   ///
   /// Param [messageId] The message ID.
   ///
-  /// **return** The message object obtained by the specified ID. Returns null if the message doesn't exist.
+  /// **Return** The message object specified by the message ID. Returns null if the message does not exist.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = {"msg_id": messageId};
@@ -233,20 +236,17 @@ class EMChatManager {
   ///
   /// Gets the conversation by conversation ID and conversation type.
   ///
-  /// The SDK wil return null if the conversation is not found.
-  ///
   /// Param [conversationId] The conversation ID.
   ///
-  /// Param [type] The conversation type, see {@link EMConversationType}.
+  /// Param [type] The conversation type: {@link EMConversationType}.
   ///
-  /// Param [createIfNeed] Whether to create a conversation if not find the specified conversation.
+  /// Param [createIfNeed] Whether to create a conversation is the specified conversation is not found:
+  /// - `true`: Yes.
+  /// - `false`: No.
   ///
-  /// `true` (default) means create one.
-  /// `false` means not.
+  /// **Return** The conversation object found according to the ID and type. Returns null if the conversation is not found.
   ///
-  /// **return** The conversation object found according to the ID and type. Returns null if the conversation is not found.
-  ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMConversation?> getConversation(
     String conversationId, [
@@ -276,7 +276,7 @@ class EMChatManager {
   ///
   /// This method is for the local conversations only.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> markAllConversationsAsRead() async {
     Map result =
@@ -289,11 +289,11 @@ class EMChatManager {
   }
 
   ///
-  /// Gets the unread message count.
+  /// Gets the count of the unread messages.
   ///
-  /// **return** The count of unread messages.
+  /// **Return** The count of the unread messages.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<int> getUnreadMessageCount() async {
     Map result =
@@ -313,9 +313,9 @@ class EMChatManager {
   ///
   /// Updates the local message.
   ///
-  /// Will update the memory and the local database at the same time.
+  /// The message will be updated both in the cache and local database.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = {"message": message.toJson()};
@@ -331,13 +331,13 @@ class EMChatManager {
   ///
   /// Imports messages to the local database.
   ///
-  /// Make sure the message's sender or receiver is the current user before option.
+  /// Before importing, ensure that the sender or receiver of the message is the current user.
   ///
-  /// Recommends import less than 1,000 messages per operation.
+  /// For each method call, we recommends to import less than 1,000 messages.
   ///
   /// Param [messages] The message list.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> importMessages(List<EMMessage> messages) async {
     List<Map> list = [];
@@ -359,9 +359,9 @@ class EMChatManager {
   ///
   /// You can call the method again if the attachment download fails.
   ///
-  /// Param [message] The message to be download the attachment.
+  /// Param [message] The message with the attachment that is to be downloaded.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> downloadAttachment(EMMessage message) async {
     Map result = await _channel.invokeMethod(
@@ -374,11 +374,11 @@ class EMChatManager {
   }
 
   ///
-  /// Downloads the thumbnail if the msg is not downloaded before or the download failed.
+  /// Downloads the thumbnail if the message has not been downloaded before or if the download fails.
   ///
   /// Param [message] The message object.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> downloadThumbnail(EMMessage message) async {
     Map result = await _channel.invokeMethod(
@@ -393,11 +393,11 @@ class EMChatManager {
   ///
   /// Gets all conversations from the local database.
   ///
-  /// Conversations will be loaded from memory first, if no conversation is found then the SDk loads from the local database.
+  /// Conversations will be first loaded from the cache. If no conversation is found, the SDK loads from the local database.
   ///
-  /// **return** Returns all the conversations from the memory or local database.
+  /// **Return** All the conversations from the cache or local database.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMConversation>> loadAllConversations() async {
     Map result =
@@ -415,13 +415,13 @@ class EMChatManager {
   }
 
   ///
-  /// Fetches the conversation list from the server.
+  /// Gets the conversation list from the server.
   ///
-  /// The default maximum return is 100.
+  /// To use this function, you need to contact our business manager to activate it. After this function is activated, users can pull 10 conversations within 7 days by default (each convesation contains the latest historical message). If you want to adjust the number of conversations or time limit, please contact our business manager.
   ///
-  /// **return** Returns the conversation list of the current user.
+  /// **Return** The conversation list of the current user.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMConversation>> getConversationsFromServer() async {
     Map result =
@@ -439,20 +439,21 @@ class EMChatManager {
   }
 
   ///
-  /// Deletes conversation and messages from the local database.
+  /// Deletes a conversation and its related messages from the local database.
   ///
-  /// If you set `deleteMessages` to `true`, delete the local chat history when delete the conversation.
+  /// If you set `deleteMessages` to `true`, the local historical messages are deleted when the conversation is deleted.
   ///
   /// Param [conversationId] The conversation ID.
   ///
-  /// Param [deleteMessages] Whether to delete the chat history when delete the conversation.
+  /// Param [deleteMessages] Whether to delete the historical messages when deleting the conversation.
+  /// - `true`: (default) Yes.
+  /// - `false`: No.
   ///
-  /// `true`: (default) means delete the chat history when delete the conversation.
-  /// `false`: means not.
+  /// **Return** Whether the conversation is successfully deleted.
+  /// - `true`: Yes;
+  /// - `false`: No.
   ///
-  /// **return** The result of deleting. `True` means success, `false` means failure.
-  ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> deleteConversation(
     String conversationId, [
@@ -470,11 +471,9 @@ class EMChatManager {
   }
 
   ///
-  /// Adds the message listener.
+  /// Adds the message listener. After calling this method, you can listen for new messages when they arrive.
   ///
-  /// Receives new messages and so on can set the method to listen, see {@link EMChatManagerListener}.
-  ///
-  /// Param [listener] The message listener which is used to listen the incoming messages, see {@link EMChatManagerListener}
+  /// Param [listener] The message listener that listens for new messages. See {@link EMChatManagerListener}.
   ///
   void addChatManagerListener(EMChatManagerListener listener) {
     _messageListeners.add(listener);
@@ -483,9 +482,9 @@ class EMChatManager {
   ///
   /// Removes the message listener.
   ///
-  /// You should call this method after set {@link #addMessageListener(addChatManagerListener)} .
+  /// After adding a chat manager listener, you can remove this listener if you do not want to listen for it.
   ///
-  /// Param [listener] The message listener to be removed.
+  /// Param [listener] The message listener to be removed. See {@link EMChatManagerListener}.
   ///
   void removeChatManagerListener(EMChatManagerListener listener) {
     if (_messageListeners.contains(listener)) {
@@ -494,21 +493,20 @@ class EMChatManager {
   }
 
   ///
-  /// Fetches history messages of the conversation from the server.
+  /// Gets historical messages of the conversation from the server with pagination.
   ///
-  /// Fetches by page.
   ///
   /// Param [conversationId] The conversation ID.
   ///
-  /// Param [type] The conversation type which select to fetch roam message, see {@link EMConversationType}
+  /// Param [type] The conversation type. See {@link EMConversationType}.
   ///
-  /// Param [pageSize] The number of records per page.
+  /// Param [pageSize] The number of messages per page.
   ///
-  /// Param [startMsgId] The start search roam message, if the param is empty, fetches from the server latest message.
+  /// Param [startMsgId] The ID of the message from which you start to get the historical messages. If `null` is passed, the SDK gets messages in reverse chronological order.
   ///
-  /// **return** Returns the messages and the cursor for next fetch action.
+  /// **Return** The obtained messages and the cursor for the next fetch action.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMCursorResult<EMMessage?>> fetchHistoryMessages(
     String conversationId, {
@@ -536,21 +534,22 @@ class EMChatManager {
   }
 
   ///
-  /// Searches messages from the database according to the parameters.
+  /// Retrieves messages from the database according to the parameters.
   ///
-  /// Note: Cautious about the memory usage when the maxCount is large, currently the limited number is 400 entries at a time.
+  /// **Note**
+  /// Pay attention to the memory usage when the maxCount is large. Currently, a maximum of 400 historical messages can be retrieved each time.
   ///
   /// Param [keywords] The keywords in message.
   ///
-  /// Param [timeStamp] The timestamp for search, Unix timestamp, in milliseconds.
+  /// Param [timeStamp] The Unix timestamp for search, in milliseconds.
   ///
-  /// Param [maxCount] The max number of message to search at a time.
+  /// Param [maxCount] The maximum number of messages to retrieve each time.
   ///
-  /// Param [from] A user ID or a group ID searches for messages, usually refers to the conversation ID.
+  /// Param [from] A username or group ID at which the retrieval is targeted.  Usually, it is the conversation ID.
   ///
-  /// **return** The list of messages.
+  /// **Return** The list of messages.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMMessage>> searchMsgFromDB(
     String keywords, {
@@ -581,22 +580,20 @@ class EMChatManager {
   }
 
   ///
-  /// Fetches the ack details for group messages from server.
+  /// Gets read receipts for group messages from the server with pagination.
   ///
-  /// Fetches by page.
-  ///
-  /// Reference:
-  /// If you want to send group message receipt, see {@link {@link #sendConversationReadAck(String)}.
+  /// See also:
+  /// For how to send read receipts for group messages, see {@link {@link #sendConversationReadAck(String)}.
   ///
   /// Param [msgId] The message ID.
   ///
-  /// Param [startAckId] The start ID for fetch receipts, can be null. If you set it as null, the SDK will start from the server's latest receipt.
+  /// Param [startAckId] The starting read receipt ID for query. If you set it as null, the SDK retrieves the read receipts in the in reverse chronological order.
   ///
-  /// Param [pageSize] The number of records per page.
+  /// Param [pageSize] The number of read receipts per page.
   ///
-  /// **return** The group acks cursor result.
+  /// **Return** The list of obtained read receipts and the cursor for next query.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMCursorResult<EMGroupMessageAck?>> fetchGroupAcks(
     String msgId, {
@@ -629,18 +626,18 @@ class EMChatManager {
   }
 
   ///
-  /// Deletes the conversation of a specified ID and it's chat records on the server.
+  /// Deletes the specified conversation and the related historical messages from the server.
   ///
-  /// Param [conversationId] Conversation ID.
+  /// Param [conversationId] The conversation ID.
   ///
-  /// Param [conversationType] Conversation type  {@link EMConversationType}
+  /// Param [conversationType] The conversation type. See  {@link EMConversationType}.
   ///
-  /// Param [isDeleteMessage] Whether to delete the server chat records when delete conversation.
+  /// Param [isDeleteMessage] Whether to delete the chat history when deleting the conversation.
+  /// - `true`: (default) Yes.
+  /// - `false`: No.
   ///
-  /// `true`:(default) means to delete the chat history when delete the conversation;
-  /// `false`: means not.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> deleteRemoteConversation(
     String conversationId, {

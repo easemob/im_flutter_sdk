@@ -4,7 +4,10 @@ import '../../src/tools/em_extension.dart';
 import 'em_chat_enums.dart';
 
 ///
-/// Chat room types.
+/// The chat room instance class.
+///
+/// **Note**
+/// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
 ///
 class EMChatRoom {
   EMChatRoom._private({
@@ -64,41 +67,49 @@ class EMChatRoom {
   }
 
   ///
-  /// The chat room ID.
+  /// Gets the chat room ID.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final String roomId;
 
   ///
-  /// The chat room name from the memory.
+  /// Gets the chat room name from the memory.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final String? name;
 
   ///
-  /// The the chat room description from the memory.
+  /// Gets the chat room description from the memory.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final String? description;
 
   ///
-  /// The chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
+  /// Gets the chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final String? owner;
 
   ///
-  /// Get the chat room announcement in the chat room from the memory.
+  /// Gets the chat room announcement in the chat room from the memory.
   ///
-  /// Ensure that you call {@ link EMChatRoomManager#fetchChatRoomAnnouncement(String)} before calling this method. Otherwise, the return value may not be correct.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomAnnouncement(String)} before calling this method. Otherwise, the return value may not be correct.
   ///
   final String? announcement;
 
   ///
-  /// The number of online members from the memory.
+  /// Gets the number of online members from the memory.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final int? memberCount;
@@ -106,34 +117,39 @@ class EMChatRoom {
   ///
   /// Gets the maximum number of members in the chat room from the memory, which is set/specified when the chat room is created.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final int? maxUsers;
 
   ///
-  /// The chat room admin list.
+  /// Gets the chat room admin list.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final List<String>? adminList;
 
   ///
-  /// The member list.
+  /// Gets the member list.
   ///
-  /// You can get the member list in the following ways:
-  /// When there are less than 200 members, use {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String, bool?)} to get them.
-  /// If true is passed to the second parameter, you can get up to 200 members.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomMembers(String, bool?)}
   ///
   final List<String>? memberList;
 
   ///
-  /// The chat room block list.
+  /// Gets the chat room block list.
   ///
+  /// **Note**
   /// To get the block list, you can call {@link EMChatRoomManager#fetchChatRoomBlockList(String, int?, int?)}.
   ///
   final List<String>? blockList;
 
   ///
-  /// The mute list of the chat room.
+  /// Gets the mute list of the chat room.
   ///
+  /// **Note**
   /// To get the mute list, you can call {@link EMChatRoomManager#fetchChatRoomMuteList(String, int?, int?)}.
   ///
   final List<String>? muteList;
@@ -141,14 +157,16 @@ class EMChatRoom {
   ///
   /// Checks whether all members are muted in the chat room from the memory.
   ///
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final bool? isAllMemberMuted;
 
   ///
-  /// The current user's role in the chat room, see {@link EMChatRoomPermissionType}.
+  /// Gets the current user's role in the chat room. The role types: {@link EMChatRoomPermissionType}.
   ///
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
   ///
   final EMChatRoomPermissionType permissionType;
 }

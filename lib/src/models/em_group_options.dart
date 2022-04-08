@@ -4,21 +4,26 @@ import 'em_chat_enums.dart';
 import '../tools/em_extension.dart';
 
 ///
-/// Group property options to be configured during group creation.
+/// The group options to be configured when the chat group is created.
 ///
 class EMGroupOptions {
   EMGroupOptions._private();
 
   ///
-  /// Create a group property options
+  /// Sets the group options.
   ///
-  /// Param [style] The group style.  see {EMGroupStyle}
+  /// Param [style] The group style: {EMGroupStyle}.
   ///
-  /// Param [count] The maximum number of members in a group. default is 200.
+  /// Param [count] The maximum number of members in a group. The default value is 200.
   ///
-  /// Param [inviteNeedConfirm]
+  /// Param [inviteNeedConfirm] Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
   ///
-  /// Param [extension]
+  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of `EMOptions#autoAcceptGroupInvitation`.
+  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of {@link EMOptions#autoAcceptGroupInvitation(boolean)} on the invitee's client.
+  ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
+  ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
+  ///
+  /// Param [extension] Group detail extensions which can be in the JSON format to contain more group information.
   ///
   EMGroupOptions({
     EMGroupStyle style = EMGroupStyle.PrivateOnlyOwnerInvite,
@@ -38,35 +43,30 @@ class EMGroupOptions {
   String? _ext;
 
   ///
-  /// Gets the group style.  see {EMGroupStyle}
+  /// Gets the group style.
   ///
-  /// **return** The group style.  see {EMGroupStyle}
+  /// **Return** The group style. See {EMGroupStyle}.
   ///
   EMGroupStyle? get style => _style;
 
   ///
-  /// Get maximum number of members in a group.
+  /// Gets the maximum number of members in a group.
   ///
-  /// **return** The maximum number of members in a group.
+  /// **Return** The maximum number of members in a group.
   ///
   int? get maxCount => _maxCount;
 
   ///
-  /// This option defines whether to ask for content when inviting a user to join a group.
+  /// Whether you need the approval from the user when adding this user to the chat group.
   ///
-  /// Whether automatically accepting the invitation to join a group depends on two settings: inviteNeedConfirm, an option during group creation,
-  /// and {@link EMOptions#autoAcceptGroupInvitation(boolean)} which determines whether to automatically accept an invitation to join the group.
-  /// There are two cases:
-  /// (1) If inviteNeedConfirm is set to 'false', adds the invitee directly to the group on the server side
-  ///  regardless of the setting of {@link EMOptions#autoAcceptGroupInvitation(boolean)}.
+  /// Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
   ///
-  /// (2) If inviteNeedConfirm is set to 'true', the user automatically joins a group or decides whether to join, depending on the setting of {@link EMOptions#autoAcceptGroupInvitation(boolean)}.
-  ///  {@link EMOptions#autoAcceptGroupInvitation(boolean)} is an SDK-level operation. If it is set to true,
-  ///  SDK calls the API for agreeing to join the group to automatically accept the joining invitation.
-  ///  If inviteNeedConfirm is set to false, SDK does not automatically accept its invitation,
-  ///  but the user decides to accept or reject the invitation.
+  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of `EMOptions#autoAcceptGroupInvitation`.
+  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of {@link EMOptions#autoAcceptGroupInvitation(boolean)} on the invitee's client.
+  ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
+  ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
   ///
-  /// **return** The whether to ask for content when inviting a user to join a group.
+  /// **Return** Whether you need the approval from the user when adding this user to the chat group.
   ///
   bool? get inviteNeedConfirm => _inviteNeedConfirm;
   String? get ext => _ext;

@@ -4,15 +4,16 @@ import 'package:flutter/services.dart';
 
 import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
-
+import '../tools/em_log.dart';
+import '../tools/em_message_callback_manager.dart';
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
+import '../internal/em_message_state_handle.dart';
 
 ///
-/// The message instance, which represents a sent/received message.
+/// The message class.
 ///
-/// For example:
-/// Constructs a text message to send:
+/// The sample code for constructing a text message to send is as follows.
 ///
 /// ```dart
 ///   EMMessage msg = EMMessage.createTxtSendMessage(
@@ -140,11 +141,11 @@ class EMMessage {
   EMMessage._private();
 
   ///
-  /// Creates a new received message instance.
+  /// Creates a received message instance.
   ///
   /// Param [body] The message body.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createReceiveMessage({
     required this.body,
@@ -157,9 +158,12 @@ class EMMessage {
   ///
   /// Param [body] The message body.
   ///
-  /// Param [to] Sets the user ID of the message recipient.
+  /// Param [to] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createSendMessage({
     required this.body,
@@ -217,11 +221,14 @@ class EMMessage {
   ///
   /// Creates a text message for sending.
   ///
-  /// Param [username] The ID of the message recipient(user or group).
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   /// Param [content] The text content.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createTxtSendMessage({
     required String username,
@@ -232,17 +239,20 @@ class EMMessage {
         );
 
   ///
-  /// Creates a message to send a regular file.
+  /// Creates a file message for sending.
   ///
-  /// Param [username] The ID of the message recipient(user or group).
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   /// Param [filePath] The file path.
   ///
-  /// Param [displayName] The file name. like 'readme.doc'
+  /// Param [displayName] The file name.
   ///
-  /// Param [fileSize] The file size.
+  /// Param [fileSize] The file size in bytes.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createFileSendMessage({
     required String username,
@@ -260,25 +270,28 @@ class EMMessage {
   ///
   /// Creates an image message for sending.
   ///
-  /// Param [username] The ID of the message recipient(user or group).
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   /// Param [filePath] The image path.
   ///
-  /// Param [displayName] The image name. like 'image.jpeg'
+  /// Param [displayName] The image name.
   ///
-  /// Param [thumbnailLocalPath] The image thumbnail path.
+  /// Param [thumbnailLocalPath] The local path of the image thumbnail.
   ///
   /// Param [sendOriginalImage] Whether to send the original image.
-  /// `true`: Send the original image.
-  /// `false`: (default) For an image greater than 100 KB, the SDK will compress it.
+  /// - `true`: Yes.
+  /// - `false`: (default) No. For an image greater than 100 KB, the SDK will compress it and send the thumbnail.
   ///
-  /// Param [fileSize] The image file size.
+  /// Param [fileSize] The image file size in bytes.
   ///
-  /// Param [width] The image width.
+  /// Param [width] The image width in pixels.
   ///
-  /// Param [height] The image height.
+  /// Param [height] The image height in pixels.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createImageSendMessage({
     required String username,
@@ -303,23 +316,26 @@ class EMMessage {
   ///
   ///  Creates a video message instance for sending.
   ///
-  /// Param [username] The ID of the message recipient(user or group).
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   /// Param [filePath] The path of the video file.
   ///
-  /// Param [displayName] The video name. like 'video.mp4'
+  /// Param [displayName] The video name.
   ///
   /// Param [duration] The video duration in seconds.
   ///
-  /// Param [fileSize] The video file size.
+  /// Param [fileSize] The video file size in bytes.
   ///
-  /// Param [thumbnailLocalPath] The path of the thumbnail of the first frame of video.
+  /// Param [thumbnailLocalPath] The local path of the thumbnail, which is usually the first frame of video.
   ///
-  /// Param [width] The video thumbnail image width.
+  /// Param [width] The width of the video thumbnail, in pixels.
   ///
-  /// Param [height] The video thumbnail image height.
+  /// Param [height] The height of the video thumbnail, in pixels.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createVideoSendMessage({
     required String username,
@@ -345,17 +361,20 @@ class EMMessage {
   ///
   /// Creates a voice message for sending.
   ///
-  /// Param [username] The ID of the message recipient(user or group).
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   /// Param [filePath] The path of the voice file.
   ///
   /// Param [duration] The voice duration in seconds.
   ///
-  /// Param [fileSize] The voice file size.
+  /// Param [fileSize] The size of the voice file, in bytes.
   ///
-  /// Param [displayName] The voice name. like 'voice.mp3'
+  /// Param [displayName] The name of the voice file which ends with a suffix that indicates the format of the file. For example "voice.mp3".
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   EMMessage.createVoiceSendMessage({
     required String username,
@@ -374,13 +393,21 @@ class EMMessage {
   ///
   /// Creates a location message for sending.
   ///
-  /// Param [username] The ID of the message recipient(user or group).
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
-  /// The latitude.
+  /// Param [latitude] The latitude.
   ///
-  /// The longitude.
+  /// Param [longitude] The longitude.
   ///
-  /// The location details.
+  /// Param [address] The address.
+  ///
+  /// Param [buildingName] The building name.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createLocationSendMessage({
     required String username,
     required double latitude,
@@ -395,12 +422,34 @@ class EMMessage {
               address: address,
             ));
 
-  /// 构造发送的cmd消息
+  /// Creates a command message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [action] The command action.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createCmdSendMessage({required String username, required action})
       : this.createSendMessage(
             to: username, body: EMCmdMessageBody(action: action));
 
-  /// 构造发送的自定义消息
+  /// Creates a custom message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [event] The event.
+  ///
+  /// Param [Map<String, String>? params] The params map.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createCustomSendMessage(
       {required String username, required event, Map<String, String>? params})
       : this.createSendMessage(

@@ -12,19 +12,19 @@ class EMImageMessageBody extends EMFileMessageBody {
   ///
   /// Creates an image message body with an image file.
   ///
-  /// Param [localPath] The path of the image file.
+  /// Param [localPath] The local path of the image file.
   ///
-  /// Param [displayName] The image name. like "img.jpeg"
+  /// Param [displayName] The image name.
   ///
   /// Param [thumbnailLocalPath] The local path of the image thumbnail.
   ///
-  /// Param [sendOriginalImage] The original image when sending an image.
+  /// Param [sendOriginalImage] The original image included in the image message to be sent.
   ///
   /// Param [fileSize] The size of the image file in bytes.
   ///
-  /// Param [width] The image width.
+  /// Param [width] The image width in pixels.
   ///
-  /// Param [height] The image height.
+  /// Param [height] The image height in pixels.
   ///
   EMImageMessageBody({
     required String localPath,
@@ -41,6 +41,7 @@ class EMImageMessageBody extends EMFileMessageBody {
           type: MessageType.IMAGE,
         );
 
+  /// nodoc
   EMImageMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.IMAGE) {
     this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
@@ -57,6 +58,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     );
   }
 
+  /// nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -72,14 +74,14 @@ class EMImageMessageBody extends EMFileMessageBody {
   }
 
   ///
-  /// Sets whether to send the original image when sending an image.
+  /// Whether to send the original image.
   ///
-  /// `false`: (default) Send the thumbnail(image with size larger than 100k will be compressed);
-  /// `true`: Send the original image.
+  /// - `false`: (default) No. The original image will be compressed if it exceeds 100 KB and the thumbnail will be sent.
+  /// - `true`: Yes.
   ///
   bool sendOriginalImage = false;
 
-  /// The local path or the URI of the thumbnail as a string.
+  /// The local path or the URI (a string) of the thumbnail.
   String? thumbnailLocalPath;
 
   /// The URL of the thumbnail on the server.
@@ -91,9 +93,9 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// The download status of the thumbnail.
   DownloadStatus thumbnailStatus = DownloadStatus.PENDING;
 
-  /// The image width.
+  /// The image width in pixels.
   double? width;
 
-  /// The image height.
+  /// The image height in pixels.
   double? height;
 }

@@ -1,13 +1,13 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The user attribute class that contains user attributes.
+/// The EMUserInfo class, which contains the user attributes, such as the nickname, description, and avatar.
 ///
 class EMUserInfo {
   ///
-  /// Creates a userInfo.
+  /// Creates a user attribute.
   ///
-  /// Param [userId] The user Id.
+  /// Param [userId] The username.
   ///
   EMUserInfo(
     this.userId, {
@@ -50,34 +50,36 @@ class EMUserInfo {
   }
 
   ///
-  /// Set user attribute.
+  /// Sets user attributes.
   ///
-  /// Param [nickName] The user's nickname.
-  ///
-  /// Param [avatarUrl] The avatar URL of the user.
-  ///
-  /// Param [mail] The email address of the user.
-  ///
-  /// Param [phone] The phone number of the user.
-  ///
-  /// Param [gender] The user's gender. The value can only be 0, 1, or 2. 0: default; 1: male; 2: female. Other values are invalid.
-  ///
-  /// Param [sign] The user's signature.
-  ///
-  /// Param [birth] The user's birthday.
-  ///
-  /// Param [ext] The user's extension information. You can set it to an empty string or type custom information and encapsulate them as a JSON string.
-  ///
-  /// **return** The new userInfo instance.
+  /// **Return** The new user information instance.
   ///
   EMUserInfo copyWith({
+    /// Param [nickName] The user's nickname.
     String? nickName,
+
+    /// Param [avatarUrl] The avatar URL of the user.
     String? avatarUrl,
+
+    /// Param [mail] The email address of the user.
     String? mail,
+
+    /// Param [phone] The phone number of the user.
     String? phone,
+
+    /// Param [gender] The user's gender. The value can only be `0`, `1`, or `2`. Other values are invalid.
+    /// - `0`: (Default) Unknow;
+    /// - `1`: Male;
+    /// - `2`: Female.
     int? gender,
+
+    /// Param [sign] The user's signature.
     String? sign,
+
+    /// Param [birth] The user's data of birth.
     String? birth,
+
+    /// Param [ext] The user's extension information. You can set it to an empty string or type custom information and encapsulate them as a JSON string.
     String? ext,
   }) {
     return EMUserInfo._private(
@@ -123,32 +125,77 @@ class EMUserInfo {
     return data;
   }
 
-  /// The user ID.
+  /// Gets the username.
+  ///
+  /// **Return**
+  /// The user's username.
+  ///
   final String userId;
 
-  ///  The user's nickname.
+  /// Gets the user's nickname.
+  ///
+  /// **Return**
+  /// The user's nickname.
+  ///
   final String? nickName;
 
+  /// Gets the avatar URL of the user.
+  ///
+  /// **Return**
   /// The avatar URL of the user.
+  ///
   final String? avatarUrl;
 
+  /// Gets the email address of the user.
+  ///
+  /// **Return**
   /// The email address of the user.
+  ///
   final String? mail;
 
-  /// The phone number of the user.
+  /// Gets the mobile numbers of the user.
+  ///
+  /// **Return**
+  /// The mobile numbers of the user.
+  ///
   final String? phone;
 
-  /// The user's gender. The value can only be 0, 1, or 2. 0: default; 1: male; 2: female. Other values are invalid.
+  /// Gets the user's gender.
+  ///
+  /// **Return**
+  /// The user's gender:
+  /// - `0`: (Default) Unknow;
+  /// - `1`: Male;
+  /// - `2`: Female.
+  ///
   final int gender;
 
+  /// Gets the user's signature.
+  ///
+  /// **Return**
   /// The user's signature.
+  ///
   final String? sign;
 
-  /// The user's birthday.
+  /// Gets the user's data of birth.
+  ///
+  /// **Return**
+  /// The user's data of birth.
+  ///
   final String? birth;
 
-  /// The user's extension information. You can set it to an empty string or type custom information and encapsulate them as a JSON string.
+  /// Gets the user's extension information.
+  ///
+  /// **Return**
+  /// The user's extension information.
+  ///
   final String? ext;
 
+  /// Gets the time period(seconds) when the user attibutes in the cache expire.
+  /// If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
+  ///
+  /// **Return**
+  /// The time period(seconds) when the user attibutes in the cache expire.
+  ///
   final int expireTime = DateTime.now().millisecondsSinceEpoch;
 }

@@ -1,6 +1,6 @@
 import '../tools/em_extension.dart';
 
-/// @nodoc
+/// The push configuration class, which contains the push configuration information, such as the push style.
 class EMPushConfig {
   String? mzAppId = '';
   String? mzAppKey = '';

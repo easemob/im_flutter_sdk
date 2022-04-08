@@ -4,11 +4,11 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The location message body.
+/// The location message class.
 ///
 class EMLocationMessageBody extends EMMessageBody {
   ///
-  /// Creates a location message body.
+  /// Creates a location message body instance.
   ///
   /// Param [latitude] The latitude.
   ///

@@ -5,18 +5,18 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The file message.
+/// The base class of file messages.
 ///
 class EMFileMessageBody extends EMMessageBody {
-  /// Creates an file message body with an file.
+  /// Creates a message with an attachment.
   ///
   /// Param [localPath] The path of the image file.
   ///
-  /// Param [displayName] The file name. like "file.doc"
+  /// Param [displayName] The file name.
   ///
   /// Param [fileSize] The size of the file in bytes.
   ///
-  /// Param [type] The body type.
+  /// Param [type] The file type.
   ///
   EMFileMessageBody({
     required this.localPath,
@@ -52,22 +52,22 @@ class EMFileMessageBody extends EMMessageBody {
     return data;
   }
 
-  /// The localPath of the attachment file.
+  /// The local path of the attachment.
   late final String localPath;
 
-  /// The file's token.
+  /// The token used to get the attachment.
   String? secret;
 
-  /// The path of the attachment file in the server.
+  /// The attachment path in the server.
   String? remotePath;
 
-  /// The download status of the attachment file .
+  /// The download status of the attachment.
   DownloadStatus fileStatus = DownloadStatus.PENDING;
 
-  ///  The size of the file in bytes.
+  ///  The size of the attachment in bytes.
   int? fileSize;
 
-  /// The file name. like "file.doc"
+  /// The attachment name.
   String? displayName;
 
   static DownloadStatus downloadStatusFromInt(int? status) {

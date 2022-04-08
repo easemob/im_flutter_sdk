@@ -1,18 +1,17 @@
 ///
-/// The group styles.
+/// The enumeration of group types.
 ///
 enum EMGroupStyle {
-  /// Private groups. Only the group owner can invite users to join.
+  /// Private groups where only the the group owner can invite users to join.
   PrivateOnlyOwnerInvite,
 
-  /// Private groups. Both the group owner and group members can invite users to join.
+  /// Private groups where all group members can invite users to join.
   PrivateMemberCanInvite,
 
-  /// Public groups. Only the owner can invite users to join.
-  /// A user can join a group only after the owner approves the user's group request;
+  /// Public groups where users can join only after receiving an invitation from the group owner(admin) or the joining request being approved by the  group owner(admin).
   PublicJoinNeedApproval,
 
-  /// Public groups. A user can join a group without the group owner approving user's group request.
+  /// Public groups where users can join freely.
   PublicOpenJoin,
 }
 
@@ -35,7 +34,7 @@ enum EMPushStyle {
 }
 
 ///
-/// The enumeration of the chat type.
+/// The enumeration of chat types.
 ///
 /// There are three chat types: one-to-one chat, group chat, and chat room.
 ///
@@ -51,28 +50,26 @@ enum ChatType {
 }
 
 ///
-/// The enumeration of the message MessageDirection.
+/// The enumeration of the message directions.
 ///
 /// Whether the message is sent or received.
 ///
 enum MessageDirection {
-  /// This message is sent from the local client.
+  /// This message is sent from the local user.
   SEND,
 
-  /// The message is received by the local client.
+  /// The message is received by the local user.
   RECEIVE,
 }
 
 ///
 /// The enumeration of the message sending/reception status.
 ///
-/// The states include success, failure, being sent/being received, and created to be sent.
-///
 enum MessageStatus {
-  /// The message is created to be sent.
+  /// The message is created.
   CREATE,
 
-  /// The message is being delivered/receiving.
+  /// The message is being delivered/received.
   PROGRESS,
 
   /// The message is successfully delivered/received.
@@ -83,56 +80,56 @@ enum MessageStatus {
 }
 
 ///
-/// The download status of the attachment file .
+/// The download status of the attachment file.
 ///
 enum DownloadStatus {
-  /// File message download is pending.
+  /// The file message download is pending.
   PENDING,
 
-  /// The SDK is downloading the file message.
+  /// The file message is being downloaded.
   DOWNLOADING,
 
-  /// The SDK successfully downloads the file message.
+  /// The file message download succeeds.
   SUCCESS,
 
-  /// The SDK fails to download the file message.
+  /// The file message download fails.
   FAILED,
 }
 
 ///
-/// The enumeration of the message type.
+/// The enumeration of message types.
 ///
 enum MessageType {
-  /// Text message.
+  /// The text message.
   TXT,
 
-  /// Image message.
+  /// The image message.
   IMAGE,
 
-  /// Video message.
+  /// The video message.
   VIDEO,
 
-  /// Location message.
+  /// The location message.
   LOCATION,
 
-  /// Voice message.
+  /// The voice message.
   VOICE,
 
-  /// File message.
+  /// The file message.
   FILE,
 
-  /// Command message.
+  /// The command message.
   CMD,
 
-  /// Customized message.
+  /// The custom message.
   CUSTOM,
 }
 
 ///
-/// The enum of the group permission types.
+/// The enumeration of group permission types.
 ///
 enum EMGroupPermissionType {
-  /// The unknown type.
+  /// Unknown.
   None,
 
   /// The group member.
@@ -146,30 +143,30 @@ enum EMGroupPermissionType {
 }
 
 ///
-/// Chat room role types.
+/// The enumeration of chat room role types.
 ///
 enum EMChatRoomPermissionType {
-  /// Unknown type.
+  /// Unknown.
   None,
 
-  /// Regular member.
+  /// The chat room member.
   Member,
 
-  /// Chat room admin.
+  /// The chat room admin.
   Admin,
 
-  /// Chat room owner.
+  /// The chat room owner.
   Owner,
 }
 
 ///
-/// The message search direction type.
+/// The enumeration of message search directions.
 ///
 enum EMSearchDirection {
-  /// The search older messages type
+  /// Messages are retrieved in the reverse chronological order of when the server receives the message.
   Up,
 
-  /// The search newer messages type.
+  /// Messages are retrieved in the chronological order of when the server receives the message.
   Down,
 }
 

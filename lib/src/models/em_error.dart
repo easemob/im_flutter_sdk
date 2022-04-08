@@ -1,5 +1,5 @@
 ///
-/// The error defined by the SDK.
+/// The error class defined by the SDK.
 ///
 class EMError {
   EMError._private(this.code, this.description);
