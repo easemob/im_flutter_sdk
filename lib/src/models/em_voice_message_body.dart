@@ -20,9 +20,9 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   ///
   EMVoiceMessageBody({
     localPath,
+    this.duration = 0,
     String? displayName,
     int? fileSize,
-    this.duration,
   }) : super(
           localPath: localPath,
           displayName: displayName,
@@ -32,7 +32,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
 
   EMVoiceMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VOICE) {
-    this.duration = map.getIntValue("duration");
+    this.duration = map.getIntValue("duration", defaultValue: 0)!;
   }
 
   @override
@@ -43,5 +43,5 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   }
 
   /// The voice duration in seconds.
-  int? duration;
+  late final int duration;
 }
