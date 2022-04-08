@@ -684,18 +684,21 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private void joinPublicGroup(JSONObject param, String channelName, Result result) throws JSONException {
+
         String groupId = param.getString("groupId");
-
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
+        asyncRunnable(()->{
+            try{
+                EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
+                if (group.isMemberOnly()){
+                    throw new HyphenateException(603,"User has no permission for this operation");
+                }
+                EMClient.getInstance().groupManager().joinGroup(groupId);
+                EMGroup joinedGroup = EMClient.getInstance().groupManager().getGroup(groupId);
+                onSuccess(result, channelName, EMGroupHelper.toJson(joinedGroup));
+            }catch (HyphenateException e){
+                onError(result, e);
             }
-        };
-
-        EMClient.getInstance().groupManager().asyncJoinGroup(groupId, callBack);
+        });
     }
 
     private void requestToJoinPublicGroup(JSONObject param, String channelName, Result result) throws JSONException {

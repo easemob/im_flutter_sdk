@@ -842,6 +842,7 @@
 
 - (void)joinPublicGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
+    
     [EMClient.sharedClient.groupManager joinPublicGroup:param[@"groupId"]
                                              completion:^(EMGroup *aGroup, EMError *aError)
      {
