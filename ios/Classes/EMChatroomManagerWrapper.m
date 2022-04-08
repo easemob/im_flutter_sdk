@@ -715,7 +715,7 @@
         @"type":@"onMuteListAdded",
         @"roomId":aChatroom.chatroomId,
         @"mutes":aMutes,
-        @"expireTime":[NSString stringWithFormat:@"%ld", aMuteExpire]
+        @"expireTime":[NSString stringWithFormat:@"%ld", (long)aMuteExpire]
     };
     [self.channel invokeMethod:ChatChatroomChanged
                      arguments:map];

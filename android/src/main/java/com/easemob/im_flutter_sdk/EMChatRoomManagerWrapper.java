@@ -365,7 +365,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         asyncRunnable(() -> {
             try {
                 Map map = EMClient.getInstance().chatroomManager().fetchChatRoomMuteList(roomId, pageNum, pageSize);
-                onSuccess(result, channelName, map);
+                onSuccess(result, channelName, map.keySet().toArray());
             } catch (HyphenateException e) {
                 onError(result, e);
             }

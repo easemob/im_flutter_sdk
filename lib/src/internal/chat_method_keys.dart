@@ -86,7 +86,6 @@ class ChatMethodKeys {
   static const String onMessageSuccess = "onMessageSuccess";
   static const String onMessageReadAck = "onMessageReadAck";
   static const String onMessageDeliveryAck = "onMessageDeliveryAck";
-  static const String onMessageStatusChanged = "onMessageStatusChanged";
 
   /// EMConversation
   static const String getUnreadMsgCount = "getUnreadMsgCount";
