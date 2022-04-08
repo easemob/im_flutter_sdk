@@ -5,7 +5,6 @@ class EMMessageStateHandle {
   final void Function(Map<String, dynamic>)? onMessageSuccess;
   final void Function(Map<String, dynamic>)? onMessageReadAck;
   final void Function(Map<String, dynamic>)? onMessageDeliveryAck;
-  final void Function(Map<String, dynamic>)? onMessageStatusChanged;
 
   EMMessageStateHandle(
     this.messageKey, {
@@ -14,6 +13,5 @@ class EMMessageStateHandle {
     this.onMessageSuccess,
     this.onMessageReadAck,
     this.onMessageDeliveryAck,
-    this.onMessageStatusChanged,
   });
 }

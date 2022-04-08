@@ -33,7 +33,7 @@ static EMClientWrapper *wrapper = nil;
     if (aData == nil) {
         return;
     }
-    [self.channel invokeMethod:EMMethodKeySendDataToFlutter
+    [self.channel invokeMethod:ChatSendDataToFlutter
                      arguments:aData];
 }
 
@@ -59,113 +59,104 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([EMMethodKeyInit isEqualToString:call.method])
+    if ([ChatInit isEqualToString:call.method])
     {
         [self initSDKWithDict:call.arguments
                   channelName:call.method
                        result:result];
     }
-    else if ([EMMethodKeyCreateAccount isEqualToString:call.method])
+    else if ([ChatCreateAccount isEqualToString:call.method])
     {
         [self createAccount:call.arguments
                 channelName:call.method
                      result:result];
     }
-    else if ([EMMethodKeyLogin isEqualToString:call.method])
+    else if ([ChatLogin isEqualToString:call.method])
     {
         [self login:call.arguments
         channelName:call.method
              result:result];
     }
-    else if ([EMMethodKeyLogout isEqualToString:call.method])
+    else if ([ChatLogout isEqualToString:call.method])
     {
         [self logout:call.arguments
          channelName:call.method
               result:result];
     }
-    else if ([EMMethodKeyChangeAppKey isEqualToString:call.method])
+    else if ([ChatChangeAppKey isEqualToString:call.method])
     {
         [self changeAppKey:call.arguments
                channelName:call.method
                     result:result];
     }
-    else if ([EMMethodKeyUploadLog isEqualToString:call.method])
+    else if ([ChatUploadLog isEqualToString:call.method])
     {
         [self uploadLog:call.arguments
             channelName:call.method
                  result:result];
     }
-    else if ([EMMethodKeyCompressLogs isEqualToString:call.method])
+    else if ([ChatCompressLogs isEqualToString:call.method])
     {
         [self compressLogs:call.arguments
                channelName:call.method
                     result:result];
     }
-    else if ([EMMethodKeyGetLoggedInDevicesFromServer isEqualToString:call.method])
+    else if ([ChatGetLoggedInDevicesFromServer isEqualToString:call.method])
     {
         [self getLoggedInDevicesFromServer:call.arguments
                                channelName:call.method
                                     result:result];
     }
-    else if ([EMMethodKeyKickDevice isEqualToString:call.method])
+    else if ([ChatKickDevice isEqualToString:call.method])
     {
         [self kickDevice:call.arguments
              channelName:call.method
                   result:result];
     }
-    else if ([EMMethodKeyKickAllDevices isEqualToString:call.method])
+    else if ([ChatKickAllDevices isEqualToString:call.method])
     {
         [self kickAllDevices:call.arguments
                  channelName:call.method
                       result:result];
     }
-    else if([EMMethodKeyIsLoggedInBefore isEqualToString:call.method])
+    else if([ChatIsLoggedInBefore isEqualToString:call.method])
     {
         [self isLoggedInBefore:call.arguments
                    channelName:call.method
                         result:result];
     }
-    else if([EMMethodKeyGetCurrentUser isEqualToString:call.method])
+    else if([ChatGetCurrentUser isEqualToString:call.method])
     {
         [self getCurrentUser:call.arguments
                  channelName:call.method
                       result:result];
     }
-    else if([EMMethodKeyGetToken isEqualToString:call.method])
+    else if([ChatGetToken isEqualToString:call.method])
     {
         [self getToken:call.arguments
            channelName:call.method
                 result:result];
     }
-    else if ([EMMethodKeyLoginWithAgoraToken isEqualToString:call.method])
+    else if ([ChatLoginWithAgoraToken isEqualToString:call.method])
     {
-        [self loginWithAgoraToken:call.arguments result:result];
+        [self loginWithAgoraToken:call.arguments channelName:call.method result:result];
     }
-    else if([EMMethodKeyIsConnected isEqualToString:call.method])
+    else if([ChatIsConnected isEqualToString:call.method])
     {
         [self isConnected:call.arguments
               channelName:call.method
                    result:result];
+    }
+    else if ([ChatRenewToken isEqualToString:call.method]){
+        [self renewToken:call.arguments
+             channelName:call.method
+                  result:result];
     }
     else {
         [super handleMethodCall:call result:result];
     }
 }
 
-- (void)getToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
-    [self wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:EMClient.sharedClient.accessUserToken];
-}
-
-
-- (void)isConnected:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
-    [self wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:@(EMClient.sharedClient.isConnected)];
-}
 
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -183,7 +174,7 @@ static EMClientWrapper *wrapper = nil;
         [self _registerAPNs];
     }
     [weakSelf wrapperCallBack:result
-                  channelName:EMMethodKeyInit
+                  channelName:ChatInit
                         error:nil
                        object:@{
         @"currentUsername": EMClient.sharedClient.currentUsername ?: @"",
@@ -230,7 +221,7 @@ static EMClientWrapper *wrapper = nil;
         [EMClient.sharedClient loginWithUsername:username
                                         password:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError){
-
+            
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
@@ -343,7 +334,7 @@ static EMClientWrapper *wrapper = nil;
     
 }
 
-- (void)loginWithAgoraToken:(NSDictionary *)param result:(FlutterResult)result {
+- (void)loginWithAgoraToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *username = param[@"username"];
     NSString *agoraToken = param[@"agoratoken"];
@@ -352,10 +343,35 @@ static EMClientWrapper *wrapper = nil;
                                   completion:^(NSString *aUsername, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
-                      channelName:EMMethodKeyLoginWithAgoraToken
+                      channelName:aChannelName
                             error:aError
                            object:EMClient.sharedClient.currentUsername];
     }];
+}
+
+
+- (void)getToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:EMClient.sharedClient.accessUserToken];
+}
+
+
+- (void)isConnected:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:@(EMClient.sharedClient.isConnected)];
+}
+
+- (void)renewToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    NSString *newAgoraToken = param[@"agora_token"];
+    [EMClient.sharedClient renewToken:newAgoraToken];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:nil];
 }
 
 - (void)onMultiDeviceEvent:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -403,13 +419,13 @@ static EMClientWrapper *wrapper = nil;
 
 // 声网token即将过期
 - (void)tokenWillExpire:(int)aErrorCode {
-    [self.channel invokeMethod:EMMethodKeyOnTokenWillExpire
+    [self.channel invokeMethod:ChatOnTokenWillExpire
                      arguments:nil];
 }
 
 // 声网token过期
 - (void)tokenDidExpire:(int)aErrorCode {
-    [self.channel invokeMethod:EMMethodKeyOnTokenDidExpire
+    [self.channel invokeMethod:ChatOnTokenDidExpire
                      arguments:nil];
 }
 
@@ -445,12 +461,12 @@ static EMClientWrapper *wrapper = nil;
 
 #pragma mark - Merge Android and iOS Method
 - (void)onConnected {
-    [self.channel invokeMethod:EMMethodKeyOnConnected
+    [self.channel invokeMethod:ChatOnConnected
                      arguments:@{@"connected" : @(YES)}];
 }
 
 - (void)onDisconnected:(int)errorCode {
-    [self.channel invokeMethod:EMMethodKeyOnDisconnected
+    [self.channel invokeMethod:ChatOnDisconnected
                      arguments:@{@"errorCode" : @(errorCode)}];
 }
 

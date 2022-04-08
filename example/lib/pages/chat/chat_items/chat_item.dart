@@ -44,7 +44,7 @@ class ChatItem extends StatefulWidget {
 class ChatItemState extends State<ChatItem> {
   void initState() {
     super.initState();
-    widget.msg.messageStatusCallBack = MessageStatusCallBack(onSuccess: () {
+    widget.msg.setMessageStatusCallBack(MessageStatusCallBack(onSuccess: () {
       if (mounted) {
         setState(() {});
       }
@@ -58,7 +58,7 @@ class ChatItemState extends State<ChatItem> {
       }
     }, onProgress: (progress) {
       debugPrint("progress --- $progress");
-    });
+    }));
   }
 
   @override

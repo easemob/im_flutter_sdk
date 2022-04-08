@@ -24,55 +24,55 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if ([EMMethodKeyGetImPushConfig isEqualToString:call.method]) {
+    if ([ChatGetImPushConfig isEqualToString:call.method]) {
         [self getImPushConfig:call.arguments
                    channelName:call.method
                         result:result];
-    } else if ([EMMethodKeyGetImPushConfigFromServer isEqualToString:call.method]) {
+    } else if ([ChatGetImPushConfigFromServer isEqualToString:call.method]) {
         [self getImPushConfigFromServer:call.arguments
                              channelName:call.method
                                   result:result];
-    } else if ([EMMethodKeyUpdatePushNickname isEqualToString:call.method]) {
+    } else if ([ChatUpdatePushNickname isEqualToString:call.method]) {
         [self updatePushNickname:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyImPushNoDisturb isEqualToString:call.method]) {
+    } else if ([ChatImPushNoDisturb isEqualToString:call.method]) {
         [self setImPushNoDisturb:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyUpdateImPushStyle isEqualToString:call.method]) {
+    } else if ([ChatUpdateImPushStyle isEqualToString:call.method]) {
         [self updateImPushStyle:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([EMMethodKeyUpdateGroupPushService isEqualToString:call.method]) {
+    } else if ([ChatUpdateGroupPushService isEqualToString:call.method]) {
         [self updateGroupPushService:call.arguments
-                         channelName:EMMethodKeyUpdateGroupPushService
+                         channelName:call.method
                               result:result];
-    } else if ([EMMethodKeyGetNoDisturbGroups isEqualToString:call.method]) {
+    } else if ([ChatGetNoDisturbGroups isEqualToString:call.method]) {
         [self getNoDisturbGroups:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyBindDeviceToken isEqualToString:call.method]) {
+    } else if ([ChatBindDeviceToken isEqualToString:call.method]) {
         [self  bindDeviceToken:call.arguments
                    channelName:call.method
                         result:result];
-    } else if ([EMMethodKeySetNoDisturbUsers isEqualToString:call.method]) {
+    } else if ([ChatSetNoDisturbUsers isEqualToString:call.method]) {
         [self setNoDisturbUsers:call.arguments
-                    channelName:EMMethodKeySetNoDisturbUsers
+                    channelName:ChatSetNoDisturbUsers
                          result:result];
-    } else if ([EMMethodKeyGetNoDisturbUsersFromServer isEqualToString:call.method]) {
+    } else if ([ChatGetNoDisturbUsersFromServer isEqualToString:call.method]) {
         [self getNoDisturbUsersFromServer:call.arguments
-                              channelName:EMMethodKeyGetNoDisturbUsersFromServer
+                              channelName:call.method
                                    result:result];
-    } else if ([EMMethodKeyEnablePush isEqualToString:call.method]) {
+    } else if ([ChatEnablePush isEqualToString:call.method]) {
         [self enablePush:call.arguments
              channelName:call.method
                   result:result];
-    } else if ([EMMethodKeyDisablePush isEqualToString:call.method]) {
+    } else if ([ChatDisablePush isEqualToString:call.method]) {
         [self disablePush:call.arguments
               channelName:call.method
                    result:result];
-    } else if ([EMMethodKeyGetNoPushGroups isEqualToString:call.method]) {
+    } else if ([ChatGetNoPushGroups isEqualToString:call.method]) {
         [self getNoPushGroups:call.arguments
                   channelName:call.method
                        result:result];
