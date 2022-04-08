@@ -28,8 +28,6 @@ class MessageCallBackManager {
         return handle?.onMessageReadAck?.call(argMap);
       } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
         return handle?.onMessageDeliveryAck?.call(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageStatusChanged) {
-        return handle?.onMessageStatusChanged?.call(argMap);
       }
       return null;
     });

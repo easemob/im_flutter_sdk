@@ -214,13 +214,6 @@ class EMMessage {
     return null;
   }
 
-  void _onMessageStatusChanged(Map<String, dynamic> map) {
-    EMMessage msg = EMMessage.fromJson(map);
-    this.status = msg.status;
-    _messageStatusCallBack?.onStatusChanged?.call();
-    return null;
-  }
-
   ///
   /// Creates a text message for sending.
   ///
@@ -533,8 +526,6 @@ class MessageCallBackManager {
         return handle?._onMessageReadAck(argMap);
       } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
         return handle?._onMessageDeliveryAck(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageStatusChanged) {
-        return handle?._onMessageStatusChanged(argMap);
       }
       return null;
     });
