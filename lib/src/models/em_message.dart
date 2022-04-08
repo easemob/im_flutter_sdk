@@ -4,11 +4,8 @@ import 'package:flutter/services.dart';
 
 import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
-import '../tools/em_log.dart';
-import '../tools/em_message_callback_manager.dart';
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
-import '../internal/em_message_state_handle.dart';
 
 ///
 /// The message class.
