@@ -128,7 +128,7 @@ class EMMessage {
   ///
   MessageStatusCallBack? _messageStatusCallBack;
 
-  set messageStatusCallBack(MessageStatusCallBack? callback) {
+  void setMessageStatusCallBack(MessageStatusCallBack? callback) {
     _messageStatusCallBack = callback;
     if (callback != null) {
       MessageCallBackManager.getInstance.addMessage(this);
