@@ -7,7 +7,7 @@ import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
 
 ///
-/// The conversation class, which represents a conversation with a user/group/chat room and contains the messages that are sent and received.
+/// The conversation class, indicating a one-to-one chat, a group chat, or a converation chat. It contains the messages that are sent and received within the converation.
 ///
 /// The following code shows how to get the number of the unread messages from the conversation.
 /// ```dart
@@ -46,12 +46,10 @@ class EMConversation {
   ///
   /// The conversation ID.
   ///
-  /// For one-to-one chat，the conversation ID is the same with the other side's name.
-  /// For group chat, the conversation ID is the group ID, different with group name.
-  /// For chat room, the conversation ID is the chatroom ID, different with chat room name.
-  /// For help desk, it is the same with one-to-one chat, the conversation ID is also the other chat user's name.
-  ///
-  /// The conversation ID.
+  /// For one-to-one chat，the conversation ID is the username of the other party.
+  /// For group chat, the conversation ID is the group ID, not the group name.
+  /// For chat room, the conversation ID is the chat room ID, not the chat room name.
+  /// For help desk, the conversation ID is the username of the other party.
   ///
   final String id;
 
@@ -83,13 +81,13 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Gets the last message from the conversation.
+  /// Gets the lastest message from the conversation.
   ///
   /// The operation does not change the unread message count.
   ///
-  /// Gets from the cache first, if no message is found, loads from the local database and then put it in the cache.
+  /// The SDK gets the latest message from the local memory first. If no message is found, the SDK loads the message from the local database and then puts it in the memory.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   Future<EMMessage?> latestMessage() async {
     Map req = this._toJson();
@@ -110,7 +108,7 @@ extension EMConversationExtension on EMConversation {
   ///
   /// Gets the latest message from the conversation.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
   Future<EMMessage?> lastReceivedMessage() async {
     Map req = this._toJson();
@@ -130,11 +128,11 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Gets the number of unread messages of the conversation.
+  /// Gets the unread message count of the conversation.
   ///
-  /// **return** The unread message count of the conversation.
+  /// **Return** The unread message count of the conversation.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<int> unreadCount() async {
     Map req = this._toJson();
@@ -157,7 +155,7 @@ extension EMConversationExtension on EMConversation {
   ///
   /// Param [messageId] The message ID.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> markMessageAsRead(String messageId) async {
     Map req = this._toJson();
@@ -185,13 +183,13 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Inserts a message to a conversation in local database and SDK will update the last message automatically.
+  /// Inserts a message to a conversation in the local database and the SDK will automatically update the lastest message.
   ///
-  /// The conversation ID of the message should be the same as conversation ID of the conversation in order to insert the message into the conversation correctly. The inserting message will be inserted based on timestamp.
+  /// Make sure you set the conversation ID as that of the conversation where you want to insert the message.
   ///
   /// Param [message] The message instance.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> insertMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -208,11 +206,11 @@ extension EMConversationExtension on EMConversation {
   ///
   /// Inserts a message to the end of a conversation in the local database.
   ///
-  /// The `conversationId` of the message should be the same as the `conversationId` of the conversation in order to insert the message into the conversation correctly. And the `latestMessage` and other properties of the session should be updated.
+  /// Make sure you set the conversation ID as that of the conversation where you want to insert the message.
   ///
   /// Param [message] The message instance.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> appendMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -227,13 +225,13 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Uses this method to update a message in local database. Changing properties will affect data in database.
+  /// Updates a message in the local database.
   ///
-  /// The latestMessage of the conversation and other properties will be updated accordingly. The messageID of the message cannot be updated.
+  /// The latestMessage of the conversation and other properties will be updated accordingly. The message ID of the message, however, remains the same.
   ///
   /// Param [message] The message to be updated.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -251,11 +249,12 @@ extension EMConversationExtension on EMConversation {
   ///
   /// Deletes a message in the local database.
   ///
-  /// Note: Operates only on the local database.
+  /// **Note**
+  /// After this method is called, the message is only deleted both from the memory and the local database.
   ///
-  /// Param [messageId] The message id to be deleted.
+  /// Param [messageId] The ID of message to be deleted.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> deleteMessage(String messageId) async {
     Map req = this._toJson();
@@ -270,9 +269,9 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Deletes all the messages of the conversation from the memory cache and local database.
+  /// Deletes all the messages of the conversation from both the memory and local database.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(
@@ -285,16 +284,15 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Gets the message with message ID.
+  /// Gets the message with a specific message ID.
   ///
-  /// If the message already loaded into the memory cache, the message will be directly returned,
-  /// otherwise the message will be loaded from the local database, and be set into the cache.
+  /// If the message is already loaded into the memory cache, the message will be directly returned; otherwise, the message will be loaded from the local database and loaded in the memory.
   ///
   /// Param [messageId] The message ID.
   ///
-  /// **return** The message instance.
+  /// **Return** The message instance.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = this._toJson();
@@ -314,26 +312,26 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Searches messages from the local database according the following parameters: the message type, the Unix timestamp, max count, sender.
+  /// Retrieves messages from the database according to the following parameters: the message type, the Unix timestamp, max count, sender.
   ///
-  /// Note:
+  /// **Note**
   /// Be cautious about the memory usage when the maxCount is large.
   ///
-  /// Param [type] The message type, including TXT、VOICE、IMAGE and so on.
+  /// Param [type] The message type, including TXT, VOICE, IMAGE, and so on.
   ///
-  /// Param [timestamp] The Unix timestamp for search.
+  /// Param [timestamp] The Unix timestamp for the search.
   ///
-  /// Param [count] The max number of message to search.
+  /// Param [count] The max number of messages to search.
   ///
-  /// Param [sender] The sender of the message. The param can also be used to search in group chat.
+  /// Param [sender] The sender of the message. The param can also be used to search in group chat or chat room.
   ///
   /// Param [direction]  The direction in which the message is loaded: EMSearchDirection.
-  /// `EMSearchDirection.Up`: get aCount of messages before the timestamp of the specified message ID;
-  /// `EMSearchDirection.Down`: get aCount of messages after the timestamp of the specified message ID.
+  /// - `EMSearchDirection.Up`: Messages are retrieved in the reverse chronological order of when the server received messages.
+  /// - `EMSearchDirection.Down`: Messages are retrieved in the chronological order of when the server received messages.
   ///
-  /// **return** The message list.
+  /// **Return** The message list.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMMessage>?> loadMessagesWithMsgType({
     required MessageType type,
@@ -364,24 +362,24 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Loads more messages from the local database.
+  /// Loads multiple messages from the local database.
   ///
   /// Loads messages from the local database before the specified message.
   ///
-  /// The messages will also be stored in to current conversation's memory cache.
-  /// So when next time calling {@link #getAllMessages()}, the result will contain those messages.
+  /// The loaded messages will also join the existing messages of the conversation stored in the memory.
+  /// The {@link #getAllMessages()} method returns all messages of the conversation loaded in the memory.
   ///
-  /// Param [startMsgId] The specified message ID. If the `startMsgId` is set as "" or null, the SDK will load latest messages in database.
+  /// Param [startMsgId] The starting message ID. Message loaded in the memory before this message ID will be loaded. If the `startMsgId` is set as "" or null, the SDK will first load the latest messages in the database.
   ///
-  /// Param [loadCount] The number of records in a page.
+  /// Param [loadCount] The number of messages per page.
   ///
   /// Param [direction]  The direction in which the message is loaded: EMSearchDirection.
-  /// `EMSearchDirection.Up`: get aCount of messages before the timestamp of the specified message ID;
-  /// `EMSearchDirection.Down`: get aCount of messages after the timestamp of the specified message ID.
+  /// - `EMSearchDirection.Up`: Messages are retrieved in the reverse chronological order of when the server received messages.
+  /// - `EMSearchDirection.Down`: Messages are retrieved in the chronological order of when the server received messages.
   ///
-  /// **return** The message list.
+  /// **Return** The message list.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMMessage>?> loadMessages({
     String startMsgId = '',
@@ -409,9 +407,9 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Searches messages from the local database by the following parameters: keywords, timestamp, max count, sender, search direction.
+  /// Loads messages from the local database by the following parameters: keywords, timestamp, max count, sender, search direction.
   ///
-  /// Note: Be cautious about memory usage when the maxCount is large.
+  /// **Note** Pay attention to the memory usage when the maxCount is large.
   ///
   /// Param [keywords] The keywords in message.
   ///
@@ -419,15 +417,15 @@ extension EMConversationExtension on EMConversation {
   ///
   /// Param [timestamp] The timestamp for search.
   ///
-  /// Param [count] The max number of message to search.
+  /// Param [count] The maximum number of messages to search.
   ///
   /// Param [direction] The direction in which the message is loaded: EMSearchDirection.
-  /// `EMSearchDirection.Up`: get aCount of messages before the timestamp of the specified message ID;
-  /// `EMSearchDirection.Down`: get aCount of messages after the timestamp of the specified message ID.
+  /// `EMSearchDirection.Up`: Gets the messages loaded before the timestamp of the specified message ID.
+  /// `EMSearchDirection.Down`: Gets the messages loaded after the timestamp of the specified message ID.
   ///
-  /// **returns** The list of searched messages.
+  /// **Returns** The list of retrieved messages.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
@@ -461,19 +459,19 @@ extension EMConversationExtension on EMConversation {
   }
 
   ///
-  /// Searches messages from the local database according the following parameters.
+  /// Loads messages from the local database according the following parameters: start timestamp, end timestamp, count.
   ///
-  /// Note: Be cautious about the memory usage when the maxCount is large.
+  /// **Note** Pay attention to the memory usage when the maxCount is large.
   ///
-  ///  Param [startTime] The start Unix timestamp to search.
+  ///  Param [startTime] The starting Unix timestamp for search.
   ///
-  ///  Param [endTime] The end Unix timestamp to search.
+  ///  Param [endTime] The ending Unix timestamp for search.
   ///
-  ///  Param [count] The max number of message to search.
+  ///  Param [count] The maximum number of message to retrieve.
   ///
-  /// **returns** The list of searched messages.
+  /// **Returns** The list of searched messages.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMMessage>> loadMessagesFromTime({
     required int startTime,

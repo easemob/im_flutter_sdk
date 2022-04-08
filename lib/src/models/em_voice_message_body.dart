@@ -4,15 +4,15 @@ import 'em_file_message_body.dart';
 import 'em_chat_enums.dart';
 
 ///
-/// The voice message body.
+/// The voice message body class.
 ///
 class EMVoiceMessageBody extends EMFileMessageBody {
   ///
-  /// Creates a voice message body.
+  /// Creates a voice message.
   ///
-  /// Param [localPath] The path of the voice file.
+  /// Param [localPath] The local path of the voice file.
   ///
-  /// Param [displayName] The voice name. like "voice.mp3"
+  /// Param [displayName] The name of the voice file.
   ///
   /// Param [fileSize] The size of the voice file in bytes.
   ///

@@ -8,7 +8,7 @@ import 'internal/em_event_keys.dart';
 import 'models/em_error.dart';
 
 ///
-/// The `EMContactManager` is used to record, query, and modify contacts.
+/// The contact manager class, which manages chat contacts such as adding, deleting, retrieving, and modifying contacts.
 ///
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';
@@ -59,9 +59,9 @@ class EMContactManager {
   ///
   /// Param [username] The user to be added.
   ///
-  /// Param [reason] (optional) The invitation message. Set the parameter as null if you want to ignore the information.
+  /// Param [reason] (optional) The invitation message.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> addContact(
     String username, [
@@ -77,15 +77,15 @@ class EMContactManager {
   }
 
   ///
-  /// Deletes a contact and all the conversations associated.
+  /// Deletes a contact and all the related conversations.
   ///
   /// Param [username] The contact to be deleted.
   ///
-  /// Param [keepConversation] Whether to keep the associated conversation and messages.
-  /// `true`: keep conversation and messages.
-  /// `false`: (default) delete conversation and messages.
+  /// Param [keepConversation] Whether to retain conversations of the deleted contact.
+  /// - `true`: Yes.
+  /// - `false`: (default) No.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> deleteContact(
     String username, [
@@ -101,11 +101,11 @@ class EMContactManager {
   }
 
   ///
-  /// Get all contacts from the server.
+  /// Gets all the contacts from the server.
   ///
-  /// **return** The list of contacts.
+  /// **Return** The list of contacts.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -125,9 +125,9 @@ class EMContactManager {
   ///
   /// Gets the contact list from the local database.
   ///
-  /// **return** The contact list.
+  /// **Return** The contact list.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -146,12 +146,12 @@ class EMContactManager {
   }
 
   ///
-  /// Adds a user to block list.
-  /// You can send message to the user in block list, but you can not receive the message sent by the other.
+  /// Adds a user to the block list.
+  /// You can send messages to the users on the block list, but cannot receive messages from them.
   ///
-  /// Param [username] The user to be blocked.
+  /// Param [username] The user to be added to the block list.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> addUserToBlockList(
     String username,
@@ -171,9 +171,9 @@ class EMContactManager {
   ///
   /// Removes the contact from the block list.
   ///
-  /// Param [username] The user to be removed from the block list.
+  /// Param [username] The contact to be removed from the block list.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
@@ -187,11 +187,11 @@ class EMContactManager {
   }
 
   ///
-  /// Get all block list from the server.
+  /// Gets the block list from the server.
   ///
-  /// **return** The block list from the server.
+  /// **Return** The block list obtained from the server.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -209,11 +209,11 @@ class EMContactManager {
   }
 
   ///
-  /// Gets the local database block list.
+  /// Gets the block list from the local database.
   ///
-  /// **return** The block list.
+  /// **Return** The block list obtained from the local database.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
@@ -232,9 +232,9 @@ class EMContactManager {
   ///
   /// Accepts a friend invitation。
   ///
-  /// Param [username] The user who initiates the friend request.
+  /// Param [username] The user who sends the friend invitation.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
@@ -250,9 +250,9 @@ class EMContactManager {
   ///
   /// Declines a friend invitation.
   ///
-  /// Param [username] The user who initiates the invitation.
+  /// Param [username] The user who sends the friend invitation.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
@@ -266,11 +266,11 @@ class EMContactManager {
   }
 
   ///
-  /// Get the unique IDs of current user on the other devices. The ID is username + "/" + resource.
+  /// Gets the unique IDs of the current user on the other devices. The ID is in the format of username + "/" + resource.
   ///
-  /// **return** The unique device ID list on the other devices if the method succeeds.
+  /// **Return** The list of unique IDs of users on the other devices if the method succeeds.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<String>?> getSelfIdsOnOtherPlatform() async {
     Map result =
@@ -288,7 +288,7 @@ class EMContactManager {
   ///
   /// Registers a new contact listener.
   ///
-  /// Param [contactListener] The contact listener to be registered.
+  /// Param [contactListener] The contact listener to be registered: {@link EMContactEventListener}.
   ///
   void addContactListener(EMContactManagerListener contactListener) {
     _contactManagerListeners.add(contactListener);

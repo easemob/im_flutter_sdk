@@ -33,10 +33,10 @@ class EMCmdMessageBody extends EMMessageBody {
   late final String action;
 
   ///
-  /// Checks whether this cmd message is only delivered to online users.
+  /// Checks whether this command message is only delivered to online users.
   ///
-  /// `true`: Only delivers to online users.
-  /// `false`: Delivers to all users.
+  /// - `true`: Yes.
+  /// - `false`: No.
   ///
   bool deliverOnlineOnly = false;
 }

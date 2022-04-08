@@ -14,7 +14,6 @@ class EMCustomMessageBody extends EMMessageBody {
     required this.event,
     this.params,
   }) : super(type: MessageType.CUSTOM);
-
   EMCustomMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.CUSTOM) {
     this.event = map["event"];
@@ -33,6 +32,6 @@ class EMCustomMessageBody extends EMMessageBody {
   /// The event.
   late final String event;
 
-  /// The params map.
+  /// The custom params map.
   Map<String, String>? params;
 }

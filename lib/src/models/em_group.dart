@@ -5,7 +5,7 @@ import 'em_chat_enums.dart';
 import 'em_group_options.dart';
 
 ///
-/// The group class.
+/// The EMGroup class, which contains the information of the chat group.
 ///
 class EMGroup {
   EMGroup._private();
@@ -35,21 +35,24 @@ class EMGroup {
   ///
   /// Gets the group name.
   ///
-  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
   ///
   String? get name => _name;
 
   ///
   /// Gets the group description.
   ///
-  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
   ///
   String? get description => _description;
 
   ///
   /// Gets the user ID of the group owner.
   ///
-  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
   ///
   String? get owner => _owner;
 
@@ -57,39 +60,43 @@ class EMGroup {
   String? get announcement => _announcement;
 
   ///
-  /// Get the member count of the group.
+  /// Gets the member count of the group.
   ///
-  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String groupId)} before calling this method.
   ///
   int? get memberCount => _memberCount;
 
   ///
-  /// Get the member list of the group.
+  /// Gets the member list of the group.
   ///
-  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupMemberListFromServer(String, int?, String?)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupMemberListFromServer(String, int?, String?)} before calling this method.
   ///
   List? get memberList => _memberList;
 
   ///
-  /// Get the admin list of the group.
+  /// Gets the admin list of the group.
   ///
-  /// To get the correct value, ensure that you call {@ link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   List? get adminList => _adminList;
 
   ///
-  /// Get the block list of the group.
+  /// Gets the block list of the group.
   ///
   /// If no block list is found from the server, the return may be empty.
   ///
-  /// Reference:
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getBlockListFromServer(String, int?, int?)} before calling this method.
   ///
   List? get blockList => _blockList;
 
   ///
-  /// Get the mute list of the group.
+  /// Gets the mute list of the group.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getMuteListFromServer(String, int?, int?)} before calling this method.
   ///
   List? get muteList => _muteList;
@@ -100,6 +107,7 @@ class EMGroup {
   ///
   /// Gets whether the group message is blocked.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   bool? get messageBlocked => _messageBlocked;
@@ -107,6 +115,7 @@ class EMGroup {
   ///
   /// Gets Whether all members are muted.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   bool? get isAllMemberMuted => _isAllMemberMuted;
@@ -116,35 +125,33 @@ class EMGroup {
   EMGroupOptions? get settings => _options;
 
   ///
-  /// Get the current user's role in group.
+  /// Gets the current user's role in group.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   EMGroupPermissionType? get permissionType => _permissionType;
 
   ///
-  /// Get the max number of group members allowed in a group. The param is set when the group is created.
+  /// Gets the maximum number of group members allowed in a group. The parameter is set when the group is created.
   ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
   int? get maxUserCount => _options?.maxCount;
 
   ///
-  /// Fetches the group property: whether users can auto join the group VS need requesting or invitation from a group member to join the group.
+  /// Checks whether users cannot join a chat group freely:
+  /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members(PrivateOnlyOwnerInvite, PrivateMemberCanInvite, PublicJoinNeedApproval).
+  /// - `false`: No. Users can join freely(PublicOpenJoin).
   ///
+  /// **Note**
+  /// There are four types of group properties used to define the style of a group: {@link EMGroupManager.EMGroupStyle}.
   ///
-  /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
-  ///
-  /// There are four types of group properties used to define the style of a group,
-  /// and `isMemberOnly` contains three types including:
-  /// PrivateOnlyOwnerInvite,
-  /// PrivateMemberCanInvite,
-  /// PublicJoinNeedApproval.
-  /// And do not include {@link EMGroupManager.EMGroupStyle#PublicOpenJoin}.
-  ///
-  /// **return**
-  /// `true`: Users can not join the group freely. Needs the invitation from the group owner or members, or the application been approved by the group owner or admins.
-  /// `false`: Users can join freely without the group owner or member‘s invitation or the new joiner’s application been approved.
+  /// **Return**
+  /// Whether users can join a chat group with only the approval of the group owner(admin):
+  /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members.
+  /// - `false`: No.
   ///
   bool get isMemberOnly {
     if (_options == null) {
@@ -160,14 +167,14 @@ class EMGroup {
   }
 
   ///
-  /// Gets whether the group member is allowed to invite other users to join the group.
+  /// Checks whether a group member is allowed to invite other users to join the group.
   ///
-  ///
+  /// **Note**
   /// To get the correct value, ensure that you call {@link EMGroupManager#getGroupSpecificationFromServer(String)} before calling this method.
   ///
-  /// **return**
-  /// `true`: The group member can invite other users to join the group;
-  /// `false`: Do not allow the group member invite other users to join the group.
+  /// **Return**
+  /// - `true`: Yes;
+  /// - `false`: No. Only the group owner or admin can invite others to join the group.
   ///
   bool get isMemberAllowToInvite {
     if (_options == null) {

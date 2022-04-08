@@ -5,15 +5,15 @@ import 'em_chat_enums.dart';
 import 'em_file_message_body.dart';
 
 ///
-/// The video message body.
+/// The video message body class.
 ///
 class EMVideoMessageBody extends EMFileMessageBody {
   ///
-  /// Creates a video message body.
+  /// Creates a video message.
   ///
-  /// Param [localPath] The path of the video file.
+  /// Param [localPath] The local path of the video file.
   ///
-  /// Param [displayName] The video name. like "video.mp4"
+  /// Param [displayName] The video name.
   ///
   /// Param [duration] The video duration in seconds.
   ///
@@ -21,9 +21,9 @@ class EMVideoMessageBody extends EMFileMessageBody {
   ///
   /// Param [thumbnailLocalPath] The local path of the video thumbnail.
   ///
-  /// Param [height] The video height.
+  /// Param [height] The video height in pixels.
   ///
-  /// Param [width] The video width.
+  /// Param [width] The video width in pixels.
   ///
   EMVideoMessageBody({
     required String localPath,
@@ -68,7 +68,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
   }
 
   /// The video duration in seconds.
-  late final int duration;
+  int? duration;
 
   ///  The local path of the video thumbnail.
   String? thumbnailLocalPath;
@@ -82,9 +82,9 @@ class EMVideoMessageBody extends EMFileMessageBody {
   /// The download status of the video thumbnail.
   DownloadStatus thumbnailStatus = DownloadStatus.PENDING;
 
-  /// The video width.
+  /// The video width in pixels.
   double? width;
 
-  /// The video height.
+  /// The video height in pixels.
   double? height;
 }

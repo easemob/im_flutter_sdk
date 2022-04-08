@@ -1,7 +1,7 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The Multi-device information.
+/// The EMDeviceInfo class, which contains the multi-device information.
 ///
 class EMDeviceInfo {
   EMDeviceInfo._private(
@@ -29,7 +29,7 @@ class EMDeviceInfo {
     );
   }
 
-  /// The other devices‘ information.
+  /// The information of other login devices.
   final String? resource;
 
   /// The UUID of the device.

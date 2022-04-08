@@ -7,7 +7,7 @@ import 'models/em_error.dart';
 import 'models/em_userInfo.dart';
 
 ///
-/// The user information manager for updating and getting user properties.
+/// The user attribute manager class, which gets and sets the user attributes.
 ///
 class EMUserInfoManager {
   static const _channelPrefix = 'com.chat.im';
@@ -16,17 +16,17 @@ class EMUserInfoManager {
 
   EMUserInfo? _ownUserInfo;
 
-  //有效的联系人map
+  // The map of effective contacts.
   Map<String, EMUserInfo> _effectiveUserInfoMap = Map();
 
   ///
-  /// Modifies the current user's information.
+  /// Modifies the user attributes of the current user.
   ///
-  /// Param [userInfo] userInfo The user information to be modified.
+  /// Param [userInfo] The user attributes to be modified.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> updateOwnInfo(EMUserInfo userInfo) async {
+  Future<void> updateOwnUserInfo(EMUserInfo userInfo) async {
     Map req = {'userInfo': userInfo.toJson()};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
@@ -38,14 +38,13 @@ class EMUserInfoManager {
   }
 
   ///
-  /// Get the current user's information from server.
+  /// Gets the current user's attributes from the server.
   ///
-  /// Param [expireTime] expire time, Units are seconds. If the last fetch is less than the expiration time, it is directly fetched from the local cache;
-  /// otherwise, it is fetched from the server.
+  /// Param [expireTime] The time period(seconds) when the user attibutes in the cache expire. If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
   ///
-  /// **return**  user properties. See {@link EMUserInfo}
+  /// **Return**  The user properties that are obtained. See {@link EMUserInfo}.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 0}) async {
     String? currentUser = await EMClient.getInstance.getCurrentUsername();
@@ -64,16 +63,15 @@ class EMUserInfoManager {
   }
 
   ///
-  /// Gets user information with user ID.
+  /// Gets user attributes of the specified users.
   ///
-  /// Param [userIds] The user ID array.
+  /// Param [userIds] The username array.
   ///
-  /// Param [expireTime] expire time, Units are seconds. If the last fetch is less than the expiration time, it is directly fetched from the local cache;
-  /// otherwise, it is fetched from the server.
+  /// Param [expireTime] The time period(seconds) when the user attibutes in the cache expire. If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
   ///
-  /// **return** Map of User ids and user properties. key is user id and value is user properties.
+  /// **Return** A map that contains key-value pairs where the key is the user ID and the value is user attributes.
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<Map<String, EMUserInfo>> fetchUserInfoById(
     List<String> userIds, {
