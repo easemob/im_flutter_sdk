@@ -5,7 +5,6 @@ import 'internal/em_transform_tools.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
-import 'tools/em_message_callback_manager.dart';
 
 ///
 /// The chat manager class, responsible for sending and receiving messages, loading and deleting conversations, and downloading attachments.
@@ -27,7 +26,6 @@ class EMChatManager {
 
   /// @nodoc
   EMChatManager() {
-    MessageCallBackManager.getInstance;
     _channel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
