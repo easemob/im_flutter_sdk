@@ -30,6 +30,7 @@ static NSString *const ChatIsConnected = @"isConnected";
 #pragma mark - EMClientDelegate
 static NSString *const ChatOnConnected = @"onConnected";
 static NSString *const ChatOnDisconnected = @"onDisconnected";
+static NSString *const ChatOnMultiDeviceEvent = @"onMultiDeviceEvent";
 
 static NSString *const ChatSendDataToFlutter = @"onSendDataToFlutter";
 

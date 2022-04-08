@@ -221,7 +221,7 @@ static EMClientWrapper *wrapper = nil;
         [EMClient.sharedClient loginWithUsername:username
                                         password:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError){
-            
+
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
@@ -352,30 +352,28 @@ static EMClientWrapper *wrapper = nil;
 
 - (void)getToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     [self wrapperCallBack:result
-              channelName:aChannelName
-                    error:nil
-                   object:EMClient.sharedClient.accessUserToken];
+                  channelName:aChannelName
+                        error:nil
+                       object:EMClient.sharedClient.accessUserToken];
 }
 
 
 - (void)isConnected:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     [self wrapperCallBack:result
-              channelName:aChannelName
-                    error:nil
-                   object:@(EMClient.sharedClient.isConnected)];
+                  channelName:aChannelName
+                        error:nil
+                       object:@(EMClient.sharedClient.isConnected)];
 }
 
 - (void)renewToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     NSString *newAgoraToken = param[@"agora_token"];
     [EMClient.sharedClient renewToken:newAgoraToken];
     [self wrapperCallBack:result
-              channelName:aChannelName
-                    error:nil
-                   object:nil];
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
 }
 
-- (void)onMultiDeviceEvent:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-}
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
@@ -450,13 +448,21 @@ static EMClientWrapper *wrapper = nil;
 - (void)multiDevicesContactEventDidReceive:(EMMultiDevicesEvent)aEvent
                                   username:(NSString *)aUsername
                                        ext:(NSString *)aExt {
-    
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"event"] = @(aEvent);
+    data[@"target"] = aUsername;
+    data[@"ext"] = aExt;
+    [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
 }
 
 - (void)multiDevicesGroupEventDidReceive:(EMMultiDevicesEvent)aEvent
                                  groupId:(NSString *)aGroupId
                                      ext:(id)aExt {
-    
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"event"] = @(aEvent);
+    data[@"target"] = aGroupId;
+    data[@"userNames"] = aExt;
+    [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
 }
 
 #pragma mark - Merge Android and iOS Method
