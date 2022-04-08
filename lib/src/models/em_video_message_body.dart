@@ -28,7 +28,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
   EMVideoMessageBody({
     required String localPath,
     String? displayName,
-    this.duration,
+    this.duration = 0,
     int? fileSize,
     this.thumbnailLocalPath,
     this.height,
@@ -42,7 +42,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
 
   EMVideoMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VIDEO) {
-    this.duration = map.getIntValue("duration");
+    this.duration = map.getIntValue("duration", defaultValue: 0)!;
     this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
     this.thumbnailRemotePath = map.getStringValue("thumbnailRemotePath");
     this.thumbnailSecret = map.getStringValue("thumbnailSecret");
@@ -68,7 +68,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
   }
 
   /// The video duration in seconds.
-  int? duration;
+  late final int duration;
 
   ///  The local path of the video thumbnail.
   String? thumbnailLocalPath;

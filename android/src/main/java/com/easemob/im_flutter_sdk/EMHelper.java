@@ -428,7 +428,10 @@ class EMMessageHelper {
         }
 
         message.setLocalTime(json.getLong("localTime"));
-        message.setMsgTime(json.getLong("serverTime"));
+        if (json.has("serverTime")){
+            message.setMsgTime(json.getLong("serverTime"));
+        }
+
         message.setStatus(statusFromInt(json.getInt("status")));
         message.setChatType(chatTypeFromInt(json.getInt("chatType")));
         if (json.has("msgId")){
@@ -698,9 +701,11 @@ class EMMessageBodyHelper {
         if (json.has("secret")){
             body.setSecret(json.getString("secret"));
         }
-
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        body.setFileLength(json.getInt("fileSize"));
+        if (json.has("fileSize")){
+            body.setFileLength(json.getInt("fileSize"));
+        }
+
         return body;
     }
 
@@ -779,8 +784,8 @@ class EMMessageBodyHelper {
     static EMVideoMessageBody videoBodyFromJson(JSONObject json) throws JSONException {
         String localPath = json.getString("localPath");
         int duration = json.getInt("duration");
-        int fileSize = json.getInt("fileSize");
-        EMVideoMessageBody body = new EMVideoMessageBody(localPath, null, duration, fileSize);
+        EMVideoMessageBody body = new EMVideoMessageBody(localPath, null, duration, 0);
+
         if (json.has("thumbnailRemotePath")){
             body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         }
@@ -799,11 +804,21 @@ class EMMessageBodyHelper {
         if (json.has("secret")){
             body.setSecret(json.getString("secret"));
         }
+        if (json.has("fileSize")){
+            body.setVideoFileLength(json.getInt("fileSize"));
+        }
 
-        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        int width = json.getInt("width");
-        int height = json.getInt("height");
-        body.setThumbnailSize(width, height);
+        if(json.has("fileStatus")){
+            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        }
+
+        if (json.has("width") && json.has("height")){
+            int width = json.getInt("width");
+            int height = json.getInt("height");
+            body.setThumbnailSize(width, height);
+        }
+
+
         return body;
     }
 
@@ -841,7 +856,10 @@ class EMMessageBodyHelper {
         if (json.has("remotePath")){
             body.setRemoteUrl(json.getString("remotePath"));
         }
-        body.setFileLength(json.getLong("fileSize"));
+        if (json.has("fileSize")){
+            body.setFileLength(json.getLong("fileSize"));
+        }
+
         return body;
     }
 

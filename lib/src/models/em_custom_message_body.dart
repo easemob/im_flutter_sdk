@@ -10,8 +10,10 @@ class EMCustomMessageBody extends EMMessageBody {
   ///
   /// Creates a custom message.
   ///
-  EMCustomMessageBody({required this.event, this.params})
-      : super(type: MessageType.CUSTOM);
+  EMCustomMessageBody({
+    required this.event,
+    this.params,
+  }) : super(type: MessageType.CUSTOM);
 
   EMCustomMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.CUSTOM) {

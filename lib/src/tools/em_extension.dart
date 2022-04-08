@@ -54,6 +54,8 @@ extension MapExtension on Map {
     return null;
   }
 
+  ///
+  /// 如果给的value是null则不设置到map中。
   void setValueWithOutNull<T>(String key, T? value,
       {Object Function(T object)? callback, T? defaultValue}) {
     if (value != null) {
