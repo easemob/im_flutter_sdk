@@ -86,7 +86,7 @@ class EMPushManager {
   }
 
   ///
-  /// Sets wether to turn on or turn off the push notification for the the specified groups.
+  /// Sets whether to turn on or turn off the push notification for the the specified groups.
   ///
   /// [groupIds]  The list of groups to be set.
   ///
