@@ -28,6 +28,7 @@ class EMPushConfig {
 
   EMPushConfig();
 
+  /// @nodoc
   void updateFromJson(Map<String, dynamic> json) {
     miAppId = json.stringValue("mzAppId");
     mzAppKey = json.stringValue("mzAppKey");
@@ -46,6 +47,7 @@ class EMPushConfig {
     enableAPNS = json.boolValue('enableAPNS');
   }
 
+  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data.setValueWithOutNull("mzAppId", mzAppId);

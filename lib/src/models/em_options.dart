@@ -1,5 +1,5 @@
 import '../tools/em_extension.dart';
-import 'em_push_config.dart';
+import '../internal/em_push_config.dart';
 
 ///
 /// The EMOptions class, which contains the settings of the Chat SDK.
@@ -290,6 +290,7 @@ class EMOptions {
       /// Param [imServer] The IM server URL for private deployment.
       this.imServer});
 
+  /// @nodoc
   factory EMOptions.fromJson(Map<String, dynamic> json) {
     var ret = EMOptions(
       appKey: json['appKey'],
@@ -323,6 +324,7 @@ class EMOptions {
     return ret;
   }
 
+  /// @nodoc
   Map toJson() {
     Map data = new Map();
     data.setValueWithOutNull("appKey", appKey);

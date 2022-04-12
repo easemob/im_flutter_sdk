@@ -13,6 +13,7 @@ class EMCmdMessageBody extends EMMessageBody {
   EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
       : super(type: MessageType.CMD);
 
+  /// @nodoc
   EMCmdMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.CMD) {
     this.action = map["action"];
@@ -20,6 +21,7 @@ class EMCmdMessageBody extends EMMessageBody {
         map.getBoolValue("deliverOnlineOnly", defaultValue: false)!;
   }
 
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();

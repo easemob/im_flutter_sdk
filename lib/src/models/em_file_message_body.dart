@@ -25,6 +25,7 @@ class EMFileMessageBody extends EMMessageBody {
     MessageType type = MessageType.FILE,
   }) : super(type: type);
 
+  /// @nodoc
   EMFileMessageBody.fromJson(
       {required Map map, MessageType type = MessageType.FILE})
       : super.fromJson(map: map, type: type) {
@@ -38,6 +39,7 @@ class EMFileMessageBody extends EMMessageBody {
     );
   }
 
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();

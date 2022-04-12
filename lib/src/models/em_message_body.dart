@@ -5,6 +5,7 @@ import 'em_chat_enums.dart';
 abstract class EMMessageBody {
   EMMessageBody({required this.type});
 
+  /// @nodoc
   EMMessageBody.fromJson({
     required Map map,
     required this.type,

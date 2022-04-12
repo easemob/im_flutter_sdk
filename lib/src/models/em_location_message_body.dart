@@ -28,6 +28,7 @@ class EMLocationMessageBody extends EMMessageBody {
     _buildingName = buildingName;
   }
 
+  /// @nodoc
   EMLocationMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.LOCATION) {
     this.latitude = map.getDoubleValue("latitude", defaultValue: 0.0)!;
@@ -36,6 +37,7 @@ class EMLocationMessageBody extends EMMessageBody {
     this._buildingName = map.getStringValue("buildingName");
   }
 
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();

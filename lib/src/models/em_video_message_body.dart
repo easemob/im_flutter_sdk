@@ -40,6 +40,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
           type: MessageType.VIDEO,
         );
 
+  /// @nodoc
   EMVideoMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VIDEO) {
     this.duration = map.getIntValue("duration", defaultValue: 0)!;
@@ -52,6 +53,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
         map.getIntValue("thumbnailStatus"));
   }
 
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();

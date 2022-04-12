@@ -17,6 +17,7 @@ class EMCursorResult<T> {
     this.data,
   );
 
+  /// @nodoc
   factory EMCursorResult.fromJson(Map<String, dynamic> map,
       {dataItemCallback: CursorResultCallback}) {
     List<T> list = [];
