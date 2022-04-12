@@ -190,7 +190,7 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets group information from the server.
+  /// Gets the group information from the server.
   ///
   /// This method does not get member information. If member information is required, call {@link #getGroupMemberListFromServer(String, int?, String?)}.
   ///
@@ -214,7 +214,7 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets a group's member list with pagination.
+  /// Gets the member list of the group with pagination.
   ///
   /// For example:
   ///   ```dart
