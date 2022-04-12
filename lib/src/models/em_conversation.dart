@@ -25,10 +25,10 @@ class EMConversation {
 
   /// @nodoc
   factory EMConversation.fromJson(Map<String, dynamic> map) {
-    Map<String, String>? ext = map['ext']?.cast<String, String>();
+    Map<String, String>? ext = map["ext"]?.cast<String, String>();
     EMConversation ret = EMConversation._private(
       map["con_id"],
-      conversationTypeFromInt(map['type']),
+      conversationTypeFromInt(map["type"]),
       ext,
     );
 
@@ -38,8 +38,8 @@ class EMConversation {
   /// @nodoc
   Map<String, dynamic> _toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = conversationTypeToInt(this.type);
-    data['con_id'] = this.id;
+    data["type"] = conversationTypeToInt(this.type);
+    data["con_id"] = this.id;
     return data;
   }
 

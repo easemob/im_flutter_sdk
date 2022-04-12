@@ -164,22 +164,16 @@ static EMClientWrapper *wrapper = nil;
     __weak typeof(self) weakSelf = self;
     
     EMOptions *options = [EMOptions fromJson:param];
-    //    options.enableConsoleLog = YES;
+
     [EMClient.sharedClient initializeSDKWithOptions:options];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
-    // 如果有证书名，说明要使用Apns
-    if (options.apnsCertName.length > 0) {
-        [self _registerAPNs];
-    }
+    
     [weakSelf wrapperCallBack:result
                   channelName:ChatInit
                         error:nil
-                       object:@{
-        @"currentUsername": EMClient.sharedClient.currentUsername ?: @"",
-        @"isLoginBefore": @(EMClient.sharedClient.isLoggedIn)
-    }];
+                       object:nil];
 }
 
 
@@ -475,50 +469,6 @@ static EMClientWrapper *wrapper = nil;
     [self.channel invokeMethod:ChatOnDisconnected
                      arguments:@{@"errorCode" : @(errorCode)}];
 }
-
-
-#pragma mark - register APNs
-- (void)_registerAPNs {
-    UIApplication *application = [UIApplication sharedApplication];
-    application.applicationIconBadgeNumber = 0;
-    
-    if (NSClassFromString(@"UNUserNotificationCenter")) {
-        //        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
-        [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert completionHandler:^(BOOL granted, NSError *error) {
-            if (granted) {
-#if !TARGET_IPHONE_SIMULATOR
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [application registerForRemoteNotifications];
-                });
-#endif
-            }
-        }];
-        return;
-    }
-    
-    if([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
-        UIUserNotificationType notificationTypes = UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
-        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationTypes categories:nil];
-        [application registerUserNotificationSettings:settings];
-    }
-    
-#if !TARGET_IPHONE_SIMULATOR
-    if ([application respondsToSelector:@selector(registerForRemoteNotifications)]) {
-        [application registerForRemoteNotifications];
-    }
-#endif
-}
-
-#pragma mark - AppDelegate
-
-//- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-//    
-//    return YES;
-//}
-//
-//- (void)applicationDidBecomeActive:(UIApplication *)application {
-//    
-//}
 
 
 @end
