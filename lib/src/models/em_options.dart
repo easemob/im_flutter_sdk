@@ -352,9 +352,8 @@ class EMOptions {
         "sortMessageByServerTime", sortMessageByServerTime);
     data.setValueWithOutNull("usingHttpsOnly", usingHttpsOnly);
 
-    data['sortMessageByServerTime'] = this.sortMessageByServerTime;
-    data['usingHttpsOnly'] = this.usingHttpsOnly;
-    data['pushConfig'] = this._pushConfig.toJson();
+    data["usingHttpsOnly"] = this.usingHttpsOnly;
+    data["pushConfig"] = this._pushConfig.toJson();
     return data;
   }
 

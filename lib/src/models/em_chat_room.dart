@@ -42,8 +42,9 @@ class EMChatRoom {
         blockList: map.listValue<String>("blockList"),
         muteList: map.listValue<String>("muteList"),
         announcement: map.getStringValue("announcement"),
-        permissionType: chatRoomPermissionTypeFromInt(map.getIntValue("key")),
-        isAllMemberMuted: map.boolValue('isAllMemberMuted'));
+        permissionType:
+            chatRoomPermissionTypeFromInt(map.getIntValue("permissionType")),
+        isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
 
   /// @nodoc

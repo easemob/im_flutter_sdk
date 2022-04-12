@@ -195,7 +195,7 @@ class EMGroup {
       .._description = map.stringValue("desc")
       .._owner = map.stringValue("owner")
       .._announcement = map.stringValue("announcement")
-      .._memberCount = map['memberCount']
+      .._memberCount = map["memberCount"]
       .._memberList = map.listValue<String>("memberList")
       .._adminList = map.listValue<String>("adminList")
       .._blockList = map.listValue<String>("blockList")
@@ -219,7 +219,6 @@ class EMGroup {
     data.setValueWithOutNull("adminList", _adminList);
     data.setValueWithOutNull("blockList", _blockList);
     data.setValueWithOutNull("muteList", _muteList);
-    data.setValueWithOutNull("owner", _owner);
     data.setValueWithOutNull("noticeEnable", _noticeEnable);
     data.setValueWithOutNull("messageBlocked", _messageBlocked);
     data.setValueWithOutNull("isAllMemberMuted", _isAllMemberMuted);
