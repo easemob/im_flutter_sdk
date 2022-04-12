@@ -14,6 +14,7 @@ class EMTextMessageBody extends EMMessageBody {
   ///
   EMTextMessageBody({required this.content}) : super(type: MessageType.TXT);
 
+  /// @nodoc
   EMTextMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.TXT) {
     this.content = map.getStringValue("content", defaultValue: "")!;

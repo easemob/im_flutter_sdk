@@ -33,7 +33,7 @@ class EMUserInfo {
     this.ext,
   });
 
-  /// @nodac
+  /// @nodoc
   factory EMUserInfo.fromJson(Map map) {
     EMUserInfo info = EMUserInfo(
       map["userId"],
@@ -95,7 +95,7 @@ class EMUserInfo {
     );
   }
 
-  /// @nodac
+  /// @nodoc
   Map toJson() {
     Map data = Map();
     data['userId'] = userId;

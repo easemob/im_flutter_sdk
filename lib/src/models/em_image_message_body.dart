@@ -41,7 +41,7 @@ class EMImageMessageBody extends EMFileMessageBody {
           type: MessageType.IMAGE,
         );
 
-  /// nodoc
+  /// @nodoc
   EMImageMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.IMAGE) {
     this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
@@ -58,7 +58,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     );
   }
 
-  /// nodoc
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();

@@ -207,6 +207,7 @@ class EMGroup {
       .._permissionType = permissionTypeFromInt(map['permissionType']);
   }
 
+  /// @nodoc
   Map toJson() {
     Map data = Map();
     data.setValueWithOutNull("id", _groupId);

@@ -20,6 +20,7 @@ class EMCustomMessageBody extends EMMessageBody {
     this.params = map["params"]?.cast<String, String>();
   }
 
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();

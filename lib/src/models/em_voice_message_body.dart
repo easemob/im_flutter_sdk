@@ -30,11 +30,13 @@ class EMVoiceMessageBody extends EMFileMessageBody {
           type: MessageType.VOICE,
         );
 
+  /// @nodoc
   EMVoiceMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VOICE) {
     this.duration = map.getIntValue("duration", defaultValue: 0)!;
   }
 
+  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
