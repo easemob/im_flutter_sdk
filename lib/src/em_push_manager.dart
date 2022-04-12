@@ -6,15 +6,14 @@ import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 
 ///
-/// The push message presentation style: Simple represents the presentation of a simple message,
+/// The push styles.
 ///
-/// and Summary represents the presentation of message content.
 ///
 enum DisplayStyle {
-  /// 显示 ”您有一条新消息“
+  /// The push message presentation style: SimpleBanner represents the presentation of a simple message.
   Simple,
 
-  /// 显示推送内容详情
+  /// The push message presentation style: MessageSummary represents the presentation of message content.
   Summary,
 }
 
@@ -36,7 +35,7 @@ class EMPushManager {
     }
   }
 
-  /// 从服务器获取 `EMPushConfigs`
+  /// Gets the push configurations from the server.
   Future<EMPushConfigs> getPushConfigsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
@@ -66,9 +65,9 @@ class EMPushManager {
   ///
   /// Do not push the offline messages within the specified time period (24-hour clock).
   ///
-  /// Param [start] The start hour.
+  /// Param [start] The start hour(24-hour clock).
   ///
-  /// Param [end] The end hour.
+  /// Param [end] The end hour(24-hour clock).
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
@@ -150,7 +149,7 @@ class EMPushManager {
   }
 
   ///
-  /// Update the push message style. The default value is {@link DisplayStyle#Simple}.
+  ///  Updates the push message style. The default value is {@link DisplayStyle#Simple}.
   ///
   /// Param [displayStyle] The push message display style.
   ///
@@ -168,7 +167,7 @@ class EMPushManager {
   }
 
   ///
-  /// Update the HMS push token.
+  ///  Updates the HMS push token.
   ///
   /// Param [token] The HMS push token.
   ///
@@ -188,7 +187,7 @@ class EMPushManager {
   }
 
   ///
-  /// Update the FCM push token.
+  ///  Updates the FCM push token.
   ///
   /// Param [token] The FCM push token.
   ///
@@ -208,7 +207,7 @@ class EMPushManager {
   }
 
   ///
-  /// Update the APNs push token.
+  ///  Updates the APNs push token.
   ///
   /// Param [token] The APNs push token.
   ///
@@ -227,7 +226,7 @@ class EMPushManager {
     }
   }
 
-  /// 从本地获取ImPushConfig
+  /// Gets push options from the local database.
   @Deprecated('use - getPushConfigsFromCache method instead.')
   Future<EMPushConfigs> getImPushConfig() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
@@ -239,7 +238,7 @@ class EMPushManager {
     }
   }
 
-  /// 从服务器获取ImPushConfig
+  /// Gets push options from the server.
   @Deprecated('use - getPushConfigsFromServer method instead.')
   Future<EMPushConfigs> getImPushConfigFromServer() async {
     Map result =

@@ -2,21 +2,21 @@ import 'models/em_error.dart';
 
 @Deprecated("Switch to using MessageStatusCallBack instead.")
 abstract class StatusListener {
-  /// 消息进度
+  /// The status of a message.
   void onProgress(int progress) {}
 
-  /// 消息发送失败
+  /// The message fails to be delivered.
   void onError(EMError error) {}
 
-  /// 消息发送成功
+  /// The message is successfully delivered.
   void onSuccess() {}
 
-  /// 消息已读
+  /// The message is read.
   void onReadAck() {}
 
-  /// 消息已送达
+  /// The message is delivered.
   void onDeliveryAck() {}
 
-  /// 消息状态发生改变
+  /// Occurs when the status of the message changes.
   void onStatusChanged() {}
 }

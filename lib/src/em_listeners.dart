@@ -81,7 +81,7 @@ abstract class EMMultiDeviceListener {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [usernames] The userIds.
+  /// Param [usernames] The array of usernames.
   ///
   void onGroupEvent(
     EMMultiDevicesEvent event,
@@ -97,15 +97,15 @@ abstract class EMCustomListener {
 ///
 /// The contact updates listener.
 ///
-/// Listen for the contact changes, including requests to add friends, notifications to delete friends,
+/// Occurs when the contact changes, including requests to add friends, notifications to delete friends,
 /// requests to accept friends, and requests to reject friends.
 ///
-/// Register listener：
+/// Register the listener：
 /// ```dart
 ///   EMClient.getInstance.contactManager.addContactListener(contactListener);
 /// ```
 ///
-/// Unregister listener：
+/// Unregister the listener：
 /// ```dart
 ///   EMClient.getInstance.contactManager.removeContactListener(contactListener);
 /// ```
@@ -156,12 +156,12 @@ abstract class EMContactManagerListener {
 ///
 /// The chat room change listener.
 ///
-/// Register chat room change listener:
+/// Register the chat room change listener:
 /// ```dart
 ///   EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(listener);
 /// ```
 ///
-///Unregister chat room change listener:
+///Unregister the chat room change listener:
 /// ```dart
 ///   EMClient.getInstance.chatRoomManager.removeChatRoomListener(listener);
 /// ```
@@ -300,92 +300,240 @@ abstract class EMChatRoomEventListener {
   /// Param [roomId] The chatroom ID.
   ///
   /// Param [isAllMuted] Whether all chat room members is muted or unmuted.
+  /// - `true`: Yes;
+  /// - `false`: No.
   ///
   void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted);
 }
 
 @Deprecated('Use EMGroupEventListener.')
 abstract class EMGroupChangeListener {
-  /// id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
+  ///
+  /// Occurs when an invitation is rejected by the inviter.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [inviter] The username of the inviter.
+  ///
+  /// Param [reason] The reason.
+  ///
   void onInvitationReceivedFromGroup(
       String groupId, String? groupName, String inviter, String? reason);
 
-  /// 收到用户[applicant]申请加入id是[groupId], 名称是[groupName]的群，原因是[reason]
+  ///
+  /// Occurs when a group join application is received from an applicant.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [applicant] The username of the applicant.
+  ///
+  /// Param [reason] The reason.
+  ///
   void onRequestToJoinReceivedFromGroup(
       String groupId, String? groupName, String applicant, String? reason);
 
-  /// 入群申请被同意
+  ///
+  /// Occurs when a group-join application is accepted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [accepter] The username of the accepter.
+  ///
   void onRequestToJoinAcceptedFromGroup(
       String groupId, String? groupName, String accepter);
 
-  /// 入群申请被拒绝
+  ///
+  /// Occurs when a group-join application is declined.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [decliner] The username of the decliner.
+  ///
+  /// Param [reason] The reason.
+  ///
   void onRequestToJoinDeclinedFromGroup(
       String groupId, String? groupName, String decliner, String? reason);
 
-  /// 入群邀请被同意
+  ///
+  /// Occurs when a group invitation is approved.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [invitee] The username of the invitee.
+  ///
+  /// Param [reason] The reason.
+  ///
   void onInvitationAcceptedFromGroup(
       String groupId, String invitee, String? reason);
 
-  /// 入群邀请被拒绝
+  ///
+  /// Occurs when a group invitation is declined.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [invitee] The username of the invitee.
+  ///
+  /// Param [reason] The reason.
+  ///
   void onInvitationDeclinedFromGroup(
       String groupId, String invitee, String? reason);
 
-  /// 被移出群组
+  /// Occurs when a group member is removed from the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
   void onUserRemovedFromGroup(String groupId, String? groupName);
 
-  /// 群组解散
+  /// Occurs when a group is destroyed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
   void onGroupDestroyed(String groupId, String? groupName);
 
-  /// @nodoc 自动同意加群
+  /// Occurs when the group invitation is accepted automatically.
+  /// The SDK will join the group before notifying the app of the acceptance of the group invitation.
+  /// For settings, see {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
+  ///
+  /// Param [groupId]			The group ID.
+  /// Param [inviter]			The inviter ID.
+  /// Param [inviteMessage]		The invitation message.
+  ///
   void onAutoAcceptInvitationFromGroup(
       String groupId, String inviter, String? inviteMessage);
 
-  /// 群禁言列表增加
+  /// Occurs when members are added to the mute list of the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [mutes] The members to be muted.
+  ///
+  /// Param [muteExpire] Reserved parameter. The time when the mute state expires.
+  ///
   void onMuteListAddedFromGroup(
       String groupId, List<String> mutes, int? muteExpire);
 
-  /// 群禁言列表减少
+  /// Occurs when members are removed from the mute list of the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [mutes] The members to be removed from the mute list.
+  ///
   void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
 
-  /// 群管理增加
+  ///
+  /// Occurs when members are changed to admins.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [admin] The members changed to be admins.
+  ///
   void onAdminAddedFromGroup(String groupId, String admin);
 
-  /// 群管理被移除
+  ///
+  /// Occurs when an admin permission is removed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [admin] The member whose admin permission is removed.
   void onAdminRemovedFromGroup(String groupId, String admin);
 
-  /// 群所有者变更
+  ///
+  /// Occurs when the chat room ownership is transferred.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [newOwner] The new owner.
+  ///
+  /// Param [oldOwner] The previous owner.
   void onOwnerChangedFromGroup(
       String groupId, String newOwner, String oldOwner);
 
-  /// 有用户加入群
+  ///
+  /// Occurs when a member joins the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The new member.
   void onMemberJoinedFromGroup(String groupId, String member);
 
-  /// 有用户离开群
+  ///
+  /// Occurs when a member exits the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The member who exits the group.
   void onMemberExitedFromGroup(String groupId, String member);
 
-  /// 群公告变更
+  ///
+  /// Occurs when the announcement changed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The new announcement.
   void onAnnouncementChangedFromGroup(String groupId, String announcement);
 
-  /// 群共享文件增加
+  /// Occurs when a shared file is added to the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The new shared File.
+  ///
   void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
 
-  /// 群共享文件被删除
+  ///
+  /// Occurs when a shared file is deleted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The ID of the shared file that is deleted.
+  ///
   void onSharedFileDeletedFromGroup(String groupId, String fileId);
 
-  /// 有用户被添加到群组白名单
+  ///
+  /// Occurs when one or more group members are added to the allow list.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [members] The members that are added to the allow list.
   void onWhiteListAddedFromGroup(String groupId, List<String> members);
 
-  /// 有用户从群组白名单被移除
+  ///
+  /// Occurs when one or more group members are removed from the allow list.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [members] The members that are removed from the allow list.
   void onWhiteListRemovedFromGroup(String groupId, List<String> members);
 
-  /// 群组禁言状态发生变化
+  /// Occurs when all group members are muted or unmuted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [isAllMuted] Whether all group members are muted or unmuted.
+  /// - `true`: Yes;
+  /// - `false`: No.
+
   void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
 }
 
 ///
 /// The group change listener.
 ///
-/// Listens for group events such as requesting to join a group, approving or declining a group request, and kicking a user out of a group.
+/// Occurs when the following group events happens: requesting to join a group, approving or declining a group request, and kicking a user out of a group.
 ///
 /// Registers a group change listener:
 /// ```dart
@@ -637,7 +785,9 @@ abstract class EMGroupEventListener {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [isAllMuted] Whether all group members are muted or unmuted. true: all group members are muted; false: all group members are unmuted.
+  /// Param [isAllMuted] Whether all group members are muted or unmuted.
+  /// - `true`: Yes;
+  /// - `false`: No.
   ///
   void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
 }
@@ -713,7 +863,7 @@ abstract class EMChatManagerListener {
   void onConversationsUpdate() {}
 
   ///
-  /// Occurs when received conversation read receipt.
+  /// Occurs when a conversation read receipt is received.
   ///
   /// Occurs in the following scenarios:
   /// (1) The message is read by the receiver (The conversation receipt is sent).

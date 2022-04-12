@@ -22,7 +22,7 @@ import '../../im_flutter_sdk.dart';
 class EMMessage {
   int _groupAckCount = 0;
 
-  /// 消息id
+  /// 消息 ID。
   String? _msgId;
   String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
       Random().nextInt(99999).toString();
@@ -39,44 +39,53 @@ class EMMessage {
   String? conversationId;
 
   ///
-  /// The user ID of the message sender.
+  /// The ID of the message sender.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   String? from = '';
 
   ///
-  /// The user ID of the message recipient.
+  /// The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
   ///
   String? to = '';
 
   ///
-  /// The local timestamp of the message.
+  /// The local timestamp when the message is created on the local device, in milliseconds.
   ///
   int localTime = DateTime.now().millisecondsSinceEpoch;
 
   ///
-  /// The local timestamp of the message.
+  /// The timestamp when the message is received by the server.
   ///
   int serverTime = DateTime.now().millisecondsSinceEpoch;
 
   ///
   /// The delivery receipt, which is to check whether the other party has received the message.
   ///
-  /// Whether the other party has received the message.
-  /// `true`:the message has been delivered to the other party.
+  ///  Whether the recipient has received the message.
+  /// - `true`: Yes.
+  /// - `false`: No.
   ///
   bool hasDeliverAck = false;
 
   ///
-  /// Whether the other party has read the message.
-  /// `true`: The message has been read by the other party.
+  /// Whether the recipient has read the message.
+  /// - `true`: Yes.
+  /// - `false`: No.
   ///
   bool hasReadAck = false;
 
   ///
-  /// Sets whether read receipts are required for group messages.
+  /// Whether read receipts are required for group messages.
   ///
-  /// `true`: Read receipts are required;
-  /// `false`: Read receipts are NOT required.
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///
   ///
   bool needGroupAck = false;
 
@@ -86,10 +95,10 @@ class EMMessage {
   int get groupAckCount => _groupAckCount;
 
   ///
-  /// Checks whether the message is read.
+  /// Whether the message is read.
+  /// - `true`: Yes.
+  /// - `false`: No.
   ///
-  /// `true`: The message is read.
-  /// `false`: The message is unread.
   ///
   bool hasRead = false;
 
