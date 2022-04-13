@@ -3,6 +3,7 @@
 ## 3.8.3+9
 
 - 将设置推送相关操作从EMPushConfigs中移到EMPushManager中；
+- 修复已知bug；
 
 ## 3.8.3+8
 
