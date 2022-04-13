@@ -56,6 +56,18 @@
         [self  bindDeviceToken:call.arguments
                    channelName:call.method
                         result:result];
+    } else if ([EMMethodKeyEnablePush isEqualToString:call.method]) {
+        [self enablePush:call.arguments
+             channelName:call.method
+                  result:result];
+    } else if ([EMMethodKeyDisablePush isEqualToString:call.method]) {
+        [self disablePush:call.arguments
+              channelName:call.method
+                   result:result];
+    } else if ([EMMethodKeyGetNoPushGroups isEqualToString:call.method]) {
+        [self getNoPushGroups:call.arguments
+                  channelName:call.method
+                       result:result];
     }
     else{
         [super handleMethodCall:call result:result];
@@ -153,18 +165,17 @@
                    channelName:(NSString *)aChannelName
                         result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *groupId = param[@"group_id"];
-    bool enablePush = [param[@"enablePush"] boolValue];
+    NSArray *groupIds = param[@"group_ids"];
+    bool noPush = [param[@"noPush"] boolValue];
     
-    [EMClient.sharedClient.pushManager updatePushServiceForGroups:@[groupId]
-                                                      disablePush:!enablePush
+    [EMClient.sharedClient.pushManager updatePushServiceForGroups:groupIds
+                                                      disablePush:noPush
                                                        completion:^(EMError * _Nonnull aError)
     {
-        EMGroup *aGroup = [EMGroup groupWithId:groupId];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:[aGroup toJson]];
+                           object:nil];
     }];
 }
 
@@ -201,5 +212,52 @@
     });
 }
 
+
+- (void)enablePush:(NSDictionary *)param
+       channelName:(NSString *)aChannelName
+            result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        EMError *error = [EMClient.sharedClient.pushManager enableOfflinePush];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:nil];
+        });
+    });
+}
+
+- (void)disablePush:(NSDictionary *)param
+       channelName:(NSString *)aChannelName
+            result:(FlutterResult)result {
+    int startTime = [param[@"start"] intValue];
+    int endTime = [param[@"end"] intValue];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        EMError *error = [EMClient.sharedClient.pushManager disableOfflinePushStart:startTime end:endTime];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:nil];
+        });
+    });
+}
+
+- (void)getNoPushGroups:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSArray<NSString *>* groups = [EMClient.sharedClient.pushManager noPushGroups];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:nil
+                               object:groups];
+        });
+    });
+}
 
 @end
