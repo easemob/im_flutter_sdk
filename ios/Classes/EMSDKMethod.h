@@ -209,12 +209,17 @@ static NSString *const EMMethodKeyOnGroupChanged = @"onGroupChanged";
 static NSString *const EMMethodKeyGetImPushConfig = @"getImPushConfig";
 static NSString *const EMMethodKeyGetImPushConfigFromServer = @"getImPushConfigFromServer";
 static NSString *const EMMethodKeyUpdatePushNickname = @"updatePushNickname";
+static NSString *const EMMethodKeyBindDeviceToken = @"updateAPNsPushToken";
+static NSString *const EMMethodKeyEnablePush = @"enableOfflinePush";
+static NSString *const EMMethodKeyDisablePush = @"disableOfflinePush";
+static NSString *const EMMethodKeyGetNoPushGroups = @"getNoPushGroups";
+
 
 static NSString *const EMMethodKeyImPushNoDisturb = @"imPushNoDisturb";
 static NSString *const EMMethodKeyUpdateImPushStyle = @"updateImPushStyle";
 static NSString *const EMMethodKeyUpdateGroupPushService = @"updateGroupPushService";
 static NSString *const EMMethodKeyGetNoDisturbGroups = @"getNoDisturbGroups";
-static NSString *const EMMethodKeyBindDeviceToken = @"updateAPNsPushToken";
+
 
 
 #pragma mark - EMUserInfoManagerWrapper

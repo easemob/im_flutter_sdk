@@ -54,9 +54,9 @@
                  channelName:call.method
                       result:result];
     } else if ([EMMethodKeyAckGroupMessageRead isEqualToString:call.method]) {
-        [self ackMessageRead:call.arguments
-                 channelName:call.method
-                      result:result];
+        [self ackGroupMessageRead:call.arguments
+                      channelName:call.method
+                           result:result];
     } else if ([EMMethodKeyAckConversationRead isEqualToString:call.method]) {
         [self ackConversationRead:call.arguments
                       channelName:call.method

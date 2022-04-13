@@ -1,6 +1,8 @@
 // 思考： 是否要把所有格式转换的部分都放到这个extension中？
 import '../models/em_group_shared_file.dart';
 
+Type typeOf<T>() => T;
+
 extension MapExtension on Map {
   bool boolValue(String key) {
     if (!containsKey(key)) {
@@ -35,13 +37,13 @@ extension MapExtension on Map {
   List<T>? listValue<T>(String key) {
     if (this.containsKey(key)) {
       List obj = this[key];
-      if (T is String) {
+      if (typeOf<T>().toString() == "String") {
         List<String> strList = [];
         for (var item in obj) {
           strList.add(item);
         }
         return strList as List<T>;
-      } else if (T is EMGroupSharedFile) {
+      } else if (typeOf<T>().toString() == "EMGroupSharedFile") {
         List<EMGroupSharedFile> fileList = [];
         for (var item in obj) {
           var file = EMGroupSharedFile.fromJson(item);
@@ -49,9 +51,8 @@ extension MapExtension on Map {
         }
         return fileList as List<T>;
       }
-    } else {
-      return null;
     }
+    return null;
   }
 }
 

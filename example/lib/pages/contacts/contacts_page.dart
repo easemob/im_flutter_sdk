@@ -249,6 +249,7 @@ class ContactsPageState extends State<ContactsPage>
         _contactList.addAll(list);
       }
     } on EMError {
+      _contactList.clear();
       SmartDialog.showToast('获取失败');
       _loadLocalContacts(count);
     } finally {

@@ -29,7 +29,7 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
    
    ```dart
    dependencies:
-   im_flutter_sdk: ^3.8.3+7
+   im_flutter_sdk: ^3.8.3+9
    ```
 
 2. 执行`flutter pub get`;
@@ -1558,7 +1558,7 @@ try{
 
 ```dart
 try{
-  EMImPushConfig pushManager = await EMClient.getInstance.pushManager.getImPushConfigFromServer();
+  EMPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getPushConfigsFromServer();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1568,7 +1568,7 @@ try{
 
 ```dart
 try{
-  EMImPushConfig pushConfig = await EMClient.getInstance.pushManager.getImPushConfig();
+  EMPushConfigs pushConfigs = await EMClient.getInstance.pushManager.getPushConfigsFromCache();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1578,13 +1578,13 @@ try{
 
 ```dart
 try{
-  await pushConfig.setPushStyle(EMImPushStyle.Simple);
+  await EMClient.getInstance.pushManager.updatePushDisplayStyle(DisplayStyle.Simple);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
 ```
 
-> `EMImPushStyle`是收推送时样式，目前有两种样式：    
+> `DisplayStyle`是收推送时样式，目前有两种样式：    
 > `Simple`显示“您有一条新消息”;     
 > `Summary`显示推送详情;  
 
@@ -1592,7 +1592,7 @@ try{
 
 ```dart
 try{
-  await pushConfig.setNoDisturb(true, 10, 22);
+  await EMClient.getInstance.pushManager.disableOfflinePush(10, 22);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1604,7 +1604,7 @@ try{
 
 ```dart
 try{
-  await pushConfig.setNoDisturb(false);
+  await EMClient.getInstance.pushManager.enableOfflinePush();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1614,7 +1614,7 @@ try{
 
 ```dart
 try{
-  await pushConfig.setGroupToDisturb(groupId, true);
+  await EMClient.getInstance.pushManager.updatePushServiceForGroup(groupId, false);
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
@@ -1624,7 +1624,7 @@ try{
 
 ```dart
 try{
-  List groupIdsList = await pushConfig.noDisturbGroupsFromServer();
+  List<String> groupIdsList = await EMClient.getInstance.pushManager.getNoPushGroupsFromCache();
 } on EMError catch(e) {
   print('操作失败，原因是: $e');
 }
