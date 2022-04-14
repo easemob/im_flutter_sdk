@@ -1,6 +1,23 @@
 ## NEXT
 
+## 3.9.0
+
+- 增加单人推送免打扰接口；
+
+- 增加api referance;
+
+- 增加renewToken api;
+
+- 修改消息callback方式；
+
+- iOS移除自动绑定deviceToken，如需使用，需要在iOS端单独增加；
+
+- android移除多余权限；
+
+- 修改已知bug；
+
 ## 3.8.9
+
 - 增加单聊消息免打扰；
 - 去除不必要的信息收集；
 - 修复安卓某些场景下数据库损坏导致崩溃；
@@ -14,16 +31,14 @@
 - 默认使用https；
 - 优化登录速度；
 
-
 ## 3.8.3+9
-- 将设置推送相关操作从EMPushConfigs中移到EMPushManager中；
 
+- 将设置推送相关操作从EMPushConfigs中移到EMPushManager中；
 
 ## 3.8.3+8
 
 - 修复ios使用token登录失败；
 - 修改Login方法和Logout方法返回值；
-
 
 ## 3.8.3+6
 
