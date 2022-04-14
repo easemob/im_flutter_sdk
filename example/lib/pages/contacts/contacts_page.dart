@@ -17,7 +17,7 @@ class ContactsPage extends StatefulWidget {
 }
 
 class ContactsPageState extends State<ContactsPage>
-    implements EMContactEventListener {
+    implements EMContactManagerListener {
   List<ContactModel> _contactList = [];
   List<ContactModel> _topList = [
     ContactModel.custom('新的好友'),
@@ -291,8 +291,8 @@ class ContactsPageState extends State<ContactsPage>
   Future<List<ContactModel>> _fetchUserInfo(List<String> emIds) async {
     List<ContactModel> ret = [];
 
-    Map<String, EMUserInfo> map = await EMClient.getInstance.userInfoManager
-        .fetchUserInfoByIdWithExpireTime(emIds);
+    Map<String, EMUserInfo> map =
+        await EMClient.getInstance.userInfoManager.fetchUserInfoById(emIds);
 
     List<String> hasInfoIds = map.keys.toList();
     for (var hasInfoId in hasInfoIds) {

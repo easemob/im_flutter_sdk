@@ -27,20 +27,20 @@ void main() {
 }
 
 void initSDK() async {
-  var options = EMOptions(appKey: 'easemob-demo#easeim');
-  options.deleteMessagesAsExitGroup = false;
-  options.deleteMessagesAsExitChatRoom = false;
-  options.autoAcceptGroupInvitation = true;
-  options.debugModel = true;
-  options.enableAPNs("EaseIM_APNS_Product");
+  var options = EMOptions(
+    appKey: 'easemob-demo#easeim',
+    deleteMessagesAsExitGroup: false,
+    deleteMessagesAsExitChatRoom: false,
+    autoAcceptGroupInvitation: true,
+    debugModel: true,
+  );
 
+  options.enableAPNs("EaseIM_APNS_Product");
   await EMClient.getInstance.init(options);
   debugPrint("has init");
 }
 
 class EaseIMDemo extends StatelessWidget {
-  final FocusNode focusNode = FocusNode();
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
@@ -48,11 +48,11 @@ class EaseIMDemo extends StatelessWidget {
     ]);
     return GestureDetector(
       onTap: () {
-        focusNode.unfocus();
+        FocusScope.of(context).requestFocus(FocusNode());
       },
       child: ScreenUtilInit(
         designSize: Size(375, 667),
-        builder: () {
+        builder: (context) {
           return MaterialApp(
             builder: (context, child) => FlutterSmartDialog(child: child),
             debugShowCheckedModeBanner: false,

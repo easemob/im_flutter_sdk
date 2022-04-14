@@ -26,7 +26,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   Widget build(BuildContext context) {
     bool needApproval = false;
     if (_group != null) {
-      if (_group!.settings?.style == EMGroupStyle.PublicJoinNeedApproval) {
+      if (_group!.isMemberOnly == false) {
         needApproval = true;
       } else {
         needApproval = false;
@@ -195,8 +195,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   _fetchGroupInfo() async {
     try {
       SmartDialog.showLoading(msg: '获取中...');
-      _group = await EMClient.getInstance.groupManager
-          .getGroupSpecificationFromServer(
+      _group = await EMClient.getInstance.groupManager.fetchGroupInfoFromServer(
         widget.group.groupId,
       );
 

@@ -1,199 +1,241 @@
 import 'dart:math';
 
 import 'package:flutter/services.dart';
+
 import '../internal/chat_method_keys.dart';
+import '../internal/em_transform_tools.dart';
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
 
-// 消息类型
-enum EMMessageChatType {
-  Chat, // 单聊消息
-  GroupChat, // 群聊消息
-  ChatRoom, // 聊天室消息
-}
+///
+/// The message class.
+///
+/// The sample code for constructing a text message to send is as follows.
+///
+/// ```dart
+///   EMMessage msg = EMMessage.createTxtSendMessage(
+///      username: "user1",
+///      content: "hello",
+///    );
+/// ```
+///
+class EMMessage {
+  int _groupAckCount = 0;
 
-// 消息方向
-enum EMMessageDirection {
-  SEND, // 发送的消息
-  RECEIVE, // 接收的消息
-}
+  /// 消息 ID。
+  String? _msgId;
+  String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
+      Random().nextInt(99999).toString();
 
-// 消息状态
-enum EMMessageStatus {
-  CREATE, // 创建
-  PROGRESS, // 发送中
-  SUCCESS, // 发送成功
-  FAIL, // 发送失败
-}
+  ///
+  /// Gets the message ID.
+  ///
+  /// **return** The message ID.
+  String get msgId => _msgId ?? _msgLocalId;
 
-// 附件状态
-enum EMDownloadStatus {
-  PENDING, // 下载未开始
-  DOWNLOADING, // 下载中
-  SUCCESS, // 下载成功
-  FAILED, // 下载失败
-}
+  ///
+  /// The conversation ID.
+  ///
+  String? conversationId;
 
-/// body类型
-enum EMMessageBodyType {
-  TXT, // 文字消息
-  IMAGE, // 图片消息
-  VIDEO, // 视频消息
-  LOCATION, // 位置消息
-  VOICE, // 音频消息
-  FILE, // 文件消息
-  CMD, // CMD消息
-  CUSTOM, // CUSTOM消息
-}
+  ///
+  /// The ID of the message sender.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  String? from = '';
 
-abstract class EMMessageStatusListener {
-  /// 消息进度
-  void onProgress(int progress) {}
+  ///
+  /// The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  String? to = '';
 
-  /// 消息发送失败
-  void onError(EMError error) {}
+  ///
+  /// The local timestamp when the message is created on the local device, in milliseconds.
+  ///
+  int localTime = DateTime.now().millisecondsSinceEpoch;
 
-  /// 消息发送成功
-  void onSuccess() {}
+  ///
+  /// The timestamp when the message is received by the server.
+  ///
+  int serverTime = DateTime.now().millisecondsSinceEpoch;
 
-  /// 消息已读
-  void onReadAck() {}
+  ///
+  /// The delivery receipt, which is to check whether the other party has received the message.
+  ///
+  ///  Whether the recipient has received the message.
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///
+  bool hasDeliverAck = false;
 
-  /// 消息已送达
-  void onDeliveryAck() {}
+  ///
+  /// Whether the recipient has read the message.
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///
+  bool hasReadAck = false;
 
-  /// 消息状态发生改变
-  void onStatusChanged() {}
-}
+  ///
+  /// Whether read receipts are required for group messages.
+  ///
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///
+  ///
+  bool needGroupAck = false;
 
-class MessageCallBackManager {
-  static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _emMessageChannel =
-      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
-  Map<String, EMMessage> cacheMessageMap = {};
-  static MessageCallBackManager? _instance;
-  static MessageCallBackManager get getInstance =>
-      _instance = _instance ?? MessageCallBackManager._internal();
-  MessageCallBackManager._internal() {
-    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
-      Map<String, dynamic> argMap = call.arguments;
-      int? localTime = argMap['localTime'];
-      EMMessage? msg = cacheMessageMap[localTime.toString()];
-      if (msg == null) {
-        return null;
-      }
-      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
-        return msg._onMessageProgressChanged(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageError) {
-        return msg._onMessageError(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
-        return msg._onMessageSuccess(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
-        return msg._onMessageReadAck(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
-        return msg._onMessageDeliveryAck(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageStatusChanged) {
-        return msg._onMessageStatusChanged(argMap);
-      }
-      return null;
-    });
-  }
+  ///
+  /// Gets the number of members that have read the group message.
+  ///
+  int get groupAckCount => _groupAckCount;
 
-  addMessage(EMMessage message) {
-    cacheMessageMap[message.localTime.toString()] = message;
-  }
+  ///
+  /// Whether the message is read.
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///
+  ///
+  bool hasRead = false;
 
-  removeMessage(EMMessage message) {
-    if (cacheMessageMap.containsKey(message.localTime.toString())) {
-      cacheMessageMap.remove(message.localTime.toString());
+  ///
+  /// The enumeration of the chat type.
+  ///
+  /// There are three chat types: one-to-one chat, group chat, and chat room.
+  ///
+  ChatType chatType = ChatType.Chat;
+
+  ///
+  /// The message direction. see {@link MessageDirection}
+  ///
+  MessageDirection direction = MessageDirection.SEND;
+
+  ///
+  /// Gets the message sending/reception status. see {@link MessageStatus}
+  ///
+  MessageStatus status = MessageStatus.CREATE;
+
+  ///
+  /// Message's extension attribute.
+  ///
+  Map? attributes;
+
+  ///
+  /// Message body. We recommend you use {@link EMMessageBody)}.
+  ///
+  late EMMessageBody body;
+
+  ///
+  /// Sets the message status change callback.
+  /// Your app should set messageStatusCallBack to get the message status and then refresh the UI accordingly.
+  ///
+  MessageStatusCallBack? _messageStatusCallBack;
+
+  void setMessageStatusCallBack(MessageStatusCallBack? callback) {
+    _messageStatusCallBack = callback;
+    if (callback != null) {
+      MessageCallBackManager.getInstance.addMessage(this);
+    } else {
+      MessageCallBackManager.getInstance.removeMessage(localTime.toString());
     }
   }
-}
 
-class EMMessage {
   EMMessage._private();
 
-  /// 构造接收的消息
+  ///
+  /// Creates a received message instance.
+  ///
+  /// Param [body] The message body.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createReceiveMessage({
     required this.body,
-    this.direction = EMMessageDirection.RECEIVE,
-  });
+  }) {
+    this.direction = MessageDirection.RECEIVE;
+  }
 
-  /// 构造发送的消息
+  ///
+  /// Creates a message instance for sending.
+  ///
+  /// Param [body] The message body.
+  ///
+  /// Param [to] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createSendMessage({
     required this.body,
-    this.direction = EMMessageDirection.SEND,
     this.to,
-    this.hasRead = true,
   })  : this.from = EMClient.getInstance.currentUsername,
-        this.conversationId = to;
+        this.conversationId = to {
+    this.hasRead = true;
+    this.direction = MessageDirection.SEND;
+  }
 
   void dispose() {
-    MessageCallBackManager.getInstance.removeMessage(this);
+    MessageCallBackManager.getInstance.removeMessage(localTime.toString());
   }
 
-  Future<void>? _onMessageError(Map map) {
+  void _onMessageError(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    if (listener != null) {
-      listener!.onError(EMError.fromJson(map['error']));
-    }
+    _messageStatusCallBack?.onError?.call(EMError.fromJson(map['error']));
     return null;
   }
 
-  Future<void>? _onMessageProgressChanged(Map map) {
-    if (this.listener != null) {
-      int progress = map['progress'];
-      listener!.onProgress(progress);
-    }
+  void _onMessageProgressChanged(Map<String, dynamic> map) {
+    int progress = map['progress'];
+    _messageStatusCallBack?.onProgress?.call(progress);
     return null;
   }
 
-  Future<void>? _onMessageSuccess(Map map) {
+  void _onMessageSuccess(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map['message']);
     this._msgId = msg.msgId;
     this.status = msg.status;
     this.body = msg.body;
-    if (listener != null) {
-      listener!.onSuccess();
-    }
+    _messageStatusCallBack?.onSuccess?.call();
 
     return null;
   }
 
-  Future<void>? _onMessageReadAck(Map<String, dynamic> map) {
+  void _onMessageReadAck(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.hasReadAck = msg.hasReadAck;
+    _messageStatusCallBack?.onReadAck?.call();
 
-    if (listener != null) {
-      listener!.onReadAck();
-    }
     return null;
   }
 
-  Future<void>? _onMessageDeliveryAck(Map<String, dynamic> map) {
+  void _onMessageDeliveryAck(Map<String, dynamic> map) {
     EMMessage msg = EMMessage.fromJson(map);
     this.hasDeliverAck = msg.hasDeliverAck;
-
-    if (listener != null) {
-      listener!.onDeliveryAck();
-    }
+    _messageStatusCallBack?.onDeliveryAck?.call();
     return null;
   }
 
-  Future<void>? _onMessageStatusChanged(Map<String, dynamic> map) {
-    EMMessage msg = EMMessage.fromJson(map);
-    this.status = msg.status;
-
-    if (listener != null) {
-      listener!.onStatusChanged();
-    }
-    return null;
-  }
-
-  /// 构造发送的文字消息
+  ///
+  /// Creates a text message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [content] The text content.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createTxtSendMessage({
     required String username,
     required String content,
@@ -202,11 +244,26 @@ class EMMessage {
           body: EMTextMessageBody(content: content),
         );
 
-  /// 构造发送的文件消息
+  ///
+  /// Creates a file message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [filePath] The file path.
+  ///
+  /// Param [displayName] The file name.
+  ///
+  /// Param [fileSize] The file size in bytes.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createFileSendMessage({
     required String username,
     required String filePath,
-    String displayName = '',
+    String? displayName,
     int? fileSize,
   }) : this.createSendMessage(
             to: username,
@@ -216,16 +273,41 @@ class EMMessage {
               displayName: displayName,
             ));
 
-  /// 构造发送的图片消息
+  ///
+  /// Creates an image message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [filePath] The image path.
+  ///
+  /// Param [displayName] The image name.
+  ///
+  /// Param [thumbnailLocalPath] The local path of the image thumbnail.
+  ///
+  /// Param [sendOriginalImage] Whether to send the original image.
+  /// - `true`: Yes.
+  /// - `false`: (default) No. For an image greater than 100 KB, the SDK will compress it and send the thumbnail.
+  ///
+  /// Param [fileSize] The image file size in bytes.
+  ///
+  /// Param [width] The image width in pixels.
+  ///
+  /// Param [height] The image height in pixels.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createImageSendMessage({
     required String username,
     required String filePath,
-    String displayName = '',
-    String thumbnailLocalPath = '',
+    String? displayName,
+    String? thumbnailLocalPath,
     bool sendOriginalImage = false,
     int? fileSize,
-    double width = 0,
-    double height = 0,
+    double? width,
+    double? height,
   }) : this.createSendMessage(
             to: username,
             body: EMImageMessageBody(
@@ -237,16 +319,39 @@ class EMMessage {
               height: height,
             ));
 
-  /// 构造发送的视频消息
+  ///
+  ///  Creates a video message instance for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [filePath] The path of the video file.
+  ///
+  /// Param [displayName] The video name.
+  ///
+  /// Param [duration] The video duration in seconds.
+  ///
+  /// Param [fileSize] The video file size in bytes.
+  ///
+  /// Param [thumbnailLocalPath] The local path of the thumbnail, which is usually the first frame of video.
+  ///
+  /// Param [width] The width of the video thumbnail, in pixels.
+  ///
+  /// Param [height] The height of the video thumbnail, in pixels.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createVideoSendMessage({
     required String username,
     required String filePath,
-    String displayName = '',
+    String? displayName,
     int duration = 0,
     int? fileSize,
-    String thumbnailLocalPath = '',
-    double width = 0,
-    double height = 0,
+    String? thumbnailLocalPath,
+    double? width,
+    double? height,
   }) : this.createSendMessage(
             to: username,
             body: EMVideoMessageBody(
@@ -259,13 +364,30 @@ class EMMessage {
               height: height,
             ));
 
-  /// 构造发送的音频消息
+  ///
+  /// Creates a voice message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [filePath] The path of the voice file.
+  ///
+  /// Param [duration] The voice duration in seconds.
+  ///
+  /// Param [fileSize] The size of the voice file, in bytes.
+  ///
+  /// Param [displayName] The name of the voice file which ends with a suffix that indicates the format of the file. For example "voice.mp3".
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createVoiceSendMessage({
     required String username,
     required String filePath,
     int duration = 0,
     int? fileSize,
-    String displayName = '',
+    String? displayName,
   }) : this.createSendMessage(
             to: username,
             body: EMVoiceMessageBody(
@@ -274,179 +396,125 @@ class EMMessage {
                 fileSize: fileSize,
                 displayName: displayName));
 
-  /// 构造发送的位置消息
+  ///
+  /// Creates a location message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [latitude] The latitude.
+  ///
+  /// Param [longitude] The longitude.
+  ///
+  /// Param [address] The address.
+  ///
+  /// Param [buildingName] The building name.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createLocationSendMessage({
     required String username,
     required double latitude,
     required double longitude,
-    String address = '',
+    String? address,
+    String? buildingName,
   }) : this.createSendMessage(
             to: username,
             body: EMLocationMessageBody(
-                latitude: latitude, longitude: longitude, address: address));
+              latitude: latitude,
+              longitude: longitude,
+              address: address,
+            ));
 
-  /// 构造发送的cmd消息
+  /// Creates a command message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [action] The command action.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createCmdSendMessage({required String username, required action})
       : this.createSendMessage(
             to: username, body: EMCmdMessageBody(action: action));
 
-  /// 构造发送的自定义消息
+  /// Creates a custom message for sending.
+  ///
+  /// Param [username] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [event] The event.
+  ///
+  /// Param [Map<String, String>? params] The params map.
+  ///
+  /// **Return** The message instance.
+  ///
   EMMessage.createCustomSendMessage(
       {required String username, required event, Map<String, String>? params})
       : this.createSendMessage(
             to: username,
             body: EMCustomMessageBody(event: event, params: params));
 
-  EMMessageStatusListener? listener;
+  @Deprecated("Switch to using messageStatusCallBack instead.")
+  StatusListener? listener;
 
-  void setMessageListener(EMMessageStatusListener? listener) {
+  @Deprecated("Switch to using messageStatusCallBack instead.")
+  void setMessageStatusListener(StatusListener? listener) {
     this.listener = listener;
-    if (listener != null) {
-      MessageCallBackManager.getInstance.addMessage(this);
-    } else {
-      MessageCallBackManager.getInstance.removeMessage(this);
-    }
   }
 
-  /// 消息id
-  String? _msgId,
-      msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
-          Random().nextInt(99999).toString();
-
-  String? get msgId => _msgId ?? msgLocalId;
-
-  /// 消息所属会话id
-  String? conversationId;
-
-  /// 消息发送方
-  String? from = '';
-
-  /// 消息接收方
-  String? to = '';
-
-  /// 消息本地时间
-  int localTime = DateTime.now().millisecondsSinceEpoch;
-
-  /// 消息的服务器时间
-  int serverTime = DateTime.now().millisecondsSinceEpoch;
-
-  /// 消息是否收到已送达回执
-  bool hasDeliverAck = false;
-
-  /// 消息是否发送/收到已读回执
-  bool hasReadAck = false;
-
-  /// 是否需要群消息已读回执，默认为false
-  bool needGroupAck = false;
-
-  /// 群消息已读数量，只有在群消息时有效
-  int groupAckCount = 0;
-
-  /// 是否已读
-  bool hasRead = false;
-
-  /// 消息类型
-  EMMessageChatType chatType = EMMessageChatType.Chat;
-
-  /// 消息方向
-  EMMessageDirection direction = EMMessageDirection.SEND;
-
-  /// 消息状态
-  EMMessageStatus status = EMMessageStatus.CREATE;
-
-  /// 消息扩展
-  Map attributes = {};
-
-  /// msg body
-  EMMessageBody? body;
-
+  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['from'] = this.from;
-    data['to'] = this.to;
-    data['body'] = this.body!.toJson();
-    data['attributes'] = this.attributes;
-    data['direction'] =
-        this.direction == EMMessageDirection.SEND ? 'send' : 'rec';
-    data['hasRead'] = this.hasRead;
-    data['hasReadAck'] = this.hasReadAck;
-    data['hasDeliverAck'] = this.hasDeliverAck;
-    data['needGroupAck'] = this.needGroupAck;
-    data['groupAckCount'] = this.groupAckCount;
-    data['msgId'] = this.msgId;
-    data['conversationId'] = this.conversationId ?? this.to;
-    data['chatType'] = chatTypeToInt(this.chatType);
-    data['localTime'] = this.localTime;
-    data['serverTime'] = this.serverTime;
-    data['status'] = _chatStatusToInt(this.status);
+    data.setValueWithOutNull("from", from);
+    data.setValueWithOutNull("to", to);
+    data.setValueWithOutNull("body", body.toJson());
+    data.setValueWithOutNull("attributes", attributes);
+    data.setValueWithOutNull(
+        "direction", this.direction == MessageDirection.SEND ? 'send' : 'rec');
+    data.setValueWithOutNull("hasRead", hasRead);
+    data.setValueWithOutNull("hasReadAck", hasReadAck);
+    data.setValueWithOutNull("hasDeliverAck", hasDeliverAck);
+    data.setValueWithOutNull("needGroupAck", needGroupAck);
+    data.setValueWithOutNull("groupAckCount", groupAckCount);
+    data.setValueWithOutNull("msgId", msgId);
+    data.setValueWithOutNull("conversationId", this.conversationId ?? this.to);
+    data.setValueWithOutNull("chatType", chatTypeToInt(chatType));
+    data.setValueWithOutNull("localTime", localTime);
+    data.setValueWithOutNull("serverTime", serverTime);
+    data.setValueWithOutNull("status", messageStatusToInt(this.status));
 
     return data;
   }
 
+  /// @nodoc
   factory EMMessage.fromJson(Map<String, dynamic> map) {
     return EMMessage._private()
-      ..to = map['to'] as String?
-      ..from = map['from'] as String?
-      ..body = _bodyFromMap(map['body'])
-      ..attributes = map['attributes'] ?? {}
-      ..direction = map['direction'] == 'send'
-          ? EMMessageDirection.SEND
-          : EMMessageDirection.RECEIVE
+      ..to = map.getStringValue("to")
+      ..from = map.getStringValue("from")
+      ..body = _bodyFromMap(map["body"])!
+      ..attributes = map.getMapValue("attributes")
+      ..direction = map.getStringValue("direction") == 'send'
+          ? MessageDirection.SEND
+          : MessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
-      ..groupAckCount = map["groupAckCount"] as int? ?? 0
+      .._groupAckCount = map.getIntValue("groupAckCount", defaultValue: 0)!
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
-      .._msgId = map['msgId'] as String?
-      ..conversationId = map['conversationId'] as String?
-      ..chatType = chatTypeFromInt(map['chatType'] as int?)
-      ..localTime = map['localTime'] as int
-      ..serverTime = map['serverTime'] as int
-      ..status = _chatStatusFromInt(map['status'] as int?);
-  }
-
-  static int chatTypeToInt(EMMessageChatType type) {
-    if (type == EMMessageChatType.ChatRoom) {
-      return 2;
-    } else if (type == EMMessageChatType.GroupChat) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  static EMMessageChatType chatTypeFromInt(int? type) {
-    if (type == 2) {
-      return EMMessageChatType.ChatRoom;
-    } else if (type == 1) {
-      return EMMessageChatType.GroupChat;
-    } else {
-      return EMMessageChatType.Chat;
-    }
-  }
-
-  static int _chatStatusToInt(EMMessageStatus status) {
-    if (status == EMMessageStatus.FAIL) {
-      return 3;
-    } else if (status == EMMessageStatus.SUCCESS) {
-      return 2;
-    } else if (status == EMMessageStatus.PROGRESS) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  static EMMessageStatus _chatStatusFromInt(int? status) {
-    if (status == 3) {
-      return EMMessageStatus.FAIL;
-    } else if (status == 2) {
-      return EMMessageStatus.SUCCESS;
-    } else if (status == 1) {
-      return EMMessageStatus.PROGRESS;
-    } else {
-      return EMMessageStatus.CREATE;
-    }
+      .._msgId = map.getStringValue("msgId")
+      ..conversationId = map.getStringValue("conversationId")
+      ..chatType = chatTypeFromInt(map.getIntValue("chatType"))
+      ..localTime = map.getIntValue("localTime", defaultValue: 0)!
+      ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
+      ..status = messageStatusFromInt(map.intValue("status"));
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {
@@ -488,392 +556,43 @@ class EMMessage {
   }
 }
 
-// message body
-abstract class EMMessageBody {
-  EMMessageBody({required this.type});
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  Map<String, EMMessage> cacheHandleMap = {};
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
 
-  EMMessageBody.fromJson({required Map map, this.type});
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      int? localTime = argMap['localTime'];
+      EMMessage? handle = cacheHandleMap[localTime.toString()];
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = EMMessageBody.bodyTypeToTypeStr(this.type!);
-    return data;
+      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+        return handle?._onMessageProgressChanged(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageError) {
+        return handle?._onMessageError(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+        return handle?._onMessageSuccess(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
+        return handle?._onMessageReadAck(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
+        return handle?._onMessageDeliveryAck(argMap);
+      }
+      return null;
+    });
   }
 
-  @override
-  String toString() {
-    return toJson().toString();
+  void addMessage(EMMessage message) {
+    cacheHandleMap[message.localTime.toString()] = message;
   }
 
-  static String bodyTypeToTypeStr(EMMessageBodyType type) {
-    switch (type) {
-      case EMMessageBodyType.TXT:
-        return 'txt';
-      case EMMessageBodyType.LOCATION:
-        return 'loc';
-      case EMMessageBodyType.CMD:
-        return 'cmd';
-      case EMMessageBodyType.CUSTOM:
-        return 'custom';
-      case EMMessageBodyType.FILE:
-        return 'file';
-      case EMMessageBodyType.IMAGE:
-        return 'img';
-      case EMMessageBodyType.VIDEO:
-        return 'video';
-      case EMMessageBodyType.VOICE:
-        return 'voice';
+  void removeMessage(String key) {
+    if (cacheHandleMap.containsKey(key)) {
+      cacheHandleMap.remove(key);
     }
   }
-
-  // body 类型
-  EMMessageBodyType? type;
-}
-
-/// text body
-class EMTextMessageBody extends EMMessageBody {
-  EMTextMessageBody({required this.content})
-      : super(type: EMMessageBodyType.TXT);
-
-  EMTextMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.TXT) {
-    this.content = map['content'];
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['content'] = this.content;
-    return data;
-  }
-
-  String? content = '';
-}
-
-/// location body
-class EMLocationMessageBody extends EMMessageBody {
-  EMLocationMessageBody(
-      {required this.latitude, required this.longitude, this.address})
-      : super(type: EMMessageBodyType.LOCATION);
-
-  EMLocationMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.LOCATION) {
-    this.latitude = map['latitude'];
-    this.longitude = map['longitude'];
-    this.address = map['address'];
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['address'] = this.address;
-    data['latitude'] = this.latitude;
-    data['longitude'] = this.longitude;
-    return data;
-  }
-
-  /// 地址
-  String? address = '';
-
-  /// 经纬度
-  double? latitude = 0;
-  double? longitude = 0;
-}
-
-/// file body
-class EMFileMessageBody extends EMMessageBody {
-  EMFileMessageBody({
-    this.localPath,
-    this.displayName,
-    int? fileSize,
-    EMMessageBodyType type = EMMessageBodyType.FILE,
-  }) : super(type: type) {
-    this.fileSize = fileSize ?? 0;
-  }
-
-  EMFileMessageBody.fromJson(
-      {required Map map, EMMessageBodyType type = EMMessageBodyType.FILE})
-      : super.fromJson(map: map, type: type) {
-    this.secret = map['secret'];
-    this.remotePath = map['remotePath'];
-    this.fileSize = map['fileSize'];
-    this.localPath = map['localPath'];
-    this.displayName = map['displayName'];
-    this.fileStatus = EMFileMessageBody.downloadStatusFromInt(
-      map['fileStatus'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['secret'] = this.secret;
-    data['remotePath'] = this.remotePath;
-    // if (this.fileSize != 0) {
-    data['fileSize'] = this.fileSize;
-    // }
-    data['localPath'] = this.localPath;
-    data['displayName'] = this.displayName ?? '';
-    data['fileStatus'] = EMFileMessageBody.downloadStatusToInt(this.fileStatus);
-    return data;
-  }
-
-  /// 本地路径
-  String? localPath = '';
-
-  /// secret
-  String? secret = '';
-
-  /// 服务器路径
-  String? remotePath = '';
-
-  /// 附件状态
-  EMDownloadStatus fileStatus = EMDownloadStatus.PENDING;
-
-  /// 文件大小
-  int fileSize = 0;
-
-  /// 文件名称
-  String? displayName = '';
-
-  static EMDownloadStatus downloadStatusFromInt(int? status) {
-    if (status == 0) {
-      return EMDownloadStatus.DOWNLOADING;
-    } else if (status == 1) {
-      return EMDownloadStatus.SUCCESS;
-    } else if (status == 2) {
-      return EMDownloadStatus.FAILED;
-    } else {
-      return EMDownloadStatus.PENDING;
-    }
-  }
-
-  static int downloadStatusToInt(EMDownloadStatus status) {
-    if (status == EMDownloadStatus.DOWNLOADING) {
-      return 0;
-    } else if (status == EMDownloadStatus.SUCCESS) {
-      return 1;
-    } else if (status == EMDownloadStatus.FAILED) {
-      return 2;
-    } else {
-      return 3;
-    }
-  }
-}
-
-/// image body
-class EMImageMessageBody extends EMFileMessageBody {
-  EMImageMessageBody({
-    String? localPath,
-    String? displayName,
-    this.thumbnailLocalPath,
-    this.sendOriginalImage,
-    int? fileSize,
-    this.width,
-    this.height,
-  }) : super(
-          localPath: localPath,
-          displayName: displayName,
-          fileSize: fileSize,
-          type: EMMessageBodyType.IMAGE,
-        );
-
-  EMImageMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.IMAGE) {
-    this.thumbnailLocalPath = map['thumbnailLocalPath'];
-    this.thumbnailRemotePath = map['thumbnailRemotePath'];
-    this.thumbnailSecret = map['thumbnailSecret'];
-    this.sendOriginalImage = map.boolValue('sendOriginalImage');
-    this.height = map['height']?.toDouble();
-    this.width = map['width']?.toDouble();
-    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
-      map['thumbnailStatus'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['thumbnailLocalPath'] = this.thumbnailLocalPath;
-    data['thumbnailRemotePath'] = this.thumbnailRemotePath;
-    data['thumbnailSecret'] = this.thumbnailSecret;
-    data['sendOriginalImage'] = this.sendOriginalImage;
-    data['height'] = this.height;
-    data['width'] = this.width;
-    data['thumbnailStatus'] =
-        EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
-    return data;
-  }
-
-  /// 是否是原图
-  bool? sendOriginalImage = false;
-
-  /// 缩略图本地地址
-  String? thumbnailLocalPath = '';
-
-  /// 缩略图服务器地址
-  String? thumbnailRemotePath = '';
-
-  /// 缩略图 secret
-  String? thumbnailSecret = '';
-
-  /// 缩略图状态
-  EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
-
-  /// 宽
-  double? width = 0;
-
-  /// 高
-  double? height = 0;
-}
-
-/// video body
-class EMVideoMessageBody extends EMFileMessageBody {
-  EMVideoMessageBody({
-    String? localPath,
-    String? displayName,
-    this.duration,
-    int? fileSize,
-    this.thumbnailLocalPath,
-    this.height,
-    this.width,
-  }) : super(
-          localPath: localPath,
-          displayName: displayName,
-          fileSize: fileSize,
-          type: EMMessageBodyType.VIDEO,
-        );
-
-  EMVideoMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.VIDEO) {
-    this.duration = map['duration'] as int?;
-    this.thumbnailLocalPath = map['thumbnailLocalPath'] as String?;
-    this.thumbnailRemotePath = map['thumbnailRemotePath'] as String?;
-    this.thumbnailSecret = map['thumbnailSecret'] as String?;
-    this.height = map['height']?.toDouble();
-    this.width = map['width']?.toDouble();
-    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
-      map['thumbnailStatus'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['duration'] = this.duration;
-    data['thumbnailLocalPath'] = this.thumbnailLocalPath;
-    data['thumbnailRemotePath'] = this.thumbnailRemotePath;
-    data['thumbnailSecret'] = this.thumbnailSecret;
-    data['height'] = this.height;
-    data['width'] = this.width;
-    data['thumbnailStatus'] =
-        EMFileMessageBody.downloadStatusToInt(this.thumbnailStatus);
-    return data;
-  }
-
-  /// 时长。秒
-  int? duration = 0;
-
-  /// 缩略图本地地址
-  String? thumbnailLocalPath = '';
-
-  /// 缩略图服务器地址
-  String? thumbnailRemotePath = '';
-
-  /// 缩略图 secret
-  String? thumbnailSecret = '';
-
-  /// 缩略图状态
-  EMDownloadStatus thumbnailStatus = EMDownloadStatus.PENDING;
-
-  /// 宽
-  double? width = 0;
-
-  /// 高
-  double? height = 0;
-}
-
-/// voice body
-class EMVoiceMessageBody extends EMFileMessageBody {
-  EMVoiceMessageBody({
-    localPath,
-    String? displayName,
-    int? fileSize,
-    this.duration,
-  }) : super(
-          localPath: localPath,
-          displayName: displayName,
-          fileSize: fileSize,
-          type: EMMessageBodyType.VOICE,
-        );
-
-  EMVoiceMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.VOICE) {
-    this.duration = map['duration'];
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['duration'] = this.duration;
-    return data;
-  }
-
-  /// 时长, 秒
-  int? duration = 0;
-}
-
-/// cmd body
-class EMCmdMessageBody extends EMMessageBody {
-  EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
-      : super(type: EMMessageBodyType.CMD);
-
-  EMCmdMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.CMD) {
-    this.action = map['action'];
-    this.deliverOnlineOnly = map['deliverOnlineOnly'] == 0 ? false : true;
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['action'] = this.action;
-    data['deliverOnlineOnly'] = this.deliverOnlineOnly;
-    return data;
-  }
-
-  /// cmd 标识
-  String? action = '';
-
-  /// 只投在线
-  bool? deliverOnlineOnly = false;
-}
-
-/// custom body
-class EMCustomMessageBody extends EMMessageBody {
-  EMCustomMessageBody({required this.event, this.params})
-      : super(type: EMMessageBodyType.CUSTOM);
-
-  EMCustomMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: EMMessageBodyType.CUSTOM) {
-    this.event = map['event'];
-    this.params = map['params']?.cast<String, String>();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = super.toJson();
-    data['event'] = event;
-    if (params != null) {
-      data['params'] = params;
-    }
-
-    return data;
-  }
-
-  /// 自定义事件key
-  String? event = '';
-
-  /// 附加参数
-  Map<String, String>? params = {};
 }

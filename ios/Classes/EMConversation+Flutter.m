@@ -6,17 +6,14 @@
 //
 
 #import "EMConversation+Flutter.h"
-#import "EMMessage+Flutter.h"
+#import "EMChatMessage+Flutter.h"
 
 @implementation EMConversation (Flutter)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"con_id"] = self.conversationId;
     ret[@"type"] = @([self.class typeToInt:self.type]);
-    ret[@"unreadCount"] = @(self.unreadMessagesCount);
     ret[@"ext"] = self.ext;
-    ret[@"latestMessage"] = [self.latestMessage toJson];
-    ret[@"lastReceivedMessage"] = [self.lastReceivedMessage toJson];
     return ret;
 }
 

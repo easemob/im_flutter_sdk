@@ -44,9 +44,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.syncConversationExt.equals(call.method)){
                 syncConversationExt(param, call.method, result);
             }
-            else if (EMSDKMethod.syncConversationName.equals(call.method)){
-                syncConversationName(param, call.method, result);
-            }
             else if (EMSDKMethod.removeMessage.equals(call.method))
             {
                 removeMessage(param, call.method, result);
@@ -84,7 +81,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.loadMsgWithTime.equals(call.method)) {
                 loadMsgWithTime(param, call.method, result);
             }
-
             else
             {
                 super.onMethodCall(call, result);
@@ -117,22 +113,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         asyncRunnable(()->{
             conversation.markMessageAsRead(msg_id);
-            onSuccess(result, channelName, true);
-        });
-    }
-
-    private void syncConversationName(JSONObject params, String channelName, Result result) throws JSONException {
-        EMConversation conversation = conversationWithParam(params);
-        String conName = params.getString("con_name");
-        String extField = conversation.getExtField();
-        JSONObject jsonObject = new JSONObject();
-        if(!extField.isEmpty()){
-            jsonObject = new JSONObject(extField);
-        }
-        jsonObject.put("con_name", conName);
-        String jsonStr = jsonObject.toString();
-        conversation.setExtField(jsonStr);
-        asyncRunnable(()->{
             onSuccess(result, channelName, true);
         });
     }
@@ -310,7 +290,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             onSuccess(result, channelName, messages);
         });
     }
-
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
         String con_id = params.getString("con_id");

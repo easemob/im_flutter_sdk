@@ -41,15 +41,29 @@ class ChatItem extends StatefulWidget {
   State<StatefulWidget> createState() => ChatItemState();
 }
 
-class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
+class ChatItemState extends State<ChatItem> {
   void initState() {
     super.initState();
-    widget.msg.setMessageListener(this);
+    widget.msg.setMessageStatusCallBack(MessageStatusCallBack(onSuccess: () {
+      if (mounted) {
+        setState(() {});
+      }
+    }, onError: (error) {
+      if (mounted) {
+        setState(() {});
+      }
+    }, onReadAck: () {
+      if (mounted) {
+        setState(() {});
+      }
+    }, onProgress: (progress) {
+      debugPrint("progress --- $progress");
+    }));
   }
 
   @override
   Widget build(context) {
-    bool isRecv = widget.msg.direction == EMMessageDirection.RECEIVE;
+    bool isRecv = widget.msg.direction == MessageDirection.RECEIVE;
     return Builder(
       builder: (_) {
         _info() {
@@ -74,7 +88,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
         }
 
         Widget ret;
-        if (isRecv && widget.msg.chatType != EMMessageChatType.Chat) {
+        if (isRecv && widget.msg.chatType != ChatType.Chat) {
           ret = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -190,7 +204,7 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
       } else {
         return Builder(
           builder: (_) {
-            if (widget.msg.status == EMMessageStatus.PROGRESS) {
+            if (widget.msg.status == MessageStatus.PROGRESS) {
               return Padding(
                 padding: EdgeInsets.all(sWidth(10)),
                 child: SizedBox(
@@ -201,8 +215,8 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
                   ),
                 ),
               );
-            } else if (widget.msg.status == EMMessageStatus.FAIL ||
-                widget.msg.status == EMMessageStatus.CREATE) {
+            } else if (widget.msg.status == MessageStatus.FAIL ||
+                widget.msg.status == MessageStatus.CREATE) {
               return IconButton(
                 padding: EdgeInsets.zero,
                 icon: Icon(
@@ -225,55 +239,22 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
     return Container();
   }
 
-  @override
-  void onDeliveryAck() {}
-
-  @override
-  void onError(EMError error) {
-    if (mounted) {
-      setState(() {});
-    }
-    print('发送失败');
-  }
-
-  @override
-  void onProgress(int progress) {
-    print('progress --- $progress');
-  }
-
-  @override
-  void onReadAck() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  void onStatusChanged() {}
-
-  @override
-  void onSuccess() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   _messageBubble() {
-    EMMessageBody body = widget.msg.body!;
-    bool isSend = widget.msg.direction != EMMessageDirection.RECEIVE;
+    EMMessageBody body = widget.msg.body;
+    bool isSend = widget.msg.direction != MessageDirection.RECEIVE;
     return Builder(builder: (_) {
       Widget bubble;
-      switch (widget.msg.body!.type!) {
-        case EMMessageBodyType.TXT:
+      switch (widget.msg.body.type) {
+        case MessageType.TXT:
           bubble = ChatTextBubble(body as EMTextMessageBody);
           break;
-        case EMMessageBodyType.LOCATION:
+        case MessageType.LOCATION:
           bubble = ChatLocationBubble(body as EMLocationMessageBody);
           break;
-        case EMMessageBodyType.IMAGE:
+        case MessageType.IMAGE:
           bubble = ChatImageBubble(body as EMImageMessageBody, isSend);
           break;
-        case EMMessageBodyType.VOICE:
+        case MessageType.VOICE:
           bubble = Builder(builder: (context) {
             return Selector(
               selector: (_, ChatVoicePlayer player) {
@@ -287,14 +268,14 @@ class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
             );
           });
           break;
-        case EMMessageBodyType.VIDEO:
+        case MessageType.VIDEO:
           bubble = ChatVideoBubble(body as EMVideoMessageBody);
           break;
-        case EMMessageBodyType.FILE:
+        case MessageType.FILE:
           bubble = ChatFileBubble(body as EMFileMessageBody);
           break;
-        case EMMessageBodyType.CMD:
-        case EMMessageBodyType.CUSTOM:
+        case MessageType.CMD:
+        case MessageType.CUSTOM:
           bubble = Container();
       }
       return Container(

@@ -6,46 +6,62 @@ import 'em_chat_enums.dart';
 import 'em_error.dart';
 import '../em_push_manager.dart';
 
+/// The push configuration class.
 class EMPushConfigs {
-  EMPushConfigs._private();
+  EMPushConfigs._private({
+    this.displayStyle = DisplayStyle.Simple,
+    this.noDisturb = false,
+    this.noDisturbStartHour = -1,
+    this.noDisturbEndHour = -1,
+  });
 
+  ///
+  /// The display type of push notifications.
+  ///
+  final DisplayStyle displayStyle;
+
+  ///
+  /// Whether to enable the do-not-disturb mode for push notifications.
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///  Sets it by {@link EMPushManager#disableOfflinePush(int, int)}.
+  ///
+  final bool noDisturb;
+
+  ///
+  /// The start hour of the do-not-disturb mode for push notifications.
+  ///
+  final int noDisturbStartHour;
+
+  ///
+  /// The end hour of the do-not-disturb mode for push notifications.
+  ///
+  final int noDisturbEndHour;
+
+  // ignore: unused_field
   DisplayStyle? _displayStyle;
-  @Deprecated("Switch to using DisplayStyle instead")
-  EMPushStyle? _pushStyle;
+  // ignore: unused_field
   bool? _noDisturb;
+  // ignore: unused_field
   int? _noDisturbStartHour;
+  // ignore: unused_field
   int? _noDisturbEndHour;
+  // ignore: unused_field
   List<String>? _noDisturbGroups = [];
 
-  @Deprecated("Switch to using DisplayStyle instead")
-  EMPushStyle? get pushStyle => _pushStyle;
-
-  DisplayStyle? get displayStyle => _displayStyle;
-
-  bool? get noDisturb => _noDisturb;
-  int? get noDisturbStartHour => _noDisturbStartHour;
-  int? get noDisturbEndHour => _noDisturbEndHour;
-  List<String>? get noDisturbGroups => _noDisturbGroups;
-
+  /// @nodoc
   factory EMPushConfigs.fromJson(Map map) {
-    return EMPushConfigs._private()
-      .._displayStyle =
-          map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary
-      .._noDisturb = map.boolValue('noDisturb')
-      .._noDisturbStartHour = map['noDisturbStartHour']
-      .._noDisturbEndHour = map['noDisturbEndHour'];
-  }
-
-  Map toJson() {
-    Map data = Map();
-    data['pushStyle'] = _displayStyle == DisplayStyle.Simple;
-    data['noDisturb'] = _noDisturb;
-    data['noDisturbStartHour'] = _noDisturbStartHour;
-    data['noDisturbEndHour'] = _noDisturbEndHour;
-    return data;
+    return EMPushConfigs._private(
+      displayStyle:
+          map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary,
+      noDisturb: map.boolValue('noDisturb'),
+      noDisturbStartHour: map['noDisturbStartHour'],
+      noDisturbEndHour: map['noDisturbEndHour'],
+    );
   }
 }
 
+/// @nodoc
 extension EMPushConfigsExtension on EMPushConfigs {
   // channel的命名与pushManager中的channel一致，本质上还是一个channel。
   static const MethodChannel _channel =
@@ -65,11 +81,10 @@ extension EMPushConfigsExtension on EMPushConfigs {
       'startTime': startTime,
       'endTime': endTime
     };
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.imPushNoDisturb, req);
+    Map result = await _channel.invokeMethod("imPushNoDisturb", req);
     try {
       EMError.hasErrorFromResult(result);
-      bool success = result.boolValue(ChatMethodKeys.imPushNoDisturb);
+      bool success = result.boolValue("imPushNoDisturb");
       if (success) {
         _noDisturb = isNoDisturb;
         _noDisturbStartHour = startTime;
@@ -109,11 +124,10 @@ extension EMPushConfigsExtension on EMPushConfigs {
 
   @Deprecated("Switch to using EMPushManager#getNoPushGroups instead")
   Future<List<String>?> noDisturbGroupsFromServer() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getNoDisturbGroups);
+    Map result = await _channel.invokeMethod("getNoDisturbGroups");
     try {
       EMError.hasErrorFromResult(result);
-      _noDisturbGroups =
-          result[ChatMethodKeys.getNoDisturbGroups]?.cast<String>();
+      _noDisturbGroups = result["getNoDisturbGroups"]?.cast<String>();
       return _noDisturbGroups;
     } on EMError catch (e) {
       throw e;

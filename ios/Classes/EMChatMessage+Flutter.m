@@ -1,16 +1,16 @@
 //
-//  EMMessage+Flutter.m
+//  EMChatMessage+Flutter.m
 //  Pods
 //
 //  Created by 杜洁鹏 on 2020/9/11.
 //
 
-#import "EMMessage+Flutter.h"
+#import "EMChatMessage+Flutter.h"
 
 
-@implementation EMMessage (Flutter)
+@implementation EMChatMessage (Flutter)
 
-+ (EMMessage *)fromJson:(NSDictionary *)aJson
++ (EMChatMessage *)fromJson:(NSDictionary *)aJson
 {
     EMMessageBody *body = [EMMessageBody fromJson:aJson[@"body"]];
     if (!body) {
@@ -27,7 +27,7 @@
     NSString *conversationId = aJson[@"conversationId"];
     
 
-    EMMessage *msg = [[EMMessage alloc] initWithConversationID:conversationId
+    EMChatMessage *msg = [[EMChatMessage alloc] initWithConversationID:conversationId
                                                           from:from
                                                             to:to
                                                           body:body
@@ -292,9 +292,11 @@
     double latitude = [aJson[@"latitude"] doubleValue];
     double longitude = [aJson[@"longitude"] doubleValue];
     NSString *address = aJson[@"address"];
+    NSString *buildingName = aJson[@"buildingName"];
+    
     EMLocationMessageBody *ret  = [[EMLocationMessageBody alloc] initWithLatitude:latitude
                                                                         longitude:longitude
-                                                                          address:address];
+                                                                          address:address buildingName:buildingName];
     return ret;
 }
 
@@ -303,6 +305,7 @@
     ret[@"address"] = self.address;
     ret[@"latitude"] = @(self.latitude);
     ret[@"longitude"] = @(self.longitude);
+    ret[@"buildingName"] = self.buildingName;
     return ret;
 }
 
