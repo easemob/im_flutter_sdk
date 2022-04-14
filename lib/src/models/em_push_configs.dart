@@ -6,7 +6,7 @@ import 'em_chat_enums.dart';
 import 'em_error.dart';
 import '../em_push_manager.dart';
 
-/// The push configuration information class.
+/// The push configuration class.
 class EMPushConfigs {
   EMPushConfigs._private({
     this.displayStyle = DisplayStyle.Simple,
@@ -16,27 +16,25 @@ class EMPushConfigs {
   });
 
   ///
-  /// Gets the offline push display type.
-  /// The offline push display type.
+  /// The display type of push notifications.
   ///
   final DisplayStyle displayStyle;
 
   ///
-  ///  Gets whether to enable offline push without disturbing.
+  /// Whether to enable the do-not-disturb mode for push notifications.
+  /// - `true`: Yes.
+  /// - `false`: No.
   ///  Sets it by {@link EMPushManager#disableOfflinePush(int, int)}.
-  ///  Whether to enable offline push without disturbing.
   ///
   final bool noDisturb;
 
   ///
-  /// Gets the start hour of the offline push without disturbing.
-  /// The start hour of the offline push without disturbing.
+  /// The start hour of the do-not-disturb mode for push notifications.
   ///
   final int noDisturbStartHour;
 
   ///
-  /// Gets the end hour of the offline push without disturbing.
-  /// The end hour of the offline push without disturbing.
+  /// The end hour of the do-not-disturb mode for push notifications.
   ///
   final int noDisturbEndHour;
 
