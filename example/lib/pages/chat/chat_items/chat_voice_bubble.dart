@@ -48,7 +48,7 @@ class ChatVoiceBubbleState extends State<ChatVoiceBubble>
       controller.stop();
       controller.reverse(from: 0);
     }
-    double width = minSize * widget.body.duration! / 15;
+    double width = minSize * widget.body.duration / 15;
     if (width < minSize) width = minSize;
     if (width > maxSize) width = maxSize;
     return Container(

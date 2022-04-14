@@ -12,7 +12,7 @@
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"userId"] = self.userId;
-    ret[@"nickName"] = self.nickName;
+    ret[@"nickName"] = self.nickname;
     ret[@"avatarUrl"] = self.avatarUrl;
     ret[@"mail"] = self.mail;
     ret[@"phone"] = self.phone;
@@ -28,7 +28,7 @@
 + (EMUserInfo *)fromJson:(NSDictionary *)aJson {
     EMUserInfo *userInfo = EMUserInfo.new;
     userInfo.userId = aJson[@"userId"] ?: @"";
-    userInfo.nickName = aJson[@"nickName"] ?: @"";
+    userInfo.nickname = aJson[@"nickName"] ?: @"";
     userInfo.avatarUrl = aJson[@"avatarUrl"] ?: @"";
     userInfo.mail = aJson[@"mail"] ?: @"";
     userInfo.phone = aJson[@"phone"] ?: @"";

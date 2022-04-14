@@ -11,11 +11,7 @@
 源码地址: [Github](https://github.com/easemob/im_flutter_sdk)  
 任何问题可以通过 [Github Issues](https://github.com/easemob/im_flutter_sdk/issues) 提问
 
-Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://github.com/easemob/ease_call_kit),如果问题，可以通过 [EaseCallKit Issues](https://github.com/easemob/ease_call_kit/issues) 提问
 
-[常见问题](https://github.com/easemob/im_flutter_sdk/blob/stable/docs/flutter_QA.md)
-
-**QQ群: 535134817**
 
 ## 前期准备
 
@@ -29,7 +25,7 @@ Demo中使用的音视频是针对声网音视频封装的[EaseCallKit](https://
    
    ```dart
    dependencies:
-   im_flutter_sdk: ^3.8.3+5
+   im_flutter_sdk: ^3.9.0
    ```
 
 2. 执行`flutter pub get`;
@@ -49,7 +45,7 @@ dependencies:
   im_flutter_sdk:  
     git:  
       url: https://github.com/easemob/im_flutter_sdk.git 
-      ref: dev_3.9.0
+      ref: flutter2_stable
 ```
 
 2. 执行`flutter pub get`;
@@ -74,16 +70,7 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart'
 #### 初始化
 
 ```dart
-EMOptions options = EMOptions(appKey: 'easemob-demo#chatdemoui');
-EMPushConfig config = EMPushConfig();
-// 配置推送信息
-config
-  ..enableAPNs("chatdemoui_dev")
-  ..enableHWPush()
-  ..enableFCM('')
-  ..enableMeiZuPush('', '')
-  ..enableMiPush('', '');
-options.pushConfig = config;        
+var options = EMOptions(appKey: "easemob-demo#easeim");
 await EMClient.getInstance.init(options);
 ```
 
@@ -96,7 +83,7 @@ await EMClient.getInstance.init(options);
 try {
   await EMClient.getInstance.createAccount(username, password);
 } on EMError catch (e) {
-  print('操作失败，原因是: $e');
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -108,24 +95,23 @@ try {
 try {
   await EMClient.getInstance.login(username, password);
 } on EMError catch (e) {
-  print('操作失败，原因是: $e');
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 获取当前登录环信id
 
 ```dart
-EMClient.getInstance.currentUsername;
+String? currentUsername = await EMClient.getInstance.getCurrentUsername();
 ```
 
 #### 退出
 
 ```dart
 try {
-  // true: 是否解除deviceToken绑定。
   await EMClient.getInstance.logout(true);
 } on EMError catch (e) {
-  print('操作失败，原因是: $e');
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -135,33 +121,32 @@ try {
 #### 监听服务器连接状态
 
 ```dart
-class _MyAppState extends State<MyApp> implements EMConnectionListener{
-
+class _PageState extends State<Page> implements EMConnectionListener {
   @override
   void initState() {
     super.initState();
-    // 添加连接监听
     EMClient.getInstance.addConnectionListener(this);
   }
 
-    ...
-
   @override
-  void onConnected() {
-    // 网络已连接
+  Widget build(BuildContext context) {
+    return Container();
   }
 
+  @override
+  void onConnected() {}
 
   @override
-  void onDisconnected(int errorCode) {
-    // 连接失败，原因是[errorCode]    
-  }
+  void onDisconnected(int? errorCode) {}
 
-    ...
+  @override
+  void onTokenDidExpire() {}
+
+  @override
+  void onTokenWillExpire() {}
 
   @override
   void dispose() {
-    // 移除连接监听
     EMClient.getInstance.removeConnectionListener(this);
     super.dispose();
   }
@@ -171,25 +156,17 @@ class _MyAppState extends State<MyApp> implements EMConnectionListener{
 #### 获取当前连接状态
 
 ```dart
-EMClient.getInstance.connected;
+bool isConnected = await EMClient.getInstance.isConnected();
 ```
 
-#### 获取flutter sdk版本号
 
-```dart
-EMClient.getInstance.flutterSDKVersion;
-```
 
 ### EMChatManager
 
 #### 获取会话列表
 
 ```dart
-try {
-  List<EMConversation> conList = await EMClient.getInstance.chatManager.loadAllConversations();
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+List<EMConversation> conversations = await EMClient.getInstance.chatManager.loadAllConversations();
 ```
 
 > 会话列表是存在本地的一种消息管理对象，如果您会话中没有消息，则表示会话不存在。
@@ -197,12 +174,7 @@ try {
 #### 获取会话
 
 ```dart
-try {
-  // emId: 会话对应环信id, 如果是群组或者聊天室，则为群组id或者聊天室id
-  EMConversation conv = await EMClient.getInstance.chatManager.getConversation(emId);
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+EMConversation? conversation = await EMClient.getInstance.chatManager.getConversation(conversationId);
 ```
 
 > 获取会话，如果会话目前不存在会创建。
@@ -210,69 +182,47 @@ try {
 #### 获取会话中的消息
 
 ```dart
-try {
-  List<EMMessage> msgs = con.loadMessages();
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+List<EMMessage>? messages = await conversation.loadMessages();
 ```
 
 #### 获取会话中未读消息数
 
 ```dart
-con.unreadCount;
+int unreadCount = await conversation.unreadCount();
 ```
 
 #### 设置单条消息为已读
 
 ```dart
-try {
-  con.markMessageAsRead(msg.msgId);
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await conversation.markMessageAsRead(messageId);
 ```
 
 #### 设置所有消息为已读
 
 ```dart
-try {
-  con.markAllMessagesAsRead();
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await conversation.markAllMessagesAsRead();
 ```
 
 #### 发送消息已读状态
 
 ```dart
 try {
-  await EMClient.getInstance.chatManager.sendMessageReadAck(msg);
+  await EMClient.getInstance.chatManager.sendMessageReadAck(message);
 } on EMError catch (e) {
-  print('操作失败，原因是: $e');
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 删除会话中的消息
 
 ```dart
-try{
-  // 删除会话中所有消息
-  await conv.deleteAllMessages();
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await conversation.deleteAllMessages();
 ```
 
 #### 插入消息
 
 ```dart
-try{
-  // 向会话中插入一条消息
-  await conv.insertMessage(msg);
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await conversation.insertMessage(message);
 ```
 
 > SDK在您发送和接收消息(_cmd类型消息除外_)后会自动将消息插入数据库中，并不需要您自己将消息插入数据库，但如果您需要自己插入一条消息时可以调用该api。  
@@ -280,32 +230,19 @@ try{
 #### 更新消息
 
 ```dart
-try{
-  await conv.updateMessage(msg);
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await conversation.updateMessage(message);
 ```
 
 #### 删除消息
 
 ```dart
-try{
-  // 删除会话中某一条消息
-  await conv.deleteMessage(msg.msgId);
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await conversation.deleteMessage(messageId);
 ```
 
 #### 删除会话
 
 ```dart
-try {
-  await EMClient.getInstance.chatManager.deleteConversation(conversation.id);
-} on EMError catch (e) {
-  print('操作失败，原因是: $e');
-}
+await EMClient.getInstance.chatManager.deleteConversation(conversationId);
 ```
 
 ​    
@@ -341,84 +278,40 @@ EMMessage msg = EMMessage.createCustomSendMessage(username: '接收方id', event
 #### 发送消息
 
 ```dart
-try{
-  await EMClient.getInstance.chatManager.sendMessage(msg);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatManager.sendMessage(message);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 监听消息发送状态
 
 ```dart
-class ChatItemState extends State<ChatItem> implements EMMessageStatusListener {
-
-  EMMessage msg;
-  ...    
-
-  void initState() {
-    super.initState();
-    // 添加监听
-    msg.setMessageListener(this);
-  }
-
-    ...
-
-  // 消息进度
-  @override
-  void onProgress(int progress) {
-  }
-
-  // 消息发送失败
-  @override
-  void onError(EMError error) {
-  }
-
-  // 消息发送成功
-  @override
-  void onSuccess() {
-    }
-
-  // 消息已读
-  @override
-  void onReadAck() {
-  }
-
-  // 消息已送达
-  @override
-  void onDeliveryAck() {
-  }
-
-  // 消息状态发生改变
-  @override
-  void onStatusChanged() {
-  }
-
-  dispose(){
-    msg.setMessageListener(null);
-    super.dispose();
-  }
-
-}
+message.setMessageStatusCallBack(MessageStatusCallBack(
+  onError: (error) => {},
+  onProgress: (progress) => {},
+  onSuccess: () => {},
+));
 ```
 
 #### 重发消息
 
 ```dart
-try{
+try {
   await EMClient.getInstance.chatManager.resendMessage(message);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 撤回消息
 
 ```dart
-try{
-  await EMClient.getInstance.chatManager.recallMessage(msg.msgId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatManager.recallMessage(messageId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -427,86 +320,69 @@ try{
 #### 收消息监听
 
 ```dart
-class _ChatPageState extends State<ChatPage> implements EMChatManagerListener {
-
+class _PageState extends State<Page> implements EMChatManagerListener {
   @override
   void initState() {
     super.initState();
-    // 添加收消息监听
-    EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatManager.addChatManagerListener(this);
   }
 
-
-  // 收到cmd消息回调
   @override
-  onCmdMessagesReceived(List<EMMessage> messages) {
-  }
-
-  // 会话列表数量变更
-  @override
-  onConversationsUpdate() {
-  }
-
-  // 消息已送达回调
-  @override
-  onMessagesDelivered(List<EMMessage> messages) {
-  }
-
-  // 消息已读回调
-  @override
-  onMessagesRead(List<EMMessage> messages) {
-  }
-
-  // 消息被撤回回调
-  @override
-  onMessagesRecalled(List<EMMessage> messages) {
-  }
-
-  // 会话已读回执
-  @override
-  onConversationRead(String from, String to) { 
-  }
-
-  // 收消息回调
-  @override
-  onMessagesReceived(List<EMMessage> messages) {
-  }
-
-  // 群消息已读回执
-  @override
-  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {
+  Widget build(BuildContext context) {
+    return Container();
   }
 
   @override
   void dispose() {
-    // 移除收消息监听
-    EMClient.getInstance.chatManager.removeListener(this);
+    EMClient.getInstance.chatManager.removeChatManagerListener(this);
     super.dispose();
   }
+
+  @override
+  void onCmdMessagesReceived(List<EMMessage> messages) {}
+
+  @override
+  void onConversationRead(String from, String to) {}
+
+  @override
+  void onConversationsUpdate() {}
+
+  @override
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
+  void onMessagesDelivered(List<EMMessage> messages) {}
+
+  @override
+  void onMessagesRead(List<EMMessage> messages) {}
+
+  @override
+  void onMessagesRecalled(List<EMMessage> messages) {}
+
+  @override
+  void onMessagesReceived(List<EMMessage> messages) {}
 }
 ```
 
-#### 会话列表漫游
+#### 从服务器拉取会话列表
 
 ```dart
 try {
-  List<EMConversation> conversations =
-      await EMClient.getInstance.chatManager.getConversationsFromServer();
+  List<EMConversation>? conversations = await EMClient.getInstance.chatManager.getConversationsFromServer();
 } on EMError catch (e) {
-  debugPrint("error: ${e.code}");
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 > 会话列表漫游为增值服务，需要单独开通。
 
-#### 消息漫游
+#### 从服务器拉取消息
 
 ```dart
 try {
-  EMCursorResult<EMMessage> result = await EMClient.getInstance.chatManager
-      .fetchHistoryMessages(conversationId);
+  EMCursorResult<EMMessage?> result = await EMClient.getInstance.chatManager.fetchHistoryMessages(conversationId);
 } on EMError catch (e) {
-  debugPrint("error: ${e.code}");
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -517,10 +393,11 @@ try {
 #### 从服务器获取通讯录中的用户列表
 
 ```dart
-try{
-  List<String> contactsList = await EMClient.getInstance.contactManager.getAllContactsFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String> contacts =
+      await EMClient.getInstance.contactManager.getAllContactsFromServer();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -529,10 +406,10 @@ try{
 #### 发送添加申请
 
 ```dart
-try{
-  await EMClient.getInstance.contactManager.addContact(friendEmId, '您好，我想添加您为好友');
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.contactManager.addContact(userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -541,30 +418,30 @@ try{
 #### 删除通讯录中的成员
 
 ```dart
-try{
-  await EMClient.getInstance.contactManager.deleteContact(friendEmId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.contactManager.deleteContact(userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 从服务器获取黑名单
 
 ```dart
-try{
-  List<String> blockList = await EMClient.getInstance.contactManager.getBlockListFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String>blockList = await EMClient.getInstance.contactManager.getBlockListFromServer();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 添加用户到黑名单中
 
 ```dart
-try{
-  await EMClient.getInstance.contactManager.addUserToBlockList(emId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.contactManager.addUserToBlockList(userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -573,56 +450,57 @@ try{
 #### 将用户从黑名单中删除
 
 ```dart
-try{
-  await EMClient.getInstance.contactManager.removeUserFromBlockList(emId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.contactManager.removeUserFromBlockList(userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 通讯录监听
 
 ```dart
-class _ContactPageState extends State<ContactPage> implements EMContactEventListener {
-
+class _PageState extends State<Page> implements EMContactManagerListener {
   @override
   void initState() {
     super.initState();
-    // 添加通讯录监听
     EMClient.getInstance.contactManager.addContactListener(this);
   }
 
-
-  // [userName]添加您为好友
   @override
-  onContactAdded(String userName) {
-  }
-
-  // [userName]将您从好友中删除
-  @override
-  onContactDeleted(String userName) {
-  }
-
-  // 收到[userName]的好友申请，原因是[reason]
-  @override
-  onContactInvited(String userName, String reason) {
-  }
-
-  // 发出的好友申请被[userName]同意
-  @override
-  onFriendRequestAccepted(String userName) {
-  }
-
-  // 发出的好友申请被[userName]拒绝
-  @override
-  onFriendRequestDeclined(String userName) {
+  Widget build(BuildContext context) {
+    return Container();
   }
 
   @override
   void dispose() {
-    // 移除通讯录监听
     EMClient.getInstance.contactManager.removeContactListener(this);
     super.dispose();
+  }
+
+  @override
+  void onContactAdded(String userName) {
+    
+  }
+
+  @override
+  void onContactDeleted(String? userName) {
+    
+  }
+
+  @override
+  void onContactInvited(String userName, String? reason) {
+    
+  }
+
+  @override
+  void onFriendRequestAccepted(String userName) {
+    
+  }
+
+  @override
+  void onFriendRequestDeclined(String userName) {
+    
   }
 }
 ```
@@ -630,20 +508,20 @@ class _ContactPageState extends State<ContactPage> implements EMContactEventList
 #### 同意添加申请
 
 ```dart
-try{
-  await EMClient.getInstance.contactManager.acceptInvitation(emId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.contactManager.acceptInvitation(userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 拒绝添加申请
 
 ```dart
-try{
-  await EMClient.getInstance.contactManager.declineInvitation(emId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.contactManager.declineInvitation(userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -652,40 +530,41 @@ try{
 #### 从服务器获取已加入群组列表
 
 ```dart
-try{
-  List<EMGroup> groupsList = await EMClient.getInstance.groupManager.getJoinedGroupsFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<EMGroup> groups = await EMClient.getInstance.groupManager.fetchJoinedGroupsFromServer();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 从缓存中获取已加入群组列表
 
 ```dart
-try{
-  List<EMGroup> groupsList = await EMClient.getInstance.groupManager.getJoinedGroups();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<EMGroup> groups = await EMClient.getInstance.groupManager.getJoinedGroups();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 从服务器获取公开群组列表
 
 ```dart
-try{
-  List<EMGroup> groupsList = await EMClient.getInstance.groupManager.getPublicGroupsFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMCursorResult<EMGroup> groups = await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 创建群组
 
 ```dart
-try{
-  EMGroup group = await EMClient.getInstance.groupManager.createGroup('群组名称', settings: EMGroupOptions());
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMGroup group = await EMClient.getInstance.groupManager
+      .createGroup(options: EMGroupOptions(), groupName: groupName);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -698,30 +577,30 @@ try{
 #### 获取群组详情
 
 ```dart
-try{
-  EMGroup group = await EMClient.getInstance.groupManager.getGroupSpecificationFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMGroup group = await EMClient.getInstance.groupManager.fetchGroupInfoFromServer(groupId)
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 获取群成员列表
 
 ```dart
-try{
-  EMCursorResult result = await EMClient.getInstance.groupManager.getGroupMemberListFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMCursorResult<String> result = await EMClient.getInstance.groupManager.fetchMemberListFromServer(groupId)
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 加入公开群组
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.joinPublicGroup(groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.joinPublicGroup(groupId)
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -730,10 +609,10 @@ try{
 #### 申请加入公开群
 
 ```dart
-try{
+try {
   await EMClient.getInstance.groupManager.requestToJoinPublicGroup(groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -742,10 +621,10 @@ try{
 #### 邀请用户入群
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.inviterUser(groupId, inviteMembers);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.inviterUser(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -755,10 +634,10 @@ try{
 > 被邀请方会收到邀请通知，同意后进群。邀请通知并不会以推送的形式发出，如果用户不在线，等上线后会收到，用户同意后入群。
 
 ```dart
-try{
-    EMClient.getInstance.groupManager.addMembers(groupId, members);
-} on EMError catch(e){
-    print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.addMembers(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -769,10 +648,10 @@ try{
 #### 从群组中移除用户
 
 ```dart
-try{
+try {
   await EMClient.getInstance.groupManager.removeMembers(groupId, members);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -781,10 +660,10 @@ try{
 #### 添加管理员
 
 ```dart
-try{
+try {
   await EMClient.getInstance.groupManager.addAdmin(groupId, memberId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -793,10 +672,10 @@ try{
 #### 移除管理员
 
 ```dart
-try{
+try {
   await EMClient.getInstance.groupManager.removeAdmin(groupId, memberId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -805,20 +684,20 @@ try{
 #### 退出群组
 
 ```dart
-try{
+try {
   await EMClient.getInstance.groupManager.leaveGroup(groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 解散群组
 
 ```dart
-try{
+try {
   await EMClient.getInstance.groupManager.destroyGroup(groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -827,10 +706,10 @@ try{
 #### 转移群组
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.changeGroupOwner(groupId, newOwner);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.changeOwner(groupId, newOwnerId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -839,20 +718,20 @@ try{
 #### 获取群组黑名单列表
 
 ```dart
-try{
-  List blockList = await EMClient.getInstance.groupManager.getGroupBlocklistFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String>? blockList = await EMClient.getInstance.groupManager.fetchBlockListFromServer(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 将群成员添加到群黑名单
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.blockMembers(group.groupId, blockList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.blockMembers(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -861,10 +740,10 @@ try{
 #### 将用户从黑名单移除
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.unblockMembers(group.groupId, unBlockList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.unblockMembers(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -873,20 +752,21 @@ try{
 #### 获取群禁言列表
 
 ```dart
-try{
-  List mutesList = await EMClient.getInstance.groupManager.getGroupMuteListFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String>? list = await EMClient.getInstance.groupManager
+      .fetchMuteListFromServer(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 对成员禁言
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.muteMembers(group.groupId, mutesList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.muteMembers(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -895,10 +775,10 @@ try{
 #### 对成员解除禁言
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.unMuteMembers(group.groupId, unMutesList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.unMuteMembers(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -907,10 +787,10 @@ try{
 #### 对所有成员禁言
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.muteAllMembers(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.muteAllMembers(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -919,10 +799,10 @@ try{
 #### 对所有成员解除禁言
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.unMuteAllMembers(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.unMuteAllMembers(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -931,20 +811,20 @@ try{
 #### 获取白名单列表
 
 ```dart
-try{
-  List whiteList = await EMClient.getInstance.groupManager.getGroupWhiteListFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String>? list = await EMClient.getInstance.groupManager.fetchWhiteListFromServer(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 将用户添加到白名单中
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.addWhiteList(group.groupId, whiteList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.addWhiteList(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -953,10 +833,10 @@ try{
 #### 将用户从白名单中移除
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.removeWhiteList(group.groupId, whiteList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.removeWhiteList(groupId, members);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -965,20 +845,20 @@ try{
 #### 判断自己是否在白名单中
 
 ```dart
-try{
-  bool inWhiteList = await EMClient.getInstance.groupManager.isMemberInWhiteListFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  bool inWhiteList = await EMClient.getInstance.groupManager.isMemberInWhiteListFromServer(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 不接收群消息
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.blockGroup(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.blockGroup(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -987,20 +867,21 @@ try{
 #### 恢复接收群消息
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.unblockGroup(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.unblockGroup(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 消息免打扰
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.ignoreGroupPush(group.groupId, true);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.pushManager.updatePushServiceForGroup(
+      groupIds: groupIds, enablePush: false);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1009,10 +890,10 @@ try{
 #### 更新群名称
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.changeGroupName(group.groupId, newName);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.changeGroupName(groupId, newName);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1021,10 +902,10 @@ try{
 #### 更新群描述
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.changeGroupDescription(group.groupId, newDescription);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.changeGroupDescription(groupId, newDesc);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1033,20 +914,20 @@ try{
 #### 获取群组公告
 
 ```dart
-try{
-  String announcement = await EMClient.getInstance.groupManager.getGroupAnnouncementFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  String? announcement =await EMClient.getInstance.groupManager.fetchAnnouncementFromServer(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 更新群公告
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.updateGroupAnnouncement(group.groupId, announcement);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.updateGroupAnnouncement(groupId, newAnnouncement);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1055,40 +936,40 @@ try{
 #### 获取群共享文件列表
 
 ```dart
-try{
-  List<EMGroupSharedFile> filesList = await EMClient.getInstance.groupManager.getGroupFileListFromServer(group.groupId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<EMGroupSharedFile> fileList =await EMClient.getInstance.groupManager.fetchGroupFileListFromServer(groupId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 上传群共享文件
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.uploadGroupSharedFile(group.groupId, filePath);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.uploadGroupSharedFile(groupId, filePath);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 下载群共享文件
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.uploadGroupSharedFile(group.groupId, groupSharedFile.fileId, savePath: path);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.downloadGroupSharedFile(groupId, filePath, savePath);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 删除群共享文件
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.removeGroupSharedFile(group.groupId, groupSharedFile.fileId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.removeGroupSharedFile(groupId, fileId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1097,111 +978,110 @@ try{
 #### 群回调监听
 
 ```dart
-class _GroupPageState extends State<GroupPage> implements EMGroupEventListener {
-
+class _PageState extends State<Page> implements EMGroupEventListener {
   @override
   void initState() {
     super.initState();
-    // 添加群组监听
     EMClient.getInstance.groupManager.addGroupChangeListener(this);
   }
 
-    ...
-
-  // id是[groupId], 名称是[groupName]的群邀请被[inviter]拒绝,理由是[reason]
-  void onInvitationReceived(String groupId, String groupName, String inviter, String reason) {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
-
-  // 收到用户[applicant]申请加入id是[groupId], 名称是[groupName]的群，原因是[reason]
-  void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason) {
-  }
-
-  // 入群申请被同意
-  void onRequestToJoinAccepted(String groupId, String groupName, String accepter) {
-  }
-
-  // 入群申请被拒绝
-  void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason) {
-  }
-
-  // 入群邀请被同意
-  void onInvitationAccepted(String groupId, String invitee, String reason) {
-  }
-
-  // 入群邀请被拒绝
-  void onInvitationDeclined(String groupId, String invitee, String reason) {
-  }
-
-  // 被移出群组
-  void onUserRemoved(String groupId, String groupName) {
-  }
-
-  // 群组解散
-  void onGroupDestroyed(String groupId, String groupName) {
-  }
-
-  // 自动同意加群
-  void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage) {
-  }
-
-  // 群禁言列表增加
-  void onMuteListAdded(String groupId, List mutes, int muteExpire) {
-  }
-
-  // 群禁言列表减少
-  void onMuteListRemoved(String groupId, List mutes) {
-  }
-
-  // 群管理增加
-  void onAdminAdded(String groupId, String administrator) {
-  }
-
-  // 群管理被移除
-  void onAdminRemoved(String groupId, String administrator) {
-  }
-
-  // 群所有者变更
-  void onOwnerChanged(String groupId, String newOwner, String oldOwner) {
-  }
-
-  // 有用户加入群
-  void onMemberJoined(String groupId, String member) {
-  }
-
-  // 有用户离开群
-  void onMemberExited(String groupId, String member) {
-  }
-
-  // 群公告变更
-  void onAnnouncementChanged(String groupId, String announcement) {
-  }
-
-  // 群共享文件增加
-  void onSharedFileAdded(String groupId, EMGroupSharedFile sharedFile) {
-  }
-
-  // 群共享文件被删除
-  void onSharedFileDeleted(String groupId, String fileId) {
-  }
-
-    ...
 
   @override
   void dispose() {
-    // 移除群组监听
     EMClient.getInstance.groupManager.removeGroupChangeListener(this);
     super.dispose();
   }
+
+  @override
+  void onAdminAddedFromGroup(String groupId, String admin) {}
+
+  @override
+  void onAdminRemovedFromGroup(String groupId, String admin) {}
+
+  @override
+  void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted) {}
+
+  @override
+  void onAnnouncementChangedFromGroup(String groupId, String announcement) {}
+
+  @override
+  void onAutoAcceptInvitationFromGroup(
+      String groupId, String inviter, String? inviteMessage) {}
+
+  @override
+  void onGroupDestroyed(String groupId, String? groupName) {}
+
+  @override
+  void onInvitationAcceptedFromGroup(
+      String groupId, String invitee, String? reason) {}
+
+  @override
+  void onInvitationDeclinedFromGroup(
+      String groupId, String invitee, String? reason) {}
+
+  @override
+  void onInvitationReceivedFromGroup(
+      String groupId, String? groupName, String inviter, String? reason) {}
+
+  @override
+  void onMemberExitedFromGroup(String groupId, String member) {}
+
+  @override
+  void onMemberJoinedFromGroup(String groupId, String member) {}
+
+  @override
+  void onMuteListAddedFromGroup(
+      String groupId, List<String> mutes, int? muteExpire) {}
+
+  @override
+  void onMuteListRemovedFromGroup(String groupId, List<String> mutes) {}
+
+  @override
+  void onOwnerChangedFromGroup(
+      String groupId, String newOwner, String oldOwner) {}
+
+  @override
+  void onRequestToJoinAcceptedFromGroup(
+      String groupId, String? groupName, String accepter) {}
+
+  @override
+  void onRequestToJoinDeclinedFromGroup(
+      String groupId, String? groupName, String decliner, String? reason) {}
+
+  @override
+  void onRequestToJoinReceivedFromGroup(
+      String groupId, String? groupName, String applicant, String? reason) {}
+
+  @override
+  void onSharedFileAddedFromGroup(
+      String groupId, EMGroupSharedFile sharedFile) {}
+
+  @override
+  void onSharedFileDeletedFromGroup(String groupId, String fileId) {}
+
+  @override
+  void onUserRemovedFromGroup(String groupId, String? groupName) {}
+
+  @override
+  void onWhiteListAddedFromGroup(String groupId, List<String> members) {}
+
+  @override
+  void onWhiteListRemovedFromGroup(String groupId, List<String> members) {}
 }
+
 ```
 
 #### 同意加群申请
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.acceptJoinApplication(group.groupId, username);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.acceptJoinApplication(groupId, userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1210,10 +1090,10 @@ try{
 #### 拒绝加群申请
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.declineJoinApplication(group.groupId, username);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.declineJoinApplication(groupId, userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1222,20 +1102,20 @@ try{
 #### 同意加群邀请
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.declineJoinApplication(group.groupId, inviter);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.acceptInvitation(groupId, userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 拒绝加群邀请
 
 ```dart
-try{
-  await EMClient.getInstance.groupManager.declineInvitationFromGroup(group.groupId, inviter);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.groupManager.declineInvitation(groupId, userId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1244,30 +1124,20 @@ try{
 #### 从服务器获取聊天室列表
 
 ```dart
-try{
-  EMPageResult result = await EMClient.getInstance.roomManager.fetchPublicChatRoomsFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
-}
-```
-
-#### 获取本地缓存聊天室列表
-
-```dart
-try{
-  List<EMChatRoom> list = await EMClient.getInstance.roomManager.getAllChatRooms();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMPageResult<EMChatRoom> result = await EMClient.getInstance.chatRoomManager.fetchPublicChatRoomsFromServer();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 创建聊天室
 
 ```dart
-try{
-  EMChatRoom room = await EMClient.getInstance.roomManager.createChatRoom('聊天室名称');
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMChatRoom room = await EMClient.getInstance.chatRoomManager.createChatRoom(subject);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1276,30 +1146,30 @@ try{
 #### 加入聊天室
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.joinChatRoom(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.joinChatRoom(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 离开聊天室
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.leaveChatRoom(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.leaveChatRoom(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 销毁聊天室
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.destroyChatRoom(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.destroyChatRoom(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1308,10 +1178,10 @@ try{
 #### 转移聊天室
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.changeOwner(roomId, newOwner);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.changeOwner(roomId, newOwnerId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1320,20 +1190,20 @@ try{
 #### 获取聊天室详情
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.fetchChatRoomInfoFromServer(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMChatRoom room =await EMClient.getInstance.chatRoomManager.fetchChatRoomInfoFromServer(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 获取聊天室成员
 
 ```dart
-try{
-  EMCursorResult result = await EMClient.getInstance.roomManager.fetchChatRoomMembers(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMCursorResult<String> result = await EMClient.getInstance.chatRoomManager.fetchChatRoomMembers(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1352,10 +1222,10 @@ try{
 #### 添加管理员
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.addChatRoomAdmin(roomId, memberId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.addChatRoomAdmin(roomId, memberId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1364,10 +1234,10 @@ try{
 #### 移除管理员
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.removeChatRoomAdmin(roomId, adminId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.removeChatRoomAdmin(roomId, AdminId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1376,20 +1246,20 @@ try{
 #### 获取禁言列表
 
 ```dart
-try{
-  List<String> mutesList = await EMClient.getInstance.roomManager.fetchChatRoomMuteList(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String>? list =await EMClient.getInstance.chatRoomManager.fetchChatRoomMuteList(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 设置禁言
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.muteChatRoomMembers(roomId, membersList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.muteChatRoomMembers(roomId, memberIds);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1398,10 +1268,10 @@ try{
 #### 解除禁言
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.unMuteChatRoomMembers(roomId, membersList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.unMuteChatRoomMembers(roomId, memberIds);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1410,20 +1280,20 @@ try{
 #### 获取黑名单列表
 
 ```dart
-try{
-  List<String> blockList = await EMClient.getInstance.roomManager.fetchChatRoomBlockList(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  List<String>? list = await EMClient.getInstance.chatRoomManager.fetchChatRoomBlockList(roomId);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 添加黑名单
 
 ```dart
-try{
-  List<String> blockList = await EMClient.getInstance.roomManager.blockChatRoomMembers(roomId, membersList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.blockChatRoomMembers(roomId, memberIds);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1432,10 +1302,10 @@ try{
 #### 移除黑名单
 
 ```dart
-try{
-  List<String> blockList = await EMClient.getInstance.roomManager.unBlockChatRoomMembers(roomId, membersList);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.unBlockChatRoomMembers(roomId, memberIds);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1444,10 +1314,10 @@ try{
 #### 修改聊天室标题
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.changeChatRoomSubject(roomId, subject);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.changeChatRoomSubject(roomId, newSubject);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1468,20 +1338,20 @@ try{
 #### 获取聊天室公告
 
 ```dart
-try{
-  String announcement = await EMClient.getInstance.roomManager.fetchChatRoomAnnouncement(roomId);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.changeChatRoomDescription(omId, newDesc);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 修改聊天室公告
 
 ```dart
-try{
-  await EMClient.getInstance.roomManager.updateChatRoomAnnouncement(roomId, announcement);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.chatRoomManager.updateChatRoomAnnouncement(chatRoomId, newAnnouncement);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1490,62 +1360,68 @@ try{
 #### 添加聊天室监听
 
 ```dart
-class _RoomPageState extends State<RoomPage> implements EMChatRoomEventListener {
-
+class _PageState extends State<Page> implements EMChatRoomEventListener {
   @override
   void initState() {
     super.initState();
-    // 添加聊天室监听
-    EMClient.getInstance.roomManager.addChatRoomChangeListener(this);
+    EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
   }
 
-  /// id是[roomId],名称是[roomName]的聊天室被销毁
-  void onChatRoomDestroyed(String roomId, String roomName) {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 
-  /// 有用户[participant]加入id是[roomId]的聊天室
-  void onMemberJoined(String roomId, String participant) {
-  }
-
-  /// 有用户[participant]离开id是[roomId]，名字是[roomName]的聊天室
-  void onMemberExited(String roomId, String roomName, String participant) {
-  }
-
-  /// 用用户[participant]被id是[roomId],名称[roomName]的聊天室删除，删除原因是[reason]
-  void onRemovedFromChatRoom(int reason, String roomId, String roomName, String participant) {
-  }
-
-  /// id是[roomId]的聊天室禁言列表[mutes]有增加
-  void onMuteListAdded(String roomId, List mutes, String expireTime) {
-  }
-
-  /// id是[roomId]的聊天室禁言列表[mutes]有减少
-  void onMuteListRemoved(String roomId, List mutes) {
-  }
-
-  /// id是[roomId]的聊天室增加id是[admin]管理员
-  void onAdminAdded(String roomId, String admin) {
-  }
-
-  /// id是[roomId]的聊天室移除id是[admin]管理员
-  void onAdminRemoved(String roomId, String admin) {
-  }
-
-  /// id是[roomId]的聊天室所有者由[oldOwner]变更为[newOwner]
-  void onOwnerChanged(String roomId, String newOwner, String oldOwner) {
-  }
-
-  /// id是[roomId]的聊天室公告变为[announcement]
-  void onAnnouncementChanged(String roomId, String announcement) {
-  }
-
-   @override
+  @override
   void dispose() {
-    // 移除聊天室监听
-    EMClient.getInstance.roomManager.removeChatRoomListener(this);
+    EMClient.getInstance.chatRoomManager.removeChatRoomListener(this);
     super.dispose();
   }
+
+  @override
+  void onAdminAddedFromChatRoom(String roomId, String admin) {}
+
+  @override
+  void onAdminRemovedFromChatRoom(String roomId, String admin) {}
+
+  @override
+  void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted) {}
+
+  @override
+  void onAnnouncementChangedFromChatRoom(String roomId, String announcement) {}
+
+  @override
+  void onChatRoomDestroyed(String roomId, String? roomName) {}
+
+  @override
+  void onMemberExitedFromChatRoom(
+      String roomId, String? roomName, String participant) {}
+
+  @override
+  void onMemberJoinedFromChatRoom(String roomId, String participant) {}
+
+  @override
+  void onMuteListAddedFromChatRoom(
+      String roomId, List<String> mutes, String? expireTime) {}
+
+  @override
+  void onMuteListRemovedFromChatRoom(String roomId, List<String> mutes) {}
+
+  @override
+  void onOwnerChangedFromChatRoom(
+      String roomId, String newOwner, String oldOwner) {}
+
+  @override
+  void onRemovedFromChatRoom(
+      String roomId, String? roomName, String? participant) {}
+
+  @override
+  void onWhiteListAddedFromChatRoom(String roomId, List<String> members) {}
+
+  @override
+  void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
 }
+
 ```
 
 ### 推送
@@ -1553,10 +1429,10 @@ class _RoomPageState extends State<RoomPage> implements EMChatRoomEventListener 
 #### 设置推送昵称
 
 ```dart
-try{
-  await EMClient.getInstance.pushManager.updatePushNickname(pushName);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.pushManager.updatePushNickname(pushDisplayName);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1565,44 +1441,40 @@ try{
 #### 从服务器获取推送配置
 
 ```dart
-try{
-  EMImPushConfig pushManager = await EMClient.getInstance.pushManager.getImPushConfigFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  EMPushConfigs configs = await EMClient.getInstance.pushManager.fetchPushConfigsFromServer();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 从本地缓存获取推送配置
 
 ```dart
-try{
-  EMImPushConfig pushConfig = await EMClient.getInstance.pushManager.getImPushConfig();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
-}
+EMPushConfigs? configs = await EMClient.getInstance.pushManager.getPushConfigsFromCache();
 ```
 
 #### 设置推送显示样式
 
 ```dart
-try{
-  await pushConfig.setPushStyle(EMImPushStyle.Simple);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.pushManager.updatePushDisplayStyle(DisplayStyle.Simple);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
-> `EMImPushStyle`是收推送时样式，目前有两种样式：    
+> `DisplayStyle`是收推送时样式，目前有两种样式：    
 > `Simple`显示“您有一条新消息”;     
 > `Summary`显示推送详情;  
 
 #### 设置消息免打扰
 
 ```dart
-try{
-  await pushConfig.setNoDisturb(true, 10, 22);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.pushManager.disableOfflinePush(start: 10, end: 22);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
@@ -1611,64 +1483,73 @@ try{
 #### 关闭消息免打扰
 
 ```dart
-try{
-  await pushConfig.setNoDisturb(false);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.pushManager.enableOfflinePush();
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 设置群组免打扰
 
 ```dart
-try{
-  await pushConfig.setGroupToDisturb(groupId, true);
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+try {
+  await EMClient.getInstance.pushManager.updatePushServiceForGroup(groupIds: groupIds, enablePush: false);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
 
 #### 获取免打扰群组列表
 
 ```dart
-try{
-  List groupIdsList = await pushConfig.noDisturbGroupsFromServer();
-} on EMError catch(e) {
-  print('操作失败，原因是: $e');
+List<String> list = await EMClient.getInstance.pushManager.getNoPushGroupsFromCache();
+```
+
+#### 设置用户免打扰
+
+```dart
+try {
+  await EMClient.getInstance.pushManager.updatePushServiceFroUsers(userIds: userIds, enablePush: false);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
 }
 ```
+
+#### 获取免打扰用户列表
+
+```dart
+List<String> list = await EMClient.getInstance.pushManager.getNoPushUsersFromCache();
+```
+
+
+
+
 
 ### EMUserInfoManager
 
 #### 更新自己的用户属性
 
 ```dart
- try {
-    EMUserInfo info = EMUserInfo(EMClient.getInstance.currentUsername);
-    info.copyWith(
-      sign: "修改签名",
-      nickName: "用户属性昵称",
-      mail: "xxx@easemob.com",
-    );
-    await EMClient.getInstance.userInfoManager.updateOwnUserInfo(info);
-    } on EMError catch (e) {
-      print('操作失败，原因是: $e');
-    }
+String? currentUser = await EMClient.getInstance.getCurrentUsername();
+if (currentUser == null) {
+  return;
+}
+try {
+  EMUserInfo userInfo = EMUserInfo(currentUser);
+  userInfo = userInfo.copyWith(nickName: nickname, avatarUrl: avatarUrl);
+  await EMClient.getInstance.userInfoManager.updateOwnUserInfo(userInfo);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
+}
 ```
 
 #### 获取多用户的用户属性
 
 ```dart
-  try {
-      String userId = EMClient.getInstance.currentUsername;
-      List<String> userIds =[];
-      userIds.add(userId);
-      userIds.add('xxx');
-
-      Map userInfoMap = await EMClient.getInstance.userInfoManager
-          .fetchUserInfoByIdWithExpireTime(userIds, expireTime: 3600);
-
-    } on EMError catch (e) {
-      print('操作失败，原因是: $e');
-    }
+try {
+  Map<String, EMUserInfo> map = await EMClient.getInstance.userInfoManager.fetchUserInfoById(userIds);
+} on EMError catch (e) {
+  debugPrint("error code: ${e.code}, desc: ${e.description}");
+}
 ```

@@ -232,7 +232,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
   }
 
   _loadJoinedGroups([bool isMore = false]) async {
-    print('_loadJoinedGroups');
+    debugPrint('_loadJoinedGroups');
     try {
       if (!isMore) {
         _pageNumber = 0;
@@ -255,7 +255,9 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
         _groupsList.clear();
       }
       _groupsList.addAll(groups);
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       SmartDialog.showToast('获取成功');
       isMore
           ? _refreshController.loadComplete()
@@ -278,10 +280,10 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       SmartDialog.showToast('会话创建失败');
       return;
     }
-    con.name = group.name!;
+    // con.name = group.name!;
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [con.name, con],
+      arguments: [con.id, con],
     ).then((value) {
       eventBus.fire(EventBusManager.updateConversations());
     });
@@ -291,7 +293,9 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
     _searchName = std;
     if (std.length == 0) {
       _searchedGroups.clear();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       return;
     }
     _searchedGroups.clear();
@@ -305,6 +309,8 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
         continue;
       }
     }
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

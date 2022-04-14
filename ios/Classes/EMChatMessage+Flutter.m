@@ -292,9 +292,11 @@
     double latitude = [aJson[@"latitude"] doubleValue];
     double longitude = [aJson[@"longitude"] doubleValue];
     NSString *address = aJson[@"address"];
+    NSString *buildingName = aJson[@"buildingName"];
+    
     EMLocationMessageBody *ret  = [[EMLocationMessageBody alloc] initWithLatitude:latitude
                                                                         longitude:longitude
-                                                                          address:address];
+                                                                          address:address buildingName:buildingName];
     return ret;
 }
 
@@ -303,6 +305,7 @@
     ret[@"address"] = self.address;
     ret[@"latitude"] = @(self.latitude);
     ret[@"longitude"] = @(self.longitude);
+    ret[@"buildingName"] = self.buildingName;
     return ret;
 }
 

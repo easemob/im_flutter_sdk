@@ -43,7 +43,9 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
                       _searchName = text;
                       if (_searchName.length == 0) {
                         _searchedRoom = null;
-                        setState(() {});
+                        if (mounted) {
+                          setState(() {});
+                        }
                       }
                     },
                     style: TextStyle(
@@ -120,7 +122,7 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       child: ListTile(
         onTap: () => _chatToRoom(room),
         title: Text(
-          room.name,
+          room.name ?? room.roomId,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -162,11 +164,14 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
           _isEnd = false;
         }
       }
-      setState(() {});
+
       SmartDialog.showToast('获取成功');
       isMore
           ? _refreshController.loadComplete()
           : _refreshController.refreshCompleted();
+      if (mounted) {
+        setState(() {});
+      }
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
       isMore
@@ -185,10 +190,10 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       SmartDialog.showToast('会话创建失败');
       return;
     }
-    con.name = room.name;
+
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [con.name, con],
+      arguments: [con.id, con],
     ).then((value) =>
         EMClient.getInstance.chatRoomManager.leaveChatRoom(room.roomId));
   }
@@ -203,7 +208,9 @@ class ChatRoomsListPagesState extends State<ChatRoomsListPages> {
       SmartDialog.showToast('搜索失败: $e');
     } finally {
       SmartDialog.dismiss();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 }

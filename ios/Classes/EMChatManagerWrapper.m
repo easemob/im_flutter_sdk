@@ -41,91 +41,91 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    if ([EMMethodKeySendMessage isEqualToString:call.method]) {
+    if ([ChatSendMessage isEqualToString:call.method]) {
         [self sendMessage:call.arguments
               channelName:call.method
                    result:result];
-    } else if ([EMMethodKeyResendMessage isEqualToString:call.method]) {
+    } else if ([ChatResendMessage isEqualToString:call.method]) {
         [self resendMessage:call.arguments
                 channelName:call.method
                      result:result];
-    } else if ([EMMethodKeyAckMessageRead isEqualToString:call.method]) {
+    } else if ([ChatAckMessageRead isEqualToString:call.method]) {
         [self ackMessageRead:call.arguments
                  channelName:call.method
                       result:result];
-    } else if ([EMMethodKeyAckGroupMessageRead isEqualToString:call.method]) {
-        [self ackMessageRead:call.arguments
-                 channelName:call.method
-                      result:result];
-    } else if ([EMMethodKeyAckConversationRead isEqualToString:call.method]) {
+    } else if ([ChatAckGroupMessageRead isEqualToString:call.method]) {
+        [self ackGroupMessageRead:call.arguments
+                      channelName:call.method
+                           result:result];
+    } else if ([ChatAckConversationRead isEqualToString:call.method]) {
         [self ackConversationRead:call.arguments
                       channelName:call.method
                            result:result];
     }
-    else if ([EMMethodKeyRecallMessage isEqualToString:call.method]) {
+    else if ([ChatRecallMessage isEqualToString:call.method]) {
         [self recallMessage:call.arguments
                 channelName:call.method
                      result:result];
-    } else if ([EMMethodKeyGetConversation isEqualToString:call.method]) {
+    } else if ([ChatGetConversation isEqualToString:call.method]) {
         [self getConversation:call.arguments
                   channelName:call.method
                        result:result];
-    } else if ([EMMethodKeyGetMessage isEqualToString:call.method]) {
+    } else if ([ChatGetMessage isEqualToString:call.method]) {
         [self getMessageWithMessageId:call.arguments
                           channelName:call.method
                                result:result];
-    }  else if ([EMMethodKeyMarkAllChatMsgAsRead isEqualToString:call.method]) {
+    }  else if ([ChatMarkAllChatMsgAsRead isEqualToString:call.method]) {
         [self markAllMessagesAsRead:call.arguments
                         channelName:call.method
                              result:result];
-    } else if ([EMMethodKeyGetUnreadMessageCount isEqualToString:call.method]) {
+    } else if ([ChatGetUnreadMessageCount isEqualToString:call.method]) {
         [self getUnreadMessageCount:call.arguments
                         channelName:call.method
                              result:result];
-    } else if ([EMMethodKeyUpdateChatMessage isEqualToString:call.method]) {
+    } else if ([ChatUpdateChatMessage isEqualToString:call.method]) {
         [self updateChatMessage:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([EMMethodKeyDownloadAttachment isEqualToString:call.method]) {
+    } else if ([ChatDownloadAttachment isEqualToString:call.method]) {
         [self downloadAttachment:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyDownloadThumbnail isEqualToString:call.method]) {
+    } else if ([ChatDownloadThumbnail isEqualToString:call.method]) {
         [self downloadThumbnail:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([EMMethodKeyImportMessages isEqualToString:call.method]) {
+    } else if ([ChatImportMessages isEqualToString:call.method]) {
         [self importMessages:call.arguments
                  channelName:call.method
                       result:result];
-    } else if ([EMMethodKeyLoadAllConversations isEqualToString:call.method]) {
+    } else if ([ChatLoadAllConversations isEqualToString:call.method]) {
         [self loadAllConversations:call.arguments
                        channelName:call.method
                             result:result];
-    } else if ([EMMethodKeyGetConversationsFromServer isEqualToString:call.method]) {
+    } else if ([ChatGetConversationsFromServer isEqualToString:call.method]) {
         [self getConversationsFromServer:call.arguments
                              channelName:call.method
                                   result:result];
-    } else if ([EMMethodKeyDeleteConversation isEqualToString:call.method]) {
+    } else if ([ChatDeleteConversation isEqualToString:call.method]) {
         [self deleteConversation:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyFetchHistoryMessages isEqualToString:call.method]) {
+    } else if ([ChatFetchHistoryMessages isEqualToString:call.method]) {
         [self fetchHistoryMessages:call.arguments
                        channelName:call.method
                             result:result];
-    } else if ([EMMethodKeySearchChatMsgFromDB isEqualToString:call.method]) {
+    } else if ([ChatSearchChatMsgFromDB isEqualToString:call.method]) {
         [self searchChatMsgFromDB:call.arguments
                       channelName:call.method
                            result:result];
-    } else if ([EMMethodKeyUpdateConversationsName isEqualToString:call.method]) {
-        [self updateConversationsName:call.arguments
-                          channelName:call.method
-                               result:result];
-    } else if ([EMMethodKeyAsyncFetchGroupAcks isEqualToString:call.method]) {
+    } else if ([ChatAsyncFetchGroupAcks isEqualToString:call.method]) {
         [self fetchGroupReadAck:call.arguments
                     channelName:call.method
                          result:result];
+    } else if ([ChatDeleteRemoteConversation isEqualToString:call.method]){
+        [self deleteRemoteConversation:call.arguments
+                           channelName:call.method
+                                result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -148,21 +148,21 @@
     
     [EMClient.sharedClient.chatManager sendMessage:msg
                                           progress:^(int progress) {
-        [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
         }];
     } completion:^(EMChatMessage *message, EMError *error) {
         if (error) {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
                 @"localTime":@(msg.localTime),
                 @"message":[message toJson]
             }];
         }else {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
                 @"localTime":@(msg.localTime)
@@ -185,21 +185,21 @@
     
     [EMClient.sharedClient.chatManager resendMessage:msg
                                             progress:^(int progress) {
-        [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
         }];
     } completion:^(EMChatMessage *message, EMError *error) {
         if (error) {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
                 @"localTime":@(msg.localTime),
                 @"message":[message toJson]
             }];
         }else {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
                 @"localTime":@(msg.localTime)
@@ -399,7 +399,7 @@
     [EMClient.sharedClient.chatManager downloadMessageAttachment:needDownMSg
                                                         progress:^(int progress)
      {
-        [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
@@ -407,14 +407,14 @@
     } completion:^(EMChatMessage *message, EMError *error)
      {
         if (error) {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
                 @"localTime":@(msg.localTime),
                 @"message":[message toJson]
             }];
         }else {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
                 @"localTime":@(msg.localTime)
@@ -437,7 +437,7 @@
     [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMSg
                                                        progress:^(int progress)
      {
-        [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageProgressUpdate
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
@@ -445,14 +445,14 @@
     } completion:^(EMChatMessage *message, EMError *error)
      {
         if (error) {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
                 @"localTime":@(msg.localTime),
                 @"message":[message toJson]
             }];
         }else {
-            [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageSuccess
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
                 @"localTime":@(msg.localTime)
@@ -566,7 +566,6 @@
     }];
 }
 
-
 - (void)searchChatMsgFromDB:(NSDictionary *)param
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result {
@@ -593,33 +592,6 @@
                             error:aError
                            object:msgList];
     }];
-}
-
-- (void)updateConversationsName:(NSDictionary *)param
-                    channelName:(NSString *)aChannelName
-                         result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    NSDictionary *namesMap = param[@"name_map"];
-    
-    NSArray *conversationsList = EMClient.sharedClient.chatManager.getAllConversations;
-    for (EMConversation *con in conversationsList) {
-        if (namesMap[con.conversationId]) {
-            NSMutableDictionary *ext = [con.ext mutableCopy];
-            if (!ext) {
-                ext = [NSMutableDictionary dictionary];
-            }
-            NSString *current = ext[@"con_name"] ?: @"";
-            if (![current isEqualToString:namesMap[@"con_name"]]) {
-                ext[@"con_name"] = namesMap[@"con_name"];
-                con.ext = ext;
-            }
-        }
-        
-    }
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:@(true)];
 }
 
 
@@ -657,13 +629,13 @@
 
 
 - (void)conversationListDidUpdate:(NSArray *)aConversationList {
-    [self.channel invokeMethod:EMMethodKeyOnConversationUpdate
+    [self.channel invokeMethod:ChatOnConversationUpdate
                      arguments:nil];
 }
 
 - (void)onConversationRead:(NSString *)from
                         to:(NSString *)to {
-    [self.channel invokeMethod:EMMethodKeyOnConversationHasRead
+    [self.channel invokeMethod:ChatOnConversationHasRead
                      arguments:@{@"from":from, @"to": to}];
 }
 
@@ -673,7 +645,7 @@
         
         [msgList addObject:[msg toJson]];
     }
-    [self.channel invokeMethod:EMMethodKeyOnMessagesReceived
+    [self.channel invokeMethod:ChatOnMessagesReceived
                      arguments:msgList];
 }
 
@@ -683,7 +655,7 @@
         [cmdMsgList addObject:[msg toJson]];
     }
     
-    [self.channel invokeMethod:EMMethodKeyOnCmdMessagesReceived
+    [self.channel invokeMethod:ChatOnCmdMessagesReceived
                      arguments:cmdMsgList];
 }
 
@@ -692,11 +664,11 @@
     for (EMChatMessage *msg in aMessages) {
         NSDictionary *json = [msg toJson];
         [list addObject:json];
-        [self.messageChannel invokeMethod:EMMethodKeyOnMessageReadAck
+        [self.messageChannel invokeMethod:ChatOnMessageReadAck
                                 arguments:json];
     }
     
-    [self.channel invokeMethod:EMMethodKeyOnMessagesRead arguments:list];
+    [self.channel invokeMethod:ChatOnMessagesRead arguments:list];
 }
 
 - (void)messagesDidDeliver:(NSArray *)aMessages {
@@ -704,11 +676,11 @@
     for (EMChatMessage *msg in aMessages) {
         NSDictionary *json = [msg toJson];
         [list addObject:json];
-        [self.messageChannel invokeMethod:EMMethodKeyOnMessageDeliveryAck
+        [self.messageChannel invokeMethod:ChatOnMessageDeliveryAck
                                 arguments:@{@"message":json}];
     }
     
-    [self.channel invokeMethod:EMMethodKeyOnMessagesDelivered
+    [self.channel invokeMethod:ChatOnMessagesDelivered
                      arguments:list];
 }
 
@@ -718,21 +690,10 @@
         [list addObject:[msg toJson]];
     }
     
-    [self.channel invokeMethod:EMMethodKeyOnMessagesRecalled
+    [self.channel invokeMethod:ChatOnMessagesRecalled
                      arguments:list];
 }
 
-- (void)messageStatusDidChange:(EMChatMessage *)aMessage
-                         error:(EMError *)aError {
-    [self.messageChannel invokeMethod:EMMethodKeyOnMessageStatusChanged
-                            arguments:@{@"message":[aMessage toJson]}];
-}
-
-// TODO: 安卓未找到对应回调
-- (void)messageAttachmentStatusDidChange:(EMChatMessage *)aMessage
-                                   error:(EMError *)aError {
-    
-}
 
 - (void)groupMessageDidRead:(EMChatMessage *)aMessage groupAcks:(NSArray *)aGroupAcks {
     NSMutableArray *list = [NSMutableArray array];
@@ -741,7 +702,7 @@
         [list addObject:json];
     }
     
-    [self.channel invokeMethod:EMMethodKeyOnGroupMessageRead
+    [self.channel invokeMethod:ChatOnGroupMessageRead
                      arguments:list];
 }
 

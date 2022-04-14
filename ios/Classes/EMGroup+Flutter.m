@@ -27,7 +27,7 @@
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"options"] = [self.setting toJson];
     ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
-    
+
     return ret;
 }
 
@@ -94,7 +94,7 @@
 @implementation EMGroupOptions (Flutter)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-    ret[@"maxCount"] = @(self.maxUsersCount);
+    ret[@"maxCount"] = @(self.maxUsers);
     ret[@"ext"] = self.ext;
     ret[@"style"] = @([EMGroupOptions styleToInt:self.style]);
     ret[@"inviteNeedConfirm"] = @(self.IsInviteNeedConfirm);
@@ -103,7 +103,7 @@
 
 + (EMGroupOptions *)formJson:(NSDictionary *)dict {
     EMGroupOptions *options = [[EMGroupOptions alloc] init];
-    options.maxUsersCount = [dict[@"maxCount"] intValue];
+    options.maxUsers = [dict[@"maxCount"] intValue];
     options.ext = dict[@"ext"];
     options.IsInviteNeedConfirm = [dict[@"inviteNeedConfirm"] boolValue];
     options.style = [EMGroupOptions styleFromInt:[dict[@"style"] intValue]];

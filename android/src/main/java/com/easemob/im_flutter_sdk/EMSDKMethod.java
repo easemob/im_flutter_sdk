@@ -6,9 +6,10 @@ public class EMSDKMethod {
     static final String createAccount = "createAccount";
     static final String login = "login";
     static final String loginWithAgoraToken = "loginWithAgoraToken";
+    static final String renewToken = "renewToken";
     static final String logout = "logout";
     static final String changeAppKey = "changeAppKey";
-    static final String updateCurrentUserNick = "updateCurrentUserNick";
+
     static final String uploadLog = "uploadLog";
     static final String compressLogs = "compressLogs";
     static final String kickDevice = "kickDevice";
@@ -83,14 +84,12 @@ public class EMSDKMethod {
     static final String onMessageSuccess = "onMessageSuccess";
     static final String onMessageReadAck = "onMessageReadAck";
     static final String onMessageDeliveryAck = "onMessageDeliveryAck";
-    static final String onMessageStatusChanged = "onMessageStatusChanged";
 
     /// EMConversation
     static final String getUnreadMsgCount = "getUnreadMsgCount";
     static final String markAllMessagesAsRead = "markAllMessagesAsRead";
     static final String markMessageAsRead = "markMessageAsRead";
     static final String syncConversationExt = "syncConversationExt";
-    static final String syncConversationName = "syncConversationName";
     static final String removeMessage = "removeMessage";
     static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";
@@ -141,7 +140,7 @@ public class EMSDKMethod {
     static final String isMemberInChatRoomWhiteListFromServer = "isMemberInChatRoomWhiteListFromServer";
 
     static final String muteAllChatRoomMembers = "muteAllChatRoomMembers";
-    static final String unMuteAllChatRoomMembers = "umMuteAllChatRoomMembers";
+    static final String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
 
 
     // EMChatRoomManagerListener
@@ -160,7 +159,7 @@ public class EMSDKMethod {
     static final String getGroupMuteListFromServer = "getGroupMuteListFromServer";
     static final String getGroupWhiteListFromServer = "getGroupWhiteListFromServer";
     static final String isMemberInWhiteListFromServer = "isMemberInWhiteListFromServer";
-    static final String getGroupFileListFromServer = "getGroupFileList";
+    static final String getGroupFileListFromServer = "getGroupFileListFromServer";
     static final String getGroupAnnouncementFromServer = "getGroupAnnouncementFromServer";
     static final String addMembers = "addMembers";
     static final String inviterUser = "inviterUser";
@@ -201,17 +200,20 @@ public class EMSDKMethod {
     /// EMPushManager
     static final String getImPushConfig = "getImPushConfig";
     static final String getImPushConfigFromServer = "getImPushConfigFromServer";
+    static final String enableOfflinePush = "enableOfflinePush";
+    static final String disableOfflinePush = "disableOfflinePush";
+    static final String updateImPushStyle = "updateImPushStyle";
     static final String updatePushNickname = "updatePushNickname";
+
+    static final String updateGroupPushService = "updateGroupPushService";
+    static final String getNoPushGroups = "getNoPushGroups";
+    static final String updateUserPushService = "updateUserPushService";
+    static final String getNoPushUsers = "getNoPushUsers";
+
+
     static final String updateHMSPushToken = "updateHMSPushToken";
     static final String updateFCMPushToken = "updateFCMPushToken";
 
-    /// ImPushConfig
-    static final String imPushNoDisturb = "imPushNoDisturb";
-    static final String updateImPushStyle = "updateImPushStyle";
-    static final String updateGroupPushService = "updateGroupPushService";
-    static final String getNoDisturbGroups = "getNoDisturbGroups";
-    static final String setNoDisturbUsers = "setNoDisturbUsers";
-    static final String getNoDisturbUsersFromServer = "getNoDisturbUsersFromServer";
 
 
     /// EMUserInfoManager 

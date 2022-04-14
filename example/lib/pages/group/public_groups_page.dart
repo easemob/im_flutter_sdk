@@ -43,7 +43,9 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                       _searchName = text;
                       if (_searchName.length == 0) {
                         _searchedGroup = null;
-                        setState(() {});
+                        if (mounted) {
+                          setState(() {});
+                        }
                       }
                     },
                     style: TextStyle(
@@ -143,17 +145,17 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
   _loadMorePublicGroups() async {
     try {
       EMCursorResult<EMGroup> cursor =
-          await EMClient.getInstance.groupManager.getPublicGroupsFromServer(
+          await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer(
         pageSize: _pageSize,
         cursor: _cursor ?? "",
       );
       _refreshController.loadComplete();
       _cursor = cursor.cursor;
-      if (cursor.data != null) {
-        _groupsList.addAll(cursor.data!);
-        // 返回数据小于pageSize,说明是最后一页
-        if (_pageSize > cursor.data!.length) {
-          _isEnd = true;
+      _groupsList.addAll(cursor.data);
+      // 返回数据小于pageSize,说明是最后一页
+      if (_pageSize > cursor.data.length) {
+        _isEnd = true;
+        if (mounted) {
           setState(() {});
         }
       }
@@ -168,18 +170,20 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
       _isEnd = false;
 
       EMCursorResult<EMGroup> cursor =
-          await EMClient.getInstance.groupManager.getPublicGroupsFromServer(
+          await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer(
         pageSize: _pageSize,
       );
       _refreshController.refreshCompleted();
-      if (_pageSize > cursor.data!.length) {
+      if (_pageSize > cursor.data.length) {
         _isEnd = true;
       }
       _cursor = cursor.cursor;
       _groupsList.clear();
-      _groupsList.addAll(cursor.data!);
-      setState(() {});
+      _groupsList.addAll(cursor.data);
       SmartDialog.showToast('获取成功');
+      if (mounted) {
+        setState(() {});
+      }
     } on EMError catch (e) {
       SmartDialog.showToast('获取失败$e');
       _refreshController.refreshFailed();
@@ -197,13 +201,15 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     if (std.length == 0) return;
     try {
       SmartDialog.showLoading(msg: '搜索中...');
-      _searchedGroup = await EMClient.getInstance.groupManager
-          .getGroupSpecificationFromServer(std);
+      _searchedGroup =
+          await EMClient.getInstance.groupManager.fetchGroupInfoFromServer(std);
     } on EMError catch (e) {
       SmartDialog.showToast('搜索失败: $e');
     } finally {
       SmartDialog.dismiss();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 }

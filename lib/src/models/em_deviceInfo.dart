@@ -1,31 +1,40 @@
-class EMDeviceInfo {
-  EMDeviceInfo._private();
+import '../tools/em_extension.dart';
 
+///
+/// The EMDeviceInfo class, which contains the multi-device information.
+///
+class EMDeviceInfo {
+  EMDeviceInfo._private(
+    this.resource,
+    this.deviceUUID,
+    this.deviceName,
+  );
+
+  /// @nodoc
   Map toJson() {
     Map data = Map();
-    data['resource'] = _resource;
-    data['deviceUUID'] = _deviceUUID;
-    data['deviceName'] = _deviceName;
+    data.setValueWithOutNull("resource", resource);
+    data.setValueWithOutNull("deviceUUID", deviceUUID);
+    data.setValueWithOutNull("deviceName", deviceName);
+
     return data;
   }
 
+  /// @nodoc
   factory EMDeviceInfo.fromJson(Map map) {
-    return EMDeviceInfo._private()
-      .._resource = map['resource']
-      .._deviceUUID = map['deviceUUID']
-      .._deviceName = map['deviceName'];
+    return EMDeviceInfo._private(
+      map.getStringValue("resource"),
+      map.getStringValue("deviceUUID"),
+      map.getStringValue("deviceName"),
+    );
   }
 
-  /// 设备资源描述
-  String? get resource => _resource;
+  /// The information of other login devices.
+  final String? resource;
 
-  /// 设备的UUID
-  String? get deviceUUID => _deviceUUID;
+  /// The UUID of the device.
+  final String? deviceUUID;
 
-  /// 设备名称
-  String? get deviceName => _deviceName;
-
-  String? _resource;
-  String? _deviceUUID;
-  String? _deviceName;
+  /// The device type. For example: "Pixel 6 Pro".
+  final String? deviceName;
 }
