@@ -1,7 +1,8 @@
 iOS如何绑定deviceToken?
 
-```objectivec
+OC
 
+```objectivec
 #import "AppDelegate.h"
 // 引入环信SDK
 #import <Hyphenate/Hyphenate.h>
@@ -14,11 +15,11 @@ iOS如何绑定deviceToken?
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    
-    
+
+
     // ...
-    
-    
+
+
     // // 获取UNUserNotificationCenter并申请[badge, alert, sound]权限。
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center requestAuthorizationWithOptions:
@@ -31,8 +32,8 @@ iOS如何绑定deviceToken?
             });
         }
     }];
-    
-    
+
+
     return YES;
 }
 
@@ -45,11 +46,11 @@ iOS如何绑定deviceToken?
 
 
 @end
-
 ```
 
-```swift
+Swift
 
+```swift
 import UIKit
 import Flutter
 // 引入环信SDK
@@ -62,7 +63,7 @@ import HyphenateChat
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
       GeneratedPluginRegistrant.register(with: self);
-      
+
       // 获取UNUserNotificationCenter并申请[badge, alert, sound]权限。
       let center = UNUserNotificationCenter.current();
       center.requestAuthorization(options: [.badge, .alert, .sound]) { granted, error in
@@ -73,7 +74,7 @@ import HyphenateChat
               }
           }
       }
-      
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
     // 收到系统deviceToken获取成功回调
@@ -82,8 +83,4 @@ import HyphenateChat
         EMClient.share.registerForRemoteNotifications(withDeviceToken: deviceToken, completion: nil)
     }
 }
-
-
-
-
 ```
