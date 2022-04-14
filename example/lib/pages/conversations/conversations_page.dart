@@ -62,7 +62,7 @@ class ConversationPageState extends State<ConversationPage>
               [
                 PopMenuItem('创建群组'),
                 PopMenuItem('添加好友'),
-                PopMenuItem('多人通话'),
+                // PopMenuItem('多人通话'),
               ],
               callback: (index) {
                 if (index == 0) {

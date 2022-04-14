@@ -52,7 +52,7 @@ class EaseIMDemo extends StatelessWidget {
       },
       child: ScreenUtilInit(
         designSize: Size(375, 667),
-        builder: () {
+        builder: (context) {
           return MaterialApp(
             builder: (context, child) => FlutterSmartDialog(child: child),
             debugShowCheckedModeBanner: false,
