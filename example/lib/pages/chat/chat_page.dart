@@ -71,7 +71,7 @@ class _ChatPageState extends State<ChatPage>
 
     _moreView = ChatMoreView(items);
     // 添加环信回调监听
-    EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatManager.addChatManagerListener(this);
     EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
     widget.conversation.markAllMessagesAsRead();
@@ -95,13 +95,13 @@ class _ChatPageState extends State<ChatPage>
           .joinChatRoom(widget.conversation.id);
       _loadMessages();
     } on EMError catch (e) {
-      print("加入房间失败 -- " + e.toString());
+      debugPrint("加入房间失败 -- " + e.toString());
     }
   }
 
   void dispose() {
     // 移除环信回调监听
-    EMClient.getInstance.chatManager.removeListener(this);
+    EMClient.getInstance.chatManager.removeChatManagerListener(this);
     _scrollController.dispose();
     _inputBarEditingController.dispose();
     if (widget.conversation.type == EMConversationType.ChatRoom) {
@@ -130,7 +130,9 @@ class _ChatPageState extends State<ChatPage>
           if (_keyboardVisible) {
             _inputBarType = ChatInputBarType.normal;
             SystemChannels.textInput.invokeMethod('TextInput.hide');
-            setState(() {});
+            if (mounted) {
+              setState(() {});
+            }
           }
         },
         child: SafeArea(
@@ -236,8 +238,8 @@ class _ChatPageState extends State<ChatPage>
 
   /// 发送消息已读回执
   _makeMessageAsRead(EMMessage msg) async {
-    if (msg.chatType == EMMessageChatType.Chat &&
-        msg.direction == EMMessageDirection.RECEIVE) {
+    if (msg.chatType == ChatType.Chat &&
+        msg.direction == MessageDirection.RECEIVE) {
       if (msg.hasReadAck == false) {
         try {
           await EMClient.getInstance.chatManager.sendMessageReadAck(msg);
@@ -245,7 +247,7 @@ class _ChatPageState extends State<ChatPage>
       }
       if (msg.hasRead == false) {
         try {
-          await widget.conversation.markMessageAsRead(msg.msgId!);
+          await widget.conversation.markMessageAsRead(msg.msgId);
         } on EMError {}
       }
     }
@@ -261,7 +263,9 @@ class _ChatPageState extends State<ChatPage>
         onFaceTap: (expression) {
           _inputBarEditingController.text =
               _inputBarEditingController.text + '[${expression.name}]';
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         },
         onDeleteTap: () {
           if (_inputBarEditingController.text.length > 0) {
@@ -279,11 +283,13 @@ class _ChatPageState extends State<ChatPage>
   /// 下拉加载更多消息
   _loadMessages({int count = 20, bool moveBottom = true}) async {
     try {
-      List<EMMessage> msgs = await widget.conversation.loadMessages(
-        startMsgId: _msgList.length > 0 ? _msgList.first.msgId! : '',
+      List<EMMessage>? msgs = await widget.conversation.loadMessages(
+        startMsgId: _msgList.length > 0 ? _msgList.first.msgId : '',
         loadCount: count,
       );
-      _msgList.insertAll(0, msgs);
+      if (msgs != null) {
+        _msgList.insertAll(0, msgs);
+      }
     } on EMError {
     } finally {
       if (moveBottom) {
@@ -296,7 +302,9 @@ class _ChatPageState extends State<ChatPage>
 
   /// 刷新View并滑动到最底部
   _setStateAndMoreToListViewEnd() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
     Future.delayed(Duration(milliseconds: 100), () {
       _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     });
@@ -304,21 +312,21 @@ class _ChatPageState extends State<ChatPage>
 
   /// 点击bubble
   _messageBubbleOnTap(EMMessage msg) async {
-    switch (msg.body!.type!) {
-      case EMMessageBodyType.TXT:
+    switch (msg.body.type) {
+      case MessageType.TXT:
         break;
-      case EMMessageBodyType.IMAGE:
+      case MessageType.IMAGE:
         {
           EMImageMessageBody body = msg.body as EMImageMessageBody;
           Image img;
-          if (body.fileStatus != EMDownloadStatus.SUCCESS) {
+          if (body.fileStatus != DownloadStatus.SUCCESS) {
             img = Image.network(
               body.remotePath!,
               fit: BoxFit.cover,
             );
           } else {
             img = Image.file(
-              File(body.localPath!),
+              File(body.localPath),
               fit: BoxFit.cover,
             );
           }
@@ -331,7 +339,7 @@ class _ChatPageState extends State<ChatPage>
           );
         }
         break;
-      case EMMessageBodyType.VOICE:
+      case MessageType.VOICE:
         {
           if (_voicePlayer.currentMsgId == msg.msgId) {
             _voicePlayer.stopPlay();
@@ -340,15 +348,15 @@ class _ChatPageState extends State<ChatPage>
           }
         }
         break;
-      case EMMessageBodyType.VIDEO:
+      case MessageType.VIDEO:
         break;
-      case EMMessageBodyType.LOCATION:
+      case MessageType.LOCATION:
         break;
-      case EMMessageBodyType.FILE:
+      case MessageType.FILE:
         break;
-      case EMMessageBodyType.CMD:
+      case MessageType.CMD:
         break;
-      case EMMessageBodyType.CUSTOM:
+      case MessageType.CUSTOM:
         break;
     }
   }
@@ -372,7 +380,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   /// 发送图片消息
-  _sendImageMessage(String imagePath, [String fileName = '']) {
+  _sendImageMessage(String imagePath, {String? fileName}) {
     Image.file(
       File(imagePath),
       fit: BoxFit.contain,
@@ -385,7 +393,7 @@ class _ChatPageState extends State<ChatPage>
         filePath: imagePath,
         displayName: fileName,
       );
-      EMImageMessageBody body = msg.body! as EMImageMessageBody;
+      EMImageMessageBody body = msg.body as EMImageMessageBody;
       body.height = info.image.height.toDouble();
       body.width = info.image.width.toDouble();
       msg.body = body;
@@ -396,16 +404,16 @@ class _ChatPageState extends State<ChatPage>
   /// 发消息方法
   _sendMessage(EMMessage msg) async {
     _chatType() {
-      EMMessageChatType type = EMMessageChatType.Chat;
+      ChatType type = ChatType.Chat;
       switch (widget.conversation.type) {
         case EMConversationType.Chat:
-          type = EMMessageChatType.Chat;
+          type = ChatType.Chat;
           break;
         case EMConversationType.ChatRoom:
-          type = EMMessageChatType.ChatRoom;
+          type = ChatType.ChatRoom;
           break;
         case EMConversationType.GroupChat:
-          type = EMMessageChatType.GroupChat;
+          type = ChatType.GroupChat;
           break;
         default:
       }

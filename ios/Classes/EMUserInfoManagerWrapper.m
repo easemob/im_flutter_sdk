@@ -26,23 +26,23 @@
 
 #pragma mark - FlutterPlugin
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-    if ([call.method isEqualToString:EMMethodKeyUpdateOwnUserInfo]) {
+    if ([call.method isEqualToString:ChatUpdateOwnUserInfo]) {
         [self updateOwnUserInfo:call.arguments channelName:call.method result:result];
     }
     
-    if ([call.method isEqualToString:EMMethodKeyUpdateOwnUserInfoWithType]) {
+    if ([call.method isEqualToString:ChatUpdateOwnUserInfoWithType]) {
         [self updateOwnUserInfoWithType:call.arguments
                             channelName:call.method
                                  result:result];
     }
     
-    if ([call.method isEqualToString:EMMethodKeyFetchUserInfoById]) {
+    if ([call.method isEqualToString:ChatFetchUserInfoById]) {
         [self fetchUserInfoById:call.arguments
                     channelName:call.method
                          result:result];
     }
     
-    if ([call.method isEqualToString:EMMethodKeyFetchUserInfoByIdWithType]) {
+    if ([call.method isEqualToString:ChatFetchUserInfoByIdWithType]) {
         [self fetchUserInfoByIdWithType:call.arguments
                             channelName:call.method
                                  result:result];
@@ -120,7 +120,7 @@
         
         
             [weakSelf wrapperCallBack:result
-                          channelName:EMMethodKeyFetchUserInfoByIdWithType
+                          channelName:ChatFetchUserInfoByIdWithType
                                 error:aError
                                object:dic];
     }];

@@ -71,10 +71,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             {
                 changeAppKey(param, call.method, result);
             }
-            else if (EMSDKMethod.updateCurrentUserNick.equals(call.method))
-            {
-                updateCurrentUserNick(param, call.method, result);
-            }
             else if (EMSDKMethod.uploadLog.equals(call.method))
             {
                 uploadLog(param, call.method, result);
@@ -113,6 +109,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
             else if (EMSDKMethod.isConnected.equals(call.method)) {
                 isConnected(param, call.method, result);
+            }
+            else if (EMSDKMethod.renewToken.equals(call.method)){
+                renewToken(param, call.method, result);
             }
             else  {
                 super.onMethodCall(call, result);
@@ -215,19 +214,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         onSuccess(result, channelName, EMClient.getInstance().isConnected());
     }
 
-    private void updateCurrentUserNick(JSONObject param, String channelName, Result result) throws JSONException {
-        String nickName = param.getString("nickname");
-        asyncRunnable(()->{
-            try {
-                boolean status = EMClient.getInstance().pushManager().updatePushNickname(nickName);
-                onSuccess(result, channelName, status);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-
     private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
         EMClient.getInstance().uploadLog(new EMWrapperCallBack(result, channelName, true));
     }
@@ -278,6 +264,21 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     }
 
+    private void init(JSONObject param, String channelName, Result result) throws JSONException {
+        EMOptions options = EMOptionsHelper.fromJson(param, this.context);
+        EMClient.getInstance().init(this.context, options);
+        EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
+        bindingManagers();
+        addEMListener();
+        onSuccess(result, channelName, null);
+    }
+
+    private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {
+        String agoraToken = param.getString("agora_token");
+        EMClient.getInstance().renewToken(agoraToken);
+        onSuccess(result, channelName, null);
+    }
+
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
@@ -304,14 +305,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMPushManagerWrapper(binging, "chat_push_manager");
         new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
     }
-    private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        EMOptions options = EMOptionsHelper.fromJson(param, this.context);
-        EMClient.getInstance().init(this.context, options);
-        EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
-        bindingManagers();
-        addEMListener();
-        onSuccess(result, channelName, null);
-    }
+
 
     private void addEMListener() {
         EMClient.getInstance().addMultiDeviceListener(new EMMultiDeviceListener() {

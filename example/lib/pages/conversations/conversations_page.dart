@@ -33,7 +33,7 @@ class ConversationPageState extends State<ConversationPage>
   void initState() {
     super.initState();
     // 添加环信回调监听
-    EMClient.getInstance.chatManager.addListener(this);
+    EMClient.getInstance.chatManager.addChatManagerListener(this);
     notifier = eventBus.on<EventBusManager>().listen((event) {
       if (event.eventKey == EventBusManager.updateConversationsList) {
         _reLoadAllConversations();
@@ -44,7 +44,7 @@ class ConversationPageState extends State<ConversationPage>
   void dispose() {
     _refreshController.dispose();
     // 移除环信回调监听
-    EMClient.getInstance.chatManager.removeListener(this);
+    EMClient.getInstance.chatManager.removeChatManagerListener(this);
     notifier.cancel();
     super.dispose();
   }
@@ -155,20 +155,20 @@ class ConversationPageState extends State<ConversationPage>
   /// 更新会话列表
   void _reLoadAllConversations() async {
     try {
+      int count =
+          await EMClient.getInstance.chatManager.getUnreadMessageCount();
       List<EMConversation> list =
           await EMClient.getInstance.chatManager.loadAllConversations();
       _conversationsList.clear();
       _conversationsList.addAll(list);
       _refreshController.refreshCompleted();
-      int count = 0;
-      for (var conversation in _conversationsList) {
-        count += conversation.unreadCount;
-      }
       widget.updateCount(count);
     } on Error {
       _refreshController.refreshFailed();
     } finally {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -193,7 +193,9 @@ class ConversationPageState extends State<ConversationPage>
       _conversationsList.removeAt(index);
     } on Error {
     } finally {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -202,7 +204,7 @@ class ConversationPageState extends State<ConversationPage>
     EMConversation con = _conversationsList[index];
     Navigator.of(context).pushNamed(
       '/chat',
-      arguments: [con.name, con],
+      arguments: [con.id, con],
     ).then((value) {
       // 返回时刷新页面
       _reLoadAllConversations();

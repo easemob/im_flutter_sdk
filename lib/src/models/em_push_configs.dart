@@ -1,51 +1,75 @@
 import 'package:flutter/services.dart';
-import '../../im_flutter_sdk.dart';
-import '../chat_method_keys.dart';
+
+import '../internal/chat_method_keys.dart';
 import '../tools/em_extension.dart';
+import 'em_chat_enums.dart';
+import 'em_error.dart';
+import '../em_push_manager.dart';
 
-enum EMPushStyle { Simple, Summary }
-
+/// The push configuration class.
 class EMPushConfigs {
-  EMPushConfigs._private();
+  EMPushConfigs._private({
+    this.displayStyle = DisplayStyle.Simple,
+    this.noDisturb = false,
+    this.noDisturbStartHour = -1,
+    this.noDisturbEndHour = -1,
+  });
 
-  EMPushStyle? _pushStyle;
+  ///
+  /// The display type of push notifications.
+  ///
+  final DisplayStyle displayStyle;
+
+  ///
+  /// Whether to enable the do-not-disturb mode for push notifications.
+  /// - `true`: Yes.
+  /// - `false`: No.
+  ///  Sets it by {@link EMPushManager#disableOfflinePush(int, int)}.
+  ///
+  final bool noDisturb;
+
+  ///
+  /// The start hour of the do-not-disturb mode for push notifications.
+  ///
+  final int noDisturbStartHour;
+
+  ///
+  /// The end hour of the do-not-disturb mode for push notifications.
+  ///
+  final int noDisturbEndHour;
+
+  // ignore: unused_field
+  DisplayStyle? _displayStyle;
+  // ignore: unused_field
   bool? _noDisturb;
+  // ignore: unused_field
   int? _noDisturbStartHour;
+  // ignore: unused_field
   int? _noDisturbEndHour;
+  // ignore: unused_field
   List<String>? _noDisturbGroups = [];
 
-  EMPushStyle? get pushStyle => _pushStyle;
-  bool? get noDisturb => _noDisturb;
-  int? get noDisturbStartHour => _noDisturbStartHour;
-  int? get noDisturbEndHour => _noDisturbEndHour;
-  List<String>? get noDisturbGroups => _noDisturbGroups;
-
+  /// @nodoc
   factory EMPushConfigs.fromJson(Map map) {
-    return EMPushConfigs._private()
-      .._pushStyle =
-          map['pushStyle'] == 0 ? EMPushStyle.Simple : EMPushStyle.Summary
-      .._noDisturb = map.boolValue('noDisturb')
-      .._noDisturbStartHour = map['noDisturbStartHour']
-      .._noDisturbEndHour = map['noDisturbEndHour'];
-  }
-
-  Map toJson() {
-    Map data = Map();
-    data['pushStyle'] = _pushStyle == EMPushStyle.Simple;
-    data['noDisturb'] = _noDisturb;
-    data['noDisturbStartHour'] = _noDisturbStartHour;
-    data['noDisturbEndHour'] = _noDisturbEndHour;
-    return data;
+    return EMPushConfigs._private(
+      displayStyle:
+          map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary,
+      noDisturb: map.boolValue('noDisturb'),
+      noDisturbStartHour: map['noDisturbStartHour'],
+      noDisturbEndHour: map['noDisturbEndHour'],
+    );
   }
 }
 
+/// @nodoc
 extension EMPushConfigsExtension on EMPushConfigs {
   // channel的命名与pushManager中的channel一致，本质上还是一个channel。
   static const MethodChannel _channel =
       const MethodChannel('com.chat.im/chat_push_manager', JSONMethodCodec());
 
-  /// 设置是否免打扰[isNoDisturb], [startTime], [endTime]
-  Future<bool> setNoDisturb(
+  @Deprecated(
+      "Switch to using EMPushManager#enableOfflinePush and EMPushManager#disableOfflinePush instead")
+  Future<void> setNoDisturb(
     bool isNoDisturb, [
     int startTime = 0,
     int endTime = 24,
@@ -57,53 +81,56 @@ extension EMPushConfigsExtension on EMPushConfigs {
       'startTime': startTime,
       'endTime': endTime
     };
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.imPushNoDisturb, req);
-    EMError.hasErrorFromResult(result);
-    bool success = result.boolValue(ChatMethodKeys.imPushNoDisturb);
-    if (success) {
-      _noDisturb = isNoDisturb;
-      _noDisturbStartHour = startTime;
-      _noDisturbEndHour = endTime;
+    Map result = await _channel.invokeMethod("imPushNoDisturb", req);
+    try {
+      EMError.hasErrorFromResult(result);
+      bool success = result.boolValue("imPushNoDisturb");
+      if (success) {
+        _noDisturb = isNoDisturb;
+        _noDisturbStartHour = startTime;
+        _noDisturbEndHour = endTime;
+      }
+    } on EMError catch (e) {
+      throw e;
     }
-    return success;
   }
 
-  /// 设置消息推送显示样式[pushStyle]
-  Future<bool> setPushStyle(EMPushStyle pushStyle) async {
-    EMLog.v('setPushStyle: ' + pushStyle.toString());
+  @Deprecated("Switch to using EMPushManager#updatePushDisplayStyle instead")
+  Future<void> setPushStyle(EMPushStyle pushStyle) async {
     Map req = {'pushStyle': pushStyle == EMPushStyle.Simple ? 0 : 1};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updateImPushStyle, req);
-    EMError.hasErrorFromResult(result);
-    bool success = result.boolValue(ChatMethodKeys.updateImPushStyle);
-    if (success) _pushStyle = pushStyle;
-    return success;
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
-  /// 通过群id[groupId]设置群组是否免打扰[isNoDisturb]
-  Future<EMGroup> setGroupToDisturb(
+  @Deprecated("Switch to using EMPushManager#updatePushServiceForGroup instead")
+  Future<void> setGroupToDisturb(
     String groupId,
     bool isNoDisturb,
   ) async {
     Map req = {'noDisturb': isNoDisturb, 'group_id': groupId};
-    EMLog.v('setGroupToDisturb: ' + req.toString());
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.updateGroupPushService, req);
-    EMError.hasErrorFromResult(result);
-    EMGroup group =
-        EMGroup.fromJson(result[ChatMethodKeys.updateGroupPushService]);
-    _noDisturbGroups!.removeWhere((e) => e == group.groupId);
-    if (isNoDisturb) _noDisturbGroups!.add(group.groupId);
-    return group;
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
-  /// 获取免打扰群组列表
+  @Deprecated("Switch to using EMPushManager#getNoPushGroups instead")
   Future<List<String>?> noDisturbGroupsFromServer() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getNoDisturbGroups);
-    EMError.hasErrorFromResult(result);
-    _noDisturbGroups =
-        result[ChatMethodKeys.getNoDisturbGroups]?.cast<String>();
-    return _noDisturbGroups;
+    Map result = await _channel.invokeMethod("getNoDisturbGroups");
+    try {
+      EMError.hasErrorFromResult(result);
+      _noDisturbGroups = result["getNoDisturbGroups"]?.cast<String>();
+      return _noDisturbGroups;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 }

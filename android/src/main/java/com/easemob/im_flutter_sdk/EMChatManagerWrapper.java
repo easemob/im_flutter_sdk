@@ -561,13 +561,6 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }
 
             @Override
-            public void onMessageChanged(EMMessage message, Object change) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("message", EMMessageHelper.toJson(message));
-                post(() -> channel.invokeMethod(EMSDKMethod.onMessageStatusChanged, data));
-            }
-
-            @Override
             public void onGroupMessageRead(List<EMGroupReadAck> var1) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for (EMGroupReadAck ack : var1) {

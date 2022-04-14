@@ -1,5 +1,6 @@
 import '../tools/em_extension.dart';
 
+/// The push configuration class, which contains the push configuration information, such as the push style.
 class EMPushConfig {
   String? mzAppId = '';
   String? mzAppKey = '';
@@ -27,6 +28,7 @@ class EMPushConfig {
 
   EMPushConfig();
 
+  /// @nodoc
   void updateFromJson(Map<String, dynamic> json) {
     miAppId = json.stringValue("mzAppId");
     mzAppKey = json.stringValue("mzAppKey");
@@ -45,6 +47,7 @@ class EMPushConfig {
     enableAPNS = json.boolValue('enableAPNS');
   }
 
+  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data.setValueWithOutNull("mzAppId", mzAppId);

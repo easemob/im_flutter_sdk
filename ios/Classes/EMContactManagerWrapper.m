@@ -27,47 +27,47 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
-    if ([EMMethodKeyAddContact isEqualToString:call.method]) {
+    if ([ChatAddContact isEqualToString:call.method]) {
         [self addContact:call.arguments
              channelName:call.method
                   result:result];
-    } else if ([EMMethodKeyDeleteContact isEqualToString:call.method]) {
+    } else if ([ChatDeleteContact isEqualToString:call.method]) {
         [self deleteContact:call.arguments
                 channelName:call.method
                      result:result];
-    } else if ([EMMethodKeyGetAllContactsFromServer isEqualToString:call.method]) {
+    } else if ([ChatGetAllContactsFromServer isEqualToString:call.method]) {
         [self getAllContactsFromServer:call.arguments
                            channelName:call.method
                                 result:result];
-    } else if ([EMMethodKeyGetAllContactsFromDB isEqualToString:call.method]) {
+    } else if ([ChatGetAllContactsFromDB isEqualToString:call.method]) {
         [self getAllContactsFromDB:call.arguments
                        channelName:call.method
                             result:result];
-    } else if ([EMMethodKeyAddUserToBlockList isEqualToString:call.method]) {
+    } else if ([ChatAddUserToBlockList isEqualToString:call.method]) {
         [self addUserToBlockList:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyRemoveUserFromBlockList isEqualToString:call.method]) {
+    } else if ([ChatRemoveUserFromBlockList isEqualToString:call.method]) {
         [self removeUserFromBlockList:call.arguments
                           channelName:call.method
                                result:result];
-    } else if ([EMMethodKeyGetBlockListFromServer isEqualToString:call.method]) {
+    } else if ([ChatGetBlockListFromServer isEqualToString:call.method]) {
         [self getBlockListFromServer:call.arguments
                          channelName:call.method
                               result:result];
-    } else if ([EMMethodKeyGetBlockListFromDB isEqualToString:call.method]){
+    } else if ([ChatGetBlockListFromDB isEqualToString:call.method]){
         [self getBlockListFromDB:call.arguments
                      channelName:call.method
                           result:result];
-    } else if ([EMMethodKeyAcceptInvitation isEqualToString:call.method]) {
+    } else if ([ChatAcceptInvitation isEqualToString:call.method]) {
         [self acceptInvitation:call.arguments
                    channelName:call.method
                         result:result];
-    } else if ([EMMethodKeyDeclineInvitation isEqualToString:call.method]) {
+    } else if ([ChatDeclineInvitation isEqualToString:call.method]) {
         [self declineInvitation:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([EMMethodKeyGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
+    } else if ([ChatGetSelfIdsOnOtherPlatform isEqualToString:call.method]) {
         [self getSelfIdsOnOtherPlatform:call.arguments
                             channelName:call.method
                                  result:result];
@@ -218,7 +218,7 @@
         @"type":@"onContactAdded",
         @"username":aUsername
     };
-    [self.channel invokeMethod:EMMethodKeyOnContactChanged
+    [self.channel invokeMethod:ChatOnContactChanged
                      arguments:map];
 }
 
@@ -227,7 +227,7 @@
         @"type":@"onContactDeleted",
         @"username":aUsername
     };
-    [self.channel invokeMethod:EMMethodKeyOnContactChanged
+    [self.channel invokeMethod:ChatOnContactChanged
                      arguments:map];
 }
 
@@ -238,7 +238,7 @@
         @"username":aUsername,
         @"reason":aMessage
     };
-    [self.channel invokeMethod:EMMethodKeyOnContactChanged
+    [self.channel invokeMethod:ChatOnContactChanged
                      arguments:map];
 }
 
@@ -247,7 +247,7 @@
         @"type":@"onFriendRequestAccepted",
         @"username":aUsername
     };
-    [self.channel invokeMethod:EMMethodKeyOnContactChanged
+    [self.channel invokeMethod:ChatOnContactChanged
                      arguments:map];
 }
 
@@ -256,7 +256,7 @@
         @"type":@"onFriendRequestDeclined",
         @"username":aUsername
     };
-    [self.channel invokeMethod:EMMethodKeyOnContactChanged
+    [self.channel invokeMethod:ChatOnContactChanged
                      arguments:map];
 }
 
