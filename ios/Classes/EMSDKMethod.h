@@ -207,19 +207,18 @@ static NSString *const ChatOnGroupChanged = @"onGroupChanged";
 #pragma mark - EMPushManagerWrapper
 static NSString *const ChatGetImPushConfig = @"getImPushConfig";
 static NSString *const ChatGetImPushConfigFromServer = @"getImPushConfigFromServer";
-static NSString *const ChatUpdatePushNickname = @"updatePushNickname";
-static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
 static NSString *const ChatEnablePush = @"enableOfflinePush";
 static NSString *const ChatDisablePush = @"disableOfflinePush";
-static NSString *const ChatGetNoPushGroups = @"getNoPushGroups";
-
-
-static NSString *const ChatImPushNoDisturb = @"imPushNoDisturb";
 static NSString *const ChatUpdateImPushStyle = @"updateImPushStyle";
+static NSString *const ChatUpdatePushNickname = @"updatePushNickname";
+
 static NSString *const ChatUpdateGroupPushService = @"updateGroupPushService";
-static NSString *const ChatGetNoDisturbGroups = @"getNoDisturbGroups";
-static NSString *const ChatSetNoDisturbUsers = @"setNoDisturbUsers";
-static NSString *const ChatGetNoDisturbUsersFromServer = @"getNoDisturbUsersFromServer";
+static NSString *const ChatGetNoPushGroups = @"getNoPushGroups";
+static NSString *const ChatUpdateUserPushService = @"updateUserPushService";
+static NSString *const ChatGetNoPushUsers = @"getNoPushUsers";
+
+
+static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
 
 #pragma mark - EMUserInfoManagerWrapper
 static NSString *const ChatUpdateOwnUserInfo = @"updateOwnUserInfo";

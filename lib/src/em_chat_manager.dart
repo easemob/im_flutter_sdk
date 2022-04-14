@@ -195,12 +195,11 @@ class EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<bool> recallMessage(String messageId) async {
+  Future<void> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
     Map result = await _channel.invokeMethod(ChatMethodKeys.recallMessage, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(ChatMethodKeys.recallMessage);
     } on EMError catch (e) {
       throw e;
     }

@@ -166,6 +166,9 @@ static EMClientWrapper *wrapper = nil;
     EMOptions *options = [EMOptions fromJson:param];
 
     [EMClient.sharedClient initializeSDKWithOptions:options];
+    
+    [EMClient.sharedClient removeDelegate:self];
+    [EMClient.sharedClient removeMultiDevicesDelegate:self];
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];

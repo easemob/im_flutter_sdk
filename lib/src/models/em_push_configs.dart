@@ -50,7 +50,6 @@ class EMPushConfigs {
   int? _noDisturbEndHour;
   // ignore: unused_field
   List<String>? _noDisturbGroups = [];
-  @Deprecated("Switch to using DisplayStyle instead")
 
   /// @nodoc
   factory EMPushConfigs.fromJson(Map map) {
@@ -84,11 +83,10 @@ extension EMPushConfigsExtension on EMPushConfigs {
       'startTime': startTime,
       'endTime': endTime
     };
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.imPushNoDisturb, req);
+    Map result = await _channel.invokeMethod("imPushNoDisturb", req);
     try {
       EMError.hasErrorFromResult(result);
-      bool success = result.boolValue(ChatMethodKeys.imPushNoDisturb);
+      bool success = result.boolValue("imPushNoDisturb");
       if (success) {
         _noDisturb = isNoDisturb;
         _noDisturbStartHour = startTime;
@@ -128,11 +126,10 @@ extension EMPushConfigsExtension on EMPushConfigs {
 
   @Deprecated("Switch to using EMPushManager#getNoPushGroups instead")
   Future<List<String>?> noDisturbGroupsFromServer() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getNoDisturbGroups);
+    Map result = await _channel.invokeMethod("getNoDisturbGroups");
     try {
       EMError.hasErrorFromResult(result);
-      _noDisturbGroups =
-          result[ChatMethodKeys.getNoDisturbGroups]?.cast<String>();
+      _noDisturbGroups = result["getNoDisturbGroups"]?.cast<String>();
       return _noDisturbGroups;
     } on EMError catch (e) {
       throw e;
