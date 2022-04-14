@@ -3,10 +3,10 @@ import '../tools/em_extension.dart';
 ///
 /// The EMGroupSharedFile class, which manages the chat group shared files.
 ///
-/// To get the information of the chat group shared file, call {@link EMGroupManager#getGroupFileListFromServer(String, int?, int?)}.
+/// To get the information of the chat group shared file, call {@link EMGroupManager#fetchGroupFileListFromServer(String, int?, int?)}.
 ///
 /// ```dart
-///   List<EMGroupSharedFile>? list = await EMClient.getInstance.groupManager.getGroupFileListFromServer(groupId);
+///   List<EMGroupSharedFile>? list = await EMClient.getInstance.groupManager.fetchGroupFileListFromServer(groupId);
 /// ```
 class EMGroupSharedFile {
   EMGroupSharedFile._private();

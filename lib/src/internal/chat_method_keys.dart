@@ -213,22 +213,19 @@ class ChatMethodKeys {
   /// EMPushManager
   static const String getImPushConfig = "getImPushConfig";
   static const String getImPushConfigFromServer = "getImPushConfigFromServer";
+  static const String enableOfflinePush = "enableOfflinePush";
+  static const String disableOfflinePush = "disableOfflinePush";
+  static const String updateImPushStyle = "updateImPushStyle";
   static const String updatePushNickname = "updatePushNickname";
+
+  static const String updateGroupPushService = "updateGroupPushService";
+  static const String getNoPushGroups = "getNoPushGroups";
+  static const String updateUserPushService = "updateUserPushService";
+  static const String getNoPushUsers = "getNoPushUsers";
+
   static const String updateHMSPushToken = "updateHMSPushToken";
   static const String updateFCMPushToken = "updateFCMPushToken";
   static const String updateAPNsPushToken = "updateAPNsPushToken";
-  static const String enableOfflinePush = "enableOfflinePush";
-  static const String disableOfflinePush = "disableOfflinePush";
-  static const String getNoPushGroups = "getNoPushGroups";
-
-  /// ImPushConfig
-  static const String imPushNoDisturb = "imPushNoDisturb";
-  static const String updateImPushStyle = "updateImPushStyle";
-  static const String updateGroupPushService = "updateGroupPushService";
-  static const String getNoDisturbGroups = "getNoDisturbGroups";
-  static const String setNoDisturbUsers = "setNoDisturbUsers";
-  static const String getNoDisturbUsersFromServer =
-      "getNoDisturbUsersFromServer";
 
   /// EMUserInfoManager methods
   static const String updateOwnUserInfo = "updateOwnUserInfo";

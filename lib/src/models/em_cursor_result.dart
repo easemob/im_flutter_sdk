@@ -6,7 +6,7 @@ typedef CursorResultCallback = Object Function(dynamic obj);
 ///
 ///   ```dart
 ///     String? cursor;
-///     EMCursorResult<EMGroup> result = await EMClient.getInstance.groupManager.getPublicGroupsFromServer(pageSize: 10, cursor: cursor);
+///     EMCursorResult<EMGroup> result = await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer(pageSize: 10, cursor: cursor);
 ///     List<EMGroup>? group = result.data;
 ///     cursor = result.cursor;
 ///   ```

@@ -391,7 +391,7 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<String?>> fetchChatRoomMembers(
+  Future<EMCursorResult<String>> fetchChatRoomMembers(
     String roomId, {
     String cursor = '',
     int pageSize = 200,
@@ -402,7 +402,7 @@ class EMChatRoomManager {
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<String?>.fromJson(
+      return EMCursorResult<String>.fromJson(
           result[ChatMethodKeys.fetchChatRoomMembers],
           dataItemCallback: (obj) => obj);
     } on EMError catch (e) {

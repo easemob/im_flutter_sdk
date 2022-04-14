@@ -195,8 +195,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
   _fetchGroupInfo() async {
     try {
       SmartDialog.showLoading(msg: '获取中...');
-      _group = await EMClient.getInstance.groupManager
-          .getGroupSpecificationFromServer(
+      _group = await EMClient.getInstance.groupManager.fetchGroupInfoFromServer(
         widget.group.groupId,
       );
 

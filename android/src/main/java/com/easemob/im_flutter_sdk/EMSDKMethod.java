@@ -200,20 +200,20 @@ public class EMSDKMethod {
     /// EMPushManager
     static final String getImPushConfig = "getImPushConfig";
     static final String getImPushConfigFromServer = "getImPushConfigFromServer";
-    static final String updatePushNickname = "updatePushNickname";
-    static final String updateHMSPushToken = "updateHMSPushToken";
-    static final String updateFCMPushToken = "updateFCMPushToken";
     static final String enableOfflinePush = "enableOfflinePush";
     static final String disableOfflinePush = "disableOfflinePush";
-    static final String getNoPushGroups = "getNoPushGroups";
-
-    /// ImPushConfig
-    static final String imPushNoDisturb = "imPushNoDisturb";
     static final String updateImPushStyle = "updateImPushStyle";
+    static final String updatePushNickname = "updatePushNickname";
+
     static final String updateGroupPushService = "updateGroupPushService";
-    static final String getNoDisturbGroups = "getNoDisturbGroups";
-    static final String setNoDisturbUsers = "setNoDisturbUsers";
-    static final String getNoDisturbUsersFromServer = "getNoDisturbUsersFromServer";
+    static final String getNoPushGroups = "getNoPushGroups";
+    static final String updateUserPushService = "updateUserPushService";
+    static final String getNoPushUsers = "getNoPushUsers";
+
+
+    static final String updateHMSPushToken = "updateHMSPushToken";
+    static final String updateFCMPushToken = "updateFCMPushToken";
+
 
 
     /// EMUserInfoManager 

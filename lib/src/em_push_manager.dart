@@ -36,7 +36,7 @@ class EMPushManager {
   }
 
   /// Gets the push configurations from the server.
-  Future<EMPushConfigs> getPushConfigsFromServer() async {
+  Future<EMPushConfigs> fetchPushConfigsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
     try {
@@ -111,17 +111,58 @@ class EMPushManager {
   }
 
   ///
+  /// Sets whether to turn on or turn off the push notification for the the specified users.
+  ///
+  /// [userIds]  The list of users to be set.
+  ///
+  /// [enablePush] enable push notification.
+  /// `true`: Turns on the notification;
+  /// `false`: Turns off the notification;
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
+  Future<void> updatePushServiceFroUsers({
+    required List<String> userIds,
+    required bool enablePush,
+  }) async {
+    Map req = {'noPush': !enablePush, 'user_ids': userIds};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateUserPushService, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
   /// Gets the list of groups which have blocked the push notification.
   ///
   /// **return** The list of groups that blocked the push notification.
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
-  Future<List<String>?> getNoPushGroupsFromCache() async {
+  Future<List<String>> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
     if (result.containsKey(ChatMethodKeys.getNoPushGroups)) {
       list = result[ChatMethodKeys.getNoPushGroups]?.cast<String>();
+    }
+    return list;
+  }
+
+  ///
+  /// Gets the list of users which have blocked the push notification.
+  ///
+  /// **return** The list of user that blocked the push notification.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
+  Future<List<String>> getNoPushUsersFromCache() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushUsers);
+    List<String> list = [];
+    if (result.containsKey(ChatMethodKeys.getNoPushUsers)) {
+      list = result[ChatMethodKeys.getNoPushUsers]?.cast<String>();
     }
     return list;
   }
@@ -241,6 +282,20 @@ class EMPushManager {
   /// Gets push options from the server.
   @Deprecated('use - getPushConfigsFromServer method instead.')
   Future<EMPushConfigs> getImPushConfigFromServer() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMPushConfigs.fromJson(
+          result[ChatMethodKeys.getImPushConfigFromServer]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// Gets the push configurations from the server.
+  @Deprecated('use - fetchPushConfigsFromServer method instead.')
+  Future<EMPushConfigs> getPushConfigsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
     try {
