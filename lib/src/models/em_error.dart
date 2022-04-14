@@ -1,23 +1,25 @@
+///
+/// The error class defined by the SDK.
+///
 class EMError {
-  EMError._private([int? code, String? desc])
-      : _code = code ?? 0,
-        _description = desc ?? "";
+  EMError._private(this.code, this.description);
 
-  late int _code;
-  late String _description;
+  ///
+  /// The error code.
+  ///
+  final int code;
 
-  int get code {
-    return _code;
-  }
+  ///
+  /// The error description.
+  ///
+  final String description;
 
-  String get description {
-    return _description;
-  }
-
+  /// @nodoc
   factory EMError.fromJson(Map map) {
     return EMError._private(map['code'], map['description']);
   }
 
+  /// @nodoc
   static hasErrorFromResult(Map map) {
     if (map['error'] == null) {
       return;

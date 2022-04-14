@@ -1,4 +1,3 @@
-// 思考： 是否要把所有格式转换的部分都放到这个extension中？
 import '../models/em_group_shared_file.dart';
 
 Type typeOf<T>() => T;
@@ -54,11 +53,11 @@ extension MapExtension on Map {
     }
     return null;
   }
-}
 
-extension MapWithoutNull on Map {
-  setValueWithOutNull<T>(String key, T? value,
-      [Object Function(T object)? callback]) {
+  ///
+  /// 如果给的value是null则不设置到map中。
+  void setValueWithOutNull<T>(String key, T? value,
+      {Object Function(T object)? callback, T? defaultValue}) {
     if (value != null) {
       if (callback != null) {
         Object v = callback(value);
@@ -66,6 +65,67 @@ extension MapWithoutNull on Map {
       } else {
         this[key] = value;
       }
+    } else {
+      if (defaultValue != null) {
+        this[key] = defaultValue;
+      }
     }
+  }
+
+  int? getIntValue(String key, {int? defaultValue}) {
+    int? ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is int) {
+        ret = value;
+      }
+    }
+    return ret;
+  }
+
+  bool? getBoolValue(String key, {bool? defaultValue}) {
+    bool? ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is bool) {
+        ret = value;
+      }
+    }
+    return ret;
+  }
+
+  String? getStringValue(String key, {String? defaultValue}) {
+    String? ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is String) {
+        ret = value;
+      }
+    }
+    return ret;
+  }
+
+  double? getDoubleValue(String key, {double? defaultValue}) {
+    double? ret = defaultValue;
+    if (this.containsKey(key)) {
+      dynamic value = this[key];
+      if (value is double) {
+        ret = value;
+      } else if (value is int) {
+        ret = value.toDouble();
+      }
+    }
+    return ret;
+  }
+
+  Map? getMapValue(String key, {Map? defaultValue}) {
+    Map? ret = defaultValue;
+    if (this.containsKey(key)) {
+      Map? value = this[key];
+      if (value is double) {
+        ret = value;
+      }
+    }
+    return ret;
   }
 }

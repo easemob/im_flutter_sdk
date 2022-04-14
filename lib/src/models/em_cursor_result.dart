@@ -1,23 +1,36 @@
 typedef CursorResultCallback = Object Function(dynamic obj);
 
+///
+/// The EMCursorResult class, which specifies the cursor from which to query results.
+/// When querying using this class, the SDK returns the queried instance and the cursor.
+///
+///   ```dart
+///     String? cursor;
+///     EMCursorResult<EMGroup> result = await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer(pageSize: 10, cursor: cursor);
+///     List<EMGroup>? group = result.data;
+///     cursor = result.cursor;
+///   ```
+///
 class EMCursorResult<T> {
-  EMCursorResult._private();
+  EMCursorResult._private(
+    this.cursor,
+    this.data,
+  );
 
+  /// @nodoc
   factory EMCursorResult.fromJson(Map<String, dynamic> map,
       {dataItemCallback: CursorResultCallback}) {
-    EMCursorResult<T> result = EMCursorResult<T>._private()
-      .._cursor = map['cursor']
-      .._data = [];
-
+    List<T> list = [];
     (map['list'] as List)
-        .forEach((element) => result._data!.add(dataItemCallback(element)));
+        .forEach((element) => list.add(dataItemCallback(element)));
+    EMCursorResult<T> result = EMCursorResult<T>._private(map['cursor'], list);
 
     return result;
   }
 
-  String? _cursor;
-  List<T>? _data;
+  /// Gets the cursor.
+  final String? cursor;
 
-  String? get cursor => _cursor;
-  List<T>? get data => _data;
+  /// Gets the data list.
+  final List<T> data;
 }

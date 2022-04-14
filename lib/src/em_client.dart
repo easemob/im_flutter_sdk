@@ -2,11 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-import 'internal/chat_method_keys.dart';
+import 'internal/em_transform_tools.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
+import 'internal/chat_method_keys.dart';
 import 'tools/em_log.dart';
 
+///
+/// The EMClient class, which is the entry point of the Chat SDK. With this class, you can log in, log out, and access other functionalities such as group and chatroom.
+///
 class EMClient {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel =
@@ -24,18 +28,17 @@ class EMClient {
 
   EMOptions? _options;
 
-  /// 获取配置信息[EMOptions].
+  /// Gets the configurations.
   EMOptions? get options => _options;
 
   String? _currentUsername;
 
-  /// 获取当前登录的环信id
+  /// Gets the current logged-in username.
   String? get currentUsername => _currentUsername;
 
   static EMClient get getInstance =>
       _instance = _instance ?? EMClient._internal();
 
-  /// @nodoc private constructor
   EMClient._internal() {
     _addNativeMethodCallHandler();
   }
@@ -51,7 +54,12 @@ class EMClient {
         return _onMultiDeviceEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
         return _onReceiveCustomData(argMap!);
+      } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
+        return _onTokenWillExpire(argMap);
+      } else if (call.method == ChatMethodKeys.onTokenDidExpire) {
+        return _onTokenDidExpire(argMap);
       }
+
       return null;
     });
   }
@@ -92,7 +100,7 @@ class EMClient {
     }
   }
 
-  /// 获取已登录账号的环信Token
+  /// Gets the token of the current logged-in user.
   Future<String> getAccessToken() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getToken);
     try {
@@ -103,7 +111,11 @@ class EMClient {
     }
   }
 
-  /// 初始化SDK 指定[options].
+  ///
+  /// Initializes the SDK.
+  ///
+  /// Param [options] The configurations: {@link EMOptions}. Ensure that you set this parameter.
+  ///
   Future<void> init(EMOptions options) async {
     _options = options;
     EMLog.v('init: $options');
@@ -111,23 +123,42 @@ class EMClient {
     _currentUsername = await getCurrentUsername();
   }
 
-  /// 注册环信id，[username],[password],
-  /// 需要在环信后台的console中设置为开放注册才能通过sdk注册，否则只能使用rest api注册。
-  /// 返回注册成功的环信id
-  Future<String> createAccount(String username, String password) async {
+  ///
+  /// Register a new user.
+  ///
+  /// Param [username] The username. The maximum length is 64 characters. Ensure that you set this parameter.
+  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-),
+  /// and the English period (.). This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
+  /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
+  ///
+  /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(ChatMethodKeys.createAccount, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.createAccount];
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 使用用户名(环信id)和密码(或token)登录，[username], [pwdOrToken]
-  /// 返回登录成功的id(环信id)
+  ///
+  /// An app user logs in to the chat server with a password or token.
+  ///
+  /// Param [username] The username.
+  ///
+  /// Param [pwdOrToken] The password or token.
+  ///
+  /// Param [isPassword] Whether to log in with password or token.
+  /// `true`: (default) Log in with password.
+  /// `false`: Log in with token.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<void> login(String username, String pwdOrToken,
       [bool isPassword = true]) async {
     EMLog.v('login: $username : $pwdOrToken, isPassword: $isPassword');
@@ -139,15 +170,70 @@ class EMClient {
     Map result = await _channel.invokeMethod(ChatMethodKeys.login, req);
     try {
       EMError.hasErrorFromResult(result);
-      _currentUsername = result[ChatMethodKeys.login];
+      _currentUsername = username;
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 退出登录，是否解除deviceToken绑定[unbindDeviceToken]
-  /// 返回退出是否成功
-  Future<bool> logout([
+  ///
+  /// An app user logs in to the chat server by username and Agora token. This method supports automatic login.
+  ///
+  /// See also: Another method to login to chat server is to login with user ID and token, see {@link #login(String, String, bool)}.
+  ///
+  /// Param [username] The username.
+  ///
+  /// Param [agoraToken] The Agora token.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> loginWithAgoraToken(String username, String agoraToken) async {
+    Map req = {
+      "username": username,
+      "agoratoken": agoraToken,
+    };
+
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.loginWithAgoraToken, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _currentUsername = username;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Renews the Agora token.
+  ///
+  /// If a user is logged in with an Agora token, when the token expires, you need to call this method to update the token.
+  ///
+  /// Param [agoraToken] The new Agora token.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> renewAgoraToken(String agoraToken) async {
+    Map req = {"agora_token": agoraToken};
+
+    Map result = await _channel.invokeMethod(ChatMethodKeys.renewToken, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// An app user logs out.
+  ///
+  /// Param [unbindDeviceToken] Whether to unbind the token when logout.
+  ///
+  /// `true` (default) Yes.
+  /// `false` No.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> logout([
     bool unbindDeviceToken = true,
   ]) async {
     EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
@@ -156,13 +242,22 @@ class EMClient {
     try {
       EMError.hasErrorFromResult(result);
       _clearAllInfo();
-      return result.boolValue(ChatMethodKeys.logout);
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  /// 修改appKey [newAppKey].
+  ///
+  /// Updates the App Key, which is the unique identifier to access Agora Chat.
+  ///
+  /// You can retrieve the new App Key from Agora Console.
+  ///
+  /// As this key controls all access to Agora Chat for your app, you can only update the key when the current user is logged out.
+  ///
+  /// Param [newAppKey] The App Key. Ensure that you set this parameter.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<bool> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
@@ -175,15 +270,15 @@ class EMClient {
     }
   }
 
-  // /// @nodoc 上传日志到环信, 不对外暴露
-  // Future<bool> _uploadLog() async {
-  //   Map result = await _channel.invokeMethod(ChatMethodKeys.uploadLog);
-  //   EMError.hasErrorFromResult(result);
-  //   return true;
-  // }
-
-  /// 压缩环信日志
-  /// 返回日志路径
+  ///
+  /// Compresses the debug log into a gzip archive.
+  ///
+  /// Best practice is to delete this debug archive as soon as it is no longer used.
+  ///
+  /// **Return** The path of the compressed gzip file.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
     Map result = await _channel.invokeMethod(ChatMethodKeys.compressLogs);
@@ -195,8 +290,17 @@ class EMClient {
     }
   }
 
-  /// 获取账号名下登陆的在线设备列表
-  /// 当前登录账号和密码 [username]/[password].
+  ///
+  /// Gets all the information about the logged in devices under the specified account.
+  ///
+  /// Param [username] The username you want to get the device information.
+  ///
+  /// Param [password] The password.
+  ///
+  /// **Return** TThe list of the logged-in devices.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String username, required String password}) async {
     EMLog.v('getLoggedInDevicesFromServer: $username, "******"');
@@ -215,8 +319,17 @@ class EMClient {
     }
   }
 
-  /// 根据设备ID，将该设备下线,
-  /// 账号和密码 [username]/[password] 设备ID[resource].
+  ///
+  /// Forces the specified account to log out from the specified device.
+  ///
+  /// Param [username] The account you want to force logout.
+  ///
+  /// Param [password] The account's password.
+  ///
+  /// Param [resource] The device ID. For how to fetch the device ID, ee {@link EMDeviceInfo#resource}.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<bool> kickDevice(
       {required String username,
       required String password,
@@ -236,9 +349,16 @@ class EMClient {
     }
   }
 
-  /// 将该账号下的所有设备都踢下线
-  /// 账号和密码 [username]/[password].
-  Future<bool> kickAllDevices(
+  ///
+  /// Kicks out all the devices logged in under the specified account.
+  ///
+  /// Param [username] The account you want to log out from all the devices.
+  ///
+  /// Param [password] The password.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> kickAllDevices(
       {required String username, required String password}) async {
     EMLog.v('kickAllDevices: $username, "******"');
     Map req = {'username': username, 'password': password};
@@ -246,7 +366,6 @@ class EMClient {
         await _channel.invokeMethod(ChatMethodKeys.kickAllDevices, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(ChatMethodKeys.kickAllDevices);
     } on EMError catch (e) {
       throw e;
     }
@@ -254,34 +373,60 @@ class EMClient {
 
   /* Listeners*/
 
-  /// @nodoc 添加多设备监听的接口 [listener].
+  ///
+  /// Adds the multi-device listener.
+  ///
+  /// Param [listener] The listener to be added: {EMMultiDeviceListener}.
+  ///
   void addMultiDeviceListener(EMMultiDeviceListener listener) {
     _multiDeviceListeners.add(listener);
   }
 
-  /// @nodoc 移除多设备监听的接口[listener].
+  ///
+  /// Removes the multi-device listener.
+  ///
+  /// Param [listener] The listener to be removed: {EMMultiDeviceListener}.
+  ///
   void removeMultiDeviceListener(EMMultiDeviceListener listener) {
     if (_multiDeviceListeners.contains(listener)) {
       _multiDeviceListeners.remove(listener);
     }
   }
 
-  /// 添加链接状态监听的接口[listener].
+  ///
+  /// Adds the connection listener of chat server.
+  ///
+  /// Param [listener] The chat server connection listener to be added.
+  ///
   void addConnectionListener(EMConnectionListener listener) {
     _connectionListeners.add(listener);
   }
 
-  /// 移除链接状态监听的接口[listener].
+  ///
+  /// Removes the chat server connection listener.
+  ///
+  /// Param [listener]  The chat server connection listener to be removed.
+  ///
   void removeConnectionListener(EMConnectionListener listener) {
     if (_connectionListeners.contains(listener)) {
       _connectionListeners.remove(listener);
     }
   }
 
+  ///
+  /// Adds a custom listener to receive data from iOS or Android devices.
+  ///
+  /// Param [listener] The custom native listener to be added.
+  ///
   void addCustomListener(EMCustomListener listener) {
     _customListeners.add(listener);
   }
 
+  ///
+  /// Removes the custom listener.
+  ///
+  /// Param [listener] The custom native listener.
+  ///
   void removeCustomListener(EMCustomListener listener) {
     if (_customListeners.contains(listener)) {
       _customListeners.remove(listener);
@@ -305,11 +450,17 @@ class EMClient {
     var event = map['event'];
     for (var listener in _multiDeviceListeners) {
       if (event >= 10) {
-        listener.onGroupEvent(convertIntToEMContactGroupEvent(event),
-            map['target'], map['userNames']);
+        listener.onGroupEvent(
+          convertIntToEMContactGroupEvent(event)!,
+          map['target'],
+          map['userNames'],
+        );
       } else {
         listener.onContactEvent(
-            convertIntToEMContactGroupEvent(event), map['target'], map['ext']);
+          convertIntToEMContactGroupEvent(event)!,
+          map['target'],
+          map['ext'],
+        );
       }
     }
   }
@@ -320,85 +471,70 @@ class EMClient {
     }
   }
 
+  void _onTokenWillExpire(Map? map) {
+    for (EMConnectionListener listener in _connectionListeners) {
+      listener.onTokenWillExpire();
+    }
+  }
+
+  void _onTokenDidExpire(Map? map) {
+    for (EMConnectionListener listener in _connectionListeners) {
+      listener.onTokenDidExpire();
+    }
+  }
+
+  ///
+  /// Gets the `EMChatManager` class. Make sure to call it after EMClient has been initialized.
+  ///
+  /// **Return** The `EMChatManager` class.
+  ///
   EMChatManager get chatManager {
     return _chatManager;
   }
 
+  ///
+  /// Gets the `EMContactManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMContactManager` class.
+  ///
   EMContactManager get contactManager {
     return _contactManager;
   }
 
+  ///
+  /// Gets the `ChatRoomManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMChatRoomManager` class.
+  ///
   EMChatRoomManager get chatRoomManager {
     return _chatRoomManager;
   }
 
+  ///
+  /// Gets the `EMGroupManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMGroupManager` class.
+  ///
   EMGroupManager get groupManager {
     return _groupManager;
   }
 
+  ///
+  /// Gets the `EMPushManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMPushManager` class.
+  ///
   EMPushManager get pushManager {
     return _pushManager;
   }
 
+  ///
+  /// Gets the `EMUserInfoManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMUserInfoManager` class.
+  ///
   EMUserInfoManager get userInfoManager {
     return _userInfoManager;
-  }
-
-  EMContactGroupEvent? convertIntToEMContactGroupEvent(int? i) {
-    switch (i) {
-      case 2:
-        return EMContactGroupEvent.CONTACT_REMOVE;
-      case 3:
-        return EMContactGroupEvent.CONTACT_ACCEPT;
-      case 4:
-        return EMContactGroupEvent.CONTACT_DECLINE;
-      case 5:
-        return EMContactGroupEvent.CONTACT_BAN;
-      case 6:
-        return EMContactGroupEvent.CONTACT_ALLOW;
-      case 10:
-        return EMContactGroupEvent.GROUP_CREATE;
-      case 11:
-        return EMContactGroupEvent.GROUP_DESTROY;
-      case 12:
-        return EMContactGroupEvent.GROUP_JOIN;
-      case 13:
-        return EMContactGroupEvent.GROUP_LEAVE;
-      case 14:
-        return EMContactGroupEvent.GROUP_APPLY;
-      case 15:
-        return EMContactGroupEvent.GROUP_APPLY_ACCEPT;
-      case 16:
-        return EMContactGroupEvent.GROUP_APPLY_DECLINE;
-      case 17:
-        return EMContactGroupEvent.GROUP_INVITE;
-      case 18:
-        return EMContactGroupEvent.GROUP_INVITE_ACCEPT;
-      case 19:
-        return EMContactGroupEvent.GROUP_INVITE_DECLINE;
-      case 20:
-        return EMContactGroupEvent.GROUP_KICK;
-      case 21:
-        return EMContactGroupEvent.GROUP_BAN;
-      case 22:
-        return EMContactGroupEvent.GROUP_ALLOW;
-      case 23:
-        return EMContactGroupEvent.GROUP_BLOCK;
-      case 24:
-        return EMContactGroupEvent.GROUP_UNBLOCK;
-      case 25:
-        return EMContactGroupEvent.GROUP_ASSIGN_OWNER;
-      case 26:
-        return EMContactGroupEvent.GROUP_ADD_ADMIN;
-      case 27:
-        return EMContactGroupEvent.GROUP_REMOVE_ADMIN;
-      case 28:
-        return EMContactGroupEvent.GROUP_ADD_MUTE;
-      case 29:
-        return EMContactGroupEvent.GROUP_REMOVE_MUTE;
-      default:
-        return null;
-    }
   }
 
   void _clearAllInfo() {

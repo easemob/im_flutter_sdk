@@ -85,7 +85,6 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
              EMValueWrapperCallBack<String> callBack = new EMValueWrapperCallBack<String>(result, channelName){
                  @Override
                  public void onSuccess(final String object) {
-                     EMLog.e("updateOwnUserInfoWithType", "object: "+object);
 
                      if(object != null && object.length() > 0) {
                          JSONObject obj = null;

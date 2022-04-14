@@ -1,120 +1,173 @@
+import '../internal/em_transform_tools.dart';
+
 import '../../src/tools/em_extension.dart';
 import 'em_chat_enums.dart';
 
+///
+/// The chat room instance class.
+///
+/// **Note**
+/// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+///
 class EMChatRoom {
-  EMChatRoom._private();
+  EMChatRoom._private({
+    required this.roomId,
+    this.name,
+    this.description,
+    this.owner,
+    this.announcement,
+    this.memberCount,
+    this.maxUsers,
+    this.adminList,
+    this.memberList,
+    this.blockList,
+    this.muteList,
+    this.isAllMemberMuted,
+    this.permissionType = EMChatRoomPermissionType.None,
+  });
 
   String toString() => toJson().toString();
 
+  /// @nodoc
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
-    return EMChatRoom._private()
-      .._roomId = map['roomId'] as String
-      .._name = map.stringValue("name")
-      .._description = map.stringValue("desc")
-      .._owner = map.stringValue("owner")
-      .._memberCount = map.intValue("memberCount")
-      .._maxUsers = map.intValue("maxUsers")
-      .._adminList = map.listValue<String>("adminList")
-      .._memberList = map.listValue<String>("memberList")
-      .._blockList = map.listValue<String>("blockList")
-      .._muteList = map.listValue<String>("muteList")
-      .._announcement = map.stringValue("announcement")
-      .._permissionType =
-          EMChatRoom.permissionTypeFromInt(map['permissionType'])
-      .._isAllMemberMuted = map.boolValue('isAllMemberMuted');
+    return EMChatRoom._private(
+        roomId: map["roomId"],
+        name: map.getStringValue("name"),
+        description: map.getStringValue("desc"),
+        owner: map.getStringValue("owner"),
+        memberCount: map.getIntValue("memberCount"),
+        maxUsers: map.getIntValue("maxUsers"),
+        adminList: map.listValue<String>("adminList"),
+        memberList: map.listValue<String>("memberList"),
+        blockList: map.listValue<String>("blockList"),
+        muteList: map.listValue<String>("muteList"),
+        announcement: map.getStringValue("announcement"),
+        permissionType:
+            chatRoomPermissionTypeFromInt(map.getIntValue("permissionType")),
+        isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
 
+  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['roomId'] = _roomId;
-    data.setValueWithOutNull("name", _name);
-    data.setValueWithOutNull("desc", _description);
+    data['roomId'] = roomId;
+    data.setValueWithOutNull("name", name);
+    data.setValueWithOutNull("desc", description);
     data.setValueWithOutNull("owner", owner);
-    data.setValueWithOutNull("memberCount", _memberCount);
-    data.setValueWithOutNull("maxUsers", _maxUsers);
-    data.setValueWithOutNull("adminList", _adminList);
-    data.setValueWithOutNull("memberList", _memberList);
-    data.setValueWithOutNull("blockList", _blockList);
-    data.setValueWithOutNull("muteList", _muteList);
-    data.setValueWithOutNull("announcement", _announcement);
-    data.setValueWithOutNull("isAllMemberMuted", _isAllMemberMuted);
-    data['permissionType'] = EMChatRoom.permissionTypeToInt(_permissionType);
+    data.setValueWithOutNull("memberCount", memberCount);
+    data.setValueWithOutNull("maxUsers", maxUsers);
+    data.setValueWithOutNull("adminList", adminList);
+    data.setValueWithOutNull("memberList", memberList);
+    data.setValueWithOutNull("blockList", blockList);
+    data.setValueWithOutNull("muteList", muteList);
+    data.setValueWithOutNull("announcement", announcement);
+    data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
+    data['permissionType'] = chatRoomPermissionTypeToInt(permissionType);
 
     return data;
   }
 
-  // 房间id
-  late String _roomId;
-  // 房间名称
-  String? _name = '';
-  // 房间描述
-  String? _description = '';
-  // 房主
-  String? _owner = '';
-  //公告
-  String? _announcement = '';
-  // 当前人数
-  int? _memberCount = 0;
-  // 最大人数
-  int? _maxUsers = 0;
-  // 管理员列表
-  List? _adminList;
-  // 成员列表
-  List? _memberList;
-  // 黑名单列表
-  List? _blockList;
-  // 禁言列表
-  List? _muteList;
-  // 是否全员禁言
-  bool? _isAllMemberMuted;
-  // 在聊天室中的角色
-  EMChatRoomPermissionType _permissionType = EMChatRoomPermissionType.None;
+  ///
+  /// Gets the chat room ID.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final String roomId;
 
-  String get roomId => _roomId;
-  get name => _name;
-  get description => _description;
-  get owner => _owner;
-  get announcement => _announcement;
-  get memberCount => _memberCount;
-  get maxUsers => _maxUsers;
-  get adminList => _adminList;
-  get memberList => _memberList;
-  get blockList => _blockList;
-  get muteList => _muteList;
-  get isAllMemberMuted => _isAllMemberMuted;
-  get permissionType => _permissionType;
+  ///
+  /// Gets the chat room name from the memory.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final String? name;
 
-  static EMChatRoomPermissionType permissionTypeFromInt(int? type) {
-    EMChatRoomPermissionType ret = EMChatRoomPermissionType.Member;
-    switch (type) {
-      case -1:
-        return EMChatRoomPermissionType.None;
-      case 0:
-        return EMChatRoomPermissionType.Member;
-      case 1:
-        return EMChatRoomPermissionType.Admin;
-      case 2:
-        return EMChatRoomPermissionType.Owner;
-    }
-    return ret;
-  }
+  ///
+  /// Gets the chat room description from the memory.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final String? description;
 
-  static int permissionTypeToInt(EMChatRoomPermissionType type) {
-    int ret = 0;
-    switch (type) {
-      case EMChatRoomPermissionType.None:
-        ret = -1;
-        break;
-      case EMChatRoomPermissionType.Member:
-        ret = 0;
-        break;
-      case EMChatRoomPermissionType.Admin:
-        ret = 1;
-        break;
-      case EMChatRoomPermissionType.Owner:
-        ret = 2;
-        break;
-    }
-    return ret;
-  }
+  ///
+  /// Gets the chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final String? owner;
+
+  ///
+  /// Gets the chat room announcement in the chat room from the memory.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomAnnouncement(String)} before calling this method. Otherwise, the return value may not be correct.
+  ///
+  final String? announcement;
+
+  ///
+  /// Gets the number of online members from the memory.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final int? memberCount;
+
+  ///
+  /// Gets the maximum number of members in the chat room from the memory, which is set/specified when the chat room is created.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final int? maxUsers;
+
+  ///
+  /// Gets the chat room admin list.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final List<String>? adminList;
+
+  ///
+  /// Gets the member list.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomMembers(String, bool?)}
+  ///
+  final List<String>? memberList;
+
+  ///
+  /// Gets the chat room block list.
+  ///
+  /// **Note**
+  /// To get the block list, you can call {@link EMChatRoomManager#fetchChatRoomBlockList(String, int?, int?)}.
+  ///
+  final List<String>? blockList;
+
+  ///
+  /// Gets the mute list of the chat room.
+  ///
+  /// **Note**
+  /// To get the mute list, you can call {@link EMChatRoomManager#fetchChatRoomMuteList(String, int?, int?)}.
+  ///
+  final List<String>? muteList;
+
+  ///
+  /// Checks whether all members are muted in the chat room from the memory.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final bool? isAllMemberMuted;
+
+  ///
+  /// Gets the current user's role in the chat room. The role types: {@link EMChatRoomPermissionType}.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  ///
+  final EMChatRoomPermissionType permissionType;
 }

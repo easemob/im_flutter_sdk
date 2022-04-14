@@ -87,7 +87,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 getMessage(param, call.method, result);
             } else if (EMSDKMethod.asyncFetchGroupAcks.equals(call.method)){
                 asyncFetchGroupMessageAckFromServer(param, call.method, result);
-            } else {
+            } else if (EMSDKMethod.deleteRemoteConversation.equals(call.method)){
+                deleteRemoteConversation(param, call.method, result);
+            }
+            else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException ignored) {
@@ -495,6 +498,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().asyncFetchGroupReadAcks(msgId, pageSize, ackId, callBack);
     }
 
+
+    private void deleteRemoteConversation(JSONObject param, String channelName, Result result) throws JSONException {
+        String conversationId = param.getString("conversationId");
+        EMConversationType type = typeFromInt(param.getInt("conversationType"));
+        boolean isDeleteRemoteMessage = param.getBoolean("isDeleteRemoteMessage");
+        EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
+    }
+
+
     private void registerEaseListener() {
         EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
             @Override
@@ -549,13 +561,6 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }
 
             @Override
-            public void onMessageChanged(EMMessage message, Object change) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("message", EMMessageHelper.toJson(message));
-                post(() -> channel.invokeMethod(EMSDKMethod.onMessageStatusChanged, data));
-            }
-
-            @Override
             public void onGroupMessageRead(List<EMGroupReadAck> var1) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for (EMGroupReadAck ack : var1) {
@@ -589,5 +594,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
         return direction == "up" ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
+    }
+
+    private EMConversation.EMConversationType typeFromInt(int intType) {
+        if (intType == 0){
+            return EMConversationType.Chat;
+        }else if(intType == 1){
+            return EMConversationType.GroupChat;
+        }else {
+            return EMConversationType.ChatRoom;
+        }
     }
 }

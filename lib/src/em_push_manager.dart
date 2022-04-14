@@ -5,14 +5,21 @@ import 'internal/chat_method_keys.dart';
 import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 
+///
+/// The push styles.
+///
+///
 enum DisplayStyle {
-  /// 显示 ”您有一条新消息“
+  /// The push message presentation style: SimpleBanner represents the presentation of a simple message.
   Simple,
 
-  /// 显示推送内容详情
+  /// The push message presentation style: MessageSummary represents the presentation of message content.
   Summary,
 }
 
+///
+///  The message push configuration options.
+///
 class EMPushManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -28,8 +35,8 @@ class EMPushManager {
     }
   }
 
-  /// 从服务器获取 `EMPushConfigs`
-  Future<EMPushConfigs> getPushConfigsFromServer() async {
+  /// Gets the push configurations from the server.
+  Future<EMPushConfigs> fetchPushConfigsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
     try {
@@ -41,7 +48,11 @@ class EMPushManager {
     }
   }
 
-  /// 开启离线推送
+  ///
+  /// Turns on the push notification.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> enableOfflinePush() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.enableOfflinePush);
     try {
@@ -51,15 +62,20 @@ class EMPushManager {
     }
   }
 
-  /// 关闭离线推送
-  /// [start]: 开始时间
-  /// [to]: 结束时间
-  /// 如果需要设置24小时免打扰，可以设置start:0, to:24
+  ///
+  /// Do not push the offline messages within the specified time period (24-hour clock).
+  ///
+  /// Param [start] The start hour(24-hour clock).
+  ///
+  /// Param [end] The end hour(24-hour clock).
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> disableOfflinePush({
     required int start,
-    required int to,
+    required int end,
   }) async {
-    Map req = {'start': start, 'end': to};
+    Map req = {'start': start, 'end': end};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.disableOfflinePush, req);
     try {
@@ -69,9 +85,17 @@ class EMPushManager {
     }
   }
 
-  /// 设置群组不接收推送
-  /// [groupIds] 群组ids
-  /// [enablePush] 是否接收离线推送
+  ///
+  /// Sets whether to turn on or turn off the push notification for the the specified groups.
+  ///
+  /// [groupIds]  The list of groups to be set.
+  ///
+  /// [enablePush] enable push notification.
+  /// `true`: Turns on the notification;
+  /// `false`: Turns off the notification;
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updatePushServiceForGroup({
     required List<String> groupIds,
     required bool enablePush,
@@ -86,9 +110,39 @@ class EMPushManager {
     }
   }
 
-  /// 从本地获取不接收推送的群组
-  /// 如果需要从服务器获取，需要调用{@link #getPushConfigsFromServer}后再调用本方法
-  Future<List<String>?> getNoPushGroupsFromCache() async {
+  ///
+  /// Sets whether to turn on or turn off the push notification for the the specified users.
+  ///
+  /// [userIds]  The list of users to be set.
+  ///
+  /// [enablePush] enable push notification.
+  /// `true`: Turns on the notification;
+  /// `false`: Turns off the notification;
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
+  Future<void> updatePushServiceFroUsers({
+    required List<String> userIds,
+    required bool enablePush,
+  }) async {
+    Map req = {'noPush': !enablePush, 'user_ids': userIds};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateUserPushService, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the list of groups which have blocked the push notification.
+  ///
+  /// **return** The list of groups that blocked the push notification.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
+  Future<List<String>> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
     if (result.containsKey(ChatMethodKeys.getNoPushGroups)) {
@@ -97,7 +151,33 @@ class EMPushManager {
     return list;
   }
 
-  /// 更新当前用户的[nickname],这样离线消息推送的时候可以显示用户昵称而不是id，需要登录环信服务器成功后调用才生效
+  ///
+  /// Gets the list of users which have blocked the push notification.
+  ///
+  /// **return** The list of user that blocked the push notification.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
+  Future<List<String>> getNoPushUsersFromCache() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushUsers);
+    List<String> list = [];
+    if (result.containsKey(ChatMethodKeys.getNoPushUsers)) {
+      list = result[ChatMethodKeys.getNoPushUsers]?.cast<String>();
+    }
+    return list;
+  }
+
+  ///
+  /// Updates the push display nickname of the current user.
+  ///
+  /// This method can be used to set a push display nickname, the push display nickname will be used to show for offline push notification.
+  /// When the app user changes the nickname in the user profile(use {@link EMUserInfoManager#updateOwnInfo(EMUserInfo, int?)
+  /// be sure to also call this method to update to prevent the display differences.
+  ///
+  /// Param [nickname] The push display nickname, which is different from the nickname in the user profile.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updatePushNickname(String nickname) async {
     Map req = {'nickname': nickname};
     Map result =
@@ -109,7 +189,13 @@ class EMPushManager {
     }
   }
 
-  /// 设置推送样式
+  ///
+  ///  Updates the push message style. The default value is {@link DisplayStyle#Simple}.
+  ///
+  /// Param [displayStyle] The push message display style.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updatePushDisplayStyle(DisplayStyle displayStyle) async {
     Map req = {'pushStyle': displayStyle == DisplayStyle.Simple ? 0 : 1};
     Map result =
@@ -121,7 +207,13 @@ class EMPushManager {
     }
   }
 
-  /// 上传华为推送token, 需要确保登录成功后再调用(可以是进入home页面后)
+  ///
+  ///  Updates the HMS push token.
+  ///
+  /// Param [token] The HMS push token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateHMSPushToken(String token) async {
     if (Platform.isAndroid) {
       Map req = {'token': token};
@@ -135,7 +227,13 @@ class EMPushManager {
     }
   }
 
-  /// 上传FCM推送token, 需要确保登录成功后再调用(可以是进入home页面后)
+  ///
+  ///  Updates the FCM push token.
+  ///
+  /// Param [token] The FCM push token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateFCMPushToken(String token) async {
     if (Platform.isAndroid) {
       Map req = {'token': token};
@@ -149,7 +247,13 @@ class EMPushManager {
     }
   }
 
-  /// 上传iOS推送deviceToken
+  ///
+  ///  Updates the APNs push token.
+  ///
+  /// Param [token] The APNs push token.
+  ///
+  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  ///
   Future<void> updateAPNsDeviceToken(String token) async {
     if (Platform.isIOS) {
       Map req = {'token': token};
@@ -163,7 +267,7 @@ class EMPushManager {
     }
   }
 
-  /// 从本地获取ImPushConfig
+  /// Gets push options from the local database.
   @Deprecated('use - getPushConfigsFromCache method instead.')
   Future<EMPushConfigs> getImPushConfig() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
@@ -175,9 +279,23 @@ class EMPushManager {
     }
   }
 
-  /// 从服务器获取ImPushConfig
+  /// Gets push options from the server.
   @Deprecated('use - getPushConfigsFromServer method instead.')
   Future<EMPushConfigs> getImPushConfigFromServer() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMPushConfigs.fromJson(
+          result[ChatMethodKeys.getImPushConfigFromServer]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// Gets the push configurations from the server.
+  @Deprecated('use - fetchPushConfigsFromServer method instead.')
+  Future<EMPushConfigs> getPushConfigsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
     try {

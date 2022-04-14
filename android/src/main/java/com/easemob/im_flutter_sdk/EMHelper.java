@@ -5,7 +5,6 @@ import android.content.Context;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
-import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
@@ -58,12 +57,9 @@ class EMOptionsHelper {
         options.setDeleteMessagesAsExitGroup(json.getBoolean("deleteMessagesAsExitGroup"));
         options.setDeleteMessagesAsExitChatRoom(json.getBoolean("deleteMessagesAsExitChatRoom"));
         options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
-        // options.setAutoLogin(json.getBoolean("")); isChatRoomOwnerLeaveAllowed
-        // options.setAutoLogin(json.getBoolean("")); debugModel
-        // options.setAutoLogin(json.getBoolean("")); serverTransfer
+        options.allowChatroomOwnerLeave(json.getBoolean("isChatRoomOwnerLeaveAllowed"));
+        options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
-        // options.setAutoLogin(json.getBoolean("")); EMPushConfig
-        // options.setAutoLogin(json.getBoolean("")); enableDNSConfig
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
         if (!json.getBoolean("enableDNSConfig")) {
             options.setImPort(json.getInt("imPort"));
@@ -100,6 +96,7 @@ class EMOptionsHelper {
 
     }
 
+    /*
     static Map<String, Object> toJson(EMOptions options) {
         Map<String, Object> data = new HashMap<>();
         data.put("appKey", options.getAppKey());
@@ -126,22 +123,7 @@ class EMOptionsHelper {
 
         return data;
     }
-}
-
-class EMContactHelper {
-    static EMContact fromJson(JSONObject json) throws JSONException {
-        EMContact contact = new EMContact(json.getString("eid"));
-        contact.setNickname(json.getString("nickname"));
-        return contact;
-    }
-
-    static Map<String, Object> toJson(EMContact contact) {
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("eid", contact.getUsername());
-        data.put("nickname", contact.getNickname());
-        return data;
-    }
+     */
 }
 
 class EMGroupHelper {
@@ -157,11 +139,6 @@ class EMGroupHelper {
         data.put("adminList", group.getAdminList());
         data.put("blockList", group.getBlackList());
         data.put("muteList", group.getMuteList());
-
-        if (group.getGroupId() != null && EMClient.getInstance().pushManager().getNoPushGroups() != null) {
-            data.put("noticeEnable",
-                    !EMClient.getInstance().pushManager().getNoPushGroups().contains(group.getGroupId()));
-        }
         data.put("messageBlocked", group.isMsgBlocked());
         data.put("isAllMemberMuted", group.isAllMemberMuted());
         data.put("permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
@@ -239,7 +216,9 @@ class EMGroupOptionsHelper {
         EMGroupOptions options = new EMGroupOptions();
         options.maxUsers = json.getInt("maxCount");
         options.inviteNeedConfirm = json.getBoolean("inviteNeedConfirm");
-        options.extField = json.getString("ext");
+        if (json.has("ext")){
+            options.extField = json.getString("ext");
+        }
         options.style = styleFromInt(json.getInt("style"));
         return options;
     }
@@ -430,11 +409,11 @@ class EMMessageHelper {
             }
         }
 
-        if (!json.isNull("to")) {
+        if (json.has("to")) {
             message.setTo(json.getString("to"));
         }
 
-        if (!json.isNull("from")) {
+        if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
 
@@ -449,11 +428,17 @@ class EMMessageHelper {
         }
 
         message.setLocalTime(json.getLong("localTime"));
-        message.setMsgTime(json.getLong("serverTime"));
+        if (json.has("serverTime")){
+            message.setMsgTime(json.getLong("serverTime"));
+        }
+
         message.setStatus(statusFromInt(json.getInt("status")));
         message.setChatType(chatTypeFromInt(json.getInt("chatType")));
-        message.setMsgId(json.getString("msgId"));
-        if (null != json.getJSONObject("attributes")) {
+        if (json.has("msgId")){
+            message.setMsgId(json.getString("msgId"));
+        }
+
+        if(json.has("attributes")){
             JSONObject data = json.getJSONObject("attributes");
             Iterator iterator = data.keys();
             while (iterator.hasNext()) {
@@ -604,6 +589,7 @@ class EMGroupAckHelper {
     static Map<String, Object>toJson(EMGroupReadAck ack) {
         Map<String, Object> data = new HashMap<>();
         data.put("msg_id", ack.getMsgId());
+        data.put("ack_id", ack.getAckId());
         data.put("from", ack.getFrom());
         data.put("count", ack.getCount());
         data.put("timestamp", ack.getTimestamp());
@@ -633,9 +619,18 @@ class EMMessageBodyHelper {
     static EMLocationMessageBody localBodyFromJson(JSONObject json) throws JSONException {
         double latitude = json.getDouble("latitude");
         double longitude = json.getDouble("longitude");
-        String address = json.getString("address");
+        String address = null;
+        String buildingName = null;
+        if (json.has("address")){
+            address = json.getString("address");
+        }
 
-        EMLocationMessageBody body = new EMLocationMessageBody(address, latitude, longitude);
+        if (json.has("buildingName")){
+            buildingName = json.getString("buildingName");
+        }
+
+        EMLocationMessageBody body = new EMLocationMessageBody(address, latitude, longitude, buildingName);
+
         return body;
     }
 
@@ -643,6 +638,7 @@ class EMMessageBodyHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("latitude", body.getLatitude());
         data.put("longitude", body.getLongitude());
+        data.put("buildingName", body.getBuildingName());
         data.put("address", body.getAddress());
         data.put("type", "loc");
         return data;
@@ -696,11 +692,20 @@ class EMMessageBodyHelper {
         File file = new File(localPath);
 
         EMNormalFileMessageBody body = new EMNormalFileMessageBody(file);
-        body.setFileName(json.getString("displayName"));
-        body.setRemoteUrl(json.getString("remotePath"));
-        body.setSecret(json.getString("secret"));
+        if (json.has("displayName")){
+            body.setFileName(json.getString("displayName"));
+        }
+        if (json.has("remotePath")){
+            body.setRemoteUrl(json.getString("remotePath"));
+        }
+        if (json.has("secret")){
+            body.setSecret(json.getString("secret"));
+        }
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        body.setFileLength(json.getInt("fileSize"));
+        if (json.has("fileSize")){
+            body.setFileLength(json.getInt("fileSize"));
+        }
+
         return body;
     }
 
@@ -711,7 +716,6 @@ class EMMessageBodyHelper {
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
-        data.put("fileSize", body.getFileSize());
         data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("type", "file");
         return data;
@@ -722,20 +726,39 @@ class EMMessageBodyHelper {
         File file = new File(localPath);
 
         EMImageMessageBody body = new EMImageMessageBody(file);
-        body.setFileName(json.getString("displayName"));
-        body.setRemoteUrl(json.getString("remotePath"));
-        body.setSecret(json.getString("secret"));
-        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        if (json.getString("thumbnailLocalPath") != null) {
+        if (json.has("displayName")){
+            body.setFileName(json.getString("displayName"));
+        }
+        if (json.has("remotePath")){
+            body.setRemoteUrl(json.getString("remotePath"));
+        }
+        if (json.has("secret")){
+            body.setSecret(json.getString("secret"));
+        }
+        if (json.has("thumbnailLocalPath")) {
             body.setThumbnailLocalPath(json.getString("thumbnailLocalPath"));
         }
-        body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
-        body.setThumbnailSecret(json.getString("thumbnailSecret"));
-        body.setFileLength(json.getInt("fileSize"));
-        int width = json.getInt("width");
-        int height = json.getInt("height");
-        body.setThumbnailSize(width, height);
-        body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
+        if (json.has("thumbnailRemotePath")){
+            body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
+        }
+        if (json.has("thumbnailSecret")){
+            body.setThumbnailSecret(json.getString("thumbnailSecret"));
+        }
+        if (json.has("fileSize")){
+            body.setFileLength(json.getInt("fileSize"));
+        }
+        if (json.has("width") && json.has("height")){
+            int width = json.getInt("width");
+            int height = json.getInt("height");
+            body.setThumbnailSize(width, height);
+        }
+        if (json.has("sendOriginalImage")){
+            body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
+        }
+
+        if (json.has("fileStatus")){
+            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        }
 
         return body;
     }
@@ -760,23 +783,42 @@ class EMMessageBodyHelper {
 
     static EMVideoMessageBody videoBodyFromJson(JSONObject json) throws JSONException {
         String localPath = json.getString("localPath");
-        String thumbnailLocalPath = json.getString("thumbnailLocalPath");
         int duration = json.getInt("duration");
-        int fileSize = json.getInt("fileSize");
-        EMVideoMessageBody body = new EMVideoMessageBody(localPath, thumbnailLocalPath, duration, fileSize);
-        body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
+        EMVideoMessageBody body = new EMVideoMessageBody(localPath, null, duration, 0);
+
+        if (json.has("thumbnailRemotePath")){
+            body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
+        }
         if (json.getString("thumbnailLocalPath") != null) {
             body.setLocalThumb(json.getString("thumbnailLocalPath"));
         }
-        body.setThumbnailSecret(json.getString("thumbnailSecret"));
-        body.setFileName(json.getString("displayName"));
-        int width = json.getInt("width");
-        int height = json.getInt("height");
-        body.setThumbnailSize(width, height);
-        body.setRemoteUrl(json.getString("remotePath"));
-        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        body.setSecret(json.getString("secret"));
-        body.setFileLength(json.getInt("fileSize"));
+        if (json.has("thumbnailSecret")){
+            body.setThumbnailSecret(json.getString("thumbnailSecret"));
+        }
+        if (json.has("displayName")){
+            body.setFileName(json.getString("displayName"));
+        }
+        if (json.has("remotePath")){
+            body.setRemoteUrl(json.getString("remotePath"));
+        }
+        if (json.has("secret")){
+            body.setSecret(json.getString("secret"));
+        }
+        if (json.has("fileSize")){
+            body.setVideoFileLength(json.getInt("fileSize"));
+        }
+
+        if(json.has("fileStatus")){
+            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        }
+
+        if (json.has("width") && json.has("height")){
+            int width = json.getInt("width");
+            int height = json.getInt("height");
+            body.setThumbnailSize(width, height);
+        }
+
+
         return body;
     }
 
@@ -785,7 +827,6 @@ class EMMessageBodyHelper {
         data.put("localPath", body.getLocalUrl());
         data.put("thumbnailLocalPath", body.getLocalThumbUri());
         data.put("duration", body.getDuration());
-        data.put("fileSize", body.getVideoFileLength());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
         data.put("thumbnailSecret", body.getThumbnailSecret());
         data.put("displayName", body.getFileName());
@@ -806,10 +847,19 @@ class EMMessageBodyHelper {
         int duration = json.getInt("duration");
         EMVoiceMessageBody body = new EMVoiceMessageBody(file, duration);
         body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
-        body.setFileName(json.getString("displayName"));
-        body.setFileLength(json.getLong("fileSize"));
-        body.setSecret(json.getString("secret"));
-        body.setFileLength(json.getInt("fileSize"));
+        if (json.has("displayName")){
+            body.setFileName(json.getString("displayName"));
+        }
+        if (json.has("secret")){
+            body.setSecret(json.getString("secret"));
+        }
+        if (json.has("remotePath")){
+            body.setRemoteUrl(json.getString("remotePath"));
+        }
+        if (json.has("fileSize")){
+            body.setFileLength(json.getLong("fileSize"));
+        }
+
         return body;
     }
 
@@ -1056,19 +1106,34 @@ class HyphenateExceptionHelper {
 class EMUserInfoHelper {
     static EMUserInfo fromJson(JSONObject obj) throws JSONException {
         EMUserInfo userInfo = new EMUserInfo();
+        if (obj.has("userId")){
+            userInfo.setUserId(obj.getString("userId"));
+        }
+        if (obj.has("nickName")){
+            userInfo.setNickname(obj.getString("nickName"));
+        }
 
-        userInfo.setUserId(obj.getString("userId"));
-        userInfo.setNickName(obj.optString("nickName"));
         if (obj.has("gender")){
             userInfo.setGender(obj.getInt("gender"));
         }
-
-        userInfo.setEmail(obj.optString("mail"));
-        userInfo.setPhoneNumber(obj.optString("phone"));
-        userInfo.setSignature(obj.optString("sign"));
-        userInfo.setAvatarUrl(obj.optString("avatarUrl"));
-        userInfo.setExt(obj.optString("ext"));
-        userInfo.setBirth(obj.optString("birth"));
+        if (obj.has("mail")){
+            userInfo.setEmail(obj.optString("mail"));
+        }
+        if (obj.has("phone")){
+            userInfo.setPhoneNumber(obj.optString("phone"));
+        }
+        if (obj.has("sign")){
+            userInfo.setSignature(obj.optString("sign"));
+        }
+        if (obj.has("avatarUrl")){
+            userInfo.setAvatarUrl(obj.optString("avatarUrl"));
+        }
+        if (obj.has("ext")){
+            userInfo.setExt(obj.getString("ext"));
+        }
+        if (obj.has("birth")){
+            userInfo.setBirth(obj.getString("birth"));
+        }
 
         return userInfo;
     }
