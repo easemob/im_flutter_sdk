@@ -447,7 +447,7 @@ class _ChatPageState extends State<ChatPage>
     print('_moreCameraBtnOnTap');
 
     var curser = await EMClient.getInstance.groupManager
-        .getGroupMemberListFromServer(widget.conversation.id);
+        .fetchMemberListFromServer(widget.conversation.id);
 
     debugPrint(curser.data.toString());
   }
