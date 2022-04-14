@@ -239,7 +239,7 @@ class JoinedGroupsPageState extends State<JoinedGroupsPage> {
       }
 
       List<EMGroup> groups =
-          await EMClient.getInstance.groupManager.getJoinedGroupsFromServer(
+          await EMClient.getInstance.groupManager.fetchJoinedGroupsFromServer(
         pageSize: _pageSize,
         pageNum: _pageNumber,
       );

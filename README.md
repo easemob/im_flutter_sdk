@@ -11,7 +11,7 @@
 源码地址: [Github](https://github.com/easemob/im_flutter_sdk)  
 任何问题可以通过 [Github Issues](https://github.com/easemob/im_flutter_sdk/issues) 提问
 
-
+[常见问题](FlutterQA.md)
 
 ## 前期准备
 
@@ -158,8 +158,6 @@ class _PageState extends State<Page> implements EMConnectionListener {
 ```dart
 bool isConnected = await EMClient.getInstance.isConnected();
 ```
-
-
 
 ### EMChatManager
 
@@ -480,27 +478,27 @@ class _PageState extends State<Page> implements EMContactManagerListener {
 
   @override
   void onContactAdded(String userName) {
-    
+
   }
 
   @override
   void onContactDeleted(String? userName) {
-    
+
   }
 
   @override
   void onContactInvited(String userName, String? reason) {
-    
+
   }
 
   @override
   void onFriendRequestAccepted(String userName) {
-    
+
   }
 
   @override
   void onFriendRequestDeclined(String userName) {
-    
+
   }
 }
 ```
@@ -1072,7 +1070,6 @@ class _PageState extends State<Page> implements EMGroupEventListener {
   @override
   void onWhiteListRemovedFromGroup(String groupId, List<String> members) {}
 }
-
 ```
 
 #### 同意加群申请
@@ -1421,7 +1418,6 @@ class _PageState extends State<Page> implements EMChatRoomEventListener {
   @override
   void onWhiteListRemovedFromChatRoom(String roomId, List<String> members) {}
 }
-
 ```
 
 ### 推送
@@ -1521,10 +1517,6 @@ try {
 ```dart
 List<String> list = await EMClient.getInstance.pushManager.getNoPushUsersFromCache();
 ```
-
-
-
-
 
 ### EMUserInfoManager
 
