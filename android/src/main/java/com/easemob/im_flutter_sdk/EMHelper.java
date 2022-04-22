@@ -323,89 +323,95 @@ class EMMessageHelper {
         String type = bodyJson.getString("type");
         if (json.getString("direction").equals("send")) {
             switch (type) {
-            case "txt": {
-                message = EMMessage.createSendMessage(Type.TXT);
-                message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
+                case "txt": {
+                    message = EMMessage.createSendMessage(Type.TXT);
+                    message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
+                }
+                    break;
+                case "img": {
+                    message = EMMessage.createSendMessage(Type.IMAGE);
+                    message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
+                }
+                    break;
+                case "loc": {
+                    message = EMMessage.createSendMessage(Type.LOCATION);
+                    message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
+                }
+                    break;
+                case "video": {
+                    message = EMMessage.createSendMessage(Type.VIDEO);
+                    message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
+                }
+                    break;
+                case "voice": {
+                    message = EMMessage.createSendMessage(Type.VOICE);
+                    message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
+                }
+                    break;
+                case "file": {
+                    message = EMMessage.createSendMessage(Type.FILE);
+                    message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
+                }
+                    break;
+                case "cmd": {
+                    message = EMMessage.createSendMessage(Type.CMD);
+                    message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
+                }
+                    break;
+                case "custom": {
+                    message = EMMessage.createSendMessage(Type.CUSTOM);
+                    message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
+                }
+                    break;
             }
-                break;
-            case "img": {
-                message = EMMessage.createSendMessage(Type.IMAGE);
-                message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
-            }
-                break;
-            case "loc": {
-                message = EMMessage.createSendMessage(Type.LOCATION);
-                message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
-            }
-                break;
-            case "video": {
-                message = EMMessage.createSendMessage(Type.VIDEO);
-                message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
-            }
-                break;
-            case "voice": {
-                message = EMMessage.createSendMessage(Type.VOICE);
-                message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
-            }
-                break;
-            case "file": {
-                message = EMMessage.createSendMessage(Type.FILE);
-                message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
-            }
-                break;
-            case "cmd": {
-                message = EMMessage.createSendMessage(Type.CMD);
-                message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
-            }
-                break;
-            case "custom": {
-                message = EMMessage.createSendMessage(Type.CUSTOM);
-                message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
-            }
-                break;
+            if (message != null) {
+                message.setDirection(EMMessage.Direct.SEND);
             }
         } else {
             switch (type) {
-            case "txt": {
-                message = EMMessage.createReceiveMessage(Type.TXT);
-                message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
-            }
+                case "txt": {
+                    message = EMMessage.createReceiveMessage(Type.TXT);
+                    message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
+                }
+                    break;
+                case "img": {
+                    message = EMMessage.createReceiveMessage(Type.IMAGE);
+                    message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
+                }
+                    break;
+                case "loc": {
+                    message = EMMessage.createReceiveMessage(Type.LOCATION);
+                    message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
+                }
+                    break;
+                case "video": {
+                    message = EMMessage.createReceiveMessage(Type.VIDEO);
+                    message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
+                }
+                    break;
+                case "voice": {
+                    message = EMMessage.createReceiveMessage(Type.VOICE);
+                    message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
+                }
+                    break;
+                case "file": {
+                    message = EMMessage.createReceiveMessage(Type.FILE);
+                    message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
+                }
+                    break;
+                case "cmd": {
+                    message = EMMessage.createReceiveMessage(Type.CMD);
+                    message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
+                }
+                    break;
+                case "custom": {
+                    message = EMMessage.createReceiveMessage(Type.CUSTOM);
+                    message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
+                }
                 break;
-            case "img": {
-                message = EMMessage.createReceiveMessage(Type.IMAGE);
-                message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
             }
-                break;
-            case "loc": {
-                message = EMMessage.createReceiveMessage(Type.LOCATION);
-                message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
-            }
-                break;
-            case "video": {
-                message = EMMessage.createReceiveMessage(Type.VIDEO);
-                message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
-            }
-                break;
-            case "voice": {
-                message = EMMessage.createReceiveMessage(Type.VOICE);
-                message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
-            }
-                break;
-            case "file": {
-                message = EMMessage.createReceiveMessage(Type.FILE);
-                message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
-            }
-                break;
-            case "cmd": {
-                message = EMMessage.createReceiveMessage(Type.CMD);
-                message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
-            }
-                break;
-            case "custom": {
-                message = EMMessage.createReceiveMessage(Type.CUSTOM);
-                message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
-            }
-                break;
+            if (message != null) {
+                message.setDirection(EMMessage.Direct.RECEIVE);
             }
         }
 
