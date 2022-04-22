@@ -132,12 +132,6 @@ extension MapExtension on Map {
               value = data;
               break;
             } on FormatException {}
-
-            // try {
-            //   List<dynamic> data = convert.jsonDecode(value);
-            //   value = data;
-            //   break;
-            // } on FormatException {}
           } while (false);
           ret[tmpKey] = value;
         } else {
