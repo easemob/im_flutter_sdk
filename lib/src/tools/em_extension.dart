@@ -1,4 +1,5 @@
 import '../models/em_group_shared_file.dart';
+import 'dart:convert' as convert;
 
 Type typeOf<T>() => T;
 
@@ -119,12 +120,27 @@ extension MapExtension on Map {
   }
 
   Map? getMapValue(String key, {Map? defaultValue}) {
-    Map? ret = defaultValue;
+    Map? ret = {};
     if (this.containsKey(key)) {
-      Map? value = this[key];
-      if (value is double) {
-        ret = value;
+      Map tmpMap = this[key];
+      for (var tmpKey in tmpMap.keys) {
+        dynamic value = tmpMap[tmpKey];
+        if (value is String) {
+          do {
+            try {
+              dynamic data = convert.jsonDecode(value);
+              value = data;
+              break;
+            } on FormatException {}
+          } while (false);
+          ret[tmpKey] = value;
+        } else {
+          ret[tmpKey] = value;
+        }
       }
+    }
+    if (ret.length == 0) {
+      ret = defaultValue;
     }
     return ret;
   }

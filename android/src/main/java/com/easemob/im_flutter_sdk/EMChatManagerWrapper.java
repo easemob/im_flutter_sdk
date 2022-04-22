@@ -593,7 +593,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
-        return direction == "up" ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
+        return direction.equals("up") ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
     }
 
     private EMConversation.EMConversationType typeFromInt(int intType) {
