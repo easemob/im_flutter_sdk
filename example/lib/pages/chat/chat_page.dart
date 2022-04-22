@@ -403,6 +403,13 @@ class _ChatPageState extends State<ChatPage>
 
   /// 发消息方法
   _sendMessage(EMMessage msg) async {
+    msg.attributes = {
+      "int": 1,
+      "bool": false,
+      "str": "hello",
+      "list": ["a", "b", "c"],
+      "json": {"key": "value"}
+    };
     _chatType() {
       ChatType type = ChatType.Chat;
       switch (widget.conversation.type) {
