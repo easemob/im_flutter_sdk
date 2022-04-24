@@ -53,7 +53,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void initState() {
     super.initState();
-
+    EMClient.getInstance.startCallback();
     items = [
       ChatMoreViewItem(
           'images/chat_input_more_photo.png', '相册', _moreViewPhotoBtnOnTap),

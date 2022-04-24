@@ -64,6 +64,15 @@ class EMClient {
     });
   }
 
+  Future<void> startCallback() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.startCallback);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   Future<bool> isConnected() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isConnected);
     try {
