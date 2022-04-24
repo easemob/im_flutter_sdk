@@ -165,7 +165,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMClient.getInstance().logout(unbindToken, new EMWrapperCallBack(result, channelName, null){
             @Override
             public void onSuccess() {
-                EMListenerHandle.getInstance().clearListener();
+                EMListenerHandle.getInstance().clearHandle();
                 object = true;
                 super.onSuccess();
             }

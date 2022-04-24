@@ -47,8 +47,10 @@ public class EMListenerHandle {
         runHandle();
     }
 
-    void clearListener(){
+    void clearHandle(){
         hasReady = false;
-        emActionHandle.clear();
+        synchronized (emActionHandle) {
+            emActionHandle.clear();
+        }
     }
 }
