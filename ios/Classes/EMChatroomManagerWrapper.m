@@ -11,7 +11,7 @@
 #import "EMCursorResult+Flutter.h"
 #import "EMPageResult+Flutter.h"
 #import "EMChatroom+Flutter.h"
-
+#import "EMListenerHandle.h"
 
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>
 
@@ -661,156 +661,191 @@
 
 - (void)userDidJoinChatroom:(EMChatroom *)aChatroom
                        user:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onMemberJoined",
-        @"roomId":aChatroom.chatroomId,
-        @"participant":aUsername
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
     
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMemberJoined",
+            @"roomId":aChatroom.chatroomId,
+            @"participant":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)userDidLeaveChatroom:(EMChatroom *)aChatroom
                         user:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onMemberExited",
-        @"roomId":aChatroom.chatroomId,
-        @"roomName":aChatroom.subject,
-        @"participant":aUsername
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMemberExited",
+            @"roomId":aChatroom.chatroomId,
+            @"roomName":aChatroom.subject,
+            @"participant":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)didDismissFromChatroom:(EMChatroom *)aChatroom
                         reason:(EMChatroomBeKickedReason)aReason {
-    NSString *type;
-    NSDictionary *map;
-    if (aReason == EMChatroomBeKickedReasonDestroyed) {
-        type = @"onChatRoomDestroyed";
-        map = @{
-            @"type":type,
-            @"roomId":aChatroom.chatroomId,
-            @"roomName":aChatroom.subject
-        };
-    } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
-        type = @"onRemovedFromChatRoom";
-        map = @{
-            @"type":type,
-            @"roomId":aChatroom.chatroomId,
-            @"roomName":aChatroom.subject,
-            @"participant":[[EMClient sharedClient] currentUsername]
-        };
-    }
     
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSString *type;
+        NSDictionary *map;
+        if (aReason == EMChatroomBeKickedReasonDestroyed) {
+            type = @"onChatRoomDestroyed";
+            map = @{
+                @"type":type,
+                @"roomId":aChatroom.chatroomId,
+                @"roomName":aChatroom.subject
+            };
+        } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
+            type = @"onRemovedFromChatRoom";
+            map = @{
+                @"type":type,
+                @"roomId":aChatroom.chatroomId,
+                @"roomName":aChatroom.subject,
+                @"participant":[[EMClient sharedClient] currentUsername]
+            };
+        }
+        
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
                 addedMutedMembers:(NSArray *)aMutes
                        muteExpire:(NSInteger)aMuteExpire {
-    NSDictionary *map = @{
-        @"type":@"onMuteListAdded",
-        @"roomId":aChatroom.chatroomId,
-        @"mutes":aMutes,
-        @"expireTime":[NSString stringWithFormat:@"%ld", (long)aMuteExpire]
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMuteListAdded",
+            @"roomId":aChatroom.chatroomId,
+            @"mutes":aMutes,
+            @"expireTime":[NSString stringWithFormat:@"%ld", (long)aMuteExpire]
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
               removedMutedMembers:(NSArray *)aMutes {
-    NSDictionary *map = @{
-        @"type":@"onMuteListRemoved",
-        @"roomId":aChatroom.chatroomId,
-        @"mutes":aMutes
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMuteListRemoved",
+            @"roomId":aChatroom.chatroomId,
+            @"mutes":aMutes
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomAdminListDidUpdate:(EMChatroom *)aChatroom
                         addedAdmin:(NSString *)aAdmin {
-    NSDictionary *map = @{
-        @"type":@"onAdminAdded",
-        @"roomId":aChatroom.chatroomId,
-        @"admin":aAdmin
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAdminAdded",
+            @"roomId":aChatroom.chatroomId,
+            @"admin":aAdmin
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomAdminListDidUpdate:(EMChatroom *)aChatroom
                       removedAdmin:(NSString *)aAdmin {
-    NSDictionary *map = @{
-        @"type":@"onAdminRemoved",
-        @"roomId":aChatroom.chatroomId,
-        @"admin":aAdmin
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAdminRemoved",
+            @"roomId":aChatroom.chatroomId,
+            @"admin":aAdmin
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomOwnerDidUpdate:(EMChatroom *)aChatroom
                       newOwner:(NSString *)aNewOwner
                       oldOwner:(NSString *)aOldOwner {
-    NSDictionary *map = @{
-        @"type":@"onOwnerChanged",
-        @"roomId":aChatroom.chatroomId,
-        @"newOwner":aNewOwner,
-        @"oldOwner":aOldOwner
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onOwnerChanged",
+            @"roomId":aChatroom.chatroomId,
+            @"newOwner":aNewOwner,
+            @"oldOwner":aOldOwner
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomAnnouncementDidUpdate:(EMChatroom *)aChatroom
                          announcement:(NSString *)aAnnouncement {
-    NSDictionary *map = @{
-        @"type":@"onAnnouncementChanged",
-        @"roomId":aChatroom.chatroomId,
-        @"announcement":aAnnouncement
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAnnouncementChanged",
+            @"roomId":aChatroom.chatroomId,
+            @"announcement":aAnnouncement
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 - (void)chatroomWhiteListDidUpdate:(EMChatroom *)aChatroom
              addedWhiteListMembers:(NSArray *)aMembers {
-    NSDictionary *map = @{
-        @"type":@"onWhiteListAdded",
-        @"roomId":aChatroom.chatroomId,
-        @"whitelist":aMembers
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onWhiteListAdded",
+            @"roomId":aChatroom.chatroomId,
+            @"whitelist":aMembers
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 
 - (void)chatroomWhiteListDidUpdate:(EMChatroom *)aChatroom
            removedWhiteListMembers:(NSArray *)aMembers {
-    NSDictionary *map = @{
-        @"type":@"onWhiteListRemoved",
-        @"roomId":aChatroom.chatroomId,
-        @"whitelist":aMembers
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onWhiteListRemoved",
+            @"roomId":aChatroom.chatroomId,
+            @"whitelist":aMembers
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
 }
 
 
 - (void)chatroomAllMemberMuteChanged:(EMChatroom *)aChatroom
                     isAllMemberMuted:(BOOL)aMuted {
-    NSDictionary *map = @{
-        @"type":@"onAllMemberMuteStateChanged",
-        @"roomId":aChatroom.chatroomId,
-        @"isMuted":@(aMuted)
-    };
-    [self.channel invokeMethod:ChatChatroomChanged
-                     arguments:map];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAllMemberMuteStateChanged",
+            @"roomId":aChatroom.chatroomId,
+            @"isMuted":@(aMuted)
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
+    
 }
 
 #pragma mark - EMChatroom Pack Method

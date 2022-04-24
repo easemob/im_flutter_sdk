@@ -7,6 +7,7 @@
 
 #import "EMContactManagerWrapper.h"
 #import "EMSDKMethod.h"
+#import "EMListenerHandle.h"
 
 @interface EMContactManagerWrapper () <EMContactManagerDelegate>
 
@@ -16,8 +17,8 @@
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
-                           registrar:registrar]) {
-       [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
+                               registrar:registrar]) {
+        [EMClient.sharedClient.contactManager addDelegate:self delegateQueue:nil];
     }
     return self;
 }
@@ -214,50 +215,62 @@
 #pragma mark - EMContactManagerDelegate
 
 - (void)friendshipDidAddByUser:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onContactAdded",
-        @"username":aUsername
-    };
-    [self.channel invokeMethod:ChatOnContactChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onContactAdded",
+            @"username":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
+
 }
 
 - (void)friendshipDidRemoveByUser:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onContactDeleted",
-        @"username":aUsername
-    };
-    [self.channel invokeMethod:ChatOnContactChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onContactDeleted",
+            @"username":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
 }
 
 - (void)friendRequestDidReceiveFromUser:(NSString *)aUsername
                                 message:(NSString *)aMessage {
-    NSDictionary *map = @{
-        @"type":@"onContactInvited",
-        @"username":aUsername,
-        @"reason":aMessage
-    };
-    [self.channel invokeMethod:ChatOnContactChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onContactInvited",
+            @"username":aUsername,
+            @"reason":aMessage
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
+
 }
 
 - (void)friendRequestDidApproveByUser:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onFriendRequestAccepted",
-        @"username":aUsername
-    };
-    [self.channel invokeMethod:ChatOnContactChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onFriendRequestAccepted",
+            @"username":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
 }
 
 - (void)friendRequestDidDeclineByUser:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onFriendRequestDeclined",
-        @"username":aUsername
-    };
-    [self.channel invokeMethod:ChatOnContactChanged
-                     arguments:map];
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onFriendRequestDeclined",
+            @"username":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
+    }];
 }
 
 @end
