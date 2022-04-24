@@ -232,4 +232,7 @@ class ChatMethodKeys {
   static const String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
   static const String fetchUserInfoById = "fetchUserInfoById";
   static const String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
+
+  /// HandleAction
+  static const String startCallback = "startCallback";
 }

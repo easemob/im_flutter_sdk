@@ -221,4 +221,9 @@ public class EMSDKMethod {
     static final String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
     static final String fetchUserInfoById = "fetchUserInfoById";
     static final String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
+
+
+
+    /// HandleAction
+    static final String startCallback = "startCallback";
 }
