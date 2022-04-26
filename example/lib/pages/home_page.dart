@@ -4,6 +4,7 @@ import 'package:easeim_flutter_demo/pages/me/me_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,8 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>
-    with AutomaticKeepAliveClientMixin
-    implements EMContactManagerListener {
+    with AutomaticKeepAliveClientMixin {
   int _selectedPageIndex = 0;
   late ConversationPage _conversationListPage;
   late List<Widget> _pages;
@@ -21,13 +21,14 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    EMClient.getInstance.contactManager.addContactListener(this);
     _conversationListPage = ConversationPage();
     _pages = [
       _conversationListPage,
       ContactsPage(),
       MePage(),
     ];
+
+    EMClient.getInstance.startCallback();
   }
 
   @override
@@ -159,29 +160,4 @@ class _HomePageState extends State<HomePage>
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void onContactAdded(String userName) {
-    // TODO: implement onContactAdded
-  }
-
-  @override
-  void onContactDeleted(String? userName) {
-    // TODO: implement onContactDeleted
-  }
-
-  @override
-  void onContactInvited(String userName, String? reason) {
-    // TODO: implement onContactInvited
-  }
-
-  @override
-  void onFriendRequestAccepted(String userName) {
-    // TODO: implement onFriendRequestAccepted
-  }
-
-  @override
-  void onFriendRequestDeclined(String userName) {
-    // TODO: implement onFriendRequestDeclined
-  }
 }
