@@ -251,7 +251,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         String sender = params.getString("sender");
         int count = params.getInt("count");
         EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
-        String typeStr = params.getString("type");
+        String typeStr = params.getString("msgType");
         EMMessage.Type type = EMMessage.Type.TXT;
         switch (typeStr) {
             case "txt" : type = EMMessage.Type.TXT; break;
