@@ -1,7 +1,8 @@
 ## NEXT
 
 ## 3.9.0+1
-- 修复message.attribute不准；
+- 修复message.attribute不准;
+- 修复已知bug;
 
 ## 3.9.0
 
