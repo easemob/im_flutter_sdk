@@ -555,149 +555,183 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
             @Override
             public void onWhiteListAdded(String chatRoomId, List<String> whitelist) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("whitelist", whitelist);
-                    data.put("type", "onWhiteListAdded");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("whitelist", whitelist);
+                            data.put("type", "onWhiteListAdded");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onWhiteListRemoved(String chatRoomId, List<String> whitelist) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("whitelist", whitelist);
-                    data.put("type", "onWhiteListRemoved");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("whitelist", whitelist);
+                            data.put("type", "onWhiteListRemoved");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
             }
 
             @Override
             public void onAllMemberMuteStateChanged(String chatRoomId, boolean isMuted) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("isMuted", isMuted);
-                    data.put("type", "onAllMemberMuteStateChanged");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("isMuted", isMuted);
+                            data.put("type", "onAllMemberMuteStateChanged");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onChatRoomDestroyed(String roomId, String roomName) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", roomId);
-                    data.put("roomName", roomName);
-                    data.put("type", "onChatRoomDestroyed");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", roomId);
+                            data.put("roomName", roomName);
+                            data.put("type", "onChatRoomDestroyed");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onMemberJoined(String roomId, String participant) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", roomId);
-                    data.put("participant", participant);
-                    data.put("type", "onMemberJoined");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", roomId);
+                            data.put("participant", participant);
+                            data.put("type", "onMemberJoined");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
             }
 
             @Override
             public void onMemberExited(String roomId, String roomName, String participant) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", roomId);
-                    data.put("roomName", roomName);
-                    data.put("participant", participant);
-                    data.put("type", "onMemberExited");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", roomId);
+                            data.put("roomName", roomName);
+                            data.put("participant", participant);
+                            data.put("type", "onMemberExited");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onRemovedFromChatRoom(int reason, String roomId, String roomName, String participant) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", roomId);
-                    data.put("roomName", roomName);
-                    data.put("participant", participant);
-                    data.put("type", "onRemovedFromChatRoom");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", roomId);
+                            data.put("roomName", roomName);
+                            data.put("participant", participant);
+                            data.put("type", "onRemovedFromChatRoom");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onMuteListAdded(String chatRoomId, List<String> mutes, long expireTime) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("mutes", mutes);
-                    data.put("expireTime", String.valueOf(expireTime));
-                    data.put("type", "onMuteListAdded");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("mutes", mutes);
+                            data.put("expireTime", String.valueOf(expireTime));
+                            data.put("type", "onMuteListAdded");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
             }
 
             @Override
             public void onMuteListRemoved(String chatRoomId, List<String> mutes) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("mutes", mutes);
-                    data.put("type", "onMuteListRemoved");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("mutes", mutes);
+                            data.put("type", "onMuteListRemoved");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onAdminAdded(String chatRoomId, String admin) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("admin", admin);
-                    data.put("type", "onAdminAdded");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("admin", admin);
+                            data.put("type", "onAdminAdded");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onAdminRemoved(String chatRoomId, String admin) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("admin", admin);
-                    data.put("type", "onAdminRemoved");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("admin", admin);
+                            data.put("type", "onAdminRemoved");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
             }
 
             @Override
             public void onOwnerChanged(String chatRoomId, String newOwner, String oldOwner) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("newOwner", newOwner);
-                    data.put("oldOwner", oldOwner);
-                    data.put("chatRoomChange", "onOwnerChanged");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("newOwner", newOwner);
+                            data.put("oldOwner", oldOwner);
+                            data.put("chatRoomChange", "onOwnerChanged");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+
             }
 
             @Override
             public void onAnnouncementChanged(String chatRoomId, String announcement) {
-                post(() -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("roomId", chatRoomId);
-                    data.put("announcement", announcement);
-                    data.put("chatRoomChange", "onAnnouncementChanged");
-                    channel.invokeMethod(EMSDKMethod.chatRoomChange, data);
-                });
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("roomId", chatRoomId);
+                            data.put("announcement", announcement);
+                            data.put("chatRoomChange", "onAnnouncementChanged");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
             }
         });
     }

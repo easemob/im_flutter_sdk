@@ -902,216 +902,309 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
             @Override
             public void onWhiteListAdded(String groupId, List<String> whitelist) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onWhiteListAdded");
-                data.put("groupId", groupId);
-                data.put("whitelist", whitelist);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onWhiteListAdded");
+                            data.put("groupId", groupId);
+                            data.put("whitelist", whitelist);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onWhiteListRemoved(String groupId, List<String> whitelist) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onWhiteListRemoved");
-                data.put("groupId", groupId);
-                data.put("whitelist", whitelist);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onWhiteListRemoved");
+                            data.put("groupId", groupId);
+                            data.put("whitelist", whitelist);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onAllMemberMuteStateChanged(String groupId, boolean isMuted) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onAllMemberMuteStateChanged");
-                data.put("groupId", groupId);
-                data.put("isMuted", isMuted);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onAllMemberMuteStateChanged");
+                            data.put("groupId", groupId);
+                            data.put("isMuted", isMuted);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onInvitationReceived(String groupId, String groupName, String inviter, String reason) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onInvitationReceived");
-                data.put("groupId", groupId);
-                data.put("groupName", groupName);
-                data.put("inviter", inviter);
-                data.put("reason", reason);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onInvitationReceived");
+                            data.put("groupId", groupId);
+                            data.put("groupName", groupName);
+                            data.put("inviter", inviter);
+                            data.put("reason", reason);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onRequestToJoinReceived(String groupId, String groupName, String applicant, String reason) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onRequestToJoinReceived");
-                data.put("groupId", groupId);
-                data.put("groupName", groupName);
-                data.put("applicant", applicant);
-                data.put("reason", reason);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onRequestToJoinReceived");
+                            data.put("groupId", groupId);
+                            data.put("groupName", groupName);
+                            data.put("applicant", applicant);
+                            data.put("reason", reason);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onRequestToJoinAccepted(String groupId, String groupName, String accepter) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onRequestToJoinAccepted");
-                data.put("groupId", groupId);
-                data.put("groupName", groupName);
-                data.put("accepter", accepter);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onRequestToJoinAccepted");
+                            data.put("groupId", groupId);
+                            data.put("groupName", groupName);
+                            data.put("accepter", accepter);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onRequestToJoinDeclined");
-                data.put("groupId", groupId);
-                data.put("groupName", groupName);
-                data.put("decliner", decliner);
-                data.put("reason", reason);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onRequestToJoinDeclined");
+                            data.put("groupId", groupId);
+                            data.put("groupName", groupName);
+                            data.put("decliner", decliner);
+                            data.put("reason", reason);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onInvitationAccepted(String groupId, String invitee, String reason) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onInvitationAccepted");
-                data.put("groupId", groupId);
-                data.put("invitee", invitee);
-                data.put("reason", reason);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onInvitationAccepted");
+                            data.put("groupId", groupId);
+                            data.put("invitee", invitee);
+                            data.put("reason", reason);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onInvitationDeclined(String groupId, String invitee, String reason) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onInvitationDeclined");
-                data.put("groupId", groupId);
-                data.put("invitee", invitee);
-                data.put("reason", reason);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onInvitationDeclined");
+                            data.put("groupId", groupId);
+                            data.put("invitee", invitee);
+                            data.put("reason", reason);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onUserRemoved(String groupId, String groupName) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onUserRemoved");
-                data.put("groupId", groupId);
-                data.put("groupName", groupName);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onUserRemoved");
+                            data.put("groupId", groupId);
+                            data.put("groupName", groupName);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onGroupDestroyed(String groupId, String groupName) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onGroupDestroyed");
-                data.put("groupId", groupId);
-                data.put("groupName", groupName);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onGroupDestroyed");
+                            data.put("groupId", groupId);
+                            data.put("groupName", groupName);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onAutoAcceptInvitationFromGroup(String groupId, String inviter, String inviteMessage) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onAutoAcceptInvitationFromGroup");
-                data.put("groupId", groupId);
-                data.put("inviter", inviter);
-                data.put("inviteMessage", inviteMessage);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onAutoAcceptInvitationFromGroup");
+                            data.put("groupId", groupId);
+                            data.put("inviter", inviter);
+                            data.put("inviteMessage", inviteMessage);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onMuteListAdded(String groupId, List<String> mutes, long muteExpire) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onMuteListAdded");
-                data.put("groupId", groupId);
-                data.put("mutes", mutes);
-                data.put("muteExpire", muteExpire);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onMuteListAdded");
+                            data.put("groupId", groupId);
+                            data.put("mutes", mutes);
+                            data.put("muteExpire", muteExpire);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+
             }
 
             @Override
             public void onMuteListRemoved(String groupId, List<String> mutes) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onMuteListRemoved");
-                data.put("groupId", groupId);
-                data.put("mutes", mutes);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onMuteListRemoved");
+                            data.put("groupId", groupId);
+                            data.put("mutes", mutes);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onAdminAdded(String groupId, String administrator) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onAdminAdded");
-                data.put("groupId", groupId);
-                data.put("administrator", administrator);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onAdminAdded");
+                            data.put("groupId", groupId);
+                            data.put("administrator", administrator);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onAdminRemoved(String groupId, String administrator) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onAdminRemoved");
-                data.put("groupId", groupId);
-                data.put("administrator", administrator);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onAdminRemoved");
+                            data.put("groupId", groupId);
+                            data.put("administrator", administrator);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onOwnerChanged(String groupId, String newOwner, String oldOwner) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onOwnerChanged");
-                data.put("groupId", groupId);
-                data.put("newOwner", newOwner);
-                data.put("oldOwner", oldOwner);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onOwnerChanged");
+                            data.put("groupId", groupId);
+                            data.put("newOwner", newOwner);
+                            data.put("oldOwner", oldOwner);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onMemberJoined(String groupId, String member) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onMemberJoined");
-                data.put("groupId", groupId);
-                data.put("member", member);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onMemberJoined");
+                            data.put("groupId", groupId);
+                            data.put("member", member);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onMemberExited(String groupId, String member) {
-                EMLog.e("_emGroupManagerWrapper", "onMemberExited");
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onMemberExited");
-                data.put("groupId", groupId);
-                data.put("member", member);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onMemberExited");
+                            data.put("groupId", groupId);
+                            data.put("member", member);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onAnnouncementChanged(String groupId, String announcement) {
-                EMLog.e("_emGroupManagerWrapper", "onAnnouncementChanged");
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onAnnouncementChanged");
-                data.put("groupId", groupId);
-                data.put("announcement", announcement);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onAnnouncementChanged");
+                            data.put("groupId", groupId);
+                            data.put("announcement", announcement);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onSharedFileAdded(String groupId, EMMucSharedFile sharedFile) {
-                EMLog.e("_emGroupManagerWrapper", "onSharedFileAdded");
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onSharedFileAdded");
-                data.put("groupId", groupId);
-                data.put("sharedFile", EMMucSharedFileHelper.toJson(sharedFile));
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onSharedFileAdded");
+                            data.put("groupId", groupId);
+                            data.put("sharedFile", EMMucSharedFileHelper.toJson(sharedFile));
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onSharedFileDeleted(String groupId, String fileId) {
-                EMLog.e("_emGroupManagerWrapper", "onSharedFileDeleted");
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onSharedFileDeleted");
-                data.put("groupId", groupId);
-                data.put("fileId", fileId);
-                post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onSharedFileDeleted");
+                            data.put("groupId", groupId);
+                            data.put("fileId", fileId);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
             }
         });
     }

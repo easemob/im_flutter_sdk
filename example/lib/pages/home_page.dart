@@ -3,6 +3,8 @@ import 'package:easeim_flutter_demo/pages/conversations/conversations_page.dart'
 import 'package:easeim_flutter_demo/pages/me/me_page.dart';
 import 'package:easeim_flutter_demo/widgets/common_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,13 +21,14 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-
     _conversationListPage = ConversationPage();
     _pages = [
       _conversationListPage,
       ContactsPage(),
       MePage(),
     ];
+
+    EMClient.getInstance.startCallback();
   }
 
   @override

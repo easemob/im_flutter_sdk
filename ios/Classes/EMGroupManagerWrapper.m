@@ -10,7 +10,7 @@
 
 #import "EMGroup+Flutter.h"
 #import "EMCursorResult+Flutter.h"
-
+#import "EMListenerHandle.h"
 #import "EMSDKMethod.h"
 
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
@@ -940,252 +940,358 @@
 - (void)groupInvitationDidReceive:(NSString *)aGroupId
                           inviter:(NSString *)aInviter
                           message:(NSString *)aMessage {
-    NSDictionary *map = @{
-        @"type":@"onInvitationReceived",
-        @"groupId":aGroupId,
-        @"inviter":aInviter,
-        @"message":aMessage
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onInvitationReceived",
+            @"groupId":aGroupId,
+            @"inviter":aInviter,
+            @"message":aMessage
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
     
 }
 
 - (void)groupInvitationDidAccept:(EMGroup *)aGroup
                          invitee:(NSString *)aInvitee {
-    NSDictionary *map = @{
-        @"type":@"onInvitationAccepted",
-        @"groupId":aGroup.groupId,
-        @"invitee":aInvitee
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onInvitationAccepted",
+            @"groupId":aGroup.groupId,
+            @"invitee":aInvitee
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
     
 }
 
 - (void)groupInvitationDidDecline:(EMGroup *)aGroup
                           invitee:(NSString *)aInvitee
                            reason:(NSString *)aReason {
-    NSDictionary *map = @{
-        @"type":@"onInvitationDeclined",
-        @"groupId":aGroup.groupId,
-        @"invitee":aInvitee,
-        @"reason":aReason
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onInvitationDeclined",
+            @"groupId":aGroup.groupId,
+            @"invitee":aInvitee,
+            @"reason":aReason
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)didJoinGroup:(EMGroup *)aGroup
              inviter:(NSString *)aInviter
              message:(NSString *)aMessage {
-    NSDictionary *map = @{
-        @"type":@"onAutoAcceptInvitationFromGroup",
-        @"groupId":aGroup.groupId,
-        @"message":aMessage,
-        @"inviter":aInviter
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAutoAcceptInvitationFromGroup",
+            @"groupId":aGroup.groupId,
+            @"message":aMessage,
+            @"inviter":aInviter
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)didLeaveGroup:(EMGroup *)aGroup
                reason:(EMGroupLeaveReason)aReason {
-    NSString *type;
-    if (aReason == EMGroupLeaveReasonBeRemoved) {
-        type = @"onUserRemoved";
-    } else if (aReason == EMGroupLeaveReasonDestroyed) {
-        type = @"onGroupDestroyed";
-    }
-    NSDictionary *map = @{
-        @"type":type,
-        @"groupId":aGroup.groupId,
-        @"groupName":aGroup.groupName
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSString *type;
+        if (aReason == EMGroupLeaveReasonBeRemoved) {
+            type = @"onUserRemoved";
+        } else if (aReason == EMGroupLeaveReasonDestroyed) {
+            type = @"onGroupDestroyed";
+        }
+        NSDictionary *map = @{
+            @"type":type,
+            @"groupId":aGroup.groupId,
+            @"groupName":aGroup.groupName
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
+    
 }
 
 - (void)joinGroupRequestDidReceive:(EMGroup *)aGroup
                               user:(NSString *)aUsername
                             reason:(NSString *)aReason {
-    NSDictionary *map = @{
-        @"type":@"onRequestToJoinReceived",
-        @"groupId":aGroup.groupId,
-        @"applicant":aUsername,
-        @"reason":aReason
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onRequestToJoinReceived",
+            @"groupId":aGroup.groupId,
+            @"applicant":aUsername,
+            @"reason":aReason
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)joinGroupRequestDidDecline:(NSString *)aGroupId
                             reason:(NSString *)aReason {
-    NSDictionary *map = @{
-        @"type":@"onRequestToJoinDeclined",
-        @"groupId":aGroupId,
-        @"reason":aReason
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onRequestToJoinDeclined",
+            @"groupId":aGroupId,
+            @"reason":aReason
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)joinGroupRequestDidApprove:(EMGroup *)aGroup {
-    NSDictionary *map = @{
-        @"type":@"onRequestToJoinAccepted",
-        @"groupId":aGroup.groupId,
-        @"groupName":aGroup.groupName,
-        @"accepter":aGroup.owner,
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onRequestToJoinAccepted",
+            @"groupId":aGroup.groupId,
+            @"groupName":aGroup.groupName,
+            @"accepter":aGroup.owner,
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupMuteListDidUpdate:(EMGroup *)aGroup
              addedMutedMembers:(NSArray *)aMutedMembers
                     muteExpire:(NSInteger)aMuteExpire {
-    NSDictionary *map = @{
-        @"type":@"onMuteListAdded",
-        @"groupId":aGroup.groupId,
-        @"mutes":aMutedMembers,
-        @"muteExpire":[NSNumber numberWithInteger:aMuteExpire]
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMuteListAdded",
+            @"groupId":aGroup.groupId,
+            @"mutes":aMutedMembers,
+            @"muteExpire":[NSNumber numberWithInteger:aMuteExpire]
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupMuteListDidUpdate:(EMGroup *)aGroup
            removedMutedMembers:(NSArray *)aMutedMembers {
-    NSDictionary *map = @{
-        @"type":@"onMuteListRemoved",
-        @"groupId":aGroup.groupId,
-        @"mutes":aMutedMembers
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMuteListRemoved",
+            @"groupId":aGroup.groupId,
+            @"mutes":aMutedMembers
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupWhiteListDidUpdate:(EMGroup *)aGroup
           addedWhiteListMembers:(NSArray *)aMembers {
-    NSDictionary *map = @{
-        @"type":@"onWhiteListAdded",
-        @"groupId":aGroup.groupId,
-        @"whitelist":aMembers
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onWhiteListAdded",
+            @"groupId":aGroup.groupId,
+            @"whitelist":aMembers
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupWhiteListDidUpdate:(EMGroup *)aGroup
         removedWhiteListMembers:(NSArray *)aMembers {
-    NSDictionary *map = @{
-        @"type":@"onWhiteListRemoved",
-        @"groupId":aGroup.groupId,
-        @"whitelist":aMembers
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onWhiteListRemoved",
+            @"groupId":aGroup.groupId,
+            @"whitelist":aMembers
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupAllMemberMuteChanged:(EMGroup *)aGroup
                  isAllMemberMuted:(BOOL)aMuted {
-    NSDictionary *map = @{
-        @"type":@"onAllMemberMuteStateChanged",
-        @"groupId":aGroup.groupId,
-        @"isMuted":@(aMuted)
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAllMemberMuteStateChanged",
+            @"groupId":aGroup.groupId,
+            @"isMuted":@(aMuted)
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupAdminListDidUpdate:(EMGroup *)aGroup
                      addedAdmin:(NSString *)aAdmin {
-    NSDictionary *map = @{
-        @"type":@"onAdminAdded",
-        @"groupId":aGroup.groupId,
-        @"administrator":aAdmin
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAdminAdded",
+            @"groupId":aGroup.groupId,
+            @"administrator":aAdmin
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupAdminListDidUpdate:(EMGroup *)aGroup
                    removedAdmin:(NSString *)aAdmin {
-    NSDictionary *map = @{
-        @"type":@"onAdminRemoved",
-        @"groupId":aGroup.groupId,
-        @"administrator":aAdmin
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAdminRemoved",
+            @"groupId":aGroup.groupId,
+            @"administrator":aAdmin
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupOwnerDidUpdate:(EMGroup *)aGroup
                    newOwner:(NSString *)aNewOwner
                    oldOwner:(NSString *)aOldOwner {
-    NSDictionary *map = @{
-        @"type":@"onOwnerChanged",
-        @"groupId":aGroup.groupId,
-        @"newOwner":aNewOwner,
-        @"oldOwner":aOldOwner
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onOwnerChanged",
+            @"groupId":aGroup.groupId,
+            @"newOwner":aNewOwner,
+            @"oldOwner":aOldOwner
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)userDidJoinGroup:(EMGroup *)aGroup
                     user:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onMemberJoined",
-        @"groupId":aGroup.groupId,
-        @"member":aUsername
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMemberJoined",
+            @"groupId":aGroup.groupId,
+            @"member":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)userDidLeaveGroup:(EMGroup *)aGroup
                      user:(NSString *)aUsername {
-    NSDictionary *map = @{
-        @"type":@"onMemberExited",
-        @"groupId":aGroup.groupId,
-        @"member":aUsername
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onMemberExited",
+            @"groupId":aGroup.groupId,
+            @"member":aUsername
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupAnnouncementDidUpdate:(EMGroup *)aGroup
                       announcement:(NSString *)aAnnouncement {
-    NSDictionary *map = @{
-        @"type":@"onAnnouncementChanged",
-        @"groupId":aGroup.groupId,
-        @"announcement":aAnnouncement
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onAnnouncementChanged",
+            @"groupId":aGroup.groupId,
+            @"announcement":aAnnouncement
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
                addedSharedFile:(EMGroupSharedFile *)aSharedFile {
-    NSDictionary *map = @{
-        @"type":@"onSharedFileAdded",
-        @"groupId":aGroup.groupId,
-        @"sharedFile":[aSharedFile toJson]
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onSharedFileAdded",
+            @"groupId":aGroup.groupId,
+            @"sharedFile":[aSharedFile toJson]
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
              removedSharedFile:(NSString *)aFileId {
-    NSDictionary *map = @{
-        @"type":@"onSharedFileDeleted",
-        @"groupId":aGroup.groupId,
-        @"fileId":aFileId
-    };
-    [self.channel invokeMethod:ChatOnGroupChanged
-                     arguments:map];
+
+    
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onSharedFileDeleted",
+            @"groupId":aGroup.groupId,
+            @"fileId":aFileId
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
 }
 
 

@@ -112,6 +112,8 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
             else if (EMSDKMethod.renewToken.equals(call.method)){
                 renewToken(param, call.method, result);
+            } else if (EMSDKMethod.startCallback.equals(call.method)) {
+                startCallback();
             }
             else  {
                 super.onMethodCall(call, result);
@@ -163,6 +165,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMClient.getInstance().logout(unbindToken, new EMWrapperCallBack(result, channelName, null){
             @Override
             public void onSuccess() {
+                EMListenerHandle.getInstance().clearHandle();
                 object = true;
                 super.onSuccess();
             }
@@ -294,6 +297,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 onError(result, e);
             }
         });
+    }
+
+    private void startCallback() {
+        EMListenerHandle.getInstance().startCallback();
     }
 
     private void bindingManagers() {
