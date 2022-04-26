@@ -51,7 +51,8 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 declineInvitation(param, call.method, result);
             } else if (EMSDKMethod.getSelfIdsOnOtherPlatform.equals(call.method)) {
                 getSelfIdsOnOtherPlatform(param, call.method, result);
-            } else {
+            }
+            else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException e) {
@@ -69,7 +70,6 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 onSuccess(result, channelName, username);
             } catch (HyphenateException e) {
                 onError(result, e);
-            
             }
         });
     }
@@ -182,51 +182,70 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 onError(result, e);
             }
         });
-
     }
+
 
     private void registerEaseListener() {
         EMClient.getInstance().contactManager().setContactListener(new EMContactListener() {
             @Override
             public void onContactAdded(String userName) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onContactAdded");
-                data.put("username", userName);
-                post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
-
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactAdded");
+                            data.put("username", userName);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onContactDeleted(String userName) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onContactDeleted");
-                data.put("username", userName);
-                post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactDeleted");
+                            data.put("username", userName);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onContactInvited(String userName, String reason) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onContactInvited");
-                data.put("username", userName);
-                data.put("reason", reason);
-                post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onContactInvited");
+                            data.put("username", userName);
+                            data.put("reason", reason);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onFriendRequestAccepted(String userName) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onFriendRequestAccepted");
-                data.put("username", userName);
-                post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onFriendRequestAccepted");
+                            data.put("username", userName);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                        }
+                );
             }
 
             @Override
             public void onFriendRequestDeclined(String userName) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("type", "onFriendRequestDeclined");
-                data.put("username", userName);
-                post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onFriendRequestDeclined");
+                            data.put("username", userName);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onContactChanged, data));
+                        }
+                );
             }
         });
     }

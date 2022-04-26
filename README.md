@@ -118,6 +118,16 @@ try {
 > 退出也有失败的情况，需要确定是否失败。  
 > 注册环信id详细说明请参考文档[用户体系集成](http://docs-im.easemob.com/im/server/ready/user)。
 
+#### UI 监听
+
+
+> 当UI已经准备好后，需要主动调用该方法，调用之后，`EMContactManagerListener`、 `EMGroupEventListener` 、 `EMChatRoomEventListener` 回调才会开始执行。
+
+```dart
+EMClient.getInstance.startCallback();
+```
+
+
 #### 监听服务器连接状态
 
 ```dart
@@ -456,6 +466,8 @@ try {
 ```
 
 #### 通讯录监听
+
+> 如果想要收到 `EMContactManagerListener` 回调,需要先调用 `EMClient.getInstance.startCallback();` 方法。
 
 ```dart
 class _PageState extends State<Page> implements EMContactManagerListener {
@@ -975,6 +987,8 @@ try {
 
 #### 群回调监听
 
+> 如果想要收到 `EMGroupEventListener` 回调,需要先调用 `EMClient.getInstance.startCallback();` 方法。
+
 ```dart
 class _PageState extends State<Page> implements EMGroupEventListener {
   @override
@@ -1355,6 +1369,9 @@ try {
 > 创建者或管理员调用
 
 #### 添加聊天室监听
+
+> 如果想要收到 `EMChatRoomEventListener` 回调,需要先调用 `EMClient.getInstance.startCallback();` 方法。
+
 
 ```dart
 class _PageState extends State<Page> implements EMChatRoomEventListener {

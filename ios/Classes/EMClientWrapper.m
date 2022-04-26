@@ -16,6 +16,7 @@
 #import "EMDeviceConfig+Flutter.h"
 #import "EMOptions+Flutter.h"
 #import "EMUserInfoManagerWrapper.h"
+#import "EMListenerHandle.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
 @end
@@ -151,6 +152,8 @@ static EMClientWrapper *wrapper = nil;
         [self renewToken:call.arguments
              channelName:call.method
                   result:result];
+    }else if ([ChatStartCallback isEqualToString:call.method]){
+        [self startCallBack];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -391,6 +394,10 @@ static EMClientWrapper *wrapper = nil;
                             error:aError
                            object:nil];
     }];
+}
+
+- (void)startCallBack {
+    [EMListenerHandle.sharedInstance startCallback];
 }
 
 #pragma - mark EMClientDelegate

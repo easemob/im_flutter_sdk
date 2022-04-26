@@ -227,4 +227,7 @@ static NSString *const ChatFetchUserInfoById = @"fetchUserInfoById";
 static NSString *const ChatFetchUserInfoByIdWithType = @"fetchUserInfoByIdWithType";
 
 
+#pragma mark - HandleAction
+static NSString *const ChatStartCallback = @"startCallback";
+
 

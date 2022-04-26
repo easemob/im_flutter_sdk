@@ -1,7 +1,13 @@
 ## NEXT
 
 ## 3.9.0+1
-- 修复message.attribute不准；
+- 修复message.attribute不准;
+- 增加 EMClient.getInstance.startCallback() 方法
+  ```dart
+  EMClient.getInstance.startCallback();
+  ``` 
+  只有调用该方法后，`EMContactManagerListener`、 `EMGroupEventListener` 、 `EMChatRoomEventListener` 回调才会开始执行;
+- 修复删除聊天室白名单成员失败;
 
 ## 3.9.0
 

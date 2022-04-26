@@ -325,7 +325,7 @@
 - (void)loadMsgWithMsgType:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
     
-    EMMessageBodyType type = [EMMessageBody typeFromString:param[@"type"]];
+    EMMessageBodyType type = [EMMessageBody typeFromString:param[@"msgType"]];
     long long timeStamp = [param[@"timeStamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *sender = param[@"sender"];

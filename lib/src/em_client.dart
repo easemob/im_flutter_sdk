@@ -64,6 +64,27 @@ class EMClient {
     });
   }
 
+  ///
+  /// Start contact and group, chatroom callback.
+  ///
+  /// Reference:
+  /// Call this method when you ui is ready, then will receive `EMChatRoomEventListener`, `EMContactManagerListener`, `EMGroupEventListener` callback.
+  ///
+  Future<void> startCallback() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.startCallback);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Checks whether the SDK is connected to the chat server.
+  ///
+  /// **Return** the result whether the SDK is connected to the chat server.
+  /// `true`: means that the SDK is connected to the chat server.
+  /// `false`: means not.
   Future<bool> isConnected() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isConnected);
     try {
@@ -74,6 +95,15 @@ class EMClient {
     }
   }
 
+  ///
+  /// Checks whether the user has logged in before and did not log out.
+  ///
+  /// Reference:
+  /// If you need to check whether the SDK is connected to the server, please use {@link #isConnected()}.
+  ///
+  /// **Return** The result of whether the user has logged in before.
+  /// `true`: means that the user has logged in before,
+  /// `false`: means that the user has not login before or has called {@link #logout()} method.
   Future<bool> isLoginBefore() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isLoggedInBefore);
     try {
@@ -84,6 +114,11 @@ class EMClient {
     }
   }
 
+  ///
+  /// Gets the current login user ID.
+  ///
+  /// **Return** The current login user ID.
+  ///
   Future<String?> getCurrentUsername() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getCurrentUser);
     try {

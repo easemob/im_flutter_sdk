@@ -341,7 +341,7 @@ extension EMConversationExtension on EMConversation {
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
     Map req = this._toJson();
-    req['type'] = messageTypeToTypeStr(type);
+    req['msgType'] = messageTypeToTypeStr(type);
     req['timestamp'] = timestamp;
     req['count'] = count;
     req['sender'] = sender;

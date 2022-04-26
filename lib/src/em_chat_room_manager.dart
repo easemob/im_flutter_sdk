@@ -237,9 +237,8 @@ class EMChatRoomManager {
         .invokeMethod(ChatMethodKeys.getChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
-      if (result.containsKey(ChatMethodKeys.fetchChatRoomInfoFromServer)) {
-        return EMChatRoom.fromJson(
-            result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
+      if (result.containsKey(ChatMethodKeys.getChatRoom)) {
+        return EMChatRoom.fromJson(result[ChatMethodKeys.getChatRoom]);
       } else {
         return null;
       }
@@ -818,7 +817,7 @@ class EMChatRoomManager {
       "members": members,
     };
     Map result = await _channel.invokeMethod(
-      ChatMethodKeys.addMembersToChatRoomWhiteList,
+      ChatMethodKeys.removeMembersFromChatRoomWhiteList,
       req,
     );
     EMError.hasErrorFromResult(result);
