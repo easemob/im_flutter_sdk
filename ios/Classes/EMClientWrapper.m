@@ -244,6 +244,9 @@ static EMClientWrapper *wrapper = nil;
     __weak typeof(self)weakSelf = self;
     BOOL unbindToken = [param[@"unbindToken"] boolValue];
     [EMClient.sharedClient logout:unbindToken completion:^(EMError *aError) {
+        if(aError == nil) {
+            [EMListenerHandle.sharedInstance clearHandle];
+        }
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -405,18 +408,16 @@ static EMClientWrapper *wrapper = nil;
 - (void)connectionStateDidChange:(EMConnectionState)aConnectionState {
     BOOL isConnected = aConnectionState == EMConnectionConnected;
     if (isConnected) {
-        [self onConnected];
+        [self.channel invokeMethod:ChatOnConnected
+                         arguments:nil];
     }else {
-        [self onDisconnected:2]; // 需要明确具体的code
+        [self.channel invokeMethod:ChatOnDisconnected
+                         arguments:nil];
     }
 }
 
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
-    if (aError) {
-        [self onDisconnected:1];  // 需要明确具体的code
-    }else {
-        [self onConnected];
-    }
+ 
 }
 
 // 声网token即将过期
@@ -427,24 +428,44 @@ static EMClientWrapper *wrapper = nil;
 
 // 声网token过期
 - (void)tokenDidExpire:(int)aErrorCode {
+    [EMListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnTokenDidExpire
                      arguments:nil];
 }
 
 - (void)userAccountDidLoginFromOtherDevice {
-    [self onDisconnected:206];
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
+                     arguments:nil];
 }
 
 - (void)userAccountDidRemoveFromServer {
-    [self onDisconnected:207];
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidRemoveFromServer
+                     arguments:nil];
 }
 
 - (void)userDidForbidByServer {
-    [self onDisconnected:305];
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidForbidByServer
+                     arguments:nil];
 }
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {
-    [self onDisconnected:1]; // 需要明确具体的code
+    [EMListenerHandle.sharedInstance clearHandle];
+    if (aError.code == EMErrorUserKickedByChangePassword) {
+        [self.channel invokeMethod:ChatOnUserDidChangePassword
+                         arguments:nil];
+    } else if (aError.code == EMErrorUserLoginTooManyDevices) {
+        [self.channel invokeMethod:ChatOnUserDidLoginTooManyDevice
+                         arguments:nil];
+    } else if (aError.code == EMErrorUserKickedByOtherDevice) {
+        [self.channel invokeMethod:ChatOnUserKickedByOtherDevice
+                         arguments:nil];
+    } else if (aError.code == EMErrorUserAuthenticationFailed) {
+        [self.channel invokeMethod:ChatOnUserAuthenticationFailed
+                         arguments:nil];
+    }
 }
 
 #pragma mark - EMMultiDevicesDelegate
@@ -467,17 +488,6 @@ static EMClientWrapper *wrapper = nil;
     data[@"target"] = aGroupId;
     data[@"userNames"] = aExt;
     [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
-}
-
-#pragma mark - Merge Android and iOS Method
-- (void)onConnected {
-    [self.channel invokeMethod:ChatOnConnected
-                     arguments:@{@"connected" : @(YES)}];
-}
-
-- (void)onDisconnected:(int)errorCode {
-    [self.channel invokeMethod:ChatOnDisconnected
-                     arguments:@{@"errorCode" : @(errorCode)}];
 }
 
 

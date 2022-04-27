@@ -23,6 +23,14 @@ public class EMSDKMethod {
 
     static final String onConnected = "onConnected";
     static final String onDisconnected = "onDisconnected";
+    static final String onUserDidLoginFromOtherDevice = "onUserDidLoginFromOtherDevice";
+    static final String onUserDidRemoveFromServer = "onUserDidRemoveFromServer";
+    static final String onUserDidForbidByServer = "onUserDidForbidByServer";
+    static final String onUserDidChangePassword = "onUserDidChangePassword";
+    static final String onUserDidLoginTooManyDevice = "onUserDidLoginTooManyDevice";
+    static final String onUserKickedByOtherDevice = "onUserKickedByOtherDevice";
+    static final String onUserAuthenticationFailed = "onUserAuthenticationFailed";
+
     static final String onMultiDeviceEvent = "onMultiDeviceEvent";
     static final String onSendDataToFlutter = "onSendDataToFlutter";
     static final String onTokenWillExpire = "onTokenWillExpire";

@@ -32,7 +32,42 @@ abstract class EMConnectionListener {
   ///
   /// Note that the logout may not be performed at the bottom level when the SDK is disconnected.
   ///
-  void onDisconnected(int? errorCode);
+  void onDisconnected();
+
+  ///
+  /// Occurs when the current user account is logged in to another device.
+  ///
+  void onUserDidLoginFromOtherDevice();
+
+  ///
+  /// Occurs when the current chat user is removed from the server.
+  ///
+  void onUserDidRemoveFromServer();
+
+  ///
+  /// Occurs when the current chat user is forbid from the server.
+  ///
+  void onUserDidForbidByServer();
+
+  ///
+  /// Occurs when the current chat user is changed password.
+  ///
+  void onUserDidChangePassword();
+
+  ///
+  /// Occurs when the current chat user logged to many devices.
+  ///
+  void onUserDidLoginTooManyDevice();
+
+  ///
+  /// Occurs when the current chat user kicked by other device.
+  ///
+  void onUserKickedByOtherDevice();
+
+  ///
+  /// Occurs when the current chat user authentication failed.
+  ///
+  void onUserAuthenticationFailed();
 
   ///
   /// Occurs when the token is about to expire.

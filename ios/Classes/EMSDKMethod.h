@@ -27,10 +27,18 @@ static NSString *const ChatGetCurrentUser = @"getCurrentUser";
 static NSString *const ChatIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const ChatIsConnected = @"isConnected";
 
+
+static NSString *const ChatOnMultiDeviceEvent = @"onMultiDeviceEvent";
 #pragma mark - EMClientDelegate
 static NSString *const ChatOnConnected = @"onConnected";
 static NSString *const ChatOnDisconnected = @"onDisconnected";
-static NSString *const ChatOnMultiDeviceEvent = @"onMultiDeviceEvent";
+static NSString *const ChatOnUserDidLoginFromOtherDevice = @"onUserDidLoginFromOtherDevice";
+static NSString *const ChatOnUserDidRemoveFromServer = @"onUserDidRemoveFromServer";
+static NSString *const ChatOnUserDidForbidByServer = @"onUserDidForbidByServer";
+static NSString *const ChatOnUserDidChangePassword = @"onUserDidChangePassword";
+static NSString *const ChatOnUserDidLoginTooManyDevice = @"onUserDidLoginTooManyDevice";
+static NSString *const ChatOnUserKickedByOtherDevice = @"onUserKickedByOtherDevice";
+static NSString *const ChatOnUserAuthenticationFailed = @"onUserAuthenticationFailed";
 
 static NSString *const ChatSendDataToFlutter = @"onSendDataToFlutter";
 
