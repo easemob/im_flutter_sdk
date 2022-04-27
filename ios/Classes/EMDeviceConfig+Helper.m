@@ -5,9 +5,9 @@
 //  Created by 杜洁鹏 on 2020/10/12.
 //
 
-#import "EMDeviceConfig+Flutter.h"
+#import "EMDeviceConfig+Helper.h"
 
-@implementation EMDeviceConfig (Flutter)
+@implementation EMDeviceConfig (Helper)
 - (NSDictionary *)toJson {
     return @{
         @"resource": self.resource,

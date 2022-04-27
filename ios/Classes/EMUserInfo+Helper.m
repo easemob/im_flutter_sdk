@@ -5,9 +5,9 @@
 //  Created by liujinliang on 2021/4/28.
 //
 
-#import "EMUserInfo+Flutter.h"
+#import "EMUserInfo+Helper.h"
 
-@implementation EMUserInfo (Flutter)
+@implementation EMUserInfo (Helper)
 
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];

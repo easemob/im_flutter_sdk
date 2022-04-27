@@ -6,7 +6,7 @@
 //
 
 #import "EMWrapper.h"
-#import "EMError+Flutter.h"
+#import "EMError+Helper.h"
 #define easemob_dispatch_main_async_safe(block)\
     if ([NSThread isMainThread]) {\
         block();\

@@ -5,9 +5,9 @@
 //  Created by 杜洁鹏 on 2021/11/25.
 //
 
-#import "EMGroupMessageAck+Flutter.h"
+#import "EMGroupMessageAck+Helper.h"
 
-@implementation EMGroupMessageAck (Flutter)
+@implementation EMGroupMessageAck (Helper)
 - (NSDictionary *)toJson{
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"msg_id"] = self.messageId;

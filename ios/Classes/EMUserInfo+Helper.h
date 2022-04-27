@@ -1,17 +1,17 @@
 //
-//  EMUserInfo+Flutter.h
+//  EMUserInfo+Helper.h
 //  im_flutter_sdk
 //
 //  Created by liujinliang on 2021/4/28.
 //
 
 #import <HyphenateChat/HyphenateChat.h>
-#import "EaseToFlutterJson.h"
+#import "EaseModeToJson.h"
 
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMUserInfo (Flutter)<EaseToFlutterJson>
+@interface EMUserInfo (Helper)<EaseModeToJson>
 -(NSDictionary *)toJson;
 + (EMUserInfo *)fromJson:(NSDictionary *)aJson;
 

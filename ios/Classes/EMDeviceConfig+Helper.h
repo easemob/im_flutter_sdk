@@ -1,15 +1,15 @@
 //
-//  EMDeviceConfig+Flutter.h
+//  EMDeviceConfig+Helper.h
 //  im_flutter_sdk
 //
 //  Created by 杜洁鹏 on 2020/10/12.
 //
 
 #import <HyphenateChat/HyphenateChat.h>
-#import "EaseToFlutterJson.h"
+#import "EaseModeToJson.h"
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMDeviceConfig (Flutter) <EaseToFlutterJson>
+@interface EMDeviceConfig (Helper) <EaseModeToJson>
 - (NSDictionary *)toJson;
 @end
 

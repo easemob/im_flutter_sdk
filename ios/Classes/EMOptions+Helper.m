@@ -5,10 +5,10 @@
 //  Created by 杜洁鹏 on 2020/10/12.
 //
 
-#import "EMOptions+Flutter.h"
+#import "EMOptions+Helper.h"
 #import <HyphenateChat/EMOptions+PrivateDeploy.h>
 
-@implementation EMOptions (Flutter)
+@implementation EMOptions (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"appKey"] = self.appkey;

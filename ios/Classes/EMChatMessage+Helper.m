@@ -5,10 +5,10 @@
 //  Created by 杜洁鹏 on 2020/9/11.
 //
 
-#import "EMChatMessage+Flutter.h"
+#import "EMChatMessage+Helper.h"
 
 
-@implementation EMChatMessage (Flutter)
+@implementation EMChatMessage (Helper)
 
 + (EMChatMessage *)fromJson:(NSDictionary *)aJson
 {
@@ -169,7 +169,7 @@
 
 @end
 
-@implementation EMMessageBody (Flutter)
+@implementation EMMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)bodyJson {
     EMMessageBody *ret = nil;
@@ -258,13 +258,13 @@
 
 #pragma mark - txt
 
-@interface EMTextMessageBody (Flutter)
+@interface EMTextMessageBody (Helper)
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
 
-@implementation EMTextMessageBody (Flutter)
+@implementation EMTextMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson {
     return [[EMTextMessageBody alloc] initWithText:aJson[@"content"]];
@@ -280,13 +280,13 @@
 
 #pragma mark - loc
 
-@interface EMLocationMessageBody (Flutter)
+@interface EMLocationMessageBody (Helper)
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
 
-@implementation EMLocationMessageBody (Flutter)
+@implementation EMLocationMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson {
     double latitude = [aJson[@"latitude"] doubleValue];
@@ -313,12 +313,12 @@
 
 #pragma mark - cmd
 
-@interface EMCmdMessageBody (Flutter)
+@interface EMCmdMessageBody (Helper)
 + (EMCmdMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
-@implementation EMCmdMessageBody (Flutter)
+@implementation EMCmdMessageBody (Helper)
 
 + (EMCmdMessageBody *)fromJson:(NSDictionary *)aJson {
     EMCmdMessageBody *ret = [[EMCmdMessageBody alloc] initWithAction:aJson[@"action"]];
@@ -337,12 +337,12 @@
 
 #pragma mark - custom
 
-@interface EMCustomMessageBody (Flutter)
+@interface EMCustomMessageBody (Helper)
 + (EMCustomMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
-@implementation EMCustomMessageBody (Flutter)
+@implementation EMCustomMessageBody (Helper)
 
 + (EMCustomMessageBody *)fromJson:(NSDictionary *)aJson {
     NSDictionary *dic = aJson[@"params"];
@@ -366,12 +366,12 @@
 
 #pragma mark - file
 
-@interface EMFileMessageBody (Flutter)
+@interface EMFileMessageBody (Helper)
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
-@implementation EMFileMessageBody (Flutter)
+@implementation EMFileMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson {
     NSString *path = aJson[@"localPath"];
@@ -443,12 +443,12 @@
 
 #pragma mark - img
 
-@interface EMImageMessageBody (Flutter)
+@interface EMImageMessageBody (Helper)
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
-@implementation EMImageMessageBody (Flutter)
+@implementation EMImageMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson {
     NSString *path = aJson[@"localPath"];
@@ -490,12 +490,12 @@
 
 #pragma mark - video
 
-@interface EMVideoMessageBody (Flutter)
+@interface EMVideoMessageBody (Helper)
 + (EMVideoMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
-@implementation EMVideoMessageBody (Flutter)
+@implementation EMVideoMessageBody (Helper)
 + (EMVideoMessageBody *)fromJson:(NSDictionary *)aJson {
     NSString *path = aJson[@"localPath"];
     NSString *displayName = aJson[@"displayName"];
@@ -532,12 +532,12 @@
 
 #pragma mark - voice
 
-@interface EMVoiceMessageBody (Flutter)
+@interface EMVoiceMessageBody (Helper)
 + (EMVoiceMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
-@implementation EMVoiceMessageBody (Flutter)
+@implementation EMVoiceMessageBody (Helper)
 + (EMVoiceMessageBody *)fromJson:(NSDictionary *)aJson {
     NSString *path = aJson[@"localPath"];
     NSString *displayName = aJson[@"displayName"];
