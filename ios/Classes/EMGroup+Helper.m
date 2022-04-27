@@ -5,9 +5,9 @@
 //  Created by 杜洁鹏 on 2020/9/28.
 //
 
-#import "EMGroup+Flutter.h"
+#import "EMGroup+Helper.h"
 
-@implementation EMGroup (Flutter)
+@implementation EMGroup (Helper)
 
 
 - (NSDictionary *)toJson {
@@ -91,7 +91,7 @@
 
 @end
 
-@implementation EMGroupOptions (Flutter)
+@implementation EMGroupOptions (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"maxCount"] = @(self.maxUsers);
@@ -165,7 +165,7 @@
 @end
 
 
-@implementation EMGroupSharedFile (Flutter)
+@implementation EMGroupSharedFile (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"fileId"] = self.fileId;

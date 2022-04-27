@@ -8,9 +8,9 @@
 #import "EMChatroomManagerWrapper.h"
 #import "EMSDKMethod.h"
 
-#import "EMCursorResult+Flutter.h"
-#import "EMPageResult+Flutter.h"
-#import "EMChatroom+Flutter.h"
+#import "EMCursorResult+Helper.h"
+#import "EMPageResult+Helper.h"
+#import "EMChatroom+Helper.h"
 #import "EMListenerHandle.h"
 
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>

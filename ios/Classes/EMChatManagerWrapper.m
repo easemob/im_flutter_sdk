@@ -8,11 +8,11 @@
 #import "EMChatManagerWrapper.h"
 #import "EMSDKMethod.h"
 
-#import "EMChatMessage+Flutter.h"
-#import "EMConversation+Flutter.h"
-#import "EMGroupMessageAck+Flutter.h"
-#import "EMError+Flutter.h"
-#import "EMCursorResult+Flutter.h"
+#import "EMChatMessage+Helper.h"
+#import "EMConversation+Helper.h"
+#import "EMGroupMessageAck+Helper.h"
+#import "EMError+Helper.h"
+#import "EMCursorResult+Helper.h"
 
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>

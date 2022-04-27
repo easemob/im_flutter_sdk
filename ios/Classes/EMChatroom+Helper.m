@@ -5,9 +5,9 @@
 //  Created by 杜洁鹏 on 2020/9/27.
 //
 
-#import "EMChatroom+Flutter.h"
+#import "EMChatroom+Helper.h"
 
-@implementation EMChatroom (Flutter)
+@implementation EMChatroom (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"roomId"] = self.chatroomId;

@@ -8,8 +8,8 @@
 
 #import "EMGroupManagerWrapper.h"
 
-#import "EMGroup+Flutter.h"
-#import "EMCursorResult+Flutter.h"
+#import "EMGroup+Helper.h"
+#import "EMCursorResult+Helper.h"
 #import "EMListenerHandle.h"
 #import "EMSDKMethod.h"
 

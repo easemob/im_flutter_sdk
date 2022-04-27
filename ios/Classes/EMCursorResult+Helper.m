@@ -5,9 +5,9 @@
 //  Created by 杜洁鹏 on 2020/9/27.
 //
 
-#import "EMCursorResult+Flutter.h"
+#import "EMCursorResult+Helper.h"
 
-@implementation EMCursorResult (Flutter)
+@implementation EMCursorResult (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     NSMutableArray *dataList = [NSMutableArray array];

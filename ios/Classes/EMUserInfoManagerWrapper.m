@@ -8,7 +8,7 @@
 #import "EMUserInfoManagerWrapper.h"
 #import "EMClientWrapper.h"
 #import "EMSDKMethod.h"
-#import "EMUserInfo+Flutter.h"
+#import "EMUserInfo+Helper.h"
 
 @interface EMUserInfoManagerWrapper ()
 

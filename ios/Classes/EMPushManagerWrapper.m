@@ -7,8 +7,8 @@
 
 #import "EMPushManagerWrapper.h"
 #import "EMSDKMethod.h"
-#import "EMPushOptions+Flutter.h"
-#import "EMGroup+Flutter.h"
+#import "EMPushOptions+Helper.h"
+#import "EMGroup+Helper.h"
 
 @implementation EMPushManagerWrapper
 

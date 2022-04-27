@@ -5,10 +5,10 @@
 //  Created by 杜洁鹏 on 2020/9/21.
 //
 
-#import "EMConversation+Flutter.h"
-#import "EMChatMessage+Flutter.h"
+#import "EMConversation+Helper.h"
+#import "EMChatMessage+Helper.h"
 
-@implementation EMConversation (Flutter)
+@implementation EMConversation (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"con_id"] = self.conversationId;

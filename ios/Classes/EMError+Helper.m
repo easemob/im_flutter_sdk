@@ -5,9 +5,9 @@
 //  Created by 杜洁鹏 on 2020/9/23.
 //
 
-#import "EMError+Flutter.h"
+#import "EMError+Helper.h"
 
-@implementation EMError (Flutter)
+@implementation EMError (Helper)
 - (NSDictionary *)toJson {
     return @{
         @"code": @(self.code),

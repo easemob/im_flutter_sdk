@@ -8,8 +8,8 @@
 #import "EMConversationWrapper.h"
 #import "EMSDKMethod.h"
 
-#import "EMChatMessage+Flutter.h"
-#import "EMConversation+Flutter.h"
+#import "EMChatMessage+Helper.h"
+#import "EMConversation+Helper.h"
 
 @interface EMConversationWrapper ()
 
