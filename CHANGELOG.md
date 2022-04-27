@@ -1,11 +1,28 @@
 ## NEXT
 
+
+## 3.9.0+2
+
+- 修改用户退出/离线回调;
+  - EMConnectionListener#onConnected: 长连接恢复;
+  - EMConnectionListener#onDisconnected: 长连接断开;
+  - EMConnectionListener#onUserDidLoginFromOtherDevice: 当前账号在其他设备登录;
+  - EMConnectionListener#onUserDidRemoveFromServer: 当前账号被服务器删除;
+  - EMConnectionListener#onUserDidForbidByServer: 当前账号登录被服务器拒绝;
+  - EMConnectionListener#onUserDidChangePassword: 当前账号密码变更;
+  - EMConnectionListener#onUserDidLoginTooManyDevice: 当前账号登录太多设备;
+  - EMConnectionListener#onUserKickedByOtherDevice: 当前账号被登录的其他设备设置下线;
+  - EMConnectionListener#onUserAuthenticationFailed: 当前账号鉴权失败;
+
 ## 3.9.0+1
+
 - 修复message.attribute不准;
 - 增加 EMClient.getInstance.startCallback() 方法
+  
   ```dart
   EMClient.getInstance.startCallback();
-  ``` 
+  ```
+  
   只有调用该方法后，`EMContactManagerListener`、 `EMGroupEventListener` 、 `EMChatRoomEventListener` 回调才会开始执行;
 - 修复删除聊天室白名单成员失败;
 

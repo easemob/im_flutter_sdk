@@ -49,18 +49,30 @@ class EMClient {
       if (call.method == ChatMethodKeys.onConnected) {
         return _onConnected();
       } else if (call.method == ChatMethodKeys.onDisconnected) {
-        return _onDisconnected(argMap);
+        return _onDisconnected();
+      } else if (call.method == ChatMethodKeys.onUserDidLoginFromOtherDevice) {
+        _onUserDidLoginFromOtherDevice();
+      } else if (call.method == ChatMethodKeys.onUserDidRemoveFromServer) {
+        _onUserDidRemoveFromServer();
+      } else if (call.method == ChatMethodKeys.onUserDidForbidByServer) {
+        _onUserDidForbidByServer();
+      } else if (call.method == ChatMethodKeys.onUserDidChangePassword) {
+        _onUserDidChangePassword();
+      } else if (call.method == ChatMethodKeys.onUserDidLoginTooManyDevice) {
+        _onUserDidLoginTooManyDevice();
+      } else if (call.method == ChatMethodKeys.onUserKickedByOtherDevice) {
+        _onUserKickedByOtherDevice();
+      } else if (call.method == ChatMethodKeys.onUserAuthenticationFailed) {
+        _onUserAuthenticationFailed();
       } else if (call.method == ChatMethodKeys.onMultiDeviceEvent) {
-        return _onMultiDeviceEvent(argMap!);
+        _onMultiDeviceEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
-        return _onReceiveCustomData(argMap!);
+        _onReceiveCustomData(argMap!);
       } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
-        return _onTokenWillExpire(argMap);
+        _onTokenWillExpire(argMap);
       } else if (call.method == ChatMethodKeys.onTokenDidExpire) {
-        return _onTokenDidExpire(argMap);
+        _onTokenDidExpire(argMap);
       }
-
-      return null;
     });
   }
 
@@ -474,10 +486,51 @@ class EMClient {
     }
   }
 
-  Future<void> _onDisconnected(Map? map) async {
+  Future<void> _onDisconnected() async {
     for (var listener in _connectionListeners) {
-      int? errorCode = map!['errorCode'];
-      listener.onDisconnected(errorCode);
+      listener.onDisconnected();
+    }
+  }
+
+  Future<void> _onUserDidLoginFromOtherDevice() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidLoginFromOtherDevice();
+    }
+  }
+
+  Future<void> _onUserDidRemoveFromServer() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidRemoveFromServer();
+    }
+  }
+
+  Future<void> _onUserDidForbidByServer() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidForbidByServer();
+    }
+  }
+
+  Future<void> _onUserDidChangePassword() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidChangePassword();
+    }
+  }
+
+  Future<void> _onUserDidLoginTooManyDevice() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidLoginTooManyDevice();
+    }
+  }
+
+  Future<void> _onUserKickedByOtherDevice() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserKickedByOtherDevice();
+    }
+  }
+
+  Future<void> _onUserAuthenticationFailed() async {
+    for (var listener in _connectionListeners) {
+      listener.onDisconnected();
     }
   }
 

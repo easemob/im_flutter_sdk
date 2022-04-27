@@ -346,9 +346,33 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
             @Override
             public void onDisconnected(int errorCode) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("errorCode", errorCode);
-                post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, data));
+                if (errorCode == 206) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
+                }else if (errorCode == 207) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidRemoveFromServer, null));
+                }else if (errorCode == 305) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidForbidByServer, null));
+                }else if (errorCode == 216) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidChangePassword, null));
+                }else if (errorCode == 214) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginTooManyDevice, null));
+                }
+                else if (errorCode == 217) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserKickedByOtherDevice, null));
+                }
+                else if (errorCode == 202) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserAuthenticationFailed, null));
+                }
+                else {
+                    post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, null));
+                }
             }
 
             @Override
