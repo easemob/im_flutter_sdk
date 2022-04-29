@@ -3,21 +3,17 @@ package com.easemob.im_flutter_sdk;
 import com.hyphenate.EMConversationListener;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
-import com.hyphenate.chat.*;
-import com.hyphenate.chat.EMConversation.EMSearchDirection;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMConversation.EMConversationType;
-
+import com.hyphenate.chat.EMConversation.EMSearchDirection;
 import com.hyphenate.chat.EMCursorResult;
+import com.hyphenate.chat.EMGroupReadAck;
 import com.hyphenate.chat.EMMessage;
-import com.hyphenate.chat.adapter.message.EMAMessage;
 import com.hyphenate.exceptions.HyphenateException;
-
-import java.util.ArrayList;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -30,13 +26,10 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler {
 
     private MethodChannel messageChannel;
-
-
     EMChatManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         messageChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.easemob.im/em_message", JSONMethodCodec.INSTANCE);
@@ -85,7 +78,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 searchChatMsgFromDB(param, EMSDKMethod.searchChatMsgFromDB, result);
             } else if (EMSDKMethod.getMessage.equals(call.method)) {
                 getMessage(param, EMSDKMethod.getMessage, result);
-            } else if (EMSDKMethod.asyncFetchGroupAcks.equals(call.method)){
+            } else if (EMSDKMethod.asyncFetchGroupAcks.equals(call.method)) {
                 asyncFetchGroupMessageAckFromServer(param, EMSDKMethod.asyncFetchGroupAcks, result);
             } else {
                 super.onMethodCall(call, result);
@@ -206,11 +199,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         String msgId = param.getString("msg_id");
         String to = param.getString("group_id");
         String content = null;
-        if(param.has("content")) {
+        if (param.has("content")) {
             content = param.getString("content");
         }
         String finalContent = content;
-        asyncRunnable(()->{
+        asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatManager().ackGroupMessageRead(to, msgId, finalContent);
             } catch (HyphenateException e) {
@@ -240,7 +233,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 if (msg != null) {
                     EMClient.getInstance().chatManager().recallMessage(msg);
                 }
-                onSuccess(result, channelName, true);               
+                onSuccess(result, channelName, true);
             } catch (HyphenateException e) {
                 onError(result, e);
             }

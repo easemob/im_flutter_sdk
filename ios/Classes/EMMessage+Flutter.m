@@ -8,9 +8,9 @@
 #import "EMMessage+Flutter.h"
 
 
-@implementation EMMessage (Flutter)
+@implementation EMChatMessage (Flutter)
 
-+ (EMMessage *)fromJson:(NSDictionary *)aJson
++ (EMChatMessage *)fromJson:(NSDictionary *)aJson
 {
     EMMessageBody *body = [EMMessageBody fromJson:aJson[@"body"]];
     if (!body) {
@@ -27,7 +27,7 @@
     NSString *conversationId = aJson[@"conversationId"];
     
 
-    EMMessage *msg = [[EMMessage alloc] initWithConversationID:conversationId
+    EMChatMessage *msg = [[EMChatMessage alloc] initWithConversationID:conversationId
                                                           from:from
                                                             to:to
                                                           body:body

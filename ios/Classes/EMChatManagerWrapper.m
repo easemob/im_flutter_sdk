@@ -15,9 +15,8 @@
 #import "EMCursorResult+Flutter.h"
 
 
-@interface EMChatManagerWrapper () <EMChatManagerDelegate>
+@interface EMChatManagerWrapper () <EMChatManagerDelegate,EMLocalNotificationDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
-
 @end
 
 @implementation EMChatManagerWrapper
@@ -54,7 +53,7 @@
                  channelName:EMMethodKeyAckMessageRead
                       result:result];
     } else if ([EMMethodKeyAckGroupMessageRead isEqualToString:call.method]) {
-        [self ackMessageRead:call.arguments
+        [self ackGroupMessageRead:call.arguments
                  channelName:EMMethodKeyAckMessageRead
                       result:result];
     } else if ([EMMethodKeyAckConversationRead isEqualToString:call.method]) {
@@ -144,7 +143,7 @@
              result:(FlutterResult)result {
     
     __weak typeof(self) weakSelf = self;
-    __block EMMessage *msg = [EMMessage fromJson:param];
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param];
     
     [EMClient.sharedClient.chatManager sendMessage:msg
                                           progress:^(int progress) {
@@ -153,7 +152,7 @@
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
         }];
-    } completion:^(EMMessage *message, EMError *error) {
+    } completion:^(EMChatMessage *message, EMError *error) {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
                                         arguments:@{
@@ -181,7 +180,7 @@
                result:(FlutterResult)result {
     
     __weak typeof(self) weakSelf = self;
-    __block EMMessage *msg = [EMMessage fromJson:param];
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param];
     
     [EMClient.sharedClient.chatManager resendMessage:msg
                                             progress:^(int progress) {
@@ -190,7 +189,7 @@
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
         }];
-    } completion:^(EMMessage *message, EMError *error) {
+    } completion:^(EMChatMessage *message, EMError *error) {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
                                         arguments:@{
@@ -271,7 +270,7 @@
                result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msg_id"];
-    EMMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
+    EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     if (!msg) {
         EMError *error = [EMError errorWithDescription:@"The message was not found" code:EMErrorMessageInvalid];
         [weakSelf wrapperCallBack:result
@@ -295,7 +294,7 @@
                          result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msg_id"];
-    EMMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
+    EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
@@ -359,9 +358,9 @@
               channelName:(NSString *)aChannelName
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    EMMessage *msg = [EMMessage fromJson:param[@"message"]];
+    EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
     [EMClient.sharedClient.chatManager updateMessage:msg
-                                          completion:^(EMMessage *aMessage, EMError *aError)
+                                          completion:^(EMChatMessage *aMessage, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -377,7 +376,7 @@
     NSArray *dictAry = param[@"messages"];
     NSMutableArray *messages = [NSMutableArray array];
     for (NSDictionary *dict in dictAry) {
-        [messages addObject:[EMMessage fromJson:dict]];
+        [messages addObject:[EMChatMessage fromJson:dict]];
     }
     [[EMClient sharedClient].chatManager importMessages:messages
                                              completion:^(EMError *aError)
@@ -394,8 +393,8 @@
                channelName:(NSString *)aChannelName
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    __block EMMessage *msg = [EMMessage fromJson:param[@"message"]];
-    EMMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
     [EMClient.sharedClient.chatManager downloadMessageAttachment:needDownMSg
                                                         progress:^(int progress)
      {
@@ -404,7 +403,7 @@
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
         }];
-    } completion:^(EMMessage *message, EMError *error)
+    } completion:^(EMChatMessage *message, EMError *error)
      {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
@@ -432,8 +431,8 @@
               channelName:(NSString *)aChannelName
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    __block EMMessage *msg = [EMMessage fromJson:param[@"message"]];
-    EMMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
     [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMSg
                                                        progress:^(int progress)
      {
@@ -442,7 +441,7 @@
             @"progress":@(progress),
             @"localTime":@(msg.localTime)
         }];
-    } completion:^(EMMessage *message, EMError *error)
+    } completion:^(EMChatMessage *message, EMError *error)
      {
         if (error) {
             [weakSelf.messageChannel invokeMethod:EMMethodKeyOnMessageError
@@ -549,6 +548,26 @@
     }];
 }
 
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+{
+//    if (gMainController) {
+//        [gMainController jumpToChatList];
+//    }
+    [[EMClient sharedClient] application:application didReceiveRemoteNotification:userInfo];
+}
+
+- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+{
+//    if (gMainController) {
+//        [gMainController didReceiveLocalNotification:notification];
+//    }
+}
+- (void)emDidRecivePushSilentMessage:(NSDictionary *)messageDic
+{
+    NSLog(@"emDidRecivePushSilentMessage : %@",messageDic);
+}
+
+
 - (void)fetchGroupReadAck:(NSDictionary *)param
               channelName:(NSString *)aChannelName
                    result:(FlutterResult) result {
@@ -584,7 +603,7 @@
                                                     completion:^(NSArray *aMessages, EMError *aError)
      {
         NSMutableArray *msgList = [NSMutableArray array];
-        for (EMMessage *msg in aMessages) {
+        for (EMChatMessage *msg in aMessages) {
             [msgList addObject:[msg toJson]];
         }
         
@@ -622,6 +641,43 @@
                        object:@(true)];
 }
 
+//注册远程通知
+- (void)_registerRemoteNotification
+{
+    UIApplication *application = [UIApplication sharedApplication];
+    application.applicationIconBadgeNumber = 0;
+    
+    if (NSClassFromString(@"UNUserNotificationCenter")) {
+        [[EMLocalNotificationManager sharedManager] launchWithDelegate:self];
+        
+        [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert completionHandler:^(BOOL granted, NSError *error) {
+            if (granted) {
+#if !TARGET_IPHONE_SIMULATOR
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [application registerForRemoteNotifications];
+                });
+#endif
+            }
+        }];
+        return;
+    }
+    
+    if([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        UIUserNotificationType notificationTypes = UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationTypes categories:nil];
+        [application registerUserNotificationSettings:settings];
+    }
+    
+#if !TARGET_IPHONE_SIMULATOR
+    if ([application respondsToSelector:@selector(registerForRemoteNotifications)]) {
+        [application registerForRemoteNotifications];
+    } else {
+        UIRemoteNotificationType notificationTypes = UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert;
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:notificationTypes];
+    }
+#endif
+}
+
 
 #pragma mark - EMChatManagerDelegate
 
@@ -639,7 +695,7 @@
 
 - (void)messagesDidReceive:(NSArray *)aMessages {
     NSMutableArray *msgList = [NSMutableArray array];
-    for (EMMessage *msg in aMessages) {
+    for (EMChatMessage *msg in aMessages) {
         
         [msgList addObject:[msg toJson]];
     }
@@ -649,7 +705,7 @@
 
 - (void)cmdMessagesDidReceive:(NSArray *)aCmdMessages {
     NSMutableArray *cmdMsgList = [NSMutableArray array];
-    for (EMMessage *msg in aCmdMessages) {
+    for (EMChatMessage *msg in aCmdMessages) {
         [cmdMsgList addObject:[msg toJson]];
     }
     
@@ -659,7 +715,7 @@
 
 - (void)messagesDidRead:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
-    for (EMMessage *msg in aMessages) {
+    for (EMChatMessage *msg in aMessages) {
         NSDictionary *json = [msg toJson];
         [list addObject:json];
         [self.messageChannel invokeMethod:EMMethodKeyOnMessageReadAck
@@ -671,7 +727,7 @@
 
 - (void)messagesDidDeliver:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
-    for (EMMessage *msg in aMessages) {
+    for (EMChatMessage *msg in aMessages) {
         NSDictionary *json = [msg toJson];
         [list addObject:json];
         [self.messageChannel invokeMethod:EMMethodKeyOnMessageDeliveryAck
@@ -684,7 +740,7 @@
 
 - (void)messagesDidRecall:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
-    for (EMMessage *msg in aMessages) {
+    for (EMChatMessage *msg in aMessages) {
         [list addObject:[msg toJson]];
     }
     
@@ -692,19 +748,19 @@
                      arguments:list];
 }
 
-- (void)messageStatusDidChange:(EMMessage *)aMessage
+- (void)messageStatusDidChange:(EMChatMessage *)aMessage
                          error:(EMError *)aError {
     [self.messageChannel invokeMethod:EMMethodKeyOnMessageStatusChanged
                             arguments:@{@"message":[aMessage toJson]}];
 }
 
 // TODO: 安卓未找到对应回调
-- (void)messageAttachmentStatusDidChange:(EMMessage *)aMessage
+- (void)messageAttachmentStatusDidChange:(EMChatMessage *)aMessage
                                    error:(EMError *)aError {
     
 }
 
-- (void)groupMessageDidRead:(EMMessage *)aMessage groupAcks:(NSArray *)aGroupAcks {
+- (void)groupMessageDidRead:(EMChatMessage *)aMessage groupAcks:(NSArray *)aGroupAcks {
     NSMutableArray *list = [NSMutableArray array];
     for (EMGroupMessageAck *ack in aGroupAcks) {
         NSDictionary *json = [ack toJson];

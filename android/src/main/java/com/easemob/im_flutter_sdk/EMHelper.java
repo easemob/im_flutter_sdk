@@ -5,7 +5,7 @@ import android.content.Context;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
-import com.hyphenate.chat.EMContact;
+//import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
@@ -128,21 +128,21 @@ class EMOptionsHelper {
     }
 }
 
-class EMContactHelper {
-    static EMContact fromJson(JSONObject json) throws JSONException {
-        EMContact contact = new EMContact(json.getString("eid"));
-        contact.setNickname(json.getString("nickname"));
-        return contact;
-    }
-
-    static Map<String, Object> toJson(EMContact contact) {
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("eid", contact.getUsername());
-        data.put("nickname", contact.getNickname());
-        return data;
-    }
-}
+//class EMContactHelper {
+//    static EMContact fromJson(JSONObject json) throws JSONException {
+//        EMContact contact = new EMContact(json.getString("eid"));
+//        contact.setNickname(json.getString("nickname"));
+//        return contact;
+//    }
+//
+//    static Map<String, Object> toJson(EMContact contact) {
+//
+//        Map<String, Object> data = new HashMap<>();
+//        data.put("eid", contact.getUsername());
+//        data.put("nickname", contact.getNickname());
+//        return data;
+//    }
+//}
 
 class EMGroupHelper {
     static Map<String, Object> toJson(EMGroup group) {

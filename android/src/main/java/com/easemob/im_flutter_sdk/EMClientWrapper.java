@@ -22,8 +22,6 @@ import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
-
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,7 +48,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
-
         JSONObject param = (JSONObject)call.arguments;
         try {
             if (EMSDKMethod.init.equals(call.method)) {

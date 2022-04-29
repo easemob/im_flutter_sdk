@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EMMessage (Flutter) <EaseToFlutterJson>
-+ (EMMessage *)fromJson:(NSDictionary *)aJson;
+@interface EMChatMessage (Flutter) <EaseToFlutterJson>
++ (EMChatMessage *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 @end
 
