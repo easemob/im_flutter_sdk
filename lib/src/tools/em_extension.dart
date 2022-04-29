@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
+
 import '../models/em_group_shared_file.dart';
 import 'dart:convert' as convert;
 
 Type typeOf<T>() => T;
+
+typedef MapResultCallback<T> = T Function(dynamic obj);
 
 extension MapExtension on Map {
   bool boolValue(String key) {
@@ -141,6 +145,19 @@ extension MapExtension on Map {
     }
     if (ret.length == 0) {
       ret = defaultValue;
+    }
+    return ret;
+  }
+
+  List<T>? getList<T>(String key, {valueCallback: MapResultCallback}) {
+    List<String> list = this[key];
+    List<T>? ret;
+    List<T> typeList = [];
+    for (var item in list) {
+      typeList.add(valueCallback(item));
+    }
+    if (typeList.length > 0) {
+      ret = typeList;
     }
     return ret;
   }

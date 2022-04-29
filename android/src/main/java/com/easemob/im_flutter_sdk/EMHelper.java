@@ -23,6 +23,7 @@ import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMPageResult;
+import com.hyphenate.chat.EMPresence;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMTextMessageBody;
@@ -1016,36 +1017,38 @@ class EMCursorResultHelper {
     static Map<String, Object> toJson(EMCursorResult result) {
         Map<String, Object> data = new HashMap<>();
         data.put("cursor", result.getCursor());
-        List list = (List) result.getData();
         List<Object> jsonList = new ArrayList<>();
-        for (Object obj : list) {
-            if (obj instanceof EMMessage) {
-                jsonList.add(EMMessageHelper.toJson((EMMessage) obj));
-            }
+        if (result.getData() != null){
+            List list = (List) result.getData();
+            for (Object obj : list) {
+                if (obj instanceof EMMessage) {
+                    jsonList.add(EMMessageHelper.toJson((EMMessage) obj));
+                }
 
-            if (obj instanceof EMGroup) {
-                jsonList.add(EMGroupHelper.toJson((EMGroup) obj));
-            }
+                if (obj instanceof EMGroup) {
+                    jsonList.add(EMGroupHelper.toJson((EMGroup) obj));
+                }
 
-            if (obj instanceof EMChatRoom) {
-                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
-            }
+                if (obj instanceof EMChatRoom) {
+                    jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
+                }
 
-            if (obj instanceof EMGroupReadAck) {
-                jsonList.add(EMGroupAckHelper.toJson((EMGroupReadAck) obj));
-            }
+                if (obj instanceof EMGroupReadAck) {
+                    jsonList.add(EMGroupAckHelper.toJson((EMGroupReadAck) obj));
+                }
 
-            if (obj instanceof String) {
-                jsonList.add(obj);
-            }
+                if (obj instanceof String) {
+                    jsonList.add(obj);
+                }
 
-            if (obj instanceof EMGroupInfo) {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId());
-                if (group != null) {
-                    jsonList.add(EMGroupHelper
-                            .toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
-                } else {
-                    jsonList.add(EMGroupInfoHelper.toJson((EMGroupInfo) obj));
+                if (obj instanceof EMGroupInfo) {
+                    EMGroup group = EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId());
+                    if (group != null) {
+                        jsonList.add(EMGroupHelper
+                                .toJson(EMClient.getInstance().groupManager().getGroup(((EMGroupInfo) obj).getGroupId())));
+                    } else {
+                        jsonList.add(EMGroupInfoHelper.toJson((EMGroupInfo) obj));
+                    }
                 }
             }
         }
@@ -1060,19 +1063,21 @@ class EMPageResultHelper {
     static Map<String, Object> toJson(EMPageResult result) {
         Map<String, Object> data = new HashMap<>();
         data.put("count", result.getPageCount());
-        List list = (List) result.getData();
         List<Map> jsonList = new ArrayList<>();
-        for (Object obj : list) {
-            if (obj instanceof EMMessage) {
-                jsonList.add(EMMessageHelper.toJson((EMMessage) obj));
-            }
+        if (result.getData() != null){
+            List list = (List) result.getData();
+            for (Object obj : list) {
+                if (obj instanceof EMMessage) {
+                    jsonList.add(EMMessageHelper.toJson((EMMessage) obj));
+                }
 
-            if (obj instanceof EMGroup) {
-                jsonList.add(EMGroupHelper.toJson((EMGroup) obj));
-            }
+                if (obj instanceof EMGroup) {
+                    jsonList.add(EMGroupHelper.toJson((EMGroup) obj));
+                }
 
-            if (obj instanceof EMChatRoom) {
-                jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
+                if (obj instanceof EMChatRoom) {
+                    jsonList.add(EMChatRoomHelper.toJson((EMChatRoom) obj));
+                }
             }
         }
         data.put("list", jsonList);
@@ -1158,4 +1163,18 @@ class EMUserInfoHelper {
 
         return data;
     }
+}
+
+class EMPresenceHelper {
+
+    static Map<String, Object> toJson(EMPresence presence) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("publisher", presence.getPublisher());
+        data.put("statusDescription", presence.getExt());
+        data.put("lastTime", presence.getLatestTime());
+        data.put("expirytime", presence.getExpiryTime());
+        data.put("statusDetails", presence.getStatusList());
+        return null;
+    }
+
 }

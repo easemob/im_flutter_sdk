@@ -4,7 +4,7 @@ import com.hyphenate.EMGroupChangeListener;
 import com.hyphenate.chat.EMClient;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.plugin.common.JSONMethodCodec;
+
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import com.hyphenate.chat.EMCursorResult;
@@ -13,7 +13,6 @@ import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.exceptions.HyphenateException;
-import com.hyphenate.util.EMLog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,7 +26,6 @@ import java.util.Map;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.PluginRegistry;
 
 public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandler {
 
@@ -785,16 +783,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         if (param.has("reason")){
             reason = param.getString("reason");
         }
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
 
-        EMClient.getInstance().groupManager().asyncApplyJoinToGroup(groupId, reason, callBack);
+        EMClient.getInstance().groupManager().asyncApplyJoinToGroup(groupId, reason, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void acceptJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
