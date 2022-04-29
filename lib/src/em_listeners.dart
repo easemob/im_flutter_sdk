@@ -912,3 +912,5 @@ abstract class EMChatManagerListener {
   ///
   void onConversationRead(String from, String to) {}
 }
+
+class EMPresenceManagerDelegate {}

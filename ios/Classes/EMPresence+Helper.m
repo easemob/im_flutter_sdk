@@ -10,9 +10,9 @@
 @implementation EMPresence (Helper)
 
 - (nonnull NSDictionary *)toJson {
-    NSMutableArray *details = [NSMutableArray array];
-    for (id<EaseModeToJson> detail in self.statusDetails) {
-        [details addObject:[detail toJson]];
+    NSMutableDictionary *details = [NSMutableDictionary dictionary];
+    for (EMPresenceStatusDetail *detail in self.statusDetails) {
+        details[detail.device] = @(detail.status);
     }
     return @{
         @"publisher": self.publisher,
@@ -20,22 +20,6 @@
         @"statusDescription": self.statusDescription,
         @"lastTime": @(self.lastTime),
         @"expirytime": @(self.expirytime)
-    };
-}
-
-@end
-
-@interface EMPresenceStatusDetail (Helper)  <EaseModeToJson>
-
-@end
-
-
-@implementation EMPresenceStatusDetail (Helper)
-
-- (nonnull NSDictionary *)toJson {
-    return @{
-        @"device": self.device,
-        @"statue": @(self.status)
     };
 }
 

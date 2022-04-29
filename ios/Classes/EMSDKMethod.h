@@ -41,7 +41,6 @@ static NSString *const ChatOnUserKickedByOtherDevice = @"onUserKickedByOtherDevi
 static NSString *const ChatOnUserAuthenticationFailed = @"onUserAuthenticationFailed";
 
 static NSString *const ChatSendDataToFlutter = @"onSendDataToFlutter";
-
 static NSString *const ChatOnTokenWillExpire = @"onTokenWillExpire";
 static NSString *const ChatOnTokenDidExpire = @"onTokenDidExpire";
 
@@ -103,6 +102,9 @@ static NSString *const ChatOnMessageError = @"onMessageError";
 static NSString *const ChatOnMessageReadAck = @"onMessageReadAck";
 static NSString *const ChatOnMessageDeliveryAck = @"onMessageDeliveryAck";
 
+
+#pragma mark - EMPresenceManagerDelegate
+static NSString *const ChatOnPresenceStatusChanged = @"onPresenceStatusChanged";
 
 #pragma mark - EMConversationWrapper
 

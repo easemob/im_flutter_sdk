@@ -7,6 +7,7 @@
 
 #import "EMPresenceManagerWrapper.h"
 #import <HyphenateChat/HyphenateChat.h>
+#import "EMSDKMethod.h"
 #import "NSArray+Helper.h"
 
 @interface EMPresenceManagerWrapper () <EMPresenceManagerDelegate>
@@ -76,7 +77,8 @@
     NSArray *members = param[@"members"];
 
     __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.presenceManager unsubscribe:members completion:^(EMError *error)
+    [EMClient.sharedClient.presenceManager unsubscribe:members
+                                            completion:^(EMError *error)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -126,7 +128,9 @@
 
 #pragma mark - EMPresenceManagerDelegate
 - (void)presenceStatusDidChanged:(NSArray<EMPresence*>*)presences {
-    
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"presences"] = [presences toJsonArray];
+    [self.channel invokeMethod:ChatOnPresenceStatusChanged arguments:data];
 }
 
 @end

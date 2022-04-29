@@ -97,6 +97,9 @@ class ChatMethodKeys {
   static const String onMessageReadAck = "onMessageReadAck";
   static const String onMessageDeliveryAck = "onMessageDeliveryAck";
 
+  /// EMPresenceManagerDelegate
+  static const String onPresenceStatusChanged = "onPresenceStatusChanged";
+
   /// EMConversation
   static const String getUnreadMsgCount = "getUnreadMsgCount";
   static const String markAllMessagesAsRead = "markAllMessagesAsRead";
