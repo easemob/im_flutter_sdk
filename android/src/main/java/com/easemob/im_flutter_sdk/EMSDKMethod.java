@@ -218,11 +218,8 @@ public class EMSDKMethod {
     static final String updateUserPushService = "updateUserPushService";
     static final String getNoPushUsers = "getNoPushUsers";
 
-
     static final String updateHMSPushToken = "updateHMSPushToken";
     static final String updateFCMPushToken = "updateFCMPushToken";
-
-
 
     /// EMUserInfoManager 
     static final String updateOwnUserInfo = "updateOwnUserInfo";
@@ -230,7 +227,15 @@ public class EMSDKMethod {
     static final String fetchUserInfoById = "fetchUserInfoById";
     static final String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
 
+    /// EMPresenceManager methods
+    static final String presenceWithDescription = "publishPresenceWithDescription";
+    static final String presenceSubscribe = "presenceSubscribe";
+    static final String presenceUnsubscribe = "presenceUnsubscribe";
+    static final String fetchSubscribedMembersWithPageNum = "fetchSubscribedMembersWithPageNum";
+    static final String fetchPresenceStatus = "fetchPresenceStatus";
 
+    /// EMPresenceManagerListener
+    static final String onPresenceStatusChanged = "onPresenceStatusChanged";
 
     /// HandleAction
     static final String startCallback = "startCallback";

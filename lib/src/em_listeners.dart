@@ -1,4 +1,5 @@
 import '../im_flutter_sdk.dart';
+import 'models/em_presence.dart';
 
 ///
 /// The chat connection listener.
@@ -913,4 +914,6 @@ abstract class EMChatManagerListener {
   void onConversationRead(String from, String to) {}
 }
 
-class EMPresenceManagerDelegate {}
+class EMPresenceManagerListener {
+  void onPresenceStatusChanged(List<EMPresence> list) {}
+}

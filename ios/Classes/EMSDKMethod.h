@@ -237,6 +237,13 @@ static NSString *const ChatFetchUserInfoById = @"fetchUserInfoById";
 static NSString *const ChatFetchUserInfoByIdWithType = @"fetchUserInfoByIdWithType";
 
 
+#pragma make - EMPresenceManagerWrapper
+static NSString *const ChatPublishPresenceWithDescription = @"publishPresenceWithDescription";
+static NSString *const ChatPresenceSubscribe = @"presenceSubscribe";
+static NSString *const ChatPresenceUnsubscribe = @"presenceUnsubscribe";
+static NSString *const ChatFetchSubscribedMembersWithPageNum = @"fetchSubscribedMembersWithPageNum";
+static NSString *const ChatFetchPresenceStatus = @"fetchPresenceStatus";
+
 #pragma mark - HandleAction
 static NSString *const ChatStartCallback = @"startCallback";
 

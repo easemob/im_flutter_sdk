@@ -1,26 +1,21 @@
 buildscript {
     ext.kotlin_version = '1.5.31'
     repositories {
-        // google()
-        // mavenCentral()
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        google()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        // classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
     repositories {
-        // google()
-        // mavenCentral()
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        google()
+        mavenCentral()
     }
 }
 
