@@ -246,6 +246,15 @@ class ChatMethodKeys {
   static const String fetchUserInfoById = "fetchUserInfoById";
   static const String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
 
+  /// EMPresenceManager methods
+  static const String presenceWithDescription =
+      "publishPresenceWithDescription";
+  static const String presenceSubscribe = "presenceSubscribe";
+  static const String presenceUnsubscribe = "presenceUnsubscribe";
+  static const String fetchSubscribedMembersWithPageNum =
+      "fetchSubscribedMembersWithPageNum";
+  static const String fetchPresenceStatus = "fetchPresenceStatus";
+
   /// HandleAction
   static const String startCallback = "startCallback";
 }

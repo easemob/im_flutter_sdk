@@ -31,8 +31,41 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
                   result:(FlutterResult)result {
-    [super handleMethodCall:call result:result];
+    if([ChatPublishPresenceWithDescription isEqualToString:call.method]) {
+        [self publishPresenceWithDescription:call.arguments
+                                 channelName:call.method
+                                      result:result];
+    }
+    else if ([ChatPresenceSubscribe isEqualToString:call.method])
+    {
+        [self subscribe:call.arguments
+            channelName:call.method
+                 result:result];
+    }
+    else if ([ChatPresenceUnsubscribe isEqualToString:call.method])
+    {
+        [self unsubscribe:call.arguments
+              channelName:call.method
+                   result:result];
+    }
+    else if ([ChatFetchSubscribedMembersWithPageNum isEqualToString:call.method])
+    {
+        [self fetchSubscribedMembersWithPageNum:call.arguments
+                                    channelName:call.method
+                                         result:result];
+    }
+    else if ([ChatFetchPresenceStatus isEqualToString:call.method])
+    {
+        [self fetchPresenceStatus:call.arguments
+                      channelName:call.method
+                           result:result];
+    }
+    else
+    {
+        [super handleMethodCall:call result:result];
+    }
 }
+
 - (void)publishPresenceWithDescription:(NSDictionary *)param
                            channelName:(NSString *)aChannelName
                                 result:(FlutterResult)result
@@ -57,7 +90,7 @@
 {
     NSArray *members = param[@"members"];
     NSInteger expiry = [param[@"expiry"] integerValue];
-
+    
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient.presenceManager subscribe:members
                                               expiry:expiry
@@ -71,11 +104,11 @@
 }
 
 - (void)unsubscribe:(NSDictionary *)param
-      channelName:(NSString *)aChannelName
-           result:(FlutterResult)result
+        channelName:(NSString *)aChannelName
+             result:(FlutterResult)result
 {
     NSArray *members = param[@"members"];
-
+    
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient.presenceManager unsubscribe:members
                                             completion:^(EMError *error)
@@ -89,8 +122,8 @@
 
 
 - (void)fetchSubscribedMembersWithPageNum:(NSDictionary *)param
-      channelName:(NSString *)aChannelName
-           result:(FlutterResult)result
+                              channelName:(NSString *)aChannelName
+                                   result:(FlutterResult)result
 {
     int pageNum = [param[@"pageNum"] intValue];
     int pageSize = [param[@"pageSize"] intValue];
@@ -113,7 +146,7 @@
                      result:(FlutterResult)result
 {
     NSArray *members = param[@"members"];
-
+    
     __weak typeof(self)weakSelf = self;
     [EMClient.sharedClient.presenceManager fetchPresenceStatus:members
                                                     completion:^(NSArray<EMPresence *> *presences, EMError *error)

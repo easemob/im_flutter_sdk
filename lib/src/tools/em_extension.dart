@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/src/models/em_presence.dart';
 
 import '../models/em_group_shared_file.dart';
 import 'dart:convert' as convert;
@@ -54,6 +54,13 @@ extension MapExtension on Map {
           fileList.add(file);
         }
         return fileList as List<T>;
+      } else if (typeOf<T>().toString() == "EMPresence") {
+        List<EMPresence> presenceList = [];
+        for (var item in obj) {
+          var presence = EMPresence.fromJson(item);
+          presenceList.add(presence);
+        }
+        return presenceList as List<T>;
       }
     }
     return null;

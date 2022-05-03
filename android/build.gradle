@@ -3,11 +3,8 @@ version '1.0-SNAPSHOT'
 
 buildscript {
     repositories {
-        // google()
-        // mavenCentral()
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        google()
+        mavenCentral()
     }
 
     dependencies {
@@ -18,11 +15,8 @@ buildscript {
 
 allprojects {
     repositories {
-        // google()
-        // mavenCentral()
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
-        maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'}
-        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        google()
+        mavenCentral()
     }
 }
 
