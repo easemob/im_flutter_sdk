@@ -84,6 +84,9 @@ static NSString *const ChatGetMessage = @"getMessage";
 static NSString *const ChatAsyncFetchGroupAcks = @"asyncFetchGroupAcks";
 static NSString *const ChatDeleteRemoteConversation = @"deleteRemoteConversation";
 
+static NSString *const ChatTranslateMessage = @"translateMessage";
+static NSString *const ChatFetchSupportedLanguages = @"fetchSupportLanguages";
+
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
 static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";

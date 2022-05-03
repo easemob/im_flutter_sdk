@@ -78,6 +78,9 @@ class ChatMethodKeys {
   static const String asyncFetchGroupAcks = "asyncFetchGroupAcks";
   static const String deleteRemoteConversation = "deleteRemoteConversation";
 
+  static const String translateMessage = "translateMessage";
+  static const String fetchSupportLanguages = "fetchSupportLanguages";
+
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";

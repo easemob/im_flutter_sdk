@@ -40,8 +40,15 @@ class EMPresenceManager {
     }
   }
 
+  ///
+  /// Publishes a custom presence state.
+  ///
+  /// Param [description] The extension information of the presence state. It can be set as nil.
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
+  ///
   void publishPresenceWithDescription({
-    required String description,
+    String? description,
   }) async {
     Map req = {'desc': description};
     Map result = await _channel.invokeMethod(
@@ -53,6 +60,17 @@ class EMPresenceManager {
     }
   }
 
+  ///
+  /// Subscribes to a user's presence states. If the subscription succeeds, the subscriber will receive the callback when the user's presence state changes.
+  ///
+  /// Param [members] The list of IDs of users whose presence states you want to subscribe to.
+  ///
+  /// Param [expiry] The expiration time of the presence subscription.
+  ///
+  /// **Return** Which contains IDs of users whose presence states you have subscribed to.
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
+  ///
   Future<List<EMPresence>?> subscribe({
     required List<String> members,
     required int expiry,
@@ -72,6 +90,13 @@ class EMPresenceManager {
     }
   }
 
+  ///
+  /// Unsubscribes from a user's presence states.
+  ///
+  /// Param [members] The array of IDs of users whose presence states you want to unsubscribe from.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   void unSubscribe({
     required List<String> members,
   }) async {
@@ -85,8 +110,19 @@ class EMPresenceManager {
     }
   }
 
+  ///
+  /// Uses pagination to get a list of users whose presence states you have subscribed to.
+  ///
+  /// Param [pageNum] The current page number, starting from 1.
+  ///
+  /// Param [pageSize] The number of subscribed users on each page.
+  ///
+  /// **Return** Which contains IDs of users whose presence states you have subscribed to. Returns null if you subscribe to no user's presence state.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<List<String>?> fetchSubscribedMembers({
-    int pageNum = 0,
+    int pageNum = 1,
     int pageSize = 20,
   }) async {
     Map req = {'pageNum': pageNum, "pageSize": pageSize};
@@ -94,17 +130,26 @@ class EMPresenceManager {
         ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
     try {
       EMError.hasErrorFromResult(result);
-      List<String> list = [];
+      List<String>? list = [];
       result[ChatMethodKeys.fetchSubscribedMembersWithPageNum]
           ?.forEach((element) {
         list.add(element);
       });
-      return list;
+      return list.length > 0 ? list : null;
     } on EMError catch (e) {
       throw e;
     }
   }
 
+  ///
+  /// Gets the current presence state of users.
+  ///
+  /// Param [members] The array of IDs of users whose current presence state you want to check.
+  ///
+  /// **Return** Which contains the users whose presence state you have subscribed to.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<List<EMPresence>?> fetchPresenceStatus({
     required List<String> members,
   }) async {
@@ -117,7 +162,7 @@ class EMPresenceManager {
       result[ChatMethodKeys.fetchPresenceStatus]?.forEach((element) {
         list.add(EMPresence.fromJson(element));
       });
-      return list;
+      return list.length > 0 ? list : null;
     } on EMError catch (e) {
       throw e;
     }
