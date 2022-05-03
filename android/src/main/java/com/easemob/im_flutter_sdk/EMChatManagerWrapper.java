@@ -89,6 +89,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 asyncFetchGroupMessageAckFromServer(param, call.method, result);
             } else if (EMSDKMethod.deleteRemoteConversation.equals(call.method)){
                 deleteRemoteConversation(param, call.method, result);
+            } else if (EMSDKMethod.translateMessage.equals(call.method)) {
+                translateMessage(param, call.method, result);
+            } else if (EMSDKMethod.fetchSupportedLanguages.equals(call.method)) {
+                fetchSupportedLanguages(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -504,6 +508,38 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMConversationType type = typeFromInt(param.getInt("conversationType"));
         boolean isDeleteRemoteMessage = param.getBoolean("isDeleteRemoteMessage");
         EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void translateMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
+        List<String> list = new ArrayList<String>();
+        if (param.has("languages")){
+            JSONArray array = param.getJSONArray("languages");
+            for (int i = 0; i < array.length(); i++) {
+                list.add(array.getString(i));
+            }
+        }
+        EMClient.getInstance().chatManager().translateMessage(msg, list, new EMValueWrapperCallBack<EMMessage>(result, channelName){
+            @Override
+            public void onSuccess(EMMessage object) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("message", EMMessageHelper.toJson(object));
+                updateObject(data);
+            }
+        });
+    }
+
+    private void fetchSupportedLanguages(JSONObject param, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().chatManager().fetchSupportLanguages(new EMValueWrapperCallBack<List<EMLanguage>>(result, channelName){
+            @Override
+            public void onSuccess(List<EMLanguage> object) {
+                List<Map> list = new ArrayList<>();
+                for (EMLanguage language : object) {
+                    list.add(EMLanguageHelper.toJson(language));
+                }
+                updateObject(list);
+            }
+        });
     }
 
 

@@ -267,12 +267,15 @@
 @implementation EMTextMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson {
-    return [[EMTextMessageBody alloc] initWithText:aJson[@"content"]];
+    EMTextMessageBody *body = [[EMTextMessageBody alloc] initWithText:aJson[@"content"]];
+    body.targetLanguages = aJson[@"targetLanguages"];
+    return body;
 }
 
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"content"] = self.text;
+    ret[@"targetLanguages"] = self.targetLanguages;
     return ret;
 }
 

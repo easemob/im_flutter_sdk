@@ -914,6 +914,14 @@ abstract class EMChatManagerListener {
   void onConversationRead(String from, String to) {}
 }
 
+///
+/// The delegate protocol that defines presence callbacks.
+///
 class EMPresenceManagerListener {
+  ///
+  /// Occurs when the presence state of a subscribed user changes.
+  ///
+  /// Param [list] The new presence state of a subscribed user.
+  ///
   void onPresenceStatusChanged(List<EMPresence> list) {}
 }

@@ -2,6 +2,7 @@ import "dart:async";
 
 import 'package:flutter/services.dart';
 import 'internal/em_transform_tools.dart';
+import 'models/em_translate_language.dart';
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
@@ -656,6 +657,56 @@ class EMChatManager {
         ChatMethodKeys.deleteRemoteConversation, req);
 
     EMError.hasErrorFromResult(data);
+  }
+
+  ///
+  /// Translate a message.
+  ///
+  /// Param [msg] The message object
+  ///
+  /// Param [languages] The target languages to translate
+  ///
+  /// **Return** Translated Message
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<EMMessage> translateMessage({
+    required EMMessage msg,
+    required List<String> languages,
+  }) async {
+    Map req = {};
+    req["message"] = msg.toJson();
+    req["languages"] = languages;
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.translateMessage, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMMessage.fromJson(result["message"]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Fetch all languages what the translate service support
+  ///
+  /// **Return** Supported languages
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<List<EMTranslateLanguage>?> fetchSupportedLanguages() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.fetchSupportLanguages);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMTranslateLanguage>? list = [];
+      result[ChatMethodKeys.fetchSupportLanguages]?.forEach((element) {
+        list.add(EMTranslateLanguage.fromJson(element));
+      });
+      return list.length > 0 ? list : null;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   Future<void> _onMessagesReceived(List messages) async {

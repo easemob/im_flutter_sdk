@@ -7,7 +7,7 @@
 
 #import "EMChatManagerWrapper.h"
 #import "EMSDKMethod.h"
-
+#import "NSArray+Helper.h"
 #import "EMChatMessage+Helper.h"
 #import "EMConversation+Helper.h"
 #import "EMGroupMessageAck+Helper.h"
@@ -126,6 +126,10 @@
         [self deleteRemoteConversation:call.arguments
                            channelName:call.method
                                 result:result];
+    } else if ([ChatTranslateMessage isEqualToString:call.method]) {
+        
+    } else if ([ChatFetchSupportedLanguages isEqualToString:call.method]) {
+        
     }
     else {
         [super handleMethodCall:call result:result];
@@ -621,6 +625,35 @@
                       channelName:aChannelName
                             error:aError
                            object:@(!aError)];
+    }];
+}
+
+- (void)translateMessage:(NSDictionary *)param
+             channelName:(NSString *)aChannelName
+                  result:(FlutterResult)result{
+    EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    NSArray *languages = param[@"languages"];
+    
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager translateMessage:msg
+                                        targetLanguages:languages completion:^(EMChatMessage *message, EMError *error)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@{@"message": [message toJson]}];
+    }];
+}
+
+- (void)fetchSupportLanguages:(NSDictionary *)param
+                  channelName:(NSString *)aChannelName
+                       result:(FlutterResult)result{
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager fetchSupportedLangurages:^(NSArray<EMTranslateLanguage *> * _Nullable languages, EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[languages toJsonArray]];
     }];
 }
 
