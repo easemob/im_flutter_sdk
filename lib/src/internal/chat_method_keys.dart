@@ -81,6 +81,11 @@ class ChatMethodKeys {
   static const String translateMessage = "translateMessage";
   static const String fetchSupportLanguages = "fetchSupportLanguages";
 
+  static const String addReaction = "addReaction";
+  static const String removeReaction = "removeReaction";
+  static const String fetchReaction = "fetchReaction";
+  static const String fetchReactionDetail = "fetchReactionDetail";
+
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
@@ -103,7 +108,7 @@ class ChatMethodKeys {
   /// EMPresenceManagerDelegate
   static const String onPresenceStatusChanged = "onPresenceStatusChanged";
 
-  /// EMConversation
+  /// EMConversation method
   static const String getUnreadMsgCount = "getUnreadMsgCount";
   static const String markAllMessagesAsRead = "markAllMessagesAsRead";
   static const String markMessageAsRead = "markMessageAsRead";
@@ -115,17 +120,14 @@ class ChatMethodKeys {
   static const String insertMessage = "insertMessage";
   static const String appendMessage = "appendMessage";
   static const String updateConversationMessage = "updateConversationMessage";
-
-  // 根据消息id获取消息
   static const String loadMsgWithId = "loadMsgWithId";
-  // 根据起始消息id获取消息
   static const String loadMsgWithStartId = "loadMsgWithStartId";
-  // 根据关键字获取消息
   static const String loadMsgWithKeywords = "loadMsgWithKeywords";
-  // 根据消息类型获取消息
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
-  // 通过时间获取消息
   static const String loadMsgWithTime = "loadMsgWithTime";
+
+  /// EMMessage method
+  static const String getReaction = "getReaction";
 
   /// EMChatRoomManager methods
   static const String joinChatRoom = "joinChatRoom";

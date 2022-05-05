@@ -78,6 +78,11 @@ public class EMSDKMethod {
     static final String translateMessage = "translateMessage";
     static final String fetchSupportedLanguages = "fetchSupportLanguages";
 
+    static final String addReaction = "addReaction";
+    static final String removeReaction = "removeReaction";
+    static final String fetchReaction = "fetchReaction";
+    static final String fetchReactionDetail = "fetchReactionDetail";
+
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
@@ -108,17 +113,14 @@ public class EMSDKMethod {
     static final String insertMessage = "insertMessage";
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
-
-    // 根据消息id获取消息
     static final String loadMsgWithId = "loadMsgWithId";
-    // 根据起始消息id获取消息
     static final String loadMsgWithStartId = "loadMsgWithStartId";
-    // 根据关键字获取消息
     static final String loadMsgWithKeywords = "loadMsgWithKeywords";
-    // 根据消息类型获取消息
     static final String loadMsgWithMsgType = "loadMsgWithMsgType";
-    // 通过时间获取消息
     static final String loadMsgWithTime = "loadMsgWithTime";
+
+    // EMMessage method
+    static final String getReaction = "getReaction";
 
     // EMChatRoomManager
     static final String joinChatRoom = "joinChatRoom";

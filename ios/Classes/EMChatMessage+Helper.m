@@ -68,7 +68,7 @@
     ret[@"needGroupAck"] = @(self.isNeedGroupAck);
     ret[@"serverTime"] = @(self.timestamp);
     ret[@"groupAckCount"] = @(self.groupAckCount);
-    ret[@"attributes"] = self.ext ?: @{};
+    ret[@"attributes"] = self.ext;
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = @([self statusToInt:self.status]);
     ret[@"chatType"] = @([self chatTypeToInt:self.chatType]);

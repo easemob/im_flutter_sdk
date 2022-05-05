@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/models/em_message_reaction_change.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -637,4 +638,7 @@ class _ChatPageState extends State<ChatPage>
   @override
   void onRemovedFromChatRoom(
       String roomId, String? roomName, String? participant) {}
+
+  @override
+  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
 }

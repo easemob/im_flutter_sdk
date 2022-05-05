@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/src/models/em_message_reaction.dart';
 
 import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
@@ -128,6 +129,11 @@ class EMMessage {
   /// Message body. We recommend you use {@link EMMessageBody)}.
   ///
   late EMMessageBody body;
+
+  ///
+  /// The Reaction list.
+  ///
+  List<EMMessageReaction>? reactionList;
 
   ///
   /// Sets the message status change callback.
@@ -593,6 +599,35 @@ class MessageCallBackManager {
   void removeMessage(String key) {
     if (cacheHandleMap.containsKey(key)) {
       cacheHandleMap.remove(key);
+    }
+  }
+}
+
+extension EMMessageExtension on EMMessage {
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
+
+  ///
+  /// Gets the Reaction content by the Reaction ID
+  ///
+  /// Param [reaction] The Reaction ID
+  ///
+  /// **Return**  The Reaction content
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}
+  ///
+  Future<EMMessageReaction?> getReaction(String reaction) async {
+    Map req = {"msgId": msgId};
+
+    Map result = await _emMessageChannel.invokeMethod(
+      ChatMethodKeys.getReaction,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMMessageReaction.fromJson(result[ChatMethodKeys.getReaction]);
+    } on EMError catch (e) {
+      throw e;
     }
   }
 }

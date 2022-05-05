@@ -87,6 +87,11 @@ static NSString *const ChatDeleteRemoteConversation = @"deleteRemoteConversation
 static NSString *const ChatTranslateMessage = @"translateMessage";
 static NSString *const ChatFetchSupportedLanguages = @"fetchSupportLanguages";
 
+static NSString *const ChatAddReaction = @"addReaction";
+static NSString *const ChatRemoveReaction = @"removeReaction";
+static NSString *const ChatFetchReactionList = @"fetchReaction";
+static NSString *const ChatFetchReactionDetail = @"fetchReactionDetail";
+
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
 static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";
@@ -128,6 +133,10 @@ static NSString *const ChatLoadMsgWithStartId = @"loadMsgWithStartId";
 static NSString *const ChatLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
+
+#pragma mark - EMChatMessageWrapper
+static NSString *const ChatGetReaction = @"getReaction";
+
 
 #pragma mark - EMChatroomManagerWrapper
 

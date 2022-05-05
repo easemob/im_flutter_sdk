@@ -93,6 +93,14 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 translateMessage(param, call.method, result);
             } else if (EMSDKMethod.fetchSupportedLanguages.equals(call.method)) {
                 fetchSupportedLanguages(param, call.method, result);
+            } else if (EMSDKMethod.addReaction.equals(call.method)) {
+                addReaction(param, call.method, result);
+            } else if (EMSDKMethod.removeReaction.equals(call.method)) {
+                removeReaction(param, call.method, result);
+            } else if (EMSDKMethod.fetchReaction.equals(call.method)) {
+                fetchReactionList(param, call.method, result);
+            } else if (EMSDKMethod.fetchReactionDetail.equals(call.method)) {
+                fetchReactionDetail(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -542,6 +550,47 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
     }
 
+    private void addReaction(JSONObject param, String channelName, Result result) throws JSONException {
+        String reaction = param.getString("reaction");
+        String msgId = param.getString("msgId");
+        // TODO:
+    }
+
+    private void removeReaction(JSONObject param, String channelName, Result result) throws JSONException {
+        String reaction = param.getString("reaction");
+        String msgId = param.getString("msgId");
+        // TODO:
+    }
+
+    private void fetchReactionList(JSONObject param, String channelName, Result result) throws JSONException {
+        List<String> msgIds = new ArrayList<>();
+        JSONArray ja = param.getJSONArray("msgIds");
+        for (int i = 0; i < ja.length(); i++) {
+            msgIds.add(ja.getString(i));
+        }
+        String groupId = param.getString("groupId");
+        EMMessage.ChatType type = EMMessage.ChatType.Chat;
+        int iType = param.getInt("chatType");
+        if (iType == 0) {
+            type = EMMessage.ChatType.Chat;
+        } else if(iType == 1) {
+            type = EMMessage.ChatType.GroupChat;
+        } else {
+            type = EMMessage.ChatType.ChatRoom;
+        }
+        // TODO:
+    }
+
+    private void fetchReactionDetail(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.getString("msgId");
+        String reaction = param.getString("reaction");
+        String cursor = null;
+        if (param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
+        int pageSize = param.getInt("pageSize");
+        // TODO:
+    }
 
     private void registerEaseListener() {
         EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
