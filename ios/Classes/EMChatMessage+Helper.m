@@ -354,14 +354,14 @@
     }
     
     EMCustomMessageBody *ret = [[EMCustomMessageBody alloc] initWithEvent:aJson[@"event"]
-                                                                      ext:dic];
+                                                                customExt:dic];
     return ret;
 }
 
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"event"] = self.event;
-    ret[@"params"] = self.ext;
+    ret[@"params"] = self.customExt;
     return ret;
 }
 

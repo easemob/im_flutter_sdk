@@ -282,7 +282,7 @@ class EMChatRoomHelper {
         data.put("memberCount", chatRoom.getMemberCount());
         data.put("adminList", chatRoom.getAdminList());
         data.put("memberList", chatRoom.getMemberList());
-        data.put("blockList", chatRoom.getBlackList());
+        data.put("blockList", chatRoom.getBlacklist());
         data.put("muteList", chatRoom.getMuteList().values());
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
@@ -474,45 +474,36 @@ class EMMessageHelper {
         if (message == null)
             return null;
         Map<String, Object> data = new HashMap<>();
-        String type = "";
         switch (message.getType()) {
         case TXT: {
-            type = "txt";
             data.put("body", EMMessageBodyHelper.textBodyToJson((EMTextMessageBody) message.getBody()));
         }
             break;
         case IMAGE: {
-            type = "img";
             data.put("body", EMMessageBodyHelper.imageBodyToJson((EMImageMessageBody) message.getBody()));
         }
             break;
         case LOCATION: {
-            type = "loc";
             data.put("body", EMMessageBodyHelper.localBodyToJson((EMLocationMessageBody) message.getBody()));
         }
             break;
         case CMD: {
-            type = "cmd";
             data.put("body", EMMessageBodyHelper.cmdBodyToJson((EMCmdMessageBody) message.getBody()));
         }
             break;
         case CUSTOM: {
-            type = "custom";
             data.put("body", EMMessageBodyHelper.customBodyToJson((EMCustomMessageBody) message.getBody()));
         }
             break;
         case FILE: {
-            type = "file";
             data.put("body", EMMessageBodyHelper.fileBodyToJson((EMNormalFileMessageBody) message.getBody()));
         }
             break;
         case VIDEO: {
-            type = "video";
             data.put("body", EMMessageBodyHelper.videoBodyToJson((EMVideoMessageBody) message.getBody()));
         }
             break;
         case VOICE: {
-            type = "voice";
             data.put("body", EMMessageBodyHelper.voiceBodyToJson((EMVoiceMessageBody) message.getBody()));
         }
             break;
@@ -1164,7 +1155,7 @@ class EMUserInfoHelper {
     static Map<String, Object> toJson(EMUserInfo userInfo) {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", userInfo.getUserId());
-        data.put("nickName", userInfo.getNickName());
+        data.put("nickName", userInfo.getNickname());
         data.put("avatarUrl", userInfo.getAvatarUrl());
         data.put("mail", userInfo.getEmail());
         data.put("phone", userInfo.getPhoneNumber());

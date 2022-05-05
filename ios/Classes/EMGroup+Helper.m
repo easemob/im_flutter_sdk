@@ -25,7 +25,7 @@
     ret[@"noticeEnable"] = @(self.isPushNotificationEnabled);
     ret[@"messageBlocked"] = @(self.isBlocked);
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
-    ret[@"options"] = [self.setting toJson];
+    ret[@"options"] = [self.settings toJson];
     ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
 
     return ret;
@@ -171,7 +171,7 @@
     data[@"fileId"] = self.fileId;
     data[@"name"] = self.fileName;
     data[@"owner"] = self.fileOwner;
-    data[@"createTime"] = @(self.createTime);
+    data[@"createTime"] = @(self.createdAt);
     data[@"fileSize"] = @(self.fileSize);
     return data;
 }

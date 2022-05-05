@@ -260,6 +260,22 @@ class ChatMethodKeys {
       "fetchSubscribedMembersWithPageNum";
   static const String fetchPresenceStatus = "fetchPresenceStatus";
 
+  /// EMChatThreadManager methods
+  static const String fetchChatThread = "fetchChatThread";
+  static const String fetchChatThreadDetail = "fetchChatThreadDetail";
+  static const String fetchJoinedChatThreads = "fetchJoinedChatThreads";
+  static const String fetchChatThreadsWithParentId =
+      "fetchChatThreadsWithParentId";
+  static const String fetchChatThreadMember = "fetchChatThreadMember";
+  static const String fetchLastMessageWithChatThreads =
+      "fetchLastMessageWithChatThreads";
+  static const String removeMemberFromChatThread = "removeMemberFromChatThread";
+  static const String updateChatThreadSubject = "updateChatThreadSubject";
+  static const String createChatThread = "createChatThread";
+  static const String joinChatThread = "joinChatThread";
+  static const String leaveChatThread = "leaveChatThread";
+  static const String destroyChatThread = "destroyChatThread";
+
   /// HandleAction
   static const String startCallback = "startCallback";
 }

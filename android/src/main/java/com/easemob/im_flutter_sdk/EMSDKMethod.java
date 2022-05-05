@@ -242,6 +242,23 @@ public class EMSDKMethod {
     /// EMPresenceManagerListener
     static final String onPresenceStatusChanged = "onPresenceStatusChanged";
 
+    /// EMChatThreadManager methods
+    static final String fetchChatThread = "fetchChatThread";
+    static final String fetchChatThreadDetail = "fetchChatThreadDetail";
+    static final String fetchJoinedChatThreads = "fetchJoinedChatThreads";
+    static final String fetchChatThreadsWithParentId = "fetchChatThreadsWithParentId";
+    static final String fetchChatThreadMember = "fetchChatThreadMember";
+    static final String fetchLastMessageWithChatThreads = "fetchLastMessageWithChatThreads";
+    static final String removeMemberFromChatThread = "removeMemberFromChatThread";
+    static final String updateChatThreadSubject = "updateChatThreadSubject";
+    static final String createChatThread = "createChatThread";
+    static final String joinChatThread = "joinChatThread";
+    static final String leaveChatThread = "leaveChatThread";
+    static final String destroyChatThread = "destroyChatThread";
+
+    // TODO: EMChatThreadManagerListener
+
+
     /// HandleAction
     static final String startCallback = "startCallback";
 }

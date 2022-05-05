@@ -309,6 +309,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
         new EMPresenceManagerWrapper(binging, "chat_presence_manager");
         new EMMessageWrapper(binging, "chat_message");
+        new EMChatThreadManagerWrapper(binging, "chat_thread_manager");
     }
 
 

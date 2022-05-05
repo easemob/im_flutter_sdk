@@ -1,3 +1,5 @@
+import 'package:im_flutter_sdk/src/models/em_chat_thread_event.dart';
+
 import '../im_flutter_sdk.dart';
 import 'models/em_message_reaction_change.dart';
 import 'models/em_presence.dart';
@@ -932,4 +934,11 @@ class EMPresenceManagerListener {
   /// Param [list] The new presence state of a subscribed user.
   ///
   void onPresenceStatusChanged(List<EMPresence> list) {}
+}
+
+class EMChatThreadManagerListener {
+  void onChatThreadCreated(EMChatThreadEvent event) {}
+  void onChatThreadUpdated(EMChatThreadEvent event) {}
+  void onChatThreadDestroyed(EMChatThreadEvent event) {}
+  void onChatThreadUserRemoved(EMChatThreadEvent event) {}
 }
