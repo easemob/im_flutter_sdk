@@ -31,6 +31,7 @@
     return ret;
 }
 
+
 + (int)premissionTypeToInt:(EMGroupPermissionType)type {
     int ret = -1;
     switch (type) {

@@ -101,7 +101,7 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
     private void destroyChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
 
     }
-    
+
     private void registerEaseListener() {
 
     }
