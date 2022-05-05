@@ -441,15 +441,16 @@
 
 - (void)getGroupMuteListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getGroupMuteListFromServerWithId:param[@"groupId"]
-                                                              pageNumber:[param[@"pageNum"] intValue]
-                                                                pageSize:[param[@"pageSize"] intValue]
-                                                              completion:^(NSArray *aList, EMError *aError)
+    
+    [EMClient.sharedClient.groupManager fetchGroupMuteListFromServerWithId:param[@"groupId"]
+                                                                pageNumber:[param[@"pageNum"] intValue]
+                                                                  pageSize:[param[@"pageSize"] intValue]
+                                                                completion:^(NSDictionary<NSString *,NSNumber *> *aDict, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:aList];
+                           object:aDict];
     }];
 }
 
