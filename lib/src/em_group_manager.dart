@@ -6,6 +6,7 @@ import 'internal/em_event_keys.dart';
 import 'models/em_cursor_result.dart';
 import 'models/em_error.dart';
 import 'models/em_group.dart';
+import 'models/em_group_info.dart';
 import 'models/em_group_options.dart';
 import 'models/em_group_shared_file.dart';
 import 'tools/em_extension.dart';
@@ -120,7 +121,7 @@ class EMGroupManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<EMGroup>> fetchPublicGroupsFromServer({
+  Future<EMCursorResult<EMGroupInfo>> fetchPublicGroupsFromServer({
     int pageSize = 200,
     String? cursor,
   }) async {
@@ -130,10 +131,10 @@ class EMGroupManager {
         ChatMethodKeys.getPublicGroupsFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<EMGroup>.fromJson(
+      return EMCursorResult<EMGroupInfo>.fromJson(
           result[ChatMethodKeys.getPublicGroupsFromServer],
           dataItemCallback: (value) {
-        return EMGroup.fromJson(value);
+        return EMGroupInfo.fromJson(value);
       });
     } on EMError catch (e) {
       throw e;
