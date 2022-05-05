@@ -127,9 +127,29 @@
                            channelName:call.method
                                 result:result];
     } else if ([ChatTranslateMessage isEqualToString:call.method]) {
-        
+        [self translateMessage:call.arguments
+                   channelName:call.method
+                        result:result];
     } else if ([ChatFetchSupportedLanguages isEqualToString:call.method]) {
-        
+        [self fetchSupportLanguages:call.arguments
+                        channelName:call.method
+                             result:result];
+    } else if ([ChatAddReaction isEqualToString:call.method]) {
+        [self addReaction:call.arguments
+              channelName:call.method
+                   result:result];
+    } else if ([ChatRemoveReaction isEqualToString:call.method]) {
+        [self removeReaction:call.arguments
+                 channelName:call.method
+                      result:result];
+    } else if ([ChatFetchReactionList isEqualToString:call.method]) {
+        [self fetchReactionList:call.arguments
+                    channelName:call.method
+                         result:result];
+    } else if ([ChatFetchReactionDetail isEqualToString:call.method]) {
+        [self fetchReactionDetail:call.arguments
+                      channelName:call.method
+                           result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -560,7 +580,7 @@
     int pageSize = [param[@"pageSize"] intValue];
     NSString *ackId = param[@"ack_id"];
     NSString *groupId = param[@"group_id"];
-
+    
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.chatManager asyncFetchGroupMessageAcksFromServer:msgId groupId:groupId startGroupAckId:ackId pageSize:pageSize completion:^(EMCursorResult *aResult, EMError *aError, int totalCount) {
         [weakSelf wrapperCallBack:result
@@ -657,6 +677,37 @@
     }];
 }
 
+- (void)addReaction:(NSDictionary *)param
+        channelName:(NSString *)aChannelName
+             result:(FlutterResult)result {
+    NSString *reaction = param[@"reaction"];
+    NSString *msgId = param[@"msgId"];
+}
+
+- (void)removeReaction:(NSDictionary *)param
+           channelName:(NSString *)aChannelName
+                result:(FlutterResult)result {
+    NSString *reaction = param[@"reaction"];
+    NSString *msgId = param[@"msgId"];
+}
+
+- (void)fetchReactionList:(NSDictionary *)param
+              channelName:(NSString *)aChannelName
+                   result:(FlutterResult)result {
+    NSArray *msgIds = param[@"msgIds"];
+    NSString *groupId = param[@"groupId"];
+    EMChatType type = param[@"chatType"];
+    
+}
+
+- (void)fetchReactionDetail:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    NSString *msgId = param[@"msgId"];
+    NSString *reaction = param[@"reaction"];
+    NSString *cursor = param[@"cursor"];
+    int pageSize = [param[@"pageSize"] intValue];
+}
 
 #pragma mark - EMChatManagerDelegate
 

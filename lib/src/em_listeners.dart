@@ -1,4 +1,5 @@
 import '../im_flutter_sdk.dart';
+import 'models/em_message_reaction_change.dart';
 import 'models/em_presence.dart';
 
 ///
@@ -912,6 +913,13 @@ abstract class EMChatManagerListener {
   /// Param [to]   The user who receives the read receipt.
   ///
   void onConversationRead(String from, String to) {}
+
+  ///
+  /// Occurs when the Reaction data changes.
+  ///
+  /// Param [list] The Reaction which is changed
+  ///
+  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
 }
 
 ///

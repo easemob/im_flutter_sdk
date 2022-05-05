@@ -5,6 +5,7 @@ import 'package:easeim_flutter_demo/widgets/demo_app_bar.dart';
 import 'package:easeim_flutter_demo/widgets/pop_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/models/em_message_reaction_change.dart';
 
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -247,4 +248,7 @@ class ConversationPageState extends State<ConversationPage>
 
   @override
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  @override
+  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
 }

@@ -17,6 +17,7 @@
 #import "EMOptions+Helper.h"
 #import "EMUserInfoManagerWrapper.h"
 #import "EMPresenceManagerWrapper.h"
+#import "EMChatMessageWrapper.h"
 #import "EMListenerHandle.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
@@ -195,6 +196,8 @@ static EMClientWrapper *wrapper = nil;
     EMPushManagerWrapper * push =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
     EMUserInfoManagerWrapper *userInfo = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
     EMPresenceManagerWrapper * presence = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
+    EMChatMessageWrapper *chatMessage = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
+    
 #pragma clang diagnostic pop
 }
 
