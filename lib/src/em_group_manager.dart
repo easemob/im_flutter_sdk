@@ -299,11 +299,11 @@ class EMGroupManager {
   ///
   /// Param [pageNum] The page number, starting from 1.
   ///
-  /// **Return** The group mute list.
+  /// **Return** The group mute map, key is memberId and value is mute time.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchMuteListFromServer(
+  Future<Map<String, int>?> fetchMuteListFromServer(
     String groupId, {
     int pageSize = 200,
     int pageNum = 1,
@@ -313,7 +313,8 @@ class EMGroupManager {
         ChatMethodKeys.getGroupMuteListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.getGroupMuteListFromServer]?.cast<String>();
+      return result[ChatMethodKeys.getGroupMuteListFromServer]
+          ?.cast<Map<String, int>>();
     } on EMError catch (e) {
       throw e;
     }

@@ -321,7 +321,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 channelName) {
             @Override
             public void onSuccess(Map<String, Long> object) {
-                updateObject(object.keySet().toArray());
+                updateObject(object);
             }
         };
 
