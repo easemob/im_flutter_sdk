@@ -168,4 +168,11 @@ extension MapExtension on Map {
     }
     return ret;
   }
+
+  T? getValueWithKey<T>(
+    String key, {
+    required MapResultCallback callback,
+  }) {
+    return callback.call(this[key]);
+  }
 }
