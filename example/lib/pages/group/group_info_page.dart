@@ -6,8 +6,12 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class GroupInfoPage extends StatefulWidget {
-  final EMGroup group;
-  GroupInfoPage(this.group);
+  final Map map;
+  GroupInfoPage(this.map);
+
+  String get groupId => map["groupId"];
+  String? get groupName => map["groupName"];
+
   @override
   State<StatefulWidget> createState() => GroupInfoPageState();
 }
@@ -80,7 +84,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            widget.group.name!,
+                            widget.groupName ?? widget.groupId,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -98,7 +102,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            widget.group.groupId,
+                            widget.groupId,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -196,7 +200,7 @@ class GroupInfoPageState extends State<GroupInfoPage> {
     try {
       SmartDialog.showLoading(msg: '获取中...');
       _group = await EMClient.getInstance.groupManager.fetchGroupInfoFromServer(
-        widget.group.groupId,
+        widget.groupId,
       );
 
       SmartDialog.showToast('获取成功');

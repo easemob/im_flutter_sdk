@@ -1,18 +1,18 @@
 class EMGroupInfo {
   final String groupId;
-  final String groupName;
+  final String? name;
 
   EMGroupInfo._private({
     required this.groupId,
-    required this.groupName,
+    required this.name,
   });
 
   factory EMGroupInfo.fromJson(Map map) {
     String groupId = map["groupId"];
-    String groupName = map["groupName"];
+    String? groupName = map["name"];
     return EMGroupInfo._private(
       groupId: groupId,
-      groupName: groupName,
+      name: groupName,
     );
   }
 }

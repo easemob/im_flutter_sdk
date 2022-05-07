@@ -157,15 +157,18 @@ extension MapExtension on Map {
   }
 
   List<T>? getList<T>(String key, {valueCallback: MapResultCallback}) {
-    List<String> list = this[key];
+    List<String>? list = this[key];
     List<T>? ret;
-    List<T> typeList = [];
-    for (var item in list) {
-      typeList.add(valueCallback(item));
+    if (list != null) {
+      List<T> typeList = [];
+      for (var item in list) {
+        typeList.add(valueCallback(item));
+      }
+      if (typeList.length > 0) {
+        ret = typeList;
+      }
     }
-    if (typeList.length > 0) {
-      ret = typeList;
-    }
+
     return ret;
   }
 

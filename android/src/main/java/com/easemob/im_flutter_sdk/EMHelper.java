@@ -195,7 +195,7 @@ class EMGroupInfoHelper {
     static Map<String, Object> toJson(EMGroupInfo group) {
         Map<String, Object> data = new HashMap<>();
         data.put("groupId", group.getGroupId());
-        data.put("groupName", group.getGroupName());
+        data.put("name", group.getGroupName());
         return data;
     }
 }
@@ -1185,4 +1185,12 @@ class EMLanguageHelper {
         data.put("nativeName", language.LanguageLocalName);
         return data;
     }
+}
+
+class EMChatThreadHelper {
+
+}
+
+class EMChatThreadEventHelper {
+
 }

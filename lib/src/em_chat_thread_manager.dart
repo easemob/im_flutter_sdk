@@ -74,6 +74,7 @@ class EMChatThreadManager {
   }
 
   Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
+    required String parentId,
     String? cursor,
     int pageSize = 20,
   }) async {
@@ -145,11 +146,11 @@ class EMChatThreadManager {
   }
 
   Future<void> removeMemberFromChatThread({
-    required String user,
+    required String memberId,
     required String threadId,
   }) async {
     Map req = {
-      "user": user,
+      "memberId": memberId,
       "threadId": threadId,
     };
     Map result = await _channel.invokeMethod(
@@ -163,12 +164,12 @@ class EMChatThreadManager {
     }
   }
 
-  Future<void> updateChatThreadSubject({
-    required String subject,
+  Future<void> updateChatThreadName({
+    required String newName,
     required String threadId,
   }) async {
     Map req = {
-      "subject": subject,
+      "name": newName,
       "threadId": threadId,
     };
     Map result = await _channel.invokeMethod(
@@ -183,12 +184,12 @@ class EMChatThreadManager {
   }
 
   Future<EMChatThread> createChatThread({
-    required String subject,
+    required String name,
     required String messageId,
     required String parentId,
   }) async {
     Map req = {
-      "subject": subject,
+      "name": name,
       "messageId": messageId,
       "parentId": parentId,
     };

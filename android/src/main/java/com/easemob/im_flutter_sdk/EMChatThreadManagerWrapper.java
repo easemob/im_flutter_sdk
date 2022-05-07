@@ -3,8 +3,12 @@ package com.easemob.im_flutter_sdk;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.exceptions.HyphenateException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -55,54 +59,89 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
     }
 
     private void fetchChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        // TODO:
     }
 
     private void fetchChatThreadDetail(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        // TODO:
     }
 
     private void fetchJoinedChatThreads(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        int pageSize = param.getInt("pageSize");
+        String cursor = null;
+        if (param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
+        // TODO:
     }
 
     private void fetchChatThreadsWithParentId(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        int pageSize = param.getInt("pageSize");
+        String cursor = null;
+        if (param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
+        String parentId = param.getString("parentId");
+        // TODO:
     }
 
     private void fetchChatThreadMember(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        int pageSize = param.getInt("pageSize");
+        String cursor = null;
+        if (param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
+        String threadId = param.getString("threadId");
+        // TODO:
     }
 
     private void fetchLastMessageWithChatThreads(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        List<String> threadIds = new ArrayList<>();
+        JSONArray ja = param.getJSONArray("threadIds");
+        for (int i = 0; i < ja.length(); i++) {
+            String threadId = ja.getString(i);
+            threadIds.add(threadId);
+        }
+        // TODO:
     }
 
     private void removeMemberFromChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        String memberId = param.getString("memberId");
+        // TODO:
     }
 
     private void updateChatThreadSubject(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        String name = param.getString("name");
+        // TODO:
     }
 
     private void createChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String messageId = param.getString("messageId");
+        String name = param.getString("name");
+        String parentId = param.getString("parentId");
+        // TODO:
     }
 
     private void joinChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        // TODO:
     }
 
     private void leaveChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        // TODO:
     }
 
     private void destroyChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-
+        String threadId = param.getString("threadId");
+        // TODO:
     }
 
     private void registerEaseListener() {
-
+        // TODO:
     }
 }
