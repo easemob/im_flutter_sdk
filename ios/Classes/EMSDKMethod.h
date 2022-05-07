@@ -111,9 +111,6 @@ static NSString *const ChatOnMessageReadAck = @"onMessageReadAck";
 static NSString *const ChatOnMessageDeliveryAck = @"onMessageDeliveryAck";
 
 
-#pragma mark - EMPresenceManagerDelegate
-static NSString *const ChatOnPresenceStatusChanged = @"onPresenceStatusChanged";
-
 #pragma mark - EMConversationWrapper
 
 static NSString *const ChatGetUnreadMsgCount = @"getUnreadMsgCount";
@@ -255,6 +252,27 @@ static NSString *const ChatPresenceSubscribe = @"presenceSubscribe";
 static NSString *const ChatPresenceUnsubscribe = @"presenceUnsubscribe";
 static NSString *const ChatFetchSubscribedMembersWithPageNum = @"fetchSubscribedMembersWithPageNum";
 static NSString *const ChatFetchPresenceStatus = @"fetchPresenceStatus";
+
+
+#pragma mark - EMPresenceManagerDelegate
+static NSString *const ChatOnPresenceStatusChanged = @"onPresenceStatusChanged";
+
+#pragma mark - EMChatThreadManager methods
+static NSString *const ChatFetchChatThread = @"fetchChatThread";
+static NSString *const ChatFetchChatThreadDetail = @"fetchChatThreadDetail";
+static NSString *const ChatFetchJoinedChatThreads = @"fetchJoinedChatThreads";
+static NSString *const ChatFetchChatThreadsWithParentId = @"fetchChatThreadsWithParentId";
+static NSString *const ChatFetchChatThreadMember = @"fetchChatThreadMember";
+static NSString *const ChatFetchLastMessageWithChatThreads = @"fetchLastMessageWithChatThreads";
+static NSString *const ChatRemoveMemberFromChatThread = @"removeMemberFromChatThread";
+static NSString *const ChatUpdateChatThreadSubject = @"updateChatThreadSubject";
+static NSString *const ChatCreateChatThread = @"createChatThread";
+static NSString *const ChatJoinChatThread = @"joinChatThread";
+static NSString *const ChatLeaveChatThread = @"leaveChatThread";
+static NSString *const ChatDestroyChatThread = @"destroyChatThread";
+
+// TODO: EMChatThreadManagerListener
+
 
 #pragma mark - HandleAction
 static NSString *const ChatStartCallback = @"startCallback";

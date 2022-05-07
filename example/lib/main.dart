@@ -86,7 +86,7 @@ Route<dynamic> onGenerateRoute(RouteSettings settings) {
           (settings.arguments as List)[0],
           (settings.arguments as List)[1],
         ),
-    '/groupInfo': (context) => GroupInfoPage(settings.arguments as EMGroup),
+    '/groupInfo': (context) => GroupInfoPage(settings.arguments as Map),
     '/groupMemberList': (context) => GroupMembersPage(
           (settings.arguments as List)[0],
           (settings.arguments as List)[1],

@@ -11,11 +11,11 @@ class PublicGroupsPage extends StatefulWidget {
 }
 
 class PublicGroupsPageState extends State<PublicGroupsPage> {
-  List<EMGroup> _groupsList = [];
+  List<EMGroupInfo> _groupsList = [];
   String? _cursor;
   bool _isEnd = false;
   String _searchName = '';
-  EMGroup? _searchedGroup;
+  dynamic _searchedGroup;
   final _pageSize = 30;
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
@@ -86,10 +86,19 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
                 child: ListView.separated(
                   itemBuilder: ((_, index) {
                     if (_searchedGroup != null) {
-                      return _groupItem(_searchedGroup!);
+                      String groupId = "";
+                      String? groupName;
+                      if (_searchedGroup is EMGroup) {
+                        groupId = (_searchedGroup as EMGroup).groupId;
+                        groupName = (_searchedGroup as EMGroup).name;
+                      } else {
+                        groupId = (_searchedGroup as EMGroupInfo).groupId;
+                        groupName = (_searchedGroup as EMGroupInfo).name;
+                      }
+                      return _groupItem(groupId, groupName);
                     } else {
-                      EMGroup group = _groupsList[index];
-                      return _groupItem(group);
+                      EMGroupInfo group = _groupsList[index];
+                      return _groupItem(group.groupId, group.name);
                     }
                   }),
                   separatorBuilder: ((_, index) {
@@ -115,14 +124,14 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     super.dispose();
   }
 
-  _groupItem(EMGroup group) {
+  _groupItem(String groupId, [String? groupName]) {
     return Container(
       height: sHeight(70),
       // height: sHeight(44),
       child: ListTile(
-        onTap: () => _fetchGroupInfo(group),
+        onTap: () => _fetchGroupInfo(groupId, groupName),
         title: Text(
-          group.name!,
+          groupName ?? groupId,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -130,7 +139,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
           ),
         ),
         subtitle: Text(
-          group.groupId,
+          groupId,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -144,7 +153,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
 
   _loadMorePublicGroups() async {
     try {
-      EMCursorResult<EMGroup> cursor =
+      EMCursorResult<EMGroupInfo> cursor =
           await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer(
         pageSize: _pageSize,
         cursor: _cursor ?? "",
@@ -169,7 +178,7 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     try {
       _isEnd = false;
 
-      EMCursorResult<EMGroup> cursor =
+      EMCursorResult<EMGroupInfo> cursor =
           await EMClient.getInstance.groupManager.fetchPublicGroupsFromServer(
         pageSize: _pageSize,
       );
@@ -190,11 +199,12 @@ class PublicGroupsPageState extends State<PublicGroupsPage> {
     } finally {}
   }
 
-  _fetchGroupInfo(EMGroup group) {
-    print('_fetchGroupInfo ${group.groupId}');
-    Navigator.of(context)
-        .pushNamed('/groupInfo', arguments: group)
-        .then((value) {});
+  _fetchGroupInfo(String groupId, [String? groupName]) {
+    print('_fetchGroupInfo $groupId');
+    Navigator.of(context).pushNamed('/groupInfo', arguments: {
+      "groupId": groupId,
+      "groupName": groupName
+    }).then((value) {});
   }
 
   _searchPublicId(String std) async {

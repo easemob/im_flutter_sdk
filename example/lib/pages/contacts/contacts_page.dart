@@ -44,7 +44,6 @@ class ContactsPageState extends State<ContactsPage>
 
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     _fetchContactsFromServer(3);
   }
 
@@ -275,6 +274,7 @@ class ContactsPageState extends State<ContactsPage>
         _contactList.addAll(list);
       }
     } on EMError {
+      _contactList.clear();
     } finally {
       SuspensionUtil.sortListBySuspensionTag(_contactList);
       SuspensionUtil.setShowSuspensionStatus(_contactList);

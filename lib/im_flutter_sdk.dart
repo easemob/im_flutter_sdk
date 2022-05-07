@@ -1,24 +1,47 @@
 library im_flutter_sdk;
 
-export 'src/em_client.dart';
+export 'src/em_client.dart' show EMClient;
+export 'src/em_listeners.dart'
+    show
+        EMConnectionListener,
+        EMMultiDeviceListener,
+        EMChatManagerListener,
+        EMGroupEventListener,
+        EMChatRoomEventListener,
+        EMContactManagerListener,
+        EMChatThreadManagerListener,
+        EMCustomListener,
+        EMPresenceManagerListener;
 
-export 'src/em_listeners.dart';
+export 'src/models/em_group_message_ack.dart' show EMGroupMessageAck;
+export 'src/models/em_chat_room.dart' show EMChatRoom;
+export 'src/models/em_conversation.dart'
+    show EMConversation, EMConversationExtension;
+export 'src/models/em_cursor_result.dart' show EMCursorResult;
+export 'src/models/em_deviceInfo.dart' show EMDeviceInfo;
+export 'src/models/em_error.dart' show EMError;
+export 'src/models/em_group.dart' show EMGroup;
+export 'src/models/em_group_info.dart' show EMGroupInfo;
 
-export 'src/models/em_group_message_ack.dart';
-export 'src/models/em_chat_room.dart';
-export 'src/models/em_conversation.dart';
-export 'src/models/em_cursor_result.dart';
-export 'src/models/em_deviceInfo.dart';
-export 'src/models/em_error.dart';
-export 'src/models/em_group.dart';
-
-export 'src/models/em_options.dart';
-export 'src/models/em_push_configs.dart';
-export 'src/models/em_page_result.dart';
-export 'src/models/em_userInfo.dart';
-export 'src/models/em_group_shared_file.dart';
-export 'src/models/em_group_options.dart';
-export 'src/models/em_chat_enums.dart';
+export 'src/models/em_options.dart' show EMOptions;
+export 'src/models/em_push_configs.dart' show EMPushConfigs;
+export 'src/models/em_page_result.dart' show EMPageResult;
+export 'src/models/em_userInfo.dart' show EMUserInfo;
+export 'src/models/em_group_shared_file.dart' show EMGroupSharedFile;
+export 'src/models/em_group_options.dart' show EMGroupOptions;
+export 'src/models/em_chat_enums.dart'
+    show
+        EMGroupStyle,
+        EMConversationType,
+        ChatType,
+        MessageDirection,
+        MessageStatus,
+        DownloadStatus,
+        MessageType,
+        EMGroupPermissionType,
+        EMChatRoomPermissionType,
+        EMSearchDirection,
+        EMMultiDevicesEvent;
 
 export 'src/models/em_message.dart' show EMMessage;
 export 'src/models/em_message_body.dart' show EMMessageBody;
