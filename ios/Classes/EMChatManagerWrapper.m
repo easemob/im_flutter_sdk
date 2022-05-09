@@ -682,6 +682,7 @@
              result:(FlutterResult)result {
     NSString *reaction = param[@"reaction"];
     NSString *msgId = param[@"msgId"];
+    // TODO:
 }
 
 - (void)removeReaction:(NSDictionary *)param
@@ -689,6 +690,7 @@
                 result:(FlutterResult)result {
     NSString *reaction = param[@"reaction"];
     NSString *msgId = param[@"msgId"];
+    // TODO:
 }
 
 - (void)fetchReactionList:(NSDictionary *)param
@@ -697,6 +699,7 @@
     NSArray *msgIds = param[@"msgIds"];
     NSString *groupId = param[@"groupId"];
     EMChatType type = param[@"chatType"];
+    // TODO:
     
 }
 
@@ -707,6 +710,7 @@
     NSString *reaction = param[@"reaction"];
     NSString *cursor = param[@"cursor"];
     int pageSize = [param[@"pageSize"] intValue];
+    // TODO:
 }
 
 #pragma mark - EMChatManagerDelegate
