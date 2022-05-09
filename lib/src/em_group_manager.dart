@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'em_download_callback.dart';
 import 'em_listeners.dart';
 import 'internal/em_event_keys.dart';
 import 'models/em_cursor_result.dart';
@@ -943,11 +945,12 @@ class EMGroupManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> downloadGroupSharedFile(
-    String groupId,
-    String fileId,
-    String savePath,
-  ) async {
+  Future<void> downloadGroupSharedFile({
+    required String groupId,
+    required String fileId,
+    required String savePath,
+    EMDownloadCallback? callback,
+  }) async {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.downloadGroupSharedFile, req);

@@ -146,6 +146,11 @@ class EMGroup {
   String? get getExtension => _options?.ext;
 
   ///
+  ///
+  ///
+  bool? get inviteNeedConfirm => _options?.inviteNeedConfirm;
+
+  ///
   /// Checks whether users cannot join a chat group freely:
   /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members(PrivateOnlyOwnerInvite, PrivateMemberCanInvite, PublicJoinNeedApproval).
   /// - `false`: No. Users can join freely(PublicOpenJoin).
