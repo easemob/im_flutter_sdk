@@ -25,12 +25,34 @@
     ret[@"noticeEnable"] = @(self.isPushNotificationEnabled);
     ret[@"messageBlocked"] = @(self.isBlocked);
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
-    ret[@"options"] = [self.settings toJson];
-    ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
 
+    ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
+    
+    if (self.settings != nil) {
+        ret[@"maxUserCount"] = @(self.settings.maxUsers);
+        ret[@"isMemberOnly"] = @([self isMemberOnly]);
+        ret[@"isMemberAllowToInvite"] = @([self isMemberAllowToInvite]);
+        ret[@"ext"] = self.settings.ext;
+    }
+    
     return ret;
 }
 
+
+- (BOOL)isMemberOnly {
+    
+    if (self.settings.style == EMGroupStylePrivateOnlyOwnerInvite ||
+        self.settings.style == EMGroupStylePrivateMemberCanInvite ||
+        self.settings.style == EMGroupStylePublicJoinNeedApproval) {
+        return true;
+    }
+
+    return NO;
+}
+
+- (BOOL)isMemberAllowToInvite {
+    return self.settings.style == EMGroupStylePrivateMemberCanInvite;
+}
 
 + (int)premissionTypeToInt:(EMGroupPermissionType)type {
     int ret = -1;
