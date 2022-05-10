@@ -129,38 +129,23 @@ class EMOptionsHelper {
 class EMGroupHelper {
     static Map<String, Object> toJson(EMGroup group) {
         Map<String, Object> data = new HashMap<>();
-        data.put("groupId", group.getGroupId());
-        data.put("name", group.getGroupName());
-        data.put("desc", group.getDescription());
-        data.put("owner", group.getOwner());
-        data.put("announcement", group.getAnnouncement());
-        data.put("memberCount", group.getMemberCount());
-        data.put("memberList", group.getMembers());
-        data.put("adminList", group.getAdminList());
-        data.put("blockList", group.getBlackList());
-        data.put("muteList", group.getMuteList());
-        data.put("messageBlocked", group.isMsgBlocked());
-        data.put("isAllMemberMuted", group.isAllMemberMuted());
-        data.put("permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
-
-        EMGroupOptions options = new EMGroupOptions();
-        options.extField = group.getExtension();
-        options.maxUsers = group.getMaxUserCount();
-
-        if (group.isPublic()) {
-            if (group.isMemberOnly()) {
-                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePublicJoinNeedApproval;
-            } else {
-                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePublicOpenJoin;
-            }
-        } else {
-            if (group.isMemberAllowToInvite()) {
-                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
-            } else {
-                options.style = EMGroupManager.EMGroupStyle.EMGroupStylePrivateOnlyOwnerInvite;
-            }
-        }
-        data.put("options", EMGroupOptionsHelper.toJson(options));
+        EMCommonUtil.putObjectToMap(data, "groupId", group.getGroupId());
+        EMCommonUtil.putObjectToMap(data, "name", group.getGroupName());
+        EMCommonUtil.putObjectToMap(data, "desc", group.getDescription());
+        EMCommonUtil.putObjectToMap(data, "owner", group.getOwner());
+        EMCommonUtil.putObjectToMap(data, "announcement", group.getAnnouncement());
+        EMCommonUtil.putObjectToMap(data, "memberCount", group.getMemberCount());
+        EMCommonUtil.putObjectToMap(data, "memberList", group.getMembers());
+        EMCommonUtil.putObjectToMap(data, "adminList", group.getAdminList());
+        EMCommonUtil.putObjectToMap(data, "blockList", group.getBlackList());
+        EMCommonUtil.putObjectToMap(data, "muteList", group.getMuteList());
+        EMCommonUtil.putObjectToMap(data, "messageBlocked", group.isMsgBlocked());
+        EMCommonUtil.putObjectToMap(data, "isAllMemberMuted", group.isAllMemberMuted());
+        EMCommonUtil.putObjectToMap(data, "permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
+        EMCommonUtil.putObjectToMap(data, "maxUserCount", group.getMemberCount());
+        EMCommonUtil.putObjectToMap(data, "isMemberOnly", group.isMemberOnly());
+        EMCommonUtil.putObjectToMap(data, "isMemberAllowToInvite", group.isMemberAllowToInvite());
+        EMCommonUtil.putObjectToMap(data, "ext", group.getExtension());
         return data;
     }
 
