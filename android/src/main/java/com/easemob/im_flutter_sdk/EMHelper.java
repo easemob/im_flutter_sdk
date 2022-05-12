@@ -793,7 +793,7 @@ class EMMessageBodyHelper {
         if (json.has("thumbnailRemotePath")){
             body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         }
-        if (json.getString("thumbnailLocalPath") != null) {
+        if (json.has("thumbnailLocalPath") != null) {
             body.setLocalThumb(json.getString("thumbnailLocalPath"));
         }
         if (json.has("thumbnailSecret")){
