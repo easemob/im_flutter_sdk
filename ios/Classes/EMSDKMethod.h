@@ -219,7 +219,6 @@ static NSString *const ChatAcceptJoinApplication = @"acceptJoinApplication";
 static NSString *const ChatDeclineJoinApplication = @"declineJoinApplication";
 static NSString *const ChatAcceptInvitationFromGroup = @"acceptInvitationFromGroup";
 static NSString *const ChatDeclineInvitationFromGroup = @"declineInvitationFromGroup";
-static NSString *const ChatIgnoreGroupPush = @"ignoreGroupPush";
 
 static NSString *const ChatOnGroupChanged = @"onGroupChanged";
 

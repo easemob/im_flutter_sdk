@@ -223,7 +223,6 @@ class ChatMethodKeys {
   static const String declineJoinApplication = "declineJoinApplication";
   static const String acceptInvitationFromGroup = "acceptInvitationFromGroup";
   static const String declineInvitationFromGroup = "declineInvitationFromGroup";
-  static const String ignoreGroupPush = "ignoreGroupPush";
 
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";

@@ -146,7 +146,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         asyncRunnable(()->{
             EMMessage msg = conversation.getLastMessage();
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            onSuccess(result, channelName, msg != null ? EMMessageHelper.toJson(msg) : null);
         });
     }
 
@@ -155,7 +155,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         asyncRunnable(()->{
             EMMessage msg = conversation.getLatestMessageFromOthers();
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            onSuccess(result, channelName, msg != null ? EMMessageHelper.toJson(msg) : null);
         });
     }
 
@@ -185,7 +185,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMMessage message = EMMessageHelper.fromJson(msg);
 
         asyncRunnable(()->{
-            conversation.appendMessage(message);
+            if (message != null) {
+                conversation.appendMessage(message);
+            }
             onSuccess(result, channelName, true);
         });
     }

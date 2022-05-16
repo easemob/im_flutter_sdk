@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'em_download_callback.dart';
 import 'em_listeners.dart';
@@ -697,8 +696,6 @@ class EMGroupManager {
   ///
   /// Param [newOwner] The new owner ID.
   ///
-  /// **Return** The updated group instance.
-  ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> changeOwner(
@@ -724,8 +721,6 @@ class EMGroupManager {
   ///
   /// Param [memberId] The username of the admin to add.
   ///
-  /// **Return** The updated group instance.
-  ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> addAdmin(
@@ -749,8 +744,6 @@ class EMGroupManager {
   /// Param [groupId] The group ID.
   ///
   /// Param [adminId] The username of the admin to remove.
-  ///
-  /// **Return** The updated group instance.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///

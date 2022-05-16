@@ -4,16 +4,16 @@ class EMTranslateLanguage {
   final String languageNativeName;
 
   ///
-  /// 翻译语言类。
+  /// The language class, used for encapsulation of language information.
   ///
   EMTranslateLanguage._private({
-    /// 语言代码，如中文简体为"zh-Hans"
+    /// The language code.
     required this.languageCode,
 
-    /// 语言名称，如中文简体为"Chinese Simplified"
+    /// The language name.
     required this.languageName,
 
-    /// 语言的原生名称，如中文简体为"中文 (简体)"
+    /// The display name of the language on the device.
     required this.languageNativeName,
   });
 
