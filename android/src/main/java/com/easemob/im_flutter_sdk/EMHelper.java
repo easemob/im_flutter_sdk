@@ -457,8 +457,6 @@ class EMMessageHelper {
     }
 
     static Map<String, Object> toJson(EMMessage message) {
-        if (message == null)
-            return null;
         Map<String, Object> data = new HashMap<>();
         switch (message.getType()) {
         case TXT: {
@@ -785,7 +783,7 @@ class EMMessageBodyHelper {
         if (json.has("thumbnailRemotePath")){
             body.setThumbnailUrl(json.getString("thumbnailRemotePath"));
         }
-        if (json.has("thumbnailLocalPath") != null) {
+        if (json.has("thumbnailLocalPath")) {
             body.setLocalThumb(json.getString("thumbnailLocalPath"));
         }
         if (json.has("thumbnailSecret")){
@@ -913,14 +911,15 @@ class EMConversationHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("con_id", conversation.conversationId());
         data.put("type", typeToInt(conversation.getType()));
-        data.put("unreadCount", conversation.getUnreadMsgCount());
         try {
             data.put("ext", jsonStringToMap(conversation.getExtField()));
         } catch (JSONException e) {
 
         } finally {
-            data.put("latestMessage", EMMessageHelper.toJson(conversation.getLastMessage()));
-            data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));
+            // 不返回，每次取得时候都从原生取最新的
+//            data.put("unreadCount", conversation.getUnreadMsgCount());
+//            data.put("latestMessage", EMMessageHelper.toJson(conversation.getLastMessage()));
+//            data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));
             return data;
         }
     }
@@ -1155,8 +1154,10 @@ class EMPresenceHelper {
         data.put("publisher", presence.getPublisher());
         data.put("statusDescription", presence.getExt());
         data.put("lastTime", presence.getLatestTime());
-        data.put("expirytime", presence.getExpiryTime());
-        data.put("statusDetails", presence.getStatusList());
+        data.put("expiryTime", presence.getExpiryTime());
+        Map<String, Integer> statusList = new HashMap<String, Integer>();
+        statusList.putAll(presence.getStatusList());
+        data.put("statusDetails", statusList);
         return data;
     }
 

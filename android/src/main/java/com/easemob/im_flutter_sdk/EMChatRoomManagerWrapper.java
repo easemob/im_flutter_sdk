@@ -166,7 +166,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
         asyncRunnable(() -> {
             EMChatRoom room = EMClient.getInstance().chatroomManager().getChatRoom(roomId);
-            onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
+            onSuccess(result, channelName,room != null ? EMChatRoomHelper.toJson(room) : null);
         });
     }
 
@@ -714,7 +714,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", chatRoomId);
                             data.put("newOwner", newOwner);
                             data.put("oldOwner", oldOwner);
-                            data.put("chatRoomChange", "onOwnerChanged");
+                            data.put("type", "onOwnerChanged");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -728,7 +728,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("announcement", announcement);
-                            data.put("chatRoomChange", "onAnnouncementChanged");
+                            data.put("type", "onAnnouncementChanged");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );

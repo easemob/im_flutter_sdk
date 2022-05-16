@@ -301,12 +301,7 @@
                              channelName:call.method
                                   result:result];
     }
-    else if([ChatIgnoreGroupPush isEqualToString:call.method])
-    {
-        [self ignoreGroupPush:call.arguments
-                  channelName:call.method
-                       result:result];
-    }
+    
     else
     {
         [super handleMethodCall:call result:result];
@@ -921,20 +916,6 @@
     }];
 }
 
-- (void)ignoreGroupPush:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    
-    __block NSString *groupId = param[@"groupId"];
-    [EMClient.sharedClient.pushManager updatePushServiceForGroups:@[groupId]
-                                                      disablePush:[param[@"ignore"] boolValue]
-                                                       completion:^(EMError * _Nonnull aError) {
-        EMGroup *aGroup = [EMGroup groupWithId:groupId];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aGroup toJson]];
-    }];
-}
 
 #pragma mark - EMGroupManagerDelegate
 

@@ -205,7 +205,6 @@ public class EMSDKMethod {
     static final String declineJoinApplication = "declineJoinApplication";
     static final String acceptInvitationFromGroup = "acceptInvitationFromGroup";
     static final String declineInvitationFromGroup = "declineInvitationFromGroup";
-    static final String ignoreGroupPush = "ignoreGroupPush";
 
     /// EMGroupManagerListener
     static final String onGroupChanged = "onGroupChanged";

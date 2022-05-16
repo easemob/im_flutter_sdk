@@ -254,8 +254,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
                 if (msg != null) {
                     EMClient.getInstance().chatManager().recallMessage(msg);
+                    onSuccess(result, channelName, true);
+                }else {
+                    onError(result, new HyphenateException(500, "The message was not found"));
                 }
-                onSuccess(result, channelName, true);               
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -273,11 +275,17 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void getConversation(JSONObject param, String channelName, Result result) throws JSONException {
         String conId = param.getString("con_id");
+        boolean createIfNeed = true;
+        if (param.has("createIfNeed")) {
+            createIfNeed = param.getBoolean("createIfNeed");
+        }
+
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
 
+        boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
-            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, true);
-            onSuccess(result, channelName, EMConversationHelper.toJson(conversation));
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed);
+            onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
         });
     }
 

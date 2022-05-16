@@ -19,7 +19,7 @@
         @"statusDetails": details,
         @"statusDescription": self.statusDescription,
         @"lastTime": @(self.lastTime),
-        @"expirytime": @(self.expirytime)
+        @"expiryTime": @(self.expirytime)
     };
 }
 

@@ -25,7 +25,7 @@ class EMConversation {
 
   /// @nodoc
   factory EMConversation.fromJson(Map<String, dynamic> map) {
-    Map<String, String>? ext = map["ext"]?.cast<String, String>();
+    Map<String, String>? ext = map.getMapValue("ext")?.cast<String, String>();
     EMConversation ret = EMConversation._private(
       map["con_id"],
       conversationTypeFromInt(map["type"]),

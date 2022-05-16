@@ -14,7 +14,7 @@ class EMPresence {
   final int lastTime;
 
   /// The expiration time of the presence subscription.
-  final int expireTime;
+  final int expiryTime;
 
   /// The details of the current presence state.
   Map<String, int>? statusDetails;
@@ -25,7 +25,7 @@ class EMPresence {
     this.statusDescription,
     this.statusDetails,
     this.lastTime,
-    this.expireTime,
+    this.expiryTime,
   );
 
   /// @nodoc
@@ -34,10 +34,10 @@ class EMPresence {
     String statusDescription =
         map.getStringValue("statusDescription", defaultValue: "")!;
     int latestTime = map.getIntValue("lastTime", defaultValue: 0)!;
-    int expireTime = map.getIntValue("expireTime", defaultValue: 0)!;
-    Map<String, int>? statusDetails = map["statusDetails"];
+    int expiryTime = map.getIntValue("expiryTime", defaultValue: 0)!;
+    Map<String, int>? statusDetails = map["statusDetails"]?.cast<String, int>();
     return EMPresence._private(
-        publisher, statusDescription, statusDetails, latestTime, expireTime);
+        publisher, statusDescription, statusDetails, latestTime, expiryTime);
   }
 }
 
