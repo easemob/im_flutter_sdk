@@ -210,7 +210,7 @@ class EMGroup {
   /// @nodoc
   Map toJson() {
     Map data = Map();
-    data.setValueWithOutNull("id", _groupId);
+    data.setValueWithOutNull("groupId", _groupId);
     data.setValueWithOutNull("name", _name);
     data.setValueWithOutNull("desc", _description);
     data.setValueWithOutNull("owner", _owner);
