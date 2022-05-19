@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/src/models/em_message_reaction.dart';
 
 import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
@@ -485,7 +484,7 @@ class EMMessage {
     data.setValueWithOutNull("hasReadAck", hasReadAck);
     data.setValueWithOutNull("hasDeliverAck", hasDeliverAck);
     data.setValueWithOutNull("needGroupAck", needGroupAck);
-    data.setValueWithOutNull("groupAckCount", groupAckCount);
+    data.setValueWithOutNull("groupAckCount", _groupAckCount);
     data.setValueWithOutNull("msgId", msgId);
     data.setValueWithOutNull("conversationId", this.conversationId ?? this.to);
     data.setValueWithOutNull("chatType", chatTypeToInt(chatType));

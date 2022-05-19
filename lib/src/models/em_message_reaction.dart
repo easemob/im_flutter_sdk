@@ -27,7 +27,7 @@ class EMMessageReaction {
     required this.userList,
   });
 
-  /// nodoc
+  /// @nodoc
   factory EMMessageReaction.fromJson(Map map) {
     String reaction = map["reaction"];
     int count = map["count"];

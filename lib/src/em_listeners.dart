@@ -1,7 +1,6 @@
 import 'package:im_flutter_sdk/src/models/em_chat_thread_event.dart';
 
 import '../im_flutter_sdk.dart';
-import 'models/em_message_reaction_change.dart';
 import 'models/em_presence.dart';
 
 ///
