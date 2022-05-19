@@ -1,6 +1,15 @@
 library im_flutter_sdk;
 
 export 'src/em_client.dart' show EMClient;
+export 'src/em_chat_manager.dart' show EMChatManager;
+export 'src/em_chat_manager_transform_plugin.dart' show EMTransformPlugin;
+export 'src/em_chat_manager_reaction_plugin.dart' show EMReactionPlugin;
+
+export 'src/em_contact_manager.dart' show EMContactManager;
+export 'src/em_group_manager.dart' show EMGroupManager;
+export 'src/em_chat_room_manager.dart' show EMChatRoomManager;
+export 'src/em_push_manager.dart' show EMPushManager;
+export 'src/em_userInfo_manager.dart' show EMUserInfoManager;
 export 'src/em_listeners.dart'
     show
         EMConnectionListener,
@@ -52,18 +61,11 @@ export 'src/models/em_file_message_body.dart' show EMFileMessageBody;
 export 'src/models/em_cmd_message_body.dart' show EMCmdMessageBody;
 export 'src/models/em_custom_message_body.dart' show EMCustomMessageBody;
 export 'src/models/em_location_message_body.dart' show EMLocationMessageBody;
+export 'src/models/em_message_reaction_change.dart'
+    show EMMessageReactionChange;
+export 'src/models/em_message_reaction.dart' show EMMessageReaction;
 
 export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
-
-export 'src/em_chat_manager.dart' show EMChatManager;
-export 'src/em_chat_manager_transform_plugin.dart' show EMTransformPlugin;
-export 'src/em_chat_manager_reaction_plugin.dart' show EMReactionPlugin;
-
-export 'src/em_contact_manager.dart' show EMContactManager;
-export 'src/em_group_manager.dart' show EMGroupManager;
-export 'src/em_chat_room_manager.dart' show EMChatRoomManager;
-export 'src/em_push_manager.dart' show EMPushManager;
-export 'src/em_userInfo_manager.dart' show EMUserInfoManager;
 
 @Deprecated("Switch to using MessageStatusCallBack instead.")
 export 'src/em_status_listener.dart';
