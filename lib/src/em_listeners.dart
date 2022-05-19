@@ -188,23 +188,6 @@ abstract class EMContactManagerListener {
   void onFriendRequestDeclined(String userName);
 }
 
-// abstract class EMConversationListener {
-//   void onConversationUpdate();
-// }
-
-///
-/// The chat room change listener.
-///
-/// Register the chat room change listener:
-/// ```dart
-///   EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(listener);
-/// ```
-///
-///Unregister the chat room change listener:
-/// ```dart
-///   EMClient.getInstance.chatRoomManager.removeChatRoomListener(listener);
-/// ```
-///
 abstract class EMChatRoomEventListener {
   ///
   /// Occurs when the chat room is destroyed.
@@ -881,6 +864,8 @@ abstract class EMChatManagerListener {
   /// Param [groupMessageAcks] The group message acks.
   ///
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  void onReadAckForGroupMessageUpdated() {}
 
   ///
   /// Occurs when a delivery receipt is received.

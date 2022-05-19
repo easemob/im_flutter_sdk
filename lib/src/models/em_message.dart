@@ -21,8 +21,6 @@ import '../../im_flutter_sdk.dart';
 /// ```
 ///
 class EMMessage {
-  int _groupAckCount = 0;
-
   /// 消息 ID。
   String? _msgId;
   String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
@@ -90,9 +88,12 @@ class EMMessage {
   ///
   bool needGroupAck = false;
 
+  int _groupAckCount = 0;
+
   ///
   /// Gets the number of members that have read the group message.
   ///
+  @Deprecated("Switch to using EMMessage#groupAckCount instead.")
   int get groupAckCount => _groupAckCount;
 
   ///
@@ -129,11 +130,6 @@ class EMMessage {
   /// Message body. We recommend you use {@link EMMessageBody)}.
   ///
   late EMMessageBody body;
-
-  ///
-  /// The Reaction list.
-  ///
-  List<EMMessageReaction>? reactionList;
 
   ///
   /// Sets the message status change callback.
@@ -608,24 +604,46 @@ extension EMMessageExtension on EMMessage {
       const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
 
   ///
-  /// Gets the Reaction content by the Reaction ID
+  /// Gets the Reaction list.
   ///
-  /// Param [reaction] The Reaction ID
+  /// **Return** The Reaction list
   ///
-  /// **Return**  The Reaction content
+  /// **Throws** A description of the exception. See {@link EMError}
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}
-  ///
-  Future<EMMessageReaction?> getReaction(String reaction) async {
+  Future<List<EMMessageReaction>?> reactionList() async {
     Map req = {"msgId": msgId};
-
     Map result = await _emMessageChannel.invokeMethod(
-      ChatMethodKeys.getReaction,
+      ChatMethodKeys.getReactionList,
       req,
     );
     try {
       EMError.hasErrorFromResult(result);
-      return EMMessageReaction.fromJson(result[ChatMethodKeys.getReaction]);
+      List<EMMessageReaction> list = [];
+      result[ChatMethodKeys.getReactionList]?.forEach(
+        (element) => list.add(
+          EMMessageReaction.fromJson(element),
+        ),
+      );
+      return list.length > 0 ? list : null;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the number of members that have read the group message.
+  ///
+  Future<int> groupAckCount() async {
+    Map req = {"msgId": msgId};
+    Map result =
+        await _emMessageChannel.invokeMethod(ChatMethodKeys.groupAckCount, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.groupAckCount)) {
+        return result[ChatMethodKeys.groupAckCount];
+      } else {
+        return 0;
+      }
     } on EMError catch (e) {
       throw e;
     }

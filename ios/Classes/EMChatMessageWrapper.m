@@ -10,6 +10,8 @@
 #import "EMChatMessageWrapper.h"
 #import "EMSDKMethod.h"
 
+#import "EMMessageReaction+Helper.h"
+
 
 @implementation EMChatMessageWrapper
 - (instancetype)initWithChannelName:(NSString *)aChannelName
@@ -26,8 +28,13 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
     if ([ChatGetReaction isEqualToString:call.method]) {
-        
-    }else {
+        [self getReaction:call.arguments channelName:call.method result:result];
+    } else if([ChatGetReactionList isEqualToString:call.method]){
+        [self getReactionList:call.arguments channelName:call.method result:result];
+    } else if([ChatGroupAckCount isEqualToString:call.method]) {
+        [self getGroupAckCount:call.arguments channelName:call.method result:result];
+    }
+    else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -37,11 +44,42 @@
         channelName:(NSString *)aChannelName
              result:(FlutterResult)result {
     NSString *msgId = param[@"msgId"];
+    NSString *reaction = param[@"reaction"];
     EMChatMessage *msg = [self getMessageWithId:msgId];
-    // TODO: getReaction
+    EMMessageReaction *msgReaction = [msg getReaction:reaction];
+    [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:[msgReaction toJson]];
 }
 
+- (void)getReactionList:(NSDictionary *)param
+        channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    NSString *msgId = param[@"msgId"];
+    EMChatMessage *msg = [self getMessageWithId:msgId];
+    NSMutableArray *list = [NSMutableArray array];
+    for (EMMessageReaction *reaction in msg.reactionList) {
+        [list addObject:[reaction toJson]];
+    }
+    
+    [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                   object:list.count > 0 ? list : nil];
+}
 
+- (void)getGroupAckCount:(NSDictionary *)param
+        channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    NSString *msgId = param[@"msgId"];
+    EMChatMessage *msg = [self getMessageWithId:msgId];
+    [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:@(msg.groupAckCount)];
+    
+}
 
 - (EMChatMessage *)getMessageWithId:(NSString *)aMessageId {
     return [EMClient.sharedClient.chatManager getMessageWithMessageId:aMessageId];
