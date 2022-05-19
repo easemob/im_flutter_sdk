@@ -85,6 +85,7 @@ class ChatMethodKeys {
   static const String removeReaction = "removeReaction";
   static const String fetchReactionList = "fetchReactionList";
   static const String fetchReactionDetail = "fetchReactionDetail";
+  static const String reportMessage = "reportMessage";
 
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";

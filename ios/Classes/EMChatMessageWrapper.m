@@ -27,9 +27,7 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     
-    if ([ChatGetReaction isEqualToString:call.method]) {
-        [self getReaction:call.arguments channelName:call.method result:result];
-    } else if([ChatGetReactionList isEqualToString:call.method]){
+    if([ChatGetReactionList isEqualToString:call.method]){
         [self getReactionList:call.arguments channelName:call.method result:result];
     } else if([ChatGroupAckCount isEqualToString:call.method]) {
         [self getGroupAckCount:call.arguments channelName:call.method result:result];
