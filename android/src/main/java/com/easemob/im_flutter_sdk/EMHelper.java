@@ -20,6 +20,8 @@ import com.hyphenate.chat.EMLanguage;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
+import com.hyphenate.chat.EMMessageReaction;
+import com.hyphenate.chat.EMMessageReactionChange;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
@@ -1000,7 +1002,7 @@ class EMDeviceInfoHelper {
     }
 }
 
-class EMCursorResultHelper {
+class                                                                                                                                                                                                                                                                    EMCursorResultHelper {
 
     static Map<String, Object> toJson(EMCursorResult result) {
         Map<String, Object> data = new HashMap<>();
@@ -1031,6 +1033,10 @@ class EMCursorResultHelper {
 
                 if (obj instanceof EMGroupInfo) {
                     jsonList.add(EMGroupInfoHelper.toJson((EMGroupInfo) obj));
+                }
+
+                if (obj instanceof EMMessageReaction) {
+                    jsonList.add(EMMessageReactionHelper.toJson((EMMessageReaction) obj));
                 }
             }
         }
@@ -1169,6 +1175,32 @@ class EMLanguageHelper {
         data.put("code", language.LanguageCode);
         data.put("name", language.LanguageName);
         data.put("nativeName", language.LanguageLocalName);
+        return data;
+    }
+}
+
+class EMMessageReactionHelper {
+    static Map<String, Object> toJson(EMMessageReaction reaction) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("reaction", reaction.getReaction());
+        data.put("count", reaction.getUserCount());
+        data.put("isAddedBySelf", reaction.isAddedBySelf());
+        data.put("userList", reaction.getUserList());
+        return data;
+    }
+}
+
+class EMMessageReactionChangeHelper {
+    static Map<String, Object> toJson(EMMessageReactionChange change) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("conversationId", change.getConversionID());
+        data.put("messageId", change.getMessageId());
+        ArrayList<Map<String, Object>> list = new ArrayList<>();
+        for (int i = 0; i < change.getMessageReactionList().size(); i++) {
+            list.add(EMMessageReactionHelper.toJson(change.getMessageReactionList().get(i)));
+        }
+        data.put("reactions", list);
+
         return data;
     }
 }

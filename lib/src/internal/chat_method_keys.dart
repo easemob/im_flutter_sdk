@@ -83,13 +83,15 @@ class ChatMethodKeys {
 
   static const String addReaction = "addReaction";
   static const String removeReaction = "removeReaction";
-  static const String fetchReaction = "fetchReaction";
+  static const String fetchReactionList = "fetchReactionList";
   static const String fetchReactionDetail = "fetchReactionDetail";
 
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessagesRead = "onMessagesRead";
+  static const String onReadAckForGroupMessageUpdated =
+      "onReadAckForGroupMessageUpdated";
   static const String onGroupMessageRead = "onGroupMessageRead";
   static const String onMessagesDelivered = "onMessagesDelivered";
   static const String onMessagesRecalled = "onMessagesRecalled";
@@ -97,6 +99,8 @@ class ChatMethodKeys {
 
   static const String onConversationUpdate = "onConversationUpdate";
   static const String onConversationHasRead = "onConversationHasRead";
+
+  static const String onMessageReactionDidChange = "messageReactionDidChange";
 
   /// EMMessage listener
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";
@@ -127,7 +131,8 @@ class ChatMethodKeys {
   static const String loadMsgWithTime = "loadMsgWithTime";
 
   /// EMMessage method
-  static const String getReaction = "getReaction";
+  static const String getReactionList = "getReactionList";
+  static const String groupAckCount = "groupAckCount";
 
   /// EMChatRoomManager methods
   static const String joinChatRoom = "joinChatRoom";

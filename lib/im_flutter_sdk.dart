@@ -9,7 +9,6 @@ export 'src/em_listeners.dart'
         EMGroupEventListener,
         EMChatRoomEventListener,
         EMContactManagerListener,
-        EMChatThreadManagerListener,
         EMCustomListener,
         EMPresenceManagerListener;
 
@@ -54,13 +53,17 @@ export 'src/models/em_cmd_message_body.dart' show EMCmdMessageBody;
 export 'src/models/em_custom_message_body.dart' show EMCustomMessageBody;
 export 'src/models/em_location_message_body.dart' show EMLocationMessageBody;
 
+export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
+
+export 'src/em_chat_manager.dart' show EMChatManager;
+export 'src/em_chat_manager_transform_plugin.dart' show EMTransformPlugin;
+export 'src/em_chat_manager_reaction_plugin.dart' show EMReactionPlugin;
+
+export 'src/em_contact_manager.dart' show EMContactManager;
+export 'src/em_group_manager.dart' show EMGroupManager;
+export 'src/em_chat_room_manager.dart' show EMChatRoomManager;
+export 'src/em_push_manager.dart' show EMPushManager;
+export 'src/em_userInfo_manager.dart' show EMUserInfoManager;
+
 @Deprecated("Switch to using MessageStatusCallBack instead.")
 export 'src/em_status_listener.dart';
-export 'src/em_message_status_callback.dart';
-
-export 'src/em_chat_manager.dart';
-export 'src/em_contact_manager.dart';
-export 'src/em_group_manager.dart';
-export 'src/em_chat_room_manager.dart';
-export 'src/em_push_manager.dart';
-export 'src/em_userInfo_manager.dart';

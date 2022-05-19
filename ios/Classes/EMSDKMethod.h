@@ -89,7 +89,7 @@ static NSString *const ChatFetchSupportedLanguages = @"fetchSupportLanguages";
 
 static NSString *const ChatAddReaction = @"addReaction";
 static NSString *const ChatRemoveReaction = @"removeReaction";
-static NSString *const ChatFetchReactionList = @"fetchReaction";
+static NSString *const ChatFetchReactionList = @"fetchReactionList";
 static NSString *const ChatFetchReactionDetail = @"fetchReactionDetail";
 
 #pragma mark - EMChatManagerDelegate
@@ -97,11 +97,14 @@ static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
 static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";
 static NSString *const ChatOnMessagesRead = @"onMessagesRead";
 static NSString *const ChatOnGroupMessageRead = @"onGroupMessageRead";
+static NSString *const ChatOnReadAckForGroupMessageUpdated = @"onReadAckForGroupMessageUpdated";
 static NSString *const ChatOnMessagesDelivered = @"onMessagesDelivered";
 static NSString *const ChatOnMessagesRecalled = @"onMessagesRecalled";
 
 static NSString *const ChatOnConversationUpdate = @"onConversationUpdate";
 static NSString *const ChatOnConversationHasRead = @"onConversationHasRead";
+
+static NSString *const ChatOnMessageReactionDidChange = @"messageReactionDidChange";
 
 #pragma mark - EMMessageListener
 static NSString *const ChatOnMessageProgressUpdate = @"onMessageProgressUpdate";
@@ -132,7 +135,8 @@ static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
 
 #pragma mark - EMChatMessageWrapper
-static NSString *const ChatGetReaction = @"getReaction";
+static NSString *const ChatGetReactionList = @"getReactionList";
+static NSString *const ChatGroupAckCount = @"groupAckCount";
 
 
 #pragma mark - EMChatroomManagerWrapper

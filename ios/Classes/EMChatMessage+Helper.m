@@ -41,7 +41,7 @@
     });
     
     
-    msg.chatType = [msg chatTypeFromInt:[aJson[@"chatType"] intValue]];
+    msg.chatType = [EMChatMessage chatTypeFromInt:[aJson[@"chatType"] intValue]];
     msg.status = [msg statusFromInt:[aJson[@"status"] intValue]];
     msg.localTime = [aJson[@"localTime"] longLongValue];
     msg.timestamp = [aJson[@"serverTime"] longLongValue];
@@ -71,7 +71,7 @@
     ret[@"attributes"] = self.ext;
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = @([self statusToInt:self.status]);
-    ret[@"chatType"] = @([self chatTypeToInt:self.chatType]);
+    ret[@"chatType"] = @([EMChatMessage chatTypeToInt:self.chatType]);
     ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
     
@@ -134,7 +134,7 @@
     return status;
 }
 
-- (EMChatType)chatTypeFromInt:(int)aType {
++ (EMChatType)chatTypeFromInt:(int)aType {
     EMChatType type = EMChatTypeChat;
     switch (aType) {
         case 0:
@@ -151,7 +151,7 @@
     return type;
 }
 
-- (int)chatTypeToInt:(EMChatType)aType {
++ (int)chatTypeToInt:(EMChatType)aType {
     int type;
     switch (aType) {
         case EMChatTypeChat:
@@ -351,6 +351,17 @@
     NSDictionary *dic = aJson[@"params"];
     if ([dic isKindOfClass:[NSNull class]]) {
         dic = nil;
+    }else if ([dic isKindOfClass:[NSString class]]) {
+        NSError *err = nil;
+        NSData *jsonData = [(NSString *)dic dataUsingEncoding:NSUTF8StringEncoding];
+        id obj = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                 options:NSJSONReadingMutableContainers
+                                                   error:&err];
+        if (err == nil && obj != nil) {
+            dic = (NSDictionary *)obj;
+        }else {
+            dic = nil;
+        }
     }
     
     EMCustomMessageBody *ret = [[EMCustomMessageBody alloc] initWithEvent:aJson[@"event"]

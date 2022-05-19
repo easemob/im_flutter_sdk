@@ -13,7 +13,8 @@
 #import "EMGroupMessageAck+Helper.h"
 #import "EMError+Helper.h"
 #import "EMCursorResult+Helper.h"
-
+#import "EMMessageReaction+Helper.h"
+#import "EMMessageReactionChange+Helper.h"
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
@@ -682,7 +683,16 @@
              result:(FlutterResult)result {
     NSString *reaction = param[@"reaction"];
     NSString *msgId = param[@"msgId"];
-    // TODO:
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager addReaction:reaction
+                                         toMessage:msgId
+                                        completion:^(EMError * error)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:nil];
+    }];
 }
 
 - (void)removeReaction:(NSDictionary *)param
@@ -690,7 +700,13 @@
                 result:(FlutterResult)result {
     NSString *reaction = param[@"reaction"];
     NSString *msgId = param[@"msgId"];
-    // TODO:
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager removeReaction:reaction fromMessage:msgId completion:^(EMError * error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:nil];
+    }];
 }
 
 - (void)fetchReactionList:(NSDictionary *)param
@@ -698,9 +714,28 @@
                    result:(FlutterResult)result {
     NSArray *msgIds = param[@"msgIds"];
     NSString *groupId = param[@"groupId"];
-    EMChatType type = param[@"chatType"];
-    // TODO:
-    
+    EMChatType type = [EMChatMessage chatTypeFromInt:[param[@"chatType"] intValue]];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager getReactionList:msgIds
+                                                groupId:groupId
+                                               chatType:type
+                                             completion:^(NSDictionary<NSString *,NSArray *> * dic, EMError * error)
+      {
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+        for (NSString *key in dic.allKeys) {
+            NSArray *ary = dic[key];
+            NSMutableArray *list = [NSMutableArray array];
+            for (EMMessageReaction *reaction in ary) {
+                [list addObject:[reaction toJson]];
+            }
+            dictionary[key] = list;
+        }
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:dictionary];
+    }];
 }
 
 - (void)fetchReactionDetail:(NSDictionary *)param
@@ -710,7 +745,23 @@
     NSString *reaction = param[@"reaction"];
     NSString *cursor = param[@"cursor"];
     int pageSize = [param[@"pageSize"] intValue];
-    // TODO:
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager getReactionDetail:msgId
+                                                reaction:reaction
+                                                  cursor:cursor
+                                                pageSize:pageSize
+                                              completion:^(EMMessageReaction * reaction, NSString * _Nullable cursor, EMError * error)
+     {
+        EMCursorResult *cursorResult = nil;
+        if (error == nil) {
+            cursorResult = [EMCursorResult cursorResultWithList:@[reaction] andCursor:cursor];
+        }
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[cursorResult toJson]];
+    }];
 }
 
 #pragma mark - EMChatManagerDelegate
@@ -794,6 +845,21 @@
                      arguments:list];
 }
 
+- (void)groupMessageAckHasChanged {
+    [self.channel invokeMethod:ChatOnReadAckForGroupMessageUpdated
+                     arguments:nil];
+}
+
+
+- (void)messageReactionDidChange:(NSArray<EMMessageReactionChange *> *)changes {
+    NSMutableArray *list = [NSMutableArray array];
+    for (EMMessageReactionChange *change in changes) {
+        [list addObject:[change toJson]];
+    }
+    
+    [self.channel invokeMethod:ChatOnMessageReactionDidChange
+                     arguments:list];
+}
 
 - (EMMessageSearchDirection)searchDirectionFromString:(NSString *)aDirection {
     return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;

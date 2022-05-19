@@ -3,9 +3,14 @@ package com.easemob.im_flutter_sdk;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessageReaction;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -23,8 +28,8 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         JSONObject param = (JSONObject)call.arguments;
 
         try {
-            if (EMSDKMethod.getUnreadMsgCount.equals(call.method)) {
-                getReaction(param, call.method, result);
+            if (EMSDKMethod.getReactionList.equals(call.method)) {
+                reactionList(param, call.method, result);
             }
             else
             {
@@ -35,10 +40,16 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         }
     }
 
-    private void getReaction(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+
+    private void reactionList(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
         String msgId = params.getString("msgId");
         EMMessage msg = getMessageWithId(msgId);
-        // TODO: getReaction
+        ArrayList<Map<String, Object>> list = new ArrayList<>();
+        List<EMMessageReaction> reactions = msg.getMessageReaction();
+        for (int i = 0; i < reactions.size(); i++) {
+            list.add(EMMessageReactionHelper.toJson(reactions.get(i)));
+        }
+        onSuccess(result, channelName, list);
     }
 
     private EMMessage getMessageWithId(String msgId) {

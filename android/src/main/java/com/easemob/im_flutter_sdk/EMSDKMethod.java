@@ -88,11 +88,14 @@ public class EMSDKMethod {
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
     static final String onMessagesRead = "onMessagesRead";
     static final String onGroupMessageRead = "onGroupMessageRead";
+    static final String onReadAckForGroupMessageUpdated = "onReadAckForGroupMessageUpdated";
     static final String onMessagesDelivered = "onMessagesDelivered";
     static final String onMessagesRecalled = "onMessagesRecalled";
 
     static final String onConversationUpdate = "onConversationUpdate";
     static final String onConversationHasRead = "onConversationHasRead";
+
+    static final String onMessageReactionDidChange = "messageReactionDidChange";
 
     /// EMMessage listener
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
@@ -120,7 +123,7 @@ public class EMSDKMethod {
     static final String loadMsgWithTime = "loadMsgWithTime";
 
     // EMMessage method
-    static final String getReaction = "getReaction";
+    static final String getReactionList = "getReactionList";
 
     // EMChatRoomManager
     static final String joinChatRoom = "joinChatRoom";
