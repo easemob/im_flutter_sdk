@@ -101,6 +101,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 fetchReactionList(param, call.method, result);
             } else if (EMSDKMethod.fetchReactionDetail.equals(call.method)) {
                 fetchReactionDetail(param, call.method, result);
+            } else if (EMSDKMethod.reportMessage.equals(call.method)) {
+                reportMessage(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -622,6 +624,13 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 updateObject(EMCursorResultHelper.toJson(object));
             }
         });
+    }
+
+    private void reportMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.getString("msgId");
+        String tag = param.getString("tag");
+        String reason = param.getString("reason");
+        EMClient.getInstance().chatManager().asyncReportMessage(msgId, tag, reason, new EMWrapperCallBack(result, channelName, true));
     }
 
     private void registerEaseListener() {

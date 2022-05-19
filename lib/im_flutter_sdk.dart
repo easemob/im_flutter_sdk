@@ -4,6 +4,7 @@ export 'src/em_client.dart' show EMClient;
 export 'src/em_chat_manager.dart' show EMChatManager;
 export 'src/em_chat_manager_transform_plugin.dart' show EMTransformPlugin;
 export 'src/em_chat_manager_reaction_plugin.dart' show EMReactionPlugin;
+export 'src/em_chat_manager_moderation_plugin.dart' show EMModerationPlugin;
 
 export 'src/em_contact_manager.dart' show EMContactManager;
 export 'src/em_group_manager.dart' show EMGroupManager;

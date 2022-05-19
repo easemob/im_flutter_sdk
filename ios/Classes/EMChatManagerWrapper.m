@@ -151,6 +151,10 @@
         [self fetchReactionDetail:call.arguments
                       channelName:call.method
                            result:result];
+    } else if ([ChatReportMessage isEqualToString:call.method]) {
+        [self reportMessage:call.arguments
+                channelName:call.method
+                     result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -761,6 +765,25 @@
                       channelName:aChannelName
                             error:error
                            object:[cursorResult toJson]];
+    }];
+}
+
+- (void)reportMessage:(NSDictionary *)param
+          channelName:(NSString *)aChannelName
+               result:(FlutterResult)result {
+    NSString *msgId = param[@"msgId"];
+    NSString *tag = param[@"tag"];
+    NSString *reason = param[@"reason"];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager reportMessageWithId:msgId
+                                                       tag:tag
+                                                    reason:reason
+                                                completion:^(EMError *error)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@(!error)];
     }];
 }
 

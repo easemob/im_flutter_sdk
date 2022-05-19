@@ -91,6 +91,7 @@ static NSString *const ChatAddReaction = @"addReaction";
 static NSString *const ChatRemoveReaction = @"removeReaction";
 static NSString *const ChatFetchReactionList = @"fetchReactionList";
 static NSString *const ChatFetchReactionDetail = @"fetchReactionDetail";
+static NSString *const ChatReportMessage = @"reportMessage";
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
