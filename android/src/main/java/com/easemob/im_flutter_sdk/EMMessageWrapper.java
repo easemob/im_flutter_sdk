@@ -30,6 +30,8 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         try {
             if (EMSDKMethod.getReactionList.equals(call.method)) {
                 reactionList(param, call.method, result);
+            }else if (EMSDKMethod.groupAckCount.equals(call.method)){
+                getAckCount(param, call.method, result);
             }
             else
             {
@@ -54,5 +56,13 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
 
     private EMMessage getMessageWithId(String msgId) {
         return EMClient.getInstance().chatManager().getMessage(msgId);
+    }
+
+    private void getAckCount(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String msgId = params.getString("msgId");
+        EMMessage msg = getMessageWithId(msgId);
+        asyncRunnable(()->{
+            onSuccess(result, channelName,  msg.groupAckCount());
+        });
     }
 }

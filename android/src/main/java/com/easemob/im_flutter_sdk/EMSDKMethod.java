@@ -125,6 +125,7 @@ public class EMSDKMethod {
 
     // EMMessage method
     static final String getReactionList = "getReactionList";
+    static final String groupAckCount = "groupAckCount";
 
     // EMChatRoomManager
     static final String joinChatRoom = "joinChatRoom";
