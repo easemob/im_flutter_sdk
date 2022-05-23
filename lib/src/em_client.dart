@@ -7,6 +7,7 @@ import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
 import 'tools/em_log.dart';
+import 'tools/em_progress_manager.dart';
 
 ///
 /// The EMClient class, which is the entry point of the Chat SDK. With this class, you can log in, log out, and access other functionalities such as group and chatroom.
@@ -22,6 +23,7 @@ class EMClient {
   final EMGroupManager _groupManager = EMGroupManager();
   final EMPushManager _pushManager = EMPushManager();
   final EMUserInfoManager _userInfoManager = EMUserInfoManager();
+  final EMProgressManager _emProgressManager = EMProgressManager();
   final List<EMConnectionListener> _connectionListeners = [];
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
   final List<EMCustomListener> _customListeners = [];
@@ -36,8 +38,7 @@ class EMClient {
   /// Gets the current logged-in username.
   String? get currentUsername => _currentUsername;
 
-  static EMClient get getInstance =>
-      _instance = _instance ?? EMClient._internal();
+  static EMClient get getInstance => _instance ??= EMClient._internal();
 
   EMClient._internal() {
     _addNativeMethodCallHandler();

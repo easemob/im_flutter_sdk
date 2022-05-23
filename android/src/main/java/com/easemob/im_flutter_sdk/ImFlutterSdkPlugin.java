@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
+import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.EMLog;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -86,6 +87,33 @@ class EMWrapperCallBack implements EMCallBack {
     @Override
     public void onProgress(int progress, String status) {
         // no need
+    }
+}
+
+class EMDownloadCallback implements EMCallBack {
+
+    EMDownloadCallback(String fileId, String savePath) {
+        this.fileId = fileId;
+        this.savePath = savePath;
+    }
+    String savePath;
+    String fileId;
+
+
+    @Override
+    public void onSuccess() {
+        EMClientWrapper.getInstance().progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
+    }
+
+    @Override
+    public void onError(int code, String error) {
+        HyphenateException e = new HyphenateException(code, error);
+        EMClientWrapper.getInstance().progressManager.sendDownloadErrorToFlutter(fileId, e);
+    }
+
+    @Override
+    public void onProgress(int progress, String status) {
+        EMClientWrapper.getInstance().progressManager.sendDownloadProgressToFlutter(fileId, progress);
     }
 }
 

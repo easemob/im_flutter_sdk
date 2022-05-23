@@ -12,6 +12,7 @@
 #import "EMCursorResult+Helper.h"
 #import "EMListenerHandle.h"
 #import "EMSDKMethod.h"
+#import "EMClientWrapper.h"
 
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
 
@@ -780,20 +781,26 @@
 }
 
 - (void)downloadGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
+    __block NSString *fileId = param[@"fileId"];
+    __block NSString *savePath = param[@"savePath"];
     [EMClient.sharedClient.groupManager downloadGroupSharedFileWithId:param[@"groupId"]
-                                                             filePath:param[@"savePath"]
-                                                         sharedFileId:param[@"fileId"]
+                                                             filePath:savePath
+                                                         sharedFileId:fileId
                                                              progress:^(int progress)
      {
-        
+        [EMClientWrapper.sharedWrapper.progressManager sendDownloadProgressToFlutter:fileId progress:progress];
     } completion:^(EMGroup *aGroup, EMError *aError)
      {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:@(!aError)];
+        if (aError) {
+            [EMClientWrapper.sharedWrapper.progressManager sendDownloadErrorToFlutter:fileId error:aError];
+        }else {
+            [EMClientWrapper.sharedWrapper.progressManager sendDownloadSuccessToFlutter:fileId path:savePath];
+        }
     }];
+    [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:@(YES)];
 }
 
 - (void)removeGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {

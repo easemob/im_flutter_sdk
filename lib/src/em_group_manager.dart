@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'em_download_callback.dart';
+import 'models/em_download_callback.dart';
 import 'em_listeners.dart';
 import 'internal/em_event_keys.dart';
 import 'models/em_cursor_result.dart';
@@ -35,6 +35,8 @@ class EMGroupManager {
   }
 
   final _groupChangeListeners = [];
+
+  EMDownloadCallback? downloadCallback;
 
   ///
   /// Gets the group instance from the cache by group ID.
@@ -942,7 +944,6 @@ class EMGroupManager {
     required String groupId,
     required String fileId,
     required String savePath,
-    EMDownloadCallback? callback,
   }) async {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
     Map result = await _channel.invokeMethod(

@@ -31,6 +31,7 @@ import org.json.JSONObject;
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     static EMClientWrapper wrapper;
+    public EMProgressManager progressManager;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -47,6 +48,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }
         post(()-> channel.invokeMethod(EMSDKMethod.onSendDataToFlutter, data));
     }
+
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
@@ -310,6 +312,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMPresenceManagerWrapper(binging, "chat_presence_manager");
         new EMMessageWrapper(binging, "chat_message");
         new EMChatThreadManagerWrapper(binging, "chat_thread_manager");
+        progressManager = new EMProgressManager(binging, "file_progress_manager");
     }
 
 

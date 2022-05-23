@@ -708,7 +708,11 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         }
 
         EMClient.getInstance().groupManager().asyncDownloadGroupSharedFile(groupId, fileId, savePath,
-                new EMWrapperCallBack(result, channelName, true));
+                new EMDownloadCallback(fileId, savePath));
+
+        post(()->{
+            onSuccess(result, channelName, true);
+        });
     }
 
     private void removeGroupSharedFile(JSONObject param, String channelName, Result result) throws JSONException {

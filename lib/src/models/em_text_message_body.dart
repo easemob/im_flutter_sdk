@@ -18,7 +18,10 @@ class EMTextMessageBody extends EMMessageBody {
   EMTextMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.TXT) {
     this.content = map.getStringValue("content", defaultValue: "")!;
-    this.targetLanguages = map.getList<String>("targetLanguages");
+    this.targetLanguages =
+        map.getList<String>("targetLanguages", valueCallback: (item) {
+      return item;
+    });
   }
 
   @override
