@@ -60,8 +60,8 @@
         NSArray *ary = _handleList;
         for (EMListenerHandleCallback callback in ary) {
             callback();
-            [_handleList removeObject:callback];
         }
+        [_handleList removeAllObjects];
     }
 }
 

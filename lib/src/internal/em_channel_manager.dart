@@ -5,4 +5,7 @@ class EMMethodChannel {
 
   static const MethodChannel ChatManager =
       const MethodChannel('$channelPrefix/chat_manager', JSONMethodCodec());
+
+  static const MethodChannel ProgressChannel = const MethodChannel(
+      "$channelPrefix/file_progress_manager", JSONMethodCodec());
 }

@@ -157,9 +157,10 @@ extension MapExtension on Map {
   }
 
   List<T>? getList<T>(String key, {valueCallback: MapResultCallback}) {
-    List<String>? list = this[key];
     List<T>? ret;
-    if (list != null) {
+    if (this.containsKey(key)) {
+      List list = this[key];
+
       List<T> typeList = [];
       for (var item in list) {
         typeList.add(valueCallback(item));
@@ -168,7 +169,6 @@ extension MapExtension on Map {
         ret = typeList;
       }
     }
-
     return ret;
   }
 

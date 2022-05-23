@@ -64,6 +64,7 @@ export 'src/models/em_custom_message_body.dart' show EMCustomMessageBody;
 export 'src/models/em_location_message_body.dart' show EMLocationMessageBody;
 export 'src/models/em_message_reaction_change.dart'
     show EMMessageReactionChange;
+export 'src/models/em_download_callback.dart';
 export 'src/models/em_message_reaction.dart' show EMMessageReaction;
 
 export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
