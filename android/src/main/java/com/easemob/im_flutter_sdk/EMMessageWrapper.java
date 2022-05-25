@@ -47,9 +47,11 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         String msgId = params.getString("msgId");
         EMMessage msg = getMessageWithId(msgId);
         ArrayList<Map<String, Object>> list = new ArrayList<>();
-        List<EMMessageReaction> reactions = msg.getMessageReaction();
-        for (int i = 0; i < reactions.size(); i++) {
-            list.add(EMMessageReactionHelper.toJson(reactions.get(i)));
+        if (msg != null) {
+            List<EMMessageReaction> reactions = msg.getMessageReaction();
+            for (int i = 0; i < reactions.size(); i++) {
+                list.add(EMMessageReactionHelper.toJson(reactions.get(i)));
+            }
         }
         onSuccess(result, channelName, list);
     }
@@ -62,7 +64,7 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         String msgId = params.getString("msgId");
         EMMessage msg = getMessageWithId(msgId);
         asyncRunnable(()->{
-            onSuccess(result, channelName,  msg.groupAckCount());
+            onSuccess(result, channelName,  msg != null ? msg.groupAckCount() : 0);
         });
     }
 }
