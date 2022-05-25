@@ -211,9 +211,13 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMChatRoom> fetchChatRoomInfoFromServer(String roomId) async {
+  Future<EMChatRoom> fetchChatRoomInfoFromServer(
+    String roomId, {
+    bool fetchMembers = false,
+  }) async {
     Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchChatRoomInfoFromServer, {"roomId": roomId});
+        ChatMethodKeys.fetchChatRoomInfoFromServer,
+        {"roomId": roomId, "fetchMembers": fetchMembers});
     try {
       EMError.hasErrorFromResult(result);
       return EMChatRoom.fromJson(

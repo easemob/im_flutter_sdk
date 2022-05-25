@@ -44,6 +44,5 @@ public class EMProgressManager extends EMWrapper implements MethodChannel.Method
         post(()->{
             channel.invokeMethod("onError", data);
         });
-
     }
 }
