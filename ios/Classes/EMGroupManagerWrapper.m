@@ -397,7 +397,10 @@
 
 - (void)getGroupSpecificationFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:param[@"groupId"]
+    NSString *groupId = param[@"groupId"];
+    BOOL fetchMembers = [param[@"fetchMembers"] boolValue];
+    [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
+                                                                 fetchMembers:fetchMembers
                                                                    completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result

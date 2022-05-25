@@ -256,15 +256,15 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void getGroupSpecificationFromServer(JSONObject param, String channelName, Result result)
             throws JSONException {
         String groupId = param.getString("groupId");
-
-        EMValueWrapperCallBack<EMGroup> callBack = new EMValueWrapperCallBack<EMGroup>(result, channelName) {
-            @Override
-            public void onSuccess(EMGroup object) {
-                updateObject(EMGroupHelper.toJson(object));
+        boolean fetchMembers = param.getBoolean("fetchMembers");
+        asyncRunnable(() -> {
+            try {
+                EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId, fetchMembers);
+                onSuccess(result, channelName, EMGroupHelper.toJson(group));
+            } catch (HyphenateException e) {
+                onError(result, e);
             }
-        };
-
-        EMClient.getInstance().groupManager().asyncGetGroupFromServer(groupId, callBack);
+        });
     }
 
     private void getGroupMemberListFromServer(JSONObject param, String channelName, Result result)

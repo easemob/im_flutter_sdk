@@ -204,8 +204,11 @@ class EMGroupManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMGroup> fetchGroupInfoFromServer(String groupId) async {
-    Map req = {'groupId': groupId};
+  Future<EMGroup> fetchGroupInfoFromServer(
+    String groupId, {
+    bool fetchMembers = false,
+  }) async {
+    Map req = {"groupId": groupId, "fetchMembers": fetchMembers};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getGroupSpecificationFromServer, req);
     try {

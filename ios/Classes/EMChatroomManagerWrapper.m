@@ -277,14 +277,13 @@
 - (void)fetchChatroomInfoFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *chatroomId = param[@"roomId"];
-    [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId
-                                                                     completion:^(EMChatroom *aChatroom, EMError *aError)
-    {
+    BOOL fetchMembers = [param[@"fetchMembers"] boolValue];
+    
+    [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId fetchMembers:fetchMembers completion:^(EMChatroom *aChatroom, EMError *aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
                            object:[aChatroom toJson]];
-        
     }];
 }
 
