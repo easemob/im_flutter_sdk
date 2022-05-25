@@ -80,7 +80,7 @@ public class EMSDKMethod {
 
     static final String addReaction = "addReaction";
     static final String removeReaction = "removeReaction";
-    static final String fetchReaction = "fetchReaction";
+    static final String fetchReactionList = "fetchReactionList";
     static final String fetchReactionDetail = "fetchReactionDetail";
     static final String reportMessage = "reportMessage";
 

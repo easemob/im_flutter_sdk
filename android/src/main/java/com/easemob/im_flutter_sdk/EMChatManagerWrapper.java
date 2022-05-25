@@ -97,7 +97,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 addReaction(param, call.method, result);
             } else if (EMSDKMethod.removeReaction.equals(call.method)) {
                 removeReaction(param, call.method, result);
-            } else if (EMSDKMethod.fetchReaction.equals(call.method)) {
+            } else if (EMSDKMethod.fetchReactionList.equals(call.method)) {
                 fetchReactionList(param, call.method, result);
             } else if (EMSDKMethod.fetchReactionDetail.equals(call.method)) {
                 fetchReactionDetail(param, call.method, result);
