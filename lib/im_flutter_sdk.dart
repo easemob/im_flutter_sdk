@@ -5,6 +5,7 @@ export 'src/em_chat_manager.dart' show EMChatManager;
 export 'src/em_chat_manager_transform_plugin.dart' show EMTransformPlugin;
 export 'src/em_chat_manager_reaction_plugin.dart' show EMReactionPlugin;
 export 'src/em_chat_manager_moderation_plugin.dart' show EMModerationPlugin;
+export 'src/em_chat_thread_manager.dart' show EMChatThreadManager;
 
 export 'src/em_contact_manager.dart' show EMContactManager;
 export 'src/em_group_manager.dart' show EMGroupManager;
@@ -20,7 +21,8 @@ export 'src/em_listeners.dart'
         EMChatRoomEventListener,
         EMContactManagerListener,
         EMCustomListener,
-        EMPresenceManagerListener;
+        EMPresenceManagerListener,
+        EMChatThreadManagerListener;
 
 export 'src/models/em_group_message_ack.dart' show EMGroupMessageAck;
 export 'src/models/em_chat_room.dart' show EMChatRoom;

@@ -260,7 +260,11 @@ public class EMSDKMethod {
     static final String leaveChatThread = "leaveChatThread";
     static final String destroyChatThread = "destroyChatThread";
 
-    // TODO: EMChatThreadManagerListener
+    // EMChatThreadManagerListener
+    static final String onChatThreadCreated = "onChatThreadCreated";
+    static final String onChatThreadUpdated = "onChatThreadUpdated";
+    static final String onChatThreadDestroyed = "onChatThreadDestroyed";
+    static final String onChatThreadUserRemoved = "onChatThreadUserRemoved";
 
 
     /// HandleAction

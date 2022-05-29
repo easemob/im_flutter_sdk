@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/models/em_chat_thread_event.dart';
 
-import 'em_listeners.dart';
 import 'tools/em_extension.dart';
 import 'internal/chat_method_keys.dart';
 import 'models/em_chat_thread.dart';
@@ -11,6 +11,20 @@ class EMChatThreadManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_thread_manager', JSONMethodCodec());
 
+  EMChatThreadManager() {
+    _channel.setMethodCallHandler((MethodCall call) async {
+      Map? argMap = call.arguments;
+      if (call.method == ChatMethodKeys.onChatThreadCreated) {
+        _onChatThreadCreated(argMap);
+      } else if (call.method == ChatMethodKeys.onChatThreadUpdated) {
+        _onChatThreadUpdated(argMap);
+      } else if (call.method == ChatMethodKeys.onChatThreadDestroyed) {
+        _onChatThreadDestroyed(argMap);
+      } else if (call.method == ChatMethodKeys.onChatThreadUserRemoved) {}
+      _onChatThreadUserRemoved(argMap);
+      return null;
+    });
+  }
   final List<EMChatThreadManagerListener> _listeners = [];
 
   void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
@@ -256,5 +270,41 @@ class EMChatThreadManager {
     } on EMError catch (e) {
       throw e;
     }
+  }
+
+  Future<void> _onChatThreadCreated(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    _listeners.forEach((element) {
+      element.onChatThreadCreated.call(EMChatThreadEvent.fromJson(event));
+    });
+  }
+
+  Future<void> _onChatThreadUpdated(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    _listeners.forEach((element) {
+      element.onChatThreadUpdated.call(EMChatThreadEvent.fromJson(event));
+    });
+  }
+
+  Future<void> _onChatThreadDestroyed(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    _listeners.forEach((element) {
+      element.onChatThreadDestroyed.call(EMChatThreadEvent.fromJson(event));
+    });
+  }
+
+  Future<void> _onChatThreadUserRemoved(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    _listeners.forEach((element) {
+      element.onChatThreadUserRemoved.call(EMChatThreadEvent.fromJson(event));
+    });
   }
 }
