@@ -1,3 +1,5 @@
+import 'em_message.dart';
+
 class EMChatThread {
   /// sub-zone id
   final String threadId;
@@ -11,47 +13,60 @@ class EMChatThread {
   /// A messageId that create sub-zone
   final String messageId;
 
-  /// A messageContent that create sub-zone
-  final String msgContent;
-
   /// A channelId that create sub-zone
-  final String channelId;
+  final String parentId;
 
   /// Member list of the sub-zone, require fetch thread's detail first
-  final int memberCount;
+  final int membersCount;
+
+  /// Number of messages in subsection
+  final int messageCount;
 
   /// Timestamp of subarea creation
-  final int timestamp;
+  final int createAt;
+
+  /// The last message in the sub-area, if it is empty, it means the last message is withdrawn. If it is not empty, it means a new message.
+  final EMMessage? lastMessage;
 
   /// @nodoc
   EMChatThread._private({
     required this.threadId,
+    this.threadName,
     required this.owner,
     required this.messageId,
-    required this.msgContent,
-    required this.channelId,
-    required this.memberCount,
-    required this.timestamp,
-    this.threadName,
+    required this.parentId,
+    required this.membersCount,
+    required this.messageCount,
+    required this.createAt,
+    this.lastMessage,
   });
 
   factory EMChatThread.fromJson(Map map) {
     String threadId = map["threadId"];
-    String threadName = map["threadName"];
     String owner = map["owner"];
     String messageId = map["msgId"];
-    String content = map["content"];
-    String channelId = map["channelId"];
-    int count = map["memberCount"];
-    int timestamp = map["ts"];
+    String parentId = map["parentId"];
+    int memberCount = map["memberCount"] as int;
+    int messageCount = map["messageCount"] as int;
+    int createAt = map["createAt"] as int;
+    EMMessage? msg;
+    if (map.containsKey("lastMessage")) {
+      msg = EMMessage.fromJson(map["lastMessage"]);
+    }
+    String? threadName;
+    if (map.containsKey("threadName")) {
+      threadName = map["threadName"];
+    }
+
     return EMChatThread._private(
       threadId: threadId,
       owner: owner,
       messageId: messageId,
-      msgContent: content,
-      channelId: channelId,
-      memberCount: count,
-      timestamp: timestamp,
+      parentId: parentId,
+      membersCount: memberCount,
+      messageCount: messageCount,
+      createAt: createAt,
+      lastMessage: msg,
       threadName: threadName,
     );
   }

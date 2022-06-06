@@ -1,80 +1,59 @@
-import 'em_message.dart';
+import 'em_chat_thread.dart';
+import 'em_chat_enums.dart';
 import '../tools/em_extension.dart';
 
 class EMChatThreadEvent {
-  /// Sub-zone id
-  final String threadId;
-
-  /// Sub-zone name
-  final String? threadName;
-
   /// Received the operation type of the sub-area from others
-  final String threadOperation;
-
-  /// The message id of the message on which the subarea was created
-  final String messageId;
-
-  /// Number of messages in subsection
-  final int messageCount;
-
-  /// The session id of the message on which the subarea was created
-  final String channelId;
+  final EMChatThreadOperation type;
 
   /// User id of the operation sub-area
   final String from;
 
-  /// The user id of the sub-area that accepts the operation notification, currently all group members
-  final String to;
-
-  /// The timestamp of the operation when the user of the subarea was operated
-  final int timestamp;
-
-  /// The last message in the sub-area, if it is empty, it means the last message is withdrawn. If it is not empty, it means a new message.
-  final EMMessage? lastMessage;
+  /// sub-area
+  final EMChatThread? chatThread;
 
   EMChatThreadEvent._private({
-    required this.threadId,
-    required this.threadOperation,
-    required this.messageId,
-    required this.messageCount,
-    required this.channelId,
+    required this.type,
     required this.from,
-    required this.to,
-    required this.timestamp,
-    this.lastMessage,
-    this.threadName,
+    this.chatThread,
   });
 
   factory EMChatThreadEvent.fromJson(Map map) {
-    String threadId = map["threadId"];
-    String operation = map["operation"];
-    String messageId = map["msgId"];
-    String channelId = map["channelId"];
-    int count = map["count"];
     String from = map["from"];
-    String to = map["to"];
-    int ts = map["ts"];
-    EMMessage? msg = map.getValueWithKey<EMMessage>(
-      "message",
+    int iType = map["type"];
+    EMChatThreadOperation type = EMChatThreadOperation.UnKnown;
+    switch (iType) {
+      case 0:
+        type = EMChatThreadOperation.UnKnown;
+        break;
+      case 1:
+        type = EMChatThreadOperation.Create;
+        break;
+      case 2:
+        type = EMChatThreadOperation.Update;
+        break;
+      case 3:
+        type = EMChatThreadOperation.Delete;
+        break;
+      case 4:
+        type = EMChatThreadOperation.Update_Msg;
+        break;
+    }
+
+    EMChatThread? chatThread = map.getValueWithKey<EMChatThread>(
+      "thread",
       callback: (map) {
         if (map == null) {
           return null;
         }
-        return EMMessage.fromJson(map);
+        return EMChatThread.fromJson(map);
       },
     );
-    String? threadName = map["threadName"];
+
     return EMChatThreadEvent._private(
-      threadId: threadId,
-      threadOperation: operation,
-      messageId: messageId,
-      messageCount: count,
-      channelId: channelId,
+      type: type,
       from: from,
-      to: to,
-      timestamp: ts,
-      lastMessage: msg,
-      threadName: threadName,
+      chatThread: chatThread,
     );
   }
 }

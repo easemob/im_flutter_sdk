@@ -514,8 +514,8 @@ class EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<EMMessage?>> fetchHistoryMessages(
-    String conversationId, {
+  Future<EMCursorResult<EMMessage?>> fetchHistoryMessages({
+    required String conversationId,
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
     String startMsgId = '',

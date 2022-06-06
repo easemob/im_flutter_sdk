@@ -251,3 +251,10 @@ enum EMMultiDevicesEvent {
   /// The current user unmuted a member on another device.
   GROUP_REMOVE_MUTE,
 }
+enum EMChatThreadOperation {
+  UnKnown,
+  Create,
+  Update,
+  Delete,
+  Update_Msg,
+}
