@@ -669,10 +669,10 @@ class EMChatRoomManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<String>?> fetchChatRoomBlockList(
-    String roomId, [
+    String roomId, {
     int pageNum = 1,
     int pageSize = 200,
-  ]) async {
+  }) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);

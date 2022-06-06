@@ -161,7 +161,7 @@ abstract class EMContactManagerListener {
   ///
   /// Param [userName] The user who is removed from the contact list by another user.
   ///
-  void onContactDeleted(String? userName);
+  void onContactDeleted(String userName);
 
   ///
   /// Occurs when a user receives a friend request.
@@ -920,9 +920,35 @@ class EMPresenceManagerListener {
   void onPresenceStatusChanged(List<EMPresence> list) {}
 }
 
+///
+/// The delegate protocol that defines chat thread callbacks.
+///
 class EMChatThreadManagerListener {
-  void onChatThreadCreated(EMChatThreadEvent event) {}
-  void onChatThreadUpdated(EMChatThreadEvent event) {}
-  void onChatThreadDestroyed(EMChatThreadEvent event) {}
-  void onChatThreadUserRemoved(EMChatThreadEvent event) {}
+  ///
+  /// Occurs when received after subsection is created
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onChatThreadCreate(EMChatThreadEvent event) {}
+
+  ///
+  /// Occurs when received after updating the sub-area (including updating the last message of the sub-area, updating the sub-area name, and withdrawing the sub-area message)
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onChatThreadUpdate(EMChatThreadEvent event) {}
+
+  ///
+  /// Occurs when received after destroying the subsection
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onChatThreadDestroy(EMChatThreadEvent event) {}
+
+  ///
+  /// Occurs when received after user is kicked out of subsection
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
 }
