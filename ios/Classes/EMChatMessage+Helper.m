@@ -6,6 +6,7 @@
 //
 
 #import "EMChatMessage+Helper.h"
+#import "EMChatThread+Helper.h"
 
 
 @implementation EMChatMessage (Helper)
@@ -51,6 +52,8 @@
     msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
     // read only
     // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
+    // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
+    msg.isChatThreadMessage = [aJson[@"isThread"] boolValue];
     msg.ext = aJson[@"attributes"];
     return msg;
 }
@@ -72,8 +75,11 @@
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = @([self statusToInt:self.status]);
     ret[@"chatType"] = @([EMChatMessage chatTypeToInt:self.chatType]);
+    ret[@"isThread"] = @(self.isChatThreadMessage);
+//    ret[@"thread"] = [self.chatThread toJson];
     ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
+    
     
     return ret;
 }

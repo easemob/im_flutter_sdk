@@ -11,6 +11,7 @@
 #import "EMSDKMethod.h"
 
 #import "EMMessageReaction+Helper.h"
+#import "EMChatThread+Helper.h"
 
 
 @implementation EMChatMessageWrapper
@@ -31,6 +32,8 @@
         [self getReactionList:call.arguments channelName:call.method result:result];
     } else if([ChatGroupAckCount isEqualToString:call.method]) {
         [self getGroupAckCount:call.arguments channelName:call.method result:result];
+    } else if([ChatThread isEqualToString:call.method]) {
+        
     }
     else {
         [super handleMethodCall:call result:result];
@@ -77,6 +80,17 @@
                         error:nil
                        object:@(msg.groupAckCount)];
     
+}
+
+- (void)getChatThread:(NSDictionary *)param
+          channelName:(NSString *)aChannelName
+               result:(FlutterResult)result {
+    NSString *msgId = param[@"msgId"];
+    EMChatMessage *msg = [self getMessageWithId:msgId];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:[msg.chatThread toJson]] ;
 }
 
 - (EMChatMessage *)getMessageWithId:(NSString *)aMessageId {
