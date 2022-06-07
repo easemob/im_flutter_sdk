@@ -424,6 +424,8 @@ class EMMessageHelper {
             message.setGroupAckCount(json.getInt("groupAckCount"));
         }
 
+        message.setIsChatThreadMessage(json.getBoolean("isThread"));
+
         message.setLocalTime(json.getLong("localTime"));
         if (json.has("serverTime")){
             message.setMsgTime(json.getLong("serverTime"));
@@ -512,8 +514,9 @@ class EMMessageHelper {
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
         data.put("needGroupAck", message.isNeedGroupAck());
-        data.put("groupAckCount", message.groupAckCount());
-
+        // 通过EMMessageWrapper获取
+        // data.put("groupAckCount", message.groupAckCount());
+        data.put("isThread", message.isChatThreadMessage());
         return data;
     }
 
@@ -914,6 +917,7 @@ class EMConversationHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("con_id", conversation.conversationId());
         data.put("type", typeToInt(conversation.getType()));
+        data.put("isThread", conversation.isChatThread());
         try {
             data.put("ext", jsonStringToMap(conversation.getExtField()));
         } catch (JSONException e) {
@@ -1003,7 +1007,7 @@ class EMDeviceInfoHelper {
     }
 }
 
-class                                                                                                                                                                                                                                                                    EMCursorResultHelper {
+class EMCursorResultHelper {
 
     static Map<String, Object> toJson(EMCursorResult result) {
         Map<String, Object> data = new HashMap<>();

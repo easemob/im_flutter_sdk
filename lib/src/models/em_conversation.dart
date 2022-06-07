@@ -17,11 +17,7 @@ import '../internal/em_transform_tools.dart';
 /// ```
 ///
 class EMConversation {
-  EMConversation._private(
-    this.id,
-    this.type,
-    this._ext,
-  );
+  EMConversation._private(this.id, this.type, this._ext, this.isChatThread);
 
   /// @nodoc
   factory EMConversation.fromJson(Map<String, dynamic> map) {
@@ -30,6 +26,7 @@ class EMConversation {
       map["con_id"],
       conversationTypeFromInt(map["type"]),
       ext,
+      map.getBoolValue("isThread", defaultValue: false)!,
     );
 
     return ret;
@@ -40,6 +37,7 @@ class EMConversation {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data["type"] = conversationTypeToInt(this.type);
     data["con_id"] = this.id;
+    data["isThread"] = this.isChatThread;
     return data;
   }
 
@@ -57,6 +55,10 @@ class EMConversation {
   /// The conversation type.
   ///
   final EMConversationType type;
+
+  ///
+  /// Is chat thread conversation.
+  final bool isChatThread;
 
   Map<String, String>? _ext;
 }

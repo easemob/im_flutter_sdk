@@ -32,6 +32,8 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
                 reactionList(param, call.method, result);
             }else if (EMSDKMethod.groupAckCount.equals(call.method)){
                 getAckCount(param, call.method, result);
+            }else if (EMSDKMethod.getChatThread.equals(call.method)) {
+                getChatThread(param, call.method, result);
             }
             else
             {
@@ -56,9 +58,6 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         onSuccess(result, channelName, list);
     }
 
-    private EMMessage getMessageWithId(String msgId) {
-        return EMClient.getInstance().chatManager().getMessage(msgId);
-    }
 
     private void getAckCount(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
         String msgId = params.getString("msgId");
@@ -67,4 +66,20 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
             onSuccess(result, channelName,  msg != null ? msg.groupAckCount() : 0);
         });
     }
+
+    private void getChatThread(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String msgId = params.getString("msgId");
+        EMMessage msg = getMessageWithId(msgId);
+        asyncRunnable(()->{
+            if (msg == null) {
+                onSuccess(result, channelName,  msg.getChatThread() != null ? EMChatThreadHelper.toJson(msg.getChatThread()) : null);
+            }
+            onSuccess(result, channelName,  null);
+        });
+    }
+
+    private EMMessage getMessageWithId(String msgId) {
+        return EMClient.getInstance().chatManager().getMessage(msgId);
+    }
+
 }

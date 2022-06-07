@@ -6,6 +6,7 @@ import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
 import '../tools/em_extension.dart';
 import '../../im_flutter_sdk.dart';
+import 'em_chat_thread.dart';
 
 ///
 /// The message class.
@@ -86,6 +87,10 @@ class EMMessage {
   ///
   ///
   bool needGroupAck = false;
+
+  ///
+  /// Is it a message sent within a thread
+  bool isChatThreadMessage = false;
 
   int _groupAckCount = 0;
 
@@ -491,6 +496,7 @@ class EMMessage {
     data.setValueWithOutNull("localTime", localTime);
     data.setValueWithOutNull("serverTime", serverTime);
     data.setValueWithOutNull("status", messageStatusToInt(this.status));
+    data.setValueWithOutNull("isThread", isChatThreadMessage);
 
     return data;
   }
@@ -515,6 +521,13 @@ class EMMessage {
       ..chatType = chatTypeFromInt(map.getIntValue("chatType"))
       ..localTime = map.getIntValue("localTime", defaultValue: 0)!
       ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
+      ..isChatThreadMessage = map.getBoolValue("isThread", defaultValue: false)!
+      // ..chatThread = map.getValueWithKey<EMChatThread>(
+      //   "thread",
+      //   callback: (obj) {
+      //     return EMChatThread.fromJson(obj);
+      //   },
+      // )
       ..status = messageStatusFromInt(map.intValue("status"));
   }
 
@@ -632,6 +645,10 @@ extension EMMessageExtension on EMMessage {
   ///
   /// Gets the number of members that have read the group message.
   ///
+  /// **Return** group ack count
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}
+  ///
   Future<int> groupAckCount() async {
     Map req = {"msgId": msgId};
     Map result =
@@ -642,6 +659,31 @@ extension EMMessageExtension on EMMessage {
         return result[ChatMethodKeys.groupAckCount];
       } else {
         return 0;
+      }
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Get an overview of the thread in the message (currently only supported by group messages)
+  ///
+  /// **Return** overview of the thread
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}
+  ///
+  Future<EMChatThread?> chatThread() async {
+    Map req = {"msg": msgId};
+    Map result =
+        await _emMessageChannel.invokeMethod(ChatMethodKeys.getChatThread, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getChatThread)) {
+        return result.getValueWithKey<EMChatThread>(
+            ChatMethodKeys.getChatThread,
+            callback: (obj) => EMChatThread.fromJson(obj));
+      } else {
+        return null;
       }
     } on EMError catch (e) {
       throw e;

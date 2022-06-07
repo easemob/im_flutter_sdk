@@ -14,6 +14,7 @@
     ret[@"con_id"] = self.conversationId;
     ret[@"type"] = @([self.class typeToInt:self.type]);
     ret[@"ext"] = self.ext;
+    ret[@"isThread"] = @(self.isChatThread);
     return ret;
 }
 

@@ -134,6 +134,7 @@ class ChatMethodKeys {
   /// EMMessage method
   static const String getReactionList = "getReactionList";
   static const String groupAckCount = "groupAckCount";
+  static const String getChatThread = "chatThread";
 
   /// EMChatRoomManager methods
   static const String joinChatRoom = "joinChatRoom";

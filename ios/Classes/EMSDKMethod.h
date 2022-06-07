@@ -138,6 +138,7 @@ static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
 #pragma mark - EMChatMessageWrapper
 static NSString *const ChatGetReactionList = @"getReactionList";
 static NSString *const ChatGroupAckCount = @"groupAckCount";
+static NSString *const ChatThread = @"chatThread";
 
 
 #pragma mark - EMChatroomManagerWrapper

@@ -176,6 +176,9 @@ extension MapExtension on Map {
     String key, {
     required MapResultCallback callback,
   }) {
+    if (!this.containsKey(key)) {
+      return null;
+    }
     return callback.call(this[key]);
   }
 }
