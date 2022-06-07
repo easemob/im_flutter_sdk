@@ -5,7 +5,6 @@ import android.content.Context;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMChatThread;
 import com.hyphenate.chat.EMChatThreadEvent;
-import com.hyphenate.chat.EMChatThreadInfo;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
@@ -1214,30 +1213,18 @@ class EMMessageReactionChangeHelper {
 class EMChatThreadHelper {
     static Map<String, Object> toJson(EMChatThread thread) {
         Map<String, Object> data = new HashMap<>();
-        data.put("id", thread.getChatThreadId());
-        data.put("name", thread.getChatThreadName());
-        data.put("owner", thread.getCreator());
+        data.put("threadId", thread.getChatThreadId());
+        if (thread.getChatThreadName() != null) {
+            data.put("threadName", thread.getChatThreadName());
+        }
+        data.put("owner", thread.getOwner());
         data.put("msgId", thread.getMessageId());
-        data.put("channelId", thread.getParentId());
+        data.put("parentId", thread.getParentId());
         data.put("memberCount", thread.getMemberCount());
-        data.put("createTime", thread.getCreateTimestamp());
-
-        return data;
-    }
-}
-
-class EMChatThreadInfoHelper{
-    static Map<String, Object> toJson(EMChatThreadInfo threadInfo) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", threadInfo.getChatThreadId());
-        data.put("name", threadInfo.getChatThreadName());
-        data.put("parentId", threadInfo.getParentId());
-        data.put("msgId", threadInfo.getMessageId());
-        data.put("messageCount", threadInfo.getMessageCount());
-        data.put("createTime", threadInfo.getCreateTimestamp());
-        data.put("updateTime", threadInfo.getUpdateTimestamp());
-        if (threadInfo.getLastMessage() != null) {
-            data.put("message", EMMessageHelper.toJson(threadInfo.getLastMessage()));
+        data.put("messageCount", thread.getMessageCount());
+        data.put("createAt", thread.getCreateAt());
+        if (thread.getLastMessage() != null) {
+            data.put("lastMessage", EMMessageHelper.toJson(thread.getLastMessage()));
         }
         return data;
     }
@@ -1247,30 +1234,25 @@ class EMChatThreadEventHelper {
     static Map<String, Object> toJson(EMChatThreadEvent event) {
         Map<String, Object> data = new HashMap<>();
         switch (event.getType()) {
-            case CREATE:
+            case UNKNOWN:
                 data.put("type", 0);
                 break;
-            case UPDATE:
+            case CREATE:
                 data.put("type", 1);
                 break;
-            case DELETE:
+            case UPDATE:
                 data.put("type", 2);
                 break;
-            case UPDATE_MSG:
+            case DELETE:
                 data.put("type", 3);
                 break;
+            case UPDATE_MSG:
+                data.put("type", 4);
+                break;
         }
-        data.put("id", event.getChatThreadId());
-        data.put("name", event.getChatThreadName());
-        data.put("parentId", event.getParentId());
-        if (event.getMessageId() != null) {
-            data.put("msgId", event.getMessageId());
-        }
-        data.put("operatorId", event.getOperatorId());
-        data.put("createTime", event.getCreateTimestamp());
-        data.put("messageCount", event.getMessageCount());
-        if (event.getLastMessage() != null) {
-            data.put("message", EMMessageHelper.toJson(event.getLastMessage()));
+        data.put("from", event.getFrom());
+        if (event.getChatThread() != null) {
+            data.put("thread", EMChatThreadHelper.toJson(event.getChatThread()));
         }
         return data;
     }

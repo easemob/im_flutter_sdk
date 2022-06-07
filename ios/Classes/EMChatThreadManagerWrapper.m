@@ -43,7 +43,7 @@
         [self fetchChatThreadsWithParentId:call.arguments
                                channelName:call.method
                                     result:result];
-    } else if ([ChatFetchJoinedChatThreadsWihtParentId isEqualToString:call.method]) {
+    } else if ([ChatFetchJoinedChatThreadsWithParentId isEqualToString:call.method]) {
         [self fetchJoinedChatThreadsWithParentId:call.arguments
                                channelName:call.method
                                     result:result];
