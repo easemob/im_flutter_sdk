@@ -32,14 +32,14 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
 
         JSONObject param = (JSONObject) call.arguments;
         try {
-            if (EMSDKMethod.fetchChatThread.equals(call.method)) {
-                fetchChatThread(param, call.method, result);
-            } else if (EMSDKMethod.fetchChatThreadDetail.equals(call.method)) {
+            if (EMSDKMethod.fetchChatThreadDetail.equals(call.method)) {
                 fetchChatThreadDetail(param, call.method, result);
             } else if (EMSDKMethod.fetchJoinedChatThreads.equals(call.method)) {
                 fetchJoinedChatThreads(param, call.method, result);
             } else if (EMSDKMethod.fetchChatThreadsWithParentId.equals(call.method)) {
                 fetchChatThreadsWithParentId(param, call.method, result);
+            } else if (EMSDKMethod.fetchJoinedChatThreadsWithParentId.equals(call.method)) {
+                fetchJoinedChatThreadsWithParentId(param, call.method, result);
             } else if (EMSDKMethod.fetchChatThreadMember.equals(call.method)) {
                 fetchChatThreadMember(param, call.method, result);
             } else if (EMSDKMethod.fetchLastMessageWithChatThreads.equals(call.method)) {
@@ -65,17 +65,6 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
         }
     }
 
-    private void fetchChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        String threadId = param.getString("threadId");
-//        EMClient.getInstance().chatThreadManager().getChatThreadFromServer(threadId, new EMValueWrapperCallBack<EMChatThread>(result, channelName) {
-//            @Override
-//            public void onSuccess(EMChatThread object) {
-//                super.updateObject(EMChatThreadHelper.toJson(object));
-//            }
-//        });
-        // TODO:
-    }
-
     private void fetchChatThreadDetail(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String threadId = param.getString("threadId");
         EMClient.getInstance().chatThreadManager().getChatThreadFromServer(threadId, new EMValueWrapperCallBack<EMChatThread>(result, channelName){
@@ -84,7 +73,6 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
                 super.updateObject(EMChatThreadHelper.toJson(object));
             }
         });
-
     }
 
     private void fetchJoinedChatThreads(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
@@ -109,7 +97,23 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
             cursor = param.getString("cursor");
         }
         String parentId = param.getString("parentId");
-        EMClient.getInstance().chatThreadManager().getJoinedChatThreadsFromServer(parentId, pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMChatThread>>(result, channelName){
+        EMClient.getInstance().chatThreadManager().getChatThreadsFromServer(parentId, pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMChatThread>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMChatThread> object) {
+                super.updateObject(EMCursorResultHelper.toJson(object));
+            }
+        });
+    }
+
+    private void fetchJoinedChatThreadsWithParentId(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
+        int pageSize = param.getInt("pageSize");
+        String cursor = null;
+        if (param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
+        String parentId = param.getString("parentId");
+
+        EMClient.getInstance().chatThreadManager().getJoinedChatThreadsFromServer(parentId, pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMChatThread>>(result, channelName) {
             @Override
             public void onSuccess(EMCursorResult<EMChatThread> object) {
                 super.updateObject(EMCursorResultHelper.toJson(object));
@@ -160,7 +164,7 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
     private void updateChatThreadSubject(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String threadId = param.getString("threadId");
         String name = param.getString("name");
-        EMClient.getInstance().chatThreadManager().changeChatThreadName(threadId, name, new EMWrapperCallBack(result, channelName, true));
+        EMClient.getInstance().chatThreadManager().updateChatThreadName(threadId, name, new EMWrapperCallBack(result, channelName, true));
     }
 
     private void createChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
@@ -200,22 +204,22 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
         EMClient.getInstance().chatThreadManager().addChatThreadChangeListener(new EMChatThreadChangeListener() {
             @Override
             public void onChatThreadCreated(EMChatThreadEvent event) {
-                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadCreated, EMChatThreadEventHelper.toJson(event)));
+                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadCreate, EMChatThreadEventHelper.toJson(event)));
             }
 
             @Override
             public void onChatThreadUpdated(EMChatThreadEvent event) {
-                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadUpdated, EMChatThreadEventHelper.toJson(event)));
+                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadUpdate, EMChatThreadEventHelper.toJson(event)));
             }
 
             @Override
             public void onChatThreadDestroyed(EMChatThreadEvent event) {
-                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadDestroyed, EMChatThreadEventHelper.toJson(event)));
+                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadDestroy, EMChatThreadEventHelper.toJson(event)));
             }
 
             @Override
             public void onChatThreadUserRemoved(EMChatThreadEvent event) {
-                post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadUserRemoved, EMChatThreadEventHelper.toJson(event)));
+                post(() -> channel.invokeMethod(EMSDKMethod.onUserKickOutOfChatThread, EMChatThreadEventHelper.toJson(event)));
             }
         });
     }
