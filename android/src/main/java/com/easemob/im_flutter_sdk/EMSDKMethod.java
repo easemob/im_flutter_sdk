@@ -31,7 +31,9 @@ public class EMSDKMethod {
     static final String onUserKickedByOtherDevice = "onUserKickedByOtherDevice";
     static final String onUserAuthenticationFailed = "onUserAuthenticationFailed";
 
-    static final String onMultiDeviceEvent = "onMultiDeviceEvent";
+    static final String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
+    static final String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
+    static final String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
     static final String onSendDataToFlutter = "onSendDataToFlutter";
     static final String onTokenWillExpire = "onTokenWillExpire";
     static final String onTokenDidExpire = "onTokenDidExpire";

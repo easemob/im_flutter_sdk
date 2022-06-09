@@ -1,6 +1,6 @@
 import '../models/em_chat_enums.dart';
 
-EMMultiDevicesEvent? convertIntToEMContactGroupEvent(int? i) {
+EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
   switch (i) {
     case 2:
       return EMMultiDevicesEvent.CONTACT_REMOVE;
@@ -52,6 +52,18 @@ EMMultiDevicesEvent? convertIntToEMContactGroupEvent(int? i) {
       return EMMultiDevicesEvent.GROUP_ADD_MUTE;
     case 29:
       return EMMultiDevicesEvent.GROUP_REMOVE_MUTE;
+    case 40:
+      return EMMultiDevicesEvent.CHAT_THREAD_CREATE;
+    case 41:
+      return EMMultiDevicesEvent.CHAT_THREAD_DESTROY;
+    case 42:
+      return EMMultiDevicesEvent.CHAT_THREAD_JOIN;
+    case 43:
+      return EMMultiDevicesEvent.CHAT_THREAD_LEAVE;
+    case 44:
+      return EMMultiDevicesEvent.CHAT_THREAD_KICK;
+    case 45:
+      return EMMultiDevicesEvent.CHAT_THREAD_UPDATE;
   }
   return null;
 }

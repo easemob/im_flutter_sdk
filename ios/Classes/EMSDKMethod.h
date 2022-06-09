@@ -28,7 +28,9 @@ static NSString *const ChatIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const ChatIsConnected = @"isConnected";
 
 
-static NSString *const ChatOnMultiDeviceEvent = @"onMultiDeviceEvent";
+static NSString *const ChatOnMultiDeviceGroupEvent = @"onMultiDeviceGroupEvent";
+static NSString *const ChatOnMultiDeviceContactEvent = @"onMultiDeviceContactEvent";
+static NSString *const ChatOnMultiDeviceThreadEvent = @"onMultiDeviceThreadEvent";
 #pragma mark - EMClientDelegate
 static NSString *const ChatOnConnected = @"onConnected";
 static NSString *const ChatOnDisconnected = @"onDisconnected";

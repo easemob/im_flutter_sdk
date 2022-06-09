@@ -491,7 +491,7 @@ static EMClientWrapper *wrapper = nil;
     data[@"event"] = @(aEvent);
     data[@"target"] = aUsername;
     data[@"ext"] = aExt;
-    [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
+    [self.channel invokeMethod:ChatOnMultiDeviceContactEvent arguments:data];
 }
 
 - (void)multiDevicesGroupEventDidReceive:(EMMultiDevicesEvent)aEvent
@@ -500,9 +500,18 @@ static EMClientWrapper *wrapper = nil;
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"event"] = @(aEvent);
     data[@"target"] = aGroupId;
-    data[@"userNames"] = aExt;
-    [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
+    data[@"users"] = aExt;
+    [self.channel invokeMethod:ChatOnMultiDeviceGroupEvent arguments:data];
 }
 
+- (void)multiDevicesChatThreadEventDidReceive:(EMMultiDevicesEvent)aEvent
+                                 threadId:(NSString *)aThreadId
+                                          ext:(id)aExt {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"event"] = @(aEvent);
+    data[@"threadId"] = aThreadId;
+    data[@"users"] = aExt;
+    [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
+}
 
 @end

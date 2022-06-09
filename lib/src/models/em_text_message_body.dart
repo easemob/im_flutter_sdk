@@ -16,12 +16,20 @@ class EMTextMessageBody extends EMMessageBody {
 
   /// @nodoc
   EMTextMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.TXT) {
+      : super.fromJson(
+          map: map,
+          type: MessageType.TXT,
+        ) {
     this.content = map.getStringValue("content", defaultValue: "")!;
-    this.targetLanguages =
-        map.getList<String>("targetLanguages", valueCallback: (item) {
-      return item;
-    });
+    this.targetLanguages = map.getList<String>(
+      "targetLanguages",
+      valueCallback: (item) {
+        return item;
+      },
+    );
+    if (map.containsKey("translations")) {
+      this.translations = map["translations"]?.cast<String, String>();
+    }
   }
 
   @override
@@ -31,6 +39,7 @@ class EMTextMessageBody extends EMMessageBody {
     final Map<String, dynamic> data = super.toJson();
     data['content'] = this.content;
     data.setValueWithOutNull("targetLanguages", this.targetLanguages);
+    data.setValueWithOutNull("translations", this.translations);
     return data;
   }
 
@@ -39,4 +48,6 @@ class EMTextMessageBody extends EMMessageBody {
 
   /// The target languages to translate
   List<String>? targetLanguages;
+
+  Map<String, String>? translations;
 }

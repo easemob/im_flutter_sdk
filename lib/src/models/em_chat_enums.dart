@@ -250,6 +250,24 @@ enum EMMultiDevicesEvent {
 
   /// The current user unmuted a member on another device.
   GROUP_REMOVE_MUTE,
+
+  /// User A creates an event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  CHAT_THREAD_CREATE,
+
+  /// User A destroys the event in the sub-area of device A1, and all other devices logged in to this account will receive this event
+  CHAT_THREAD_DESTROY,
+
+  /// User A joins the event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  CHAT_THREAD_JOIN,
+
+  /// User A leaves the event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  CHAT_THREAD_LEAVE,
+
+  /// User A is kicked in the sub-area of device A1, and all other devices that log in to this account will receive this event
+  CHAT_THREAD_KICK,
+
+  /// User A updates the event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  CHAT_THREAD_UPDATE,
 }
 enum EMChatThreadOperation {
   UnKnown,
