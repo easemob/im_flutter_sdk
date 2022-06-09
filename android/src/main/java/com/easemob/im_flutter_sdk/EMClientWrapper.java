@@ -324,7 +324,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 data.put("event", Integer.valueOf(event));
                 data.put("target", target);
                 data.put("ext", ext);
-                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceContactEvent, data));
             }
 
             @Override
@@ -332,8 +332,16 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", Integer.valueOf(event));
                 data.put("target", target);
-                data.put("userNames", userNames);
-                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
+                data.put("users", userNames);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceGroupEvent, data));
+            }
+
+            public void onChatThreadEvent(int event, String target, List<String> usernames) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("users", usernames);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
             }
         });
 

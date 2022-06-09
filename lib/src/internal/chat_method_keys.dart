@@ -21,7 +21,9 @@ class ChatMethodKeys {
   static const String isConnected = "isConnected";
 
   /// EMClient listener
-  static const String onMultiDeviceEvent = "onMultiDeviceEvent";
+  static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
+  static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
+  static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
   static const String onUserDidLoginFromOtherDevice =

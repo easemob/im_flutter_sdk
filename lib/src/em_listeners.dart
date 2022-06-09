@@ -126,6 +126,21 @@ abstract class EMMultiDeviceListener {
     String groupId,
     List<String>? usernames,
   );
+
+  ///
+  /// The multi-device event callback of thread.
+  ///
+  /// Param [event] The event type.
+  ///
+  /// Param [chatThreadId] subregion id.
+  ///
+  /// Param [usernames] The array of usernames.
+  ///
+  void onThreadEvent(
+    EMMultiDevicesEvent event,
+    String chatThreadId,
+    List<String> usernames,
+  );
 }
 
 abstract class EMCustomListener {

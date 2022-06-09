@@ -282,6 +282,7 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"content"] = self.text;
     ret[@"targetLanguages"] = self.targetLanguages;
+    ret[@"translations"] = self.translations;
     return ret;
 }
 

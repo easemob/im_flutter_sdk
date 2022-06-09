@@ -613,6 +613,9 @@ class EMMessageBodyHelper {
         if (body.getTargetLanguages() != null) {
             data.put("targetLanguages", body.getTargetLanguages());
         }
+        if (body.getTranslations() != null) {
+            data.put("translations", body.getTranslations());
+        }
         return data;
     }
 

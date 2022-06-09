@@ -65,8 +65,12 @@ class EMClient {
         _onUserKickedByOtherDevice();
       } else if (call.method == ChatMethodKeys.onUserAuthenticationFailed) {
         _onUserAuthenticationFailed();
-      } else if (call.method == ChatMethodKeys.onMultiDeviceEvent) {
-        _onMultiDeviceEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceGroupEvent) {
+        _onMultiDeviceGroupEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceContactEvent) {
+        _onMultiDeviceContactEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceThreadEvent) {
+        _onMultiDeviceThreadEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
         _onReceiveCustomData(argMap!);
       } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
@@ -535,22 +539,33 @@ class EMClient {
     }
   }
 
-  Future<void> _onMultiDeviceEvent(Map map) async {
-    var event = map['event'];
+  Future<void> _onMultiDeviceGroupEvent(Map map) async {
     for (var listener in _multiDeviceListeners) {
-      if (event >= 10) {
-        listener.onGroupEvent(
-          convertIntToEMContactGroupEvent(event)!,
-          map['target'],
-          map['userNames'],
-        );
-      } else {
-        listener.onContactEvent(
-          convertIntToEMContactGroupEvent(event)!,
-          map['target'],
-          map['ext'],
-        );
-      }
+      listener.onGroupEvent(
+        convertIntToEMMultiDevicesEvent(map['event'])!,
+        map['target'],
+        map['users'],
+      );
+    }
+  }
+
+  Future<void> _onMultiDeviceContactEvent(Map map) async {
+    for (var listener in _multiDeviceListeners) {
+      listener.onContactEvent(
+        convertIntToEMMultiDevicesEvent(map['event'])!,
+        map['target'],
+        map['ext'],
+      );
+    }
+  }
+
+  Future<void> _onMultiDeviceThreadEvent(Map map) async {
+    for (var listener in _multiDeviceListeners) {
+      listener.onThreadEvent(
+        convertIntToEMMultiDevicesEvent(map['event'])!,
+        map['target'],
+        map['users'],
+      );
     }
   }
 
