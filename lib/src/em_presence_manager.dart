@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/models/em_presence.dart';
 import 'internal/chat_method_keys.dart';
+import 'em_listeners.dart';
+import 'models/em_presence.dart';
+import 'models/em_error.dart';
 
 class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';

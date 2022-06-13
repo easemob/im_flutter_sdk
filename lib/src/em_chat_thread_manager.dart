@@ -1,10 +1,12 @@
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/models/em_chat_thread_event.dart';
-
+import 'models/em_chat_thread_event.dart';
+import 'em_listeners.dart';
 import 'tools/em_extension.dart';
 import 'internal/chat_method_keys.dart';
 import 'models/em_chat_thread.dart';
+import 'models/em_error.dart';
+import 'models/em_cursor_result.dart';
+import 'models/em_message.dart';
 
 class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
