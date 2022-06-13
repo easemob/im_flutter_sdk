@@ -1,6 +1,7 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/internal/chat_method_keys.dart';
-import 'package:im_flutter_sdk/src/internal/em_channel_manager.dart';
+import 'internal/chat_method_keys.dart';
+import 'internal/em_channel_manager.dart';
+import "em_chat_manager.dart";
+import 'models/em_error.dart';
 
 extension EMModerationPlugin on EMChatManager {
   ///

@@ -5,8 +5,22 @@ import 'package:flutter/services.dart';
 import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
 import '../tools/em_extension.dart';
-import '../../im_flutter_sdk.dart';
 import 'em_chat_thread.dart';
+import 'em_chat_enums.dart';
+import "em_message_body.dart";
+import "../em_message_status_callback.dart";
+import "../em_client.dart";
+import 'em_error.dart';
+import 'em_text_message_body.dart';
+import 'em_image_message_body.dart';
+import 'em_location_message_body.dart';
+import 'em_voice_message_body.dart';
+import 'em_video_message_body.dart';
+import 'em_file_message_body.dart';
+import 'em_custom_message_body.dart';
+import 'em_cmd_message_body.dart';
+import 'em_message_reaction.dart';
+import '../em_status_listener.dart';
 
 ///
 /// The message class.

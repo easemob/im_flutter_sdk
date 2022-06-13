@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/src/models/em_message_reaction.dart';
+import 'em_message_reaction.dart';
 
 class EMMessageReactionChange {
   /// The conversation ID
