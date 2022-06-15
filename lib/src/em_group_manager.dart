@@ -310,7 +310,7 @@ class EMGroupManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<Map<String, int>?> fetchMuteListFromServer(
+  Future<Map<String, int>> fetchMuteListFromServer(
     String groupId, {
     int pageSize = 200,
     int pageNum = 1,
@@ -320,8 +320,16 @@ class EMGroupManager {
         ChatMethodKeys.getGroupMuteListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.getGroupMuteListFromServer]
-          ?.cast<Map<String, int>>();
+      Map? tmpMap = result[ChatMethodKeys.getGroupMuteListFromServer];
+      Map<String, int> ret = {};
+      if (tmpMap != null) {
+        for (var item in tmpMap.entries) {
+          if (item.key is String && item.value is int) {
+            ret[item.key] = item.value;
+          }
+        }
+      }
+      return ret;
     } on EMError catch (e) {
       throw e;
     }
