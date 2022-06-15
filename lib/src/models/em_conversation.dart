@@ -335,7 +335,7 @@ extension EMConversationExtension on EMConversation {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMMessage>?> loadMessagesWithMsgType({
+  Future<List<EMMessage>> loadMessagesWithMsgType({
     required MessageType type,
     int timestamp = -1,
     int count = 20,

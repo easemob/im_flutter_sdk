@@ -208,7 +208,7 @@ abstract class EMChatRoomEventListener {
   ///
   /// Param [roomId] The chatroom ID.
   ///
-  /// Param [roomName] The chatroom subject.
+  /// Param [roomName] The chatroom name.
   ///
   void onChatRoomDestroyed(String roomId, String? roomName);
 
@@ -236,7 +236,7 @@ abstract class EMChatRoomEventListener {
   ///
   /// Param [roomId] The chatroom ID.
   ///
-  /// Param [roomName] The chatroom subject.
+  /// Param [roomName] The chatroom name.
   ///
   /// Param [participant] The member is dismissed from a chat room.
   ///

@@ -459,9 +459,14 @@ class EMMessage {
   ///
   /// **Return** The message instance.
   ///
-  EMMessage.createCmdSendMessage({required String username, required action})
-      : this.createSendMessage(
-            to: username, body: EMCmdMessageBody(action: action));
+  EMMessage.createCmdSendMessage({
+    required String username,
+    required action,
+    bool deliverOnlineOnly = false,
+  }) : this.createSendMessage(
+            to: username,
+            body: EMCmdMessageBody(
+                action: action, deliverOnlineOnly: deliverOnlineOnly));
 
   /// Creates a custom message for sending.
   ///

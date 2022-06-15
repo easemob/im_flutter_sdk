@@ -57,17 +57,23 @@ class EMContactManager {
   ///
   /// Adds a new contact.
   ///
-  /// Param [username] The user to be added.
+  /// Param [userId] The user to be added.
   ///
-  /// Param [userId] (optional) The invitation message.
+  /// Param [reason] (optional) The invitation message.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> addContact(
-    String userId, [
-    String reason = '',
-  ]) async {
-    Map req = {'username': userId, 'reason': reason};
+    String userId, {
+    String? reason,
+  }) async {
+    Map req = {
+      'username': userId,
+    };
+    if (reason != null) {
+      req["reason"] = reason;
+    }
+
     Map result = await _channel.invokeMethod(ChatMethodKeys.addContact, req);
     try {
       EMError.hasErrorFromResult(result);
