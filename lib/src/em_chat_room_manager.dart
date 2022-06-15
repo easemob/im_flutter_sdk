@@ -272,7 +272,7 @@ class EMChatRoomManager {
   ///
   /// Creates a chat room.
   ///
-  /// Param [subject] The chat room subject.
+  /// Param [name] The chat room name.
   ///
   /// Param [desc] The chat room description.
   ///
@@ -287,14 +287,14 @@ class EMChatRoomManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMChatRoom> createChatRoom(
-    String subject, {
+    String name, {
     String? desc,
     String? welcomeMsg,
     int maxUserCount = 300,
     List<String>? members,
   }) async {
     Map req = Map();
-    req['subject'] = subject;
+    req['subject'] = name;
     req['desc'] = desc;
     req['welcomeMsg'] = welcomeMsg;
     req['maxUserCount'] = maxUserCount;
@@ -332,21 +332,21 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Changes the chat room subject.
+  /// Changes the chat room name.
   ///
   /// Only the chat room owner can call this method.
   ///
   /// Param [roomId] The chat room ID.
   ///
-  /// Param [subject] The new subject of the chat room.
+  /// Param [name] The new name of the chat room.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> changeChatRoomSubject(
+  Future<void> changeChatRoomName(
     String roomId,
-    String subject,
+    String name,
   ) async {
-    Map req = {"roomId": roomId, "subject": subject};
+    Map req = {"roomId": roomId, "subject": name};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
     try {
@@ -558,7 +558,7 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchChatRoomMuteList(
+  Future<List<String>> fetchChatRoomMuteList(
     String roomId, {
     int pageNum = 1,
     int pageSize = 200,
@@ -568,7 +568,7 @@ class EMChatRoomManager {
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMuteList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>();
+      return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>() ?? [];
     } on EMError catch (e) {
       throw e;
     }
@@ -668,7 +668,7 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchChatRoomBlockList(
+  Future<List<String>> fetchChatRoomBlockList(
     String roomId, {
     int pageNum = 1,
     int pageSize = 200,
@@ -678,7 +678,8 @@ class EMChatRoomManager {
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>();
+      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>() ??
+          [];
     } on EMError catch (e) {
       throw e;
     }
@@ -863,5 +864,31 @@ class EMChatRoomManager {
       req,
     );
     EMError.hasErrorFromResult(result);
+  }
+
+  ///
+  /// Changes the chat room subject.
+  ///
+  /// Only the chat room owner can call this method.
+  ///
+  /// Param [roomId] The chat room ID.
+  ///
+  /// Param [subject] The new subject of the chat room.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  @Deprecated("Switch to using EMChatManager#changeChatRoomName instead.")
+  Future<void> changeChatRoomSubject(
+    String roomId,
+    String subject,
+  ) async {
+    Map req = {"roomId": roomId, "subject": subject};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 }

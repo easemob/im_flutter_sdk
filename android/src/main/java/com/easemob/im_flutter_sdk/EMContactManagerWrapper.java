@@ -62,11 +62,14 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
     private void addContact(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
-        String reason = param.getString("reason");
-
+        String reason = null;
+        if(param.has("reason")) {
+            reason = param.getString("reason");
+        }
+        String finalReason = reason;
         asyncRunnable(() -> {
             try {
-                EMClient.getInstance().contactManager().addContact(username, reason);
+                EMClient.getInstance().contactManager().addContact(username, finalReason);
                 onSuccess(result, channelName, username);
             } catch (HyphenateException e) {
                 onError(result, e);

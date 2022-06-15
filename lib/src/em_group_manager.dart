@@ -279,7 +279,7 @@ class EMGroupManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchBlockListFromServer(
+  Future<List<String>> fetchBlockListFromServer(
     String groupId, {
     int pageSize = 200,
     int pageNum = 1,
@@ -289,7 +289,9 @@ class EMGroupManager {
         ChatMethodKeys.getGroupBlockListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.getGroupBlockListFromServer]?.cast<String>();
+      return result[ChatMethodKeys.getGroupBlockListFromServer]
+              ?.cast<String>() ??
+          [];
     } on EMError catch (e) {
       throw e;
     }

@@ -255,10 +255,10 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMConversation?> getConversation(
-    String conversationId, [
+    String conversationId, {
     EMConversationType type = EMConversationType.Chat,
     bool createIfNeed = true,
-  ]) async {
+  }) async {
     Map req = {
       "con_id": conversationId,
       "type": conversationTypeToInt(type),
