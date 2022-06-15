@@ -336,15 +336,20 @@ UPDATE_dict = {
     "EMMultiDeviceListener":"ChatMultiDeviceListener",
     "EMMultiDevicesEvent":"ChatMultiDevicesEvent",
     "EMPresenceManagerListener":"ChatPresenceManagerListener",
-    
+    "EMTransformPlugin":"ChatTransformPlugin",
+    "EMReactionPlugin":"ChatReactionPlugin",
+    "EMModerationPlugin":"ChatModerationPlugin",
+    "EMConnectionListener":"ChatConnectionListener",
+    "EMSearchDirection":"ChatSearchDirection",
+    "EMProgressManager":"EMProgressManager",
     #podspec
-    "= 'im_flutter_sdk'":"= 'agora_chat_sdk'"
+     "= 'im_flutter_sdk'":"= 'agora_chat_sdk'"
 
 }
 
 # 将修改错误的再改回来
 RE_BACK_dict = {
-    
+    "rootProject.name = 'agora_chat_sdk'":"rootProject.name = 'im_flutter_sdk'"
 }
 
 
