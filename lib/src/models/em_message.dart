@@ -641,7 +641,7 @@ extension EMMessageExtension on EMMessage {
   ///
   /// **Throws** A description of the exception. See {@link EMError}
   ///
-  Future<List<EMMessageReaction>?> reactionList() async {
+  Future<List<EMMessageReaction>> reactionList() async {
     Map req = {"msgId": msgId};
     Map result = await _emMessageChannel.invokeMethod(
       ChatMethodKeys.getReactionList,
@@ -655,7 +655,7 @@ extension EMMessageExtension on EMMessage {
           EMMessageReaction.fromJson(element),
         ),
       );
-      return list.length > 0 ? list : null;
+      return list;
     } on EMError catch (e) {
       throw e;
     }

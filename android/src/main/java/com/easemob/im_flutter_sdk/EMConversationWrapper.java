@@ -250,7 +250,10 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     private void loadMsgWithMsgType(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
         long timestamp = params.getLong("timestamp");
-        String sender = params.getString("sender");
+        String sender = null;
+        if (params.has("sender")) {
+            sender = params.getString("sender");
+        }
         int count = params.getInt("count");
         EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
         String typeStr = params.getString("msgType");
@@ -267,8 +270,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         }
 
         EMMessage.Type finalType = type;
+        String finalSender = sender;
         asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.searchMsgFromDB(finalType, timestamp, count, sender, direction);
+            List<EMMessage> msgList = conversation.searchMsgFromDB(finalType, timestamp, count, finalSender, direction);
             List<Map> messages = new ArrayList<>();
             for(EMMessage msg: msgList) {
                 messages.add(EMMessageHelper.toJson(msg));

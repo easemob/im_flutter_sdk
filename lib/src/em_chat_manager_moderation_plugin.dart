@@ -14,10 +14,11 @@ extension EMModerationPlugin on EMChatManager {
   /// Param [reason] The reason for reporting.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
-  Future<void> reportMessage(
-      {required String messageId,
-      required String tag,
-      required String reason}) async {
+  Future<void> reportMessage({
+    required String messageId,
+    required String tag,
+    required String reason,
+  }) async {
     Map req = {"msgId": messageId, "tag": tag, "reason": reason};
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.reportMessage, req);

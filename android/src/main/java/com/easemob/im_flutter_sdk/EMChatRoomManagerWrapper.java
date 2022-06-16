@@ -184,18 +184,30 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     private void createChatRoom(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String subject = param.getString("subject");
-        String description = param.getString("desc");
-        String welcomeMessage = param.getString("welcomeMsg");
         int maxUserCount = param.getInt("maxUserCount");
-        JSONArray members = param.getJSONArray("members");
-        List<String> membersList = new ArrayList<>();
-        for (int i = 0; i < members.length(); i++) {
-            membersList.add((String) members.get(i));
+        String description = null;
+        if (param.has("desc")){
+            description = param.getString("desc");
         }
+        String welcomeMessage = null;
+        if (param.has("welcomeMsg")){
+            welcomeMessage = param.getString("welcomeMsg");
+        }
+        List<String> membersList = new ArrayList<>();
+        JSONArray members = null;
+        if (param.has("members")){
+            members = param.getJSONArray("members");
+            for (int i = 0; i < members.length(); i++) {
+                membersList.add((String) members.get(i));
+            }
+        }
+
+        String finalDescription = description;
+        String finalWelcomeMessage = welcomeMessage;
         asyncRunnable(() -> {
             try {
-                EMChatRoom room = EMClient.getInstance().chatroomManager().createChatRoom(subject, description,
-                        welcomeMessage, maxUserCount, membersList);
+                EMChatRoom room = EMClient.getInstance().chatroomManager().createChatRoom(subject, finalDescription,
+                        finalWelcomeMessage, maxUserCount, membersList);
                 onSuccess(result, channelName, EMChatRoomHelper.toJson(room));
             } catch (HyphenateException e) {
                 onError(result, e);

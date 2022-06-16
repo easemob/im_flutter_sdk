@@ -29,12 +29,32 @@ class EMChatThreadManager {
   }
   final List<EMChatThreadManagerListener> _listeners = [];
 
+  ///
+  /// Adds the chat thread manager listener. After calling this method, you can listen for new chat threads when they arrive.
+  ///
+  /// Param [listener] The chat thread manager listener that listens for new chat thread. See {@link EMChatThreadManagerListener}.
+  ///
   void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
     _listeners.add(listener);
   }
 
+  ///
+  /// Removes the chat thread listener.
+  ///
+  /// After adding a chat thread manager listener, you can remove this listener if you do not want to listen for it.
+  ///
+  /// Param [listener] The chat thread listener to be removed. See {@link EMChatThreadManagerListener}.
+  ///
   void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all chat thread listeners.
+  ///
+  void clearAllChatThreadManagerListeners() {
+    _listeners.clear();
   }
 
   ///
@@ -181,7 +201,7 @@ class EMChatThreadManager {
   ///
   /// **Throws**
   ///
-  Future<List<String>?> fetchChatThreadMember({
+  Future<List<String>> fetchChatThreadMember({
     required String chatThreadId,
     String? cursor,
     int pageSize = 20,
@@ -197,7 +217,13 @@ class EMChatThreadManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatThreadMember]?.cast<String>();
+      List<String> list = [];
+      result[ChatMethodKeys.fetchChatThreadMember]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
     } on EMError catch (e) {
       throw e;
     }
@@ -211,7 +237,7 @@ class EMChatThreadManager {
   ///
   /// **Throws**
   ///
-  Future<Map<String, EMMessage>?> fetchLastMessageWithChatThreads({
+  Future<Map<String, EMMessage>> fetchLastMessageWithChatThreads({
     required List<String> chatThreadIds,
   }) async {
     Map req = {
@@ -226,15 +252,16 @@ class EMChatThreadManager {
       Map? map = result.getMapValue(
         ChatMethodKeys.fetchLastMessageWithChatThreads,
       );
-      if (map == null) {
-        return null;
-      }
       Map<String, EMMessage> ret = {};
+      if (map == null) {
+        return ret;
+      }
+
       for (var key in map.keys) {
         Map<String, Object> msgMap = map[key].cast<Map<String, Object>>();
         ret[key] = EMMessage.fromJson(msgMap);
       }
-      return ret.keys.length > 0 ? ret : null;
+      return ret;
     } on EMError catch (e) {
       throw e;
     }

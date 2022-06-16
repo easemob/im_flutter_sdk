@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'tools/em_extension.dart';
 
 import 'em_listeners.dart';
 import 'internal/chat_method_keys.dart';
@@ -26,13 +27,13 @@ class EMContactManager {
     });
   }
 
-  final List<EMContactManagerListener> _contactManagerListeners = [];
+  final List<EMContactManagerListener> _listeners = [];
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
     String username = event['username'];
     String? reason = event['reason'];
-    for (var listener in _contactManagerListeners) {
+    for (var listener in _listeners) {
       switch (type) {
         case EMContactChangeEvent.CONTACT_ADD:
           listener.onContactAdded(username);
@@ -70,9 +71,7 @@ class EMContactManager {
     Map req = {
       'username': userId,
     };
-    if (reason != null) {
-      req["reason"] = reason;
-    }
+    req.setValueWithOutNull("reason", reason);
 
     Map result = await _channel.invokeMethod(ChatMethodKeys.addContact, req);
     try {
@@ -94,9 +93,9 @@ class EMContactManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> deleteContact(
-    String username, [
+    String username, {
     bool keepConversation = false,
-  ]) async {
+  }) async {
     Map req = {'username': username, 'keepConversation': keepConversation};
     Map result = await _channel.invokeMethod(ChatMethodKeys.deleteContact, req);
     try {
@@ -118,11 +117,13 @@ class EMContactManager {
         await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
     try {
       EMError.hasErrorFromResult(result);
-      List<String> contacts = [];
+      List<String> list = [];
       result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
-        contacts.add(element);
+        if (element is String) {
+          list.add(element);
+        }
       });
-      return contacts;
+      return list;
     } on EMError catch (e) {
       throw e;
     }
@@ -140,12 +141,14 @@ class EMContactManager {
         await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
     try {
       EMError.hasErrorFromResult(result);
-      List<String> contacts = [];
+      List<String> list = [];
       result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
-        contacts.add(element);
+        if (element is String) {
+          list.add(element);
+        }
       });
 
-      return contacts;
+      return list;
     } on EMError catch (e) {
       throw e;
     }
@@ -204,11 +207,13 @@ class EMContactManager {
         await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
     try {
       EMError.hasErrorFromResult(result);
-      List<String> blockList = [];
+      List<String> list = [];
       result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
-        blockList.add(element);
+        if (element is String) {
+          list.add(element);
+        }
       });
-      return blockList;
+      return list;
     } on EMError catch (e) {
       throw e;
     }
@@ -225,11 +230,13 @@ class EMContactManager {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
     try {
       EMError.hasErrorFromResult(result);
-      List<String> blockList = [];
+      List<String> list = [];
       result[ChatMethodKeys.getBlockListFromDB]?.forEach((element) {
-        blockList.add(element);
+        if (element is String) {
+          list.add(element);
+        }
       });
-      return blockList;
+      return list;
     } on EMError catch (e) {
       throw e;
     }
@@ -278,13 +285,15 @@ class EMContactManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> getSelfIdsOnOtherPlatform() async {
+  Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getSelfIdsOnOtherPlatform);
     try {
       EMError.hasErrorFromResult(result);
-      List<String>? devices =
-          result[ChatMethodKeys.getSelfIdsOnOtherPlatform]?.cast<String>();
+      List<String> devices = [];
+      result[ChatMethodKeys.getSelfIdsOnOtherPlatform]?.forEach((element) {
+        devices.add(element);
+      });
       return devices;
     } on EMError catch (e) {
       throw e;
@@ -292,12 +301,39 @@ class EMContactManager {
   }
 
   ///
+  /// Registers a new contact manager listener.
+  ///
+  /// Param [listener] The contact manager listener to be registered: {@link EMContactManagerListener}.
+  ///
+  void addContactManagerListener(EMContactManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes the contact manager listener.
+  ///
+  /// Param [listener] The contact manager listener to be removed.
+  ///
+  void removeContactManagerListener(EMContactManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all contact manager listeners.
+  ///
+  void clearContactManagerListeners() {
+    _listeners.clear();
+  }
+
+  ///
   /// Registers a new contact listener.
   ///
-  /// Param [contactListener] The contact listener to be registered: {@link EMContactEventListener}.
+  /// Param [listener] The contact listener to be registered: {@link EMContactEventListener}.
   ///
-  void addContactListener(EMContactManagerListener contactListener) {
-    _contactManagerListeners.add(contactListener);
+  @Deprecated("Use - addContactManagerListener")
+  void addContactListener(EMContactManagerListener listener) {
+    _listeners.add(listener);
   }
 
   ///
@@ -305,9 +341,8 @@ class EMContactManager {
   ///
   /// Param [contactListener] The contact listener to be removed.
   ///
+  @Deprecated("Use - removeContactManagerListener")
   void removeContactListener(EMContactManagerListener contactListener) {
-    if (_contactManagerListeners.contains(contactListener)) {
-      _contactManagerListeners.remove(contactListener);
-    }
+    _listeners.remove(contactListener);
   }
 }

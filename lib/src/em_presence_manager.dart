@@ -26,7 +26,8 @@ class EMPresenceManager {
   ///
   /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
   ///
-  void addPresenceListener(EMPresenceManagerListener listener) {
+  void addPresenceManagerListener(EMPresenceManagerListener listener) {
+    _listeners.remove(listener);
     _listeners.add(listener);
   }
 
@@ -35,10 +36,14 @@ class EMPresenceManager {
   ///
   /// Param [listener] The presence manager listener to be removed.
   ///
-  void removePresenceListener(EMPresenceManagerListener listener) {
+  void removePresenceManagerListener(EMPresenceManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
     }
+  }
+
+  void clearAllPresenceManagerListener() {
+    _listeners.clear();
   }
 
   ///
@@ -49,7 +54,7 @@ class EMPresenceManager {
   /// **Throws** A description of the exception. See {@link EMError}.
   ///
   void publishPresenceWithDescription({
-    String? description,
+    required String description,
   }) async {
     Map req = {'desc': description};
     Map result = await _channel.invokeMethod(
@@ -72,7 +77,7 @@ class EMPresenceManager {
   ///
   /// **Throws** A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMPresence>?> subscribe({
+  Future<List<EMPresence>> subscribe({
     required List<String> members,
     required int expiry,
   }) async {
@@ -122,7 +127,7 @@ class EMPresenceManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchSubscribedMembers({
+  Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
     int pageSize = 20,
   }) async {
@@ -131,12 +136,14 @@ class EMPresenceManager {
         ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
     try {
       EMError.hasErrorFromResult(result);
-      List<String>? list = [];
+      List<String> list = [];
       result[ChatMethodKeys.fetchSubscribedMembersWithPageNum]
           ?.forEach((element) {
-        list.add(element);
+        if (element is String) {
+          list.add(element);
+        }
       });
-      return list.length > 0 ? list : null;
+      return list;
     } on EMError catch (e) {
       throw e;
     }
@@ -151,7 +158,7 @@ class EMPresenceManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMPresence>?> fetchPresenceStatus({
+  Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,
   }) async {
     Map req = {'members': members};
@@ -163,7 +170,7 @@ class EMPresenceManager {
       result[ChatMethodKeys.fetchPresenceStatus]?.forEach((element) {
         list.add(EMPresence.fromJson(element));
       });
-      return list.length > 0 ? list : null;
+      return list;
     } on EMError catch (e) {
       throw e;
     }

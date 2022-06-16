@@ -41,16 +41,16 @@ extension EMTransformPlugin on EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMTranslateLanguage>?> fetchSupportedLanguages() async {
+  Future<List<EMTranslateLanguage>> fetchSupportedLanguages() async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.fetchSupportLanguages);
     try {
       EMError.hasErrorFromResult(result);
-      List<EMTranslateLanguage>? list = [];
+      List<EMTranslateLanguage> list = [];
       result[ChatMethodKeys.fetchSupportLanguages]?.forEach((element) {
         list.add(EMTranslateLanguage.fromJson(element));
       });
-      return list.length > 0 ? list : null;
+      return list;
     } on EMError catch (e) {
       throw e;
     }
