@@ -7,13 +7,14 @@ extension EMModerationPlugin on EMChatManager {
   ///
   /// Report violation message
   ///
-  /// Param [messageId] The ID of the violation message.
+  /// Param [messageId] Violation Message ID
   ///
   /// Param [tag] The report type (For example: involving pornography and terrorism).
   ///
   /// Param [reason] The reason for reporting.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<void> reportMessage({
     required String messageId,
     required String tag,

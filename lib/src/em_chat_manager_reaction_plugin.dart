@@ -9,6 +9,15 @@ import 'models/em_message_reaction.dart';
 import 'tools/em_extension.dart';
 
 extension EMReactionPlugin on EMChatManager {
+  ///
+  /// Adds a reaction.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// Param [reaction] The reaction content.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<void> addReaction({
     required String messageId,
     required String reaction,
@@ -23,6 +32,17 @@ extension EMReactionPlugin on EMChatManager {
     }
   }
 
+  ///
+  /// Deletes a reaction.
+  ///
+  /// This is a synchronous method and blocks the current thread.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// Param [reaction] The reaction content.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<void> removeReaction({
     required String messageId,
     required String reaction,
@@ -37,6 +57,19 @@ extension EMReactionPlugin on EMChatManager {
     }
   }
 
+  ///
+  /// Gets the list of Reactions.
+  ///
+  /// Param [messageIds] The message IDs.
+  ///
+  /// Param [chatType] The chat type. Only one-to-one chat ({@link EMMessage.ChatType#Chat} and group chat ({@link EMMessage.ChatType#GroupChat}) are allowed.
+  ///
+  /// Param [groupId] which is invalid only when the chat type is group chat.
+  ///
+  /// **Return** The Reaction list under the specified message ID（The UserList of EMMessageReaction is the summary data, which only contains the information of the first three users）.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<Map<String, List<EMMessageReaction>>> fetchReactionList({
     required List<String> messageIds,
     required ChatType chatType,
@@ -66,6 +99,21 @@ extension EMReactionPlugin on EMChatManager {
     }
   }
 
+  ///
+  /// Gets the reaction details.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// Param [reaction] The reaction content.
+  ///
+  /// Param [cursor] The cursor position from which to get Reactions.
+  ///
+  /// Param [pageSize] The number of Reactions you expect to get on each page.
+  ///
+  /// **Return** The result callback, which contains the reaction list obtained from the server and the cursor for the next query. Returns null if all the data is fetched.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
   Future<EMCursorResult<EMMessageReaction>> fetchReactionDetail({
     required String messageId,
     required String reaction,

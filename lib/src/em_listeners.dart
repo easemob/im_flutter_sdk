@@ -1,6 +1,10 @@
+import 'models/em_chat_enums.dart';
 import 'models/em_chat_thread_event.dart';
 
-import '../im_flutter_sdk.dart';
+import 'models/em_group_message_ack.dart';
+import 'models/em_group_shared_file.dart';
+import 'models/em_message.dart';
+import 'models/em_message_reaction_change.dart';
 import 'models/em_presence.dart';
 
 ///
@@ -136,7 +140,7 @@ abstract class EMMultiDeviceListener {
   ///
   /// Param [usernames] The array of usernames.
   ///
-  void onThreadEvent(
+  void onChatThreadEvent(
     EMMultiDevicesEvent event,
     String chatThreadId,
     List<String> usernames,
@@ -655,6 +659,9 @@ abstract class EMChatManagerListener {
   ///
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
 
+  ///
+  /// Occurs when the update for the group message read status is received.
+  ///
   void onReadAckForGroupMessageUpdated() {}
 
   ///
@@ -712,34 +719,40 @@ class EMPresenceManagerListener {
 }
 
 ///
-/// The delegate protocol that defines chat thread callbacks.
+/// The message thread listener interface, which listens for message thread events such as creating or leaving a message thread.
+///
+/// Adds a message thread event listener:
+/// EMClient.getInstance.chatThreadManager.addChatThreadManagerListener(listener);
+///
+/// Removes a message thread event listener:
+/// EMClient.getInstance.chatThreadManager.removeChatThreadManagerListener(listener);
 ///
 class EMChatThreadManagerListener {
   ///
-  /// Occurs when received after subsection is created
+  /// Occurs when a message thread is created.
   ///
-  /// Param [event] EMChatThreadEvent object
+  /// Each member of the group to which the message thread belongs can receive the callback.
   ///
   void onChatThreadCreate(EMChatThreadEvent event) {}
 
   ///
-  /// Occurs when received after updating the sub-area (including updating the last message of the sub-area, updating the sub-area name, and withdrawing the sub-area message)
+  /// Occurs when a message thread is updated.
   ///
-  /// Param [event] EMChatThreadEvent object
+  /// This callback is triggered when the message thread name is changed or a threaded reply is added or recalled.
+  ///
+  /// Each member of the group to which the message thread belongs can receive the callback.
   ///
   void onChatThreadUpdate(EMChatThreadEvent event) {}
 
   ///
-  /// Occurs when received after destroying the subsection
+  /// Occurs when a message thread is destroyed.
   ///
-  /// Param [event] EMChatThreadEvent object
+  /// Each member of the group to which the message thread belongs can receive the callback.
   ///
   void onChatThreadDestroy(EMChatThreadEvent event) {}
 
   ///
-  /// Occurs when received after user is kicked out of subsection
-  ///
-  /// Param [event] EMChatThreadEvent object
+  /// Occurs when the current user is removed from the message thread by the group owner or a group admin to which the message thread belongs.
   ///
   void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
 }

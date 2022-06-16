@@ -4,6 +4,9 @@ import 'em_listeners.dart';
 import 'models/em_presence.dart';
 import 'models/em_error.dart';
 
+///
+/// The Manager that defines how to manage presence states.
+///
 class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -53,7 +56,7 @@ class EMPresenceManager {
   ///
   /// **Throws** A description of the exception. See {@link EMError}.
   ///
-  void publishPresenceWithDescription({
+  void publishPresence({
     required String description,
   }) async {
     Map req = {'desc': description};

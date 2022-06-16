@@ -58,13 +58,13 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get the thread detail
+  /// Get Chat Thread details from server.
   ///
-  /// Param [chatThreadId] The id of the subarea to get
+  /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Return**
+  /// **Return** The chat thread object.
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<EMChatThread?> fetchChatThread({
     required String chatThreadId,
@@ -84,21 +84,21 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get the subareas the user has joined from the server
+  /// Paging to get the list of Chat Threads that the current user has joined from the server
   ///
-  /// Param [cursor] The position cursor of the last fetch
+  /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [pageSize] Number of single requests, limit 50
+  /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return**
+  /// **Return** Returns the result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreads({
     String? cursor,
-    int pageSize = 20,
+    int limit = 20,
   }) async {
-    Map req = {"pageSize": pageSize};
+    Map req = {"pageSize": limit};
     req.setValueWithOutNull("cursor", cursor);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchJoinedChatThreads, req);
@@ -117,24 +117,24 @@ class EMChatThreadManager {
   ///
   /// Get the subareas under a group from the server
   ///
-  /// Param [parentId] The session id of the upper level of the sub-area
+  /// Param [parentId] Parent ID, generally refers to group ID.
   ///
-  /// Param [cursor] The position cursor of the last fetch
+  /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [pageSize] Number of single requests, limit 50
+  /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return**
+  /// **Return** result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
     required String parentId,
     String? cursor,
-    int pageSize = 20,
+    int limit = 20,
   }) async {
     Map req = {
       "parentId": parentId,
-      "pageSize": pageSize,
+      "pageSize": limit,
     };
     req.setValueWithOutNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
@@ -152,26 +152,26 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get the mine subareas under a group from the server
+  /// Paging to get the list of Chat Threads that the current user has joined the specified group from the server。
   ///
   /// Param [parentId] The session id of the upper level of the sub-area
   ///
-  /// Param [cursor] The position cursor of the last fetch
+  /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [pageSize] Number of single requests, limit 50
+  /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return**
+  /// **Return** The result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreadsWithParentId({
     required String parentId,
     String? cursor,
-    int pageSize = 20,
+    int limit = 20,
   }) async {
     Map req = {
       "parentId": parentId,
-      "pageSize": pageSize,
+      "pageSize": limit,
     };
     req.setValueWithOutNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
@@ -189,25 +189,27 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get a list of members in a subsection
+  /// Paging to get Chat Thread members.
   ///
-  /// Param [chatThreadId] The id of the subarea to get members
+  /// The members of the group to which Chat Thread belongs have permission.
   ///
-  /// Param [cursor] The position cursor of the last fetch
+  /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// Param [pageSize] Number of single requests, limit 50
+  /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// **Return**
+  /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Throws**
+  /// **Return** The result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread member list.
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<List<String>> fetchChatThreadMember({
     required String chatThreadId,
     String? cursor,
-    int pageSize = 20,
+    int limit = 20,
   }) async {
     Map req = {
-      "pageSize": pageSize,
+      "pageSize": limit,
       "threadId": chatThreadId,
     };
     req.setValueWithOutNull("cursor", cursor);
@@ -230,14 +232,15 @@ class EMChatThreadManager {
   }
 
   ///
+  /// Get the latest news of the specified Chat Thread list from the server.
   ///
-  /// Param [chatThreadIds] The ids of the subarea to get(No more than 20 ids for a single request)
+  /// Param [chatThreadIds] Chat Thread id list. The list length is not greater than 20.
   ///
-  /// **Return**  return a map key is the sub-area id, value is the EMMessage object
+  /// **Return**  returns a Map collection, the key is the chat thread ID, and the value is the latest message object of the chat thread.
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
-  Future<Map<String, EMMessage>> fetchLastMessageWithChatThreads({
+  Future<Map<String, EMMessage>> fetchLatestMessageWithChatThreads({
     required List<String> chatThreadIds,
   }) async {
     Map req = {
@@ -268,13 +271,13 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Remove sub-zone members (only available for group management)
+  /// Remove member from Chat Thread.
   ///
-  /// Param [memberId] To remove the user's ease id
+  /// Param [memberId] The ID of the member that was removed from Chat Thread.
   ///
-  /// Param [chatThreadId] subarea id to operate
+  /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<void> removeMemberFromChatThread({
     required String memberId,
@@ -296,17 +299,21 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Update subarea name (only available for group managers or creators)
+  /// Change Chat Thread name.
   ///
-  /// Param [newName] the name you want to change（limit 64 character）
+  /// The group owner, group administrator and Thread creator have permission.
+  /// After modifying chat thread name, members of the organization (group) to which chat thread belongs will receive the update notification event.
+  /// You can set {@link EMChatThreadManagerListener} to listen on the event.
   ///
-  /// Param [chatThreadId] subarea id to operate
+  /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws**
+  /// Param [newName]  New Chat Thread name. No more than 64 characters in length.
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<void> updateChatThreadName({
-    required String newName,
     required String chatThreadId,
+    required String newName,
   }) async {
     Map req = {
       "name": newName,
@@ -324,17 +331,26 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Create a subsection
+  /// Create Chat Thread.
   ///
-  /// Param [name] The id of the subarea to get（limit 64 character）
+  /// Group members have permission.
+  /// After chat thread is created, the following notices will appear:
+  /// 1. Members of the organization (group) to which chat thread belongs will receive the created notification event,
+  /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
+  /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
+  /// 2. Multiple devices will receive the notification event and you can set {@link com.hyphenate.EMMultiDeviceListener} to listen on the event.
+  /// The event callback function is {@link com.hyphenate.EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)}, where the first parameter is the event,
+  /// for example, {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_CREATE} for the chat thread creation event.
   ///
-  /// Param [messageId] The message id of the operation to create the sub-area
+  /// Param [name] Chat Thread name. No more than 64 characters in length.
   ///
-  /// Param [parentId] The session id where the message of the operation creates the sub-area is also the to of that message
+  /// Param [messageId] Parent message ID, generally refers to group message ID.
+  ///
+  /// Param [parentId] Parent ID, generally refers to group ID.
   ///
   /// **Return** EMChatThread object
   ///
-  /// **Throws**
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<EMChatThread> createChatThread({
     required String name,
@@ -359,13 +375,21 @@ class EMChatThreadManager {
   }
 
   ///
-  /// join a subsection
+  /// Join Chat Thread.
   ///
-  /// Param [chatThreadId] The id of the subarea to join
+  /// Group members have permission.
+  /// Join successfully, return the Chat Thread details {@link EMChatThread}, the details do not include the number of members.
+  /// Repeated addition will throw an EMError.
+  /// After joining chat thread, the multiple devices will receive the notification event.
+  /// You can set {@link EMMultiDeviceListener} to listen on the event.
+  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
+  /// where the first parameter is the event, and chat thread join event is {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}.
   ///
-  /// **Return** EMChatThread object
+  /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws**
+  /// **Return** The joined chat thread object;
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<EMChatThread> joinChatThread({
     required String chatThreadId,
@@ -386,11 +410,17 @@ class EMChatThreadManager {
   }
 
   ///
-  /// leave a subsection
+  /// Leave Chat Thread.
   ///
-  /// Param [chatThreadId] The id of the subarea to leave
+  /// The operation is available to Chat Thread members.
+  /// After joining chat thread, the multiple devices will receive the notification event.
+  /// You can set {@EMMultiDeviceListener} to listen on the event.
+  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
+  /// where the first parameter is the event, and chat thread exit event is {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}.
   ///
-  /// **Throws**
+  /// Param [chatThreadId] Chat Thread ID.
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<void> leaveChatThread({
     required String chatThreadId,
@@ -410,11 +440,20 @@ class EMChatThreadManager {
   }
 
   ///
-  /// destroy a subsection
+  /// Disband Chat Thread.
   ///
-  /// Param [chatThreadId] The id of the subarea to destroy
+  /// Group owner and group administrator to which the Chat Thread belongs have permission.
+  /// After chat thread is disbanded, there will be the following notification:
+  /// 1. Members of the organization (group) to which chat thread belongs will receive the disbanded notification event,
+  /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
+  /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} .
+  /// 2. Multiple devices will receive the notification event and you can set {@link EMMultiDeviceListener} to listen on the event.
+  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List)}, where the first parameter is the event,
+  /// for example, {@link com.hyphenate.EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY} for the chat thread destruction event.
   ///
-  /// **Throws**
+  /// Param [chatThreadId] Chat Thread ID.
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}.
   ///
   Future<void> destroyChatThread({
     required String chatThreadId,
