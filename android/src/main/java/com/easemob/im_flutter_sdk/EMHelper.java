@@ -614,7 +614,14 @@ class EMMessageBodyHelper {
             data.put("targetLanguages", body.getTargetLanguages());
         }
         if (body.getTranslations() != null) {
-            data.put("translations", body.getTranslations());
+            HashMap<String, String> map = new HashMap<>();
+            List<EMTextMessageBody.EMTranslationInfo> list = body.getTranslations();
+            for (int i = 0; i < list.size(); ++i) {
+                String key = list.get(i).languageCode;
+                String value = list.get(i).translationText;
+                map.put(key, value);
+            }
+            data.put("translations", map);
         }
         return data;
     }

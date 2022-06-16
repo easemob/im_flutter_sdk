@@ -199,7 +199,7 @@ def walkFile(file):
             if len(file_ext) != 2:
                 # 没有后缀名
                 continue
-            if file_ext[1] == 'yaml' or file_ext[1] == 'gradle' or file_ext[1] == 'dart' or file_ext[1] == 'podspec':
+            if file_ext[1] == 'yaml' or file_ext[1] == 'gradle' or file_ext[1] == 'dart' or file_ext[1] == 'podspec' or file_ext[1] == 'md':
                 if file_ext[1] == 'yaml':
                     total_yaml_num += 1
                 if file_ext[1] == 'gradle':
@@ -341,7 +341,11 @@ UPDATE_dict = {
     "EMModerationPlugin":"ChatModerationPlugin",
     "EMConnectionListener":"ChatConnectionListener",
     "EMSearchDirection":"ChatSearchDirection",
-    "EMProgressManager":"EMProgressManager",
+    "EMProgressManager":"ChatProgressManager",
+    "EMChatRoom":"ChatRoom",
+    "EMRoomManager":"ChatRoomManager",
+    "EMPresence":"ChatPresence",
+
     #podspec
      "= 'im_flutter_sdk'":"= 'agora_chat_sdk'"
 

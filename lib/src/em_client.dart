@@ -24,6 +24,7 @@ class EMClient {
   final EMPushManager _pushManager = EMPushManager();
   final EMUserInfoManager _userInfoManager = EMUserInfoManager();
   final EMProgressManager _emProgressManager = EMProgressManager();
+  final EMChatThreadManager _chatThreadManager = EMChatThreadManager();
   final List<EMConnectionListener> _connectionListeners = [];
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
   final List<EMCustomListener> _customListeners = [];
@@ -561,7 +562,7 @@ class EMClient {
 
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
     for (var listener in _multiDeviceListeners) {
-      listener.onThreadEvent(
+      listener.onChatThreadEvent(
         convertIntToEMMultiDevicesEvent(map['event'])!,
         map['target'],
         map['users'],
@@ -639,6 +640,10 @@ class EMClient {
   ///
   EMUserInfoManager get userInfoManager {
     return _userInfoManager;
+  }
+
+  EMChatThreadManager get chatThreadManager {
+    return _chatThreadManager;
   }
 
   void _clearAllInfo() {

@@ -49,5 +49,6 @@ class EMTextMessageBody extends EMMessageBody {
   /// The target languages to translate
   List<String>? targetLanguages;
 
+  /// It is Map, key is target language, value is translated content
   Map<String, String>? translations;
 }
