@@ -21,7 +21,7 @@ import 'internal/chat_method_keys.dart';
 /// ```
 ///
 class EMChatManager {
-  final List<EMChatManagerListener> _messageListeners = [];
+  final List<EMChatManagerListener> _listeners = [];
 
   /// @nodoc
   EMChatManager() {
@@ -82,7 +82,7 @@ class EMChatManager {
   }
 
   ///
-  /// Resends a message.
+  /// Resend a message.
   ///
   /// Param [message] The message object to be resent: {@link EMMessage}.
   ///
@@ -158,9 +158,8 @@ class EMChatManager {
       "msg_id": msgId,
       "group_id": groupId,
     };
-    if (content != null) {
-      req["content"] = content;
-    }
+    req.setValueWithOutNull("content", content);
+
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.ackGroupMessageRead, req);
     try {
@@ -462,9 +461,9 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> deleteConversation(
-    String conversationId, [
+    String conversationId, {
     bool deleteMessages = true,
-  ]) async {
+  }) async {
     Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.deleteConversation, req);
@@ -477,30 +476,35 @@ class EMChatManager {
   }
 
   ///
-  /// Adds the message listener. After calling this method, you can listen for new messages when they arrive.
+  /// Adds the chat manager listener. After calling this method, you can listen for new messages when they arrive.
   ///
-  /// Param [listener] The message listener that listens for new messages. See {@link EMChatManagerListener}.
+  /// Param [listener] The chat manager listener that listens for new messages. See {@link EMChatManagerListener}.
   ///
   void addChatManagerListener(EMChatManagerListener listener) {
-    _messageListeners.add(listener);
+    _listeners.remove(listener);
+    _listeners.add(listener);
   }
 
   ///
-  /// Removes the message listener.
+  /// Removes the chat manager listener.
   ///
   /// After adding a chat manager listener, you can remove this listener if you do not want to listen for it.
   ///
-  /// Param [listener] The message listener to be removed. See {@link EMChatManagerListener}.
+  /// Param [listener] The chat manager listener to be removed. See {@link EMChatManagerListener}.
   ///
   void removeChatManagerListener(EMChatManagerListener listener) {
-    if (_messageListeners.contains(listener)) {
-      _messageListeners.remove(listener);
-    }
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all chat manager listeners.
+  ///
+  void clearAllChatManagerListeners() {
+    _listeners.clear();
   }
 
   ///
   /// Gets historical messages of the conversation from the server with pagination.
-  ///
   ///
   /// Param [conversationId] The conversation ID.
   ///
@@ -514,7 +518,7 @@ class EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<EMMessage?>> fetchHistoryMessages({
+  Future<EMCursorResult<EMMessage>> fetchHistoryMessages({
     required String conversationId,
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
@@ -529,7 +533,7 @@ class EMChatManager {
         ChatMethodKeys.fetchHistoryMessages, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<EMMessage?>.fromJson(
+      return EMCursorResult<EMMessage>.fromJson(
           result[ChatMethodKeys.fetchHistoryMessages],
           dataItemCallback: (value) {
         return EMMessage.fromJson(value);
@@ -601,22 +605,22 @@ class EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<EMGroupMessageAck?>> fetchGroupAcks(
+  Future<EMCursorResult<EMGroupMessageAck>> fetchGroupAcks(
     String msgId,
     String groupId, {
     String? startAckId,
     int pageSize = 0,
   }) async {
     Map req = {"msg_id": msgId, "group_id": groupId};
-    req.setValueWithOutNull("ack_id", startAckId);
     req["pageSize"] = pageSize;
+    req.setValueWithOutNull("ack_id", startAckId);
 
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.asyncFetchGroupAcks, req);
 
     try {
       EMError.hasErrorFromResult(result);
-      EMCursorResult<EMGroupMessageAck?> cursorResult = EMCursorResult.fromJson(
+      EMCursorResult<EMGroupMessageAck> cursorResult = EMCursorResult.fromJson(
         result[ChatMethodKeys.asyncFetchGroupAcks],
         dataItemCallback: (map) {
           return EMGroupMessageAck.fromJson(map);
@@ -670,7 +674,7 @@ class EMChatManager {
     for (var message in messages) {
       messageList.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesReceived(messageList);
     }
   }
@@ -680,7 +684,7 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onCmdMessagesReceived(list);
     }
   }
@@ -690,7 +694,7 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesRead(list);
     }
   }
@@ -700,13 +704,13 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMGroupMessageAck.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onGroupMessageRead(list);
     }
   }
 
   Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onReadAckForGroupMessageUpdated();
     }
   }
@@ -716,7 +720,7 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesDelivered(list);
     }
   }
@@ -726,19 +730,19 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesRecalled(list);
     }
   }
 
   Future<void> _onConversationsUpdate(dynamic obj) async {
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onConversationsUpdate();
     }
   }
 
   Future<void> _onConversationHasRead(dynamic obj) async {
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       String from = (obj as Map)['from'];
       String to = obj['to'];
       listener.onConversationRead(from, to);
@@ -746,7 +750,7 @@ class EMChatManager {
   }
 
   Future<void> _messageReactionDidChange(dynamic obj) async {
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       String from = (obj as Map)['from'];
       String to = obj['to'];
       listener.onConversationRead(from, to);

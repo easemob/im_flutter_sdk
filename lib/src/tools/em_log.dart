@@ -4,7 +4,7 @@ class EMLog {
   // ignore: non_constant_identifier_names
   static String TAG = 'EaseMob';
 
-  static bool debuggable = kReleaseMode ? false : true;
+  static bool debugAble = kReleaseMode ? false : true;
 
   /// Error级别的log
   static void e(Object object, {String? tag}) {
@@ -13,7 +13,7 @@ class EMLog {
 
   /// Verbose级别的log
   static void v(Object object, {String? tag}) {
-    if (debuggable) {
+    if (debugAble) {
       _printLog(tag, ' | V | ', object);
     }
   }

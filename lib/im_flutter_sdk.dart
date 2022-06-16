@@ -6,7 +6,6 @@ export 'src/em_chat_manager_transform_plugin.dart' show EMTransformPlugin;
 export 'src/em_chat_manager_reaction_plugin.dart' show EMReactionPlugin;
 export 'src/em_chat_manager_moderation_plugin.dart' show EMModerationPlugin;
 export 'src/em_chat_thread_manager.dart' show EMChatThreadManager;
-
 export 'src/em_contact_manager.dart' show EMContactManager;
 export 'src/em_group_manager.dart' show EMGroupManager;
 export 'src/em_chat_room_manager.dart' show EMChatRoomManager;
@@ -17,12 +16,14 @@ export 'src/em_listeners.dart'
         EMConnectionListener,
         EMMultiDeviceListener,
         EMChatManagerListener,
-        EMGroupEventListener,
-        EMChatRoomEventListener,
+        EMChatRoomManagerListener,
+        EMGroupManagerListener,
         EMContactManagerListener,
         EMCustomListener,
         EMPresenceManagerListener,
-        EMChatThreadManagerListener;
+        EMChatThreadManagerListener,
+        EMGroupEventListener,
+        EMChatRoomEventListener;
 
 export 'src/models/em_group_message_ack.dart' show EMGroupMessageAck;
 export 'src/models/em_chat_room.dart' show EMChatRoom;
@@ -54,7 +55,7 @@ export 'src/models/em_chat_enums.dart'
         EMSearchDirection,
         EMMultiDevicesEvent;
 
-export 'src/models/em_message.dart' show EMMessage;
+export 'src/models/em_message.dart' show EMMessage, EMMessageExtension;
 export 'src/models/em_message_body.dart' show EMMessageBody;
 export 'src/models/em_text_message_body.dart' show EMTextMessageBody;
 export 'src/models/em_image_message_body.dart' show EMImageMessageBody;
@@ -66,10 +67,10 @@ export 'src/models/em_custom_message_body.dart' show EMCustomMessageBody;
 export 'src/models/em_location_message_body.dart' show EMLocationMessageBody;
 export 'src/models/em_message_reaction_change.dart'
     show EMMessageReactionChange;
-export 'src/models/em_download_callback.dart';
+export 'src/models/em_download_callback.dart' show EMDownloadCallback;
 export 'src/models/em_message_reaction.dart' show EMMessageReaction;
+export 'src/models/em_chat_thread.dart' show EMChatThread;
+export 'src/models/em_chat_thread_event.dart' show EMChatThreadEvent;
 
 export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
-
-@Deprecated("Switch to using MessageStatusCallBack instead.")
 export 'src/em_status_listener.dart';

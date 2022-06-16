@@ -202,7 +202,7 @@ abstract class EMContactManagerListener {
   void onFriendRequestDeclined(String userName);
 }
 
-abstract class EMChatRoomEventListener {
+abstract class EMChatRoomManagerListener {
   ///
   /// Occurs when the chat room is destroyed.
   ///
@@ -319,7 +319,7 @@ abstract class EMChatRoomEventListener {
   ///
   /// Param [members] The member(s) to be added to the allowlist.
   ///
-  void onWhiteListAddedFromChatRoom(String roomId, List<String> members);
+  void onAllowListAddedFromChatRoom(String roomId, List<String> members);
 
   ///
   /// Occurs when the chat room member(s) is removed from the allowlist.
@@ -328,7 +328,7 @@ abstract class EMChatRoomEventListener {
   ///
   /// Param [members] The member(s) is removed from the allowlist.
   ///
-  void onWhiteListRemovedFromChatRoom(String roomId, List<String> members);
+  void onAllowListRemovedFromChatRoom(String roomId, List<String> members);
 
   ///
   /// Occurs when all members in the chat room are muted or unmuted.
@@ -342,7 +342,410 @@ abstract class EMChatRoomEventListener {
   void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted);
 }
 
-@Deprecated('Use EMGroupEventListener.')
+///
+/// The group change listener.
+///
+/// Occurs when the following group events happens: requesting to join a group, approving or declining a group request, and kicking a user out of a group.
+///
+/// Registers a group change listener:
+/// ```dart
+///   EMClient.getInstance.groupManager.addGroupChangeListener(listener);
+/// ```
+///
+/// Unregisters a group change listener:
+/// ```dart
+///   EMClient.getInstance.groupManager.removeGroupChangeListener(listener);
+/// ```
+abstract class EMGroupManagerListener {
+  ///
+  /// Occurs when the user receives a group invitation.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [inviter] The invitee ID.
+  ///
+  /// Param [reason] The reason for invitation.
+  ///
+  void onInvitationReceivedFromGroup(
+      String groupId, String? groupName, String inviter, String? reason);
+
+  ///
+  /// Occurs when the group owner or administrator receives a group request from a user.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [applicant] The ID of the user requesting to join the group.
+  ///
+  /// Param [reason] The reason for requesting to join the group.
+  ///
+  void onRequestToJoinReceivedFromGroup(
+      String groupId, String? groupName, String applicant, String? reason);
+
+  ///
+  /// Occurs when a group request is accepted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [accepter] The ID of the user that accepts the group request.
+  ///
+  void onRequestToJoinAcceptedFromGroup(
+      String groupId, String? groupName, String accepter);
+
+  ///
+  /// Occurs when a group request is declined.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  /// Param [decliner] The ID of the user that declines the group request.
+  ///
+  /// Param [reason] The reason for declining.
+  ///
+  void onRequestToJoinDeclinedFromGroup(
+    String groupId,
+    String? groupName,
+    String decliner,
+    String? reason,
+  );
+
+  ///
+  /// Occurs when a group invitation is accepted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [invitee] The invitee ID.
+  ///
+  /// Param [reason] The reason for acceptance.
+  ///
+  void onInvitationAcceptedFromGroup(
+    String groupId,
+    String invitee,
+    String? reason,
+  );
+
+  ///
+  /// Occurs when a group invitation is declined.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [invitee] The invitee ID.
+  ///
+  /// Param [reason] The reason for declining.
+  ///
+  void onInvitationDeclinedFromGroup(
+      String groupId, String invitee, String? reason);
+
+  ///
+  /// Occurs when the current user is removed from the group by the group admin.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  void onUserRemovedFromGroup(String groupId, String? groupName);
+
+  ///
+  /// Occurs when a group is destroyed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [groupName] The group name.
+  ///
+  void onGroupDestroyed(String groupId, String? groupName);
+
+  ///
+  /// Occurs when the group invitation is accepted automatically.
+  /// For settings, see {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
+  /// The SDK will join the group before notifying the app of the acceptance of the group invitation.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [inviter] The inviter ID.
+  ///
+  /// Param [inviteMessage] The invitation message.
+  ///
+  void onAutoAcceptInvitationFromGroup(
+      String groupId, String inviter, String? inviteMessage);
+
+  ///
+  /// Occurs when one or more group members are muted.
+  ///
+  /// Note: The mute function is different from a block list.
+  /// A user, when muted, can still see group messages, but cannot send messages in the group.
+  /// However, a user on the block list can neither see nor send group messages.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [mutes] The member(s) added to the mute list.
+  ///
+  /// Param [muteExpire] The mute duration in milliseconds.
+  ///
+  void onMuteListAddedFromGroup(
+      String groupId, List<String> mutes, int? muteExpire);
+
+  ///
+  /// Occurs when one or more group members are unmuted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [mutes] The member(s) added to the mute list.
+  ///
+  void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
+
+  ///
+  /// Occurs when a member is set as an admin.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [admin] The member that is set as an admin.
+  ///
+  void onAdminAddedFromGroup(String groupId, String admin);
+
+  ///
+  /// Occurs when a member's admin privileges are removed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [admin] The member whose admin privileges are removed.
+  ///
+  void onAdminRemovedFromGroup(String groupId, String admin);
+
+  ///
+  /// Occurs when the group ownership is transferred.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [newOwner] The new owner.
+  ///
+  /// Param [oldOwner] The previous owner.
+  ///
+  void onOwnerChangedFromGroup(
+      String groupId, String newOwner, String oldOwner);
+
+  ///
+  /// Occurs when a member joins a group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The ID of the new member.
+  ///
+  void onMemberJoinedFromGroup(String groupId, String member);
+
+  ///
+  /// Occurs when a member proactively leaves the group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [member] The member leaving the group.
+  ///
+  void onMemberExitedFromGroup(String groupId, String member);
+
+  ///
+  /// Occurs when the announcement is updated.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [announcement] The updated announcement content.
+  ///
+  void onAnnouncementChangedFromGroup(String groupId, String announcement);
+
+  ///
+  /// Occurs when a shared file is added to a group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [sharedFile] The new shared file.
+  ///
+  void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
+
+  ///
+  /// Occurs when a shared file is removed from a group.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [fileId] The ID of the removed shared file.
+  ///
+  void onSharedFileDeletedFromGroup(String groupId, String fileId);
+
+  ///
+  /// Occurs when one or more group members are added to the allowlist.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [members] The member(s) removed from the allowlist.
+  ///
+  void onAllowListAddedFromGroup(String groupId, List<String> members);
+
+  ///
+  /// Occurs when one or more members are removed from the allowlist.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [members] The member(s) added to the allowlist.
+  ///
+  void onAllowListRemovedFromGroup(String groupId, List<String> members);
+
+  ///
+  /// Occurs when all group members are muted or unmuted.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [isAllMuted] Whether all group members are muted or unmuted.
+  /// - `true`: Yes;
+  /// - `false`: No.
+  ///
+  void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
+}
+
+///
+/// The message event listener.
+///
+/// This listener is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: {@link EMOptions#requireDeliveryAck(boolean)}.
+/// If the peer reads the received message, a read receipt will be returned (read receipt needs to be enabled: {@link EMOptions#requireAck(boolean)})
+/// During message delivery, the message ID will be changed from a local uuid to a global unique ID that is generated by the server to uniquely identify a message on all devices using the SDK.
+/// This API should be implemented in the app to listen for message status changes.
+///
+/// Adds the message listener:
+/// ```dart
+///   EMClient.getInstance.chatManager.addChatManagerListener(listener);
+/// ```
+///
+/// Removes the message listener:
+/// ```dart
+///   EMClient.getInstance.chatManager.removeChatManagerListener(listener);
+/// ```
+///
+abstract class EMChatManagerListener {
+  ///
+  /// Occurs when a message is received.
+  ///
+  /// This callback is triggered to notify the user when a message such as texts or an image, video, voice, location, or file is received.
+  ///
+  /// Param [messages] The received messages.
+  ///
+  void onMessagesReceived(List<EMMessage> messages) {}
+
+  ///
+  /// Occurs when a command message is received.
+  ///
+  /// This callback only contains a command message body that is usually invisible to users.
+  ///
+  /// Param [messages]The received cmd messages.
+  ///
+  void onCmdMessagesReceived(List<EMMessage> messages) {}
+
+  ///
+  /// Occurs when a read receipt is received for a message.
+  ///
+  /// Param [messages] The has read messages.
+  ///
+  void onMessagesRead(List<EMMessage> messages) {}
+
+  ///
+  /// Occurs when a read receipt is received for a group message.
+  ///
+  /// Param [groupMessageAcks] The group message acks.
+  ///
+  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
+
+  void onReadAckForGroupMessageUpdated() {}
+
+  ///
+  /// Occurs when a delivery receipt is received.
+  ///
+  /// Param [messages] The has delivered messages.
+  ///
+  void onMessagesDelivered(List<EMMessage> messages) {}
+
+  ///
+  /// Occurs when a received message is recalled.
+  ///
+  /// Param [messages]  The recalled messages.
+  ///
+  void onMessagesRecalled(List<EMMessage> messages) {}
+
+  ///
+  /// Occurs when the conversation updated.
+  ///
+  void onConversationsUpdate() {}
+
+  ///
+  /// Occurs when a conversation read receipt is received.
+  ///
+  /// Occurs in the following scenarios:
+  /// (1) The message is read by the receiver (The conversation receipt is sent).
+  /// Upon receiving this event, the SDK sets the `isAcked` property of the message in the conversation to `true` in the local database.
+  /// (2) In the multi-device login scenario, when one device sends a Conversation receipt,
+  /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
+  /// and sets the `isRead` property of the message in the conversation to `true` in the local database.
+  ///
+  /// Param [from] The user who sends the read receipt.
+  /// Param [to]   The user who receives the read receipt.
+  ///
+  void onConversationRead(String from, String to) {}
+
+  ///
+  /// Occurs when the Reaction data changes.
+  ///
+  /// Param [list] The Reaction which is changed
+  ///
+  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
+}
+
+///
+/// The delegate protocol that defines presence callbacks.
+///
+class EMPresenceManagerListener {
+  ///
+  /// Occurs when the presence state of a subscribed user changes.
+  ///
+  /// Param [list] The new presence state of a subscribed user.
+  ///
+  void onPresenceStatusChanged(List<EMPresence> list) {}
+}
+
+///
+/// The delegate protocol that defines chat thread callbacks.
+///
+class EMChatThreadManagerListener {
+  ///
+  /// Occurs when received after subsection is created
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onChatThreadCreate(EMChatThreadEvent event) {}
+
+  ///
+  /// Occurs when received after updating the sub-area (including updating the last message of the sub-area, updating the sub-area name, and withdrawing the sub-area message)
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onChatThreadUpdate(EMChatThreadEvent event) {}
+
+  ///
+  /// Occurs when received after destroying the subsection
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onChatThreadDestroy(EMChatThreadEvent event) {}
+
+  ///
+  /// Occurs when received after user is kicked out of subsection
+  ///
+  /// Param [event] EMChatThreadEvent object
+  ///
+  void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
+}
+
+//////////////////////////////////////////////////////////////////////////
+@Deprecated("Switch to using EMGroupManagerListener instead.")
 abstract class EMGroupChangeListener {
   ///
   /// Occurs when an invitation is rejected by the inviter.
@@ -545,7 +948,7 @@ abstract class EMGroupChangeListener {
   /// Param [groupId] The group ID.
   ///
   /// Param [members] The members that are added to the allow list.
-  void onWhiteListAddedFromGroup(String groupId, List<String> members);
+  void onAllowListAddedFromGroup(String groupId, List<String> members);
 
   ///
   /// Occurs when one or more group members are removed from the allow list.
@@ -553,7 +956,7 @@ abstract class EMGroupChangeListener {
   /// Param [groupId] The group ID.
   ///
   /// Param [members] The members that are removed from the allow list.
-  void onWhiteListRemovedFromGroup(String groupId, List<String> members);
+  void onAllowListRemovedFromGroup(String groupId, List<String> members);
 
   /// Occurs when all group members are muted or unmuted.
   ///
@@ -580,6 +983,7 @@ abstract class EMGroupChangeListener {
 /// ```dart
 ///   EMClient.getInstance.groupManager.removeGroupChangeListener(listener);
 /// ```
+@Deprecated("Switch to using EMGroupManagerListener instead.")
 abstract class EMGroupEventListener {
   ///
   /// Occurs when the user receives a group invitation.
@@ -805,7 +1209,7 @@ abstract class EMGroupEventListener {
   ///
   /// Param [members] The member(s) removed from the allowlist.
   ///
-  void onWhiteListAddedFromGroup(String groupId, List<String> members);
+  void onAllowListAddedFromGroup(String groupId, List<String> members);
 
   ///
   /// Occurs when one or more members are removed from the allowlist.
@@ -814,7 +1218,7 @@ abstract class EMGroupEventListener {
   ///
   /// Param [members] The member(s) added to the allowlist.
   ///
-  void onWhiteListRemovedFromGroup(String groupId, List<String> members);
+  void onAllowListRemovedFromGroup(String groupId, List<String> members);
 
   ///
   /// Occurs when all group members are muted or unmuted.
@@ -828,142 +1232,143 @@ abstract class EMGroupEventListener {
   void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
 }
 
-///
-/// The message event listener.
-///
-/// This listener is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: {@link EMOptions#requireDeliveryAck(boolean)}.
-/// If the peer reads the received message, a read receipt will be returned (read receipt needs to be enabled: {@link EMOptions#requireAck(boolean)})
-/// During message delivery, the message ID will be changed from a local uuid to a global unique ID that is generated by the server to uniquely identify a message on all devices using the SDK.
-/// This API should be implemented in the app to listen for message status changes.
-///
-/// Adds the message listener:
-/// ```dart
-///   EMClient.getInstance.chatManager.addChatManagerListener(listener);
-/// ```
-///
-/// Removes the message listener:
-/// ```dart
-///   EMClient.getInstance.chatManager.removeChatManagerListener(listener);
-/// ```
-///
-abstract class EMChatManagerListener {
+@Deprecated("Switch to using EMChatRoomManagerListener instead.")
+abstract class EMChatRoomEventListener {
   ///
-  /// Occurs when a message is received.
+  /// Occurs when the chat room is destroyed.
   ///
-  /// This callback is triggered to notify the user when a message such as texts or an image, video, voice, location, or file is received.
+  /// Param [roomId] The chatroom ID.
   ///
-  /// Param [messages] The received messages.
+  /// Param [roomName] The chatroom name.
   ///
-  void onMessagesReceived(List<EMMessage> messages) {}
+  void onChatRoomDestroyed(String roomId, String? roomName);
 
   ///
-  /// Occurs when a command message is received.
+  /// Occurs when a member join the chatroom.
   ///
-  /// This callback only contains a command message body that is usually invisible to users.
+  /// Param [roomId] The chatroom ID.
   ///
-  /// Param [messages]The received cmd messages.
+  /// Param [participant] The new member's username.
   ///
-  void onCmdMessagesReceived(List<EMMessage> messages) {}
+  void onMemberJoinedFromChatRoom(String roomId, String participant);
 
   ///
-  /// Occurs when a read receipt is received for a message.
+  /// Occurs when a member leaves the chatroom.
   ///
-  /// Param [messages] The has read messages.
+  /// Param [roomId] The chatroom ID.
   ///
-  void onMessagesRead(List<EMMessage> messages) {}
+  /// Param [participant] The new member's username.
+  ///
+  void onMemberExitedFromChatRoom(
+      String roomId, String? roomName, String participant);
 
   ///
-  /// Occurs when a read receipt is received for a group message.
+  /// Occurs when a member is dismissed from a chat room.
   ///
-  /// Param [groupMessageAcks] The group message acks.
+  /// Param [roomId] The chatroom ID.
   ///
-  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
-
-  void onReadAckForGroupMessageUpdated() {}
-
+  /// Param [roomName] The chatroom name.
   ///
-  /// Occurs when a delivery receipt is received.
+  /// Param [participant] The member is dismissed from a chat room.
   ///
-  /// Param [messages] The has delivered messages.
-  ///
-  void onMessagesDelivered(List<EMMessage> messages) {}
-
-  ///
-  /// Occurs when a received message is recalled.
-  ///
-  /// Param [messages]  The recalled messages.
-  ///
-  void onMessagesRecalled(List<EMMessage> messages) {}
+  void onRemovedFromChatRoom(
+    String roomId,
+    String? roomName,
+    String? participant,
+  );
 
   ///
-  /// Occurs when the conversation updated.
+  /// Occurs when there are chat room member(s) muted (added to mute list),
   ///
-  void onConversationsUpdate() {}
+  /// Param [roomId] The chatroom ID.
+  ///
+  /// Param [mutes] The members to be muted.
+  ///
+  /// Param [expireTime] The mute duration.
+  ///
+  void onMuteListAddedFromChatRoom(
+    String roomId,
+    List<String> mutes,
+    String? expireTime,
+  );
 
   ///
-  /// Occurs when a conversation read receipt is received.
+  /// Occurs when there are chat room member(s) unmuted (removed from mute list).
   ///
-  /// Occurs in the following scenarios:
-  /// (1) The message is read by the receiver (The conversation receipt is sent).
-  /// Upon receiving this event, the SDK sets the `isAcked` property of the message in the conversation to `true` in the local database.
-  /// (2) In the multi-device login scenario, when one device sends a Conversation receipt,
-  /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
-  /// and sets the `isRead` property of the message in the conversation to `true` in the local database.
+  /// Param [roomId] The chatroom ID.
   ///
-  /// Param [from] The user who sends the read receipt.
-  /// Param [to]   The user who receives the read receipt.
+  /// Param [mutes] The member(s) muted is removed from the mute list.
   ///
-  void onConversationRead(String from, String to) {}
+  void onMuteListRemovedFromChatRoom(
+    String roomId,
+    List<String> mutes,
+  );
 
   ///
-  /// Occurs when the Reaction data changes.
+  /// Occurs when a member has been changed to an admin.
   ///
-  /// Param [list] The Reaction which is changed
+  /// Param [roomId] The chatroom ID.
   ///
-  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
-}
-
-///
-/// The delegate protocol that defines presence callbacks.
-///
-class EMPresenceManagerListener {
+  /// Param [admin] The member who has been changed to an admin.
   ///
-  /// Occurs when the presence state of a subscribed user changes.
-  ///
-  /// Param [list] The new presence state of a subscribed user.
-  ///
-  void onPresenceStatusChanged(List<EMPresence> list) {}
-}
-
-///
-/// The delegate protocol that defines chat thread callbacks.
-///
-class EMChatThreadManagerListener {
-  ///
-  /// Occurs when received after subsection is created
-  ///
-  /// Param [event] EMChatThreadEvent object
-  ///
-  void onChatThreadCreate(EMChatThreadEvent event) {}
+  void onAdminAddedFromChatRoom(String roomId, String admin);
 
   ///
-  /// Occurs when received after updating the sub-area (including updating the last message of the sub-area, updating the sub-area name, and withdrawing the sub-area message)
+  /// Occurs when an admin is been removed.
   ///
-  /// Param [event] EMChatThreadEvent object
+  /// Param [roomId] The chatroom ID.
   ///
-  void onChatThreadUpdate(EMChatThreadEvent event) {}
+  /// Param [admin] The member whose admin permission is removed.
+  ///
+  void onAdminRemovedFromChatRoom(String roomId, String admin);
 
   ///
-  /// Occurs when received after destroying the subsection
+  ///  Occurs when the chat room ownership has been transferred.
   ///
-  /// Param [event] EMChatThreadEvent object
+  /// Param [roomId] The chatroom ID.
   ///
-  void onChatThreadDestroy(EMChatThreadEvent event) {}
+  /// Param [newOwner] The new owner.
+  ///
+  /// Param [oldOwner] The previous owner.
+  ///
+  void onOwnerChangedFromChatRoom(
+      String roomId, String newOwner, String oldOwner);
 
   ///
-  /// Occurs when received after user is kicked out of subsection
+  /// Occurs when the announcement changed.
   ///
-  /// Param [event] EMChatThreadEvent object
+  /// Param [roomId] The chatroom ID.
   ///
-  void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
+  /// Param [announcement] The changed announcement.
+  ///
+  void onAnnouncementChangedFromChatRoom(String roomId, String announcement);
+
+  ///
+  /// Occurs when the chat room member(s) is added to the allowlist.
+  ///
+  /// Param [roomId] The chatroom ID.
+  ///
+  /// Param [members] The member(s) to be added to the allowlist.
+  ///
+  void onAllowListAddedFromChatRoom(String roomId, List<String> members);
+
+  ///
+  /// Occurs when the chat room member(s) is removed from the allowlist.
+  ///
+  /// Param [roomId] The chatroom ID.
+  ///
+  /// Param [members] The member(s) is removed from the allowlist.
+  ///
+  void onAllowListRemovedFromChatRoom(String roomId, List<String> members);
+
+  ///
+  /// Occurs when all members in the chat room are muted or unmuted.
+  ///
+  /// Param [roomId] The chatroom ID.
+  ///
+  /// Param [isAllMuted] Whether all chat room members is muted or unmuted.
+  /// - `true`: Yes;
+  /// - `false`: No.
+  ///
+  void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted);
 }

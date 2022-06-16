@@ -346,9 +346,8 @@ extension EMConversationExtension on EMConversation {
     req['msgType'] = messageTypeToTypeStr(type);
     req['timestamp'] = timestamp;
     req['count'] = count;
-    req['sender'] = sender;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-
+    req.setValueWithOutNull("sender", sender);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
     try {
@@ -383,7 +382,7 @@ extension EMConversationExtension on EMConversation {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMMessage>?> loadMessages({
+  Future<List<EMMessage>> loadMessages({
     String startMsgId = '',
     int loadCount = 20,
     EMSearchDirection direction = EMSearchDirection.Up,
@@ -439,11 +438,9 @@ extension EMConversationExtension on EMConversation {
     Map req = this._toJson();
     req["keywords"] = keywords;
     req['count'] = count;
-    if (sender != null) {
-      req['sender'] = sender;
-    }
     req['timestamp'] = timestamp;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req.setValueWithOutNull("sender", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);
