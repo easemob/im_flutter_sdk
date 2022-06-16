@@ -11,6 +11,7 @@ export 'src/em_group_manager.dart' show EMGroupManager;
 export 'src/em_chat_room_manager.dart' show EMChatRoomManager;
 export 'src/em_push_manager.dart' show EMPushManager;
 export 'src/em_userInfo_manager.dart' show EMUserInfoManager;
+export 'src/em_presence_manager.dart' show EMPresenceManager;
 export 'src/em_listeners.dart'
     show
         EMConnectionListener,
