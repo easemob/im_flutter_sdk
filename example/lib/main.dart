@@ -180,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _signOut() async {
-    await EMClient.getInstance.chatRoomManager.joinChatRoom("184336944005122");
+    await EMClient.getInstance.logout(true);
   }
 
   void _signUp() async {

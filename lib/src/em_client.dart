@@ -23,11 +23,14 @@ class EMClient {
   final EMGroupManager _groupManager = EMGroupManager();
   final EMPushManager _pushManager = EMPushManager();
   final EMUserInfoManager _userInfoManager = EMUserInfoManager();
-  final EMProgressManager _emProgressManager = EMProgressManager();
+
+  final EMPresenceManager _presenceManager = EMPresenceManager();
   final EMChatThreadManager _chatThreadManager = EMChatThreadManager();
   final List<EMConnectionListener> _connectionListeners = [];
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
   final List<EMCustomListener> _customListeners = [];
+  // ignore: unused_field
+  EMProgressManager? _progressManager;
 
   EMOptions? _options;
 
@@ -42,6 +45,7 @@ class EMClient {
   static EMClient get getInstance => _instance ??= EMClient._internal();
 
   EMClient._internal() {
+    _progressManager = EMProgressManager();
     _addNativeMethodCallHandler();
   }
 
@@ -86,7 +90,7 @@ class EMClient {
   /// Start contact and group, chatroom callback.
   ///
   /// Reference:
-  /// Call this method when you ui is ready, then will receive `EMChatRoomEventListener`, `EMContactManagerListener`, `EMGroupEventListener` callback.
+  /// Call this method when you ui is ready, then will receive `EMChatRoomManagerListener`, `EMContactManagerListener`, `EMGroupManagerListener` callback.
   ///
   Future<void> startCallback() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.startCallback);
@@ -642,8 +646,22 @@ class EMClient {
     return _userInfoManager;
   }
 
+  ///
+  /// Gets the `EMChatThreadManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMChatThreadManager` class.
+  ///
   EMChatThreadManager get chatThreadManager {
     return _chatThreadManager;
+  }
+
+  ///
+  /// Gets the `EMPresenceManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMPresenceManager` class.
+  ///
+  EMPresenceManager get presenceManager {
+    return _presenceManager;
   }
 
   void _clearAllInfo() {
