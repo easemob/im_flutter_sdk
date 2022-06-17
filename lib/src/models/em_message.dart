@@ -247,27 +247,33 @@ class EMMessage {
   ///
   /// Creates a text message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
   /// Param [content] The text content.
   ///
+  /// Param [targetLanguages] Target languages.
+  ///
   /// **Return** The message instance.
   ///
   EMMessage.createTxtSendMessage({
-    required String username,
+    required String targetId,
     required String content,
+    List<String>? targetLanguages,
   }) : this.createSendMessage(
-          to: username,
-          body: EMTextMessageBody(content: content),
+          to: targetId,
+          body: EMTextMessageBody(
+            content: content,
+            targetLanguages: targetLanguages,
+          ),
         );
 
   ///
   /// Creates a file message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -281,12 +287,12 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createFileSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     String? displayName,
     int? fileSize,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMFileMessageBody(
               localPath: filePath,
               fileSize: fileSize,
@@ -296,7 +302,7 @@ class EMMessage {
   ///
   /// Creates an image message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -320,7 +326,7 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createImageSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     String? displayName,
     String? thumbnailLocalPath,
@@ -329,7 +335,7 @@ class EMMessage {
     double? width,
     double? height,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMImageMessageBody(
               localPath: filePath,
               displayName: displayName,
@@ -342,7 +348,7 @@ class EMMessage {
   ///
   ///  Creates a video message instance for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -364,7 +370,7 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createVideoSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     String? displayName,
     int duration = 0,
@@ -373,7 +379,7 @@ class EMMessage {
     double? width,
     double? height,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMVideoMessageBody(
               localPath: filePath,
               displayName: displayName,
@@ -387,7 +393,7 @@ class EMMessage {
   ///
   /// Creates a voice message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -403,13 +409,13 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createVoiceSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     int duration = 0,
     int? fileSize,
     String? displayName,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMVoiceMessageBody(
                 localPath: filePath,
                 duration: duration,
@@ -419,7 +425,7 @@ class EMMessage {
   ///
   /// Creates a location message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -435,13 +441,13 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createLocationSendMessage({
-    required String username,
+    required String targetId,
     required double latitude,
     required double longitude,
     String? address,
     String? buildingName,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMLocationMessageBody(
               latitude: latitude,
               longitude: longitude,
@@ -460,17 +466,17 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createCmdSendMessage({
-    required String username,
+    required String targetId,
     required action,
     bool deliverOnlineOnly = false,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMCmdMessageBody(
                 action: action, deliverOnlineOnly: deliverOnlineOnly));
 
   /// Creates a custom message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -482,9 +488,9 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createCustomSendMessage(
-      {required String username, required event, Map<String, String>? params})
+      {required String targetId, required event, Map<String, String>? params})
       : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMCustomMessageBody(event: event, params: params));
 
   @Deprecated("Switch to using messageStatusCallBack instead.")

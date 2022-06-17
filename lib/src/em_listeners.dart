@@ -703,7 +703,7 @@ abstract class EMChatManagerListener {
   ///
   /// Param [list] The Reaction which is changed
   ///
-  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
 }
 
 ///

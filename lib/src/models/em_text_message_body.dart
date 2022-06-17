@@ -12,7 +12,10 @@ class EMTextMessageBody extends EMMessageBody {
   ///
   /// Param [content] The text content.
   ///
-  EMTextMessageBody({required this.content}) : super(type: MessageType.TXT);
+  EMTextMessageBody({
+    required this.content,
+    this.targetLanguages,
+  }) : super(type: MessageType.TXT);
 
   /// @nodoc
   EMTextMessageBody.fromJson({required Map map})

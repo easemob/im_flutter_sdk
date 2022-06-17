@@ -56,9 +56,9 @@ class EMPresenceManager {
   ///
   /// **Throws** A description of the exception. See {@link EMError}.
   ///
-  void publishPresence({
-    required String description,
-  }) async {
+  Future<void> publishPresence(
+    String description,
+  ) async {
     Map req = {'desc': description};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.presenceWithDescription, req);
@@ -106,7 +106,7 @@ class EMPresenceManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  void unSubscribe({
+  Future<void> unSubscribe({
     required List<String> members,
   }) async {
     Map req = {'members': members};

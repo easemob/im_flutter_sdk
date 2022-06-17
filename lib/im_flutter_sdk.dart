@@ -35,6 +35,8 @@ export 'src/models/em_deviceInfo.dart' show EMDeviceInfo;
 export 'src/models/em_error.dart' show EMError;
 export 'src/models/em_group.dart' show EMGroup;
 export 'src/models/em_group_info.dart' show EMGroupInfo;
+export 'src/models/em_translate_language.dart' show EMTranslateLanguage;
+export 'src/models/em_presence.dart' show EMPresence;
 
 export 'src/models/em_options.dart' show EMOptions;
 export 'src/models/em_push_configs.dart' show EMPushConfigs;

@@ -749,11 +749,13 @@ class EMChatManager {
     }
   }
 
-  Future<void> _messageReactionDidChange(dynamic obj) async {
+  Future<void> _messageReactionDidChange(List reactionChangeList) async {
+    List<EMMessageReactionChange> list = [];
+    for (var reactionChange in reactionChangeList) {
+      list.add(EMMessageReactionChange.fromJson(reactionChange));
+    }
     for (var listener in _listeners) {
-      String from = (obj as Map)['from'];
-      String to = obj['to'];
-      listener.onConversationRead(from, to);
+      listener.onMessageReactionDidChange(list);
     }
   }
 }
