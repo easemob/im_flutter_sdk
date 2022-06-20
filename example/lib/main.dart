@@ -196,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
 
     var msg = EMMessage.createTxtSendMessage(
-      username: _chatId,
+      targetId: _chatId,
       content: _messageContent,
     );
     msg.setMessageStatusCallBack(MessageStatusCallBack(
@@ -308,10 +308,10 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   @override
-  void messageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onReadAckForGroupMessageUpdated() {}
 
   @override
-  void onReadAckForGroupMessageUpdated() {}
+  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
 }
 
 class HttpRequestManager {
