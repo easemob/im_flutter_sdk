@@ -1,8 +1,5 @@
-import 'dart:convert' as convert;
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -172,6 +169,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
 
     try {
+      _addLogToConsole("begin login...");
       await EMClient.getInstance.login(_username, _password);
       _addLogToConsole("login succeed, username: $_username");
     } on EMError catch (e) {
@@ -180,13 +178,30 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _signOut() async {
-    await EMClient.getInstance.logout(true);
+    try {
+      _addLogToConsole("begin logout...");
+      await EMClient.getInstance.logout(true);
+      _addLogToConsole("logout succeed, username: $_username");
+    } on EMError catch (e) {
+      _addLogToConsole(
+          "logout failed, code: ${e.code}, desc: ${e.description}");
+    }
   }
 
   void _signUp() async {
-    Map<String, int> users = await EMClient.getInstance.groupManager
-        .fetchMuteListFromServer("184423144292354");
-    debugPrint("users $users");
+    if (_username.isEmpty || _password.isEmpty) {
+      _addLogToConsole("username or password is null");
+      return;
+    }
+
+    try {
+      _addLogToConsole("begin create account...");
+      await EMClient.getInstance.createAccount(_username, _password);
+      _addLogToConsole("create account succeed, username: $_username");
+    } on EMError catch (e) {
+      _addLogToConsole(
+          "create account failed, code: ${e.code}, desc: ${e.description}");
+    }
   }
 
   void _sendMessage() async {
@@ -312,72 +327,4 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
-}
-
-class HttpRequestManager {
-  static String host = "a41.easemob.com";
-  static String registerUrl = "/app/chat/user/register";
-  static String loginUrl = "/app/chat/user/login";
-
-  static Future<bool> registerToAppServer({
-    required String username,
-    required String password,
-  }) async {
-    bool ret = false;
-    Map<String, String> params = {};
-    params["userAccount"] = username;
-    params["userPassword"] = password;
-
-    var uri = Uri.https(host, registerUrl);
-
-    var client = http.Client();
-
-    var response = await client.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(params),
-    );
-
-    do {
-      if (response.statusCode != 200) {
-        break;
-      }
-      Map<String, dynamic>? map = convert.jsonDecode(response.body);
-      if (map != null) {
-        if (map["code"] == "RES_OK") {
-          ret = true;
-        }
-      }
-    } while (false);
-
-    return ret;
-  }
-
-  static Future<String?> loginToAppServer({
-    required String username,
-    required String password,
-  }) async {
-    Map<String, String> params = {};
-    params["userAccount"] = username;
-    params["userPassword"] = password;
-
-    var uri = Uri.https(host, loginUrl);
-
-    var client = http.Client();
-
-    var response = await client.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(params),
-    );
-    if (response.statusCode == 200) {
-      Map<String, dynamic>? map = convert.jsonDecode(response.body);
-      if (map != null) {
-        if (map["code"] == "RES_OK") {
-          return map["accessToken"];
-        }
-      }
-    }
-    return null;
-  }
 }
