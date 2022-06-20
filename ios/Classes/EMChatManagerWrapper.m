@@ -555,10 +555,40 @@
     NSString *msgId = param[@"msg_id"];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *ackId = param[@"ack_id"];
-    NSString *groupId = param[@"group_id"];
 
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.chatManager asyncFetchGroupMessageAcksFromServer:msgId groupId:groupId startGroupAckId:ackId pageSize:pageSize completion:^(EMCursorResult *aResult, EMError *aError, int totalCount) {
+    
+    EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
+    EMError *e = nil;
+    do {
+        e = [EMError errorWithDescription:@"Invalid message" code:EMErrorMessageInvalid];
+        if (msg == nil) {
+            break;
+        }
+        
+        if (msg.chatType != EMChatTypeGroupChat || !msg.isNeedGroupAck) {
+            break;
+        }
+        
+        e = nil;
+        
+    } while (false);
+    
+    if (e != nil) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:nil];
+        return;
+    }
+    
+    
+    [EMClient.sharedClient.chatManager asyncFetchGroupMessageAcksFromServer:msgId
+                                                                    groupId:msg.conversationId
+                                                            startGroupAckId:ackId
+                                                                   pageSize:pageSize
+                                                                 completion:^(EMCursorResult *aResult, EMError *aError, int totalCount)
+     {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
