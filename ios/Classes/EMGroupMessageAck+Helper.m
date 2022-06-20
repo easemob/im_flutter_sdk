@@ -15,6 +15,7 @@
     data[@"from"] = self.from;
     data[@"content"] = self.content;
     data[@"count"] = @(self.readCount);
+    data[@"ack_id"] = self.readAckId;
     data[@"timestamp"] = @(self.timestamp);
     return data;
 }

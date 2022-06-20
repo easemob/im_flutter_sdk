@@ -506,7 +506,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void asyncFetchGroupMessageAckFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         String msgId = param.getString("msg_id");
-        String ackId = param.getString("ack_id");
+        String ackId = null;
+        if (param.has("ack_id")){
+            ackId = param.getString("ack_id");
+        }
         int pageSize = param.getInt("pageSize");
 
         EMValueWrapperCallBack<EMCursorResult<EMGroupReadAck>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMGroupReadAck>>(result,
