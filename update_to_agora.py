@@ -92,47 +92,79 @@ def renameFolder(folderName):
 
 # 需要修改的文件名
 FILE_dict = {
-    "im_flutter_sdk.iml":"chat_flutter_sdk.iml",
+    "im_flutter_sdk.iml":"agora_chat_sdk.iml",
 
     # /lib/
-    "im_flutter_sdk.dart":"chat_flutter_sdk.dart",
+    "im_flutter_sdk.dart":"agora_chat_sdk.dart",
 
     # /lib/src/
-    "em_chat_manager.dart":"chat_manager.dart",
-    "em_chat_room_manager.dart":"chat_room_manager.dart",
     "em_client.dart":"chat_client.dart",
     "em_contact_manager.dart":"chat_contact_manager.dart",
     "em_group_manager.dart":"chat_group_manager.dart",
     "em_listeners.dart":"chat_listeners.dart",
+    "em_chat_manager.dart":"chat_manager.dart",
     "em_push_manager.dart":"chat_push_manager.dart",
-    "em_sdk_method.dart":"chat_method_keys.dart",
+    "em_chat_room_manager.dart":"chat_room_manager.dart",
     "em_userInfo_manager.dart":"chat_userInfo_manager.dart",
+    "em_chat_manager_moderation_plugin.dart":"chat_manager_moderation_plugin.dart",
+    "em_chat_manager_reaction_plugin.dart":"chat_manager_reaction_plugin.dart",
+    "em_chat_manager_transform_plugin.dart":"chat_manager_transform_plugin.dart",
+    "em_chat_thread_manager.dart":"chat_thread_manager.dart",
+    "em_message_status_callback.dart":"chat_message_status_callback.dart",
+    "em_presence_manager.dart":"chat_presence_manager.dart",
+    "em_status_listener.dart":"chat_status_listener.dart",
+
+    # /lib/src/internal
+    "em_sdk_method.dart":"chat_method_keys.dart",
+    "em_push_config.dart":"chat_push_config.dart",
+    "em_channel_manager.dart":"chat_channel_manager.dart",
+    "em_event_keys.dart":"chat_event_keys.dart",
+    "em_transform_tools.dart":"chat_transform_tools.dart",
+    
     
     # /lib/src/models/
-    "em_chat_room.dart":"chat_room.dart",
     "em_conversation.dart":"chat_conversation.dart",
-    "em_cursor_result.dart":"chat_cursor_result.dart",
+    "em_cursor_result.dart":"chat_cursor_result.dart",    
     "em_deviceInfo.dart":"chat_deviceInfo.dart",
-    "em_domain_terms.dart":"chat_domain_terms.dart",
+    "em_chat_enums.dart":"chat_enums.dart",
     "em_error.dart":"chat_error.dart",
     "em_group_message_ack.dart":"chat_group_message_ack.dart",
+    "em_group_options.dart":"chat_group_options.dart",
     "em_group.dart":"chat_group.dart",
     "em_message.dart":"chat_message.dart",
     "em_options.dart":"chat_options.dart",
     "em_page_result.dart":"chat_page_result.dart",
-    "em_push_config.dart":"chat_push_config.dart",
+    "em_push_configs.dart":"chat_push_configs.dart",
+    "em_chat_room.dart":"chat_room.dart",
     "em_userInfo.dart":"chat_userInfo.dart",
     "em_group_shared_file.dart":"chat_group_shared_file.dart",
-    "em_push_configs.dart":"chat_push_configs.dart",
-    "em_chat_enums.dart":"chat_enums.dart",
-    "em_group_options.dart":"chat_group_options.dart",
+    "em_chat_thread_event.dart":"chat_thread_event.dart",
+    "em_chat_thread.dart":"chat_thread.dart",
+    "em_cmd_message_body.dart":"chat_cmd_message_body.dart",
+    "em_custom_message_body.dart":"chat_custom_message_body.dart",
+    "em_download_callback.dart":"chat_download_callback.dart",
+    "em_file_message_body.dart":"chat_file_message_body.dart",
+    "em_group_info.dart":"chat_group_info.dart",
+    "em_image_message_body.dart":"chat_image_message_body.dart",
+    "em_location_message_body.dart":"chat_location_message_body.dart",
+    "em_message_body.dart":"chat_message_body.dart",
+    "em_message_reaction_change.dart":"chat_message_reaction_change.dart",
+    "em_message_reaction.dart":"chat_message_reaction.dart",
+    "em_presence.dart":"chat_presence.dart",
+    "em_text_message_body.dart":"chat_text_message_body.dart",
+    "em_translate_language.dart":"chat_translate_language.dart",
+    "em_video_message_body.dart":"chat_video_message_body.dart",
+    "em_voice_message_body.dart":"chat_voice_message_body.dart",
+    "em_domain_terms.dart":"chat_domain_terms.dart",
+    
     
     # /lib/src/tools/
     "em_extension.dart":"chat_extension.dart",
     "em_log.dart":"chat_log.dart",    
+    "em_progress_manager.dart":"chat_progress_manager.dart",
 
     # /ios/
-    "im_flutter_sdk.podspec":"chat_flutter_sdk.podspec"
+    "im_flutter_sdk.podspec":"agora_chat_sdk.podspec"
 }
 
 
@@ -152,6 +184,7 @@ def walkFile(file):
     total_gradle_num = 0
     total_dart_num = 0
     total_podspec_num = 0
+    total_md_num = 0
 
     for root, dirs, files in os.walk(file):
 
@@ -167,7 +200,7 @@ def walkFile(file):
             if len(file_ext) != 2:
                 # 没有后缀名
                 continue
-            if file_ext[1] == 'yaml' or file_ext[1] == 'gradle' or file_ext[1] == 'dart' or file_ext[1] == 'podspec':
+            if file_ext[1] == 'yaml' or file_ext[1] == 'gradle' or file_ext[1] == 'dart' or file_ext[1] == 'podspec' or file_ext[1] == 'md':
                 if file_ext[1] == 'yaml':
                     total_yaml_num += 1
                 if file_ext[1] == 'gradle':
@@ -176,7 +209,9 @@ def walkFile(file):
                     total_dart_num += 1
                 if file_ext[1] == 'podspec':
                     total_podspec_num += 1
-
+                if file_ext[1] == 'md':
+                    total_md_num += 1
+                    
                 fullname = os.path.join(root, f)
                 updateFile(fullname)
                 reBackFile(fullname)
@@ -190,17 +225,20 @@ def walkFile(file):
     print 'total .gradle files: ' + str(total_gradle_num)
     print 'total .dart files: ' + str(total_dart_num)
     print 'total .podspec files: ' + str(total_podspec_num)
+    print 'total .md files: ' + str(total_md_num)
 
 
 # 需要替换的字符串map
 UPDATE_dict = {
     # pubspec.yaml
-    "name: im_flutter_sdk": "name: chat_flutter_sdk",
+    "name: im_flutter_sdk": "name: agora_chat_sdk",
     
-    # lib/src/chat_flutter_sdk.dart
-    "library im_flutter_sdk":"library chat_flutter_sdk",
+    # lib/src/agora_chat_sdk.dart
+    "library im_flutter_sdk":"library agora_chat_sdk",
+    "Easemob IM flutter SDK.":"agora chat flutter SDK.",
+    "http://www.easemob.com/product/im":"https://www.agora.io",
 
-    # chat_flutter_sdk.dart
+    # agora_chat_sdk.dart
     "em_client":"chat_client",
     "em_chat_manager":"chat_manager",
     "em_contact_manager":"chat_contact_manager",
@@ -223,12 +261,29 @@ UPDATE_dict = {
     "em_page_result":"chat_page_result",
     "em_userInfo":"chat_userInfo",
     "em_chat_enums":"chat_enums",
-
+    "em_transform_tools":"chat_transform_tools",
+    "em_presence":"chat_presence",
+    "em_file_message_body":"chat_file_message_body",
+    "em_chat_thread":"chat_thread",
+    "em_text_message_body":"chat_text_message_body",
+    "em_image_message_body":"chat_image_message_body",
+    "em_location_message_body":"chat_location_message_body",
+    "em_voice_message_body":"chat_voice_message_body",
+    "em_video_message_body":"chat_video_message_body",
+    "em_custom_message_body":"chat_custom_message_body",
+    "em_cmd_message_body":"chat_cmd_message_body",
+    "em_status_listener":"chat_status_listener",
+    "em_progress_manager":"chat_progress_manager",
+    "em_event_keys":"chat_event_keys",
+    "em_download_callback":"chat_download_callback",
+    "em_chat_thread_event":"chat_thread_event",
+    "em_channel_manager":"chat_channel_manager",
+    "em_translate_language":"chat_translate_language",
     
     "em_extension":"chat_extension",
-    "/im_flutter_sdk.dart":"/chat_flutter_sdk.dart",
-    "package:im_flutter_sdk":"package:chat_flutter_sdk",
-    "im_flutter_sdk:":"chat_flutter_sdk:",
+    "/im_flutter_sdk.dart":"/agora_chat_sdk.dart",
+    "package:im_flutter_sdk":"package:agora_chat_sdk",
+    "im_flutter_sdk:":"agora_chat_sdk:",
 
     #class name.
     "EMClient":"ChatClient",
@@ -278,16 +333,36 @@ UPDATE_dict = {
     "EMContactEventListener":"ChatContactEventListener",
     "EMContactChangeEvent":"ChatContactChangeEvent",
     "EMImPushConfig":"ChatPushConfig",
+    "EMMethodChannel":"ChatMethodChannel",
+    "EMDownloadCallback":"ChatDownloadCallback",
+    "EMChatThread":"ChatThread",
+    "EMCustomListener":"ChatCustomListener",
+    "EMMultiDeviceListener":"ChatMultiDeviceListener",
+    "EMMultiDevicesEvent":"ChatMultiDevicesEvent",
+    "EMPresenceManagerListener":"ChatPresenceManagerListener",
+    "EMTransformPlugin":"ChatTransformPlugin",
+    "EMReactionPlugin":"ChatReactionPlugin",
+    "EMModerationPlugin":"ChatModerationPlugin",
+    "EMConnectionListener":"ChatConnectionListener",
+    "EMSearchDirection":"ChatSearchDirection",
+    "EMProgressManager":"ChatProgressManager",
+    "EMChatRoom":"ChatRoom",
+    "EMRoomManager":"ChatRoomManager",
+    "EMPresence":"ChatPresence",
+    "EMTranslateLanguage":"ChatTranslateLanguage",
+  
 
-    
     #podspec
-    "= 'im_flutter_sdk'":"= 'chat_flutter_sdk'"
+     "= 'im_flutter_sdk'":"= 'agora_chat_sdk'",
 
+    #doc
+    "im_flutter_sdk":"agora_chat_sdk",
+    "环信即时通讯":" Agora ",
 }
 
 # 将修改错误的再改回来
 RE_BACK_dict = {
-    
+    "rootProject.name = 'agora_chat_sdk'":"rootProject.name = 'im_flutter_sdk'"
 }
 
 

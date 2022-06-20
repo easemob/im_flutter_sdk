@@ -1,10 +1,14 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'em_listeners.dart';
 import 'internal/em_event_keys.dart';
+import 'models/em_chat_room.dart';
+import 'models/em_cursor_result.dart';
+import 'models/em_error.dart';
+import 'models/em_page_result.dart';
 import 'tools/em_extension.dart';
 import 'internal/chat_method_keys.dart';
-import '../im_flutter_sdk.dart';
 
 ///
 ///  The chat room manager class, which manages user joining and exiting the chat room, retrieving the chat room list, and managing member privileges.
@@ -32,7 +36,9 @@ class EMChatRoomManager {
     });
   }
 
+  @Deprecated("")
   final List<EMChatRoomEventListener> _chatRoomEventListeners = [];
+  final List<EMChatRoomManagerListener> _listeners = [];
 
   ///
   /// Registers a chat room event listener.
@@ -42,24 +48,135 @@ class EMChatRoomManager {
   ///
   /// Param [listener] A chat room listener. See {@link EMChatRoomEventListener}.
   ///
+  @Deprecated("Switch to using addChatRoomManagerListener instead.")
   void addChatRoomChangeListener(EMChatRoomEventListener listener) {
     _chatRoomEventListeners.add(listener);
   }
 
   ///
   /// Removes a chat room event listener.
+  ///
   /// This method removes the chat room event listener registered with {@link #addChatRoomChangeListener(EMChatRoomEventListener)}.
   ///
   /// Param [listener] The chat room event listener to be removed.
   ///
+  @Deprecated("Switch to using removeChatRoomManagerListener instead.")
   void removeChatRoomListener(EMChatRoomEventListener listener) {
     if (_chatRoomEventListeners.contains(listener)) {
       _chatRoomEventListeners.remove(listener);
     }
   }
 
+  ///
+  /// Registers a chat room manager listener.
+  ///
+  /// After registering the chat room manager listener, you can listen for events in {@link EMChatRoomManagerListener}, for example, users joining and exiting the chat room, adding the specified member to the chat group mute list, updating the chat room allow list, and destroying the chat room.
+  ///
+  /// To stop listening for chat room manager, call {@link #removeChatRoomManagerListener(EMChatRoomManagerListener)}.
+  ///
+  /// Param [listener] A chat room listener. See {@link EMChatRoomManagerListener}.
+  ///
+  void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes a chat room manager listener.
+  /// This method removes the chat room manager listener registered with {@link #addChatRoomManagerListener(EMChatRoomManagerListener)}.
+  ///
+  /// Param [listener] The chat room manager listener to be removed.
+  ///
+  void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
+    if (_listeners.contains(listener)) {
+      _listeners.remove(listener);
+    }
+  }
+
+  ///
+  /// Removes all chat room manager listener.
+  ///
+  void clearAllChatRoomManagerListeners() {
+    _listeners.clear();
+  }
+
   Future<void> _chatRoomChange(Map event) async {
     String? type = event['type'];
+
+    for (var listener in _listeners) {
+      switch (type) {
+        case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          listener.onChatRoomDestroyed(roomId, roomName);
+          break;
+        case EMChatRoomEvent.ON_MEMBER_JOINED:
+          String roomId = event['roomId'];
+          String participant = event['participant'];
+          listener.onMemberJoinedFromChatRoom(roomId, participant);
+          break;
+        case EMChatRoomEvent.ON_MEMBER_EXITED:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          String participant = event['participant'];
+          listener.onMemberExitedFromChatRoom(roomId, roomName, participant);
+          break;
+        case EMChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          String participant = event['participant'];
+          listener.onRemovedFromChatRoom(roomId, roomName, participant);
+          break;
+        case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
+          String roomId = event['roomId'];
+          List<String> mutes = List.from(event['mutes']);
+          String? expireTime = event['expireTime'];
+          listener.onMuteListAddedFromChatRoom(roomId, mutes, expireTime);
+          break;
+        case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> mutes = List.from(event['mutes']);
+          listener.onMuteListRemovedFromChatRoom(roomId, mutes);
+          break;
+        case EMChatRoomEvent.ON_ADMIN_ADDED:
+          String roomId = event['roomId'];
+          String admin = event['admin'];
+          listener.onAdminAddedFromChatRoom(roomId, admin);
+          break;
+        case EMChatRoomEvent.ON_ADMIN_REMOVED:
+          String roomId = event['roomId'];
+          String admin = event['admin'];
+          listener.onAdminRemovedFromChatRoom(roomId, admin);
+          break;
+        case EMChatRoomEvent.ON_OWNER_CHANGED:
+          String roomId = event['roomId'];
+          String newOwner = event['newOwner'];
+          String oldOwner = event['oldOwner'];
+          listener.onOwnerChangedFromChatRoom(roomId, newOwner, oldOwner);
+          break;
+        case EMChatRoomEvent.ON_ANNOUNCEMENT_CHANGED:
+          String roomId = event['roomId'];
+          String announcement = event['announcement'];
+          listener.onAnnouncementChangedFromChatRoom(roomId, announcement);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
+          String roomId = event['roomId'];
+          List<String> members = List.from(event["whitelist"]);
+          listener.onAllowListAddedFromChatRoom(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> members = List.from(event["whitelist"]);
+          listener.onAllowListRemovedFromChatRoom(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String roomId = event['roomId'];
+          bool isAllMuted = event['isMuted'];
+          listener.onAllChatRoomMemberMuteStateChanged(roomId, isAllMuted);
+          break;
+      }
+    }
+
     for (EMChatRoomEventListener listener in _chatRoomEventListeners) {
       switch (type) {
         case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
@@ -119,12 +236,12 @@ class EMChatRoomManager {
         case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
           String roomId = event['roomId'];
           List<String> members = List.from(event["whitelist"]);
-          listener.onWhiteListAddedFromChatRoom(roomId, members);
+          listener.onAllowListAddedFromChatRoom(roomId, members);
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
           String roomId = event['roomId'];
           List<String> members = List.from(event["whitelist"]);
-          listener.onWhiteListRemovedFromChatRoom(roomId, members);
+          listener.onAllowListRemovedFromChatRoom(roomId, members);
           break;
         case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
           String roomId = event['roomId'];
@@ -211,9 +328,13 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMChatRoom> fetchChatRoomInfoFromServer(String roomId) async {
+  Future<EMChatRoom> fetchChatRoomInfoFromServer(
+    String roomId, {
+    bool fetchMembers = false,
+  }) async {
     Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchChatRoomInfoFromServer, {"roomId": roomId});
+        ChatMethodKeys.fetchChatRoomInfoFromServer,
+        {"roomId": roomId, "fetchMembers": fetchMembers});
     try {
       EMError.hasErrorFromResult(result);
       return EMChatRoom.fromJson(
@@ -268,7 +389,7 @@ class EMChatRoomManager {
   ///
   /// Creates a chat room.
   ///
-  /// Param [subject] The chat room subject.
+  /// Param [name] The chat room name.
   ///
   /// Param [desc] The chat room description.
   ///
@@ -283,18 +404,18 @@ class EMChatRoomManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMChatRoom> createChatRoom(
-    String subject, {
+    String name, {
     String? desc,
     String? welcomeMsg,
     int maxUserCount = 300,
     List<String>? members,
   }) async {
     Map req = Map();
-    req['subject'] = subject;
-    req['desc'] = desc;
-    req['welcomeMsg'] = welcomeMsg;
+    req['subject'] = name;
     req['maxUserCount'] = maxUserCount;
-    req['members'] = members;
+    req.setValueWithOutNull("desc", desc);
+    req.setValueWithOutNull("welcomeMsg", welcomeMsg);
+    req.setValueWithOutNull("members", members);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.createChatRoom, req);
     try {
@@ -328,21 +449,21 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Changes the chat room subject.
+  /// Changes the chat room name.
   ///
   /// Only the chat room owner can call this method.
   ///
   /// Param [roomId] The chat room ID.
   ///
-  /// Param [subject] The new subject of the chat room.
+  /// Param [name] The new name of the chat room.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> changeChatRoomSubject(
+  Future<void> changeChatRoomName(
     String roomId,
-    String subject,
+    String name,
   ) async {
-    Map req = {"roomId": roomId, "subject": subject};
+    Map req = {"roomId": roomId, "subject": name};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
     try {
@@ -392,7 +513,7 @@ class EMChatRoomManager {
   ///
   Future<EMCursorResult<String>> fetchChatRoomMembers(
     String roomId, {
-    String cursor = '',
+    String? cursor,
     int pageSize = 200,
   }) async {
     Map req = {"roomId": roomId, "pageSize": pageSize};
@@ -554,7 +675,7 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchChatRoomMuteList(
+  Future<List<String>> fetchChatRoomMuteList(
     String roomId, {
     int pageNum = 1,
     int pageSize = 200,
@@ -564,7 +685,7 @@ class EMChatRoomManager {
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMuteList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>();
+      return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>() ?? [];
     } on EMError catch (e) {
       throw e;
     }
@@ -664,17 +785,18 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchChatRoomBlockList(
-    String roomId, [
+  Future<List<String>> fetchChatRoomBlockList(
+    String roomId, {
     int pageNum = 1,
     int pageSize = 200,
-  ]) async {
+  }) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>();
+      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>() ??
+          [];
     } on EMError catch (e) {
       throw e;
     }
@@ -739,16 +861,24 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>?> fetchChatRoomWhiteListFromServer(String roomId) async {
+  Future<List<String>> fetchChatRoomAllowListFromServer(String roomId) async {
     Map req = {"roomId": roomId};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    List<String> contacts = [];
-    result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]?.forEach((element) {
-      contacts.add(element);
-    });
-    return contacts;
+
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]
+          ?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   ///
@@ -761,13 +891,18 @@ class EMChatRoomManager {
   /// - `false`: No.
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<bool> isMemberInChatRoomWhiteList(String roomId) async {
+  Future<bool> isMemberInChatRoomAllowList(String roomId) async {
     Map req = {"roomId": roomId};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
-    EMError.hasErrorFromResult(result);
-    return result
-        .boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
+
+    try {
+      EMError.hasErrorFromResult(result);
+      return result
+          .boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   ///
@@ -781,7 +916,7 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> addMembersToChatRoomWhiteList(
+  Future<void> addMembersToChatRoomAllowList(
     String roomId,
     List<String> members,
   ) async {
@@ -794,7 +929,11 @@ class EMChatRoomManager {
       req,
     );
 
-    EMError.hasErrorFromResult(result);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   ///
@@ -808,7 +947,7 @@ class EMChatRoomManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> removeMembersFromChatRoomWhiteList(
+  Future<void> removeMembersFromChatRoomAllowList(
     String roomId,
     List<String> members,
   ) async {
@@ -820,7 +959,11 @@ class EMChatRoomManager {
       ChatMethodKeys.removeMembersFromChatRoomWhiteList,
       req,
     );
-    EMError.hasErrorFromResult(result);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   ///
@@ -840,7 +983,11 @@ class EMChatRoomManager {
       ChatMethodKeys.muteAllChatRoomMembers,
       req,
     );
-    EMError.hasErrorFromResult(result);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   ///
@@ -858,6 +1005,159 @@ class EMChatRoomManager {
       ChatMethodKeys.unMuteAllChatRoomMembers,
       req,
     );
-    EMError.hasErrorFromResult(result);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Changes the chat room subject.
+  ///
+  /// Only the chat room owner can call this method.
+  ///
+  /// Param [roomId] The chat room ID.
+  ///
+  /// Param [subject] The new subject of the chat room.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  @Deprecated("Switch to using EMChatManager#changeChatRoomName instead.")
+  Future<void> changeChatRoomSubject(
+    String roomId,
+    String subject,
+  ) async {
+    Map req = {"roomId": roomId, "subject": subject};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the allow list from the server.
+  ///
+  /// Only the chat room owner or admin can call this method.
+  ///
+  /// Param [roomId] The chat room ID.
+  ///
+  /// **Return** The chat room allow list.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  @Deprecated(
+      "Switch to using EMChatManager#fetchChatRoomAllowListFromServer instead.")
+  Future<List<String>> fetchChatRoomWhiteListFromServer(String roomId) async {
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
+
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]
+          ?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Checks whether the member is on the allow list.
+  ///
+  /// Param [roomId] The chat room ID.
+  ///
+  /// **Return** Whether the member is on the allow list.
+  /// - `true`: Yes;
+  /// - `false`: No.
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  @Deprecated(
+      "Switch to using EMChatManager#isMemberInChatRoomAllowList instead.")
+  Future<bool> isMemberInChatRoomWhiteList(String roomId) async {
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
+
+    try {
+      EMError.hasErrorFromResult(result);
+      return result
+          .boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Adds members to the allowlist.
+  ///
+  /// Only the chat room owner or admin can call this method.
+  ///
+  /// Param [roomId] The chat room ID.
+  ///
+  /// Param [members] The list of members to be added to the allow list.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  @Deprecated(
+      "Switch to using EMChatManager#addMembersToChatRoomAllowList instead.")
+  Future<void> addMembersToChatRoomWhiteList(
+    String roomId,
+    List<String> members,
+  ) async {
+    Map req = {
+      "roomId": roomId,
+      "members": members,
+    };
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.addMembersToChatRoomWhiteList,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Removes members from the allow list.
+  ///
+  /// Only the chat room owner or admin can call this method.
+  ///
+  /// Param [roomId] The chat room ID.
+  ///
+  /// Param [members] The list of members to be removed from the allow list.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  @Deprecated(
+      "Switch to using EMChatManager#removeMembersFromChatRoomAllowList instead.")
+  Future<void> removeMembersFromChatRoomWhiteList(
+    String roomId,
+    List<String> members,
+  ) async {
+    Map req = {
+      "roomId": roomId,
+      "members": members,
+    };
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.removeMembersFromChatRoomWhiteList,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 }

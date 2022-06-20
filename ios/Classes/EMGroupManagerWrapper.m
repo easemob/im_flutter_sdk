@@ -8,10 +8,11 @@
 
 #import "EMGroupManagerWrapper.h"
 
-#import "EMGroup+Flutter.h"
-#import "EMCursorResult+Flutter.h"
+#import "EMGroup+Helper.h"
+#import "EMCursorResult+Helper.h"
 #import "EMListenerHandle.h"
 #import "EMSDKMethod.h"
+#import "EMClientWrapper.h"
 
 @interface EMGroupManagerWrapper () <EMGroupManagerDelegate>
 
@@ -301,12 +302,7 @@
                              channelName:call.method
                                   result:result];
     }
-    else if([ChatIgnoreGroupPush isEqualToString:call.method])
-    {
-        [self ignoreGroupPush:call.arguments
-                  channelName:call.method
-                       result:result];
-    }
+    
     else
     {
         [super handleMethodCall:call result:result];
@@ -401,7 +397,10 @@
 
 - (void)getGroupSpecificationFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:param[@"groupId"]
+    NSString *groupId = param[@"groupId"];
+    BOOL fetchMembers = [param[@"fetchMembers"] boolValue];
+    [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
+                                                                 fetchMembers:fetchMembers
                                                                    completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
@@ -441,15 +440,16 @@
 
 - (void)getGroupMuteListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getGroupMuteListFromServerWithId:param[@"groupId"]
-                                                              pageNumber:[param[@"pageNum"] intValue]
-                                                                pageSize:[param[@"pageSize"] intValue]
-                                                              completion:^(NSArray *aList, EMError *aError)
+    
+    [EMClient.sharedClient.groupManager fetchGroupMuteListFromServerWithId:param[@"groupId"]
+                                                                pageNumber:[param[@"pageNum"] intValue]
+                                                                  pageSize:[param[@"pageSize"] intValue]
+                                                                completion:^(NSDictionary<NSString *,NSNumber *> *aDict, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
-                           object:aList];
+                           object:aDict];
     }];
 }
 
@@ -784,20 +784,26 @@
 }
 
 - (void)downloadGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
+    __block NSString *fileId = param[@"fileId"];
+    __block NSString *savePath = param[@"savePath"];
     [EMClient.sharedClient.groupManager downloadGroupSharedFileWithId:param[@"groupId"]
-                                                             filePath:param[@"savePath"]
-                                                         sharedFileId:param[@"fileId"]
+                                                             filePath:savePath
+                                                         sharedFileId:fileId
                                                              progress:^(int progress)
      {
-        
+        [EMClientWrapper.sharedWrapper.progressManager sendDownloadProgressToFlutter:fileId progress:progress];
     } completion:^(EMGroup *aGroup, EMError *aError)
      {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:@(!aError)];
+        if (aError) {
+            [EMClientWrapper.sharedWrapper.progressManager sendDownloadErrorToFlutter:fileId error:aError];
+        }else {
+            [EMClientWrapper.sharedWrapper.progressManager sendDownloadSuccessToFlutter:fileId path:savePath];
+        }
     }];
+    [self wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:@(YES)];
 }
 
 - (void)removeGroupSharedFile:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -920,20 +926,6 @@
     }];
 }
 
-- (void)ignoreGroupPush:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    
-    __block NSString *groupId = param[@"groupId"];
-    [EMClient.sharedClient.pushManager updatePushServiceForGroups:@[groupId]
-                                                      disablePush:[param[@"ignore"] boolValue]
-                                                       completion:^(EMError * _Nonnull aError) {
-        EMGroup *aGroup = [EMGroup groupWithId:groupId];
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aGroup toJson]];
-    }];
-}
 
 #pragma mark - EMGroupManagerDelegate
 

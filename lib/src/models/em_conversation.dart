@@ -17,19 +17,16 @@ import '../internal/em_transform_tools.dart';
 /// ```
 ///
 class EMConversation {
-  EMConversation._private(
-    this.id,
-    this.type,
-    this._ext,
-  );
+  EMConversation._private(this.id, this.type, this._ext, this.isChatThread);
 
   /// @nodoc
   factory EMConversation.fromJson(Map<String, dynamic> map) {
-    Map<String, String>? ext = map["ext"]?.cast<String, String>();
+    Map<String, String>? ext = map.getMapValue("ext")?.cast<String, String>();
     EMConversation ret = EMConversation._private(
       map["con_id"],
       conversationTypeFromInt(map["type"]),
       ext,
+      map.getBoolValue("isThread", defaultValue: false)!,
     );
 
     return ret;
@@ -40,6 +37,7 @@ class EMConversation {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data["type"] = conversationTypeToInt(this.type);
     data["con_id"] = this.id;
+    data["isThread"] = this.isChatThread;
     return data;
   }
 
@@ -57,6 +55,10 @@ class EMConversation {
   /// The conversation type.
   ///
   final EMConversationType type;
+
+  ///
+  /// Is chat thread conversation.
+  final bool isChatThread;
 
   Map<String, String>? _ext;
 }
@@ -333,7 +335,7 @@ extension EMConversationExtension on EMConversation {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMMessage>?> loadMessagesWithMsgType({
+  Future<List<EMMessage>> loadMessagesWithMsgType({
     required MessageType type,
     int timestamp = -1,
     int count = 20,
@@ -344,9 +346,8 @@ extension EMConversationExtension on EMConversation {
     req['msgType'] = messageTypeToTypeStr(type);
     req['timestamp'] = timestamp;
     req['count'] = count;
-    req['sender'] = sender;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-
+    req.setValueWithOutNull("sender", sender);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
     try {
@@ -381,7 +382,7 @@ extension EMConversationExtension on EMConversation {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<List<EMMessage>?> loadMessages({
+  Future<List<EMMessage>> loadMessages({
     String startMsgId = '',
     int loadCount = 20,
     EMSearchDirection direction = EMSearchDirection.Up,
@@ -437,11 +438,9 @@ extension EMConversationExtension on EMConversation {
     Map req = this._toJson();
     req["keywords"] = keywords;
     req['count'] = count;
-    if (sender != null) {
-      req['sender'] = sender;
-    }
     req['timestamp'] = timestamp;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req.setValueWithOutNull("sender", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);

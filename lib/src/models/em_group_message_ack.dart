@@ -6,7 +6,7 @@ import '../tools/em_extension.dart';
 /// To get the chat group message receipts, call {@link EMChatManager#fetchGroupAcks(String, String?, int)}.
 ///
 /// ```dart
-///   EMCursorResult<EMGroupMessageAck?> result = await EMClient.getInstance.chatManager.fetchGroupAcks("msgId");
+///   EMCursorResult<EMGroupMessageAck> result = await EMClient.getInstance.chatManager.fetchGroupAcks("msgId");
 /// ```
 ///
 class EMGroupMessageAck {

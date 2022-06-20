@@ -8,9 +8,9 @@
 #import "EMChatroomManagerWrapper.h"
 #import "EMSDKMethod.h"
 
-#import "EMCursorResult+Flutter.h"
-#import "EMPageResult+Flutter.h"
-#import "EMChatroom+Flutter.h"
+#import "EMCursorResult+Helper.h"
+#import "EMPageResult+Helper.h"
+#import "EMChatroom+Helper.h"
 #import "EMListenerHandle.h"
 
 @interface EMChatroomManagerWrapper () <EMChatroomManagerDelegate>
@@ -277,14 +277,13 @@
 - (void)fetchChatroomInfoFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *chatroomId = param[@"roomId"];
-    [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId
-                                                                     completion:^(EMChatroom *aChatroom, EMError *aError)
-    {
+    BOOL fetchMembers = [param[@"fetchMembers"] boolValue];
+    
+    [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId fetchMembers:fetchMembers completion:^(EMChatroom *aChatroom, EMError *aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
                            object:[aChatroom toJson]];
-        
     }];
 }
 

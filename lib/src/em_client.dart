@@ -7,6 +7,7 @@ import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
 import 'tools/em_log.dart';
+import 'tools/em_progress_manager.dart';
 
 ///
 /// The EMClient class, which is the entry point of the Chat SDK. With this class, you can log in, log out, and access other functionalities such as group and chatroom.
@@ -22,9 +23,14 @@ class EMClient {
   final EMGroupManager _groupManager = EMGroupManager();
   final EMPushManager _pushManager = EMPushManager();
   final EMUserInfoManager _userInfoManager = EMUserInfoManager();
+
+  final EMPresenceManager _presenceManager = EMPresenceManager();
+  final EMChatThreadManager _chatThreadManager = EMChatThreadManager();
   final List<EMConnectionListener> _connectionListeners = [];
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
   final List<EMCustomListener> _customListeners = [];
+  // ignore: unused_field
+  EMProgressManager? _progressManager;
 
   EMOptions? _options;
 
@@ -36,10 +42,10 @@ class EMClient {
   /// Gets the current logged-in username.
   String? get currentUsername => _currentUsername;
 
-  static EMClient get getInstance =>
-      _instance = _instance ?? EMClient._internal();
+  static EMClient get getInstance => _instance ??= EMClient._internal();
 
   EMClient._internal() {
+    _progressManager = EMProgressManager();
     _addNativeMethodCallHandler();
   }
 
@@ -49,18 +55,34 @@ class EMClient {
       if (call.method == ChatMethodKeys.onConnected) {
         return _onConnected();
       } else if (call.method == ChatMethodKeys.onDisconnected) {
-        return _onDisconnected(argMap);
-      } else if (call.method == ChatMethodKeys.onMultiDeviceEvent) {
-        return _onMultiDeviceEvent(argMap!);
+        return _onDisconnected();
+      } else if (call.method == ChatMethodKeys.onUserDidLoginFromOtherDevice) {
+        _onUserDidLoginFromOtherDevice();
+      } else if (call.method == ChatMethodKeys.onUserDidRemoveFromServer) {
+        _onUserDidRemoveFromServer();
+      } else if (call.method == ChatMethodKeys.onUserDidForbidByServer) {
+        _onUserDidForbidByServer();
+      } else if (call.method == ChatMethodKeys.onUserDidChangePassword) {
+        _onUserDidChangePassword();
+      } else if (call.method == ChatMethodKeys.onUserDidLoginTooManyDevice) {
+        _onUserDidLoginTooManyDevice();
+      } else if (call.method == ChatMethodKeys.onUserKickedByOtherDevice) {
+        _onUserKickedByOtherDevice();
+      } else if (call.method == ChatMethodKeys.onUserAuthenticationFailed) {
+        _onUserAuthenticationFailed();
+      } else if (call.method == ChatMethodKeys.onMultiDeviceGroupEvent) {
+        _onMultiDeviceGroupEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceContactEvent) {
+        _onMultiDeviceContactEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceThreadEvent) {
+        _onMultiDeviceThreadEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
-        return _onReceiveCustomData(argMap!);
+        _onReceiveCustomData(argMap!);
       } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
-        return _onTokenWillExpire(argMap);
+        _onTokenWillExpire(argMap);
       } else if (call.method == ChatMethodKeys.onTokenDidExpire) {
-        return _onTokenDidExpire(argMap);
+        _onTokenDidExpire(argMap);
       }
-
-      return null;
     });
   }
 
@@ -68,7 +90,7 @@ class EMClient {
   /// Start contact and group, chatroom callback.
   ///
   /// Reference:
-  /// Call this method when you ui is ready, then will receive `EMChatRoomEventListener`, `EMContactManagerListener`, `EMGroupEventListener` callback.
+  /// Call this method when you ui is ready, then will receive `EMChatRoomManagerListener`, `EMContactManagerListener`, `EMGroupManagerListener` callback.
   ///
   Future<void> startCallback() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.startCallback);
@@ -474,29 +496,81 @@ class EMClient {
     }
   }
 
-  Future<void> _onDisconnected(Map? map) async {
+  Future<void> _onDisconnected() async {
     for (var listener in _connectionListeners) {
-      int? errorCode = map!['errorCode'];
-      listener.onDisconnected(errorCode);
+      listener.onDisconnected();
     }
   }
 
-  Future<void> _onMultiDeviceEvent(Map map) async {
-    var event = map['event'];
+  Future<void> _onUserDidLoginFromOtherDevice() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidLoginFromOtherDevice();
+    }
+  }
+
+  Future<void> _onUserDidRemoveFromServer() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidRemoveFromServer();
+    }
+  }
+
+  Future<void> _onUserDidForbidByServer() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidForbidByServer();
+    }
+  }
+
+  Future<void> _onUserDidChangePassword() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidChangePassword();
+    }
+  }
+
+  Future<void> _onUserDidLoginTooManyDevice() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserDidLoginTooManyDevice();
+    }
+  }
+
+  Future<void> _onUserKickedByOtherDevice() async {
+    for (var listener in _connectionListeners) {
+      listener.onUserKickedByOtherDevice();
+    }
+  }
+
+  Future<void> _onUserAuthenticationFailed() async {
+    for (var listener in _connectionListeners) {
+      listener.onDisconnected();
+    }
+  }
+
+  Future<void> _onMultiDeviceGroupEvent(Map map) async {
     for (var listener in _multiDeviceListeners) {
-      if (event >= 10) {
-        listener.onGroupEvent(
-          convertIntToEMContactGroupEvent(event)!,
-          map['target'],
-          map['userNames'],
-        );
-      } else {
-        listener.onContactEvent(
-          convertIntToEMContactGroupEvent(event)!,
-          map['target'],
-          map['ext'],
-        );
-      }
+      listener.onGroupEvent(
+        convertIntToEMMultiDevicesEvent(map['event'])!,
+        map['target'],
+        map['users'],
+      );
+    }
+  }
+
+  Future<void> _onMultiDeviceContactEvent(Map map) async {
+    for (var listener in _multiDeviceListeners) {
+      listener.onContactEvent(
+        convertIntToEMMultiDevicesEvent(map['event'])!,
+        map['target'],
+        map['ext'],
+      );
+    }
+  }
+
+  Future<void> _onMultiDeviceThreadEvent(Map map) async {
+    for (var listener in _multiDeviceListeners) {
+      listener.onChatThreadEvent(
+        convertIntToEMMultiDevicesEvent(map['event'])!,
+        map['target'],
+        map['users'],
+      );
     }
   }
 
@@ -570,6 +644,24 @@ class EMClient {
   ///
   EMUserInfoManager get userInfoManager {
     return _userInfoManager;
+  }
+
+  ///
+  /// Gets the `EMChatThreadManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMChatThreadManager` class.
+  ///
+  EMChatThreadManager get chatThreadManager {
+    return _chatThreadManager;
+  }
+
+  ///
+  /// Gets the `EMPresenceManager` class. Make sure to call it after the EMClient has been initialized.
+  ///
+  /// **Return** The `EMPresenceManager` class.
+  ///
+  EMPresenceManager get presenceManager {
+    return _presenceManager;
   }
 
   void _clearAllInfo() {

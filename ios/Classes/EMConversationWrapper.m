@@ -8,8 +8,8 @@
 #import "EMConversationWrapper.h"
 #import "EMSDKMethod.h"
 
-#import "EMChatMessage+Flutter.h"
-#import "EMConversation+Flutter.h"
+#import "EMChatMessage+Helper.h"
+#import "EMConversation+Helper.h"
 
 @interface EMConversationWrapper ()
 
@@ -174,8 +174,8 @@
         
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
-                            error:nil
-                           object:@(YES)];
+                            error:error
+                           object:@(!error)];
     }];
 }
 

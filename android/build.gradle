@@ -27,7 +27,7 @@ android {
     buildToolsVersion = '28.0.3'
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -49,5 +49,5 @@ tasks.withType(JavaCompile){
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'io.hyphenate:hyphenate-chat:3.9.0'
+    implementation 'io.hyphenate:hyphenate-chat:3.9.3.1'
 }

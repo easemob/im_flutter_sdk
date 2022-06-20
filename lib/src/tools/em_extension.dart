@@ -1,7 +1,11 @@
+import 'package:im_flutter_sdk/src/models/em_presence.dart';
+
 import '../models/em_group_shared_file.dart';
 import 'dart:convert' as convert;
 
 Type typeOf<T>() => T;
+
+typedef MapResultCallback<T> = T Function(dynamic obj);
 
 extension MapExtension on Map {
   bool boolValue(String key) {
@@ -50,6 +54,13 @@ extension MapExtension on Map {
           fileList.add(file);
         }
         return fileList as List<T>;
+      } else if (typeOf<T>().toString() == "EMPresence") {
+        List<EMPresence> presenceList = [];
+        for (var item in obj) {
+          var presence = EMPresence.fromJson(item);
+          presenceList.add(presence);
+        }
+        return presenceList as List<T>;
       }
     }
     return null;
@@ -143,5 +154,31 @@ extension MapExtension on Map {
       ret = defaultValue;
     }
     return ret;
+  }
+
+  List<T>? getList<T>(String key, {valueCallback: MapResultCallback}) {
+    List<T>? ret;
+    if (this.containsKey(key)) {
+      List list = this[key];
+
+      List<T> typeList = [];
+      for (var item in list) {
+        typeList.add(valueCallback(item));
+      }
+      if (typeList.length > 0) {
+        ret = typeList;
+      }
+    }
+    return ret;
+  }
+
+  T? getValueWithKey<T>(
+    String key, {
+    required MapResultCallback callback,
+  }) {
+    if (!this.containsKey(key)) {
+      return null;
+    }
+    return callback.call(this[key]);
   }
 }

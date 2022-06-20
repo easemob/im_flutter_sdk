@@ -52,8 +52,8 @@ class EMOptions {
   ///
   /// Whether to require the delivery receipt after sending a message.
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - `true`: Yes;
+  /// - `false`: (Default) No.
   ///
   final bool requireDeliveryAck;
 
