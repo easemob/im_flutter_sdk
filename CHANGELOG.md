@@ -13,6 +13,8 @@
   - EMConnectionListener#onUserDidLoginTooManyDevice: 当前账号登录太多设备;
   - EMConnectionListener#onUserKickedByOtherDevice: 当前账号被登录的其他设备设置下线;
   - EMConnectionListener#onUserAuthenticationFailed: 当前账号鉴权失败;
+- 依赖原生sdk版本为3.9.2.1；
+- 修复ios group ack 问题；
 
 ## 3.9.0+1
 
