@@ -21,9 +21,21 @@ class ChatMethodKeys {
   static const String isConnected = "isConnected";
 
   /// EMClient listener
-  static const String onMultiDeviceEvent = "onMultiDeviceEvent";
+  static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
+  static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
+  static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
+  static const String onUserDidLoginFromOtherDevice =
+      "onUserDidLoginFromOtherDevice";
+  static const String onUserDidRemoveFromServer = "onUserDidRemoveFromServer";
+  static const String onUserDidForbidByServer = "onUserDidForbidByServer";
+  static const String onUserDidChangePassword = "onUserDidChangePassword";
+  static const String onUserDidLoginTooManyDevice =
+      "onUserDidLoginTooManyDevice";
+  static const String onUserKickedByOtherDevice = "onUserKickedByOtherDevice";
+  static const String onUserAuthenticationFailed = "onUserAuthenticationFailed";
+
   static const String onSendDataToFlutter = "onSendDataToFlutter";
   static const String onTokenWillExpire = "onTokenWillExpire";
   static const String onTokenDidExpire = "onTokenDidExpire";
@@ -68,10 +80,21 @@ class ChatMethodKeys {
   static const String asyncFetchGroupAcks = "asyncFetchGroupAcks";
   static const String deleteRemoteConversation = "deleteRemoteConversation";
 
+  static const String translateMessage = "translateMessage";
+  static const String fetchSupportLanguages = "fetchSupportLanguages";
+
+  static const String addReaction = "addReaction";
+  static const String removeReaction = "removeReaction";
+  static const String fetchReactionList = "fetchReactionList";
+  static const String fetchReactionDetail = "fetchReactionDetail";
+  static const String reportMessage = "reportMessage";
+
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessagesRead = "onMessagesRead";
+  static const String onReadAckForGroupMessageUpdated =
+      "onReadAckForGroupMessageUpdated";
   static const String onGroupMessageRead = "onGroupMessageRead";
   static const String onMessagesDelivered = "onMessagesDelivered";
   static const String onMessagesRecalled = "onMessagesRecalled";
@@ -80,6 +103,8 @@ class ChatMethodKeys {
   static const String onConversationUpdate = "onConversationUpdate";
   static const String onConversationHasRead = "onConversationHasRead";
 
+  static const String onMessageReactionDidChange = "messageReactionDidChange";
+
   /// EMMessage listener
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";
   static const String onMessageError = "onMessageError";
@@ -87,7 +112,10 @@ class ChatMethodKeys {
   static const String onMessageReadAck = "onMessageReadAck";
   static const String onMessageDeliveryAck = "onMessageDeliveryAck";
 
-  /// EMConversation
+  /// EMPresenceManagerDelegate
+  static const String onPresenceStatusChanged = "onPresenceStatusChanged";
+
+  /// EMConversation method
   static const String getUnreadMsgCount = "getUnreadMsgCount";
   static const String markAllMessagesAsRead = "markAllMessagesAsRead";
   static const String markMessageAsRead = "markMessageAsRead";
@@ -99,17 +127,16 @@ class ChatMethodKeys {
   static const String insertMessage = "insertMessage";
   static const String appendMessage = "appendMessage";
   static const String updateConversationMessage = "updateConversationMessage";
-
-  // 根据消息id获取消息
   static const String loadMsgWithId = "loadMsgWithId";
-  // 根据起始消息id获取消息
   static const String loadMsgWithStartId = "loadMsgWithStartId";
-  // 根据关键字获取消息
   static const String loadMsgWithKeywords = "loadMsgWithKeywords";
-  // 根据消息类型获取消息
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
-  // 通过时间获取消息
   static const String loadMsgWithTime = "loadMsgWithTime";
+
+  /// EMMessage method
+  static const String getReactionList = "getReactionList";
+  static const String groupAckCount = "groupAckCount";
+  static const String getChatThread = "chatThread";
 
   /// EMChatRoomManager methods
   static const String joinChatRoom = "joinChatRoom";
@@ -205,7 +232,6 @@ class ChatMethodKeys {
   static const String declineJoinApplication = "declineJoinApplication";
   static const String acceptInvitationFromGroup = "acceptInvitationFromGroup";
   static const String declineInvitationFromGroup = "declineInvitationFromGroup";
-  static const String ignoreGroupPush = "ignoreGroupPush";
 
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
@@ -232,6 +258,38 @@ class ChatMethodKeys {
   static const String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
   static const String fetchUserInfoById = "fetchUserInfoById";
   static const String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
+
+  /// EMPresenceManager methods
+  static const String presenceWithDescription =
+      "publishPresenceWithDescription";
+  static const String presenceSubscribe = "presenceSubscribe";
+  static const String presenceUnsubscribe = "presenceUnsubscribe";
+  static const String fetchSubscribedMembersWithPageNum =
+      "fetchSubscribedMembersWithPageNum";
+  static const String fetchPresenceStatus = "fetchPresenceStatus";
+
+  /// EMChatThreadManager methods
+  static const String fetchChatThreadDetail = "fetchChatThreadDetail";
+  static const String fetchJoinedChatThreads = "fetchJoinedChatThreads";
+  static const String fetchChatThreadsWithParentId =
+      "fetchChatThreadsWithParentId";
+  static const String fetchJoinedChatThreadsWithParentId =
+      "fetchJoinedChatThreadsWithParentId";
+  static const String fetchChatThreadMember = "fetchChatThreadMember";
+  static const String fetchLastMessageWithChatThreads =
+      "fetchLastMessageWithChatThreads";
+  static const String removeMemberFromChatThread = "removeMemberFromChatThread";
+  static const String updateChatThreadSubject = "updateChatThreadSubject";
+  static const String createChatThread = "createChatThread";
+  static const String joinChatThread = "joinChatThread";
+  static const String leaveChatThread = "leaveChatThread";
+  static const String destroyChatThread = "destroyChatThread";
+
+  // EMChatThreadManagerListener
+  static const String onChatThreadCreate = "onChatThreadCreate";
+  static const String onChatThreadUpdate = "onChatThreadUpdate";
+  static const String onChatThreadDestroy = "onChatThreadDestroy";
+  static const String onUserKickOutOfChatThread = "onUserKickOutOfChatThread";
 
   /// HandleAction
   static const String startCallback = "startCallback";

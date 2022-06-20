@@ -70,10 +70,10 @@ extension EMPushConfigsExtension on EMPushConfigs {
   @Deprecated(
       "Switch to using EMPushManager#enableOfflinePush and EMPushManager#disableOfflinePush instead")
   Future<void> setNoDisturb(
-    bool isNoDisturb, [
+    bool isNoDisturb, {
     int startTime = 0,
     int endTime = 24,
-  ]) async {
+  }) async {
     if (startTime < 0) startTime = 0;
     if (endTime > 24) endTime = 24;
     Map req = {
@@ -123,12 +123,17 @@ extension EMPushConfigsExtension on EMPushConfigs {
   }
 
   @Deprecated("Switch to using EMPushManager#getNoPushGroups instead")
-  Future<List<String>?> noDisturbGroupsFromServer() async {
+  Future<List<String>> noDisturbGroupsFromServer() async {
     Map result = await _channel.invokeMethod("getNoDisturbGroups");
     try {
       EMError.hasErrorFromResult(result);
-      _noDisturbGroups = result["getNoDisturbGroups"]?.cast<String>();
-      return _noDisturbGroups;
+      List<String> list = [];
+      result["getNoDisturbGroups"]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
     } on EMError catch (e) {
       throw e;
     }

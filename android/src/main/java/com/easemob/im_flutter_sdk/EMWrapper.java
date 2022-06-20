@@ -25,13 +25,6 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
 
   private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
 
-  public EMWrapper(PluginRegistry.Registrar registrar, String channelName) {
-    this.registrar = registrar;
-    this.context = registrar.context();
-    this.channel = new MethodChannel(registrar.messenger(), CHANNEL_PREFIX + channelName, JSONMethodCodec.INSTANCE);
-    channel.setMethodCallHandler(this);
-  }
-
   public EMWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
     this.context = flutterPluginBinding.getApplicationContext();
     this.binging = flutterPluginBinding;
@@ -40,7 +33,6 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
   }
 
   public Context context;
-  public PluginRegistry.Registrar registrar;
   public FlutterPlugin.FlutterPluginBinding binging;
   public MethodChannel channel;
 

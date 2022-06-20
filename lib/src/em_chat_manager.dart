@@ -1,7 +1,10 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+
+import 'internal/em_channel_manager.dart' show EMMethodChannel;
 import 'internal/em_transform_tools.dart';
+
 import 'tools/em_extension.dart';
 import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
@@ -18,15 +21,11 @@ import 'internal/chat_method_keys.dart';
 /// ```
 ///
 class EMChatManager {
-  static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _channel =
-      const MethodChannel('$_channelPrefix/chat_manager', JSONMethodCodec());
-
-  final List<EMChatManagerListener> _messageListeners = [];
+  final List<EMChatManagerListener> _listeners = [];
 
   /// @nodoc
   EMChatManager() {
-    _channel.setMethodCallHandler((MethodCall call) async {
+    EMMethodChannel.ChatManager.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
       } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {
@@ -35,6 +34,9 @@ class EMChatManager {
         return _onMessagesRead(call.arguments);
       } else if (call.method == ChatMethodKeys.onGroupMessageRead) {
         return _onGroupMessageRead(call.arguments);
+      } else if (call.method ==
+          ChatMethodKeys.onReadAckForGroupMessageUpdated) {
+        return _onReadAckForGroupMessageUpdated(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessagesDelivered) {
         return _onMessagesDelivered(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessagesRecalled) {
@@ -43,6 +45,8 @@ class EMChatManager {
         return _onConversationsUpdate(call.arguments);
       } else if (call.method == ChatMethodKeys.onConversationHasRead) {
         return _onConversationHasRead(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessageReactionDidChange) {
+        return _messageReactionDidChange(call.arguments);
       }
       return null;
     });
@@ -63,7 +67,7 @@ class EMChatManager {
   ///
   Future<EMMessage> sendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
-    Map result = await _channel.invokeMethod(
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
     try {
       EMError.hasErrorFromResult(result);
@@ -77,11 +81,14 @@ class EMChatManager {
     }
   }
 
-  /// Resends a message.
+  ///
+  /// Resend a message.
+  ///
   /// Param [message] The message object to be resent: {@link EMMessage}.
+  ///
   Future<EMMessage> resendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
-    Map result = await _channel.invokeMethod(
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.resendMessage, message.toJson());
     try {
       EMError.hasErrorFromResult(result);
@@ -114,8 +121,8 @@ class EMChatManager {
   ///
   Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.ackMessageRead, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.ackMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.ackMessageRead);
@@ -151,11 +158,10 @@ class EMChatManager {
       "msg_id": msgId,
       "group_id": groupId,
     };
-    if (content != null) {
-      req["content"] = content;
-    }
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
+    req.setValueWithOutNull("content", content);
+
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.ackGroupMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.ackMessageRead);
@@ -178,8 +184,8 @@ class EMChatManager {
   ///
   Future<bool> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.ackConversationRead, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.ackConversationRead, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.ackConversationRead);
@@ -197,7 +203,8 @@ class EMChatManager {
   ///
   Future<void> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.recallMessage, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.recallMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -217,7 +224,8 @@ class EMChatManager {
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = {"msg_id": messageId};
     Map<String, dynamic> result =
-        await _channel.invokeMethod(ChatMethodKeys.getMessage, req);
+        await EMMethodChannel.ChatManager.invokeMethod(
+            ChatMethodKeys.getMessage, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getMessage)) {
@@ -246,17 +254,17 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<EMConversation?> getConversation(
-    String conversationId, [
+    String conversationId, {
     EMConversationType type = EMConversationType.Chat,
     bool createIfNeed = true,
-  ]) async {
+  }) async {
     Map req = {
       "con_id": conversationId,
       "type": conversationTypeToInt(type),
       "createIfNeed": createIfNeed
     };
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.getConversation, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.getConversation, req);
     try {
       EMError.hasErrorFromResult(result);
       EMConversation? ret;
@@ -276,8 +284,8 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> markAllConversationsAsRead() async {
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.markAllChatMsgAsRead);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.markAllChatMsgAsRead);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -293,8 +301,8 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<int> getUnreadMessageCount() async {
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.getUnreadMessageCount);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.getUnreadMessageCount);
     try {
       int ret = 0;
       EMError.hasErrorFromResult(result);
@@ -316,8 +324,8 @@ class EMChatManager {
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = {"message": message.toJson()};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.updateChatMessage, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.updateChatMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -342,8 +350,8 @@ class EMChatManager {
       list.add(element.toJson());
     });
     Map req = {"messages": list};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.importMessages, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.importMessages, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -361,7 +369,7 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> downloadAttachment(EMMessage message) async {
-    Map result = await _channel.invokeMethod(
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.downloadAttachment, {"message": message.toJson()});
     try {
       EMError.hasErrorFromResult(result);
@@ -378,7 +386,7 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<void> downloadThumbnail(EMMessage message) async {
-    Map result = await _channel.invokeMethod(
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.downloadThumbnail, {"message": message.toJson()});
     try {
       EMError.hasErrorFromResult(result);
@@ -397,8 +405,8 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMConversation>> loadAllConversations() async {
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.loadAllConversations);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.loadAllConversations);
     try {
       EMError.hasErrorFromResult(result);
       List<EMConversation> conversationList = [];
@@ -421,8 +429,8 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<List<EMConversation>> getConversationsFromServer() async {
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.getConversationsFromServer);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.getConversationsFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<EMConversation> conversationList = [];
@@ -453,12 +461,12 @@ class EMChatManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   Future<bool> deleteConversation(
-    String conversationId, [
+    String conversationId, {
     bool deleteMessages = true,
-  ]) async {
+  }) async {
     Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.deleteConversation, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.deleteConversation, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.deleteConversation);
@@ -468,30 +476,35 @@ class EMChatManager {
   }
 
   ///
-  /// Adds the message listener. After calling this method, you can listen for new messages when they arrive.
+  /// Adds the chat manager listener. After calling this method, you can listen for new messages when they arrive.
   ///
-  /// Param [listener] The message listener that listens for new messages. See {@link EMChatManagerListener}.
+  /// Param [listener] The chat manager listener that listens for new messages. See {@link EMChatManagerListener}.
   ///
   void addChatManagerListener(EMChatManagerListener listener) {
-    _messageListeners.add(listener);
+    _listeners.remove(listener);
+    _listeners.add(listener);
   }
 
   ///
-  /// Removes the message listener.
+  /// Removes the chat manager listener.
   ///
   /// After adding a chat manager listener, you can remove this listener if you do not want to listen for it.
   ///
-  /// Param [listener] The message listener to be removed. See {@link EMChatManagerListener}.
+  /// Param [listener] The chat manager listener to be removed. See {@link EMChatManagerListener}.
   ///
   void removeChatManagerListener(EMChatManagerListener listener) {
-    if (_messageListeners.contains(listener)) {
-      _messageListeners.remove(listener);
-    }
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all chat manager listeners.
+  ///
+  void clearAllChatManagerListeners() {
+    _listeners.clear();
   }
 
   ///
   /// Gets historical messages of the conversation from the server with pagination.
-  ///
   ///
   /// Param [conversationId] The conversation ID.
   ///
@@ -505,8 +518,8 @@ class EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<EMMessage?>> fetchHistoryMessages(
-    String conversationId, {
+  Future<EMCursorResult<EMMessage>> fetchHistoryMessages({
+    required String conversationId,
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
     String startMsgId = '',
@@ -516,11 +529,11 @@ class EMChatManager {
     req['type'] = conversationTypeToInt(type);
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.fetchHistoryMessages, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.fetchHistoryMessages, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<EMMessage?>.fromJson(
+      return EMCursorResult<EMMessage>.fromJson(
           result[ChatMethodKeys.fetchHistoryMessages],
           dataItemCallback: (value) {
         return EMMessage.fromJson(value);
@@ -562,8 +575,8 @@ class EMChatManager {
     req['from'] = from;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
 
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.searchChatMsgFromDB, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMMessage> list = [];
@@ -592,24 +605,22 @@ class EMChatManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<EMCursorResult<EMGroupMessageAck?>> fetchGroupAcks(
-    String msgId, {
+  Future<EMCursorResult<EMGroupMessageAck>> fetchGroupAcks(
+    String msgId,
+    String groupId, {
     String? startAckId,
     int pageSize = 0,
   }) async {
-    Map req = Map();
-    req["msg_id"] = msgId;
-    if (startAckId != null) {
-      req["ack_id"] = startAckId;
-    }
+    Map req = {"msg_id": msgId, "group_id": groupId};
     req["pageSize"] = pageSize;
+    req.setValueWithOutNull("ack_id", startAckId);
 
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.asyncFetchGroupAcks, req);
 
     try {
       EMError.hasErrorFromResult(result);
-      EMCursorResult<EMGroupMessageAck?> cursorResult = EMCursorResult.fromJson(
+      EMCursorResult<EMGroupMessageAck> cursorResult = EMCursorResult.fromJson(
         result[ChatMethodKeys.asyncFetchGroupAcks],
         dataItemCallback: (map) {
           return EMGroupMessageAck.fromJson(map);
@@ -652,7 +663,7 @@ class EMChatManager {
     }
     req["isDeleteRemoteMessage"] = isDeleteMessage;
 
-    Map data = await _channel.invokeMethod(
+    Map data = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.deleteRemoteConversation, req);
 
     EMError.hasErrorFromResult(data);
@@ -663,7 +674,7 @@ class EMChatManager {
     for (var message in messages) {
       messageList.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesReceived(messageList);
     }
   }
@@ -673,7 +684,7 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onCmdMessagesReceived(list);
     }
   }
@@ -683,7 +694,7 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesRead(list);
     }
   }
@@ -693,8 +704,14 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMGroupMessageAck.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onGroupMessageRead(list);
+    }
+  }
+
+  Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
+    for (var listener in _listeners) {
+      listener.onReadAckForGroupMessageUpdated();
     }
   }
 
@@ -703,7 +720,7 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesDelivered(list);
     }
   }
@@ -713,22 +730,34 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onMessagesRecalled(list);
     }
   }
 
   Future<void> _onConversationsUpdate(dynamic obj) async {
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       listener.onConversationsUpdate();
     }
   }
 
   Future<void> _onConversationHasRead(dynamic obj) async {
-    for (var listener in _messageListeners) {
+    for (var listener in _listeners) {
       String from = (obj as Map)['from'];
       String to = obj['to'];
       listener.onConversationRead(from, to);
     }
   }
+
+  Future<void> _messageReactionDidChange(List reactionChangeList) async {
+    List<EMMessageReactionChange> list = [];
+    for (var reactionChange in reactionChangeList) {
+      list.add(EMMessageReactionChange.fromJson(reactionChange));
+    }
+    for (var listener in _listeners) {
+      listener.onMessageReactionDidChange(list);
+    }
+  }
 }
+
+extension EMThreadPlugin on EMChatManager {}

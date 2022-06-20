@@ -13,12 +13,18 @@
 #import "EMGroupManagerWrapper.h"
 #import "EMChatroomManagerWrapper.h"
 #import "EMPushManagerWrapper.h"
-#import "EMDeviceConfig+Flutter.h"
-#import "EMOptions+Flutter.h"
+#import "EMDeviceConfig+Helper.h"
+#import "EMOptions+Helper.h"
 #import "EMUserInfoManagerWrapper.h"
+#import "EMPresenceManagerWrapper.h"
+#import "EMChatMessageWrapper.h"
+#import "EMProgressManager.h"
 #import "EMListenerHandle.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
+{
+    EMProgressManager *_progressManager;
+}
 @end
 
 @implementation EMClientWrapper
@@ -186,14 +192,22 @@ static EMClientWrapper *wrapper = nil;
 - (void)registerManagers {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
-    EMChatManagerWrapper * chatManagerWrapper = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
-    EMContactManagerWrapper * contactManagerWrapper = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
-    EMConversationWrapper *conversationWrapper = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
-    EMGroupManagerWrapper * groupManagerWrapper = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
-    EMChatroomManagerWrapper * chatroomManagerWrapper =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
-    EMPushManagerWrapper * pushManagerWrapper =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
-    EMUserInfoManagerWrapper *userInfoManagerWrapper = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
+    EMChatManagerWrapper * chat = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
+    EMContactManagerWrapper * contact = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
+    EMConversationWrapper *conversation = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
+    EMGroupManagerWrapper * group = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
+    EMChatroomManagerWrapper * chatroom =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
+    EMPushManagerWrapper * push =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
+    EMUserInfoManagerWrapper *userInfo = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
+    EMPresenceManagerWrapper * presence = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
+    EMChatMessageWrapper *chatMessage = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
+    _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager") registrar:self.flutterPluginRegister];
+    
 #pragma clang diagnostic pop
+}
+
+- (EMProgressManager *)progressManager {
+    return _progressManager;
 }
 
 - (void)createAccount:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -244,6 +258,9 @@ static EMClientWrapper *wrapper = nil;
     __weak typeof(self)weakSelf = self;
     BOOL unbindToken = [param[@"unbindToken"] boolValue];
     [EMClient.sharedClient logout:unbindToken completion:^(EMError *aError) {
+        if(aError == nil) {
+            [EMListenerHandle.sharedInstance clearHandle];
+        }
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -405,18 +422,16 @@ static EMClientWrapper *wrapper = nil;
 - (void)connectionStateDidChange:(EMConnectionState)aConnectionState {
     BOOL isConnected = aConnectionState == EMConnectionConnected;
     if (isConnected) {
-        [self onConnected];
+        [self.channel invokeMethod:ChatOnConnected
+                         arguments:nil];
     }else {
-        [self onDisconnected:2]; // 需要明确具体的code
+        [self.channel invokeMethod:ChatOnDisconnected
+                         arguments:nil];
     }
 }
 
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
-    if (aError) {
-        [self onDisconnected:1];  // 需要明确具体的code
-    }else {
-        [self onConnected];
-    }
+ 
 }
 
 // 声网token即将过期
@@ -427,24 +442,44 @@ static EMClientWrapper *wrapper = nil;
 
 // 声网token过期
 - (void)tokenDidExpire:(int)aErrorCode {
+    [EMListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnTokenDidExpire
                      arguments:nil];
 }
 
 - (void)userAccountDidLoginFromOtherDevice {
-    [self onDisconnected:206];
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
+                     arguments:nil];
 }
 
 - (void)userAccountDidRemoveFromServer {
-    [self onDisconnected:207];
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidRemoveFromServer
+                     arguments:nil];
 }
 
 - (void)userDidForbidByServer {
-    [self onDisconnected:305];
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidForbidByServer
+                     arguments:nil];
 }
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {
-    [self onDisconnected:1]; // 需要明确具体的code
+    [EMListenerHandle.sharedInstance clearHandle];
+    if (aError.code == EMErrorUserKickedByChangePassword) {
+        [self.channel invokeMethod:ChatOnUserDidChangePassword
+                         arguments:nil];
+    } else if (aError.code == EMErrorUserLoginTooManyDevices) {
+        [self.channel invokeMethod:ChatOnUserDidLoginTooManyDevice
+                         arguments:nil];
+    } else if (aError.code == EMErrorUserKickedByOtherDevice) {
+        [self.channel invokeMethod:ChatOnUserKickedByOtherDevice
+                         arguments:nil];
+    } else if (aError.code == EMErrorUserAuthenticationFailed) {
+        [self.channel invokeMethod:ChatOnUserAuthenticationFailed
+                         arguments:nil];
+    }
 }
 
 #pragma mark - EMMultiDevicesDelegate
@@ -456,7 +491,7 @@ static EMClientWrapper *wrapper = nil;
     data[@"event"] = @(aEvent);
     data[@"target"] = aUsername;
     data[@"ext"] = aExt;
-    [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
+    [self.channel invokeMethod:ChatOnMultiDeviceContactEvent arguments:data];
 }
 
 - (void)multiDevicesGroupEventDidReceive:(EMMultiDevicesEvent)aEvent
@@ -465,20 +500,18 @@ static EMClientWrapper *wrapper = nil;
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"event"] = @(aEvent);
     data[@"target"] = aGroupId;
-    data[@"userNames"] = aExt;
-    [self.channel invokeMethod:ChatOnMultiDeviceEvent arguments:data];
+    data[@"users"] = aExt;
+    [self.channel invokeMethod:ChatOnMultiDeviceGroupEvent arguments:data];
 }
 
-#pragma mark - Merge Android and iOS Method
-- (void)onConnected {
-    [self.channel invokeMethod:ChatOnConnected
-                     arguments:@{@"connected" : @(YES)}];
+- (void)multiDevicesChatThreadEventDidReceive:(EMMultiDevicesEvent)aEvent
+                                 threadId:(NSString *)aThreadId
+                                          ext:(id)aExt {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"event"] = @(aEvent);
+    data[@"threadId"] = aThreadId;
+    data[@"users"] = aExt;
+    [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
 }
-
-- (void)onDisconnected:(int)errorCode {
-    [self.channel invokeMethod:ChatOnDisconnected
-                     arguments:@{@"errorCode" : @(errorCode)}];
-}
-
 
 @end

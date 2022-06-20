@@ -1,19 +1,10 @@
 package com.easemob.im_flutter_sdk;
 
-import android.renderscript.Sampler;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Formatter;
-
-import com.hyphenate.EMValueCallBack;
-import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
-import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.chat.EMUserInfo;
-import com.hyphenate.util.EMLog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,7 +14,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
 
 
 public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHandler {

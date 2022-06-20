@@ -5,7 +5,22 @@ import 'package:flutter/services.dart';
 import '../internal/chat_method_keys.dart';
 import '../internal/em_transform_tools.dart';
 import '../tools/em_extension.dart';
-import '../../im_flutter_sdk.dart';
+import 'em_chat_thread.dart';
+import 'em_chat_enums.dart';
+import "em_message_body.dart";
+import "../em_message_status_callback.dart";
+import "../em_client.dart";
+import 'em_error.dart';
+import 'em_text_message_body.dart';
+import 'em_image_message_body.dart';
+import 'em_location_message_body.dart';
+import 'em_voice_message_body.dart';
+import 'em_video_message_body.dart';
+import 'em_file_message_body.dart';
+import 'em_custom_message_body.dart';
+import 'em_cmd_message_body.dart';
+import 'em_message_reaction.dart';
+import '../em_status_listener.dart';
 
 ///
 /// The message class.
@@ -20,8 +35,6 @@ import '../../im_flutter_sdk.dart';
 /// ```
 ///
 class EMMessage {
-  int _groupAckCount = 0;
-
   /// 消息 ID。
   String? _msgId;
   String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
@@ -90,8 +103,15 @@ class EMMessage {
   bool needGroupAck = false;
 
   ///
+  /// Is it a message sent within a thread
+  bool isChatThreadMessage = false;
+
+  int _groupAckCount = 0;
+
+  ///
   /// Gets the number of members that have read the group message.
   ///
+  @Deprecated("Switch to using EMMessage#groupAckCount instead.")
   int get groupAckCount => _groupAckCount;
 
   ///
@@ -227,27 +247,33 @@ class EMMessage {
   ///
   /// Creates a text message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
   /// Param [content] The text content.
   ///
+  /// Param [targetLanguages] Target languages.
+  ///
   /// **Return** The message instance.
   ///
   EMMessage.createTxtSendMessage({
-    required String username,
+    required String targetId,
     required String content,
+    List<String>? targetLanguages,
   }) : this.createSendMessage(
-          to: username,
-          body: EMTextMessageBody(content: content),
+          to: targetId,
+          body: EMTextMessageBody(
+            content: content,
+            targetLanguages: targetLanguages,
+          ),
         );
 
   ///
   /// Creates a file message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -261,12 +287,12 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createFileSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     String? displayName,
     int? fileSize,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMFileMessageBody(
               localPath: filePath,
               fileSize: fileSize,
@@ -276,7 +302,7 @@ class EMMessage {
   ///
   /// Creates an image message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -300,7 +326,7 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createImageSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     String? displayName,
     String? thumbnailLocalPath,
@@ -309,7 +335,7 @@ class EMMessage {
     double? width,
     double? height,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMImageMessageBody(
               localPath: filePath,
               displayName: displayName,
@@ -322,7 +348,7 @@ class EMMessage {
   ///
   ///  Creates a video message instance for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -344,7 +370,7 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createVideoSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     String? displayName,
     int duration = 0,
@@ -353,7 +379,7 @@ class EMMessage {
     double? width,
     double? height,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMVideoMessageBody(
               localPath: filePath,
               displayName: displayName,
@@ -367,7 +393,7 @@ class EMMessage {
   ///
   /// Creates a voice message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -383,13 +409,13 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createVoiceSendMessage({
-    required String username,
+    required String targetId,
     required String filePath,
     int duration = 0,
     int? fileSize,
     String? displayName,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMVoiceMessageBody(
                 localPath: filePath,
                 duration: duration,
@@ -399,7 +425,7 @@ class EMMessage {
   ///
   /// Creates a location message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -415,13 +441,13 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createLocationSendMessage({
-    required String username,
+    required String targetId,
     required double latitude,
     required double longitude,
     String? address,
     String? buildingName,
   }) : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMLocationMessageBody(
               latitude: latitude,
               longitude: longitude,
@@ -439,13 +465,18 @@ class EMMessage {
   ///
   /// **Return** The message instance.
   ///
-  EMMessage.createCmdSendMessage({required String username, required action})
-      : this.createSendMessage(
-            to: username, body: EMCmdMessageBody(action: action));
+  EMMessage.createCmdSendMessage({
+    required String targetId,
+    required action,
+    bool deliverOnlineOnly = false,
+  }) : this.createSendMessage(
+            to: targetId,
+            body: EMCmdMessageBody(
+                action: action, deliverOnlineOnly: deliverOnlineOnly));
 
   /// Creates a custom message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -457,9 +488,9 @@ class EMMessage {
   /// **Return** The message instance.
   ///
   EMMessage.createCustomSendMessage(
-      {required String username, required event, Map<String, String>? params})
+      {required String targetId, required event, Map<String, String>? params})
       : this.createSendMessage(
-            to: username,
+            to: targetId,
             body: EMCustomMessageBody(event: event, params: params));
 
   @Deprecated("Switch to using messageStatusCallBack instead.")
@@ -483,13 +514,14 @@ class EMMessage {
     data.setValueWithOutNull("hasReadAck", hasReadAck);
     data.setValueWithOutNull("hasDeliverAck", hasDeliverAck);
     data.setValueWithOutNull("needGroupAck", needGroupAck);
-    data.setValueWithOutNull("groupAckCount", groupAckCount);
+    data.setValueWithOutNull("groupAckCount", _groupAckCount);
     data.setValueWithOutNull("msgId", msgId);
     data.setValueWithOutNull("conversationId", this.conversationId ?? this.to);
     data.setValueWithOutNull("chatType", chatTypeToInt(chatType));
     data.setValueWithOutNull("localTime", localTime);
     data.setValueWithOutNull("serverTime", serverTime);
     data.setValueWithOutNull("status", messageStatusToInt(this.status));
+    data.setValueWithOutNull("isThread", isChatThreadMessage);
 
     return data;
   }
@@ -514,6 +546,13 @@ class EMMessage {
       ..chatType = chatTypeFromInt(map.getIntValue("chatType"))
       ..localTime = map.getIntValue("localTime", defaultValue: 0)!
       ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
+      ..isChatThreadMessage = map.getBoolValue("isThread", defaultValue: false)!
+      // ..chatThread = map.getValueWithKey<EMChatThread>(
+      //   "thread",
+      //   callback: (obj) {
+      //     return EMChatThread.fromJson(obj);
+      //   },
+      // )
       ..status = messageStatusFromInt(map.intValue("status"));
   }
 
@@ -593,6 +632,86 @@ class MessageCallBackManager {
   void removeMessage(String key) {
     if (cacheHandleMap.containsKey(key)) {
       cacheHandleMap.remove(key);
+    }
+  }
+}
+
+extension EMMessageExtension on EMMessage {
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
+
+  ///
+  /// Gets the Reaction list.
+  ///
+  /// **Return** The Reaction list
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}
+  ///
+  Future<List<EMMessageReaction>> reactionList() async {
+    Map req = {"msgId": msgId};
+    Map result = await _emMessageChannel.invokeMethod(
+      ChatMethodKeys.getReactionList,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMMessageReaction> list = [];
+      result[ChatMethodKeys.getReactionList]?.forEach(
+        (element) => list.add(
+          EMMessageReaction.fromJson(element),
+        ),
+      );
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the number of members that have read the group message.
+  ///
+  /// **Return** group ack count
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}
+  ///
+  Future<int> groupAckCount() async {
+    Map req = {"msgId": msgId};
+    Map result =
+        await _emMessageChannel.invokeMethod(ChatMethodKeys.groupAckCount, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.groupAckCount)) {
+        return result[ChatMethodKeys.groupAckCount];
+      } else {
+        return 0;
+      }
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Get an overview of the thread in the message (currently only supported by group messages)
+  ///
+  /// **Return** overview of the thread
+  ///
+  /// **Throws** A description of the exception. See {@link EMError}
+  ///
+  Future<EMChatThread?> chatThread() async {
+    Map req = {"msg": msgId};
+    Map result =
+        await _emMessageChannel.invokeMethod(ChatMethodKeys.getChatThread, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getChatThread)) {
+        return result.getValueWithKey<EMChatThread>(
+            ChatMethodKeys.getChatThread,
+            callback: (obj) => EMChatThread.fromJson(obj));
+      } else {
+        return null;
+      }
+    } on EMError catch (e) {
+      throw e;
     }
   }
 }

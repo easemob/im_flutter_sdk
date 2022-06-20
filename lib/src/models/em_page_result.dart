@@ -16,14 +16,17 @@ class EMPageResult<T> {
     result.._pageCount = map['count'];
     result.._data = [];
 
-    (map['list'] as List)
-        .forEach((element) => result._data!.add(dataItemCallback(element)));
+    (map['list'] as List).forEach(
+      (element) => result._data.add(
+        dataItemCallback(element),
+      ),
+    );
 
     return result;
   }
 
   int? _pageCount;
-  List<T>? _data;
+  List<T> _data = [];
 
   /// The page count.
   get pageCount => _pageCount;

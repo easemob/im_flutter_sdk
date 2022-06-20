@@ -1,12 +1,52 @@
 ## NEXT
 
+## 3.9.3
+- 新增thread实现；
+- 修复部分bug；
+- 依赖原生sdk版本为3.9.3
+
+## 3.9.2
+- 增加Reaction实现；
+- 增加举报功能；
+- 增加获取群组已读api；
+- 添加下载群文件进度回调；
+- 修复下载视频偶现失败；
+- 修复获取群免打扰详情失败；
+- 修复 startCallback是 ios 偶现 crash;
+
+
+
+## 3.9.1
+- 增加 用户在线状态 (Presence) 订阅功能；
+- 增加 翻译 功能更新，增加自动翻译接口。用户可以按需翻译，和发消息自动翻译。
+
+## 3.9.0+2
+
+- 修改用户退出/离线回调;
+  - EMConnectionListener#onConnected: 长连接恢复;
+  - EMConnectionListener#onDisconnected: 长连接断开;
+  - EMConnectionListener#onUserDidLoginFromOtherDevice: 当前账号在其他设备登录;
+  - EMConnectionListener#onUserDidRemoveFromServer: 当前账号被服务器删除;
+  - EMConnectionListener#onUserDidForbidByServer: 当前账号登录被服务器拒绝;
+  - EMConnectionListener#onUserDidChangePassword: 当前账号密码变更;
+  - EMConnectionListener#onUserDidLoginTooManyDevice: 当前账号登录太多设备;
+  - EMConnectionListener#onUserKickedByOtherDevice: 当前账号被登录的其他设备设置下线;
+  - EMConnectionListener#onUserAuthenticationFailed: 当前账号鉴权失败;
+- 依赖原生sdk版本为3.9.2.1；
+- 修复ios group ack 问题；
+
 ## 3.9.0+1
+
 - 修复message.attribute不准;
+
 - 增加 EMClient.getInstance.startCallback() 方法
+  
   ```dart
   EMClient.getInstance.startCallback();
-  ``` 
+  ```
+  
   只有调用该方法后，`EMContactManagerListener`、 `EMGroupEventListener` 、 `EMChatRoomEventListener` 回调才会开始执行;
+
 - 修复删除聊天室白名单成员失败;
 
 ## 3.9.0

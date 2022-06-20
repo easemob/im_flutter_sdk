@@ -18,6 +18,7 @@ import io.flutter.plugin.common.PluginRegistry;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
@@ -30,6 +31,7 @@ import org.json.JSONObject;
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     static EMClientWrapper wrapper;
+    public EMProgressManager progressManager;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -46,6 +48,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }
         post(()-> channel.invokeMethod(EMSDKMethod.onSendDataToFlutter, data));
     }
+
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
@@ -262,11 +265,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     }
 
-
-    private void onMultiDeviceEvent(JSONObject param, String channelName, Result result) throws JSONException {
-
-    }
-
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
@@ -311,6 +309,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         new EMConversationWrapper(binging, "chat_conversation");
         new EMPushManagerWrapper(binging, "chat_push_manager");
         new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
+        new EMPresenceManagerWrapper(binging, "chat_presence_manager");
+        new EMMessageWrapper(binging, "chat_message");
+        new EMChatThreadManagerWrapper(binging, "chat_thread_manager");
+        progressManager = new EMProgressManager(binging, "file_progress_manager");
     }
 
 
@@ -322,7 +324,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 data.put("event", Integer.valueOf(event));
                 data.put("target", target);
                 data.put("ext", ext);
-                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceContactEvent, data));
             }
 
             @Override
@@ -330,8 +332,16 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", Integer.valueOf(event));
                 data.put("target", target);
-                data.put("userNames", userNames);
-                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceEvent, data));
+                data.put("users", userNames);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceGroupEvent, data));
+            }
+
+            public void onChatThreadEvent(int event, String target, List<String> usernames) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("event", Integer.valueOf(event));
+                data.put("target", target);
+                data.put("users", usernames);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
             }
         });
 
@@ -346,9 +356,33 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
             @Override
             public void onDisconnected(int errorCode) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("errorCode", errorCode);
-                post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, data));
+                if (errorCode == 206) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
+                }else if (errorCode == 207) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidRemoveFromServer, null));
+                }else if (errorCode == 305) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidForbidByServer, null));
+                }else if (errorCode == 216) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidChangePassword, null));
+                }else if (errorCode == 214) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginTooManyDevice, null));
+                }
+                else if (errorCode == 217) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserKickedByOtherDevice, null));
+                }
+                else if (errorCode == 202) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserAuthenticationFailed, null));
+                }
+                else {
+                    post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, null));
+                }
             }
 
             @Override

@@ -89,6 +89,20 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 asyncFetchGroupMessageAckFromServer(param, call.method, result);
             } else if (EMSDKMethod.deleteRemoteConversation.equals(call.method)){
                 deleteRemoteConversation(param, call.method, result);
+            } else if (EMSDKMethod.translateMessage.equals(call.method)) {
+                translateMessage(param, call.method, result);
+            } else if (EMSDKMethod.fetchSupportedLanguages.equals(call.method)) {
+                fetchSupportedLanguages(param, call.method, result);
+            } else if (EMSDKMethod.addReaction.equals(call.method)) {
+                addReaction(param, call.method, result);
+            } else if (EMSDKMethod.removeReaction.equals(call.method)) {
+                removeReaction(param, call.method, result);
+            } else if (EMSDKMethod.fetchReactionList.equals(call.method)) {
+                fetchReactionList(param, call.method, result);
+            } else if (EMSDKMethod.fetchReactionDetail.equals(call.method)) {
+                fetchReactionDetail(param, call.method, result);
+            } else if (EMSDKMethod.reportMessage.equals(call.method)) {
+                reportMessage(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -242,8 +256,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
                 if (msg != null) {
                     EMClient.getInstance().chatManager().recallMessage(msg);
+                    onSuccess(result, channelName, true);
+                }else {
+                    onError(result, new HyphenateException(500, "The message was not found"));
                 }
-                onSuccess(result, channelName, true);               
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -261,11 +277,17 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void getConversation(JSONObject param, String channelName, Result result) throws JSONException {
         String conId = param.getString("con_id");
+        boolean createIfNeed = true;
+        if (param.has("createIfNeed")) {
+            createIfNeed = param.getBoolean("createIfNeed");
+        }
+
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
 
+        boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
-            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, true);
-            onSuccess(result, channelName, EMConversationHelper.toJson(conversation));
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed);
+            onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
         });
     }
 
@@ -484,7 +506,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void asyncFetchGroupMessageAckFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         String msgId = param.getString("msg_id");
-        String ackId = param.getString("ack_id");
+        String ackId = null;
+        if (param.has("ack_id")){
+            ackId = param.getString("ack_id");
+        }
         int pageSize = param.getInt("pageSize");
 
         EMValueWrapperCallBack<EMCursorResult<EMGroupReadAck>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMGroupReadAck>>(result,
@@ -506,6 +531,110 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
     }
 
+    private void translateMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
+        List<String> list = new ArrayList<String>();
+        if (param.has("languages")){
+            JSONArray array = param.getJSONArray("languages");
+            for (int i = 0; i < array.length(); i++) {
+                list.add(array.getString(i));
+            }
+        }
+        EMClient.getInstance().chatManager().translateMessage(msg, list, new EMValueWrapperCallBack<EMMessage>(result, channelName){
+            @Override
+            public void onSuccess(EMMessage object) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("message", EMMessageHelper.toJson(object));
+                updateObject(data);
+            }
+        });
+    }
+
+    private void fetchSupportedLanguages(JSONObject param, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().chatManager().fetchSupportLanguages(new EMValueWrapperCallBack<List<EMLanguage>>(result, channelName){
+            @Override
+            public void onSuccess(List<EMLanguage> object) {
+                List<Map> list = new ArrayList<>();
+                for (EMLanguage language : object) {
+                    list.add(EMLanguageHelper.toJson(language));
+                }
+                updateObject(list);
+            }
+        });
+    }
+
+    private void addReaction(JSONObject param, String channelName, Result result) throws JSONException {
+        String reaction = param.getString("reaction");
+        String msgId = param.getString("msgId");
+        EMClient.getInstance().chatManager().asyncAddReaction(msgId, reaction, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void removeReaction(JSONObject param, String channelName, Result result) throws JSONException {
+        String reaction = param.getString("reaction");
+        String msgId = param.getString("msgId");
+        EMClient.getInstance().chatManager().asyncRemoveReaction(msgId, reaction, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void fetchReactionList(JSONObject param, String channelName, Result result) throws JSONException {
+        List<String> msgIds = new ArrayList<>();
+        JSONArray ja = param.getJSONArray("msgIds");
+        for (int i = 0; i < ja.length(); i++) {
+            msgIds.add(ja.getString(i));
+        }
+        String groupId = null;
+        if (param.has("groupId")) {
+            groupId = param.getString("groupId");
+        }
+        EMMessage.ChatType type = EMMessage.ChatType.Chat;
+        int iType = param.getInt("chatType");
+        if (iType == 0) {
+            type = EMMessage.ChatType.Chat;
+        } else if(iType == 1) {
+            type = EMMessage.ChatType.GroupChat;
+        } else {
+            type = EMMessage.ChatType.ChatRoom;
+        }
+        EMClient.getInstance().chatManager().asyncGetReactionList(msgIds, type, groupId, new EMValueWrapperCallBack<Map<String, List<EMMessageReaction>>>(result, channelName){
+            @Override
+            public void onSuccess(Map<String, List<EMMessageReaction>> object) {
+                HashMap<String, List<Map<String, Object>>> map =  new HashMap<>();
+                if (object != null) {
+                    for (Map.Entry<String, List<EMMessageReaction>> entry: object.entrySet()) {
+                        List<EMMessageReaction> list = entry.getValue();
+                        ArrayList<Map<String, Object>> ary = new ArrayList<>();
+                        for (int i = 0; i < list.size(); i++) {
+                            ary.add(EMMessageReactionHelper.toJson(list.get(i)));
+                        }
+                        map.put(entry.getKey(), ary);
+                    }
+                }
+                updateObject(map);
+            }
+        });
+    }
+
+    private void fetchReactionDetail(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.getString("msgId");
+        String reaction = param.getString("reaction");
+        String cursor = null;
+        if (param.has("cursor")) {
+            cursor = param.getString("cursor");
+        }
+        int pageSize = param.getInt("pageSize");
+        EMClient.getInstance().chatManager().asyncGetReactionDetail(msgId, reaction, cursor, pageSize, new EMValueWrapperCallBack<EMCursorResult<EMMessageReaction>>(result, channelName) {
+            @Override
+            public void onSuccess(EMCursorResult<EMMessageReaction> object) {
+                updateObject(EMCursorResultHelper.toJson(object));
+            }
+        });
+    }
+
+    private void reportMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.getString("msgId");
+        String tag = param.getString("tag");
+        String reason = param.getString("reason");
+        EMClient.getInstance().chatManager().asyncReportMessage(msgId, tag, reason, new EMWrapperCallBack(result, channelName, true));
+    }
 
     private void registerEaseListener() {
         EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
@@ -571,7 +700,16 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onReadAckForGroupMessageUpdated() {
+                post(() -> channel.invokeMethod(EMSDKMethod.onReadAckForGroupMessageUpdated, null));
+            }
 
+            @Override
+            public void onReactionChanged(List<EMMessageReactionChange> messageReactionChangeList) {
+                ArrayList<Map<String, Object>> list = new ArrayList<>();
+                for (EMMessageReactionChange change : messageReactionChangeList) {
+                    list.add(EMMessageReactionChangeHelper.toJson(change));
+                }
+                post(() -> channel.invokeMethod(EMSDKMethod.onMessageReactionDidChange, list));
             }
         });
         // setup conversation listener

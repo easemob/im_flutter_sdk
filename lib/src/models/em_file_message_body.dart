@@ -1,5 +1,5 @@
-import 'package:im_flutter_sdk/src/internal/em_transform_tools.dart';
-import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import "../tools/em_extension.dart";
+import '../internal/em_transform_tools.dart';
 
 import 'em_chat_enums.dart';
 import 'em_message_body.dart';
