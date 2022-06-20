@@ -184,6 +184,7 @@ def walkFile(file):
     total_gradle_num = 0
     total_dart_num = 0
     total_podspec_num = 0
+    total_md_num = 0
 
     for root, dirs, files in os.walk(file):
 
@@ -208,7 +209,9 @@ def walkFile(file):
                     total_dart_num += 1
                 if file_ext[1] == 'podspec':
                     total_podspec_num += 1
-
+                if file_ext[1] == 'md':
+                    total_md_num += 1
+                    
                 fullname = os.path.join(root, f)
                 updateFile(fullname)
                 reBackFile(fullname)
@@ -222,6 +225,7 @@ def walkFile(file):
     print 'total .gradle files: ' + str(total_gradle_num)
     print 'total .dart files: ' + str(total_dart_num)
     print 'total .podspec files: ' + str(total_podspec_num)
+    print 'total .md files: ' + str(total_md_num)
 
 
 # 需要替换的字符串map
@@ -345,10 +349,15 @@ UPDATE_dict = {
     "EMChatRoom":"ChatRoom",
     "EMRoomManager":"ChatRoomManager",
     "EMPresence":"ChatPresence",
+    "EMTranslateLanguage":"ChatTranslateLanguage",
+  
 
     #podspec
-     "= 'im_flutter_sdk'":"= 'agora_chat_sdk'"
+     "= 'im_flutter_sdk'":"= 'agora_chat_sdk'",
 
+    #doc
+    "im_flutter_sdk":"agora_chat_sdk",
+    "环信即时通讯":" Agora ",
 }
 
 # 将修改错误的再改回来
