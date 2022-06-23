@@ -20,7 +20,6 @@ import 'em_file_message_body.dart';
 import 'em_custom_message_body.dart';
 import 'em_cmd_message_body.dart';
 import 'em_message_reaction.dart';
-import '../em_status_listener.dart';
 
 ///
 /// The message class.
@@ -105,14 +104,6 @@ class EMMessage {
   ///
   /// Is it a message sent within a thread
   bool isChatThreadMessage = false;
-
-  int _groupAckCount = 0;
-
-  ///
-  /// Gets the number of members that have read the group message.
-  ///
-  @Deprecated("Switch to using EMMessage#groupAckCount instead.")
-  int get groupAckCount => _groupAckCount;
 
   ///
   /// Whether the message is read.
@@ -493,14 +484,6 @@ class EMMessage {
             to: targetId,
             body: EMCustomMessageBody(event: event, params: params));
 
-  @Deprecated("Switch to using messageStatusCallBack instead.")
-  StatusListener? listener;
-
-  @Deprecated("Switch to using messageStatusCallBack instead.")
-  void setMessageStatusListener(StatusListener? listener) {
-    this.listener = listener;
-  }
-
   /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
@@ -514,7 +497,6 @@ class EMMessage {
     data.setValueWithOutNull("hasReadAck", hasReadAck);
     data.setValueWithOutNull("hasDeliverAck", hasDeliverAck);
     data.setValueWithOutNull("needGroupAck", needGroupAck);
-    data.setValueWithOutNull("groupAckCount", _groupAckCount);
     data.setValueWithOutNull("msgId", msgId);
     data.setValueWithOutNull("conversationId", this.conversationId ?? this.to);
     data.setValueWithOutNull("chatType", chatTypeToInt(chatType));
@@ -539,7 +521,6 @@ class EMMessage {
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
-      .._groupAckCount = map.getIntValue("groupAckCount", defaultValue: 0)!
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map.getStringValue("msgId")
       ..conversationId = map.getStringValue("conversationId")

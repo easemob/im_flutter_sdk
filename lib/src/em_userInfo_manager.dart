@@ -113,18 +113,6 @@ class EMUserInfoManager {
     }
   }
 
-  @Deprecated("Switch to using EMUserInfoManager#updateUserInfo instead.")
-  Future<void> updateOwnerUserInfo(EMUserInfo userInfo) async {
-    Map req = {'userInfo': userInfo.toJson()};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
-    try {
-      EMError.hasErrorFromResult(result);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
   void clearUserInfoCache() {
     _ownUserInfo = null;
     _effectiveUserInfoMap.clear();

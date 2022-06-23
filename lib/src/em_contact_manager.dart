@@ -325,24 +325,4 @@ class EMContactManager {
   void clearContactManagerListeners() {
     _listeners.clear();
   }
-
-  ///
-  /// Registers a new contact listener.
-  ///
-  /// Param [listener] The contact listener to be registered: {@link EMContactEventListener}.
-  ///
-  @Deprecated("Use - addContactManagerListener")
-  void addContactListener(EMContactManagerListener listener) {
-    _listeners.add(listener);
-  }
-
-  ///
-  /// Removes the contact listener.
-  ///
-  /// Param [contactListener] The contact listener to be removed.
-  ///
-  @Deprecated("Use - removeContactManagerListener")
-  void removeContactListener(EMContactManagerListener contactListener) {
-    _listeners.remove(contactListener);
-  }
 }
