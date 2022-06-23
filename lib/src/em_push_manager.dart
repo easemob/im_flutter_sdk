@@ -266,44 +266,4 @@ class EMPushManager {
       }
     }
   }
-
-  /// Gets push options from the local database.
-  @Deprecated('use - getPushConfigsFromCache method instead.')
-  Future<EMPushConfigs> getImPushConfig() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
-    try {
-      EMError.hasErrorFromResult(result);
-      return EMPushConfigs.fromJson(result[ChatMethodKeys.getImPushConfig]);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  /// Gets push options from the server.
-  @Deprecated('use - getPushConfigsFromServer method instead.')
-  Future<EMPushConfigs> getImPushConfigFromServer() async {
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
-    try {
-      EMError.hasErrorFromResult(result);
-      return EMPushConfigs.fromJson(
-          result[ChatMethodKeys.getImPushConfigFromServer]);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  /// Gets the push configurations from the server.
-  @Deprecated('use - fetchPushConfigsFromServer method instead.')
-  Future<EMPushConfigs> getPushConfigsFromServer() async {
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
-    try {
-      EMError.hasErrorFromResult(result);
-      return EMPushConfigs.fromJson(
-          result[ChatMethodKeys.getImPushConfigFromServer]);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
 }
