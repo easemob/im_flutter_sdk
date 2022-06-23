@@ -147,6 +147,9 @@ abstract class EMMultiDeviceListener {
   );
 }
 
+///
+///  The custom event listener.
+///
 abstract class EMCustomListener {
   void onDataReceived(Map map);
 }
@@ -206,6 +209,9 @@ abstract class EMContactManagerListener {
   void onFriendRequestDeclined(String userName);
 }
 
+///
+/// The chat room manager listener.
+///
 abstract class EMChatRoomManagerListener {
   ///
   /// Occurs when the chat room is destroyed.

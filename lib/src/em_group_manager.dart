@@ -39,6 +39,7 @@ class EMGroupManager {
   @Deprecated("")
   final List<EMGroupEventListener> _eventListeners = [];
 
+  /// group shared file download callback.
   EMDownloadCallback? downloadCallback;
 
   ///

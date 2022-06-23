@@ -2,6 +2,9 @@ import 'em_chat_thread.dart';
 import 'em_chat_enums.dart';
 import '../tools/em_extension.dart';
 
+///
+/// The message thread event class.
+///
 class EMChatThreadEvent {
   /// Received the operation type of the sub-area from others
   final EMChatThreadOperation type;

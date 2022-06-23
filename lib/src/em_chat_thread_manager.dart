@@ -8,6 +8,9 @@ import 'models/em_error.dart';
 import 'models/em_cursor_result.dart';
 import 'models/em_message.dart';
 
+///
+/// The chat thread manager class.
+///
 class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
