@@ -1,5 +1,8 @@
 import 'em_message_reaction.dart';
 
+///
+/// The message reaction change event class.
+///
 class EMMessageReactionChange {
   /// The conversation ID
   final String conversationId;

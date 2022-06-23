@@ -1,5 +1,11 @@
+///
+/// The class that defines basic information of chat groups.
+///
 class EMGroupInfo {
+  /// The group ID.
   final String groupId;
+
+  /// The group name.
   final String? name;
 
   EMGroupInfo._private({
