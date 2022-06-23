@@ -113,11 +113,11 @@ class _MyHomePageState extends State<MyHomePage>
             const SizedBox(height: 10),
             TextField(
               decoration: const InputDecoration(
-                  hintText: "Enter the username you want to send"),
+                  hintText: "Enter recipient's user name"),
               onChanged: (chatId) => _chatId = chatId,
             ),
             TextField(
-              decoration: const InputDecoration(hintText: "Enter content"),
+              decoration: const InputDecoration(hintText: "Enter message"),
               onChanged: (msg) => _messageContent = msg,
             ),
             const SizedBox(height: 10),

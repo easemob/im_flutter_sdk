@@ -456,7 +456,7 @@ class EMMessage {
 
   /// Creates a command message for sending.
   ///
-  /// Param [username] The ID of the message recipient.
+  /// Param [targetId] The ID of the message recipient.
   /// - For a one-to-one chat, it is the username of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
@@ -483,7 +483,7 @@ class EMMessage {
   ///
   /// Param [event] The event.
   ///
-  /// Param [Map<String, String>? params] The params map.
+  /// Param [params] The params map.
   ///
   /// **Return** The message instance.
   ///
