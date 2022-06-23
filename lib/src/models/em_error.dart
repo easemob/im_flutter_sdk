@@ -1,16 +1,16 @@
 ///
-/// The error class defined by the SDK.
+/// SDK 定义的错误类。
 ///
 class EMError {
   EMError._private(this.code, this.description);
 
   ///
-  /// The error code.
+  /// 错误码。
   ///
   final int code;
 
   ///
-  /// The error description.
+  /// 错误描述。
   ///
   final String description;
 

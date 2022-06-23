@@ -23,6 +23,6 @@ abstract class EMMessageBody {
     return toJson().toString();
   }
 
-  /// Gets the chat message type.
+  /// 获取消息类型。
   MessageType type;
 }

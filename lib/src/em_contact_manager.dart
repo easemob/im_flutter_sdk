@@ -9,7 +9,7 @@ import 'internal/em_event_keys.dart';
 import 'models/em_error.dart';
 
 ///
-/// The contact manager class, which manages chat contacts such as adding, deleting, retrieving, and modifying contacts.
+/// `EMContactManager` 是联系人管理类，用于记录、查询和修改用户的联系人列表。
 ///
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';
@@ -56,13 +56,13 @@ class EMContactManager {
   }
 
   ///
-  /// Adds a new contact.
+  /// 添加好友。
   ///
-  /// Param [userId] The user to be added.
+  /// Param [userId] 要添加的好友的用户名。
   ///
-  /// Param [reason] (optional) The invitation message.
+  /// Param [reason] （可选）添加为好友的原因。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<void> addContact(
     String userId, {
@@ -82,15 +82,15 @@ class EMContactManager {
   }
 
   ///
-  /// Deletes a contact and all the related conversations.
+  /// 删除联系人及其相关的会话。
   ///
-  /// Param [username] The contact to be deleted.
+  /// Param [username] 要删除的联系人用户名。
   ///
-  /// Param [keepConversation] Whether to retain conversations of the deleted contact.
-  /// - `true`: Yes.
-  /// - `false`: (default) No.
+  /// Param [keepConversation] 是否保留要删除的联系人的会话。
+  /// - `true`：是；
+  /// - `false`：（默认）否。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。
   ///
   Future<void> deleteContact(
     String username, {
@@ -106,11 +106,11 @@ class EMContactManager {
   }
 
   ///
-  /// Gets all the contacts from the server.
+  /// 从服务器获取联系人列表。
   ///
-  /// **Return** The list of contacts.
+  /// **Return** 联系人列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -130,11 +130,11 @@ class EMContactManager {
   }
 
   ///
-  /// Gets the contact list from the local database.
+  /// 从数据库获取好友列表。
   ///
-  /// **Return** The contact list.
+  /// **Return** 调用成功会返回好友列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -155,12 +155,12 @@ class EMContactManager {
   }
 
   ///
-  /// Adds a user to the block list.
-  /// You can send messages to the users on the block list, but cannot receive messages from them.
+  /// 将指定用户加入黑名单。
+  /// 你可以向黑名单中用户发消息，但是接收不到对方发送的消息。
   ///
-  /// Param [username] The user to be added to the block list.
+  /// Param [username] 要加入黑名单的用户的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<void> addUserToBlockList(
     String username,
@@ -178,11 +178,11 @@ class EMContactManager {
   }
 
   ///
-  /// Removes the contact from the block list.
+  /// 将指定用户移除黑名单。
   ///
-  /// Param [username] The contact to be removed from the block list.
+  /// Param [username] 要在黑名单中移除的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
@@ -196,11 +196,11 @@ class EMContactManager {
   }
 
   ///
-  /// Gets the block list from the server.
+  /// 从服务器获取黑名单列表。
   ///
-  /// **Return** The block list obtained from the server.
+  /// **Return** 该方法调用成功会返回黑名单列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -220,11 +220,11 @@ class EMContactManager {
   }
 
   ///
-  /// Gets the block list from the local database.
+  /// 从本地数据库获取黑名单列表。
   ///
-  /// **Return** The block list obtained from the local database.
+  /// **Return** 该方法调用成功会返回黑名单列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
@@ -243,11 +243,11 @@ class EMContactManager {
   }
 
   ///
-  /// Accepts a friend invitation。
+  /// 接受加好友的邀请。
   ///
-  /// Param [username] The user who sends the friend invitation.
+  /// Param [username] 发起好友邀请的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
@@ -261,11 +261,11 @@ class EMContactManager {
   }
 
   ///
-  /// Declines a friend invitation.
+  /// 拒绝加好友的邀请。
   ///
-  /// Param [username] The user who sends the friend invitation.
+  /// Param [username] 发起好友邀请的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
@@ -279,11 +279,11 @@ class EMContactManager {
   }
 
   ///
-  /// Gets the unique IDs of the current user on the other devices. The ID is in the format of username + "/" + resource.
+  /// 获取登录用户在其他登录设备上唯一 ID，该 ID 由 username + "/" + resource 组成。
   ///
-  /// **Return** The list of unique IDs of users on the other devices if the method succeeds.
+  /// **Return** 该方法调用成功会返回 ID 列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result =
@@ -301,9 +301,9 @@ class EMContactManager {
   }
 
   ///
-  /// Registers a new contact manager listener.
+  /// 注册联系人监听器。
   ///
-  /// Param [listener] The contact manager listener to be registered: {@link EMContactManagerListener}.
+  /// Param [contactListener] 要注册的联系人监听器。
   ///
   void addContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
@@ -311,16 +311,16 @@ class EMContactManager {
   }
 
   ///
-  /// Removes the contact manager listener.
+  /// 移除联系人监听器。
   ///
-  /// Param [listener] The contact manager listener to be removed.
+  /// Param [contactListener] 要移除的联系人监听器。
   ///
   void removeContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
   }
 
   ///
-  /// Removes all contact manager listeners.
+  /// 移除所有的联系人监听
   ///
   void clearContactManagerListeners() {
     _listeners.clear();

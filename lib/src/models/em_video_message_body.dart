@@ -5,33 +5,33 @@ import 'em_chat_enums.dart';
 import 'em_file_message_body.dart';
 
 ///
-/// The video message body class.
+/// 视频消息体类。
 ///
 class EMVideoMessageBody extends EMFileMessageBody {
   ///
-  /// Creates a video message.
+  /// 创建一条视频消息。
   ///
-  /// Param [localPath] The local path of the video file.
-  ///
-  /// Param [displayName] The video name.
-  ///
-  /// Param [duration] The video duration in seconds.
-  ///
-  /// Param [fileSize] The size of the video file in bytes.
-  ///
-  /// Param [thumbnailLocalPath] The local path of the video thumbnail.
-  ///
-  /// Param [height] The video height in pixels.
-  ///
-  /// Param [width] The video width in pixels.
+  /// Param [localPath] 视频文件本地路径。
   ///
   EMVideoMessageBody({
     required String localPath,
+
+    /// Param [displayName] 视频名称。
     String? displayName,
+
+    /// Param [duration] 视频时长，单位为秒。
     this.duration = 0,
+
+    /// Param [fileSize] 视频文件大小，单位是字节。
     int? fileSize,
+
+    /// Param [thumbnailLocalPath] 视频缩略图本地路径。
     this.thumbnailLocalPath,
+
+    /// Param [height] 视频高度，单位是像素。
     this.height,
+
+    /// /// Param [width] 视频宽度，单位是像素。
     this.width,
   }) : super(
           localPath: localPath,
@@ -69,24 +69,24 @@ class EMVideoMessageBody extends EMFileMessageBody {
     return data;
   }
 
-  /// The video duration in seconds.
+  /// 视频时长，单位是秒。
   int? duration;
 
-  ///  The local path of the video thumbnail.
+  /// 视频缩略图的本地路径。
   String? thumbnailLocalPath;
 
-  /// The URL of the thumbnail on the server.
+  /// 视频缩略图的在服务器上的存储路径。
   String? thumbnailRemotePath;
 
-  /// The secret key of the video thumbnail.
+  /// 视频缩略图的密钥。
   String? thumbnailSecret;
 
-  /// The download status of the video thumbnail.
+  /// 视频缩略图的下载状态。
   DownloadStatus thumbnailStatus = DownloadStatus.PENDING;
 
-  /// The video width in pixels.
+  /// 视频宽度，单位是像素。
   double? width;
 
-  /// The video height in pixels.
+  /// 视频高度，单位是像素。
   double? height;
 }

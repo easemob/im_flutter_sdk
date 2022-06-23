@@ -1,10 +1,11 @@
 typedef PageResultCallback = Object Function(dynamic obj);
 
 ///
-/// The EMPageResult class, which is returned when calling the methods that fetch data by pagination.
-/// The SDK also returns the number of remaining pages and the data count of the next page. If the dada count is less than the count you set, there is no more data on server.
+/// 分页类。
+/// 该类包含下次查询的页码以及相应页面上的数据条数。
+/// 该对象在分页获取数据时返回。
 ///
-/// Param [T] Generics.
+/// Param [T] 泛型类型 T。
 ///
 class EMPageResult<T> {
   EMPageResult._private();
@@ -28,9 +29,9 @@ class EMPageResult<T> {
   int? _pageCount;
   List<T> _data = [];
 
-  /// The page count.
+  /// 获取当前页面上的数据条数。若 `PageCount` 小于传入的每页要获取的数量，表示当前是最后一页。
   get pageCount => _pageCount;
 
-  /// The result data.
+  /// 获取 <T> 泛型数据。
   List<T>? get data => _data;
 }

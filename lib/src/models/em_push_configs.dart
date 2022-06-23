@@ -1,7 +1,7 @@
 import '../tools/em_extension.dart';
 import '../em_push_manager.dart';
 
-/// The push configuration class.
+/// 推送设置类。
 class EMPushConfigs {
   EMPushConfigs._private({
     this.displayStyle = DisplayStyle.Simple,
@@ -10,27 +10,18 @@ class EMPushConfigs {
     this.noDisturbEndHour = -1,
   });
 
-  ///
-  /// The display type of push notifications.
-  ///
+  /// 获取推送显示类型。
   final DisplayStyle displayStyle;
 
-  ///
-  /// Whether to enable the do-not-disturb mode for push notifications.
-  /// - `true`: Yes.
-  /// - `false`: No.
-  ///  Sets it by {@link EMPushManager#disableOfflinePush(int, int)}.
-  ///
+  /// 获取是否开启离线推送的免打扰模式。
+  /// - `true`: 开启；
+  /// - `false`：关闭。
   final bool noDisturb;
 
-  ///
-  /// The start hour of the do-not-disturb mode for push notifications.
-  ///
+  /// 获取离线推送免打扰的开始时间。该时间为 24 小时制，取值范围为 0-24。
   final int noDisturbStartHour;
 
-  ///
-  /// The end hour of the do-not-disturb mode for push notifications.
-  ///
+  /// 获取离线推送免打扰结束的时间。该时间为 24 小时制，取值范围为 0-23。
   final int noDisturbEndHour;
 
   // ignore: unused_field

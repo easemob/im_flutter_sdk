@@ -1,166 +1,170 @@
 ///
-/// The enumeration of group types.
+/// 群组类型枚举。
 ///
 enum EMGroupStyle {
-  /// Private groups where only the the group owner can invite users to join.
+  /// 私有群组，创建完成后，只允许群主邀请用户加入。
   PrivateOnlyOwnerInvite,
 
-  /// Private groups where all group members can invite users to join.
+  /// 私有群组，创建完成后，只允许群主和群成员邀请用户加入。
   PrivateMemberCanInvite,
 
-  /// Public groups where users can join only after receiving an invitation from the group owner(admin) or the joining request being approved by the  group owner(admin).
+  /// 公开群组，创建完成后，只允许群主邀请用户加入；非群成员用户需发送入群申请，群主同意后才能入群。
   PublicJoinNeedApproval,
 
-  /// Public groups where users can join freely.
+  /// 公开群组，创建完成后，允许非群组成员加入，无需群主同意。
   PublicOpenJoin,
 }
 
-/// The conversation types.
+/// 会话类型枚举。
 enum EMConversationType {
-  /// One-to-one chat.
+  /// 单聊。
   Chat,
 
-  /// Group chat.
+  /// 群聊。
   GroupChat,
 
-  /// Chat room.
+  /// 聊天室。
   ChatRoom,
 }
 
+@Deprecated('Switch to using EMPushManager#DisplayStyle instead')
+enum EMPushStyle {
+  Simple,
+  Summary,
+}
+
 ///
-/// The enumeration of chat types.
-///
-/// There are three chat types: one-to-one chat, group chat, and chat room.
+/// 会话类型枚举。
 ///
 enum ChatType {
-  /// One-to-one chat.
+  /// 单聊。
   Chat,
 
-  /// Group chat.
+  /// 群聊。
   GroupChat,
 
-  /// Chat room.
+  /// 聊天室。
   ChatRoom,
 }
 
 ///
-/// The enumeration of the message directions.
+/// 消息的方向类型枚举类。
 ///
-/// Whether the message is sent or received.
+/// 区分是发送消息还是接收到的消息。
 ///
 enum MessageDirection {
-  /// This message is sent from the local user.
+  /// 该消息是当前用户发送出去的。
   SEND,
 
-  /// The message is received by the local user.
+  /// 该消息是当前用户接收到的。
   RECEIVE,
 }
 
 ///
-/// The enumeration of the message sending/reception status.
+/// 消息的发送/接收状态枚举类。
 ///
 enum MessageStatus {
-  /// The message is created.
+  /// 消息已创建待发送。
   CREATE,
 
-  /// The message is being delivered/received.
+  /// 正在发送/接收。
   PROGRESS,
 
-  /// The message is successfully delivered/received.
+  /// 发送/接收成功。
   SUCCESS,
 
-  /// The message fails to be delivered/received.
+  /// 发送/接收失败。
   FAIL,
 }
 
 ///
-/// The download status of the attachment file.
+/// 消息附件的下载状态。
 ///
 enum DownloadStatus {
-  /// The file message download is pending.
+  /// 等待下载。
   PENDING,
 
-  /// The file message is being downloaded.
+  /// 正在下载。
   DOWNLOADING,
 
-  /// The file message download succeeds.
+  /// 下载成功。
   SUCCESS,
 
-  /// The file message download fails.
+  /// 下载失败。
   FAILED,
 }
 
 ///
-/// The enumeration of message types.
+/// 消息类型枚举。
 ///
 enum MessageType {
-  /// The text message.
+  /// 文本消息。
   TXT,
 
-  /// The image message.
+  /// 图片消息。
   IMAGE,
 
-  /// The video message.
+  /// 视频消息。
   VIDEO,
 
-  /// The location message.
+  /// 位置消息。
   LOCATION,
 
-  /// The voice message.
+  /// 语音消息。
   VOICE,
 
-  /// The file message.
+  /// 文件消息。
   FILE,
 
-  /// The command message.
+  /// 命令消息。
   CMD,
 
-  /// The custom message.
+  /// 自定义消息。
   CUSTOM,
 }
 
 ///
-/// The enumeration of group permission types.
+/// 群组角色类型枚举。
 ///
 enum EMGroupPermissionType {
-  /// Unknown.
+  /// 未知类型。
   None,
 
-  /// The group member.
+  /// 群组成员。
   Member,
 
-  /// The group admin.
+  /// 群管理员。
   Admin,
 
-  /// The group owner.
+  /// 群主。
   Owner,
 }
 
 ///
-/// The enumeration of chat room role types.
+/// 聊天室角色类型枚举。
 ///
 enum EMChatRoomPermissionType {
-  /// Unknown.
+  /// 未知类型。
   None,
 
-  /// The chat room member.
+  /// 普通成员。
   Member,
 
-  /// The chat room admin.
+  /// 聊天室管理员。
   Admin,
 
-  /// The chat room owner.
+  /// 聊天室所有者。
   Owner,
 }
 
 ///
-/// The enumeration of message search directions.
+/// 消息检索方向类型枚举。
 ///
 enum EMSearchDirection {
-  /// Messages are retrieved in the reverse chronological order of when the server receives the message.
+  /// 从新往旧检索（一般是根据消息的服务器时间）。
   Up,
 
-  /// Messages are retrieved in the chronological order of when the server receives the message.
+  /// 从旧往新检索（一般是根据消息的服务器时间）。
   Down,
 }
 

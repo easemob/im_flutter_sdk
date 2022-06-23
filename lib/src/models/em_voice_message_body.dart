@@ -4,24 +4,24 @@ import 'em_file_message_body.dart';
 import 'em_chat_enums.dart';
 
 ///
-/// The voice message body class.
+/// 语音消息体类。
 ///
 class EMVoiceMessageBody extends EMFileMessageBody {
   ///
-  /// Creates a voice message.
+  /// 创建一条语音消息。
   ///
-  /// Param [localPath] The local path of the voice file.
-  ///
-  /// Param [displayName] The name of the voice file.
-  ///
-  /// Param [fileSize] The size of the voice file in bytes.
-  ///
-  /// Param [duration] The voice duration in seconds.
+  /// Param [localPath] 语言消息本地路径。
   ///
   EMVoiceMessageBody({
     localPath,
+
+    /// Param [displayName] 语音文件名。
     this.duration = 0,
+
+    /// Param [duration] 语音时长，单位是秒。
     String? displayName,
+
+    /// Param [fileSize] 语音文件大小，单位是字节。
     int? fileSize,
   }) : super(
           localPath: localPath,
@@ -44,6 +44,6 @@ class EMVoiceMessageBody extends EMFileMessageBody {
     return data;
   }
 
-  /// The voice duration in seconds.
+  /// 语音时长，单位是秒。
   late final int duration;
 }

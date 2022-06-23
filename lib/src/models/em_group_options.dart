@@ -4,24 +4,26 @@ import 'em_chat_enums.dart';
 import '../tools/em_extension.dart';
 
 ///
-/// The group options to be configured when the chat group is created.
+/// 创建群组时的属性配置类。
 ///
 class EMGroupOptions {
   ///
-  /// Sets the group options.
+  /// 设置群组属性。
   ///
-  /// Param [style] The group style: {EMGroupStyle}.
+  /// Param [style] 群组的类型。详见 {EMGroupStyle}。
   ///
-  /// Param [maxCount] The maximum number of members in a group. The default value is 200.
+  /// Param [count] 群组的最大成员数，默认为 200。
   ///
-  /// Param [inviteNeedConfirm] Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
+  /// Param [inviteNeedConfirm] 邀请用户进群是否需要对方同意。收到邀请是否自动入群取决于两个设置：创建群组时设置 inviteNeedConfirm 以及通过 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 确定是否自动接受加群邀请。
+  /// 具体使用如下：
+  ///（1）如果 inviteNeedConfirm 设置为 'false'，在服务端直接加受邀人进群，
+  /// 与受邀人对 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 的设置无关。
+  /// (2) 如果 inviteNeedConfirm 设置为 'true'，是否自动入群取决于被邀请人对 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 的设置。
+  /// {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 为 SDK 级别操作，设置为 'true' 时，受邀人收到入群邀请后，SDK 在内部调用同意入群的 API，
+  /// 自动接受邀请入群；
+  /// 若设置为 'false'，即非自动同意其邀请，用户可以选择接受邀请进群，也可选择拒绝邀请。
   ///
-  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of `EMOptions#autoAcceptGroupInvitation`.
-  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of {@link EMOptions#autoAcceptGroupInvitation(boolean)} on the invitee's client.
-  ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
-  ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
-  ///
-  /// Param [ext] Group detail extensions which can be in the JSON format to contain more group information.
+  /// Param [extension] 群组详情扩展，可以采用 JSON 格式，以包含更多群信息。
   ///
   EMGroupOptions({
     this.style = EMGroupStyle.PrivateOnlyOwnerInvite,
@@ -30,39 +32,26 @@ class EMGroupOptions {
     this.ext,
   });
 
-  ///
-  /// Gets the group style.
-  ///
-  /// **Return** The group style. See {EMGroupStyle}.
-  ///
+  /// 群组类型。
   final EMGroupStyle style;
 
-  ///
-  /// Gets the maximum number of members in a group.
-  ///
-  /// **Return** The maximum number of members in a group.
-  ///
+  /// 群组的最大人数上限。
   final int maxCount;
 
   ///
-  /// Whether you need the approval from the user when adding this user to the chat group.
+  /// 邀请用户进群是否需要对方同意。收到邀请是否自动入群取决于两个设置：创建群组时设置 inviteNeedConfirm 以及通过 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 确定是否自动接受加群邀请。
+  /// 具体使用如下：
+  ///（1）如果 inviteNeedConfirm 设置为 'false'，在服务端直接加受邀人进群，
+  /// 与受邀人对 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 的设置无关。
+  /// (2) 如果 inviteNeedConfirm 设置为 'true'，是否自动入群取决于被邀请人对 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 的设置。
+  /// {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 为 SDK 级别操作，设置为 'true' 时，受邀人收到入群邀请后，SDK 在内部调用同意入群的 API，自动接受邀请入群；
+  /// 若设置为 'false'，即非自动同意其邀请，用户可以选择接受邀请进群，也可选择拒绝邀请。
   ///
-  /// Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
-  ///
-  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of `EMOptions#autoAcceptGroupInvitation`.
-  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of {@link EMOptions#autoAcceptGroupInvitation(boolean)} on the invitee's client.
-  ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
-  ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
-  ///
-  /// **Return** Whether you need the approval from the user when adding this user to the chat group.
+  /// **Return** 邀请用户进群是否需要对方同意。
   ///
   final bool inviteNeedConfirm;
 
-  ///
-  ///  Gets the extension in a group.
-  ///
-  /// **Return** The extension in a group.
-  ///
+  /// 群 extension
   final String? ext;
 
   /// @nodoc

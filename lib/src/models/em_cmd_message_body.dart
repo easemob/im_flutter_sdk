@@ -4,11 +4,11 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The command message body.
+/// 命令消息体类。
 ///
 class EMCmdMessageBody extends EMMessageBody {
   ///
-  /// Creates a command message.
+  /// 创建一个命令消息。
   ///
   EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
       : super(type: MessageType.CMD);
@@ -31,14 +31,14 @@ class EMCmdMessageBody extends EMMessageBody {
     return data;
   }
 
-  /// The command action content.
+  /// 命令内容。
   late final String action;
 
   ///
-  /// Checks whether this command message is only delivered to online users.
+  /// 判断当前 CMD 类型消息是否只投递在线用户。
   ///
-  /// - `true`: Yes.
-  /// - `false`: No.
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   bool deliverOnlineOnly = false;
 }

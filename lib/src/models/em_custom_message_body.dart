@@ -8,7 +8,7 @@ import 'em_message_body.dart';
 ///
 class EMCustomMessageBody extends EMMessageBody {
   ///
-  /// Creates a custom message.
+  /// 自定义消息体类。
   ///
   EMCustomMessageBody({
     required this.event,
@@ -30,9 +30,9 @@ class EMCustomMessageBody extends EMMessageBody {
     return data;
   }
 
-  /// The event.
+  /// 自定义事件内容。
   late final String event;
 
-  /// The custom params map.
+  /// 自定义消息的键值对 Map 列表。
   Map<String, String>? params;
 }

@@ -22,130 +22,117 @@ import 'em_cmd_message_body.dart';
 import 'em_message_reaction.dart';
 
 ///
-/// The message class.
+/// 消息对象类。
 ///
-/// The sample code for constructing a text message to send is as follows.
+/// 创建一条待发送的文本消息示例代码如下：
 ///
 /// ```dart
 ///   EMMessage msg = EMMessage.createTxtSendMessage(
-///      username: "user1",
+///      targetId: "user1",
 ///      content: "hello",
 ///    );
 /// ```
 ///
 class EMMessage {
-  /// 消息 ID。
   String? _msgId;
   String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
       Random().nextInt(99999).toString();
 
-  ///
-  /// Gets the message ID.
-  ///
-  /// **return** The message ID.
+  /// 消息 ID。
   String get msgId => _msgId ?? _msgLocalId;
 
-  ///
-  /// The conversation ID.
-  ///
+  /// 会话 ID。
   String? conversationId;
 
   ///
-  /// The ID of the message sender.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// 消息发送方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
   String? from = '';
 
   ///
-  /// The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
   String? to = '';
 
-  ///
-  /// The local timestamp when the message is created on the local device, in milliseconds.
-  ///
+  /// 消息的本地时间戳，单位为毫秒。
   int localTime = DateTime.now().millisecondsSinceEpoch;
 
-  ///
-  /// The timestamp when the message is received by the server.
-  ///
+  /// 消息的服务器时间戳，单位为毫秒。
   int serverTime = DateTime.now().millisecondsSinceEpoch;
 
   ///
-  /// The delivery receipt, which is to check whether the other party has received the message.
+  /// 设置送达回执，即接收方是否已收到消息。
   ///
-  ///  Whether the recipient has received the message.
-  /// - `true`: Yes.
-  /// - `false`: No.
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   bool hasDeliverAck = false;
 
   ///
-  /// Whether the recipient has read the message.
-  /// - `true`: Yes.
-  /// - `false`: No.
+  /// 设置已读回执，即接收方是否已阅读消息。
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   bool hasReadAck = false;
 
   ///
-  /// Whether read receipts are required for group messages.
+  /// 设置是否需要群组已读回执。
   ///
-  /// - `true`: Yes.
-  /// - `false`: No.
-  ///
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   bool needGroupAck = false;
 
-  ///
-  /// Is it a message sent within a thread
+  /// 是否为子区中的消息。
   bool isChatThreadMessage = false;
 
   ///
-  /// Whether the message is read.
-  /// - `true`: Yes.
-  /// - `false`: No.
+  /// 查看消息是否已读。
   ///
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   bool hasRead = false;
 
   ///
-  /// The enumeration of the chat type.
+  /// 会话类型枚举。
   ///
-  /// There are three chat types: one-to-one chat, group chat, and chat room.
+  /// 三种会话类型：单聊，群聊，聊天室。
   ///
   ChatType chatType = ChatType.Chat;
 
   ///
-  /// The message direction. see {@link MessageDirection}
+  /// 消息方向，详见 {@link MessageDirection}。
   ///
   MessageDirection direction = MessageDirection.SEND;
 
   ///
-  /// Gets the message sending/reception status. see {@link MessageStatus}
+  /// 消息状态，详见 {@link MessageStatus}。
   ///
   MessageStatus status = MessageStatus.CREATE;
 
   ///
-  /// Message's extension attribute.
+  /// 消息的扩展字段。
   ///
   Map? attributes;
 
   ///
-  /// Message body. We recommend you use {@link EMMessageBody)}.
+  /// 消息体。请参见 {@link EMMessageBody)}.
   ///
   late EMMessageBody body;
 
-  ///
-  /// Sets the message status change callback.
-  /// Your app should set messageStatusCallBack to get the message status and then refresh the UI accordingly.
-  ///
   MessageStatusCallBack? _messageStatusCallBack;
 
+  ///
+  /// 设置消息状态监听器。
+  /// 你需要设置这个监听并依据回调结果更新 UI。
+  ///
   void setMessageStatusCallBack(MessageStatusCallBack? callback) {
     _messageStatusCallBack = callback;
     if (callback != null) {
@@ -158,11 +145,11 @@ class EMMessage {
   EMMessage._private();
 
   ///
-  /// Creates a received message instance.
+  /// 创建一条接收消息。
   ///
-  /// Param [body] The message body.
+  /// Param [body] 消息体。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息实例。
   ///
   EMMessage.createReceiveMessage({
     required this.body,
@@ -171,16 +158,16 @@ class EMMessage {
   }
 
   ///
-  /// Creates a message instance for sending.
+  /// 创建一条待发送的消息。
   ///
-  /// Param [body] The message body.
+  /// Param [body] 消息体。
   ///
-  /// Param [to] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [to] 接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息对象。
   ///
   EMMessage.createSendMessage({
     required this.body,
@@ -191,6 +178,7 @@ class EMMessage {
     this.direction = MessageDirection.SEND;
   }
 
+  /// 清除引用
   void dispose() {
     MessageCallBackManager.getInstance.removeMessage(localTime.toString());
   }
@@ -236,18 +224,16 @@ class EMMessage {
   }
 
   ///
-  /// Creates a text message for sending.
+  /// 创建一条文本消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [targetId] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [content] The text content.
+  /// Param [content] 文本消息内容。
   ///
-  /// Param [targetLanguages] Target languages.
-  ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createTxtSendMessage({
     required String targetId,
@@ -262,20 +248,20 @@ class EMMessage {
         );
 
   ///
-  /// Creates a file message for sending.
+  /// 创建一条待发送的文件消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [filePath] The file path.
+  /// Param [filePath] 文件路径。
   ///
-  /// Param [displayName] The file name.
+  /// Param [displayName] 文件名。
   ///
-  /// Param [fileSize] The file size in bytes.
+  /// Param [fileSize] 文件大小，单位为字节。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createFileSendMessage({
     required String targetId,
@@ -291,30 +277,30 @@ class EMMessage {
             ));
 
   ///
-  /// Creates an image message for sending.
+  /// 创建一条待发送的图片消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [filePath] The image path.
+  /// Param [filePath] 文件路径。
   ///
-  /// Param [displayName] The image name.
+  /// Param [displayName] 图片名。
   ///
-  /// Param [thumbnailLocalPath] The local path of the image thumbnail.
+  /// Param [thumbnailLocalPath] 缩略图本地路径。
   ///
-  /// Param [sendOriginalImage] Whether to send the original image.
-  /// - `true`: Yes.
-  /// - `false`: (default) No. For an image greater than 100 KB, the SDK will compress it and send the thumbnail.
+  /// Param [sendOriginalImage] 是否发送原图。
+  /// - `true`: 是。
+  /// - `false`: (default) 否。默认大于 100 kb 的图片会自动压缩发送缩略图。
   ///
-  /// Param [fileSize] The image file size in bytes.
+  /// Param [fileSize] 图片文件大小，单位是字节。
   ///
-  /// Param [width] The image width in pixels.
+  /// Param [width] 图片的宽，单位是像素。
   ///
-  /// Param [height] The image height in pixels.
+  /// Param [height] 图片的高，单位是像素。
   ///
-  /// **Return** The message instance.
+  /// **Return** 图片实例。
   ///
   EMMessage.createImageSendMessage({
     required String targetId,
@@ -337,28 +323,28 @@ class EMMessage {
             ));
 
   ///
-  ///  Creates a video message instance for sending.
+  /// 创建一条待发送的视频消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [filePath] The path of the video file.
+  /// Param [filePath] 视频文件路径。
   ///
-  /// Param [displayName] The video name.
+  /// Param [displayName] 文件名。
   ///
-  /// Param [duration] The video duration in seconds.
+  /// Param [duration] 视频时长，单位是秒。
   ///
-  /// Param [fileSize] The video file size in bytes.
+  /// Param [fileSize] 视频文件大小。
   ///
-  /// Param [thumbnailLocalPath] The local path of the thumbnail, which is usually the first frame of video.
+  /// Param [thumbnailLocalPath] 缩略图的本地路径，一般取视频第一帧作为缩略图。
   ///
-  /// Param [width] The width of the video thumbnail, in pixels.
+  /// Param [width] 缩略图宽度，单位是像素。
   ///
-  /// Param [height] The height of the video thumbnail, in pixels.
+  /// Param [height] 缩略图高度，单位是像素。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createVideoSendMessage({
     required String targetId,
@@ -382,22 +368,22 @@ class EMMessage {
             ));
 
   ///
-  /// Creates a voice message for sending.
+  /// 创建一条待发送的语音消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [filePath] The path of the voice file.
+  /// Param [filePath] 文件路径。
   ///
-  /// Param [duration] The voice duration in seconds.
+  /// Param [duration] 语音时长，单位为秒。
   ///
-  /// Param [fileSize] The size of the voice file, in bytes.
+  /// Param [fileSize] 语音文件大小，单位是字节。
   ///
-  /// Param [displayName] The name of the voice file which ends with a suffix that indicates the format of the file. For example "voice.mp3".
+  /// Param [displayName] 文件名。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createVoiceSendMessage({
     required String targetId,
@@ -414,22 +400,22 @@ class EMMessage {
                 displayName: displayName));
 
   ///
-  /// Creates a location message for sending.
+  /// 创建一条待发送的位置信息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [latitude] The latitude.
+  /// Param [latitude] 纬度。
   ///
-  /// Param [longitude] The longitude.
+  /// Param [longitude] 经度。
   ///
-  /// Param [address] The address.
+  /// Param [address] 地址。
   ///
-  /// Param [buildingName] The building name.
+  /// Param [buildingName] 建筑物名称。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createLocationSendMessage({
     required String targetId,
@@ -445,16 +431,16 @@ class EMMessage {
               address: address,
             ));
 
-  /// Creates a command message for sending.
+  /// 创建一条待发送的命令消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [action] The command action.
+  /// Param [action] 命令内容。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createCmdSendMessage({
     required String targetId,
@@ -465,18 +451,18 @@ class EMMessage {
             body: EMCmdMessageBody(
                 action: action, deliverOnlineOnly: deliverOnlineOnly));
 
-  /// Creates a custom message for sending.
+  /// 创建一条待发送的自定义消息。
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// Param [username] 消息接收方，可以是：
+  /// - 用户：用户名；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
   ///
-  /// Param [event] The event.
+  /// Param [event] 事件内容。
   ///
-  /// Param [params] The params map.
+  /// Param [Map<String, String>? params] 自定义消息的键值对 Map 列表。
   ///
-  /// **Return** The message instance.
+  /// **Return** 消息体实例。
   ///
   EMMessage.createCustomSendMessage(
       {required String targetId, required event, Map<String, String>? params})
@@ -576,6 +562,7 @@ class EMMessage {
   }
 }
 
+/// 消息状态回调类
 class MessageCallBackManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _emMessageChannel =

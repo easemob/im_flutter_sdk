@@ -11,8 +11,8 @@ import 'tools/em_extension.dart';
 import 'internal/chat_method_keys.dart';
 
 ///
-///  The chat room manager class, which manages user joining and exiting the chat room, retrieving the chat room list, and managing member privileges.
-///  The sample code for joining a chat room:
+///  聊天室管理类，负责聊天室加入和退出、聊天室列表获取以及成员权限管理等。
+///  比如，加入聊天室：
 ///   ```dart
 ///     try {
 ///         await EMClient.getInstance.chatRoomManager.joinChatRoom(chatRoomId);
@@ -39,13 +39,12 @@ class EMChatRoomManager {
   final List<EMChatRoomManagerListener> _listeners = [];
 
   ///
-  /// Registers a chat room manager listener.
+  /// 注册聊天室事件监听对象。
+  /// 聊天室被销毁、成员的加入和退出、禁言和加入白名单等操作均可通过设置 {@link EMChatRoomManagerListener} 进行监听。
   ///
-  /// After registering the chat room manager listener, you can listen for events in {@link EMChatRoomManagerListener}, for example, users joining and exiting the chat room, adding the specified member to the chat group mute list, updating the chat room allow list, and destroying the chat room.
+  /// 利用本方法注册聊天室事件监听对象后，可调用 {@link #removeChatRoomManagerListener(EMChatRoomManagerListener)} 移除。
   ///
-  /// To stop listening for chat room manager, call {@link #removeChatRoomManagerListener(EMChatRoomManagerListener)}.
-  ///
-  /// Param [listener] A chat room listener. See {@link EMChatRoomManagerListener}.
+  /// Param [listener] 聊天室事件监听对象，详见 {@link EMChatRoomManagerListener}。
   ///
   void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
     _listeners.remove(listener);
@@ -53,10 +52,10 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Removes a chat room manager listener.
-  /// This method removes the chat room manager listener registered with {@link #addChatRoomManagerListener(EMChatRoomManagerListener)}.
+  /// 移除聊天室事件监听对象。
+  /// 调用 {@link #addChatRoomManagerListener(EMChatRoomManagerListener)} 注册聊天室事件监听对象后，可调用本方法将其移除。
   ///
-  /// Param [listener] The chat room manager listener to be removed.
+  /// Param [listener] 要移除的聊天室监听对象。
   ///
   void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
     if (_listeners.contains(listener)) {
@@ -65,7 +64,7 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Removes all chat room manager listener.
+  /// 移除所有聊天室事件监听对象。
   ///
   void clearAllChatRoomManagerListeners() {
     _listeners.clear();
@@ -150,13 +149,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Joins the chat room.
+  /// 加入聊天室。
   ///
-  /// To exit the chat room, call {@link #leaveChatRoom(String)}.
+  /// 退出聊天室调用 {@link #leaveChatRoom(String)}。
   ///
-  /// Param [roomId] The ID of the chat room to join.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> joinChatRoom(String roomId) async {
     Map result = await _channel
@@ -169,11 +168,11 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Leaves the chat room.
+  /// 离开聊天室。
   ///
-  /// Param [roomId] The ID of the chat room to leave.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> leaveChatRoom(String roomId) async {
     Map result = await _channel
@@ -186,15 +185,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets chat room data from the server with pagination.
+  /// 以分页的方式从服务器获取聊天室数据。
   ///
-  /// Param [pageNum] The page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// Param [pageSize] The number of records per page.
+  /// Param [pageSize] 每页返回的记录数。
   ///
-  /// **Return** Chat room data. See {@link EMPageResult}.
+  /// **Return** 分页获取结果，详见 {@link EMPageResult}。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMPageResult<EMChatRoom>> fetchPublicChatRoomsFromServer({
     int pageNum = 1,
@@ -216,14 +215,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the details of the chat room from the server.
-  /// By default, the details do not include the chat room member list.
+  /// 从服务器获取聊天室详情，默认不取成员列表。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Return** The chat room instance.
+  /// **Return** 返回聊天室对象。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMChatRoom> fetchChatRoomInfoFromServer(
     String roomId, {
@@ -242,13 +240,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the chat room in the cache.
+  /// 从内存中获取聊天室。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Return** The chat room instance. Returns null if the chat room is not found in the cache.
+  /// **Return** 返回聊天室对象。如果内存中不存在聊天室对象，返回 null。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMChatRoom?> getChatRoomWithId(String roomId) async {
     Map result = await _channel
@@ -266,21 +264,21 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Creates a chat room.
+  /// 创建聊天室。
   ///
-  /// Param [name] The chat room name.
+  /// Param [name] 聊天室名称。
   ///
-  /// Param [desc] The chat room description.
+  /// Param [desc] 聊天室描述。
   ///
-  /// Param [welcomeMsg] A welcome message that invites users to join the chat room.
+  /// Param [welcomeMsg] 邀请成员加入聊天室的消息。
   ///
-  /// Param [maxUserCount] The maximum number of members allowed to join the chat room.
+  /// Param [maxUserCount] 允许加入聊天室的最大成员数。
   ///
-  /// Param [members] The list of members invited to join the chat room.
+  /// Param [members] 邀请加入聊天室的成员列表。
   ///
-  /// **Return** The chat room instance.
+  /// **Return** 创建成功的聊天室对象。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMChatRoom> createChatRoom(
     String name, {
@@ -306,13 +304,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Destroys a chat room.
+  /// 销毁聊天室。
   ///
-  /// Only the chat room owner can call this method.
+  /// 仅聊天室所有者可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> destroyChatRoom(
     String roomId,
@@ -328,15 +326,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Changes the chat room name.
+  /// 修改聊天室标题。
   ///
-  /// Only the chat room owner can call this method.
+  /// 仅聊天室所有者可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [name] The new name of the chat room.
+  /// Param [name] 新的聊天室名称。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> changeChatRoomName(
     String roomId,
@@ -353,15 +351,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Modifies the chat room description.
+  /// 修改聊天室描述信息。
   ///
-  /// Only the chat room owner can call this method.
+  /// 仅聊天室所有者可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
   /// Param [description] The new description of the chat room.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> changeChatRoomDescription(
     String roomId,
@@ -378,17 +376,19 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the chat room member list.
+  /// 获取聊天室成员列表。
   ///
-  /// Param [roomId] The chat room ID.
+  /// 返回的结果中，当 EMCursorResult.cursor 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// Param [cursor] The cursor position from which to start getting data.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [pageSize] The number of members per page.
+  /// Param [cursor] 从这个游标位置开始取数据。
   ///
-  /// **Return** The list of chat room members. See {@link EMCursorResult}. If `EMCursorResult.cursor` is an empty string (""), all data is fetched.
+  /// Param [pageSize] 每页返回的成员数。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 分页获取结果 {@link EMCursorResult}。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMCursorResult<String>> fetchChatRoomMembers(
     String roomId, {
@@ -410,17 +410,17 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Mutes the specified members in a chat room.
+  /// 禁止聊天室成员发言。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [muteMembers] The list of members to be muted.
+  /// Param [muteMembers] 禁言的用户列表。
   ///
-  /// Param [duration] The mute duration in milliseconds.
+  /// Param [duration] 禁言时长，单位是毫秒。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> muteChatRoomMembers(
     String roomId,
@@ -442,15 +442,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Unmutes the specified members in a chat room.
+  /// 解除禁言。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [unMuteMembers] The list of members to be unmuted.
+  /// Param [unMuteMembers] 解除禁言的用户列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> unMuteChatRoomMembers(
     String roomId,
@@ -467,15 +467,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Transfers the chat room ownership.
+  /// 转移聊天室的所有权。
   ///
-  /// Only the chat room owner can call this method.
+  /// 仅聊天室所有者可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [newOwner] The ID of the new chat room owner.
+  /// Param [newOwner] 新的聊天室拥有者 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> changeOwner(
     String roomId,
@@ -492,15 +492,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Adds a chat room admin.
+  /// 添加聊天室管理员。
   ///
-  /// Only the chat room owner can call this method.
+  /// 仅聊天室所有者可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [admin] The ID of the chat room admin to be added.
+  /// Param [admin] 要设置的管理员 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> addChatRoomAdmin(
     String roomId,
@@ -517,13 +517,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Removes privileges of a chat room admin.
+  /// 移除聊天室管理员权限。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [admin] The ID of admin whose privileges are to be removed.
+  /// Param [admin] 要移除管理员权限的 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> removeChatRoomAdmin(
     String roomId,
@@ -540,19 +540,19 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the list of members who are muted in the chat room from the server.
+  /// 获取聊天室禁言列表。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [pageNum] The page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// Param [pageSize] The number of muted members per page.
+  /// Param [pageSize] 每页返回的禁言成员数。
   ///
-  /// **Return** The muted member list.
+  /// **Return** 返回的包含禁言成员 ID 列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<String>> fetchChatRoomMuteList(
     String roomId, {
@@ -571,15 +571,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Removes the specified members from a chat room.
+  /// 将成员移出聊天室。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The list of the members to be removed.
+  /// Param [members] 要移出聊天室的用户列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> removeChatRoomMembers(
     String roomId,
@@ -596,19 +596,20 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Adds the specified members to the block list of the chat room.
+  /// 将成员添加到聊天室黑名单。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// **Note**
-  /// - Chat room members added to the block list are removed from the chat room by the server, and cannot re-join the chat room.
-  /// - The removed members receive the {@link EMChatRoomEventListener#onRemovedFromChatRoom(String, String?, String)} callback.
+  /// 对于添加到聊天室黑名单的成员，请注意以下几点：
+  /// 1. 成员添加到黑名单的同时，将被服务器移出聊天室。
+  /// 2. 可通过 {@link EMChatRoomEventListener#onRemovedFromChatRoom(String, String?, String?)} 回调通知。
+  /// 3. 添加到黑名单的成员禁止再次加入到聊天室。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The list of members to be added to block list.
+  /// Param [members] 要加入黑名单的成员列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> blockChatRoomMembers(
     String roomId,
@@ -625,15 +626,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Removes the specified members from the block list of the chat room.
+  /// 从聊天室黑名单中移除成员。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The list of members to be removed from the block list.
+  /// Param [members] 要移除黑名单的成员列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> unBlockChatRoomMembers(
     String roomId,
@@ -650,19 +651,19 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the chat room block list with pagination.
+  /// 以分页的形式获取聊天室黑名单列表。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [pageNum] The page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// Param [pageSize] The number of users on the block list per page.
+  /// Param [pageSize] 每页返回的黑名单中的用户数。
   ///
-  /// **Return** The list of the blocked chat room members.
+  /// **Return** 返回聊天室黑名单列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<String>> fetchChatRoomBlockList(
     String roomId, {
@@ -682,15 +683,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Updates the chat room announcement.
+  /// 更新聊天室公告。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [announcement] The announcement content.
+  /// Param [announcement] 公告内容。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> updateChatRoomAnnouncement(
     String roomId,
@@ -707,13 +708,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the chat room announcement from the server.
+  /// 从服务器获取聊天室公告内容。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Return** The chat room announcement.
+  /// **Return** 聊天室公告。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<String?> fetchChatRoomAnnouncement(
     String roomId,
@@ -730,15 +731,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Gets the allow list from the server.
+  /// 从服务器获取白名单列表。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Return** The chat room allow list.
+  /// **Return** 聊天室白名单列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<String>> fetchChatRoomAllowListFromServer(String roomId) async {
     Map req = {"roomId": roomId};
@@ -761,14 +762,14 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Checks whether the member is on the allow list.
+  /// 检查成员自己是否加入了白名单。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Return** Whether the member is on the allow list.
-  /// - `true`: Yes;
-  /// - `false`: No.
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 返回是否在白名单中：
+  /// - `true`: 是；
+  /// - `false`: 否。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> isMemberInChatRoomAllowList(String roomId) async {
     Map req = {"roomId": roomId};
@@ -785,15 +786,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Adds members to the allowlist.
+  /// 将成员添加到白名单。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The list of members to be added to the allow list.
+  /// Param [members] 要加入白名单的成员列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> addMembersToChatRoomAllowList(
     String roomId,
@@ -816,15 +817,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Removes members from the allow list.
+  /// 将成员从白名单移除。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The list of members to be removed from the allow list.
+  /// Param [members] 移除白名单的用户列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> removeMembersFromChatRoomAllowList(
     String roomId,
@@ -846,15 +847,15 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Mutes all members.
+  /// 设置全员禁言。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// This method does not work for the chat room owner, admin, and members added to the allow list.
+  /// 聊天室拥有者、管理员及加入白名单的用户不受影响。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> muteAllChatRoomMembers(String roomId) async {
     Map req = {"roomId": roomId};
@@ -870,13 +871,13 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Unmutes all members.
+  /// 解除所有成员的禁言状态。
   ///
-  /// Only the chat room owner or admin can call this method.
+  /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// Param [roomId] The chat room ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> unMuteAllChatRoomMembers(String roomId) async {
     Map req = {"roomId": roomId};

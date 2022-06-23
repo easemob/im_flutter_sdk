@@ -1,12 +1,12 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The EMGroupSharedFile class, which manages the chat group shared files.
+/// 群组共享文件类。
 ///
-/// To get the information of the chat group shared file, call {@link EMGroupManager#fetchGroupFileListFromServer(String, int?, int?)}.
+/// 可以通过 {@link EMGroupManager#fetchGroupFileListFromServer(String, int?, int?)} 方法获取共享文件信息，示例如下：
 ///
 /// ```dart
-///   List<EMGroupSharedFile>? list = await EMClient.getInstance.groupManager.fetchGroupFileListFromServer(groupId);
+///   List<EMGroupSharedFile> list = await EMClient.getInstance.groupManager.fetchGroupFileListFromServer(groupId);
 /// ```
 class EMGroupSharedFile {
   EMGroupSharedFile._private();
@@ -17,39 +17,19 @@ class EMGroupSharedFile {
   int? _createTime;
   int? _fileSize;
 
-  ///
-  /// Gets the shared file ID.
-  ///
-  /// **Return** The shared file ID.
-  ///
+  /// 共享文件 ID。
   String? get fileId => _fileId;
 
-  ///
-  /// Gets the shared file name.
-  ///
-  /// **Return** The shared file name.
-  ///
+  /// 共享文件名称。
   String? get fileName => _fileName;
 
-  ///
-  /// Gets the username that uploads the shared file.
-  ///
-  /// **Return** The username that uploads the shared file.
-  ///
+  /// 上传共享文件的成员用户名。
   String? get fileOwner => _fileOwner;
 
-  ///
-  /// Gets the Unix timestamp for uploading the shared file, in milliseconds.
-  ///
-  /// **Return** The Unix timestamp for uploading the shared file, in milliseconds.
-  ///
+  /// 共享文件的上传时间戳，单位为毫秒。
   int? get createTime => _createTime;
 
-  ///
-  /// Gets the data length of the shared file, in bytes.
-  ///
-  /// **Return** The data length of the shared file, in bytes.
-  ///
+  /// 共享文件大小，单位为字节。
   int? get fileSize => _fileSize;
 
   /// @nodoc

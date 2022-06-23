@@ -4,19 +4,19 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The location message class.
+/// 位置消息类。
 ///
 class EMLocationMessageBody extends EMMessageBody {
   ///
-  /// Creates a location message body instance.
+  /// 创建一个位置消息体实例。
   ///
-  /// Param [latitude] The latitude.
+  /// Param [latitude] 纬度。
   ///
-  /// Param [longitude] The longitude.
+  /// Param [longitude] 经度。
   ///
-  /// Param [address] The address.
+  /// Param [address] 地址。
   ///
-  /// Param [buildingName] The building name.
+  /// Param [buildingName] 建筑物名称。
   ///
   EMLocationMessageBody({
     required this.latitude,
@@ -51,15 +51,15 @@ class EMLocationMessageBody extends EMMessageBody {
   String? _address;
   String? _buildingName;
 
-  /// The address.
+  /// 地址。
   String? get address => _address;
 
-  /// The building name.
+  /// 建筑物名称。
   String? get buildingName => _buildingName;
 
-  /// The latitude.
+  /// 纬度。
   late final double latitude;
 
-  /// The longitude.
+  /// 经度。
   late final double longitude;
 }

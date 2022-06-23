@@ -10,7 +10,7 @@ import 'tools/em_log.dart';
 import 'tools/em_progress_manager.dart';
 
 ///
-/// The EMClient class, which is the entry point of the Chat SDK. With this class, you can log in, log out, and access other functionalities such as group and chatroom.
+/// 该类是 Chat SDK 的入口，负责登录、退出及连接管理等，由此可以获得其他模块的入口。
 ///
 class EMClient {
   static const _channelPrefix = 'com.chat.im';
@@ -34,12 +34,12 @@ class EMClient {
 
   EMOptions? _options;
 
-  /// Gets the configurations.
+  /// 通过 [EMOptions] 获取配置信息。
   EMOptions? get options => _options;
 
   String? _currentUsername;
 
-  /// Gets the current logged-in username.
+  /// 获取当前登录用户的用户名。
   String? get currentUsername => _currentUsername;
 
   static EMClient get getInstance => _instance ??= EMClient._internal();
@@ -87,10 +87,9 @@ class EMClient {
   }
 
   ///
-  /// Start contact and group, chatroom callback.
+  /// 回调开始信号
   ///
-  /// Reference:
-  /// Call this method when you ui is ready, then will receive `EMChatRoomManagerListener`, `EMContactManagerListener`, `EMGroupManagerListener` callback.
+  /// app启动后，界面准备好后需要调用该方法，调用后 `EMContactManagerListener`、`EMGroupManagerListener` 和 `EMChatRoomManagerListener` 才会开始执行。
   ///
   Future<void> startCallback() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.startCallback);
@@ -118,14 +117,11 @@ class EMClient {
   }
 
   ///
-  /// Checks whether the user has logged in before and did not log out.
-  ///
-  /// Reference:
-  /// If you need to check whether the SDK is connected to the server, please use {@link #isConnected()}.
-  ///
-  /// **Return** The result of whether the user has logged in before.
-  /// `true`: means that the user has logged in before,
-  /// `false`: means that the user has not login before or has called {@link #logout()} method.
+  /// 检查是否已经登录并且没有调用退出登录
+
+  /// **Return** 返回用户是否已经登录
+  /// `true`: 用户已经登录
+  /// `false`: 用户未登录
   Future<bool> isLoginBefore() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isLoggedInBefore);
     try {
@@ -137,9 +133,7 @@ class EMClient {
   }
 
   ///
-  /// Gets the current login user ID.
-  ///
-  /// **Return** The current login user ID.
+  /// 获取当前登录的用户id
   ///
   Future<String?> getCurrentUsername() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getCurrentUser);
@@ -157,7 +151,9 @@ class EMClient {
     }
   }
 
-  /// Gets the token of the current logged-in user.
+  ///
+  /// 获取当前登录账号的 Token。
+  ///
   Future<String> getAccessToken() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getToken);
     try {
@@ -169,9 +165,9 @@ class EMClient {
   }
 
   ///
-  /// Initializes the SDK.
+  /// 初始化 SDK。
   ///
-  /// Param [options] The configurations: {@link EMOptions}. Ensure that you set this parameter.
+  /// Param [options] 配置，不可为空。
   ///
   Future<void> init(EMOptions options) async {
     _options = options;
@@ -181,16 +177,12 @@ class EMClient {
   }
 
   ///
-  /// Register a new user.
+  /// 创建账号。
   ///
-  /// Param [username] The username. The maximum length is 64 characters. Ensure that you set this parameter.
-  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-),
-  /// and the English period (.). This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
-  /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
+  /// Param [username] 用户名，长度不超过 64 个字符。请确保你对该参数设值。支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
+  /// Param [password] 密码，长度不超过 64 个字符。请确保你对该参数设值。
   ///
-  /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> createAccount(String username, String password) async {
     EMLog.v('create account: $username : $password');
@@ -204,17 +196,17 @@ class EMClient {
   }
 
   ///
-  /// An app user logs in to the chat server with a password or token.
+  /// 使用密码或 Token 登录服务器。
   ///
-  /// Param [username] The username.
+  /// Param [username] 用户名（同用户 ID）。
   ///
-  /// Param [pwdOrToken] The password or token.
+  /// Param [pwdOrToken] 登录密码或 Token。
   ///
-  /// Param [isPassword] Whether to log in with password or token.
-  /// `true`: (default) Log in with password.
-  /// `false`: Log in with token.
+  /// Param [isPassword] 是否用密码登录。
+  /// - `true`: (default) 是。
+  /// - `false`: 否。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> login(String username, String pwdOrToken,
       [bool isPassword = true]) async {
@@ -234,15 +226,16 @@ class EMClient {
   }
 
   ///
-  /// An app user logs in to the chat server by username and Agora token. This method supports automatic login.
+  /// 用声网 Token 登录服务器，该方法支持自动登录。
   ///
-  /// See also: Another method to login to chat server is to login with user ID and token, see {@link #login(String, String, bool)}.
+  /// **Note**
+  /// 通过 token 登录服务器的方法见 {@link #login(String, String, bool)}。
   ///
-  /// Param [username] The username.
+  /// Param [username] 用户名（同用户 ID）。
   ///
-  /// Param [agoraToken] The Agora token.
+  /// Param [agoraToken] 声网 Token。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> loginWithAgoraToken(String username, String agoraToken) async {
     Map req = {
@@ -261,13 +254,11 @@ class EMClient {
   }
 
   ///
-  /// Renews the Agora token.
+  /// 当用户在声网 token 登录状态时，且在 {@link EMConnectionListener} 实现类中收到 token 即将过期事件的回调通知可以调用这个 API 来更新 token，避免因 token 失效产生的未知问题。
   ///
-  /// If a user is logged in with an Agora token, when the token expires, you need to call this method to update the token.
+  /// Param [agoraToken] 新声网 Token.
   ///
-  /// Param [agoraToken] The new Agora token.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> renewAgoraToken(String agoraToken) async {
     Map req = {"agora_token": agoraToken};
@@ -281,14 +272,13 @@ class EMClient {
   }
 
   ///
-  /// An app user logs out.
+  /// 退出登录。
   ///
-  /// Param [unbindDeviceToken] Whether to unbind the token when logout.
+  /// Param [unbindDeviceToken] 是否解绑 token。
+  /// - `true` (default) 表示需要退出时解绑设备 `token`。
+  /// - `false` 表示退出时不解绑设备 `token`。
   ///
-  /// `true` (default) Yes.
-  /// `false` No.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> logout([
     bool unbindDeviceToken = true,
@@ -305,15 +295,11 @@ class EMClient {
   }
 
   ///
-  /// Updates the App Key, which is the unique identifier to access Agora Chat.
+  /// 修改 App Key，注意只有在未登录状态才能修改 App Key。修改 App Key 是为了方便你切换其他 App Key，切换后可以使用切换后的 App Key 测试，除了登出外，没有其他的限制。
   ///
-  /// You can retrieve the new App Key from Agora Console.
+  /// Param [newAppKey] App Key，请确保设置该参数。
   ///
-  /// As this key controls all access to Agora Chat for your app, you can only update the key when the current user is logged out.
-  ///
-  /// Param [newAppKey] The App Key. Ensure that you set this parameter.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
@@ -328,13 +314,11 @@ class EMClient {
   }
 
   ///
-  /// Compresses the debug log into a gzip archive.
+  /// 压缩 log 文件，并返回压缩后的文件路径。强烈建议方法完成之后删除该压缩文件。
   ///
-  /// Best practice is to delete this debug archive as soon as it is no longer used.
+  /// **Return** 压缩后的 log 文件路径。
   ///
-  /// **Return** The path of the compressed gzip file.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
@@ -348,15 +332,15 @@ class EMClient {
   }
 
   ///
-  /// Gets all the information about the logged in devices under the specified account.
+  /// 获取指定账号下登录的在线设备列表。
   ///
-  /// Param [username] The username you want to get the device information.
+  /// Param [username] 用户名。
   ///
-  /// Param [password] The password.
+  /// Param [password] 密码。
   ///
-  /// **Return** TThe list of the logged-in devices.
+  /// **Return**  获取到到设备列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String username, required String password}) async {
@@ -377,15 +361,15 @@ class EMClient {
   }
 
   ///
-  /// Forces the specified account to log out from the specified device.
+  /// 在指定账号下，根据设备 ID，将指定设备下线, 设备 ID： {@link EMDeviceInfo#resource}。
   ///
-  /// Param [username] The account you want to force logout.
+  /// Param [username] 用户名。
   ///
-  /// Param [password] The account's password.
+  /// Param [password] 密码。
   ///
-  /// Param [resource] The device ID. For how to fetch the device ID, ee {@link EMDeviceInfo#resource}.
+  /// Param [resource] 设备 ID，详见 {@link EMDeviceInfo#resource}。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> kickDevice(
       {required String username,
@@ -407,13 +391,13 @@ class EMClient {
   }
 
   ///
-  /// Kicks out all the devices logged in under the specified account.
+  /// 将指定用户名下的所有设备都踢下线。
   ///
-  /// Param [username] The account you want to log out from all the devices.
+  /// Param [username] 用户名。
   ///
-  /// Param [password] The password.
+  /// Param [password] 密码。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> kickAllDevices(
       {required String username, required String password}) async {
@@ -431,18 +415,18 @@ class EMClient {
   /* Listeners*/
 
   ///
-  /// Adds the multi-device listener.
+  /// 设置多设备监听。
   ///
-  /// Param [listener] The listener to be added: {EMMultiDeviceListener}.
+  /// Param [listener] 要设置的监听器，详见 {EMMultiDeviceListener}。
   ///
   void addMultiDeviceListener(EMMultiDeviceListener listener) {
     _multiDeviceListeners.add(listener);
   }
 
   ///
-  /// Removes the multi-device listener.
+  /// 移除多设备监听。
   ///
-  /// Param [listener] The listener to be removed: {EMMultiDeviceListener}.
+  /// Param [listener] 要移除的监听，详见 {EMMultiDeviceListener}。
   ///
   void removeMultiDeviceListener(EMMultiDeviceListener listener) {
     if (_multiDeviceListeners.contains(listener)) {
@@ -451,18 +435,25 @@ class EMClient {
   }
 
   ///
-  /// Adds the connection listener of chat server.
+  /// 移除所有多设备监听。
   ///
-  /// Param [listener] The chat server connection listener to be added.
+  void clearAllMultiDeviceListeners() {
+    _multiDeviceListeners.clear();
+  }
+
+  ///
+  /// 设置 Chat 服务器连接监听。
+  ///
+  /// Param [listener] 要设置的 Chat 服务器连接监听。
   ///
   void addConnectionListener(EMConnectionListener listener) {
     _connectionListeners.add(listener);
   }
 
   ///
-  /// Removes the chat server connection listener.
+  /// 移除 Chat 服务器连接监听。
   ///
-  /// Param [listener]  The chat server connection listener to be removed.
+  /// Param [listener]  要移除的 Chat 服务器连接监听。
   ///
   void removeConnectionListener(EMConnectionListener listener) {
     if (_connectionListeners.contains(listener)) {
@@ -471,23 +462,35 @@ class EMClient {
   }
 
   ///
-  /// Adds a custom listener to receive data from iOS or Android devices.
+  /// 移除所有 Chat 服务器连接监听。
   ///
-  /// Param [listener] The custom native listener to be added.
+  void clearAllConversationListeners() {
+    _connectionListeners.clear();
+  }
+
+  ///
+  /// 设置自定义监听，接收安卓或者 iOS 设备发到 flutter 层的数据。
+  ///
+  /// Param [listener] 要设置的自定义监听器。
   ///
   void addCustomListener(EMCustomListener listener) {
     _customListeners.add(listener);
   }
 
   ///
-  /// Removes the custom listener.
+  /// 移除自定义监听器。
   ///
-  /// Param [listener] The custom native listener.
+  /// Param [listener] 要移除的自定义监听器。
   ///
   void removeCustomListener(EMCustomListener listener) {
     if (_customListeners.contains(listener)) {
       _customListeners.remove(listener);
     }
+  }
+
+  /// 移除所有自定义监听器。
+  void clearAllCustomListeners() {
+    _customListeners.clear();
   }
 
   Future<void> _onConnected() async {
@@ -593,27 +596,27 @@ class EMClient {
   }
 
   ///
-  /// Gets the `EMChatManager` class. Make sure to call it after EMClient has been initialized.
+  /// 获取 `EMChatManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMChatManager` class.
+  /// **Return**  `EMChatManager` 类。
   ///
   EMChatManager get chatManager {
     return _chatManager;
   }
 
   ///
-  /// Gets the `EMContactManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMContactManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMContactManager` class.
+  /// **Return** `EMContactManager` 类。
   ///
   EMContactManager get contactManager {
     return _contactManager;
   }
 
   ///
-  /// Gets the `ChatRoomManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMChatRoomManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMChatRoomManager` class.
+  /// **Return** `EMChatRoomManager` 类。
   ///
   EMChatRoomManager get chatRoomManager {
     return _chatRoomManager;
@@ -629,36 +632,36 @@ class EMClient {
   }
 
   ///
-  /// Gets the `EMPushManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMPushManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMPushManager` class.
+  /// **Return** `EMPushManager` 类。
   ///
   EMPushManager get pushManager {
     return _pushManager;
   }
 
   ///
-  /// Gets the `EMUserInfoManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMUserInfoManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMUserInfoManager` class.
+  /// **Return** `EMUserInfoManager` 类。
   ///
   EMUserInfoManager get userInfoManager {
     return _userInfoManager;
   }
 
   ///
-  /// Gets the `EMChatThreadManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMChatThreadManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMChatThreadManager` class.
+  /// **Return** `EMChatThreadManager` 类。
   ///
   EMChatThreadManager get chatThreadManager {
     return _chatThreadManager;
   }
 
   ///
-  /// Gets the `EMPresenceManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMPresenceManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMPresenceManager` class.
+  /// **Return** `EMPresenceManager` 类。
   ///
   EMPresenceManager get presenceManager {
     return _presenceManager;

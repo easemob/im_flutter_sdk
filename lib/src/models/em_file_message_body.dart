@@ -5,18 +5,18 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The base class of file messages.
+/// 文件类消息的基类。
 ///
 class EMFileMessageBody extends EMMessageBody {
-  /// Creates a message with an attachment.
+  /// 创建一条带文件附件的消息。
   ///
-  /// Param [localPath] The path of the image file.
+  /// Param [localPath] 图片文件路径。
   ///
-  /// Param [displayName] The file name.
+  /// Param [displayName] 文件显示名称。
   ///
-  /// Param [fileSize] The size of the file in bytes.
+  /// Param [fileSize] 文件大小，单位是字节。
   ///
-  /// Param [type] The file type.
+  /// Param [type] 文件类型。
   ///
   EMFileMessageBody({
     required this.localPath,
@@ -54,22 +54,22 @@ class EMFileMessageBody extends EMMessageBody {
     return data;
   }
 
-  /// The local path of the attachment.
+  /// 附件的本地路径。
   late final String localPath;
 
-  /// The token used to get the attachment.
+  /// 获取附件的密钥。
   String? secret;
 
-  /// The attachment path in the server.
+  /// 附件的服务器路径。
   String? remotePath;
 
-  /// The download status of the attachment.
+  /// 附件的下载状态：
   DownloadStatus fileStatus = DownloadStatus.PENDING;
 
-  ///  The size of the attachment in bytes.
+  /// 附件的大小，以字节为单位。
   int? fileSize;
 
-  /// The attachment name.
+  /// 附件的名称。
   String? displayName;
 
   static DownloadStatus downloadStatusFromInt(int? status) {

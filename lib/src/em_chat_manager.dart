@@ -10,13 +10,13 @@ import '../im_flutter_sdk.dart';
 import 'internal/chat_method_keys.dart';
 
 ///
-/// The chat manager class, responsible for sending and receiving messages, loading and deleting conversations, and downloading attachments.
+/// 聊天管理类，该类负责管理会话（加载，删除等）、发送消息、下载消息附件等。
 ///
-/// The sample code for sending a text message:
+/// 比如，发送一条文本消息：
 ///
 /// ```dart
 ///    EMMessage msg = EMMessage.createTxtSendMessage(
-///        username: toChatUsername, content: content);
+///        targetId: toChatUsername, content: content);
 ///    await EMClient.getInstance.chatManager.sendMessage(msg);
 /// ```
 ///
@@ -53,17 +53,17 @@ class EMChatManager {
   }
 
   ///
-  /// Sends a message.
+  /// 发送消息。
   ///
   /// **Note**
-  /// For attachment messages such as voice, image, or video messages, the SDK automatically uploads the attachment.
-  /// You can set whether to upload the attachment to the chat sever using {@link EMOptions#serverTransfer(boolean)}.
+  /// 如果是语音，图片类等有附件的消息，SDK 会自动上传附件。
+  /// 可以通过 {@link EMOptions#serverTransfer(boolean)} 设置是否上传到聊天服务器。
   ///
-  /// To listen for the status of sending messages, call {@link EMMessage#setMessageStatusListener(EMMessageStatusListener)}.
+  /// 发送消息的状态，可以通过设置 {@link EMMessage#setMessageStatusListener(EMMessageStatusListener)} 进行监听。
   ///
-  /// Param [message] The message object to be sent: {@link EMMessage}.
+  /// Param [message] 待发送消息对象，不能为空。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMMessage> sendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
@@ -82,9 +82,11 @@ class EMChatManager {
   }
 
   ///
-  /// Resend a message.
+  /// 重发消息。
   ///
-  /// Param [message] The message object to be resent: {@link EMMessage}.
+  /// Param [message] 需要重发的消息。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMMessage> resendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
@@ -103,21 +105,19 @@ class EMChatManager {
   }
 
   ///
-  /// Sends the read receipt to the server.
-  ///
-  /// This method applies to one-to-one chats only.
+  /// 发送消息的已读回执，该方法只针对单聊会话。
   ///
   /// **Warning**
-  /// This method only takes effect if you set {@link EMOptions#requireAck(bool)} as `true`.
+  /// 该方法只有在 {@link EMOptions#requireAck(bool)} 为 `true` 时才生效。
   ///
   /// **Note**
-  /// To send the group message read receipt, call {@link #sendGroupMessageReadAck(String, String, String)}.
+  /// 群消息已读回执，详见 {@link #sendGroupMessageReadAck(String, String, String)}。
   ///
-  /// We recommend that you call {@link #sendConversationReadAck(String)} when entering a chat page, and call this method to reduce the number of method calls.
+  /// 推荐进入会话页面时调用 {@link #sendConversationReadAck(String)}，其他情况下调用该方法以减少调用频率。
   ///
-  /// Param [message] The message body: {@link EMMessage}.
+  /// Param [message] The message body.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
@@ -132,22 +132,21 @@ class EMChatManager {
   }
 
   ///
-  /// Sends the group message receipt to the server.
+  /// 发送群消息已读回执。
   ///
-  /// You can call the method only after setting the following method: {@link EMOptions#requireAck(bool)} and {@link EMMessage#needGroupAck(bool)}.
+  /// 前提条件：设置了{@link EMOptions#requireAck(bool)} 和 {@link EMMessage#needGroupAck(bool)}。
   ///
   /// **Note**
-  /// - This method takes effect only after you set {@link EMOptions#requireAck} and {@link EMMessage#needGroupAck} as `true`.
-  /// - This method applies to group messages only. To send a one-to-one chat message receipt, call `sendMessageReadAck`; to send a conversation receipt, call `sendConversationReadAck`.
+  /// 发送单聊消息已读回执，详见 {@link #sendMessageReadAck(EMMessage)}；
+  /// 会话已读回执，详见 {@link #sendConversationReadAck(String)}。
   ///
+  /// Param [msgId] 消息 ID。
   ///
-  /// Param [msgId] The message ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [content] 扩展信息。用户自己定义的关键字，接收后，解析出自定义的字符串，可以自行处理。
   ///
-  /// Param [content] The extension information, which is a custom keyword that specifies a custom action or command.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> sendGroupMessageReadAck(
     String msgId,
@@ -171,16 +170,17 @@ class EMChatManager {
   }
 
   ///
-  /// Sends the conversation read receipt to the server. This method is only for one-to-one chat conversations.
+  /// 发送会话的已读回执，该方法只针对单聊会话。
   ///
-  /// This method informs the server to set the unread message count of the conversation to 0. In multi-device scenarios, all the devices receive the {@link EMChatManagerListener#onConversationRead(String, String)} callback.
+  /// 该方法会通知服务器将此会话未读数设置为 0，对话方（包含多端多设备）将会在下面这个回调方法中接收到回调：
+  /// {@link EMChatManagerListener#onConversationRead(String, String)}。
   ///
   /// **Note**
-  /// This method applies to one-to-one chat conversations only. To send a group message read receipt, call `sendGroupMessageReadAck`.
+  /// 发送群组消息已读回执见 {@link #sendGroupMessageReadAck(String, String, String)}。
   ///
-  /// Param [conversationId] The conversation ID.
+  /// Param [conversationId] 会话 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
@@ -195,11 +195,11 @@ class EMChatManager {
   }
 
   ///
-  /// Recalls the sent message.
+  /// 撤回发送成功的消息。
   ///
-  /// Param [messageId] The message ID.
+  /// Param [messageId] 消息 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
@@ -213,13 +213,13 @@ class EMChatManager {
   }
 
   ///
-  /// Loads a message from the local database by message ID.
+  /// 从本地数据库获取指定 ID 的消息对象。
   ///
-  /// Param [messageId] The message ID.
+  /// Param [messageId] 消息 ID。
   ///
-  /// **Return** The message object specified by the message ID. Returns null if the message does not exist.
+  /// **Return** 根据指定 ID 获取的消息对象，如果消息不存在会返回空值。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = {"msg_id": messageId};
@@ -239,19 +239,22 @@ class EMChatManager {
   }
 
   ///
-  /// Gets the conversation by conversation ID and conversation type.
+  /// 根据指定会话 ID 和类型的会话对象。
   ///
-  /// Param [conversationId] The conversation ID.
+  /// 没有找到会返回空值。
   ///
-  /// Param [type] The conversation type: {@link EMConversationType}.
+  /// Param [conversationId] 会话 ID。
   ///
-  /// Param [createIfNeed] Whether to create a conversation is the specified conversation is not found:
-  /// - `true`: Yes.
-  /// - `false`: No.
+  /// Param [type] 会话类型，详见 {@link EMConversationType}。
   ///
-  /// **Return** The conversation object found according to the ID and type. Returns null if the conversation is not found.
+  /// Param [createIfNeed] 没找到相应会话时是否自动创建。
+  ///                        - （Default)`true` 表示没有找到相应会话时会自动创建会话；
+  ///                        - `false` 表示没有找到相应会话时不创建会话。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  /// **Return**  根据指定 ID 以及会话类型找到的会话对象，如果没有找到会返回空值。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMConversation?> getConversation(
     String conversationId, {
@@ -277,11 +280,12 @@ class EMChatManager {
     }
   }
 
-  /// Marks all messages as read.
   ///
-  /// This method is for the local conversations only.
+  /// 把所有的会话都设成已读。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// 这里针对的是本地会话。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> markAllConversationsAsRead() async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
@@ -294,11 +298,11 @@ class EMChatManager {
   }
 
   ///
-  /// Gets the count of the unread messages.
+  /// 获取未读消息数。
   ///
-  /// **Return** The count of the unread messages.
+  /// **Return** 未读消息数。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<int> getUnreadMessageCount() async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
@@ -316,11 +320,11 @@ class EMChatManager {
   }
 
   ///
-  /// Updates the local message.
+  /// 更新本地消息。
   ///
-  /// The message will be updated both in the cache and local database.
+  /// 会同时更新本地内存和数据库。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = {"message": message.toJson()};
@@ -334,15 +338,13 @@ class EMChatManager {
   }
 
   ///
-  /// Imports messages to the local database.
+  ///  向消息数据库导入多条聊天记录。
+  ///  在调用此函数时要保证，消息的发送方或者接收方是当前用户。
+  ///  已经对函数做过速度优化，推荐一次导入 1,000 条以内的数据。
   ///
-  /// Before importing, ensure that the sender or receiver of the message is the current user.
+  /// Param [messages] 需要导入数据库的消息。
   ///
-  /// For each method call, we recommends to import less than 1,000 messages.
-  ///
-  /// Param [messages] The message list.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> importMessages(List<EMMessage> messages) async {
     List<Map> list = [];
@@ -360,13 +362,13 @@ class EMChatManager {
   }
 
   ///
-  /// Downloads the attachment files from the server.
+  /// 下载消息的附件。
   ///
-  /// You can call the method again if the attachment download fails.
+  /// 未成功下载的附件，可调用此方法再次下载。
   ///
-  /// Param [message] The message with the attachment that is to be downloaded.
+  /// Param [message] 要下载附件的消息。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> downloadAttachment(EMMessage message) async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
@@ -379,11 +381,11 @@ class EMChatManager {
   }
 
   ///
-  /// Downloads the thumbnail if the message has not been downloaded before or if the download fails.
+  /// 下载消息的缩略图。
   ///
-  /// Param [message] The message object.
+  /// Param [message] 要下载缩略图的消息，一般图片消息和视频消息有缩略图。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> downloadThumbnail(EMMessage message) async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
@@ -396,13 +398,13 @@ class EMChatManager {
   }
 
   ///
-  /// Gets all conversations from the local database.
+  /// 获取本地数据库中所有会话。
   ///
-  /// Conversations will be first loaded from the cache. If no conversation is found, the SDK loads from the local database.
+  /// 会先从内存中获取，如果没有会从本地数据库获取。
   ///
-  /// **Return** All the conversations from the cache or local database.
+  /// **Return**  返回获取的会话。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<EMConversation>> loadAllConversations() async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
@@ -420,13 +422,13 @@ class EMChatManager {
   }
 
   ///
-  /// Gets the conversation list from the server.
+  /// 从服务器获取会话列表。
   ///
-  /// To use this function, you need to contact our business manager to activate it. After this function is activated, users can pull 10 conversations within 7 days by default (each convesation contains the latest historical message). If you want to adjust the number of conversations or time limit, please contact our business manager.
+  /// 该功能需联系商务开通，开通后，用户默认可拉取 7 天内的 10 个会话（每个会话包含最新一条历史消息），如需调整会话数量或时间限制请联系商务经理。
   ///
-  /// **Return** The conversation list of the current user.
+  /// **Return** 返回获取的会话列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<EMConversation>> getConversationsFromServer() async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
@@ -444,21 +446,19 @@ class EMChatManager {
   }
 
   ///
-  /// Deletes a conversation and its related messages from the local database.
+  /// 删除指定 ID 的对话和本地的聊天记录。
   ///
-  /// If you set `deleteMessages` to `true`, the local historical messages are deleted when the conversation is deleted.
+  /// Param [conversationId] 会话 ID。
   ///
-  /// Param [conversationId] The conversation ID.
+  /// Param [deleteMessages] 删除会话时是否同时删除本地的聊天记录。
+  ///                         - `true` 表示删除；
+  ///                         - `false` 表示不删除。
   ///
-  /// Param [deleteMessages] Whether to delete the historical messages when deleting the conversation.
-  /// - `true`: (default) Yes.
-  /// - `false`: No.
+  /// **Return** 删除会话结果。
+  ///                        - `true` 代表删除成功；
+  ///                        - `false` 代表删除失败。
   ///
-  /// **Return** Whether the conversation is successfully deleted.
-  /// - `true`: Yes;
-  /// - `false`: No.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<bool> deleteConversation(
     String conversationId, {
@@ -476,9 +476,11 @@ class EMChatManager {
   }
 
   ///
-  /// Adds the chat manager listener. After calling this method, you can listen for new messages when they arrive.
+  /// 注册消息监听。
   ///
-  /// Param [listener] The chat manager listener that listens for new messages. See {@link EMChatManagerListener}.
+  /// 接受到新消息等回调可以通过设置此方法进行监听，详见 {@link EMChatManagerListener}。
+  ///
+  /// Param [listener] 要注册的消息监听，详见 {@link EMChatManagerListener}。
   ///
   void addChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
@@ -486,37 +488,39 @@ class EMChatManager {
   }
 
   ///
-  /// Removes the chat manager listener.
+  /// 移除消息监听。
   ///
-  /// After adding a chat manager listener, you can remove this listener if you do not want to listen for it.
+  /// 需要先添加 {@link #addMessageListener(addChatManagerListener)} 监听，再调用本方法。
   ///
-  /// Param [listener] The chat manager listener to be removed. See {@link EMChatManagerListener}.
+  /// Param [listener] 要移除的监听。
   ///
   void removeChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
   }
 
   ///
-  /// Removes all chat manager listeners.
+  /// 移除所有消息监听。
   ///
   void clearAllChatManagerListeners() {
     _listeners.clear();
   }
 
   ///
-  /// Gets historical messages of the conversation from the server with pagination.
+  /// 从服务器获取指定会话的消息历史记录。
   ///
-  /// Param [conversationId] The conversation ID.
+  /// 分页获取。
   ///
-  /// Param [type] The conversation type. See {@link EMConversationType}.
+  /// Param [conversationId] 会话 ID。
   ///
-  /// Param [pageSize] The number of messages per page.
+  /// Param [type] 会话类型，详见 {@link EMConversationType}。
   ///
-  /// Param [startMsgId] The ID of the message from which you start to get the historical messages. If `null` is passed, the SDK gets messages in reverse chronological order.
+  /// Param [pageSize] 每页获取的消息数量。
   ///
-  /// **Return** The obtained messages and the cursor for the next fetch action.
+  /// Param [startMsgId] 获取历史消息的开始消息 ID，如果为空，从最新的消息向前开始获取。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 返回消息列表和用于继续获取历史消息的 Cursor。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMCursorResult<EMMessage>> fetchHistoryMessages({
     required String conversationId,
@@ -544,22 +548,21 @@ class EMChatManager {
   }
 
   ///
-  /// Retrieves messages from the database according to the parameters.
+  /// 根据传入的参数从本地存储中搜索指定数量的消息。
   ///
-  /// **Note**
-  /// Pay attention to the memory usage when the maxCount is large. Currently, a maximum of 400 historical messages can be retrieved each time.
+  /// 注意：当 maxCount 非常大时，需要考虑内存消耗，目前限制一次最多搜索 400 条数据。
   ///
-  /// Param [keywords] The keywords in message.
+  /// Param [keywords] 关键词。
   ///
-  /// Param [timeStamp] The Unix timestamp for search, in milliseconds.
+  /// Param [timeStamp] 搜索消息的时间点，Unix 时间戳。
   ///
-  /// Param [maxCount] The maximum number of messages to retrieve each time.
+  /// Param [maxCount] 搜索结果的最大条数。
   ///
-  /// Param [from] A username or group ID at which the retrieval is targeted.  Usually, it is the conversation ID.
+  /// Param [from] 搜索来自某人或者某群的消息，一般是指会话 ID。
   ///
-  /// **Return** The list of messages.
+  /// **Return**  获取的消息列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<List<EMMessage>> searchMsgFromDB(
     String keywords, {
@@ -590,20 +593,22 @@ class EMChatManager {
   }
 
   ///
-  /// Gets read receipts for group messages from the server with pagination.
+  /// 从服务器获取群组消息回执详情。
   ///
-  /// See also:
-  /// For how to send read receipts for group messages, see {@link {@link #sendConversationReadAck(String)}.
+  /// 分页获取。
   ///
-  /// Param [msgId] The message ID.
+  /// **Note**
+  /// 发送群组消息回执，详见 {@link {@link #sendConversationReadAck(String)}。
   ///
-  /// Param [startAckId] The starting read receipt ID for query. If you set it as null, the SDK retrieves the read receipts in the in reverse chronological order.
+  /// Param [msgId] 消息 ID。
   ///
-  /// Param [pageSize] The number of read receipts per page.
+  /// Param [startAckId] 已读回执的 ID，如果为空，从最新的回执向前开始获取。
   ///
-  /// **Return** The list of obtained read receipts and the cursor for next query.
+  /// Param [pageSize] 每页获取群消息已读回执的条数。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 返回回执列表和用于下次获取群消息回执的 cursor。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<EMCursorResult<EMGroupMessageAck>> fetchGroupAcks(
     String msgId,
@@ -634,18 +639,18 @@ class EMChatManager {
   }
 
   ///
-  /// Deletes the specified conversation and the related historical messages from the server.
+  /// 删除服务端的指定 ID 的会话和聊天记录。
   ///
-  /// Param [conversationId] The conversation ID.
+  /// Param [conversationId] 会话 ID。
   ///
-  /// Param [conversationType] The conversation type. See  {@link EMConversationType}.
+  /// Param [conversationType] 会话类型，详见 {@link EMConversationType}。
   ///
-  /// Param [isDeleteMessage] Whether to delete the chat history when deleting the conversation.
-  /// - `true`: (default) Yes.
-  /// - `false`: No.
+  /// Param [isDeleteMessage] 删除会话时是否同时删除历史消息记录。
   ///
+  /// - `true`:(default)：是；
+  /// - `false`: 否。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
   Future<void> deleteRemoteConversation(
     String conversationId, {
@@ -759,5 +764,3 @@ class EMChatManager {
     }
   }
 }
-
-extension EMThreadPlugin on EMChatManager {}

@@ -5,7 +5,10 @@ import 'em_chat_enums.dart';
 import 'em_group_options.dart';
 
 ///
-/// The EMGroup class, which contains the information of the chat group.
+/// 群组信息类，包含内存中的群组相关信息。
+///
+/// **Note**
+/// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
 ///
 class EMGroup {
   EMGroup._private({
@@ -29,83 +32,94 @@ class EMGroup {
     this.extension,
   });
 
-  ///
-  /// Gets the group ID.
-  ///
+  /// 群组 ID。
   final String groupId;
 
-  ///
-  /// Gets the group name.
+  /// 从内存中获取群组名称。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
-
+  /// **Return** 群组名称。
+  ///
   final String? name;
 
-  ///
-  /// Gets the group description.
+  /// 从内存中获取群组描述。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
-
+  /// **Return** 群组描述。
+  ///
   final String? description;
 
-  ///
-  /// Gets the user ID of the group owner.
+  /// 从内存中获取群主用户名。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  ///
+  /// **Return** 群主用户名。
   ///
   final String? owner;
 
+  /// 从内存中获取群公告内容。
   ///
-  ///  The content of the group announcement.
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
   final String? announcement;
 
-  ///
-  /// Gets the member count of the group.
+  /// 从内存中获取群组成员数量。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  ///
+  /// **Return** 群组成员数量。
   ///
   final int? memberCount;
 
-  ///
-  /// Gets the member list of the group.
+  /// 从内存中获取群组成员列表。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchMemberListFromServer(String, int?, String?)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link #fetchMemberListFromServer(String, int?, String?)}.。
   ///
-
+  /// **Return** 群组成员列表。
+  ///
   final List<String>? memberList;
 
   ///
-  /// Gets the admin list of the group.
+  /// 从内存中获取群组管理员列表。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
-
+  /// **Return** 群组管理员列表。
+  ///
   final List<String>? adminList;
 
   ///
-  /// Gets the block list of the group.
+  /// 从内存中获取群组黑名单。
   ///
-  /// If no block list is found from the server, the return may be empty.
+  /// 如果没有找到会返回空列表。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchBlockListFromServer(String, int?, int?)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchBlockListFromServer(String, int?, int?)}。
+  ///
+  /// 只有群主和管理员可以调用该方法。
+  ///
+  /// **Return** 群组黑名单。
   ///
   final List<String>? blockList;
 
   ///
-  /// Gets the mute list of the group.
+  /// 从内存中获取群组禁言名单。
+  ///
+  /// 只有群主和管理员可以调用该方法。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchMuteListFromServer(String, int?, int?)} before calling this method.
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager# fetchMuteListFromServer(String, int?, int?)}。
+  ///
+  /// **Return** 群组禁言名单。
   ///
   final List<String>? muteList;
 
@@ -113,75 +127,81 @@ class EMGroup {
   final bool? noticeEnable;
 
   ///
-  /// Gets whether the group message is blocked.
+  /// 从内存中获取消息是否被屏蔽。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  ///
+  /// **Return** 消息是否被屏蔽。
+  /// - `true`: 是；
+  /// - `false`: 否。
   ///
   final bool? messageBlocked;
 
   ///
-  /// Gets Whether all members are muted.
+  /// 从内存中获取是否已经全员禁言。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  ///
+  /// **Return** 是否全员禁言。
+  /// - `true`: 是；
+  /// - `false`: 否。
   ///
   final bool? isAllMemberMuted;
 
   ///
   EMGroupOptions? _options;
 
-  ///
-  /// Gets the current user's role in group.
+  /// 从内存中获取当前用户在群组中的角色。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  ///
+  /// **Return** 当前用户在群组中的角色。
   ///
   final EMGroupPermissionType? permissionType;
 
   ///
-  /// Gets the maximum number of group members allowed in a group. The parameter is set when the group is created.
-  ///
+  /// 从内存中获取群组最大人数限制，创建时确定。
+  //
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  ///
+  /// **Return** 群组最大人数限制。
   ///
   final int? maxUserCount;
 
   ///
-  /// Checks whether users cannot join a chat group freely:
-  /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members(PrivateOnlyOwnerInvite, PrivateMemberCanInvite, PublicJoinNeedApproval).
-  /// - `false`: No. Users can join freely(PublicOpenJoin).
+  /// 从内存中获取群组类型：成员是否能自由加入，还是需要申请或者被邀请。
+  ///
+  /// 群组有四个类型属性，`isMemberOnly`是除了 {@link EMGroupManager.EMGroupStyle#EMGroupStylePublicOpenJoin} 之外的三种属性，表示该群不是自由加入的群组。
   ///
   /// **Note**
-  /// There are four types of group properties used to define the style of a group: {@link EMGroupManager.EMGroupStyle}.
+  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
   /// **Return**
-  /// Whether users can join a chat group with only the approval of the group owner(admin):
-  /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members.
-  /// - `false`: No.
+  ///  - `true`：进群需要群主邀请，群成员邀请，或者群主和管理员同意入群申请；
+  /// - `false`：意味着用户可以自由加入群，不需要申请和被邀请。
   ///
   final bool? isMemberOnly;
 
   ///
-  /// Checks whether a group member is allowed to invite other users to join the group.
+  /// 从内存中获取是否允许成员邀请他人进群。
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
   /// **Return**
-  /// - `true`: Yes;
-  /// - `false`: No. Only the group owner or admin can invite others to join the group.
+  /// - `true`: 允许;
+  /// - `false`: 不允许。
   ///
   final bool? isMemberAllowToInvite;
 
   ///
-  /// Group detail extensions which can be in the JSON format to contain more group information.
+  /// 群组ext
   ///
   final String? extension;
-
-  @Deprecated(
-      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead.")
-  EMGroupOptions? get settings => _options;
 
   /// @nodoc
   factory EMGroup.fromJson(Map map) {

@@ -1,7 +1,7 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The EMDeviceInfo class, which contains the multi-device information.
+/// 多设备登录信息类。
 ///
 class EMDeviceInfo {
   EMDeviceInfo._private(
@@ -29,12 +29,12 @@ class EMDeviceInfo {
     );
   }
 
-  /// The information of other login devices.
+  /// 登录的其他设备的信息。
   final String? resource;
 
-  /// The UUID of the device.
+  /// 设备的 UUID（唯一标识码）。
   final String? deviceUUID;
 
-  /// The device type. For example: "Pixel 6 Pro".
+  /// 设备型号，如 "Pixel 6 Pro"。
   final String? deviceName;
 }

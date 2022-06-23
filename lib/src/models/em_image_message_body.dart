@@ -6,25 +6,25 @@ import 'em_chat_enums.dart';
 import 'em_file_message_body.dart';
 
 ///
-/// The image message body class.
+/// 图片消息体类。
 ///
 class EMImageMessageBody extends EMFileMessageBody {
   ///
-  /// Creates an image message body with an image file.
+  /// 用图片文件创建一个图片消息体。
   ///
-  /// Param [localPath] The local path of the image file.
+  /// Param [localPath] 图片文件本地路径。
   ///
-  /// Param [displayName] The image name.
+  /// Param [displayName] 文件名。
   ///
-  /// Param [thumbnailLocalPath] The local path of the image thumbnail.
+  /// Param [thumbnailLocalPath] 图片缩略图本地路径。
   ///
-  /// Param [sendOriginalImage] The original image included in the image message to be sent.
+  /// Param [sendOriginalImage] 发送图片消息时的原始图片文件。
   ///
-  /// Param [fileSize] The size of the image file in bytes.
+  /// Param [fileSize] 图片文件大小，单位是字节。
   ///
-  /// Param [width] The image width in pixels.
+  /// Param [width] 图片宽度，单位为像素。
   ///
-  /// Param [height] The image height in pixels.
+  /// Param [height] 图片高度，单位为像素。
   ///
   EMImageMessageBody({
     required String localPath,
@@ -74,28 +74,27 @@ class EMImageMessageBody extends EMFileMessageBody {
   }
 
   ///
-  /// Whether to send the original image.
-  ///
-  /// - `false`: (default) No. The original image will be compressed if it exceeds 100 KB and the thumbnail will be sent.
-  /// - `true`: Yes.
+  /// 设置发送图片时，是否发送原图。
+  /// - （默认）`false`：发送缩略图，图片超过 100 KB 会被压缩。
+  ///  - `true`：发送原图。
   ///
   bool sendOriginalImage = false;
 
-  /// The local path or the URI (a string) of the thumbnail.
+  /// 缩略图的本地路径或者字符串形式的资源标识符。
   String? thumbnailLocalPath;
 
-  /// The URL of the thumbnail on the server.
+  /// 缩略图的服务器路径。
   String? thumbnailRemotePath;
 
-  /// The secret to access the thumbnail. A secret is required for verification for thumbnail download.
+  /// 设置访问缩略图的密钥。下载缩略图时用户需要提供密钥进行校验。
   String? thumbnailSecret;
 
-  /// The download status of the thumbnail.
+  /// 缩略图的下载状态。
   DownloadStatus thumbnailStatus = DownloadStatus.PENDING;
 
-  /// The image width in pixels.
+  /// 图片宽度，单位为像素。
   double? width;
 
-  /// The image height in pixels.
+  /// 图片高度，单位为像素。
   double? height;
 }

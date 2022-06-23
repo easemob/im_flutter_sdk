@@ -1,23 +1,42 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The EMUserInfo class, which contains the user attributes, such as the nickname, description, and avatar.
+/// 用户属性类。
 ///
 class EMUserInfo {
   ///
-  /// Creates a user attribute.
+  /// 创建用户属性。
   ///
-  /// Param [userId] The username.
+  /// Param [userId] 用户名。
   ///
   EMUserInfo(
     this.userId, {
+
+    /// Param [nickName] 用户昵称。
     this.nickName,
+
+    /// Param [avatarUrl] 用户头像。
     this.avatarUrl,
+
+    /// Param [mail] 用户邮箱。
     this.mail,
+
+    /// Param [phone] 用户手机号。
     this.phone,
+
+    /// Param [gender] 用户性别。
+    /// - `0`: (Default) 未知;
+    /// - `1`: 男;
+    /// - `2`: 女.
     this.gender = 0,
+
+    /// Param [sign] 用户签名。
     this.sign,
+
+    /// Param [birth] 用户的出生日期。
     this.birth,
+
+    /// Param [ext] 用户自定义属性字段。
     this.ext,
   });
 
@@ -50,36 +69,36 @@ class EMUserInfo {
   }
 
   ///
-  /// Sets user attributes.
+  /// 设置用户属性。
   ///
-  /// **Return** The new user information instance.
+  /// **Return** 用户属性新实例。
   ///
   EMUserInfo copyWith({
-    /// Param [nickName] The user's nickname.
+    /// Param [nickName] 用户昵称。
     String? nickName,
 
-    /// Param [avatarUrl] The avatar URL of the user.
+    /// Param [avatarUrl] 用户头像。
     String? avatarUrl,
 
-    /// Param [mail] The email address of the user.
+    /// Param [mail] 用户邮箱。
     String? mail,
 
-    /// Param [phone] The phone number of the user.
+    /// Param [phone] 用户手机号。
     String? phone,
 
-    /// Param [gender] The user's gender. The value can only be `0`, `1`, or `2`. Other values are invalid.
-    /// - `0`: (Default) Unknow;
-    /// - `1`: Male;
-    /// - `2`: Female.
+    /// Param [gender] 用户性别。
+    /// - `0`: (Default) 未知;
+    /// - `1`: 男;
+    /// - `2`: 女.
     int? gender,
 
-    /// Param [sign] The user's signature.
+    /// Param [sign] 用户签名。
     String? sign,
 
-    /// Param [birth] The user's data of birth.
+    /// Param [birth] 用户的出生日期。
     String? birth,
 
-    /// Param [ext] The user's extension information. You can set it to an empty string or type custom information and encapsulate them as a JSON string.
+    /// Param [ext] 用户自定义属性字段。
     String? ext,
   }) {
     return EMUserInfo._private(
@@ -125,77 +144,40 @@ class EMUserInfo {
     return data;
   }
 
-  /// Gets the username.
-  ///
-  /// **Return**
-  /// The user's username.
-  ///
+  /// 用户名Id。
   final String userId;
 
-  /// Gets the user's nickname.
-  ///
-  /// **Return**
-  /// The user's nickname.
-  ///
+  /// 用户昵称。
   final String? nickName;
 
-  /// Gets the avatar URL of the user.
-  ///
-  /// **Return**
-  /// The avatar URL of the user.
-  ///
+  /// 用户头像。
   final String? avatarUrl;
 
-  /// Gets the email address of the user.
-  ///
-  /// **Return**
-  /// The email address of the user.
-  ///
+  /// 用户邮箱地址。
   final String? mail;
 
-  /// Gets the mobile numbers of the user.
-  ///
-  /// **Return**
-  /// The mobile numbers of the user.
-  ///
+  /// 用户手机号。
   final String? phone;
 
-  /// Gets the user's gender.
-  ///
-  /// **Return**
-  /// The user's gender:
-  /// - `0`: (Default) Unknow;
-  /// - `1`: Male;
-  /// - `2`: Female.
+  /// 用户性别。
+  /// - `0`: (默认) 未知;
+  /// - `1`: 男;
+  /// - `2`: 女.
   ///
   final int gender;
 
-  /// Gets the user's signature.
-  ///
-  /// **Return**
-  /// The user's signature.
-  ///
+  /// 用户签名。
   final String? sign;
 
-  /// Gets the user's data of birth.
-  ///
-  /// **Return**
-  /// The user's data of birth.
-  ///
+  /// 用户的出生日期。
   final String? birth;
 
-  /// Gets the user's extension information.
-  ///
-  /// **Return**
-  /// The user's extension information.
-  ///
+  /// 用户自定义属性字段。
   final String? ext;
 
-  /// Gets the time period(seconds) when the user attibutes in the cache expire.
-  /// If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
-  ///
-  /// **Return**
-  /// The time period(seconds) when the user attibutes in the cache expire.
-  ///
-  final int expireTime = DateTime.now().millisecondsSinceEpoch;
+  final int _expireTime = DateTime.now().millisecondsSinceEpoch;
+}
+
+extension UserInfoPrivate on EMUserInfo {
+  int get expireTime => _expireTime;
 }

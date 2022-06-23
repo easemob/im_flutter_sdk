@@ -2,145 +2,138 @@ import '../tools/em_extension.dart';
 import '../internal/em_push_config.dart';
 
 ///
-/// The EMOptions class, which contains the settings of the Chat SDK.
-///
-/// For example, whether to encrypt the messages before sending and whether to automatically accept the friend invitations.
+/// 提供 SDK 聊天相关的设置。
+/// 用户可以用来配置 SDK 的各种参数、选项，
+/// 比如，发送消息加密，是否自动接受加好友邀请。
 ///
 class EMOptions {
-  /// The app key that you get from the console when creating the app.
+  /// 创建 app 时在 console 后台上注册的 app 唯一识别符。
   late final String appKey;
 
   ///
-  /// Whether to enable automatic login.
+  /// 是否允许自动登录。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - (默认) `true`: (默认) 允许;
+  /// - `false`: 不允许.
   ///
   final bool autoLogin;
 
-  ///
-  /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using {@link #init(Context, EMOptions)}.
-  ///
-  /// - `true`: Yes.
-  /// - `false`: (Default)No.
+  /// 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
+  /// - `true`：SDK 会在 log 里输出调试信息；
+  /// - （默认）`false`：不会输出调试信息。
   ///
   final bool debugModel;
 
   ///
-  /// Whether to accept friend invitations from other users automatically.
+  /// 是否自动接受加好友邀请。
+  /// - `true`：是。
+  /// - （默认）`false`：否。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
   final bool acceptInvitationAlways;
 
   ///
-  /// Whether to accept group invitations automatically.
-  ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// 是否自动接受群组邀请。
+  /// - `true`：是；
+  /// - （默认）`false`：否。
   ///
   final bool autoAcceptGroupInvitation;
 
   ///
-  /// Whether to require read receipt after sending a message.
-  ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// 是否发送消息已读回执.
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool requireAck;
 
   ///
-  /// Whether to require the delivery receipt after sending a message.
-  ///
-  /// - `true`: Yes;
-  /// - `false`: (Default) No.
+  /// 是否发送消息已送达回执。
+  /// - `true`：是。
+  /// - （默认）`false`：否。
   ///
   final bool requireDeliveryAck;
 
   ///
-  /// Whether to delete the group messages when leaving a group.
-  ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// 离开群组时是否删除消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool deleteMessagesAsExitGroup;
 
   ///
-  /// Whether to delete the chat room messages when leaving the chat room.
+  /// 离开聊天室时是否删除消息。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool deleteMessagesAsExitChatRoom;
 
   ///
-  /// Whether to allow the chat room owner to leave the chat room.
+  /// 是否允许聊天室所有者离开聊天室。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool isChatRoomOwnerLeaveAllowed;
 
   ///
-  /// Whether to sort the messages by the time when the messages are received by the server.
+  /// 是否根据服务器收到消息的时间对消息进行排序。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool sortMessageByServerTime;
 
   ///
-  /// Whether only HTTPS is used for REST operations.
+  /// 是否只用 HTTPS。
   ///
-  /// - `true`: (Default) Only HTTPS is used.
-  /// - `false`: Both HTTP and HTTPS are allowed.
+  /// - （默认）`true`：是；
+  /// - `false`：否。可以同时用 HTTP 和 HTTPS。
   ///
   final bool usingHttpsOnly;
 
   ///
-  /// Whether to upload the message attachments automatically to the chat server.
+  /// 是否自动将消息附件上传到聊天服务器。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No. Message attachments are uploaded to a custom path.
+  /// - （默认）`true`：是；
+  /// - `false`：否。使用自定义路径。
   ///
   final bool serverTransfer;
 
   ///
-  /// Whether to automatically download the thumbnail.
+  /// 是否自动下载缩略图。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool isAutoDownloadThumbnail;
 
   ///
-  /// Whether to enable DNS.
+  /// 是否开启 DNS。
   ///
-  /// - `true`: (Default) Yes;
-  /// - `false`: No.
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   final bool enableDNSConfig;
 
-  /// The DNS URL.
+  /// DNS 地址。
   final String? dnsUrl;
 
-  /// The custom REST server.
+  /// REST 服务器。
   final String? restServer;
 
-  /// The custom IM message server url.
+  /// 消息服务器。
   final String? imServer;
 
-  /// The custom IM server port.
+  /// 是否使用自定义 IM 服务的端口。用于私有化部署。.
   final int? imPort;
 
   EMPushConfig _pushConfig = EMPushConfig();
 
-  /// Enable OPPO PUSH on OPPO devices.
+  /// 开启 Oppo 推送。
   ///
-  /// Param [appId] The app ID for OPPO PUSH.
+  /// Param [appId] Oppo 推送的 App ID。
   ///
-  /// Param [appKey] The app key for OPPO PUSH.
-  ///
+  /// Param [appKey] Oppo 推送的 app key。
   void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
     _pushConfig.oppoAppKey = appKey;
@@ -148,11 +141,11 @@ class EMOptions {
   }
 
   ///
-  /// Enable Mi Push on Mi devices.
+  /// 开启小米推送。
   ///
-  /// Param [appId] The app ID for Mi Push.
+  /// Param [appId] 小米推送的 App ID。
   ///
-  /// Param [appKey] The app key for Mi Push.
+  /// Param [appKey] 小米推送的 app key。
   ///
   void enableMiPush(String appId, String appKey) {
     _pushConfig.enableMiPush = true;
@@ -161,134 +154,129 @@ class EMOptions {
   }
 
   ///
-  /// Enable Firebase Cloud Messaging (FCM) push on devices that support Google Play.
+  /// 开启 FCM（GCM 的升级版）推送。
   ///
-  /// Param [appId] The app ID for FCM push.
+  /// Param [appId] FCM 推送的 App ID。
   ///
   void enableFCM(String appId) {
     _pushConfig.enableFCM = true;
     _pushConfig.fcmId = appId;
   }
 
-  /// Enable vivo Push on vivo devices.
   ///
-  /// Param [appId] The app ID for vivo Push.
-  ///
-  /// Param [appKey] The app key for vivo Push.
+  /// 开启 vivo 推送。
   ///
   void enableVivoPush() {
     _pushConfig.enableVivoPush = true;
   }
 
-  /// Enable Huawei Push on Huawei devices.
   ///
-  /// Param [appId] The app ID for HuaWei Push.
-  ///
-  /// Param [appKey] The app key for HuaWei Push.
+  /// 开启华为推送。
   ///
   void enableHWPush() {
     _pushConfig.enableHWPush = true;
   }
 
   ///
-  /// Enables Apple Push Notification service (APNs) on iOS devices.
+  /// 开启 Apple 推送通知服务（APNs）推送。
   ///
-  /// Param [certName] The APNs certificate name.
+  /// Param [certName] APNs 推送证书的名称。
+  ///
   void enableAPNs(String certName) {
     _pushConfig.enableAPNS = true;
     _pushConfig.apnsCertName = certName;
   }
 
   ///
-  /// Sets the app options.
+  /// 设置sdk。
   ///
-  EMOptions(
-      {
+  /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
+  ///
+  EMOptions({
+    required this.appKey,
 
-      /// Param [appKey] The app key that you get from the console when creating an app.
-      required this.appKey,
+    /// Param [autoLogin] 是否开启自动登录。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.autoLogin = true,
 
-      /// Param [autoLogin] Whether to enable automatic login.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.autoLogin = true,
+    /// Param [debugModel] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
+    /// - `true`：SDK 会在 log 里输出调试信息；
+    /// - （默认）`false`：不会输出调试信息。
+    this.debugModel = false,
 
-      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See {@link #init(Context, EMOptions)}.
-      /// - `true`: Yes.
-      /// - `false`: (Default) No.
-      this.debugModel = false,
+    /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.acceptInvitationAlways = false,
 
-      /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
-      /// - `true`: Yes;
-      /// - `false`: (Default) No.
-      this.acceptInvitationAlways = false,
+    /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
+    /// - `true`：是；
+    /// - （默认）`false`：否。
+    this.autoAcceptGroupInvitation = false,
 
-      /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
-      /// - `true`: Yes;
-      /// - `false`: (Default) No.
-      this.autoAcceptGroupInvitation = false,
+    /// Param [requireAck] 是否发送已读回执。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.requireAck = true,
 
-      /// Param [requireAck] Whether the read receipt is required.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.requireAck = true,
+    /// Param [requireDeliveryAck] 是否发送已送达回执。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.requireDeliveryAck = false,
 
-      /// Param [requireDeliveryAck] Whether the delivery receipt is required.
-      /// - `true`: Yes;
-      /// - `false`: (Default) No.
-      this.requireDeliveryAck = false,
+    /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.deleteMessagesAsExitGroup = true,
 
-      /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.deleteMessagesAsExitGroup = true,
+    /// Param [deleteMessagesAsExitChatRoom] 是否在离开聊天室时删除聊天历史消息。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.deleteMessagesAsExitChatRoom = true,
 
-      /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.deleteMessagesAsExitChatRoom = true,
+    /// Param [isChatRoomOwnerLeaveAllowed] 是否允许聊天室所有者离开聊天室。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.isChatRoomOwnerLeaveAllowed = true,
 
-      /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.isChatRoomOwnerLeaveAllowed = true,
+    /// Param [sortMessageByServerTime] 是否根据服务器收到消息的时间对消息进行排序。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.sortMessageByServerTime = true,
 
-      /// Param [sortMessageByServerTime] Whether to sort the messages by the time the server receives messages.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.sortMessageByServerTime = true,
+    /// Param [usingHttpsOnly] 是否只使用 HTTPS。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.usingHttpsOnly = true,
 
-      /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.usingHttpsOnly = true,
+    /// Param [serverTransfer] 是否自动将消息附件上传到聊天服务器。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.serverTransfer = true,
 
-      /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.serverTransfer = true,
+    /// Param [isAutoDownloadThumbnail] 是否自动下载缩略图。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.isAutoDownloadThumbnail = true,
 
-      /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.isAutoDownloadThumbnail = true,
+    /// Param [enableDNSConfig] 设置是否开启 DNS。
+    /// - （默认）`true`：是；
+    /// - `false`：否。
+    this.enableDNSConfig = true,
 
-      /// Param [enableDNSConfig] Whether to enable DNS.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.enableDNSConfig = true,
+    /// Param [dnsUrl] DNS 地址。
+    this.dnsUrl,
 
-      /// Param [dnsUrl] The DNS url.
-      this.dnsUrl,
+    /// Param [restServer] 私有部署时的 REST 服务器地址。
+    this.restServer,
 
-      /// Param [restServer] The REST server for private deployments.
-      this.restServer,
+    /// Param [imPort] 私有部署时的 IM 服务器端口。
+    this.imPort,
 
-      /// Param [imPort] The IM server port for private deployments.
-      this.imPort,
-
-      /// Param [imServer] The IM server URL for private deployment.
-      this.imServer});
+    /// Param [imServer] 私有部署时的 IM 服务器地址。
+    this.imServer,
+  });
 
   /// @nodoc
   factory EMOptions.fromJson(Map<String, dynamic> json) {

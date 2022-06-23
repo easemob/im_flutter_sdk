@@ -4,13 +4,13 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The text message class.
+/// 文本消息类。
 ///
 class EMTextMessageBody extends EMMessageBody {
   ///
-  /// Creates a text message.
+  /// 创建一条文本消息。
   ///
-  /// Param [content] The text content.
+  /// Param [content] 文本消息内容。
   ///
   EMTextMessageBody({
     required this.content,
@@ -46,12 +46,12 @@ class EMTextMessageBody extends EMMessageBody {
     return data;
   }
 
-  /// The text content.
+  /// 文本消息内容。
   late final String content;
 
-  /// The target languages to translate
+  /// 翻译的目标语言
   List<String>? targetLanguages;
 
-  /// It is Map, key is target language, value is translated content
+  /// 翻译结果
   Map<String, String>? translations;
 }

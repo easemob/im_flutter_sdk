@@ -1,56 +1,37 @@
 import '../tools/em_extension.dart';
 
 ///
-/// The class for group message read receipts.
+/// 群组消息回执类。
 ///
-/// To get the chat group message receipts, call {@link EMChatManager#fetchGroupAcks(String, String?, int)}.
+/// 调用 {@link EMChatManager#fetchGroupAcks(String, String?, int)} 方法，示例代码如下：
 ///
 /// ```dart
 ///   EMCursorResult<EMGroupMessageAck> result = await EMClient.getInstance.chatManager.fetchGroupAcks("msgId");
 /// ```
 ///
 class EMGroupMessageAck {
-  ///
-  /// Gets the group message ID.
-  ///
-  /// **Return** The group message ID.
-  ///
+  /// 群组消息 ID。
   final String messageId;
 
-  ///
-  /// Gets the ID of the  group message read receipt.
-  ///
-  /// **Return** The read receipt ID.
-  ///
+  /// 群组消息已读回执 ID。
   final String ackId;
 
-  ///
-  /// Gets the username of the user who sends the read receipt.
-  ///
-  /// **Return** The username of the read receipt sender.
-  ///
+  /// 发送已读回执的用户 ID。
   final String from;
 
   ///
-  /// Gets the read receipt extension.
+  /// 获取已读回执扩展内容。
   ///
-  /// For how to set the extension, see {@link EMChatManager#sendGroupMessageReadAck(String, String, String?)}.
-  ///
-  /// **Return** The read receipt extension.
+  /// 设定该扩展内容详见 {@link EMChatManager#sendGroupMessageReadAck(String, String, String?)}。
   ///
   final String? content;
 
   ///
-  /// Gets the number read receipts of group messages.
-  ///
-  /// **Return** The count in which read receipts of group messages are sent.
+  /// 群组消息已读回执数量。
   ///
   final int readCount;
 
-  ///
-  /// Gets the timestamp of sending read receipts of group messages.
-  ///
-  /// **Return** The timestamp of sending read receipts of group messages.
+  /// 发送已读回执的时间戳。
   final int timestamp;
 
   /// @nodoc

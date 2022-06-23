@@ -15,7 +15,7 @@ import 'tools/em_extension.dart';
 import 'internal/chat_method_keys.dart';
 
 ///
-/// The group manager class, which manages group creation and deletion, user joining and exiting the group, etc.
+/// 群组管理类, 用于管理群组的创建，删除及成员管理等操作。
 ///
 class EMGroupManager {
   static const _channelPrefix = 'com.chat.im';
@@ -36,17 +36,19 @@ class EMGroupManager {
 
   final List<EMGroupManagerListener> _listeners = [];
 
-  /// group shared file download callback.
+  ///
+  /// 群文件下载回调
+  ///
   EMDownloadCallback? downloadCallback;
 
   ///
-  /// Gets the group instance from the cache by group ID.
+  /// 根据群组 ID，从本地缓存中获取指定群组。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Return** The group instance. Returns null if the group does not exist.
+  /// **Return** 返回群组对象。如果群组不存在，返回 null。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<EMGroup?> getGroupWithId(String groupId) async {
     Map req = {'groupId': groupId};
@@ -65,11 +67,11 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets all groups of the current user from the cache.
+  /// 从本地缓存中获取当前用户的所有群组。
   ///
-  /// **Return** The group list.
+  /// **Return** 群组列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<EMGroup>> getJoinedGroups() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getJoinedGroups);
@@ -85,14 +87,14 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets all groups of the current user from the server.
+  /// 从服务器中获取当前用户加入的所有群组。
   ///
-  /// This method returns a group list which does not contain member information. If you want to update information of a group to include its member information, call {@link #fetchGroupInfoFromServer(String groupId)}.
+  /// 此操作只返回群组列表，不包含所有成员的信息。如果要更新某个群组包括成员的全部信息，需要再调用 {@link #fetchGroupInfoFromServer(String groupId)}。
   ///
-  /// **Return** The list of groups that the current user joins.
+  /// **Return** 当前用户加入的群组的列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
-  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
     int pageSize = 200,
     int pageNum = 1,
@@ -112,16 +114,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets public groups from the server with pagination.
+  /// 以分页方式从服务器获取当前用户的所有公开群组。
   ///
-  /// Param [pageSize] The number of public groups per page.
+  /// Param [pageSize] 每页返回的群组数。
   ///
-  /// Param [cursor] The cursor position from which to start to get data next time. Sets the parameter as null for the first time.
+  /// Param [cursor] 从这个游标位置开始取数据，首次获取数据时传 null 即可。
   ///
-  /// **Return** The result of {@link EMCursorResult}, including the cursor for getting data next time and the group list.
-  /// If `EMCursorResult.cursor` is an empty string (""), all data is fetched.
+  /// **Return** 包含用于下次获取数据的 cursor 以及群组列表。返回的结果中，当 `EMCursorResult.getCursor()` 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<EMCursorResult<EMGroupInfo>> fetchPublicGroupsFromServer({
     int pageSize = 200,
@@ -144,31 +145,29 @@ class EMGroupManager {
   }
 
   ///
-  /// Creates a group instance.
+  /// 创建群组。
   ///
-  /// After the group is created, the data in the cache and database will be updated and multiple devices will receive the notification event and update the group data to the cache and database.
-  /// You can set {@link com.EMMultiDeviceListener} to listen for the event. If an event occurs, the callback function
-  /// {@link EMMultiDeviceListener#onGroupEvent(int, String, List)} is triggered, where the first parameter is the event which is
-  /// {@link EMContactGroupEvent#GROUP_CREATE} for a group creation event.
+  /// 群组创建成功后，会更新内存及数据库中的数据，多端多设备会收到相应的通知事件，将群组更新到内存及数据库中。
+  /// 可通过设置 {@link com.EMMultiDeviceListener} 监听相关事件，事件回调函数为 {@link com.EMMultiDeviceListener#onGroupEvent(int, String, List)}，第一个参数为事件，创建群组事件为 {@link com.EMMultiDeviceListener#GROUP_CREATE}。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupName] 群组名称。
   ///
-  /// Param [desc] The group description.
+  /// Param [desc] 群组描述。
   ///
-  /// Param [inviteMembers] The group member array. The group owner ID is optional.
+  /// Param [inviteMembers] 群成员数组。群主 ID 可选。
   ///
-  /// Param [inviteReason] The group joining invitation.
+  /// Param [inviteReason] 用户入群邀请信息。
   ///
-  /// Param [options] The options for creating a group. See {@link EMGroupOptions}.
-  /// The options are as follows:
-  /// - The maximum number of group members. The default value is 200.
-  /// - The group style. See {@link EMGroupManager.EMGroupStyle}. The default value is {@link EMGroupStyle#PrivateOnlyOwnerInvite}.
-  /// - Whether to ask for permission when inviting a user to join the group. The default value is `false`, indicating that invitees are automatically added to the group without their permission.
-  /// - The group detail extensions.
+  /// Param [options] 群组的其他选项。请参见 {@link EMGroupOptions}。
+  /// 群组的其他选项。
+  /// - 群最大成员数，默认值为 200；
+  /// - 群组类型，详见 {@link EMGroupManager.EMGroupStyle}，默认为 {@link EMGroupStyle#EMGroupStylePrivateOnlyOwnerInvite}；
+  /// - 邀请进群是否需要对方同意，默认为 false，即邀请后直接进群；
+  /// - 群组详情扩展。
   ///
-  /// **Return** The created group instance.
+  /// **Return** 创建成功的群对象。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<EMGroup> createGroup({
     String? groupName,
@@ -193,15 +192,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the group information from the server.
+  /// 从服务器获取群组的详细信息。
   ///
-  /// This method does not get member information. If member information is required, call {@link #fetchMemberListFromServer(String, int?, String?)}.
+  /// 该方法不获取成员。如需获取成员，使用 {@link #getGroupMemberListFromServer(String, int?, String?)}。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Return** The group instance.
+  /// **Return** 群组描述。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<EMGroup> fetchGroupInfoFromServer(
     String groupId, {
@@ -220,24 +219,23 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the member list of the group with pagination.
+  /// 以分页方式获取群组成员列表。
   ///
-  /// For example:
+  /// 例如:
   ///   ```dart
   ///     EMCursorResult<String> result = await EMClient.getInstance.groupManager.fetchMemberListFromServer(groupId); // search 1
   ///     result = await EMClient.getInstance.groupManager.fetchMemberListFromServer(groupId, cursor: result.cursor); // search 2
   ///   ```
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [pageSize] The number of group members per page.
+  /// Param [pageSize] 每页返回的群组成员数。
   ///
-  /// Param [cursor] The cursor position from which to start to get data next time. Sets the parameter as null for the first time.
+  /// Param [cursor] 从这个游标位置开始取数据，首次获取数据时传 null 即可。
   ///
-  /// **Return** The result of {@link EMCursorResult}, including the cursor for getting data next time and the group member list.
-  /// If `EMCursorResult.cursor` is an empty string (""), all data is fetched.
+  /// **Return** 分页获取结果 {@link EMCursorResult}，包含用于下次获取数据的 cursor 以及群组成员列表。返回的结果中，当 `EMCursorResult.getCursor()` 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<EMCursorResult<String>> fetchMemberListFromServer(
     String groupId, {
@@ -264,19 +262,19 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the group block list from server with pagination.
+  /// 以分页方式获取群组的黑名单。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [pageSize] The number of groups per page.
+  /// Param [pageSize] 每页返回的群组数。
   ///
-  /// Param [pageNum] The page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// **Return** The group block list.
+  /// **Return** 返回的黑名单列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<String>> fetchBlockListFromServer(
     String groupId, {
@@ -297,19 +295,19 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the mute list of the group from the server.
+  /// 获取群组的禁言列表。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [pageSize] The number of muted members per page.
+  /// Param [pageSize] 每页返回的禁言成员数。
   ///
-  /// Param [pageNum] The page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// **Return** The group mute map, key is memberId and value is mute time.
+  /// **Return** 群组的禁言列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<Map<String, int>> fetchMuteListFromServer(
     String groupId, {
@@ -337,15 +335,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the allow list of the group from the server.
+  /// 获取群组白名单列表。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Return** The allow list of the group.
+  /// **Return** 群组的白名单。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<String>> fetchAllowListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
@@ -366,13 +364,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets whether the member is on the allow list of the group.
+  /// 检查当前用户是否在群组白名单中。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Return** A Boolean value to indicate whether the current user is on the allow list of the group;
+  /// **Return** 是否在群组白名单。
+  /// - `true`: 是；
+  /// - `false`: 否。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<bool> isMemberInAllowListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
@@ -387,17 +387,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the shared files of the group from the server.
+  /// 从服务器获取群组的共享文件列表。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [pageSize] The number of shared files per page.
+  /// Param [pageSize] 每页返回的共享文件数量。
   ///
-  /// Param [pageNum] The page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// **Return** The shared files.
+  /// **Return** 返回共享文件列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<EMGroupSharedFile>> fetchGroupFileListFromServer(
     String groupId, {
@@ -420,15 +420,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Gets the group announcement from the server.
+  /// 从服务器获取群组公告。
   ///
-  /// Group members can call this method.
+  /// 群成员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Return** The group announcement.
+  /// **Return** 群组公告。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<String?> fetchAnnouncementFromServer(String groupId) async {
     Map req = {'groupId': groupId};
@@ -443,17 +443,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Adds users to the group.
+  /// 向群组中添加新成员。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The array of new members to add.
+  /// Param [members] 要添加的新成员数组。
   ///
-  /// Param [welcome] The welcome message.
+  /// Param [welcome] 欢迎消息。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> addMembers(
     String groupId,
@@ -471,19 +471,19 @@ class EMGroupManager {
   }
 
   ///
-  /// Invites users to join the group.
+  /// 邀请用户加入群组。
   ///
-  /// This method works only for groups with the style of `PrivateOnlyOwnerInvite`, `PrivateMemberCanInvite`, or `PublicJoinNeedApproval`.
-  /// For a group with the PrivateOnlyOwnerInvite style, only the group owner can invite users to join the group;
-  /// For a group with the PrivateMemberCanInvite style, each group member can invite users to join the group.
+  /// 群类型为 PrivateOnlyOwnerInvite、PrivateMemberCanInvite 和 PublicJoinNeedApproval 的群组可以邀请用户加入。
   ///
-  /// Param [groupId] The group ID.
+  /// 该方法仅适用于私有群。对于 PrivateOnlyOwnerInvite 属性的群组，仅群主可邀请用户入群；对于 PrivateMemberCanInvite 属性的群组，群成员可邀请用户入群。
   ///
-  /// Param [members] The array of new members to invite.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [reason] The invitation reason.
+  /// Param [members] 要邀请的新成员数组。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// Param [reason] 邀请原因。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> inviterUser(
     String groupId,
@@ -509,15 +509,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Removes a member from the group.
+  /// 将群成员移出群组。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID.
   ///
-  /// Param [members] The username of the member to be removed.
+  /// Param [members] 要删除的成员的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> removeMembers(
     String groupId,
@@ -533,17 +533,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Adds the user to the block list of the group.
+  /// 将用户加入群组黑名单。
   ///
-  /// Users will be first removed from the group they have joined before being added to the block list of the group. The users on the group block list cannot join the group again.
+  /// 先将用户移出群，再加入黑名单。加入黑名单的用户无法加入群。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The list of users to be added to the block list.
+  /// Param [members] 要加入黑名单的用户名。
   ///
-  /// **Throws**   A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> blockMembers(
     String groupId,
@@ -559,15 +559,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Removes users from the group block list.
+  /// 将用户从群组黑名单中移除。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The users to be removed from the group block list.
+  /// Param [members] 要从黑名单中移除的用户。
   ///
-  /// **Throws**   A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> unblockMembers(
     String groupId,
@@ -584,15 +584,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Changes the group name.
+  /// 修改群组名称。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [name] The new group name.
+  /// Param [name] 修改后的群组名称。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> changeGroupName(
     String groupId,
@@ -609,15 +609,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Changes the group description.
+  /// 修改群描述。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [desc] The new group description.
+  /// Param [desc] 修改后的群描述。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> changeGroupDescription(
     String groupId,
@@ -634,11 +634,11 @@ class EMGroupManager {
   }
 
   ///
-  /// Leaves a group.
+  /// 当前登录用户退出群组。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> leaveGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -651,13 +651,13 @@ class EMGroupManager {
   }
 
   ///
-  /// Destroys the group instance.
+  /// 解散群组。
   ///
-  /// Only the group owner can call this method.
+  /// 仅群主可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> destroyGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -670,13 +670,13 @@ class EMGroupManager {
   }
 
   ///
-  /// Blocks group messages.
+  /// 屏蔽群消息。
   ///
-  /// The user that blocks group messages is still a group member, but can't receive group messages.
+  /// 屏蔽群消息的用户仍是群成员，但不会收到群消息。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> blockGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -689,11 +689,11 @@ class EMGroupManager {
   }
 
   ///
-  /// Unblocks group messages.
+  /// 取消屏蔽群消息。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> unblockGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -706,15 +706,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Transfers the group ownership.
+  /// 转让群组所有权。
   ///
-  /// Only the group owner can call this method.
+  /// 仅群主可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [newOwner] The new owner ID.
+  /// Param [newOwner] 新的群主。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 返回新群主。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> changeOwner(
     String groupId,
@@ -731,15 +733,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Adds a group admin.
+  /// 添加群组管理员。
   ///
-  /// Only the group owner can call this method and group admins cannot.
+  /// 仅群主可调用此方法，管理员无权限。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId]   群组 ID。
   ///
-  /// Param [memberId] The username of the admin to add.
+  /// Param [memberId]  要添加的管理员的 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return**  返回更新后的群组对象。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> addAdmin(
     String groupId,
@@ -755,15 +759,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Removes a group admin.
+  /// 删除群组管理员。
   ///
-  /// Only the group owner can call this method.
+  /// 仅群主可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId]  群组 ID。
   ///
-  /// Param [adminId] The username of the admin to remove.
+  /// Param [adminId] 要移除的群组管理员的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 返回更新后的群组对象。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> removeAdmin(
     String groupId,
@@ -779,17 +785,19 @@ class EMGroupManager {
   }
 
   ///
-  /// Mutes group members.
+  /// 将指定成员禁言
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The list of members to be muted.
+  /// Param [members] 要禁言的成员列表。
   ///
-  /// Param [duration] The mute duration in milliseconds.
+  /// Param [duration] 禁言时长，单位为毫秒。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Return** 返回更新后的群组对象。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> muteMembers(
     String groupId,
@@ -806,15 +814,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Unmutes group members.
+  /// 取消禁言指定用户。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The list of members to be muted.
+  /// Param [members] 要解除禁言的成员列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> unMuteMembers(
     String groupId,
@@ -830,13 +838,13 @@ class EMGroupManager {
   }
 
   ///
-  /// Mutes all members.
+  /// 开启全员禁言。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> muteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
@@ -850,13 +858,13 @@ class EMGroupManager {
   }
 
   ///
-  /// Unmutes all members.
+  /// 关闭全员禁言。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> unMuteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
@@ -870,15 +878,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Adds members to the allow list of the group.
+  /// 将成员添加至群组白名单。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The members to be added to the allow list of the group.
+  /// Param [members] 要添加至白名单的成员列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> addAllowList(
     String groupId,
@@ -894,15 +902,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Removes members from the allow list of the group.
+  /// 将成员移除群组白名单。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The members to be removed from the allow list of the group.
+  /// Param [members] 要移除白名单的成员列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> removeAllowList(
     String groupId,
@@ -919,15 +927,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Uploads the shared file to the group.
+  /// 上传共享文件至群组。
   ///
-  /// When a shared file is uploaded, the upload progress callback will be triggered.
+  /// 上传共享文件会触发上传进度回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [filePath] The local path of the shared file.
+  /// Param [filePath] 共享文件的本地路径。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> uploadGroupSharedFile(
     String groupId,
@@ -944,17 +952,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Downloads the shared file of the group.
+  /// 下载指定的群组共享文件。
   ///
-  /// Note: The callback is only used for progress callback.
+  /// 注意：callback 只做进度回调用。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [fileId] The ID of the shared file.
+  /// Param [fileId]  共享文件的 ID。
   ///
-  /// Param [savePath] The local path of the shared file.
+  /// Param [savePath] 共享文件的本地路径。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> downloadGroupSharedFile({
     required String groupId,
@@ -972,15 +980,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Removes a shared file of the group.
+  /// 删除指定的群组共享文件。
   ///
-  /// Group members can delete their own uploaded files. The group owner or admin can delete all shared files.
+  /// 群成员可删除自己上传的文件，群主或者管理员可删除所有共享文件。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [fileId] The ID of the shared file.
+  /// Param [fileId] 共享文件的 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> removeGroupSharedFile(
     String groupId,
@@ -997,15 +1005,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Updates the group announcement.
+  /// 更新群公告。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [announcement] The group announcement.
+  /// Param [announcement] 群组公告。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updateGroupAnnouncement(
     String groupId,
@@ -1022,15 +1030,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Updates the group extension field.
+  /// 更新群组扩展字段。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [extension] The group extension field.
+  /// Param [extension] 群组扩展字段。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updateGroupExtension(
     String groupId,
@@ -1047,14 +1055,13 @@ class EMGroupManager {
   }
 
   ///
-  /// Joins a public group.
+  /// 当前登录用户加入公开群。
   ///
-  /// For a group that requires no authentication，users can join it freely without obtaining permissions from the group owner.
-  /// For a group that requires authentication, users need to wait for the group owner to agree before joining the group. For details, see {@link EMGroupStyle}.
+  /// 若是自由加入的公开群，直接进入群组；若公开群需验证，群主同意后才能入群。详见 {@link EMGroupStyle}。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> joinPublicGroup(
     String groupId,
@@ -1070,15 +1077,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Requests to join a group.
+  /// 申请加入群组。
   ///
-  /// This method works only for public groups requiring authentication, i.e., groups with the style of {@link EMGroupStyle#PublicJoinNeedApproval}.
+  /// 该方法仅适用于需要验证的公开群组，即类型为 {@link EMGroupStyle#EMGroupStylePublicJoinNeedApproval} 的群组。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [reason] The reason for requesting to join the group.
+  /// Param [reason] 申请入群的原因。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> requestToJoinPublicGroup(
     String groupId, {
@@ -1096,15 +1103,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Approves a group request.
+  /// 批准入群申请。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [username] The username of the user who sends a request to join the group.
+  /// Param [username] 申请人的用户名。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> acceptJoinApplication(
     String groupId,
@@ -1121,17 +1128,17 @@ class EMGroupManager {
   }
 
   ///
-  /// Declines a group request.
+  /// 拒绝入群申请。
   ///
-  /// Only the group owner or admin can call this method.
+  /// 仅群主和管理员可调用此方法。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [username] The username of the user who sends a request to join the group.
+  /// Param [username] 申请人的用户名。
   ///
-  /// Param [reason] The reason of declining.
+  /// Param [reason] 拒绝理由。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> declineJoinApplication(
     String groupId,
@@ -1151,15 +1158,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Accepts a group invitation.
+  /// 接受入群邀请。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [inviter] The user who initiates the invitation.
+  /// Param [inviter] 邀请者的用户名。
   ///
-  /// **Return** The group instance which the user has accepted the invitation to join.
+  /// **Return** 用户已接受邀请的群组对象。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<EMGroup> acceptInvitation(
     String groupId,
@@ -1177,15 +1184,15 @@ class EMGroupManager {
   }
 
   ///
-  /// Declines a group invitation.
+  /// 拒绝入群邀请。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [inviter] The username of the inviter.
+  /// Param [inviter] 邀请者的用户名。
   ///
-  /// Param [reason] The reason of declining.
+  /// Param [reason] 拒绝理由。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> declineInvitation({
     required String groupId,
@@ -1204,11 +1211,11 @@ class EMGroupManager {
   }
 
   ///
-  /// Registers a group manager listener.
+  /// 注册群变动事件监听器。
   ///
-  /// The registered listener needs to be used together with {@link #removeGroupManagerListener(EMGroupManagerListener)}.
+  /// 如需删除群变动事件监听器，可调用 {@link #removeGroupManagerListener(EMGroupManagerListener)}。
   ///
-  /// Param [listener] The group manager listener to be registered.
+  /// Param [listener] 要注册的群组事件监听器。
   ///
   void addGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
@@ -1216,18 +1223,18 @@ class EMGroupManager {
   }
 
   ///
-  /// Removes a group manager listener.
+  /// 移除群组变化监听器。
   ///
-  /// This method removes a group manager listener registered with {@link #addGroupManagerListener(EMGroupManagerListener)}.
+  /// 该方法在注册 {@link #addGroupManagerListener(EMGroupManagerListener)}后调用。
   ///
-  /// Param [listener] The group manager listener to be removed.
+  /// Param [listener] 要移除的群组监听器。
   ///
   void removeGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
   }
 
   ///
-  /// Removes all group manager listener.
+  /// 移除所有群组变化监听器。
   ///
   void clearAllGroupManagerListeners() {
     _listeners.clear();
