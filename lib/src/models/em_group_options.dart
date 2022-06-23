@@ -12,7 +12,7 @@ class EMGroupOptions {
   ///
   /// Param [style] The group style: {EMGroupStyle}.
   ///
-  /// Param [count] The maximum number of members in a group. The default value is 200.
+  /// Param [maxCount] The maximum number of members in a group. The default value is 200.
   ///
   /// Param [inviteNeedConfirm] Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
   ///
@@ -21,7 +21,7 @@ class EMGroupOptions {
   ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
   ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
   ///
-  /// Param [extension] Group detail extensions which can be in the JSON format to contain more group information.
+  /// Param [ext] Group detail extensions which can be in the JSON format to contain more group information.
   ///
   EMGroupOptions({
     this.style = EMGroupStyle.PrivateOnlyOwnerInvite,
