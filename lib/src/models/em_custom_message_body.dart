@@ -4,7 +4,7 @@ import 'em_chat_enums.dart';
 import 'em_message_body.dart';
 
 ///
-/// The custom message body.
+/// 自定义消息体类。
 ///
 class EMCustomMessageBody extends EMMessageBody {
   ///

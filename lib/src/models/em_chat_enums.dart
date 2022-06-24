@@ -27,12 +27,6 @@ enum EMConversationType {
   ChatRoom,
 }
 
-@Deprecated('Switch to using EMPushManager#DisplayStyle instead')
-enum EMPushStyle {
-  Simple,
-  Summary,
-}
-
 ///
 /// 会话类型枚举。
 ///
@@ -169,108 +163,145 @@ enum EMSearchDirection {
 }
 
 ///
-/// Multi-device event types.
+/// 多设备登录事件类型。
 ///
-/// This enumeration takes user A logged into both DeviceA1 and DeviceA2 as an example to illustrate the various multi-device event types and when these events are triggered.
+/// 本枚举类以用户 A 同时登录设备 A1 和 设备 A2 为例，描述多设备登录各事件的触发时机。
 ///
 enum EMMultiDevicesEvent {
-  /// The current user removed a contact on another device.
+  /// 用户 A 在设备 A1 上删除了好友，则设备 A2 上会收到该事件。
   CONTACT_REMOVE,
 
-  /// The current user accepted a friend request on another device.
+  /// 用户 A 在设备 A1 上同意了好友请求，则设备 A2 上会收到该事件。
   CONTACT_ACCEPT,
 
-  /// The current user declined a friend request on another device.
+  /// 用户 A 在设备 A1 上拒绝了好友请求，则设备 A2 上会收到该事件。
   CONTACT_DECLINE,
 
-  /// The current user added a contact to the block list on another device.
+  /// 用户 A 在设备 A1 上将其他用户加入了黑名单，则设备 A2 上会收到该事件。
   CONTACT_BAN,
 
-  /// The current user removed a contact from the block list on another device.
+  /// 用户 A 在设备 A1 上将其他用户移出了黑名单，则设备 A2 上会收到该事件。
   CONTACT_ALLOW,
 
-  /// The current user created a group on another device.
+  /// 用户 A 在设备 A1 上创建了群组，则设备 A2 上会收到该事件。
   GROUP_CREATE,
 
-  /// The current user destroyed a group on another device.
+  /// 用户 A 在设备 A1 上销毁了群组，则设备 A2 上会收到该事件。
   GROUP_DESTROY,
 
-  /// The current user joined a group on another device.
+  /// 用户 A 在设备 A1 上加入了群组，则设备 A2 会收到该事件。
   GROUP_JOIN,
 
-  /// The current user left a group on another device.
+  /// 用户 A 在设备 A1 上退出群组，则设备 A2 会收到该事件。
   GROUP_LEAVE,
 
-  /// The current user requested to join a group on another device.
+  /// 用户 A 在设备 A1 上申请加入群组，则设备 A2 会收到该事件。
   GROUP_APPLY,
 
-  /// The current user accepted a group request on another device.
+  /// 用户 A 在设备 A1 上收到了入群申请，则设备 A2 会收到该事件。
   GROUP_APPLY_ACCEPT,
 
-  /// The current user declined a group request on another device.
+  /// 用户 A 在设备 A1 上拒绝了入群申请，设备 A2 上会收到该事件。
   GROUP_APPLY_DECLINE,
 
-  /// The current user invited a user to join the group on another device.
+  /// 用户 A 在设备 A1 上邀请了其他用户进入群组，则设备 A2 上会收到该事件。
   GROUP_INVITE,
 
-  /// The current user accepted a group invitation on another device.
+  /// 用户 A 在设备 A1 上同意了其他用户的群组邀请，则设备 A2 上会收到该事件。
   GROUP_INVITE_ACCEPT,
 
-  /// The current user declined a group invitation on another device.
+  /// 用户 A 在设备 A1 上拒绝了其他用户的群组邀请，则设备 A2 上会收到该事件。
   GROUP_INVITE_DECLINE,
 
-  /// The current user kicked a member out of a group on another device.
+  /// 用户 A 在设备 A1 上将其他用户踢出群组，则设备 A2 上会收到该事件。
   GROUP_KICK,
 
-  /// The current user added a member to a group block list on another device.
+  /// 用户 A 在设备 A1 上被加入黑名单，则设备 A2 上会收到该事件。
   GROUP_BAN,
 
-  /// The current user removed a member from a group block list on another device.
+  /// 用户 A 在设备 A1 上将其他用户移出群组，则设备 A2 上会收到该事件。
   GROUP_ALLOW,
 
-  /// The current user blocked a group on another device.
+  /// 用户 A 在设备 A1 上屏蔽了某个群组的消息，设备 A2 上会收到该事件。
   GROUP_BLOCK,
 
-  /// The current user unblocked a group on another device.
+  /// 用户 A 在设备 A1 上取消屏蔽了某个群组的消息，设备 A2 上会收到该事件。
   GROUP_UNBLOCK,
 
-  /// The current user transferred the group ownership on another device.
+  /// 用户 A 在设备 A1 上更新了群主，则设备 A2 上会收到该事件。
   GROUP_ASSIGN_OWNER,
 
-  /// The current user added an admin on another device.
+  /// 用户 A 在设备 A1 上添加了群组管理员，则设备 A2 上会收到该事件。
   GROUP_ADD_ADMIN,
 
-  /// The current user removed an admin on another device.
+  /// 用户 A 在设备 A1 上移除了群组管理员，则设备 A2 上会收到该事件。
   GROUP_REMOVE_ADMIN,
 
-  /// The current user muted a member on another device.
+  /// 用户 A 在设备 A1 上禁言了群成员，则设备 A2 上会收到该事件。
   GROUP_ADD_MUTE,
 
-  /// The current user unmuted a member on another device.
+  /// 用户 A 在设备 A1 上取消禁言了群成员，则设备 A2 上会收到该事件。
   GROUP_REMOVE_MUTE,
 
-  /// User A creates an event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  /// 用户 A 在设备 A1 上将其他成员添加到群组白名单中，则设备 A2 上会收到该事件。
+  GROUP_ADD_USER_WHITE_LIST,
+
+  /// 用户 A 在设备 A1 上将其他成员移除群组白名单，则设备 A2 上会收到该事件。
+  GROUP_REMOVE_USER_WHITE_LIST,
+
+  /// 用户 A 在设备 A1 上将所有其他群组成员添加到群组禁言列表，则设备 A2 上会收到该事件。
+  GROUP_ALL_BAN,
+
+  /// 用户 A 在设备 A1 上将所有其他群组成员移除群组禁言列表，则设备 A2 上会收到该事件。
+  GROUP_REMOVE_ALL_BAN,
+
+  /// 用户 A 在设备 A1 上创建了子区，则设备 A2 上会收到该事件。
   CHAT_THREAD_CREATE,
 
-  /// User A destroys the event in the sub-area of device A1, and all other devices logged in to this account will receive this event
+  /// 用户 A 在设备 A1 上移除了子区，则设备 A2 上会收到该事件。
   CHAT_THREAD_DESTROY,
 
-  /// User A joins the event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  /// 用户 A 在设备 A1 上加入了子区，则设备 A2 上会收到该事件。
   CHAT_THREAD_JOIN,
 
-  /// User A leaves the event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  /// 用户 A 在设备 A1 上离开了子区，则设备 A2 上会收到该事件。
   CHAT_THREAD_LEAVE,
 
-  /// User A is kicked in the sub-area of device A1, and all other devices that log in to this account will receive this event
-  CHAT_THREAD_KICK,
-
-  /// User A updates the event in the sub-area of device A1, and other devices logged in to this account will receive this event
+  /// 用户 A 在设备 A1 上更新了子区信息，则设备 A2 上会收到该事件。
   CHAT_THREAD_UPDATE,
+
+  /// 用户 A 在设备 A1 上将其他用户踢出子区，则设备 A2 上会收到该事件。
+  CHAT_THREAD_KICK,
 }
+
+///
+/// 子区事件类型枚举。
+///
 enum EMChatThreadOperation {
+  /// 未知类型。
   UnKnown,
+
+  /// 子区创建。
   Create,
+
+  /// 子区更新。
   Update,
+
+  /// 子区删除。
   Delete,
+
+  /// 更新子区最新一条消息。
   Update_Msg,
+}
+
+///
+/// 推送标题显示内容
+///
+///
+enum DisplayStyle {
+  /// 显示通用标题，如“您有一条新消息”
+  Simple,
+
+  /// 显示具体内容
+  Summary,
 }

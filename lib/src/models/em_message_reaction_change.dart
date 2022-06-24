@@ -1,16 +1,16 @@
 import 'em_message_reaction.dart';
 
 ///
-/// The message reaction change event class.
+/// 消息 Reaction 事件类。
 ///
 class EMMessageReactionChange {
-  /// The conversation ID
+  /// 会话 ID。
   final String conversationId;
 
-  /// The message ID
+  /// 消息 ID。
   final String messageId;
 
-  /// The Reaction which is changed
+  /// Reaction 列表。
   final List<EMMessageReaction> reactions;
 
   EMMessageReactionChange._private({

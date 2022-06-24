@@ -8,107 +8,89 @@ import 'models/em_message_reaction_change.dart';
 import 'models/em_presence.dart';
 
 ///
-/// The chat connection listener.
+/// 服务器连接监听
 ///
-/// For the occasion of onDisconnected during unstable network condition, you don't need to reconnect manually,
-/// the chat SDK will handle it automatically.
-///
-/// There are only two states: onConnected, onDisconnected.
-///
-/// Note: We recommend not to update UI based on those methods, because this method is called on worker thread. If you update UI in those methods, other UI errors might be invoked.
-/// Also do not insert heavy computation work here, which might invoke other listeners to handle this connection event.
-///
-/// Register:
+/// 注册监听:
 ///   ```dart
 ///     EMClient.getInstance.addConnectionListener(mConnectionListener);
 ///   ```
 ///
-/// Unregister:
+/// 移除监听:
 ///   ```dart
 ///     EMClient.getInstance.removeConnectionListener(mConnectionListener);
 ///   ```
 ///
 abstract class EMConnectionListener {
   ///
-  /// Occurs when the SDK connects to the chat server successfully.
+  /// 成功连接到 chat 服务器时触发的回调。
   ///
   void onConnected();
 
   ///
-  /// Occurs when the SDK disconnect from the chat server.
-  ///
-  /// Note that the logout may not be performed at the bottom level when the SDK is disconnected.
+  ///  和 chat 服务器断开连接时触发的回调。
   ///
   void onDisconnected();
 
   ///
-  /// Occurs when the current user account is logged in to another device.
+  /// 其他设备登录回调。
   ///
   void onUserDidLoginFromOtherDevice();
 
   ///
-  /// Occurs when the current chat user is removed from the server.
+  /// 被服务器移除回调。
   ///
   void onUserDidRemoveFromServer();
 
   ///
-  /// Occurs when the current chat user is forbid from the server.
+  /// 被服务器禁止回调。
   ///
   void onUserDidForbidByServer();
 
   ///
-  /// Occurs when the current chat user is changed password.
+  /// 用户密码变更回调。
   ///
   void onUserDidChangePassword();
 
   ///
-  /// Occurs when the current chat user logged to many devices.
+  /// 登录设备过多回调。
   ///
   void onUserDidLoginTooManyDevice();
 
   ///
-  /// Occurs when the current chat user kicked by other device.
+  /// 被其他设备踢掉回调。
   ///
   void onUserKickedByOtherDevice();
 
   ///
-  /// Occurs when the current chat user authentication failed.
+  /// 鉴权失败回调。
   ///
   void onUserAuthenticationFailed();
 
   ///
-  /// Occurs when the token is about to expire.
+  /// Agora token 即将过期时触发。
   ///
   void onTokenWillExpire();
 
   ///
-  /// Occurs when the token has expired.
+  /// Agora token 已过期时触发。
   ///
   void onTokenDidExpire();
 }
 
 ///
-/// The multi-device event listener.
-/// Listens for callback for the current user's actions on other devices, including contact changes and group changes.
+/// 多设备事件监听器。
 ///
-/// Registers a multi-device event listener:
-/// ```dart
-///   EMClient.getInstance.addMultiDeviceListener(mMultiDeviceListener);
-/// ```
+/// 该监听器监听联系人事件和群组事件。
 ///
-/// Removes a multi-device event listener:
-/// ```dart
-///   EMClient.getInstance.removeMultiDeviceListener(mMultiDeviceListener);
-/// ```
 abstract class EMMultiDeviceListener {
   ///
-  /// The multi-device event callback of contact.
+  /// 联系人事件监听回调。
   ///
-  /// Param [event] The event type.
+  /// Param [event] 事件类型。
   ///
-  /// Param [username] The username.
+  /// Param [username]用户 ID。
   ///
-  /// Param [ext] The extended Information.
+  /// Param [ext] 用户相关的扩展信息。
   ///
   void onContactEvent(
     EMMultiDevicesEvent event,
@@ -117,13 +99,13 @@ abstract class EMMultiDeviceListener {
   );
 
   ///
-  /// The multi-device event callback of group.
+  /// 群组事件监听回调。
   ///
-  /// Param [event] The event type.
+  /// Param [event] 事件类型。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId]  群组 ID。
   ///
-  /// Param [usernames] The array of usernames.
+  /// Param [usernames] 用户 ID 数组。
   ///
   void onGroupEvent(
     EMMultiDevicesEvent event,
@@ -132,13 +114,13 @@ abstract class EMMultiDeviceListener {
   );
 
   ///
-  /// The multi-device event callback of thread.
+  /// 子区事件监听回调。
   ///
-  /// Param [event] The event type.
+  /// Param [event] 事件类型。
   ///
-  /// Param [chatThreadId] subregion id.
+  /// Param [chatThreadId] 子区 id
   ///
-  /// Param [usernames] The array of usernames.
+  /// Param [usernames] 用户 ID 数组。
   ///
   void onChatThreadEvent(
     EMMultiDevicesEvent event,
@@ -148,107 +130,119 @@ abstract class EMMultiDeviceListener {
 }
 
 ///
-///  The custom event listener.
+///   自定义事件监听器。
 ///
 abstract class EMCustomListener {
   void onDataReceived(Map map);
 }
 
 ///
-/// The contact updates listener.
+/// 联系人更新监听。
 ///
-/// Occurs when the contact changes, including requests to add friends, notifications to delete friends,
-/// requests to accept friends, and requests to reject friends.
+/// 监听联系人变化，包括添加好友，移除好友，同意好友请求和拒绝好友请求等。
 ///
-/// Register the listener：
+/// 添加监听：
 /// ```dart
 ///   EMClient.getInstance.contactManager.addContactListener(contactListener);
 /// ```
 ///
-/// Unregister the listener：
+/// 移除监听：
 /// ```dart
 ///   EMClient.getInstance.contactManager.removeContactListener(contactListener);
 /// ```
 ///
 abstract class EMContactManagerListener {
   ///
-  /// Occurs when user is added as a contact by another user.
+  /// 添加好友回调。
   ///
-  /// Param [userName] The new contact to be added.
+  /// Param [userName] 新添加的好友。
   ///
   void onContactAdded(String userName);
 
   ///
-  /// Occurs when a user is removed from the contact list by another user.
+  /// 删除好友回调。
   ///
-  /// Param [userName] The user who is removed from the contact list by another user.
+  /// Param [userName] 删除的好友。
   ///
   void onContactDeleted(String userName);
 
   ///
-  /// Occurs when a user receives a friend request.
+  /// 好友申请回调
   ///
-  /// Param [userName] The user who initiated the friend request.
+  /// Param [userName] 申请用户id。
   ///
-  /// Param [reason] The invitation message.
+  /// Param [reason] 申请原因。
   ///
   void onContactInvited(String userName, String? reason);
 
   ///
-  /// Occurs when a friend request is approved.
+  /// 发出的好友申请被对方同意。
   ///
-  /// Param [userName] The user who initiated the friend request.
+  /// Param [userName] 对方id。
   ///
   void onFriendRequestAccepted(String userName);
 
   ///
-  /// Occurs when a friend request is declined.
+  /// 发出的好友申请被对方拒绝。
   ///
-  /// Param [userName] The user who initiated the friend request.
+  /// Param [userName] 对方id。
   ///
   void onFriendRequestDeclined(String userName);
 }
 
 ///
-/// The chat room manager listener.
+/// 聊天室监听。
+///
+/// 添加监听：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.addChatRoomManagerListener(listener);
+/// ```
+///
+/// 移除监听：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
+/// ```
 ///
 abstract class EMChatRoomManagerListener {
   ///
-  /// Occurs when the chat room is destroyed.
+  /// 聊天室解散的回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [roomName] The chatroom name.
+  /// Param [roomName] 聊天室名称。
   ///
   void onChatRoomDestroyed(String roomId, String? roomName);
 
   ///
-  /// Occurs when a member join the chatroom.
+  /// 聊天室加入新成员回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [participant] The new member's username.
+  /// Param [participant] 新成员用户 ID。
   ///
   void onMemberJoinedFromChatRoom(String roomId, String participant);
 
   ///
-  /// Occurs when a member leaves the chatroom.
+  /// 聊天室成员主动退出回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [participant] The new member's username.
+  /// Param [participant] 离开聊天室的用户 ID。
   ///
   void onMemberExitedFromChatRoom(
-      String roomId, String? roomName, String participant);
+    String roomId,
+    String? roomName,
+    String participant,
+  );
 
   ///
-  /// Occurs when a member is dismissed from a chat room.
+  /// 聊天室成员被移出聊天室回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [roomName] The chatroom name.
+  /// Param [roomName] 聊天室名称。
   ///
-  /// Param [participant] The member is dismissed from a chat room.
+  /// Param [participant] 被移出聊天室的用户 ID。
   ///
   void onRemovedFromChatRoom(
     String roomId,
@@ -257,13 +251,13 @@ abstract class EMChatRoomManagerListener {
   );
 
   ///
-  /// Occurs when there are chat room member(s) muted (added to mute list),
+  /// 有成员被禁言回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [mutes] The members to be muted.
+  /// Param [mutes] 被禁言成员的用户 ID。
   ///
-  /// Param [expireTime] The mute duration.
+  /// Param [expireTime] 禁言过期时间戳。
   ///
   void onMuteListAddedFromChatRoom(
     String roomId,
@@ -272,11 +266,11 @@ abstract class EMChatRoomManagerListener {
   );
 
   ///
-  /// Occurs when there are chat room member(s) unmuted (removed from mute list).
+  /// 有成员从禁言列表中移除回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [mutes] The member(s) muted is removed from the mute list.
+  /// Param [mutes] 被移出禁言列表的用户 ID 列表。
   ///
   void onMuteListRemovedFromChatRoom(
     String roomId,
@@ -284,139 +278,146 @@ abstract class EMChatRoomManagerListener {
   );
 
   ///
-  /// Occurs when a member has been changed to an admin.
+  /// 有成员设置为聊天室管理员的回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [admin] The member who has been changed to an admin.
+  /// Param [admin] 设置为管理员的成员的用户 ID。
   ///
   void onAdminAddedFromChatRoom(String roomId, String admin);
 
   ///
-  /// Occurs when an admin is been removed.
+  /// 移除聊天室管理员权限的回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [admin] The member whose admin permission is removed.
+  /// Param [admin] 被移出管理员权限的成员的用户 ID。
   ///
   void onAdminRemovedFromChatRoom(String roomId, String admin);
 
   ///
-  ///  Occurs when the chat room ownership has been transferred.
+  /// 转移聊天室的所有权的回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [newOwner] The new owner.
+  /// Param [newOwner] 新聊天室所有者的用户 ID。
   ///
-  /// Param [oldOwner] The previous owner.
+  /// Param [oldOwner] 原来的聊天室所有者的用户 ID。
   ///
   void onOwnerChangedFromChatRoom(
       String roomId, String newOwner, String oldOwner);
 
   ///
-  /// Occurs when the announcement changed.
+  /// 聊天室公告更新回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [announcement] The changed announcement.
+  /// Param [announcement] 更新后的聊天室公告。
   ///
   void onAnnouncementChangedFromChatRoom(String roomId, String announcement);
 
   ///
-  /// Occurs when the chat room member(s) is added to the allowlist.
+  /// 有成员被加入聊天室白名单的回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The member(s) to be added to the allowlist.
+  /// Param [members] 被加入白名单的聊天室成员的用户 ID。
   ///
   void onAllowListAddedFromChatRoom(String roomId, List<String> members);
 
   ///
-  /// Occurs when the chat room member(s) is removed from the allowlist.
+  /// 有成员被移出聊天室白名单的回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [members] The member(s) is removed from the allowlist.
+  /// Param [members] 被移出聊天室白名单列表的成员的用户 ID。
   ///
   void onAllowListRemovedFromChatRoom(String roomId, List<String> members);
 
   ///
-  /// Occurs when all members in the chat room are muted or unmuted.
+  /// 聊天室全员禁言状态变化回调。
   ///
-  /// Param [roomId] The chatroom ID.
+  /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [isAllMuted] Whether all chat room members is muted or unmuted.
-  /// - `true`: Yes;
-  /// - `false`: No.
+  /// Param [isAllMuted] 是否所有聊天室成员被禁言。
+  /// - `true`: 是；
+  /// - `false`: 否。
   ///
   void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted);
 }
 
 ///
-/// The group change listener.
+/// 群组事件监听器。
 ///
-/// Occurs when the following group events happens: requesting to join a group, approving or declining a group request, and kicking a user out of a group.
-///
-/// Registers a group change listener:
+/// 添加监听器:
 /// ```dart
-///   EMClient.getInstance.groupManager.addGroupChangeListener(listener);
+///   EMClient.getInstance.groupManager.addGroupManagerListener(listener);
 /// ```
 ///
-/// Unregisters a group change listener:
+/// 移除监听器:
 /// ```dart
-///   EMClient.getInstance.groupManager.removeGroupChangeListener(listener);
+///   EMClient.getInstance.groupManager.removeGroupManagerListener(listener);
 /// ```
+///
 abstract class EMGroupManagerListener {
   ///
-  /// Occurs when the user receives a group invitation.
+  /// 当前用户收到入群邀请的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// 例如，用户 B 邀请用户 A 入群，则用户 A 会收到该回调。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [inviter] The invitee ID.
+  /// Param [groupName] 群组名称。
   ///
-  /// Param [reason] The reason for invitation.
+  /// Param [inviter] 邀请人的用户 ID。
+  ///
+  /// Param [reason] 邀请理由。
   ///
   void onInvitationReceivedFromGroup(
       String groupId, String? groupName, String inviter, String? reason);
 
   ///
-  /// Occurs when the group owner or administrator receives a group request from a user.
+  /// 对端用户接收群组申请的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// 该回调是由对端用户接收当前用户发送的群组申请触发的。如，用户 A 向用户 B 发送群组申请，用户 B 收到该回调。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [applicant] The ID of the user requesting to join the group.
+  /// Param [groupName] 群组名称。
   ///
-  /// Param [reason] The reason for requesting to join the group.
+  /// Param [applicant] 申请人的用户 ID。
+  ///
+  /// Param [reason] 申请加入原因。
   ///
   void onRequestToJoinReceivedFromGroup(
       String groupId, String? groupName, String applicant, String? reason);
 
   ///
-  /// Occurs when a group request is accepted.
+  /// 对端用户接受当前用户发送的群组申请的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// 若群组类型为 `PublicJoinNeedApproval`，用户 B 接受用户 A 的群组申请后，用户 A 会收到该回调。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [accepter] The ID of the user that accepts the group request.
+  /// Param [groupName] 群组名称。
+  ///
+  /// Param [accepter] 接受人的用户 ID。
   ///
   void onRequestToJoinAcceptedFromGroup(
       String groupId, String? groupName, String accepter);
 
   ///
-  /// Occurs when a group request is declined.
+  /// 对端用户拒绝群组申请的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// 该回调是由对端用户拒绝当前用户发送的群组申请触发的。例如，用户 B 拒绝用户 A 的群组申请后，用户 A 会收到该回调。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [decliner] The ID of the user that declines the group request.
+  /// Param [groupName] 群组名称。
   ///
-  /// Param [reason] The reason for declining.
+  /// Param [decliner] 拒绝人的用户 ID。
+  ///
+  /// Param [reason] 拒绝理由。
   ///
   void onRequestToJoinDeclinedFromGroup(
     String groupId,
@@ -426,13 +427,15 @@ abstract class EMGroupManagerListener {
   );
 
   ///
-  /// Occurs when a group invitation is accepted.
+  /// 当前用户收到对端用户同意入群邀请触发的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// 例如，用户 B 同意了用户 A 的群组邀请，用户 A 会收到该回调。
   ///
-  /// Param [invitee] The invitee ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [reason] The reason for acceptance.
+  /// Param [invitee] 受邀人的用户 ID。
+  ///
+  /// Param [reason] 接受理由。
   ///
   void onInvitationAcceptedFromGroup(
     String groupId,
@@ -441,324 +444,330 @@ abstract class EMGroupManagerListener {
   );
 
   ///
-  /// Occurs when a group invitation is declined.
+  /// 当前用户收到群组邀请被拒绝的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// 该回调是由当前用户收到对端用户拒绝入群邀请触发的。例如，用户 B 拒绝了用户 A 的群组邀请，用户 A 会收到该回调。
   ///
-  /// Param [invitee] The invitee ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [reason] The reason for declining.
+  /// Param [invitee] 受邀人的用户 ID。
+  ///
+  /// Param [reason] 拒绝理由。
   ///
   void onInvitationDeclinedFromGroup(
       String groupId, String invitee, String? reason);
 
   ///
-  /// Occurs when the current user is removed from the group by the group admin.
+  /// 当前用户被移出群组时的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupName] 群组名称。
   ///
   void onUserRemovedFromGroup(String groupId, String? groupName);
 
   ///
-  /// Occurs when a group is destroyed.
+  /// 当前用户收到群组被解散的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [groupName] The group name.
+  /// Param [groupName] 群组名称。
   ///
   void onGroupDestroyed(String groupId, String? groupName);
 
   ///
-  /// Occurs when the group invitation is accepted automatically.
-  /// For settings, see {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
-  /// The SDK will join the group before notifying the app of the acceptance of the group invitation.
+  /// 当前用户自动同意入群邀请的回调。
+  /// 具体配置,参考 {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [inviter] The inviter ID.
+  /// Param [inviter] 邀请人 ID。
   ///
-  /// Param [inviteMessage] The invitation message.
+  /// Param [inviteMessage] 邀请信息。
   ///
   void onAutoAcceptInvitationFromGroup(
       String groupId, String inviter, String? inviteMessage);
 
   ///
-  /// Occurs when one or more group members are muted.
+  /// 有成员被禁言回调
   ///
-  /// Note: The mute function is different from a block list.
-  /// A user, when muted, can still see group messages, but cannot send messages in the group.
-  /// However, a user on the block list can neither see nor send group messages.
+  /// 用户禁言后，将无法在群中发送消息，但可查看群组中的消息，而黑名单中的用户无法查看和发送群组消息。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [mutes] The member(s) added to the mute list.
+  /// Param [mutes] 被禁言成员的用户 ID。
   ///
-  /// Param [muteExpire] The mute duration in milliseconds.
+  /// Param [muteExpire] 禁言时长。
   ///
   void onMuteListAddedFromGroup(
       String groupId, List<String> mutes, int? muteExpire);
 
   ///
-  /// Occurs when one or more group members are unmuted.
+  /// 有成员被解除禁言的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [mutes] The member(s) added to the mute list.
+  /// Param [mutes] 用户被解除禁言的列表
   ///
   void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
 
   ///
-  /// Occurs when a member is set as an admin.
+  /// 成员设置为管理员的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [admin] The member that is set as an admin.
+  /// Param [admin] 设置为管理员的成员的用户 ID。
   ///
   void onAdminAddedFromGroup(String groupId, String admin);
 
   ///
-  /// Occurs when a member's admin privileges are removed.
+  /// 取消成员的管理员权限的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [admin] The member whose admin privileges are removed.
+  /// Param [admin] 被移除管理员的成员用户 ID。
   ///
   void onAdminRemovedFromGroup(String groupId, String admin);
 
   ///
-  /// Occurs when the group ownership is transferred.
+  /// 转移群主权限的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [newOwner] The new owner.
+  /// Param [newOwner] 新群主的用户 ID。
   ///
-  /// Param [oldOwner] The previous owner.
+  /// Param [oldOwner] 原群主的用户 ID。
   ///
   void onOwnerChangedFromGroup(
       String groupId, String newOwner, String oldOwner);
 
   ///
-  /// Occurs when a member joins a group.
+  /// 新成员加入群组的回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [member] The ID of the new member.
+  /// Param [member] 新成员的用户 ID。
   ///
   void onMemberJoinedFromGroup(String groupId, String member);
 
   ///
-  /// Occurs when a member proactively leaves the group.
+  /// 群组成员主动退出回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [member] The member leaving the group.
+  /// Param [member] 退群的成员的用户 ID。
   ///
   void onMemberExitedFromGroup(String groupId, String member);
 
   ///
-  /// Occurs when the announcement is updated.
+  /// 群公告更新回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [announcement] The updated announcement content.
+  /// Param [announcement] 新公告。
   ///
   void onAnnouncementChangedFromGroup(String groupId, String announcement);
 
   ///
-  /// Occurs when a shared file is added to a group.
+  /// 群组添加共享文件回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [sharedFile] The new shared file.
+  /// Param [sharedFile] 添加的共享文件的 ID。
   ///
   void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
 
   ///
-  /// Occurs when a shared file is removed from a group.
+  ///  群组删除共享文件回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [fileId] The ID of the removed shared file.
+  /// Param [fileId] 被删除的群共享文件 ID。
   ///
   void onSharedFileDeletedFromGroup(String groupId, String fileId);
 
   ///
-  /// Occurs when one or more group members are added to the allowlist.
+  /// 成员加入群组白名单回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The member(s) removed from the allowlist.
+  /// Param [members] 被加入白名单的成员的用户 ID。
   ///
   void onAllowListAddedFromGroup(String groupId, List<String> members);
 
   ///
-  /// Occurs when one or more members are removed from the allowlist.
+  /// 成员移出群组白名单回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] The member(s) added to the allowlist.
+  /// Param [members] 移出白名单的成员的用户 ID。
   ///
   void onAllowListRemovedFromGroup(String groupId, List<String> members);
 
   ///
-  /// Occurs when all group members are muted or unmuted.
+  /// 全员禁言状态变化回调。
   ///
-  /// Param [groupId] The group ID.
+  /// Param [groupId] 群组 ID。
   ///
-  /// Param [isAllMuted] Whether all group members are muted or unmuted.
-  /// - `true`: Yes;
-  /// - `false`: No.
+  /// Param [isAllMuted] 是否全员禁言。
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
 }
 
 ///
-/// The message event listener.
+/// 消息事件监听器。
 ///
-/// This listener is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: {@link EMOptions#requireDeliveryAck(boolean)}.
-/// If the peer reads the received message, a read receipt will be returned (read receipt needs to be enabled: {@link EMOptions#requireAck(boolean)})
-/// During message delivery, the message ID will be changed from a local uuid to a global unique ID that is generated by the server to uniquely identify a message on all devices using the SDK.
-/// This API should be implemented in the app to listen for message status changes.
+/// 该监听器用于监听消息变更：
 ///
-/// Adds the message listener:
+/// - 消息成功发送到对方后，发送方会收到送达回执（需开启送达回执功能，详见 {@link EMOptions#requireDeliveryAck(boolean)}。
+///
+/// - 对方阅读了这条消息，发送方会收到已读回执（需开启已读回执功能，详见 {@link EMOptions#requireAck(boolean)}。
+///
+/// 添加消息事件监听器：
 /// ```dart
 ///   EMClient.getInstance.chatManager.addChatManagerListener(listener);
 /// ```
 ///
-/// Removes the message listener:
+/// 移除消息事件监听器：
 /// ```dart
 ///   EMClient.getInstance.chatManager.removeChatManagerListener(listener);
 /// ```
 ///
 abstract class EMChatManagerListener {
   ///
-  /// Occurs when a message is received.
+  /// 收到消息回调。
   ///
-  /// This callback is triggered to notify the user when a message such as texts or an image, video, voice, location, or file is received.
+  /// 在收到文本、图片、视频、语音、地理位置和文件等消息时，通过此回调通知用户。
   ///
-  /// Param [messages] The received messages.
+  /// Param [messages] 收到的消息。
   ///
   void onMessagesReceived(List<EMMessage> messages) {}
 
   ///
-  /// Occurs when a command message is received.
+  /// 收到命令消息回调。
   ///
-  /// This callback only contains a command message body that is usually invisible to users.
+  /// 与 {@link #onMessagesReceived(List<EMMessage> messages)} 不同, 这个回调只包含命令的消息，命令消息通常不对用户展示。
   ///
-  /// Param [messages]The received cmd messages.
+  /// Param [messages] 收到的命令消息。
   ///
   void onCmdMessagesReceived(List<EMMessage> messages) {}
 
   ///
-  /// Occurs when a read receipt is received for a message.
+  /// 收到单聊消息已读回执的回调。
   ///
-  /// Param [messages] The has read messages.
+  /// Param [messages] 消息的已读回执。
   ///
   void onMessagesRead(List<EMMessage> messages) {}
 
   ///
-  /// Occurs when a read receipt is received for a group message.
+  /// 收到群组消息的已读回执的回调。
   ///
-  /// Param [groupMessageAcks] The group message acks.
+  /// Param [groupMessageAcks] 收到群组消息的已读回执的回调。
   ///
   void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
 
   ///
-  /// Occurs when the update for the group message read status is received.
+  /// 群消息已读变更。
   ///
   void onReadAckForGroupMessageUpdated() {}
 
   ///
-  /// Occurs when a delivery receipt is received.
+  ///  收到消息已送达回执的回调。
   ///
-  /// Param [messages] The has delivered messages.
+  /// Param [messages] 送达回执对应的消息。
   ///
   void onMessagesDelivered(List<EMMessage> messages) {}
 
   ///
-  /// Occurs when a received message is recalled.
+  /// 已收到的消息被撤回的回调。
   ///
-  /// Param [messages]  The recalled messages.
+  /// Param [messages]  撤回的消息。
   ///
   void onMessagesRecalled(List<EMMessage> messages) {}
 
   ///
-  /// Occurs when the conversation updated.
+  /// 会话更新事件回调。
   ///
   void onConversationsUpdate() {}
 
   ///
-  /// Occurs when a conversation read receipt is received.
+  /// 收到会话已读回执的回调。
   ///
-  /// Occurs in the following scenarios:
-  /// (1) The message is read by the receiver (The conversation receipt is sent).
-  /// Upon receiving this event, the SDK sets the `isAcked` property of the message in the conversation to `true` in the local database.
-  /// (2) In the multi-device login scenario, when one device sends a Conversation receipt,
-  /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
-  /// and sets the `isRead` property of the message in the conversation to `true` in the local database.
+  /// 回调此方法的场景：
+  /// （1）消息被接收方阅读，即接收方发送了会话已读回执。
+  /// SDK 在接收到此事件时，会将本地数据库中该会话中消息的 `isAcked` 属性置为 `true`。
+  /// （2）多端多设备登录场景下，一端发送会话已读回执，服务器端会将会话的未读消息数置为 0，
+  /// 同时其他端会回调此方法，并将本地数据库中该会话中消息的 `isRead` 属性置为 `true`。
   ///
-  /// Param [from] The user who sends the read receipt.
-  /// Param [to]   The user who receives the read receipt.
+  /// Param [from] 发送已读回执的用户 ID。
+  ///
+  /// Param [to] 收到已读回执的用户 ID。
   ///
   void onConversationRead(String from, String to) {}
 
   ///
-  /// Occurs when the Reaction data changes.
+  ///  消息表情回复（Reaction）变化监听器。
   ///
-  /// Param [list] The Reaction which is changed
+  /// Param [list]  Reaction 变化事件。
   ///
   void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
 }
 
 ///
-/// The delegate protocol that defines presence callbacks.
+/// 在线状态订阅监听器接口。
 ///
 class EMPresenceManagerListener {
   ///
-  /// Occurs when the presence state of a subscribed user changes.
+  /// 收到被订阅用户的在线状态发生变化。
   ///
-  /// Param [list] The new presence state of a subscribed user.
+  /// Param [list] 被订阅用户更新后的在线状态。
   ///
   void onPresenceStatusChanged(List<EMPresence> list) {}
 }
 
 ///
-/// The message thread listener interface, which listens for message thread events such as creating or leaving a message thread.
+/// 子区监听类
 ///
-/// Adds a message thread event listener:
+/// 添加子区监听:
 /// EMClient.getInstance.chatThreadManager.addChatThreadManagerListener(listener);
 ///
-/// Removes a message thread event listener:
+/// 移除子区监听:
 /// EMClient.getInstance.chatThreadManager.removeChatThreadManagerListener(listener);
 ///
 class EMChatThreadManagerListener {
   ///
-  /// Occurs when a message thread is created.
+  /// 子区创建回调。
   ///
-  /// Each member of the group to which the message thread belongs can receive the callback.
+  /// 子区所属群组的所有成员均可调用该方法。
+  ///
+  /// Param [event] 子区事件。
   ///
   void onChatThreadCreate(EMChatThreadEvent event) {}
 
   ///
-  /// Occurs when a message thread is updated.
+  /// 子区更新回调。
   ///
-  /// This callback is triggered when the message thread name is changed or a threaded reply is added or recalled.
+  /// 子区所属群组的所有成员均可调用该方法。
   ///
-  /// Each member of the group to which the message thread belongs can receive the callback.
+  /// Param [event] 子区事件。
   ///
   void onChatThreadUpdate(EMChatThreadEvent event) {}
 
   ///
-  /// Occurs when a message thread is destroyed.
+  /// 子区解散事件。
   ///
-  /// Each member of the group to which the message thread belongs can receive the callback.
+  /// 子区所属群组的所有成员均可调用该方法。
+  ///
+  /// Param [event] 子区事件。
   ///
   void onChatThreadDestroy(EMChatThreadEvent event) {}
 
   ///
-  /// Occurs when the current user is removed from the message thread by the group owner or a group admin to which the message thread belongs.
+  /// 管理员移除子区用户的回调。
+  ///
+  /// Param [event] 子区事件。
   ///
   void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
 }

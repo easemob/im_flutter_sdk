@@ -2,23 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'internal/chat_method_keys.dart';
+import 'models/em_chat_enums.dart';
 import 'models/em_error.dart';
 import 'models/em_push_configs.dart';
 
 ///
-/// The push styles.
-///
-///
-enum DisplayStyle {
-  /// The push message presentation style: SimpleBanner represents the presentation of a simple message.
-  Simple,
-
-  /// The push message presentation style: MessageSummary represents the presentation of message content.
-  Summary,
-}
-
-///
-///  The message push configuration options.
+///  推送设置管理类。
 ///
 class EMPushManager {
   static const _channelPrefix = 'com.chat.im';

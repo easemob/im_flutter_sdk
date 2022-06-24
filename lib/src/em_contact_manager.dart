@@ -303,7 +303,7 @@ class EMContactManager {
   ///
   /// 注册联系人监听器。
   ///
-  /// Param [contactListener] 要注册的联系人监听器。
+  /// Param [listener] 要注册的联系人监听器。
   ///
   void addContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
@@ -313,7 +313,7 @@ class EMContactManager {
   ///
   /// 移除联系人监听器。
   ///
-  /// Param [contactListener] 要移除的联系人监听器。
+  /// Param [listener] 要移除的联系人监听器。
   ///
   void removeContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);

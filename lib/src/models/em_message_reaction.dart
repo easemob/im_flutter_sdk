@@ -1,29 +1,22 @@
 ///
-/// The message Reaction instance class, which has the following attributes:
-/// Reaction: The message Reaction.
-/// UserCount: The count of users that added the Reaction.
-/// UserList: The list of users that added the Reaction.
-/// isAddedBySelf: Whether the current user added this Reaction.
+/// 消息 Reaction 实体类，用于指定 Reaction 属性。
 ///
 class EMMessageReaction {
-  /// The Reaction content
+  /// Reaction 内容。
   final String reaction;
 
-  /// The count of the users who added this Reaction
+  ///  添加了指定 Reaction 的用户数量。
   final int userCount;
 
-  /// Whether the current user added this Reaction
+  /// 当前用户是否添加了该 Reaction。
   ///
-  /// `Yes`: is added by self
-  /// `No`: is not added by self.
+  /// `Yes`: 是。
+  /// `No`: 否。
   ///
   final bool isAddedBySelf;
 
   ///
-  /// The list of users that added this Reaction
-  ///
-  /// **Note**
-  /// To get the entire list of users adding this Reaction, you can call {@link #getReactionDetail(EMChatManager)} which returns the user list with pagination. Other methods like {@link #reactionList(EMMessage)}, {@link #getReactionList(EMChatManager)} or {@link messageReactionDidChange(EMChatManagerListener)} can get the first three users.
+  /// 添加了指定 Reaction 的用户列表。
   ///
   final List<String> userList;
 

@@ -12,16 +12,16 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   ///
   /// Param [localPath] 语言消息本地路径。
   ///
+  /// Param [displayName] 语音文件名。
+  ///
+  /// Param [duration] 语音时长，单位是秒。
+  ///
+  /// Param [fileSize] 语音文件大小，单位是字节。
+  ///
   EMVoiceMessageBody({
     localPath,
-
-    /// Param [displayName] 语音文件名。
     this.duration = 0,
-
-    /// Param [duration] 语音时长，单位是秒。
     String? displayName,
-
-    /// Param [fileSize] 语音文件大小，单位是字节。
     int? fileSize,
   }) : super(
           localPath: localPath,

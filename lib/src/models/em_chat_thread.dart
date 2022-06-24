@@ -1,34 +1,34 @@
 import 'em_message.dart';
 
 ///
-/// The message thread class.
+/// 子区类
 ///
 class EMChatThread {
-  /// The message thread ID.
+  /// 子区 ID。
   final String threadId;
 
-  /// The name of the message thread.
+  /// 子区名称。
   final String? threadName;
 
-  /// The creator of the message thread.
+  /// 子区创建者
   final String owner;
 
-  /// The ID of the parent message of the message thread.
+  /// 子区父消息 ID。
   final String messageId;
 
-  /// The group ID where the message thread belongs.
+  /// 子区所属的群组 ID。
   final String parentId;
 
-  /// The count of members in the message thread.
+  /// 子区成员数量。
   final int membersCount;
 
-  /// The count of messages in the message thread.
+  /// 子区消息数量。
   final int messageCount;
 
-  /// The Unix timestamp when the message thread is created. The unit is millisecond.
+  /// 子区创建的 Unix 时间戳。单位为毫秒。
   final int createAt;
 
-  /// The last reply in the message thread. If it is empty, the last message is withdrawn.
+  /// 子区最新一条消息。如果为空，表明最新一条消息被撤回。
   final EMMessage? lastMessage;
 
   /// @nodoc

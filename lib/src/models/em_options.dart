@@ -134,6 +134,7 @@ class EMOptions {
   /// Param [appId] Oppo 推送的 App ID。
   ///
   /// Param [appKey] Oppo 推送的 app key。
+  ///
   void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
     _pushConfig.oppoAppKey = appKey;
@@ -188,93 +189,93 @@ class EMOptions {
   }
 
   ///
-  /// 设置sdk。
+  /// 创建EMOptions
   ///
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
+  /// Param [autoLogin] 是否开启自动登录。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [debugModel] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
+  /// - `true`：SDK 会在 log 里输出调试信息；
+  /// - （默认）`false`：不会输出调试信息。
+  ///
+  /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
+  /// - `true`：是；
+  /// - （默认）`false`：否。
+  ///
+  /// Param [requireAck] 是否发送已读回执。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [requireDeliveryAck] 是否发送已送达回执。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [deleteMessagesAsExitChatRoom] 是否在离开聊天室时删除聊天历史消息。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isChatRoomOwnerLeaveAllowed] 是否允许聊天室所有者离开聊天室。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [sortMessageByServerTime] 是否根据服务器收到消息的时间对消息进行排序。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [usingHttpsOnly] 是否只使用 HTTPS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [serverTransfer] 是否自动将消息附件上传到聊天服务器。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [isAutoDownloadThumbnail] 是否自动下载缩略图。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [enableDNSConfig] 设置是否开启 DNS。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
+  ///
+  /// Param [dnsUrl] DNS 地址。
+  ///
+  /// Param [restServer] 私有部署时的 REST 服务器地址。
+  ///
+  /// Param [imPort] 私有部署时的 IM 服务器端口。
+  ///
+  /// Param [imServer] 私有部署时的 IM 服务器地址。
+  ///
   EMOptions({
     required this.appKey,
-
-    /// Param [autoLogin] 是否开启自动登录。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.autoLogin = true,
-
-    /// Param [debugModel] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
-    /// - `true`：SDK 会在 log 里输出调试信息；
-    /// - （默认）`false`：不会输出调试信息。
     this.debugModel = false,
-
-    /// Param [acceptInvitationAlways] 是否自动接受加好友邀请。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.acceptInvitationAlways = false,
-
-    /// Param [autoAcceptGroupInvitation] 是否自动接受群组邀请。
-    /// - `true`：是；
-    /// - （默认）`false`：否。
     this.autoAcceptGroupInvitation = false,
-
-    /// Param [requireAck] 是否发送已读回执。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.requireAck = true,
-
-    /// Param [requireDeliveryAck] 是否发送已送达回执。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.requireDeliveryAck = false,
-
-    /// Param [deleteMessagesAsExitGroup] 是否在离开群组时删除群组历史消息。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.deleteMessagesAsExitGroup = true,
-
-    /// Param [deleteMessagesAsExitChatRoom] 是否在离开聊天室时删除聊天历史消息。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.deleteMessagesAsExitChatRoom = true,
-
-    /// Param [isChatRoomOwnerLeaveAllowed] 是否允许聊天室所有者离开聊天室。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.isChatRoomOwnerLeaveAllowed = true,
-
-    /// Param [sortMessageByServerTime] 是否根据服务器收到消息的时间对消息进行排序。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.sortMessageByServerTime = true,
-
-    /// Param [usingHttpsOnly] 是否只使用 HTTPS。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.usingHttpsOnly = true,
-
-    /// Param [serverTransfer] 是否自动将消息附件上传到聊天服务器。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.serverTransfer = true,
-
-    /// Param [isAutoDownloadThumbnail] 是否自动下载缩略图。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.isAutoDownloadThumbnail = true,
-
-    /// Param [enableDNSConfig] 设置是否开启 DNS。
-    /// - （默认）`true`：是；
-    /// - `false`：否。
     this.enableDNSConfig = true,
-
-    /// Param [dnsUrl] DNS 地址。
     this.dnsUrl,
-
-    /// Param [restServer] 私有部署时的 REST 服务器地址。
     this.restServer,
-
-    /// Param [imPort] 私有部署时的 IM 服务器端口。
     this.imPort,
-
-    /// Param [imServer] 私有部署时的 IM 服务器地址。
     this.imServer,
   });
 

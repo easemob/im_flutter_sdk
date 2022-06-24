@@ -1,19 +1,19 @@
 ///
-///  The translation language class, which contains the information of the translation languages.
+///  翻译语言类，包含翻译语言相关信息。
 ///
 class EMTranslateLanguage {
+  /// 目标语言代码，如中文简体为 "zh-Hans"。
   final String languageCode;
+
+  /// 语言名称，如中文简体为 "Chinese Simplified"。
   final String languageName;
+
+  /// 语言的原生名称，如中文简体为 "中文 (简体)"。
   final String languageNativeName;
 
   EMTranslateLanguage._private({
-    /// The code of a target language. For example, the code for simplified Chinese is "zh-Hans".
     required this.languageCode,
-
-    /// The language name. For example, the code for simplified Chinese is "Chinese Simplified".
     required this.languageName,
-
-    /// The native name of the language. For example, the native name of simplified Chinese is "Chinese (Simplified)".
     required this.languageNativeName,
   });
 

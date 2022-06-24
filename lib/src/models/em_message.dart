@@ -250,7 +250,7 @@ class EMMessage {
   ///
   /// 创建一条待发送的文件消息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
@@ -279,7 +279,7 @@ class EMMessage {
   ///
   /// 创建一条待发送的图片消息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
@@ -325,7 +325,7 @@ class EMMessage {
   ///
   /// 创建一条待发送的视频消息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
@@ -370,7 +370,7 @@ class EMMessage {
   ///
   /// 创建一条待发送的语音消息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
@@ -402,7 +402,7 @@ class EMMessage {
   ///
   /// 创建一条待发送的位置信息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
@@ -433,7 +433,7 @@ class EMMessage {
 
   /// 创建一条待发送的命令消息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
@@ -453,14 +453,14 @@ class EMMessage {
 
   /// 创建一条待发送的自定义消息。
   ///
-  /// Param [username] 消息接收方，可以是：
+  /// Param [targetId] 消息接收方，可以是：
   /// - 用户：用户名；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
   /// Param [event] 事件内容。
   ///
-  /// Param [Map<String, String>? params] 自定义消息的键值对 Map 列表。
+  /// Param [params] 自定义消息的键值对 Map 列表。
   ///
   /// **Return** 消息体实例。
   ///

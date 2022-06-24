@@ -3,16 +3,16 @@ import 'em_chat_enums.dart';
 import '../tools/em_extension.dart';
 
 ///
-/// The message thread event class.
+/// 子区通知类
 ///
 class EMChatThreadEvent {
-  /// Received the operation type of the sub-area from others
+  /// 子区事件类型。
   final EMChatThreadOperation type;
 
-  /// User id of the operation sub-area
+  // 子区操作者。
   final String from;
 
-  /// sub-area
+  /// 子区实例。
   final EMChatThread? chatThread;
 
   EMChatThreadEvent._private({

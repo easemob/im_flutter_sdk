@@ -12,7 +12,7 @@ class EMGroupOptions {
   ///
   /// Param [style] 群组的类型。详见 {EMGroupStyle}。
   ///
-  /// Param [count] 群组的最大成员数，默认为 200。
+  /// Param [maxCount] 群组的最大成员数，默认为 200。
   ///
   /// Param [inviteNeedConfirm] 邀请用户进群是否需要对方同意。收到邀请是否自动入群取决于两个设置：创建群组时设置 inviteNeedConfirm 以及通过 {@link EMOptions#setAutoAcceptGroupInvitation(boolean)} 确定是否自动接受加群邀请。
   /// 具体使用如下：
@@ -23,7 +23,7 @@ class EMGroupOptions {
   /// 自动接受邀请入群；
   /// 若设置为 'false'，即非自动同意其邀请，用户可以选择接受邀请进群，也可选择拒绝邀请。
   ///
-  /// Param [extension] 群组详情扩展，可以采用 JSON 格式，以包含更多群信息。
+  /// Param [ext] 群组详情扩展，可以采用 JSON 格式，以包含更多群信息。
   ///
   EMGroupOptions({
     this.style = EMGroupStyle.PrivateOnlyOwnerInvite,

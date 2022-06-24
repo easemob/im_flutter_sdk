@@ -5,7 +5,7 @@ import 'models/em_presence.dart';
 import 'models/em_error.dart';
 
 ///
-/// The Manager that defines how to manage presence states.
+/// 状态管理类
 ///
 class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
@@ -25,9 +25,9 @@ class EMPresenceManager {
   }
 
   ///
-  /// Registers a new presence manager listener.
+  /// 添加状态变化监听
   ///
-  /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
+  /// Param [listener] 状态变化监听类 {@link EMPresenceManagerListener}.
   ///
   void addPresenceManagerListener(EMPresenceManagerListener listener) {
     _listeners.remove(listener);
@@ -35,9 +35,9 @@ class EMPresenceManager {
   }
 
   ///
-  /// Removes the contact listener.
+  /// 移除状态变化监听
   ///
-  /// Param [listener] The presence manager listener to be removed.
+  /// Param [listener] 状态变化监听类
   ///
   void removePresenceManagerListener(EMPresenceManagerListener listener) {
     if (_listeners.contains(listener)) {
@@ -45,16 +45,19 @@ class EMPresenceManager {
     }
   }
 
+  ///
+  /// 移除所有状态监听
+  ///
   void clearAllPresenceManagerListener() {
     _listeners.clear();
   }
 
   ///
-  /// Publishes a custom presence state.
+  /// 发布自定义在线状态。
   ///
-  /// Param [description] The extension information of the presence state. It can be set as nil.
+  /// Param [description] 在线状态的扩展信息。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///
   Future<void> publishPresence(
     String description,
@@ -70,15 +73,15 @@ class EMPresenceManager {
   }
 
   ///
-  /// Subscribes to a user's presence states. If the subscription succeeds, the subscriber will receive the callback when the user's presence state changes.
+  /// 订阅指定用户的在线状态。
   ///
-  /// Param [members] The list of IDs of users whose presence states you want to subscribe to.
+  /// Param [members] 要订阅在线状态的用户 ID 数组。
   ///
-  /// Param [expiry] The expiration time of the presence subscription.
+  /// Param [expiry] 订阅时长，单位为秒。最长不超过 2,592,000 (30×24×3600) 秒，即 30 天。
   ///
-  /// **Return** Which contains IDs of users whose presence states you have subscribed to.
+  /// **Return** 返回被订阅用户的当前状态。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///
   Future<List<EMPresence>> subscribe({
     required List<String> members,
@@ -100,11 +103,11 @@ class EMPresenceManager {
   }
 
   ///
-  /// Unsubscribes from a user's presence states.
+  /// 取消订阅指定用户的在线状态。
   ///
-  /// Param [members] The array of IDs of users whose presence states you want to unsubscribe from.
+  /// Param [members] 要取消订阅在线状态的用户 ID 数组。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///
   Future<void> unSubscribe({
     required List<String> members,
@@ -120,15 +123,15 @@ class EMPresenceManager {
   }
 
   ///
-  /// Uses pagination to get a list of users whose presence states you have subscribed to.
+  /// 分页查询当前用户订阅了哪些用户的在线状态。
   ///
-  /// Param [pageNum] The current page number, starting from 1.
+  /// Param [pageNum] 当前页码，从 1 开始。
   ///
-  /// Param [pageSize] The number of subscribed users on each page.
+  /// Param [pageSize] 每页显示的被订阅用户数量。
   ///
-  /// **Return** Which contains IDs of users whose presence states you have subscribed to. Returns null if you subscribe to no user's presence state.
+  /// **Return** 返回订阅的在线状态所属的用户名。若当前未订阅任何用户的在线状态，返回空列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///
   Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
@@ -153,13 +156,13 @@ class EMPresenceManager {
   }
 
   ///
-  /// Gets the current presence state of users.
+  /// 查询指定用户的当前在线状态。
   ///
-  /// Param [members] The array of IDs of users whose current presence state you want to check.
+  /// Param [members] 用户 ID 数组，指定要查询哪些用户的在线状态。
   ///
-  /// **Return** Which contains the users whose presence state you have subscribed to.
+  /// **Return** 被订阅用户的当前状态。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///
   Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,

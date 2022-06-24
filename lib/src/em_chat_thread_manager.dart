@@ -9,7 +9,7 @@ import 'models/em_cursor_result.dart';
 import 'models/em_message.dart';
 
 ///
-/// The chat thread manager class.
+/// 子区管理类
 ///
 class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
@@ -61,13 +61,13 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get Chat Thread details from server.
+  /// 从服务器获取子区详情。
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Return** The chat thread object.
+  /// **Return** 若调用成功，返回子区详情；失败则抛出异常。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMChatThread?> fetchChatThread({
     required String chatThreadId,
@@ -87,15 +87,15 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Paging to get the list of Chat Threads that the current user has joined from the server
+  /// 分页从服务器获取当前用户加入的子区列表。
   ///
-  /// Param [cursor] The initial value can be empty or empty string.
+  /// Param [cursor] 开始获取数据的游标位置。首次调用方法时可以不传，按用户加入子区时间的倒序获取数据。
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
   ///
-  /// **Return** Returns the result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
+  /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreads({
     String? cursor,
@@ -118,17 +118,17 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get the subareas under a group from the server
+  ///  分页从服务器端获取指定群组的子区列表。
   ///
-  /// Param [parentId] Parent ID, generally refers to group ID.
+  /// Param [parentId] 群组 ID。
   ///
-  /// Param [cursor] The initial value can be empty or empty string.
+  /// Param [cursor] 开始取数据的游标位置。首次获取数据时可以不传，按子区创建时间的倒序获取数据。
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
   ///
-  /// **Return** result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
+  /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
     required String parentId,
@@ -155,17 +155,17 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Paging to get the list of Chat Threads that the current user has joined the specified group from the server。
+  /// 分页从服务器获取当前用户加入指定群组的子区列表。
   ///
-  /// Param [parentId] The session id of the upper level of the sub-area
+  /// Param [parentId] 群组 ID。
   ///
-  /// Param [cursor] The initial value can be empty or empty string.
+  /// Param [cursor] 开始取数据的游标位置。首次调用方法时可以不传，按用户加入子区时间的倒序获取数据。
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
   ///
-  /// **Return** The result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
+  /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreadsWithParentId({
     required String parentId,
@@ -192,21 +192,21 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Paging to get Chat Thread members.
+  /// 分页获取子区成员。
   ///
-  /// The members of the group to which Chat Thread belongs have permission.
+  /// 子区所属群组的所有成员均可调用该方法。
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// Param [chatThreadId] 子区 ID。
   ///
-  /// Param [cursor] The initial value can be empty or empty string.
+  /// Param [cursor] 开始获取数据的游标位置，首次调用方法时传 `null` 或空字符串，按成员加入子区时间的正序获取数据。
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] 每页期望返回的成员数。取值范围为 (1,50]。
   ///
-  /// **Return** The result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread member list.
+  /// **Return** 若调用成功，返回子区成员列表；失败则抛出异常。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
-  Future<List<String>> fetchChatThreadMember({
+  Future<List<String>> fetchChatThreadMembers({
     required String chatThreadId,
     String? cursor,
     int limit = 20,
@@ -235,13 +235,13 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Get the latest news of the specified Chat Thread list from the server.
+  /// 从服务器批量获取指定子区中的最新一条消息。
   ///
-  /// Param [chatThreadIds] Chat Thread id list. The list length is not greater than 20.
+  /// Param [chatThreadIds] 要查询的子区 ID 列表，每次最多可传 20 个子区。
   ///
-  /// **Return**  returns a Map collection, the key is the chat thread ID, and the value is the latest message object of the chat thread.
+  /// **Return** 若调用成功，返回子区的最新一条消息列表；失败则抛出异常。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<Map<String, EMMessage>> fetchLatestMessageWithChatThreads({
     required List<String> chatThreadIds,
@@ -274,11 +274,15 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Remove member from Chat Thread.
+  /// 移除子区成员。
   ///
-  /// Param [memberId] The ID of the member that was removed from Chat Thread.
+  /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// 被移出的成员会收到 {@link EMChatThreadManagerListener#onUserKickOutOfChatThread} 回调。
+  ///
+  /// Param [memberId] 被移出子区的成员的用户 ID。
+  ///
+  /// Param [chatThreadId] 子区 ID。
   ///
   /// **Throws** A description of the exception. See {@link EMError}.
   ///
@@ -302,17 +306,17 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Change Chat Thread name.
+  /// 修改子区名称。
   ///
-  /// The group owner, group administrator and Thread creator have permission.
-  /// After modifying chat thread name, members of the organization (group) to which chat thread belongs will receive the update notification event.
-  /// You can set {@link EMChatThreadManagerListener} to listen on the event.
+  /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// 子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadUpdated(EMChatThreadEvent)}.
   ///
-  /// Param [newName]  New Chat Thread name. No more than 64 characters in length.
+  /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// Param [newName] 子区的新名称。长度不超过 64 个字符。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updateChatThreadName({
     required String chatThreadId,
@@ -334,26 +338,24 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Create Chat Thread.
+  /// 创建子区。
   ///
-  /// Group members have permission.
-  /// After chat thread is created, the following notices will appear:
-  /// 1. Members of the organization (group) to which chat thread belongs will receive the created notification event,
-  /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
-  /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
-  /// 2. Multiple devices will receive the notification event and you can set {@link com.hyphenate.EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link com.hyphenate.EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)}, where the first parameter is the event,
-  /// for example, {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_CREATE} for the chat thread creation event.
+  /// 所有群成员都可以调用
+  /// 子区创建成功后，会出现如下情况：
   ///
-  /// Param [name] Chat Thread name. No more than 64 characters in length.
+  /// - 单设备登录时，子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
   ///
-  /// Param [messageId] Parent message ID, generally refers to group message ID.
+  /// - 多端多设备登录时，各设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)} 回调。
   ///
-  /// Param [parentId] Parent ID, generally refers to group ID.
+  /// Param [name] 要创建的子区的名称。长度不超过 64 个字符。
   ///
-  /// **Return** EMChatThread object
+  /// Param [messageId] 父消息 ID。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// Param [parentId] 群组 ID。
+  ///
+  /// **Return** 调用成功时，返回创建的子区对象；失败则抛出异常。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMChatThread> createChatThread({
     required String name,
@@ -378,21 +380,20 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Join Chat Thread.
+  /// 加入子区。
   ///
-  /// Group members have permission.
-  /// Join successfully, return the Chat Thread details {@link EMChatThread}, the details do not include the number of members.
-  /// Repeated addition will throw an EMError.
-  /// After joining chat thread, the multiple devices will receive the notification event.
-  /// You can set {@link EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
-  /// where the first parameter is the event, and chat thread join event is {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}.
+  /// 子区所属群组的所有成员均可调用该方法。
+  /// 加入成功后，返回子区对象，该返回中不包括成员数量。
+  /// 加入失败会抛出异常。
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// 加入成功后，如果是多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
+  /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}.
   ///
-  /// **Return** The joined chat thread object;
+  /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Return** 若调用成功，返回子区详情 {@link ChatMessageThread}；失败则抛出异常。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMChatThread> joinChatThread({
     required String chatThreadId,
@@ -413,17 +414,15 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Leave Chat Thread.
+  /// 退出子区。
   ///
-  /// The operation is available to Chat Thread members.
-  /// After joining chat thread, the multiple devices will receive the notification event.
-  /// You can set {@EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
-  /// where the first parameter is the event, and chat thread exit event is {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}.
+  /// 子区中的所有成员均可调用该方法。
+  /// 加入成功后，如果是多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
+  /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}.
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// Param [chatThreadId] 要退出的子区的 ID。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<void> leaveChatThread({
     required String chatThreadId,
@@ -443,20 +442,16 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Disband Chat Thread.
+  /// 解散子区。
   ///
-  /// Group owner and group administrator to which the Chat Thread belongs have permission.
-  /// After chat thread is disbanded, there will be the following notification:
-  /// 1. Members of the organization (group) to which chat thread belongs will receive the disbanded notification event,
-  /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
-  /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} .
-  /// 2. Multiple devices will receive the notification event and you can set {@link EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List)}, where the first parameter is the event,
-  /// for example, {@link com.hyphenate.EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY} for the chat thread destruction event.
+  /// 只有子区所属群组的群主及管理员可调用该方法。
+  /// 调用成功后，子区所在群的群成员都会收到 {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
+  /// 多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
+  /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY};
   ///
-  /// Param [chatThreadId] Chat Thread ID.
+  /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<void> destroyChatThread({
     required String chatThreadId,

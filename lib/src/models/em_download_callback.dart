@@ -1,26 +1,26 @@
 import 'em_error.dart';
 
 ///
-/// The group shared download callback.
+/// 群文件下载回调
 ///
 class EMDownloadCallback {
   ///
-  /// Download success callback.
+  /// 群文件下载成功回调。
   ///
   final void Function(String fileId, String path)? onSuccess;
 
   ///
-  /// Download error callback.
+  /// 群文件下载失败回调。
   ///
   final void Function(String fileId, EMError error)? onError;
 
   ///
-  /// Download progress callback.
+  /// 群文件下载进度。
   ///
   final void Function(String fileId, int progress)? onProgress;
 
   ///
-  /// Create a group shared file download callback.
+  /// 创建文件下载对象
   ///
   EMDownloadCallback({
     this.onSuccess,
