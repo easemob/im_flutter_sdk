@@ -27,9 +27,11 @@ class EMChatThreadManager {
   final List<EMChatThreadManagerListener> _listeners = [];
 
   ///
-  /// Adds the chat thread manager listener. After calling this method, you can listen for new chat threads when they arrive.
+  /// 注册子区监听。
   ///
-  /// Param [listener] The chat thread manager listener that listens for new chat thread. See {@link EMChatThreadManagerListener}.
+  /// 接受到子区等回调可以通过设置此方法进行监听，详见 {@link EMChatThreadManagerListener}。
+  ///
+  /// Param [listener] 要注册的消息监听，详见 {@link EMChatThreadManagerListener}。
   ///
   void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
@@ -37,18 +39,18 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Removes the chat thread listener.
+  /// 移除子区监听。
   ///
-  /// After adding a chat thread manager listener, you can remove this listener if you do not want to listen for it.
+  /// 需要先添加 {@link #addChatThreadManagerListener(EMChatThreadManagerListener)} 监听，再调用本方法。
   ///
-  /// Param [listener] The chat thread listener to be removed. See {@link EMChatThreadManagerListener}.
+  /// Param [listener] 要移除的监听。
   ///
   void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
   }
 
   ///
-  /// Removes all chat thread listeners.
+  /// 移除所有子区监听
   ///
   void clearAllChatThreadManagerListeners() {
     _listeners.clear();

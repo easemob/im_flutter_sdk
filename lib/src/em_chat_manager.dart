@@ -759,18 +759,16 @@ class EMChatManager {
     }
   }
 
-  ///// Moderation
-
   ///
-  /// Report violation message
+  /// 举报非法消息。
   ///
-  /// Param [messageId] Violation Message ID
+  /// Param [messageId] 非法消息的 ID。
   ///
-  /// Param [tag] The report type (For example: involving pornography and terrorism).
+  /// Param [tag] 非法消息标签，如涉政和恐怖相关。
   ///
-  /// Param [reason] The reason for reporting.
+  /// Param [reason] 举报原因。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<void> reportMessage({
     required String messageId,
@@ -790,13 +788,13 @@ class EMChatManager {
   //// Reaction
 
   ///
-  /// Adds a reaction.
+  /// 添加 Reaction。
   ///
-  /// Param [messageId] The message ID.
+  /// Param [messageId] 要添加 Reaction 的消息 ID。
   ///
-  /// Param [reaction] The reaction content.
+  /// Param [reaction] Reaction 的内容。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<void> addReaction({
     required String messageId,
@@ -813,15 +811,13 @@ class EMChatManager {
   }
 
   ///
-  /// Deletes a reaction.
+  /// 删除 Reaction。
   ///
-  /// This is a synchronous method and blocks the current thread.
+  /// Param [messageId] 添加了该 Reaction 的消息 ID。
   ///
-  /// Param [messageId] The message ID.
+  /// Param [reaction] 要删除的 Reaction。
   ///
-  /// Param [reaction] The reaction content.
-  ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<void> removeReaction({
     required String messageId,
@@ -838,17 +834,17 @@ class EMChatManager {
   }
 
   ///
-  /// Gets the list of Reactions.
+  /// 获取 Reaction 列表。
   ///
-  /// Param [messageIds] The message IDs.
+  /// Param [messageIds] 消息 ID 列表。
   ///
-  /// Param [chatType] The chat type. Only one-to-one chat ({@link EMMessage.ChatType#Chat} and group chat ({@link EMMessage.ChatType#GroupChat}) are allowed.
+  /// Param [chatType] 会话类型。
   ///
-  /// Param [groupId] which is invalid only when the chat type is group chat.
+  /// Param [groupId] 群组 ID，该参数仅在会话类型为群聊时有效。
   ///
-  /// **Return** The Reaction list under the specified message ID（The UserList of EMMessageReaction is the summary data, which only contains the information of the first three users）.
+  /// **Return** 若调用成功，返回 Reaction 列表；失败则抛出异常。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<Map<String, List<EMMessageReaction>>> fetchReactionList({
     required List<String> messageIds,
@@ -880,19 +876,19 @@ class EMChatManager {
   }
 
   ///
-  /// Gets the reaction details.
+  /// 获取 Reaction 详情。
   ///
-  /// Param [messageId] The message ID.
+  /// Param [messageId] 消息 ID。
   ///
-  /// Param [reaction] The reaction content.
+  /// Param [reaction] Reaction 内容。
   ///
-  /// Param [cursor] The cursor position from which to get Reactions.
+  /// Param [cursor] 开始获取 Reaction 的游标位置, 首次可以不传。
   ///
-  /// Param [pageSize] The number of Reactions you expect to get on each page.
+  /// Param [pageSize] 每页期望返回的 Reaction 数量。
   ///
-  /// **Return** The result callback, which contains the reaction list obtained from the server and the cursor for the next query. Returns null if all the data is fetched.
+  /// **Return** 若调用成功，返回 Reaction 详情。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMCursorResult<EMMessageReaction>> fetchReactionDetail({
     required String messageId,
@@ -922,15 +918,15 @@ class EMChatManager {
   }
 
   ///
-  /// Translate a message.
+  /// 翻译一条文本消息。
   ///
-  /// Param [msg] The message object
+  /// Param [msg] 要翻译的文本消息。
   ///
-  /// Param [languages] The target languages to translate
+  /// Param [languages] 目标语言。
   ///
-  /// **Return** Translated Message
+  /// **Return** 译文。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<EMMessage> translateMessage({
     required EMMessage msg,
@@ -950,11 +946,11 @@ class EMChatManager {
   }
 
   ///
-  /// Fetch all languages what the translate service support
+  /// 查询翻译服务支持的语言。
   ///
-  /// **Return** Supported languages
+  /// **Return** 翻译服务支持的语言列表。
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
   Future<List<EMTranslateLanguage>> fetchSupportedLanguages() async {
     Map result = await EMMethodChannel.ChatManager.invokeMethod(

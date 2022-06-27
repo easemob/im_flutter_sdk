@@ -96,11 +96,11 @@ class EMClient {
   }
 
   ///
-  /// Checks whether the SDK is connected to the chat server.
+  /// 检查当前是否已经连接到聊天服务器
   ///
-  /// **Return** the result whether the SDK is connected to the chat server.
-  /// `true`: means that the SDK is connected to the chat server.
-  /// `false`: means not.
+  /// **Return** 检查结果
+  /// `true`: 已经连接到聊天服务器
+  /// `false`: 没有连接到聊天服务器
   Future<bool> isConnected() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isConnected);
     try {
@@ -179,7 +179,10 @@ class EMClient {
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
-  Future<void> createAccount(String username, String password) async {
+  Future<void> createAccount(
+    String username,
+    String password,
+  ) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
     Map result = await _channel.invokeMethod(ChatMethodKeys.createAccount, req);
