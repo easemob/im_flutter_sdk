@@ -1,7 +1,4 @@
-import '../internal/em_transform_tools.dart';
-
-import '../../src/tools/em_extension.dart';
-import 'em_chat_enums.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The chat room instance class.

@@ -2,12 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-import 'internal/em_transform_tools.dart';
-import 'tools/em_extension.dart';
-import '../im_flutter_sdk.dart';
-import 'internal/chat_method_keys.dart';
-import 'tools/em_log.dart';
-import 'tools/em_progress_manager.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The EMClient class, which is the entry point of the Chat SDK. With this class, you can log in, log out, and access other functionalities such as group and chatroom.
@@ -247,7 +242,7 @@ class EMClient {
   Future<void> loginWithAgoraToken(String username, String agoraToken) async {
     Map req = {
       "username": username,
-      "agoratoken": agoraToken,
+      "agora_token": agoraToken,
     };
 
     Map result =
@@ -451,6 +446,13 @@ class EMClient {
   }
 
   ///
+  /// Removes all multi-device listener.
+  ///
+  void clearAllMultiDeviceListeners() {
+    _multiDeviceListeners.clear();
+  }
+
+  ///
   /// Adds the connection listener of chat server.
   ///
   /// Param [listener] The chat server connection listener to be added.
@@ -471,6 +473,13 @@ class EMClient {
   }
 
   ///
+  ///  Removes all chat server connection listeners.
+  ///
+  void clearAllConversationListeners() {
+    _connectionListeners.clear();
+  }
+
+  ///
   /// Adds a custom listener to receive data from iOS or Android devices.
   ///
   /// Param [listener] The custom native listener to be added.
@@ -488,6 +497,11 @@ class EMClient {
     if (_customListeners.contains(listener)) {
       _customListeners.remove(listener);
     }
+  }
+
+  /// Removes all custom listeners.
+  void clearAllCustomListeners() {
+    _customListeners.clear();
   }
 
   Future<void> _onConnected() async {

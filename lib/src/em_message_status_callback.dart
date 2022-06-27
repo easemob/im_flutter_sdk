@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'models/em_error.dart';
+import 'internal/inner_headers.dart';
 
 class MessageStatusCallBack {
   final void Function(int progress)? onProgress;

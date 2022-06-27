@@ -1,11 +1,4 @@
-import 'models/em_chat_enums.dart';
-import 'models/em_chat_thread_event.dart';
-
-import 'models/em_group_message_ack.dart';
-import 'models/em_group_shared_file.dart';
-import 'models/em_message.dart';
-import 'models/em_message_reaction_change.dart';
-import 'models/em_presence.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The chat connection listener.
@@ -162,12 +155,12 @@ abstract class EMCustomListener {
 ///
 /// Register the listener：
 /// ```dart
-///   EMClient.getInstance.contactManager.addContactListener(contactListener);
+///   EMClient.getInstance.contactManager.addContactManagerListener(contactListener);
 /// ```
 ///
 /// Unregister the listener：
 /// ```dart
-///   EMClient.getInstance.contactManager.removeContactListener(contactListener);
+///   EMClient.getInstance.contactManager.removeContactManagerListener(contactListener);
 /// ```
 ///
 abstract class EMContactManagerListener {
@@ -212,6 +205,17 @@ abstract class EMContactManagerListener {
 ///
 /// The chat room manager listener.
 ///
+/// Register the listener：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.addChatRoomManagerListener(listener);
+/// ```
+///
+/// Unregister the listener：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
+/// ```
+///
+
 abstract class EMChatRoomManagerListener {
   ///
   /// Occurs when the chat room is destroyed.
@@ -236,7 +240,7 @@ abstract class EMChatRoomManagerListener {
   ///
   /// Param [roomId] The chatroom ID.
   ///
-  /// Param [participant] The new member's username.
+  /// Param [participant] The exited member's username.
   ///
   void onMemberExitedFromChatRoom(
       String roomId, String? roomName, String participant);
@@ -359,12 +363,12 @@ abstract class EMChatRoomManagerListener {
 ///
 /// Registers a group change listener:
 /// ```dart
-///   EMClient.getInstance.groupManager.addGroupChangeListener(listener);
+///   EMClient.getInstance.groupManager.addGroupManagerListener(listener);
 /// ```
 ///
 /// Unregisters a group change listener:
 /// ```dart
-///   EMClient.getInstance.groupManager.removeGroupChangeListener(listener);
+///   EMClient.getInstance.groupManager.removeGroupManagerListener(listener);
 /// ```
 abstract class EMGroupManagerListener {
   ///
@@ -709,7 +713,7 @@ abstract class EMChatManagerListener {
   ///
   /// Param [list] The Reaction which is changed
   ///
-  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
 }
 
 ///
@@ -739,6 +743,8 @@ class EMChatThreadManagerListener {
   ///
   /// Each member of the group to which the message thread belongs can receive the callback.
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadCreate(EMChatThreadEvent event) {}
 
   ///
@@ -748,6 +754,8 @@ class EMChatThreadManagerListener {
   ///
   /// Each member of the group to which the message thread belongs can receive the callback.
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadUpdate(EMChatThreadEvent event) {}
 
   ///
@@ -755,10 +763,14 @@ class EMChatThreadManagerListener {
   ///
   /// Each member of the group to which the message thread belongs can receive the callback.
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadDestroy(EMChatThreadEvent event) {}
 
   ///
   /// Occurs when the current user is removed from the message thread by the group owner or a group admin to which the message thread belongs.
+  ///
+  /// Param [event] The event;
   ///
   void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
 }

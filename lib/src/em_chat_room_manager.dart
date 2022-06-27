@@ -1,14 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'em_listeners.dart';
-import 'internal/em_event_keys.dart';
-import 'models/em_chat_room.dart';
-import 'models/em_cursor_result.dart';
-import 'models/em_error.dart';
-import 'models/em_page_result.dart';
-import 'tools/em_extension.dart';
-import 'internal/chat_method_keys.dart';
+import 'internal/inner_headers.dart';
 
 ///
 ///  The chat room manager class, which manages user joining and exiting the chat room, retrieving the chat room list, and managing member privileges.

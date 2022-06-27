@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-import 'internal/chat_method_keys.dart';
-import 'em_client.dart';
-import 'models/em_error.dart';
-import 'models/em_userInfo.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The user attribute manager class, which gets and sets the user attributes.
