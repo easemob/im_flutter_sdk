@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-import 'internal/chat_method_keys.dart';
-import 'em_client.dart';
-import 'models/em_error.dart';
-import 'models/em_userInfo.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// 用户属性类，用于获取和更新用户属性。

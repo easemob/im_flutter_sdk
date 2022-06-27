@@ -1,8 +1,4 @@
-import '../internal/em_transform_tools.dart';
-
-import '../tools/em_extension.dart';
-import 'em_chat_enums.dart';
-import 'em_group_options.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 群组信息类，包含内存中的群组相关信息。
@@ -269,5 +265,30 @@ class EMGroup {
   @override
   String toString() {
     return this.toJson().toString();
+  }
+}
+
+///
+/// 群组信息类。
+///
+class EMGroupInfo {
+  /// 群组id
+  final String groupId;
+
+  /// 群组名称
+  final String? name;
+
+  EMGroupInfo._private({
+    required this.groupId,
+    required this.name,
+  });
+
+  factory EMGroupInfo.fromJson(Map map) {
+    String groupId = map["groupId"];
+    String? groupName = map["name"];
+    return EMGroupInfo._private(
+      groupId: groupId,
+      name: groupName,
+    );
   }
 }

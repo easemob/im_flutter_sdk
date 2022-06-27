@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import 'models/em_error.dart';
+import 'internal/inner_headers.dart';
 
 /// 消息状态回调
 class MessageStatusCallBack {

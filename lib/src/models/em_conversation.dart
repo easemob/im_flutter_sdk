@@ -1,10 +1,7 @@
 import 'dart:core';
 import 'package:flutter/services.dart';
 
-import '../tools/em_extension.dart';
-import '../../im_flutter_sdk.dart';
-import '../internal/chat_method_keys.dart';
-import '../internal/em_transform_tools.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 会话类，表示和一个用户/群组/聊天室的对话，包含发送和接收的消息。
@@ -64,9 +61,7 @@ class EMConversation {
   final bool isChatThread;
 
   Map<String, String>? _ext;
-}
 
-extension EMConversationExtension on EMConversation {
   static const MethodChannel _emConversationChannel =
       const MethodChannel('com.chat.im/chat_conversation', JSONMethodCodec());
 

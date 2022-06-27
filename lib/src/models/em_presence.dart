@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 在线状态属性类，包含发布者的用户名、在线设备使用的平台、当前在线状态以及在线状态的扩展信息、更新时间和到期时间。

@@ -1,7 +1,4 @@
-import '../internal/em_transform_tools.dart';
-
-import 'em_chat_enums.dart';
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 创建群组时的属性配置类。

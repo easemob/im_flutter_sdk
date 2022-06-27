@@ -2,24 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 
-import '../internal/chat_method_keys.dart';
-import '../internal/em_transform_tools.dart';
-import '../tools/em_extension.dart';
-import 'em_chat_thread.dart';
-import 'em_chat_enums.dart';
-import "em_message_body.dart";
-import "../em_message_status_callback.dart";
-import "../em_client.dart";
-import 'em_error.dart';
-import 'em_text_message_body.dart';
-import 'em_image_message_body.dart';
-import 'em_location_message_body.dart';
-import 'em_voice_message_body.dart';
-import 'em_video_message_body.dart';
-import 'em_file_message_body.dart';
-import 'em_custom_message_body.dart';
-import 'em_cmd_message_body.dart';
-import 'em_message_reaction.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 消息对象类。
@@ -514,6 +497,7 @@ class EMMessage {
       ..localTime = map.getIntValue("localTime", defaultValue: 0)!
       ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
       ..isChatThreadMessage = map.getBoolValue("isThread", defaultValue: false)!
+      // 提供单独的get方法，每次都去原生侧取。
       // ..chatThread = map.getValueWithKey<EMChatThread>(
       //   "thread",
       //   callback: (obj) {
@@ -560,51 +544,7 @@ class EMMessage {
   String toString() {
     return toJson().toString();
   }
-}
 
-/// 消息状态回调类
-class MessageCallBackManager {
-  static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _emMessageChannel =
-      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
-  Map<String, EMMessage> cacheHandleMap = {};
-  static MessageCallBackManager? _instance;
-  static MessageCallBackManager get getInstance =>
-      _instance = _instance ?? MessageCallBackManager._internal();
-
-  MessageCallBackManager._internal() {
-    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
-      Map<String, dynamic> argMap = call.arguments;
-      int? localTime = argMap['localTime'];
-      EMMessage? handle = cacheHandleMap[localTime.toString()];
-
-      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
-        return handle?._onMessageProgressChanged(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageError) {
-        return handle?._onMessageError(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
-        return handle?._onMessageSuccess(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
-        return handle?._onMessageReadAck(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
-        return handle?._onMessageDeliveryAck(argMap);
-      }
-      return null;
-    });
-  }
-
-  void addMessage(EMMessage message) {
-    cacheHandleMap[message.localTime.toString()] = message;
-  }
-
-  void removeMessage(String key) {
-    if (cacheHandleMap.containsKey(key)) {
-      cacheHandleMap.remove(key);
-    }
-  }
-}
-
-extension EMMessageExtension on EMMessage {
   static const MethodChannel _emMessageChannel =
       const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
 
@@ -682,4 +622,566 @@ extension EMMessageExtension on EMMessage {
       throw e;
     }
   }
+}
+
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  Map<String, EMMessage> cacheHandleMap = {};
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
+
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      int? localTime = argMap['localTime'];
+      EMMessage? handle = cacheHandleMap[localTime.toString()];
+
+      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+        return handle?._onMessageProgressChanged(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageError) {
+        return handle?._onMessageError(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+        return handle?._onMessageSuccess(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
+        return handle?._onMessageReadAck(argMap);
+      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
+        return handle?._onMessageDeliveryAck(argMap);
+      }
+      return null;
+    });
+  }
+
+  void addMessage(EMMessage message) {
+    cacheHandleMap[message.localTime.toString()] = message;
+  }
+
+  void removeMessage(String key) {
+    if (cacheHandleMap.containsKey(key)) {
+      cacheHandleMap.remove(key);
+    }
+  }
+}
+
+/// @nodoc
+abstract class EMMessageBody {
+  EMMessageBody({required this.type});
+
+  /// @nodoc
+  EMMessageBody.fromJson({
+    required Map map,
+    required this.type,
+  });
+
+  /// @nodoc
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['type'] = messageTypeToTypeStr(this.type);
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
+
+  /// 获取消息类型。
+  MessageType type;
+}
+
+///
+/// 命令消息体类。
+///
+class EMCmdMessageBody extends EMMessageBody {
+  ///
+  /// 创建一个命令消息。
+  ///
+  EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
+      : super(type: MessageType.CMD);
+
+  /// @nodoc
+  EMCmdMessageBody.fromJson({required Map map})
+      : super.fromJson(map: map, type: MessageType.CMD) {
+    this.action = map["action"];
+    this.deliverOnlineOnly =
+        map.getBoolValue("deliverOnlineOnly", defaultValue: false)!;
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.setValueWithOutNull("action", action);
+    data.setValueWithOutNull("deliverOnlineOnly", deliverOnlineOnly);
+
+    return data;
+  }
+
+  /// 命令内容。
+  late final String action;
+
+  ///
+  /// 判断当前 CMD 类型消息是否只投递在线用户。
+  ///
+  /// - `true`：是；
+  /// - `false`：否。
+  ///
+  bool deliverOnlineOnly = false;
+}
+
+///
+/// 位置消息类。
+///
+class EMLocationMessageBody extends EMMessageBody {
+  ///
+  /// 创建一个位置消息体实例。
+  ///
+  /// Param [latitude] 纬度。
+  ///
+  /// Param [longitude] 经度。
+  ///
+  /// Param [address] 地址。
+  ///
+  /// Param [buildingName] 建筑物名称。
+  ///
+  EMLocationMessageBody({
+    required this.latitude,
+    required this.longitude,
+    String? address,
+    String? buildingName,
+  }) : super(type: MessageType.LOCATION) {
+    _address = address;
+    _buildingName = buildingName;
+  }
+
+  /// @nodoc
+  EMLocationMessageBody.fromJson({required Map map})
+      : super.fromJson(map: map, type: MessageType.LOCATION) {
+    this.latitude = map.getDoubleValue("latitude", defaultValue: 0.0)!;
+    this.longitude = map.getDoubleValue("longitude", defaultValue: 0.0)!;
+    this._address = map.getStringValue("address");
+    this._buildingName = map.getStringValue("buildingName");
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data['latitude'] = this.latitude;
+    data['longitude'] = this.longitude;
+    data.setValueWithOutNull("address", this._address);
+    data.setValueWithOutNull("buildingName", this._buildingName);
+    return data;
+  }
+
+  String? _address;
+  String? _buildingName;
+
+  /// 地址。
+  String? get address => _address;
+
+  /// 建筑物名称。
+  String? get buildingName => _buildingName;
+
+  /// 纬度。
+  late final double latitude;
+
+  /// 经度。
+  late final double longitude;
+}
+
+///
+/// 文件类消息的基类。
+///
+class EMFileMessageBody extends EMMessageBody {
+  /// 创建一条带文件附件的消息。
+  ///
+  /// Param [localPath] 图片文件路径。
+  ///
+  /// Param [displayName] 文件显示名称。
+  ///
+  /// Param [fileSize] 文件大小，单位是字节。
+  ///
+  /// Param [type] 文件类型。
+  ///
+  EMFileMessageBody({
+    required this.localPath,
+    this.displayName,
+    this.fileSize,
+    MessageType type = MessageType.FILE,
+  }) : super(type: type);
+
+  /// @nodoc
+  EMFileMessageBody.fromJson(
+      {required Map map, MessageType type = MessageType.FILE})
+      : super.fromJson(map: map, type: type) {
+    this.secret = map.getStringValue("secret");
+    this.remotePath = map.getStringValue("remotePath");
+    this.fileSize = map.getIntValue("fileSize");
+    this.localPath = map.getStringValue("localPath", defaultValue: "")!;
+    this.displayName = map.getStringValue("displayName");
+    this.fileStatus = EMFileMessageBody.downloadStatusFromInt(
+      map.getIntValue("fileStatus"),
+    );
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.setValueWithOutNull("secret", this.secret);
+    data.setValueWithOutNull("remotePath", this.remotePath);
+    data.setValueWithOutNull("fileSize", this.fileSize);
+    data.setValueWithOutNull("localPath", this.localPath);
+    data.setValueWithOutNull("displayName", this.displayName);
+    data.setValueWithOutNull(
+        "fileStatus", downloadStatusToInt(this.fileStatus));
+
+    return data;
+  }
+
+  /// 附件的本地路径。
+  late final String localPath;
+
+  /// 获取附件的密钥。
+  String? secret;
+
+  /// 附件的服务器路径。
+  String? remotePath;
+
+  /// 附件的下载状态：
+  DownloadStatus fileStatus = DownloadStatus.PENDING;
+
+  /// 附件的大小，以字节为单位。
+  int? fileSize;
+
+  /// 附件的名称。
+  String? displayName;
+
+  static DownloadStatus downloadStatusFromInt(int? status) {
+    if (status == 0) {
+      return DownloadStatus.DOWNLOADING;
+    } else if (status == 1) {
+      return DownloadStatus.SUCCESS;
+    } else if (status == 2) {
+      return DownloadStatus.FAILED;
+    } else {
+      return DownloadStatus.PENDING;
+    }
+  }
+}
+
+///
+/// 图片消息体类。
+///
+class EMImageMessageBody extends EMFileMessageBody {
+  ///
+  /// 用图片文件创建一个图片消息体。
+  ///
+  /// Param [localPath] 图片文件本地路径。
+  ///
+  /// Param [displayName] 文件名。
+  ///
+  /// Param [thumbnailLocalPath] 图片缩略图本地路径。
+  ///
+  /// Param [sendOriginalImage] 发送图片消息时的原始图片文件。
+  ///
+  /// Param [fileSize] 图片文件大小，单位是字节。
+  ///
+  /// Param [width] 图片宽度，单位为像素。
+  ///
+  /// Param [height] 图片高度，单位为像素。
+  ///
+  EMImageMessageBody({
+    required String localPath,
+    String? displayName,
+    this.thumbnailLocalPath,
+    this.sendOriginalImage = false,
+    int? fileSize,
+    this.width,
+    this.height,
+  }) : super(
+          localPath: localPath,
+          displayName: displayName,
+          fileSize: fileSize,
+          type: MessageType.IMAGE,
+        );
+
+  /// @nodoc
+  EMImageMessageBody.fromJson({required Map map})
+      : super.fromJson(map: map, type: MessageType.IMAGE) {
+    this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
+    this.thumbnailRemotePath = map.getStringValue("thumbnailRemotePath");
+    this.thumbnailSecret = map.getStringValue("thumbnailSecret");
+    this.sendOriginalImage = map.getBoolValue(
+      "sendOriginalImage",
+      defaultValue: false,
+    )!;
+    this.height = map.getDoubleValue("height");
+    this.width = map.getDoubleValue("width");
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
+      map.getIntValue("thumbnailStatus"),
+    );
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.setValueWithOutNull("thumbnailLocalPath", thumbnailLocalPath);
+    data.setValueWithOutNull("thumbnailRemotePath", thumbnailRemotePath);
+    data.setValueWithOutNull("thumbnailSecret", thumbnailSecret);
+    data.setValueWithOutNull("sendOriginalImage", sendOriginalImage);
+    data.setValueWithOutNull("height", height);
+    data.setValueWithOutNull("width", width);
+    data.setValueWithOutNull(
+        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    return data;
+  }
+
+  ///
+  /// 设置发送图片时，是否发送原图。
+  /// - （默认）`false`：发送缩略图，图片超过 100 KB 会被压缩。
+  ///  - `true`：发送原图。
+  ///
+  bool sendOriginalImage = false;
+
+  /// 缩略图的本地路径或者字符串形式的资源标识符。
+  String? thumbnailLocalPath;
+
+  /// 缩略图的服务器路径。
+  String? thumbnailRemotePath;
+
+  /// 设置访问缩略图的密钥。下载缩略图时用户需要提供密钥进行校验。
+  String? thumbnailSecret;
+
+  /// 缩略图的下载状态。
+  DownloadStatus thumbnailStatus = DownloadStatus.PENDING;
+
+  /// 图片宽度，单位为像素。
+  double? width;
+
+  /// 图片高度，单位为像素。
+  double? height;
+}
+
+///
+/// 文本消息类。
+///
+class EMTextMessageBody extends EMMessageBody {
+  ///
+  /// 创建一条文本消息。
+  ///
+  /// Param [content] 文本消息内容。
+  ///
+  EMTextMessageBody({
+    required this.content,
+    this.targetLanguages,
+  }) : super(type: MessageType.TXT);
+
+  /// @nodoc
+  EMTextMessageBody.fromJson({required Map map})
+      : super.fromJson(
+          map: map,
+          type: MessageType.TXT,
+        ) {
+    this.content = map.getStringValue("content", defaultValue: "")!;
+    this.targetLanguages = map.getList<String>(
+      "targetLanguages",
+      valueCallback: (item) {
+        return item;
+      },
+    );
+    if (map.containsKey("translations")) {
+      this.translations = map["translations"]?.cast<String, String>();
+    }
+  }
+
+  @override
+
+  ///@nodoc
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data['content'] = this.content;
+    data.setValueWithOutNull("targetLanguages", this.targetLanguages);
+    data.setValueWithOutNull("translations", this.translations);
+    return data;
+  }
+
+  /// 文本消息内容。
+  late final String content;
+
+  /// 翻译的目标语言
+  List<String>? targetLanguages;
+
+  /// 翻译结果
+  Map<String, String>? translations;
+}
+
+///
+/// 视频消息体类。
+///
+class EMVideoMessageBody extends EMFileMessageBody {
+  ///
+  /// 创建一条视频消息。
+  ///
+  /// Param [localPath] 视频文件本地路径。
+  ///
+  EMVideoMessageBody({
+    required String localPath,
+
+    /// Param [displayName] 视频名称。
+    String? displayName,
+
+    /// Param [duration] 视频时长，单位为秒。
+    this.duration = 0,
+
+    /// Param [fileSize] 视频文件大小，单位是字节。
+    int? fileSize,
+
+    /// Param [thumbnailLocalPath] 视频缩略图本地路径。
+    this.thumbnailLocalPath,
+
+    /// Param [height] 视频高度，单位是像素。
+    this.height,
+
+    /// /// Param [width] 视频宽度，单位是像素。
+    this.width,
+  }) : super(
+          localPath: localPath,
+          displayName: displayName,
+          fileSize: fileSize,
+          type: MessageType.VIDEO,
+        );
+
+  /// @nodoc
+  EMVideoMessageBody.fromJson({required Map map})
+      : super.fromJson(map: map, type: MessageType.VIDEO) {
+    this.duration = map.getIntValue("duration", defaultValue: 0)!;
+    this.thumbnailLocalPath = map.getStringValue("thumbnailLocalPath");
+    this.thumbnailRemotePath = map.getStringValue("thumbnailRemotePath");
+    this.thumbnailSecret = map.getStringValue("thumbnailSecret");
+    this.height = map.getDoubleValue("height")?.toDouble();
+    this.width = map.getDoubleValue("width")?.toDouble();
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(
+        map.getIntValue("thumbnailStatus"));
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.setValueWithOutNull("duration", duration);
+    data.setValueWithOutNull("thumbnailLocalPath", thumbnailLocalPath);
+    data.setValueWithOutNull("thumbnailRemotePath", thumbnailRemotePath);
+    data.setValueWithOutNull("thumbnailSecret", thumbnailSecret);
+    data.setValueWithOutNull("height", height);
+    data.setValueWithOutNull("width", width);
+    data.setValueWithOutNull(
+        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+
+    return data;
+  }
+
+  /// 视频时长，单位是秒。
+  int? duration;
+
+  /// 视频缩略图的本地路径。
+  String? thumbnailLocalPath;
+
+  /// 视频缩略图的在服务器上的存储路径。
+  String? thumbnailRemotePath;
+
+  /// 视频缩略图的密钥。
+  String? thumbnailSecret;
+
+  /// 视频缩略图的下载状态。
+  DownloadStatus thumbnailStatus = DownloadStatus.PENDING;
+
+  /// 视频宽度，单位是像素。
+  double? width;
+
+  /// 视频高度，单位是像素。
+  double? height;
+}
+
+///
+/// 语音消息体类。
+///
+class EMVoiceMessageBody extends EMFileMessageBody {
+  ///
+  /// 创建一条语音消息。
+  ///
+  /// Param [localPath] 语言消息本地路径。
+  ///
+  /// Param [displayName] 语音文件名。
+  ///
+  /// Param [duration] 语音时长，单位是秒。
+  ///
+  /// Param [fileSize] 语音文件大小，单位是字节。
+  ///
+  EMVoiceMessageBody({
+    localPath,
+    this.duration = 0,
+    String? displayName,
+    int? fileSize,
+  }) : super(
+          localPath: localPath,
+          displayName: displayName,
+          fileSize: fileSize,
+          type: MessageType.VOICE,
+        );
+
+  /// @nodoc
+  EMVoiceMessageBody.fromJson({required Map map})
+      : super.fromJson(map: map, type: MessageType.VOICE) {
+    this.duration = map.getIntValue("duration", defaultValue: 0)!;
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.setValueWithOutNull("duration", duration);
+    return data;
+  }
+
+  /// 语音时长，单位是秒。
+  late final int duration;
+}
+
+///
+/// 自定义消息体类。
+///
+class EMCustomMessageBody extends EMMessageBody {
+  ///
+  /// 自定义消息体类。
+  ///
+  EMCustomMessageBody({
+    required this.event,
+    this.params,
+  }) : super(type: MessageType.CUSTOM);
+  EMCustomMessageBody.fromJson({required Map map})
+      : super.fromJson(map: map, type: MessageType.CUSTOM) {
+    this.event = map["event"];
+    this.params = map["params"]?.cast<String, String>();
+  }
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.setValueWithOutNull("event", event);
+    data.setValueWithOutNull("params", params);
+
+    return data;
+  }
+
+  /// 自定义事件内容。
+  late final String event;
+
+  /// 自定义消息的键值对 Map 列表。
+  Map<String, String>? params;
 }

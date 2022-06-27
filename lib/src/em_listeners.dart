@@ -1,11 +1,4 @@
-import 'models/em_chat_enums.dart';
-import 'models/em_chat_thread_event.dart';
-
-import 'models/em_group_message_ack.dart';
-import 'models/em_group_shared_file.dart';
-import 'models/em_message.dart';
-import 'models/em_message_reaction_change.dart';
-import 'models/em_presence.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// 服务器连接监听
@@ -143,12 +136,12 @@ abstract class EMCustomListener {
 ///
 /// 添加监听：
 /// ```dart
-///   EMClient.getInstance.contactManager.addContactListener(contactListener);
+///   EMClient.getInstance.contactManager.addContactManagerListener(contactListener);
 /// ```
 ///
 /// 移除监听：
 /// ```dart
-///   EMClient.getInstance.contactManager.removeContactListener(contactListener);
+///   EMClient.getInstance.contactManager.removeContactManagerListener(contactListener);
 /// ```
 ///
 abstract class EMContactManagerListener {
@@ -203,6 +196,17 @@ abstract class EMContactManagerListener {
 ///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
 /// ```
 ///
+/// Register the listener：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.addChatRoomManagerListener(listener);
+/// ```
+///
+/// Unregister the listener：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
+/// ```
+///
+
 abstract class EMChatRoomManagerListener {
   ///
   /// 聊天室解散的回调。
@@ -712,7 +716,7 @@ abstract class EMChatManagerListener {
   ///
   /// Param [list]  Reaction 变化事件。
   ///
-  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
 }
 
 ///
@@ -744,6 +748,8 @@ class EMChatThreadManagerListener {
   ///
   /// Param [event] 子区事件。
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadCreate(EMChatThreadEvent event) {}
 
   ///
@@ -752,6 +758,8 @@ class EMChatThreadManagerListener {
   /// 子区所属群组的所有成员均可调用该方法。
   ///
   /// Param [event] 子区事件。
+  ///
+  /// Param [event] The event;
   ///
   void onChatThreadUpdate(EMChatThreadEvent event) {}
 
@@ -762,12 +770,16 @@ class EMChatThreadManagerListener {
   ///
   /// Param [event] 子区事件。
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadDestroy(EMChatThreadEvent event) {}
 
   ///
   /// 管理员移除子区用户的回调。
   ///
   /// Param [event] 子区事件。
+  ///
+  /// Param [event] The event;
   ///
   void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
 }

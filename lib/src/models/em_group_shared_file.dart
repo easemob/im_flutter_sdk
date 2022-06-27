@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 群组共享文件类。

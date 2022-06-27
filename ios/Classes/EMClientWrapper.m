@@ -354,7 +354,7 @@ static EMClientWrapper *wrapper = nil;
 - (void)loginWithAgoraToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *agoraToken = param[@"agoratoken"];
+    NSString *agoraToken = param[@"agora_token"];
     [EMClient.sharedClient loginWithUsername:username
                                   agoraToken:agoraToken
                                   completion:^(NSString *aUsername, EMError *aError)

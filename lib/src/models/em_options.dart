@@ -1,5 +1,4 @@
-import '../tools/em_extension.dart';
-import '../internal/em_push_config.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 提供 SDK 聊天相关的设置。

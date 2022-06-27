@@ -1,14 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'em_listeners.dart';
-import 'internal/em_event_keys.dart';
-import 'models/em_chat_room.dart';
-import 'models/em_cursor_result.dart';
-import 'models/em_error.dart';
-import 'models/em_page_result.dart';
-import 'tools/em_extension.dart';
-import 'internal/chat_method_keys.dart';
+import 'internal/inner_headers.dart';
 
 ///
 ///  聊天室管理类，负责聊天室加入和退出、聊天室列表获取以及成员权限管理等。

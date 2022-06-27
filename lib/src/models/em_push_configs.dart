@@ -1,5 +1,4 @@
-import '../tools/em_extension.dart';
-import '../em_push_manager.dart';
+import '../internal/inner_headers.dart';
 
 /// 推送设置类。
 class EMPushConfigs {

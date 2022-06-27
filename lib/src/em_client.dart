@@ -2,12 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-import 'internal/em_transform_tools.dart';
-import 'tools/em_extension.dart';
-import '../im_flutter_sdk.dart';
-import 'internal/chat_method_keys.dart';
-import 'tools/em_log.dart';
-import 'tools/em_progress_manager.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// 该类是 Chat SDK 的入口，负责登录、退出及连接管理等，由此可以获得其他模块的入口。
@@ -240,7 +235,7 @@ class EMClient {
   Future<void> loginWithAgoraToken(String username, String agoraToken) async {
     Map req = {
       "username": username,
-      "agoratoken": agoraToken,
+      "agora_token": agoraToken,
     };
 
     Map result =
@@ -442,6 +437,7 @@ class EMClient {
   }
 
   ///
+
   /// 设置 Chat 服务器连接监听。
   ///
   /// Param [listener] 要设置的 Chat 服务器连接监听。
@@ -464,7 +460,7 @@ class EMClient {
   ///
   /// 移除所有 Chat 服务器连接监听。
   ///
-  void clearAllConversationListeners() {
+  void clearAllConnectionListeners() {
     _connectionListeners.clear();
   }
 
@@ -488,7 +484,9 @@ class EMClient {
     }
   }
 
+  ///
   /// 移除所有自定义监听器。
+  ///
   void clearAllCustomListeners() {
     _customListeners.clear();
   }

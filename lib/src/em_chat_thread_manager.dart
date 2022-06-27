@@ -1,12 +1,6 @@
 import 'package:flutter/services.dart';
-import 'models/em_chat_thread_event.dart';
-import 'em_listeners.dart';
-import 'tools/em_extension.dart';
-import 'internal/chat_method_keys.dart';
-import 'models/em_chat_thread.dart';
-import 'models/em_error.dart';
-import 'models/em_cursor_result.dart';
-import 'models/em_message.dart';
+
+import 'internal/inner_headers.dart';
 
 ///
 /// 子区管理类
@@ -340,6 +334,7 @@ class EMChatThreadManager {
   ///
   /// 创建子区。
   ///
+
   /// 所有群成员都可以调用
   /// 子区创建成功后，会出现如下情况：
   ///

@@ -1,10 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'internal/chat_method_keys.dart';
-import 'models/em_chat_enums.dart';
-import 'models/em_error.dart';
-import 'models/em_push_configs.dart';
+
+import 'internal/inner_headers.dart';
 
 ///
 ///  推送设置管理类。
@@ -197,7 +195,7 @@ class EMPushManager {
   }
 
   ///
-  ///  Updates the HMS push token.
+  /// Updates the HMS push token.
   ///
   /// Param [token] The HMS push token.
   ///

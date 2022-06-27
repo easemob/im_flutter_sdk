@@ -41,3 +41,38 @@ class EMMessageReaction {
     );
   }
 }
+
+///
+/// 消息 Reaction 事件类。
+///
+class EMMessageReactionEvent {
+  /// 会话 ID。
+  final String conversationId;
+
+  /// 消息 ID。
+  final String messageId;
+
+  /// Reaction 列表。
+  final List<EMMessageReaction> reactions;
+
+  EMMessageReactionEvent._private({
+    required this.conversationId,
+    required this.messageId,
+    required this.reactions,
+  });
+
+  /// nodoc
+  factory EMMessageReactionEvent.fromJson(Map map) {
+    String conversationId = map["conversationId"];
+    String messageId = map["messageId"];
+    List<EMMessageReaction> reactions = [];
+    map["reactions"]?.forEach((element) {
+      reactions.add(EMMessageReaction.fromJson(element));
+    });
+    return EMMessageReactionEvent._private(
+      conversationId: conversationId,
+      messageId: messageId,
+      reactions: reactions,
+    );
+  }
+}

@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 用户属性类。
@@ -163,7 +163,6 @@ class EMUserInfo {
   /// - `0`: (默认) 未知;
   /// - `1`: 男;
   /// - `2`: 女.
-  ///
   final int gender;
 
   /// 用户签名。

@@ -1,4 +1,4 @@
-import 'em_error.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// 群文件下载回调

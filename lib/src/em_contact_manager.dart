@@ -1,12 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'tools/em_extension.dart';
-
-import 'em_listeners.dart';
-import 'internal/chat_method_keys.dart';
-import 'internal/em_event_keys.dart';
-import 'models/em_error.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// `EMContactManager` 是联系人管理类，用于记录、查询和修改用户的联系人列表。

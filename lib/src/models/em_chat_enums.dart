@@ -255,6 +255,12 @@ enum EMMultiDevicesEvent {
   /// 用户 A 在设备 A1 上将所有其他群组成员移除群组禁言列表，则设备 A2 上会收到该事件。
   GROUP_REMOVE_ALL_BAN,
 
+  /// 群功能被关闭事件
+  GROUP_DISABLED,
+
+  /// 群功能开启事件
+  GROUP_ABLE,
+
   /// 用户 A 在设备 A1 上创建了子区，则设备 A2 上会收到该事件。
   CHAT_THREAD_CREATE,
 
@@ -275,6 +281,7 @@ enum EMMultiDevicesEvent {
 }
 
 ///
+
 /// 子区事件类型枚举。
 ///
 enum EMChatThreadOperation {
@@ -296,7 +303,6 @@ enum EMChatThreadOperation {
 
 ///
 /// 推送标题显示内容
-///
 ///
 enum DisplayStyle {
   /// 显示通用标题，如“您有一条新消息”
