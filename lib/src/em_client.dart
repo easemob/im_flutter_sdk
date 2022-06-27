@@ -475,7 +475,7 @@ class EMClient {
   ///
   ///  Removes all chat server connection listeners.
   ///
-  void clearAllConversationListeners() {
+  void clearAllConnectionListeners() {
     _connectionListeners.clear();
   }
 
