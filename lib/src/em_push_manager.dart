@@ -1,21 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'internal/chat_method_keys.dart';
-import 'models/em_error.dart';
-import 'models/em_push_configs.dart';
-
-///
-/// The push styles.
-///
-///
-enum DisplayStyle {
-  /// The push message presentation style: SimpleBanner represents the presentation of a simple message.
-  Simple,
-
-  /// The push message presentation style: MessageSummary represents the presentation of message content.
-  Summary,
-}
+import 'internal/inner_headers.dart';
 
 ///
 ///  The message push configuration options.
@@ -208,7 +194,7 @@ class EMPushManager {
   }
 
   ///
-  ///  Updates the HMS push token.
+  /// Updates the HMS push token.
   ///
   /// Param [token] The HMS push token.
   ///

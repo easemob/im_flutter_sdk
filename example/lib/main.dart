@@ -326,5 +326,5 @@ class _MyHomePageState extends State<MyHomePage>
   void onReadAckForGroupMessageUpdated() {}
 
   @override
-  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
 }

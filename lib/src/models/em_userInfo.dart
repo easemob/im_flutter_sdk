@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The EMUserInfo class, which contains the user attributes, such as the nickname, description, and avatar.
@@ -68,7 +68,7 @@ class EMUserInfo {
     String? phone,
 
     /// Param [gender] The user's gender. The value can only be `0`, `1`, or `2`. Other values are invalid.
-    /// - `0`: (Default) Unknow;
+    /// - `0`: (Default) UnKnow;
     /// - `1`: Male;
     /// - `2`: Female.
     int? gender,
@@ -164,7 +164,7 @@ class EMUserInfo {
   ///
   /// **Return**
   /// The user's gender:
-  /// - `0`: (Default) Unknow;
+  /// - `0`: (Default) UnKnow;
   /// - `1`: Male;
   /// - `2`: Female.
   ///
@@ -191,11 +191,11 @@ class EMUserInfo {
   ///
   final String? ext;
 
-  /// Gets the time period(seconds) when the user attibutes in the cache expire.
-  /// If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
+  /// Gets the time period(seconds) when the user attributes in the cache expire.
+  /// If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
   ///
   /// **Return**
-  /// The time period(seconds) when the user attibutes in the cache expire.
+  /// The time period(seconds) when the user attributes in the cache expire.
   ///
   final int expireTime = DateTime.now().millisecondsSinceEpoch;
 }

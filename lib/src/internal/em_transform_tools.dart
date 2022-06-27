@@ -1,4 +1,4 @@
-import '../models/em_chat_enums.dart';
+import 'inner_headers.dart';
 
 EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
   switch (i) {

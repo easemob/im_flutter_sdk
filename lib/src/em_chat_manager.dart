@@ -2,12 +2,7 @@ import "dart:async";
 
 import 'package:flutter/services.dart';
 
-import 'internal/em_channel_manager.dart' show EMMethodChannel;
-import 'internal/em_transform_tools.dart';
-
-import 'tools/em_extension.dart';
-import '../im_flutter_sdk.dart';
-import 'internal/chat_method_keys.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The chat manager class, responsible for sending and receiving messages, loading and deleting conversations, and downloading attachments.
@@ -750,14 +745,224 @@ class EMChatManager {
   }
 
   Future<void> _messageReactionDidChange(List reactionChangeList) async {
-    List<EMMessageReactionChange> list = [];
+    List<EMMessageReactionEvent> list = [];
     for (var reactionChange in reactionChangeList) {
-      list.add(EMMessageReactionChange.fromJson(reactionChange));
+      list.add(EMMessageReactionEvent.fromJson(reactionChange));
     }
     for (var listener in _listeners) {
       listener.onMessageReactionDidChange(list);
     }
   }
-}
 
-extension EMThreadPlugin on EMChatManager {}
+  ///// Moderation
+
+  ///
+  /// Report violation message
+  ///
+  /// Param [messageId] Violation Message ID
+  ///
+  /// Param [tag] The report type (For example: involving pornography and terrorism).
+  ///
+  /// Param [reason] The reason for reporting.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> reportMessage({
+    required String messageId,
+    required String tag,
+    required String reason,
+  }) async {
+    Map req = {"msgId": messageId, "tag": tag, "reason": reason};
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.reportMessage, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  //// Reaction
+
+  ///
+  /// Adds a reaction.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// Param [reaction] The reaction content.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> addReaction({
+    required String messageId,
+    required String reaction,
+  }) async {
+    Map req = {"reaction": reaction, "msgId": messageId};
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.addReaction, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Deletes a reaction.
+  ///
+  /// This is a synchronous method and blocks the current thread.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// Param [reaction] The reaction content.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> removeReaction({
+    required String messageId,
+    required String reaction,
+  }) async {
+    Map req = {"reaction": reaction, "msgId": messageId};
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.removeReaction, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the list of Reactions.
+  ///
+  /// Param [messageIds] The message IDs.
+  ///
+  /// Param [chatType] The chat type. Only one-to-one chat ({@link EMMessage.ChatType#Chat} and group chat ({@link EMMessage.ChatType#GroupChat}) are allowed.
+  ///
+  /// Param [groupId] which is invalid only when the chat type is group chat.
+  ///
+  /// **Return** The Reaction list under the specified message ID（The UserList of EMMessageReaction is the summary data, which only contains the information of the first three users）.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<Map<String, List<EMMessageReaction>>> fetchReactionList({
+    required List<String> messageIds,
+    required ChatType chatType,
+    String? groupId,
+  }) async {
+    Map req = {
+      "msgIds": messageIds,
+      "chatType": chatTypeToInt(chatType),
+    };
+    req.setValueWithOutNull("groupId", groupId);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.fetchReactionList, req);
+
+    try {
+      EMError.hasErrorFromResult(result);
+      Map<String, List<EMMessageReaction>> ret = {};
+      for (var info in result.entries) {
+        List<EMMessageReaction> reactions = [];
+        for (var item in info.value) {
+          reactions.add(EMMessageReaction.fromJson(item));
+        }
+        ret[info.key] = reactions;
+      }
+      return ret;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the reaction details.
+  ///
+  /// Param [messageId] The message ID.
+  ///
+  /// Param [reaction] The reaction content.
+  ///
+  /// Param [cursor] The cursor position from which to get Reactions.
+  ///
+  /// Param [pageSize] The number of Reactions you expect to get on each page.
+  ///
+  /// **Return** The result callback, which contains the reaction list obtained from the server and the cursor for the next query. Returns null if all the data is fetched.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<EMCursorResult<EMMessageReaction>> fetchReactionDetail({
+    required String messageId,
+    required String reaction,
+    String? cursor,
+    int pageSize = 20,
+  }) async {
+    Map req = {
+      "msgId": messageId,
+      "reaction": reaction,
+    };
+    req.setValueWithOutNull("cursor", cursor);
+    req.setValueWithOutNull("pageSize", pageSize);
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.fetchReactionDetail, req);
+
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<EMMessageReaction>.fromJson(
+          result[ChatMethodKeys.fetchReactionDetail],
+          dataItemCallback: (value) {
+        return EMMessageReaction.fromJson(value);
+      });
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Translate a message.
+  ///
+  /// Param [msg] The message object
+  ///
+  /// Param [languages] The target languages to translate
+  ///
+  /// **Return** Translated Message
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<EMMessage> translateMessage({
+    required EMMessage msg,
+    required List<String> languages,
+  }) async {
+    Map req = {};
+    req["message"] = msg.toJson();
+    req["languages"] = languages;
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.translateMessage, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMMessage.fromJson(result["message"]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Fetch all languages what the translate service support
+  ///
+  /// **Return** Supported languages
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<List<EMTranslateLanguage>> fetchSupportedLanguages() async {
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.fetchSupportLanguages);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMTranslateLanguage> list = [];
+      result[ChatMethodKeys.fetchSupportLanguages]?.forEach((element) {
+        list.add(EMTranslateLanguage.fromJson(element));
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+}

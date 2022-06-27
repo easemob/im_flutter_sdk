@@ -1,18 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'models/em_download_callback.dart';
-import 'em_listeners.dart';
-import 'internal/em_event_keys.dart';
-import 'models/em_cursor_result.dart';
-import 'models/em_error.dart';
-import 'models/em_group.dart';
-import 'models/em_group_info.dart';
-import 'models/em_group_options.dart';
-import 'models/em_group_shared_file.dart';
-import 'tools/em_extension.dart';
-
-import 'internal/chat_method_keys.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The group manager class, which manages group creation and deletion, user joining and exiting the group, etc.

@@ -1,7 +1,4 @@
-import '../internal/em_transform_tools.dart';
-
-import 'em_chat_enums.dart';
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The group options to be configured when the chat group is created.
