@@ -196,17 +196,6 @@ abstract class EMContactManagerListener {
 ///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
 /// ```
 ///
-/// Register the listener：
-/// ```dart
-///   EMClient.getInstance.chatRoomManager.addChatRoomManagerListener(listener);
-/// ```
-///
-/// Unregister the listener：
-/// ```dart
-///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
-/// ```
-///
-
 abstract class EMChatRoomManagerListener {
   ///
   /// 聊天室解散的回调。
