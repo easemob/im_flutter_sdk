@@ -810,7 +810,6 @@ class EMChatManager {
   ///
   /// Deletes a reaction.
   ///
-  /// This is a synchronous method and blocks the current thread.
   ///
   /// Param [messageId] The message ID.
   ///
