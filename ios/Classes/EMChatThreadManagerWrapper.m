@@ -165,6 +165,7 @@
                                  result:(FlutterResult)result {
     NSArray *threadIds = param[@"threadIds"];
     __weak typeof(self)weakSelf = self;
+    
     [EMClient.sharedClient.threadManager getLastMessageFromSeverWithChatThreads:threadIds completion:^(NSDictionary<NSString *,EMChatMessage *> * _Nonnull messageMap, EMError * _Nonnull aError) {
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         for (NSString *key in messageMap.allKeys) {
