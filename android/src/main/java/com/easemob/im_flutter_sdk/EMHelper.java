@@ -1124,15 +1124,11 @@ class HyphenateExceptionHelper {
 class EMUserInfoHelper {
     static EMUserInfo fromJson(JSONObject obj) throws JSONException {
         EMUserInfo userInfo = new EMUserInfo();
-        if (obj.has("userId")){
-            userInfo.setUserId(obj.getString("userId"));
-        }
         if (obj.has("nickName")){
             userInfo.setNickname(obj.getString("nickName"));
         }
-
-        if (obj.has("gender")){
-            userInfo.setGender(obj.getInt("gender"));
+        if (obj.has("avatarUrl")){
+            userInfo.setAvatarUrl(obj.optString("avatarUrl"));
         }
         if (obj.has("mail")){
             userInfo.setEmail(obj.optString("mail"));
@@ -1140,17 +1136,17 @@ class EMUserInfoHelper {
         if (obj.has("phone")){
             userInfo.setPhoneNumber(obj.optString("phone"));
         }
+        if (obj.has("gender")){
+            userInfo.setGender(obj.getInt("gender"));
+        }
         if (obj.has("sign")){
             userInfo.setSignature(obj.optString("sign"));
         }
-        if (obj.has("avatarUrl")){
-            userInfo.setAvatarUrl(obj.optString("avatarUrl"));
+        if (obj.has("birth")){
+            userInfo.setBirth(obj.getString("birth"));
         }
         if (obj.has("ext")){
             userInfo.setExt(obj.getString("ext"));
-        }
-        if (obj.has("birth")){
-            userInfo.setBirth(obj.getString("birth"));
         }
 
         return userInfo;

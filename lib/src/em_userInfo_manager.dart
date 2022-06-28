@@ -11,8 +11,6 @@ class EMUserInfoManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_userInfo_manager', JSONMethodCodec());
 
-  EMUserInfo? _ownUserInfo;
-
   // The map of effective contacts.
   Map<String, EMUserInfo> _effectiveUserInfoMap = Map();
 
@@ -23,12 +21,34 @@ class EMUserInfoManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> updateUserInfo(EMUserInfo userInfo) async {
-    Map req = {'userInfo': userInfo.toJson()};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
+  Future<EMUserInfo> updateUserInfo({
+    String? nickname,
+    String? avatarUrl,
+    String? mail,
+    String? phone,
+    int? gender,
+    String? sign,
+    String? birth,
+    String? ext,
+  }) async {
+    Map req = {};
+    req.setValueWithOutNull("nickName", nickname);
+    req.setValueWithOutNull("avatarUrl", avatarUrl);
+    req.setValueWithOutNull("mail", mail);
+    req.setValueWithOutNull("phone", phone);
+    req.setValueWithOutNull("gender", gender);
+    req.setValueWithOutNull("sign", sign);
+    req.setValueWithOutNull("birth", birth);
+    req.setValueWithOutNull("ext", ext);
+
     try {
+      Map result =
+          await _channel.invokeMethod(ChatMethodKeys.updateOwnUserInfo, req);
       EMError.hasErrorFromResult(result);
+      EMUserInfo info =
+          EMUserInfo.fromJson(result[ChatMethodKeys.updateOwnUserInfo]);
+      _effectiveUserInfoMap[info.userId] = info;
+      return info;
     } on EMError catch (e) {
       throw e;
     }
@@ -37,7 +57,7 @@ class EMUserInfoManager {
   ///
   /// Gets the current user's attributes from the server.
   ///
-  /// Param [expireTime] The time period(seconds) when the user attibutes in the cache expire. If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
+  /// Param [expireTime] The time period(seconds) when the user attributes in the cache expire. If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
   ///
   /// **Return**  The user properties that are obtained. See {@link EMUserInfo}.
   ///
@@ -51,12 +71,13 @@ class EMUserInfoManager {
           [currentUser],
           expireTime: expireTime,
         );
-        _ownUserInfo = ret.values.first;
+        _effectiveUserInfoMap[ret.values.first.userId] = ret.values.first;
+        return ret.values.first;
       } on EMError catch (e) {
         throw e;
       }
     }
-    return _ownUserInfo;
+    return null;
   }
 
   ///
@@ -64,7 +85,7 @@ class EMUserInfoManager {
   ///
   /// Param [userIds] The username array.
   ///
-  /// Param [expireTime] The time period(seconds) when the user attibutes in the cache expire. If the interval between two calles is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
+  /// Param [expireTime] The time period(seconds) when the user attributes in the cache expire. If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
   ///
   /// **Return** A map that contains key-value pairs where the key is the user ID and the value is user attributes.
   ///
@@ -111,7 +132,6 @@ class EMUserInfoManager {
   }
 
   void clearUserInfoCache() {
-    _ownUserInfo = null;
     _effectiveUserInfoMap.clear();
   }
 }
