@@ -17,7 +17,25 @@ class EMUserInfoManager {
   ///
   /// Modifies the user attributes of the current user.
   ///
-  /// Param [userInfo] The user attributes to be modified.
+  /// Param [nickname] The nickname of the user.
+  ///
+  /// Param [avatarUrl] The avatar URL of the user.
+  ///
+  /// Param [mail] The email address of the user.
+  ///
+  /// Param [phone] The phone number of the user.
+  ///
+  /// Param [gender] The gender of the user. The value can only be `0`, `1`, or `2`. Other values are invalid.
+  /// - `0`: (Default) Unknown;
+  /// - `1`: Male;
+  /// - `2`: Female.
+  /// Param [sign] The signature of the user.
+  ///
+  /// Param [birth] The birthday of the user.
+  ///
+  /// Param [ext] The custom extension information of the user. You can set it to an empty string or type custom information and encapsulate them as a JSON string.
+  ///
+  /// **Return** The user info.
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
