@@ -17,7 +17,7 @@ class EMPushConfigs {
   /// - `false`：关闭。
   final bool noDisturb;
 
-  /// 获取离线推送免打扰的开始时间。该时间为 24 小时制，取值范围为 0-24。
+  /// 获取离线推送免打扰的开始时间。该时间为 24 小时制，取值范围为 0-23。
   final int noDisturbStartHour;
 
   /// 获取离线推送免打扰结束的时间。该时间为 24 小时制，取值范围为 0-23。

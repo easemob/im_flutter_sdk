@@ -20,7 +20,7 @@ class EMGroupMessageAck {
   final String from;
 
   ///
-  /// 获取已读回执扩展内容。
+  /// 已读回执扩展内容。
   ///
   /// 设定该扩展内容详见 {@link EMChatManager#sendGroupMessageReadAck(String, String, String?)}。
   ///

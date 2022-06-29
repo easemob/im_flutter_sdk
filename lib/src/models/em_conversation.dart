@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../internal/inner_headers.dart';
 
 ///
-/// 会话类，表示和一个用户/群组/聊天室的对话，包含发送和接收的消息。
+/// 会话类，用于定义单聊会话、群聊会话和聊天室会话。每类会话中包含发送和接收的消息。
 ///
 /// 以下示例代码展示如何从会话中获取未读消息数：
 /// ```dart
@@ -56,7 +56,9 @@ class EMConversation {
   final EMConversationType type;
 
   ///
-  /// 是否为ChatThread会话
+  /// 是否为子区会话。
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   final bool isChatThread;
 
@@ -79,8 +81,6 @@ class EMConversation {
       throw e;
     }
   }
-
-  ///
 
   ///
   /// 获取会话的最新一条消息。
@@ -205,6 +205,8 @@ class EMConversation {
 
   ///
   /// 插入一条消息到会话尾部。
+  ///
+  /// @note
   /// 请确保消息的 conversation ID 与要插入的会话的 conversationId 一致，消息会被插入 SDK 本地数据库，并且更新会话的 `latestMessage` 等属性。
   /// Param [message] 消息体实例。
   ///
@@ -224,6 +226,8 @@ class EMConversation {
 
   ///
   /// 更新 SDK 本地数据库的消息。
+  ///
+  /// @note
   /// 不能更新消息 ID，消息更新后，会话的 `latestMessage` 等属性进行相应更新。
   /// Param [message] 要更新的消息。
   ///

@@ -71,28 +71,28 @@ class EMChatRoom {
   ///
   final String roomId;
 
-  /// 从内存中聊天室名称。
+  /// 从内存中获取聊天室名称。
   ///
   /// **Note**
   /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
   ///
   final String? name;
 
-  /// 从内存中聊天室描述。
+  /// 从内存中获取聊天室描述。
   ///
   /// **Note**
   /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
   ///
   final String? description;
 
-  /// 从内存中聊天室所有者 ID。
+  /// 从内存中获取聊天室所有者 ID。
   ///
   /// **Note**
   /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
   ///
   final String? owner;
 
-  /// 从内存中聊天室公告。
+  /// 从内存中获取聊天室公告。
   ///
   /// **Note**
   /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。

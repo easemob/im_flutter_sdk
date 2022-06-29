@@ -42,16 +42,16 @@ class EMPresence {
 }
 
 ///
-/// 在线状态详情
+/// 用户在线状态详情。
 ///
 class EMPresenceStatusDetail {
   ///
-  /// 发布在线设备，可能是 "ios", "android", "linux", "windows", "webim".
+  /// 发布在线设备，可能是 "ios", "android", "linux", "windows", "webim"。
   ///
   final String device;
 
   ///
-  /// 发布的状态
+  /// 发布的在线状态。
   ///
   final int status;
 

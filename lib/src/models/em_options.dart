@@ -12,8 +12,8 @@ class EMOptions {
   ///
   /// 是否允许自动登录。
   ///
-  /// - (默认) `true`: (默认) 允许;
-  /// - `false`: 不允许.
+  /// - (默认) `true`：允许;
+  /// - `false`：不允许.
   ///
   final bool autoLogin;
 
@@ -123,7 +123,7 @@ class EMOptions {
   /// 消息服务器。
   final String? imServer;
 
-  /// 是否使用自定义 IM 服务的端口。用于私有化部署。.
+  /// 是否使用自定义 IM 服务的端口。用于私有化部署。
   final int? imPort;
 
   EMPushConfig _pushConfig = EMPushConfig();
@@ -188,7 +188,7 @@ class EMOptions {
   }
 
   ///
-  /// 创建EMOptions
+  /// 设置推送。
   ///
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///

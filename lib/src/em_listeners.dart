@@ -1,7 +1,7 @@
 import 'internal/inner_headers.dart';
 
 ///
-/// 服务器连接监听
+/// 服务器连接监听类。
 ///
 /// 注册监听:
 ///   ```dart
@@ -20,7 +20,7 @@ abstract class EMConnectionListener {
   void onConnected();
 
   ///
-  ///  和 chat 服务器断开连接时触发的回调。
+  /// 和 chat 服务器断开连接时触发的回调。
   ///
   void onDisconnected();
 
@@ -35,7 +35,7 @@ abstract class EMConnectionListener {
   void onUserDidRemoveFromServer();
 
   ///
-  /// 被服务器禁止回调。
+  /// 被服务器禁止连接回调。
   ///
   void onUserDidForbidByServer();
 
@@ -111,7 +111,7 @@ abstract class EMMultiDeviceListener {
   ///
   /// Param [event] 事件类型。
   ///
-  /// Param [chatThreadId] 子区 id
+  /// Param [chatThreadId] 子区 ID。
   ///
   /// Param [usernames] 用户 ID 数组。
   ///
@@ -123,7 +123,7 @@ abstract class EMMultiDeviceListener {
 }
 
 ///
-///   自定义事件监听器。
+/// 自定义事件监听器。
 ///
 abstract class EMCustomListener {
   void onDataReceived(Map map);
@@ -148,21 +148,21 @@ abstract class EMContactManagerListener {
   ///
   /// 添加好友回调。
   ///
-  /// Param [userName] 新添加的好友。
+  /// Param [userName] 新添加的好友用户 ID。
   ///
   void onContactAdded(String userName);
 
   ///
   /// 删除好友回调。
   ///
-  /// Param [userName] 删除的好友。
+  /// Param [userName] 删除的好友用户 ID。
   ///
   void onContactDeleted(String userName);
 
   ///
-  /// 好友申请回调
+  /// 好友申请回调。
   ///
-  /// Param [userName] 申请用户id。
+  /// Param [userName] 申请用户 ID。
   ///
   /// Param [reason] 申请原因。
   ///
@@ -171,14 +171,14 @@ abstract class EMContactManagerListener {
   ///
   /// 发出的好友申请被对方同意。
   ///
-  /// Param [userName] 对方id。
+  /// Param [userName] 对方的用户 ID。
   ///
   void onFriendRequestAccepted(String userName);
 
   ///
   /// 发出的好友申请被对方拒绝。
   ///
-  /// Param [userName] 对方id。
+  /// Param [userName] 对方的用户 ID。
   ///
   void onFriendRequestDeclined(String userName);
 }
@@ -196,6 +196,7 @@ abstract class EMContactManagerListener {
 ///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
 /// ```
 ///
+
 abstract class EMChatRoomManagerListener {
   ///
   /// 聊天室解散的回调。
@@ -372,7 +373,7 @@ abstract class EMGroupManagerListener {
   ///
   /// 对端用户接收群组申请的回调。
   ///
-  /// 该回调是由对端用户接收当前用户发送的群组申请触发的。如，用户 A 向用户 B 发送群组申请，用户 B 收到该回调。
+  /// 该回调是由对端用户接收当前用户发送的群组申请触发的。例如，用户 A 向用户 B 发送群组申请，用户 B 收到该回调。
   ///
   /// Param [groupId] 群组 ID。
   ///
@@ -470,7 +471,7 @@ abstract class EMGroupManagerListener {
 
   ///
   /// 当前用户自动同意入群邀请的回调。
-  /// 具体配置,参考 {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
+  /// 具体配置参考 {@link EMOptions#autoAcceptGroupInvitation(boolean value)}。
   ///
   /// Param [groupId] 群组 ID。
   ///
@@ -482,7 +483,7 @@ abstract class EMGroupManagerListener {
       String groupId, String inviter, String? inviteMessage);
 
   ///
-  /// 有成员被禁言回调
+  /// 有成员被禁言回调。
   ///
   /// 用户禁言后，将无法在群中发送消息，但可查看群组中的消息，而黑名单中的用户无法查看和发送群组消息。
   ///
@@ -612,6 +613,7 @@ abstract class EMGroupManagerListener {
 ///
 /// 消息事件监听器。
 ///
+/// @note
 /// 该监听器用于监听消息变更：
 ///
 /// - 消息成功发送到对方后，发送方会收到送达回执（需开启送达回执功能，详见 {@link EMOptions#requireDeliveryAck(boolean)}。

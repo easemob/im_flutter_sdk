@@ -48,7 +48,7 @@ class EMGroupOptions {
   ///
   final bool inviteNeedConfirm;
 
-  /// 群 extension
+  /// 群组扩展属性。
   final String? ext;
 
   /// @nodoc

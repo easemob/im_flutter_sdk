@@ -29,7 +29,7 @@ class EMMessage {
 
   ///
   /// 消息发送方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -37,7 +37,7 @@ class EMMessage {
 
   ///
   /// 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -146,7 +146,7 @@ class EMMessage {
   /// Param [body] 消息体。
   ///
   /// Param [to] 接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -210,7 +210,7 @@ class EMMessage {
   /// 创建一条文本消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -234,7 +234,7 @@ class EMMessage {
   /// 创建一条待发送的文件消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -263,7 +263,7 @@ class EMMessage {
   /// 创建一条待发送的图片消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -309,7 +309,7 @@ class EMMessage {
   /// 创建一条待发送的视频消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -354,7 +354,7 @@ class EMMessage {
   /// 创建一条待发送的语音消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -386,7 +386,7 @@ class EMMessage {
   /// 创建一条待发送的位置信息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -417,7 +417,7 @@ class EMMessage {
   /// 创建一条待发送的命令消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -437,7 +437,7 @@ class EMMessage {
   /// 创建一条待发送的自定义消息。
   ///
   /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户名；
+  /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
@@ -549,11 +549,11 @@ class EMMessage {
       const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
 
   ///
-  /// Gets the Reaction list.
+  /// 获取 Reaction 列表。
   ///
-  /// **Return** The Reaction list
+  /// **Return** Reaction 列表。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<List<EMMessageReaction>> reactionList() async {
     Map req = {"msgId": msgId};
@@ -576,11 +576,11 @@ class EMMessage {
   }
 
   ///
-  /// Gets the number of members that have read the group message.
+  /// 获取群消息已读人数。
   ///
-  /// **Return** group ack count
+  /// **Return** 群消息已读人数。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<int> groupAckCount() async {
     Map req = {"msgId": msgId};
@@ -599,11 +599,14 @@ class EMMessage {
   }
 
   ///
-  /// Get an overview of the thread in the message (currently only supported by group messages)
+  /// 获得消息中的子区概述。
   ///
-  /// **Return** overview of the thread
+  /// @note
+  /// 目前，该方法只适用于群组消息。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}
+  /// **Return** 子区概述内容。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
   Future<EMChatThread?> chatThread() async {
     Map req = {"msg": msgId};
@@ -943,8 +946,8 @@ class EMImageMessageBody extends EMFileMessageBody {
 
   ///
   /// 设置发送图片时，是否发送原图。
-  /// - （默认）`false`：发送缩略图，图片超过 100 KB 会被压缩。
-  ///  - `true`：发送原图。
+  /// - （默认）`false`：图片小于 100 KB 时，发送原图和缩略图；图片大于 100 KB 时，发送压缩后的图片和压缩后图片的缩略图。
+  ///  - `true`：发送原图和缩略图。
   ///
   bool sendOriginalImage = false;
 
@@ -1013,10 +1016,10 @@ class EMTextMessageBody extends EMMessageBody {
   /// 文本消息内容。
   late final String content;
 
-  /// 翻译的目标语言
+  /// 翻译的目标语言。
   List<String>? targetLanguages;
 
-  /// 翻译结果
+  /// 译文。
   Map<String, String>? translations;
 }
 

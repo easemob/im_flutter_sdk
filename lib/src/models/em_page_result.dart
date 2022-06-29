@@ -25,8 +25,9 @@ class EMPageResult<T> {
 
     return result;
   }
-
+  /// 当前页面上的数据条数。若 `PageCount` 小于传入的每页要获取的数量，表示当前是最后一页。
   int? _pageCount;
+  /// <T> 泛型数据。 
   List<T> _data = [];
 
   /// 获取当前页面上的数据条数。若 `PageCount` 小于传入的每页要获取的数量，表示当前是最后一页。

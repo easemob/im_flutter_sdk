@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
 ///
-/// 群组管理类, 用于管理群组的创建，删除及成员管理等操作。
+/// 群组管理类，用于管理群组的创建，删除及成员管理等操作。
 ///
 class EMGroupManager {
   static const _channelPrefix = 'com.chat.im';
@@ -26,7 +26,7 @@ class EMGroupManager {
   final List<EMGroupManagerListener> _listeners = [];
 
   ///
-  /// 群文件下载回调
+  /// 群文件下载回调。
   ///
   EMDownloadCallback? downloadCallback;
 
@@ -56,7 +56,7 @@ class EMGroupManager {
   }
 
   ///
-  /// 从本地缓存中获取当前用户的所有群组。
+  /// 从本地缓存中获取当前用户加入的所有群组。
   ///
   /// **Return** 群组列表。
   ///
@@ -103,11 +103,11 @@ class EMGroupManager {
   }
 
   ///
-  /// 以分页方式从服务器获取当前用户的所有公开群组。
+  /// 以分页方式从服务器获取当前用户加入的所有公开群组。
   ///
   /// Param [pageSize] 每页返回的群组数。
   ///
-  /// Param [cursor] 从这个游标位置开始取数据，首次获取数据时传 null 即可。
+  /// Param [cursor] 从这个游标位置开始取数据，首次获取数据时传 `null`，按照用户加入公开群组时间的顺序还是逆序获取数据。
   ///
   /// **Return** 包含用于下次获取数据的 cursor 以及群组列表。返回的结果中，当 `EMCursorResult.getCursor()` 为空字符串 ("") 时，表示没有更多数据。
   ///
@@ -257,13 +257,13 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [pageSize] 每页返回的群组数。
+  /// Param [pageSize] 每页返回的群组黑名单成员数量。
   ///
   /// Param [pageNum] 当前页码，从 1 开始。
   ///
   /// **Return** 返回的黑名单列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<String>> fetchBlockListFromServer(
     String groupId, {
@@ -464,7 +464,9 @@ class EMGroupManager {
   ///
   /// 群类型为 PrivateOnlyOwnerInvite、PrivateMemberCanInvite 和 PublicJoinNeedApproval 的群组可以邀请用户加入。
   ///
-  /// 该方法仅适用于私有群。对于 PrivateOnlyOwnerInvite 属性的群组，仅群主可邀请用户入群；对于 PrivateMemberCanInvite 属性的群组，群成员可邀请用户入群。
+  /// - 对于 PrivateOnlyOwnerInvite 属性的群组，仅群主可邀请用户入群。
+  /// - 对于 PrivateMemberCanInvite 属性的群组，群成员可邀请用户入群。
+  /// - 对于 PublicJoinNeedApproval 属性的群组，仅群主可邀请用户加入。
   ///
   /// Param [groupId] 群组 ID。
   ///
@@ -504,7 +506,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID.
   ///
-  /// Param [members] 要删除的成员的用户名。
+  /// Param [members] 要删除的成员的用户 ID。
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
@@ -530,7 +532,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [members] 要加入黑名单的用户名。
+  /// Param [members] 要加入黑名单的用户 ID。
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
@@ -728,7 +730,7 @@ class EMGroupManager {
   ///
   /// Param [groupId]   群组 ID。
   ///
-  /// Param [memberId]  要添加的管理员的 ID。
+  /// Param [memberId]  要添加的管理员的用户 ID。
   ///
   /// **Return**  返回更新后的群组对象。
   ///
@@ -754,7 +756,7 @@ class EMGroupManager {
   ///
   /// Param [groupId]  群组 ID。
   ///
-  /// Param [adminId] 要移除的群组管理员的用户名。
+  /// Param [adminId] 要移除的群组管理员的用户 ID。
   ///
   /// **Return** 返回更新后的群组对象。
   ///
@@ -774,7 +776,7 @@ class EMGroupManager {
   }
 
   ///
-  /// 将指定成员禁言
+  /// 将指定群成员禁言。
   ///
   /// 仅群主和管理员可调用此方法。
   ///
@@ -918,7 +920,8 @@ class EMGroupManager {
   ///
   /// 上传共享文件至群组。
   ///
-  /// 上传共享文件会触发上传进度回调。
+  /// @note
+  /// 上传共享文件会触发进度回调 @link MessageStatusCallBack#Function(int progress)}。
   ///
   /// Param [groupId] 群组 ID。
   ///
@@ -943,7 +946,8 @@ class EMGroupManager {
   ///
   /// 下载指定的群组共享文件。
   ///
-  /// 注意：callback 只做进度回调用。
+  /// @note
+  /// 触发进度回调 @link MessageStatusCallBack#Function(int progress)}。
   ///
   /// Param [groupId] 群组 ID。
   ///
@@ -1098,7 +1102,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [username] 申请人的用户名。
+  /// Param [username] 申请人的用户 ID。
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
@@ -1123,7 +1127,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [username] 申请人的用户名。
+  /// Param [username] 申请人的用户 ID。
   ///
   /// Param [reason] 拒绝理由。
   ///
@@ -1151,7 +1155,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [inviter] 邀请者的用户名。
+  /// Param [inviter] 邀请者的用户 ID。
   ///
   /// **Return** 用户已接受邀请的群组对象。
   ///
@@ -1177,7 +1181,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [inviter] 邀请者的用户名。
+  /// Param [inviter] 邀请者的用户 ID。
   ///
   /// Param [reason] 拒绝理由。
   ///

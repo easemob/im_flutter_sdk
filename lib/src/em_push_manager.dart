@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
 ///
-///  推送设置管理类。
+/// 推送设置管理类。
 ///
 class EMPushManager {
   static const _channelPrefix = 'com.chat.im';
@@ -22,7 +22,9 @@ class EMPushManager {
     }
   }
 
-  /// Gets the push configurations from the server.
+  ///
+  /// 从服务器获取推送设置信息。
+  ///
   Future<EMPushConfigs> fetchPushConfigsFromServer() async {
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.getImPushConfigFromServer);
@@ -36,9 +38,9 @@ class EMPushManager {
   }
 
   ///
-  /// Turns on the push notification.
+  /// 开启离线消息推送。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> enableOfflinePush() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.enableOfflinePush);
@@ -50,13 +52,13 @@ class EMPushManager {
   }
 
   ///
-  /// Do not push the offline messages within the specified time period (24-hour clock).
+  /// 关闭离线消息推送，即开启免打扰模式。
   ///
-  /// Param [start] The start hour(24-hour clock).
+  /// Param [start] 免打扰开始时间，精确到小时。该时间为 24 小时制，取值范围为 [0,23]。
   ///
-  /// Param [end] The end hour(24-hour clock).
+  /// Param [end] 免打扰结束时间，精确到小时。该时间为 24 小时制，取值范围为 [0,23]。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> disableOfflinePush({
     required int start,
@@ -73,15 +75,15 @@ class EMPushManager {
   }
 
   ///
-  /// Sets whether to turn on or turn off the push notification for the the specified groups.
+  /// 设置指定群组的离线推送模式。
   ///
-  /// [groupIds]  The list of groups to be set.
+  /// [groupIds]  要设置的群组 ID 列表。
   ///
-  /// [enablePush] enable push notification.
-  /// `true`: Turns on the notification;
-  /// `false`: Turns off the notification;
+  /// [enablePush] 是否开启离线推送。
+  /// - `true`：是。
+  /// - `false`：否。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updatePushServiceForGroup({
     required List<String> groupIds,
@@ -98,15 +100,15 @@ class EMPushManager {
   }
 
   ///
-  /// Sets whether to turn on or turn off the push notification for the the specified users.
+  /// 设置是否对来自指定用户的消息开启离线推送。
   ///
-  /// [userIds]  The list of users to be set.
+  /// [userIds] 要设置的用户 ID 列表。
   ///
-  /// [enablePush] enable push notification.
-  /// `true`: Turns on the notification;
-  /// `false`: Turns off the notification;
+  /// [enablePush] 是否开启离线推送。
+  /// - `true`：是。
+  /// - `false`：否。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updatePushServiceFroUsers({
     required List<String> userIds,
@@ -123,11 +125,11 @@ class EMPushManager {
   }
 
   ///
-  /// Gets the list of groups which have blocked the push notification.
+  /// 从内存中获取关闭离线消息推送的群组。
   ///
-  /// **return** The list of groups that blocked the push notification.
+  /// **return** 关闭了离线消息推送的群组。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<String>> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
@@ -139,11 +141,11 @@ class EMPushManager {
   }
 
   ///
-  /// Gets the list of users which have blocked the push notification.
+  /// 从内存中获取关闭离线消息推送的用户。
   ///
-  /// **return** The list of user that blocked the push notification.
+  /// **return** 关闭了离线消息推送的用户。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<List<String>> getNoPushUsersFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushUsers);
@@ -155,15 +157,13 @@ class EMPushManager {
   }
 
   ///
-  /// Updates the push display nickname of the current user.
+  /// 更新推送通知收到时显示的昵称。
   ///
-  /// This method can be used to set a push display nickname, the push display nickname will be used to show for offline push notification.
-  /// When the app user changes the nickname in the user profile(use {@link EMUserInfoManager#updateOwnInfo(EMUserInfo, int?)
-  /// be sure to also call this method to update to prevent the display differences.
+  /// 该昵称与用户信息中的昵称设置不同，我们建议这两种昵称的设置保持一致。更新用户属性昵称详见 {@link EMUserInfoManager#updateUserInfo()}。
   ///
-  /// Param [nickname] The push display nickname, which is different from the nickname in the user profile.
+  /// Param [nickname] 推送通知收到时显示的昵称。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updatePushNickname(String nickname) async {
     Map req = {'nickname': nickname};
@@ -177,11 +177,11 @@ class EMPushManager {
   }
 
   ///
-  ///  Updates the push message style. The default value is {@link DisplayStyle#Simple}.
+  /// 更新推送通知的展示方式。
   ///
-  /// Param [displayStyle] The push message display style.
+  /// Param [displayStyle] 推送通知的展示方式。默认为 {@link DisplayStyle#Simple}。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updatePushDisplayStyle(DisplayStyle displayStyle) async {
     Map req = {'pushStyle': displayStyle == DisplayStyle.Simple ? 0 : 1};
@@ -195,11 +195,11 @@ class EMPushManager {
   }
 
   ///
-  /// Updates the HMS push token.
+  /// 更新华为推送 token。
   ///
-  /// Param [token] The HMS push token.
+  /// Param [token] 要更新的华为推送 token。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updateHMSPushToken(String token) async {
     if (Platform.isAndroid) {
@@ -215,11 +215,11 @@ class EMPushManager {
   }
 
   ///
-  ///  Updates the FCM push token.
+  /// 更新谷歌 FCM 推送 token。
   ///
-  /// Param [token] The FCM push token.
+  /// Param [token] 要更新的谷歌 FCM 推送 token。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updateFCMPushToken(String token) async {
     if (Platform.isAndroid) {
@@ -235,11 +235,11 @@ class EMPushManager {
   }
 
   ///
-  ///  Updates the APNs push token.
+  /// 更新苹果推送（APNs）token。
   ///
-  /// Param [token] The APNs push token.
+  /// Param [token] 要更新的苹果推送（APNs）token。
   ///
-  /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> updateAPNsDeviceToken(String token) async {
     if (Platform.isIOS) {

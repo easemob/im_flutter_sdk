@@ -155,10 +155,10 @@ enum EMChatRoomPermissionType {
 /// 消息检索方向类型枚举。
 ///
 enum EMSearchDirection {
-  /// 从新往旧检索（一般是根据消息的服务器时间）。
+  /// 按消息中的时间戳的倒序搜索。
   Up,
 
-  /// 从旧往新检索（一般是根据消息的服务器时间）。
+  /// 按消息中的时间戳的顺序搜索。
   Down,
 }
 
@@ -255,10 +255,10 @@ enum EMMultiDevicesEvent {
   /// 用户 A 在设备 A1 上将所有其他群组成员移除群组禁言列表，则设备 A2 上会收到该事件。
   GROUP_REMOVE_ALL_BAN,
 
-  /// 群功能被关闭事件
+  /// 当前用户的群组功能被关闭事件。
   GROUP_DISABLED,
 
-  /// 群功能开启事件
+  /// 当前用户的群组功能开启事件。
   GROUP_ABLE,
 
   /// 用户 A 在设备 A1 上创建了子区，则设备 A2 上会收到该事件。
@@ -302,12 +302,12 @@ enum EMChatThreadOperation {
 }
 
 ///
-/// 推送标题显示内容
+/// 推送通知展示方式。
 ///
 enum DisplayStyle {
-  /// 显示通用标题，如“您有一条新消息”
+  /// 显示通用标题，如 “您有一条新消息”。
   Simple,
 
-  /// 显示具体内容
+  /// 显示离线消息的内容。
   Summary,
 }

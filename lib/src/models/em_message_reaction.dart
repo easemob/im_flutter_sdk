@@ -10,8 +10,8 @@ class EMMessageReaction {
 
   /// 当前用户是否添加了该 Reaction。
   ///
-  /// `Yes`: 是。
-  /// `No`: 否。
+  /// - `true`：是；
+  /// - `false`：否。
   ///
   final bool isAddedBySelf;
 

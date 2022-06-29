@@ -1,7 +1,7 @@
 import '../internal/inner_headers.dart';
 
 ///
-/// 子区类
+/// 子区详情类。
 ///
 class EMChatThread {
   /// 子区 ID。
@@ -10,7 +10,7 @@ class EMChatThread {
   /// 子区名称。
   final String? threadName;
 
-  /// 子区创建者
+  /// 子区创建者的用户 ID。
   final String owner;
 
   /// 子区父消息 ID。
@@ -76,7 +76,7 @@ class EMChatThread {
 }
 
 ///
-/// 子区通知类
+/// 子区通知类。
 ///
 class EMChatThreadEvent {
   /// 子区事件类型。

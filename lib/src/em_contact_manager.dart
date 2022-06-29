@@ -53,7 +53,7 @@ class EMContactManager {
   ///
   /// 添加好友。
   ///
-  /// Param [userId] 要添加的好友的用户名。
+  /// Param [userId] 要添加的好友的用户 ID。
   ///
   /// Param [reason] （可选）添加为好友的原因。
   ///
@@ -79,11 +79,11 @@ class EMContactManager {
   ///
   /// 删除联系人及其相关的会话。
   ///
-  /// Param [username] 要删除的联系人用户名。
+  /// Param [username] 要删除的联系人用户 ID。
   ///
   /// Param [keepConversation] 是否保留要删除的联系人的会话。
   /// - `true`：是；
-  /// - `false`：（默认）否。
+  /// - （默认）`false`：否。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。
   ///
@@ -153,7 +153,7 @@ class EMContactManager {
   /// 将指定用户加入黑名单。
   /// 你可以向黑名单中用户发消息，但是接收不到对方发送的消息。
   ///
-  /// Param [username] 要加入黑名单的用户的用户名。
+  /// Param [username] 要加入黑名单的用户的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
@@ -175,7 +175,7 @@ class EMContactManager {
   ///
   /// 将指定用户移除黑名单。
   ///
-  /// Param [username] 要在黑名单中移除的用户名。
+  /// Param [username] 要在黑名单中移除的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
@@ -240,7 +240,7 @@ class EMContactManager {
   ///
   /// 接受加好友的邀请。
   ///
-  /// Param [username] 发起好友邀请的用户名。
+  /// Param [username] 发起好友邀请的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
@@ -258,7 +258,7 @@ class EMContactManager {
   ///
   /// 拒绝加好友的邀请。
   ///
-  /// Param [username] 发起好友邀请的用户名。
+  /// Param [username] 发起好友邀请的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   ///
@@ -315,7 +315,7 @@ class EMContactManager {
   }
 
   ///
-  /// 移除所有的联系人监听
+  /// 移除所有的联系人监听。
   ///
   void clearContactManagerListeners() {
     _listeners.clear();

@@ -23,7 +23,7 @@ class EMGroupSharedFile {
   /// 共享文件名称。
   String? get fileName => _fileName;
 
-  /// 上传共享文件的成员用户名。
+  /// 上传共享文件的成员用户 ID。
   String? get fileOwner => _fileOwner;
 
   /// 共享文件的上传时间戳，单位为毫秒。

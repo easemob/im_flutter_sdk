@@ -466,7 +466,7 @@ class EMChatRoomManager {
   ///
   /// Param [roomId] 聊天室 ID。
   ///
-  /// Param [newOwner] 新的聊天室拥有者 ID。
+  /// Param [newOwner] 新的聊天室所有者 ID。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
@@ -844,7 +844,7 @@ class EMChatRoomManager {
   ///
   /// 仅聊天室所有者和管理员可调用此方法。
   ///
-  /// 聊天室拥有者、管理员及加入白名单的用户不受影响。
+  /// 聊天室所有者、管理员及加入白名单的用户不受影响。
   ///
   /// Param [roomId] 聊天室 ID。
   ///

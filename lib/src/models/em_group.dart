@@ -49,12 +49,12 @@ class EMGroup {
   ///
   final String? description;
 
-  /// 从内存中获取群主用户名。
+  /// 从内存中获取群主用户 ID。
   ///
   /// **Note**
   /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
-  /// **Return** 群主用户名。
+  /// **Return** 群主用户 ID。
   ///
   final String? owner;
 
@@ -146,7 +146,7 @@ class EMGroup {
   ///
   final bool? isAllMemberMuted;
 
-  ///
+  /// 群组设置。
   EMGroupOptions? _options;
 
   /// 从内存中获取当前用户在群组中的角色。
@@ -186,7 +186,7 @@ class EMGroup {
   /// 从内存中获取是否允许成员邀请他人进群。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
   ///
   /// **Return**
   /// - `true`: 允许;
@@ -272,10 +272,10 @@ class EMGroup {
 /// 群组信息类。
 ///
 class EMGroupInfo {
-  /// 群组id
+  /// 群组 ID。
   final String groupId;
 
-  /// 群组名称
+  /// 群组名称。
   final String? name;
 
   EMGroupInfo._private({

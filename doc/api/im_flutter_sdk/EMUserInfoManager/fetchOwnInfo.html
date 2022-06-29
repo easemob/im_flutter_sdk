@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the fetchOwnInfo method from the EMUserInfoManager class, for the Dart programming language.">
+  <title>fetchOwnInfo method - EMUserInfoManager class - im_flutter_sdk library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href="../../" data-using-base-href="false">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">im_flutter_sdk</a></li>
+    <li><a href="../../im_flutter_sdk/im_flutter_sdk-library.html">im_flutter_sdk</a></li>
+    <li><a href="../../im_flutter_sdk/EMUserInfoManager-class.html">EMUserInfoManager</a></li>
+    <li class="self-crumb">fetchOwnInfo method</li>
+  </ol>
+  <div class="self-name">fetchOwnInfo</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+
+  <div id="dartdoc-main-content" class="main-content">
+      <div>
+<h1><span class="kind-method">fetchOwnInfo</span> method 
+    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../im_flutter_sdk/EMUserInfo-class.html">EMUserInfo</a>?</span>&gt;</span></span>
+<span class="name ">fetchOwnInfo</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="fetchOwnInfo-param-expireTime">{<span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">expireTime</span> = <span class="default-value">0</span>}</span></li>
+</ol>)
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>获取当前用户的属性信息。</p>
+<p>Param <code>expireTime</code> 获取的用户属性到期时间。如果在到期时间内再次调用该方法，则 SDK 直接返回上次获取到的缓存数据。例如，将该参数设为 120，即 2 分钟，则如果你在 2 分钟内再次调用该方法获取用户属性，SDK 仍将返回上次获取到的属性。否则需从服务器获取。</p>
+<p><strong>Return</strong> 用户属性。请参见 {@link EMUserInfo}。</p>
+<p><strong>Throws</strong>  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Future&lt;EMUserInfo?&gt; fetchOwnInfo({int expireTime = 0}) async {
+  String? currentUser = await EMClient.getInstance.getCurrentUsername();
+  if (currentUser != null) {
+    try {
+      Map&lt;String, EMUserInfo&gt; ret = await fetchUserInfoById(
+        [currentUser],
+        expireTime: expireTime,
+      );
+      _ownUserInfo = ret.values.first;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+  return _ownUserInfo;
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+  <li><a href="../../index.html">im_flutter_sdk</a></li>
+  <li><a href="../../im_flutter_sdk/im_flutter_sdk-library.html">im_flutter_sdk</a></li>
+  <li><a href="../../im_flutter_sdk/EMUserInfoManager-class.html">EMUserInfoManager</a></li>
+  <li class="self-crumb">fetchOwnInfo method</li>
+</ol>
+
+
+    <h5>EMUserInfoManager class</h5>
+    <ol>
+
+        <li class="section-title"><a href="../../im_flutter_sdk/EMUserInfoManager-class.html#constructors">Constructors</a></li>
+          <li><a href="../../im_flutter_sdk/EMUserInfoManager/EMUserInfoManager.html">EMUserInfoManager</a></li>
+
+
+    <li class="section-title inherited">
+      <a href="../../im_flutter_sdk/EMUserInfoManager-class.html#instance-properties">Properties</a>
+    </li>
+    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></li>
+    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></li>
+
+    <li class="section-title"><a href="../../im_flutter_sdk/EMUserInfoManager-class.html#instance-methods">Methods</a></li>
+    <li><a href="../../im_flutter_sdk/EMUserInfoManager/clearUserInfoCache.html">clearUserInfoCache</a></li>
+    <li><a href="../../im_flutter_sdk/EMUserInfoManager/fetchOwnInfo.html">fetchOwnInfo</a></li>
+    <li><a href="../../im_flutter_sdk/EMUserInfoManager/fetchUserInfoById.html">fetchUserInfoById</a></li>
+    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
+    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
+    <li><a href="../../im_flutter_sdk/EMUserInfoManager/updateUserInfo.html">updateUserInfo</a></li>
+
+    <li class="section-title inherited"><a href="../../im_flutter_sdk/EMUserInfoManager-class.html#operators">Operators</a></li>
+    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></li>
+
+
+
+
+</ol>
+
+  </div><!--/.sidebar-offcanvas-->
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    im_flutter_sdk
+      3.9.3
+  </span>
+
+  
+</footer>
+
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+
+
+</body>
+
+</html>
+

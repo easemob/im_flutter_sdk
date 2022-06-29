@@ -1,7 +1,7 @@
 import '../internal/inner_headers.dart';
 
 ///
-/// 群文件下载回调
+/// 群文件下载回调。
 ///
 class EMDownloadCallback {
   ///
@@ -15,12 +15,12 @@ class EMDownloadCallback {
   final void Function(String fileId, EMError error)? onError;
 
   ///
-  /// 群文件下载进度。
+  /// 群文件下载进度。取值范围 [0,100]。
   ///
   final void Function(String fileId, int progress)? onProgress;
 
   ///
-  /// 创建文件下载对象
+  /// 创建文件下载对象。
   ///
   EMDownloadCallback({
     this.onSuccess,

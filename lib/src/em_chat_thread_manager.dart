@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
 ///
-/// 子区管理类
+/// 子区管理类。
 ///
 class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
@@ -29,7 +29,7 @@ class EMChatThreadManager {
   ///
   /// 注册子区监听。
   ///
-  /// 接受到子区等回调可以通过设置此方法进行监听，详见 {@link EMChatThreadManagerListener}。
+  /// 接收到子区等回调可以通过设置此方法进行监听，详见 {@link EMChatThreadManagerListener}。
   ///
   /// Param [listener] 要注册的消息监听，详见 {@link EMChatThreadManagerListener}。
   ///
@@ -41,7 +41,7 @@ class EMChatThreadManager {
   ///
   /// 移除子区监听。
   ///
-  /// 需要先添加 {@link #addChatThreadManagerListener(EMChatThreadManagerListener)} 监听，再调用本方法。
+  /// 该方法移除的是通过{@link #addChatThreadManagerListener(EMChatThreadManagerListener)} 方法添加的监听。
   ///
   /// Param [listener] 要移除的监听。
   ///
@@ -50,7 +50,7 @@ class EMChatThreadManager {
   }
 
   ///
-  /// 移除所有子区监听
+  /// 移除所有子区监听。
   ///
   void clearAllChatThreadManagerListeners() {
     _listeners.clear();
@@ -87,7 +87,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] 开始获取数据的游标位置。首次调用方法时可以不传，按用户加入子区时间的倒序获取数据。
   ///
-  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的子区数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
@@ -114,13 +114,13 @@ class EMChatThreadManager {
   }
 
   ///
-  ///  分页从服务器端获取指定群组的子区列表。
+  /// 分页从服务器端获取指定群组的子区列表。
   ///
   /// Param [parentId] 群组 ID。
   ///
   /// Param [cursor] 开始取数据的游标位置。首次获取数据时可以不传，按子区创建时间的倒序获取数据。
   ///
-  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的子区数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
@@ -157,7 +157,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] 开始取数据的游标位置。首次调用方法时可以不传，按用户加入子区时间的倒序获取数据。
   ///
-  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的子区数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
@@ -190,13 +190,14 @@ class EMChatThreadManager {
   ///
   /// 分页获取子区成员。
   ///
+  /// @note
   /// 子区所属群组的所有成员均可调用该方法。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
   /// Param [cursor] 开始获取数据的游标位置，首次调用方法时传 `null` 或空字符串，按成员加入子区时间的正序获取数据。
   ///
-  /// Param [limit] 每页期望返回的成员数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的成员数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区成员列表；失败则抛出异常。
   ///
@@ -272,6 +273,7 @@ class EMChatThreadManager {
   ///
   /// 移除子区成员。
   ///
+  /// @note
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
   /// 被移出的成员会收到 {@link EMChatThreadManagerListener#onUserKickOutOfChatThread} 回调。
@@ -304,6 +306,7 @@ class EMChatThreadManager {
   ///
   /// 修改子区名称。
   ///
+  /// @note
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
   /// 子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadUpdated(EMChatThreadEvent)}.
@@ -336,8 +339,8 @@ class EMChatThreadManager {
   ///
   /// 创建子区。
   ///
-
-  /// 所有群成员都可以调用
+  /// @note
+  /// 所有群成员都可以调用。
   /// 子区创建成功后，会出现如下情况：
   ///
   /// - 单设备登录时，子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
@@ -379,12 +382,10 @@ class EMChatThreadManager {
   ///
   /// 加入子区。
   ///
+  /// @note
   /// 子区所属群组的所有成员均可调用该方法。
-  /// 加入成功后，返回子区对象，该返回中不包括成员数量。
-  /// 加入失败会抛出异常。
   ///
-  /// 加入成功后，如果是多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
-  /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}.
+  /// 加入成功后，多端多设备登录情况下，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
@@ -413,11 +414,11 @@ class EMChatThreadManager {
   ///
   /// 退出子区。
   ///
+  /// @note
   /// 子区中的所有成员均可调用该方法。
-  /// 加入成功后，如果是多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
-  /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}.
+  /// 多端多设备登录情况下，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}。
   ///
-  /// Param [chatThreadId] 要退出的子区的 ID。
+  /// Param [chatThreadId] 要退出的子区 ID。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
@@ -441,10 +442,10 @@ class EMChatThreadManager {
   ///
   /// 解散子区。
   ///
+  /// @note
   /// 只有子区所属群组的群主及管理员可调用该方法。
-  /// 单设备登录时，子区所在群的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
-  /// 多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
-  /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY};
+  /// 单设备登录时，子区所在群的所有成员均会收到 {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
+  /// 多端多设备登录时，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY}。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///

@@ -333,8 +333,9 @@ class EMChatManager {
   }
 
   ///
-  ///  向消息数据库导入多条聊天记录。
-  ///  在调用此函数时要保证，消息的发送方或者接收方是当前用户。
+  ///  将消息导入本地数据库。
+  ///
+  ///  只能将当前用户发送或接收的消息导入本地数据库。
   ///  已经对函数做过速度优化，推荐一次导入 1,000 条以内的数据。
   ///
   /// Param [messages] 需要导入数据库的消息。
@@ -642,8 +643,8 @@ class EMChatManager {
   ///
   /// Param [isDeleteMessage] 删除会话时是否同时删除历史消息记录。
   ///
-  /// - `true`:(default)：是；
-  /// - `false`: 否。
+  /// - （默认）`true`：是；
+  /// - `false`：否。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
@@ -817,7 +818,7 @@ class EMChatManager {
   ///
   /// Param [reaction] 要删除的 Reaction。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
   Future<void> removeReaction({
     required String messageId,

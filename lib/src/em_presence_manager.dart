@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
 ///
-/// 状态管理类
+/// 用户在线状态管理类。
 ///
 class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
@@ -22,9 +22,9 @@ class EMPresenceManager {
   }
 
   ///
-  /// 添加状态变化监听
+  /// 添加用户状态变化监听器。
   ///
-  /// Param [listener] 状态变化监听类 {@link EMPresenceManagerListener}.
+  /// Param [listener] 状态变化监听类 {@link EMPresenceManagerListener}。
   ///
   void addPresenceManagerListener(EMPresenceManagerListener listener) {
     _listeners.remove(listener);
@@ -32,9 +32,9 @@ class EMPresenceManager {
   }
 
   ///
-  /// 移除状态变化监听
+  /// 移除用户状态变化监听器。
   ///
-  /// Param [listener] 状态变化监听类
+  /// Param [listener] 状态变化监听类 {@link EMPresenceManagerListener}。
   ///
   void removePresenceManagerListener(EMPresenceManagerListener listener) {
     if (_listeners.contains(listener)) {
@@ -43,16 +43,16 @@ class EMPresenceManager {
   }
 
   ///
-  /// 移除所有状态监听
+  /// 移除所有用户状态监听器。
   ///
   void clearAllPresenceManagerListener() {
     _listeners.clear();
   }
 
   ///
-  /// 发布自定义在线状态。
+  /// 发布自定义用户在线状态。
   ///
-  /// Param [description] 在线状态的扩展信息。
+  /// Param [description] 用户在线状态的扩展信息。
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///
@@ -126,7 +126,7 @@ class EMPresenceManager {
   ///
   /// Param [pageSize] 每页显示的被订阅用户数量。
   ///
-  /// **Return** 返回订阅的在线状态所属的用户名。若当前未订阅任何用户的在线状态，返回空列表。
+  /// **Return** 返回订阅的在线状态所属的用户 ID。若当前未订阅任何用户的在线状态，返回空列表。
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
   ///

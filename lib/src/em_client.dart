@@ -34,7 +34,7 @@ class EMClient {
 
   String? _currentUsername;
 
-  /// 获取当前登录用户的用户名。
+  /// 获取当前登录用户的用户 ID。
   String? get currentUsername => _currentUsername;
 
   static EMClient get getInstance => _instance ??= EMClient._internal();
@@ -82,9 +82,9 @@ class EMClient {
   }
 
   ///
-  /// 回调开始信号
+  /// 启动回调。该方法用于启动通讯录，群组，聊天室的回调。
   ///
-  /// app启动后，界面准备好后需要调用该方法，调用后 `EMContactManagerListener`、`EMGroupManagerListener` 和 `EMChatRoomManagerListener` 才会开始执行。
+  /// app 启动后，界面准备好后需要调用该方法，调用后 `EMContactManagerListener`、`EMGroupManagerListener` 和 `EMChatRoomManagerListener` 才会开始执行。
   ///
   Future<void> startCallback() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.startCallback);
@@ -96,11 +96,11 @@ class EMClient {
   }
 
   ///
-  /// 检查当前是否已经连接到聊天服务器
+  /// 检查 SDK 是否连接到 Chat 服务器。
+  /// **Return** SDK 是否连接到 Chat 服务器。
+  /// - `true`：是；
+  /// - `false`：否。
   ///
-  /// **Return** 检查结果
-  /// `true`: 已经连接到聊天服务器
-  /// `false`: 没有连接到聊天服务器
   Future<bool> isConnected() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isConnected);
     try {
@@ -112,11 +112,12 @@ class EMClient {
   }
 
   ///
-  /// 检查是否已经登录并且没有调用退出登录
-
-  /// **Return** 返回用户是否已经登录
-  /// `true`: 用户已经登录
-  /// `false`: 用户未登录
+  /// 检查用户是否已登录 Chat 服务。
+  ///
+  /// **Return** 用户是否已经登录 Chat 服务。
+  ///   - `true`：是；
+  ///   - `false`：否。
+  ///
   Future<bool> isLoginBefore() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isLoggedInBefore);
     try {
@@ -128,7 +129,9 @@ class EMClient {
   }
 
   ///
-  /// 获取当前登录的用户id
+  /// 获取当前登录的用户 ID。
+  ///
+  /// **Return** 当前登录的用户 ID。
   ///
   Future<String?> getCurrentUsername() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getCurrentUser);
@@ -148,6 +151,8 @@ class EMClient {
 
   ///
   /// 获取当前登录账号的 Token。
+  ///
+  /// **Return** 当前登录账号的 Token。
   ///
   Future<String> getAccessToken() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getToken);
@@ -174,7 +179,7 @@ class EMClient {
   ///
   /// 创建账号。
   ///
-  /// Param [username] 用户名，长度不超过 64 个字符。请确保你对该参数设值。支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
+  /// Param [username] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。请确保同一个 app 下，username 唯一；`username` 用户 ID 是会公开的信息，请勿使用 UUID、邮箱地址、手机号等敏感信息。
   /// Param [password] 密码，长度不超过 64 个字符。请确保你对该参数设值。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
@@ -196,13 +201,13 @@ class EMClient {
   ///
   /// 使用密码或 Token 登录服务器。
   ///
-  /// Param [username] 用户名（同用户 ID）。
+  /// Param [username] 用户 ID。
   ///
   /// Param [pwdOrToken] 登录密码或 Token。
   ///
   /// Param [isPassword] 是否用密码登录。
-  /// - `true`: (default) 是。
-  /// - `false`: 否。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
@@ -229,7 +234,7 @@ class EMClient {
   /// **Note**
   /// 通过 token 登录服务器的方法见 {@link #login(String, String, bool)}。
   ///
-  /// Param [username] 用户名（同用户 ID）。
+  /// Param [username] 用户 ID。
   ///
   /// Param [agoraToken] 声网 Token。
   ///
@@ -272,9 +277,9 @@ class EMClient {
   ///
   /// 退出登录。
   ///
-  /// Param [unbindDeviceToken] 是否解绑 token。
-  /// - `true` (default) 表示需要退出时解绑设备 `token`。
-  /// - `false` 表示退出时不解绑设备 `token`。
+  /// Param [unbindDeviceToken] 退出时是否解绑设备 token。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
   ///
@@ -293,7 +298,10 @@ class EMClient {
   }
 
   ///
-  /// 修改 App Key，注意只有在未登录状态才能修改 App Key。修改 App Key 是为了方便你切换其他 App Key，切换后可以使用切换后的 App Key 测试，除了登出外，没有其他的限制。
+  /// 修改 App Key。
+  ///
+  /// @note
+  /// 只有在未登录状态才能修改 App Key。
   ///
   /// Param [newAppKey] App Key，请确保设置该参数。
   ///
@@ -332,7 +340,7 @@ class EMClient {
   ///
   /// 获取指定账号下登录的在线设备列表。
   ///
-  /// Param [username] 用户名。
+  /// Param [username] 用户 ID。
   ///
   /// Param [password] 密码。
   ///
@@ -359,9 +367,9 @@ class EMClient {
   }
 
   ///
-  /// 在指定账号下，根据设备 ID，将指定设备下线, 设备 ID： {@link EMDeviceInfo#resource}。
+  /// 在指定账号下，根据设备 ID，将指定设备下线，设备 ID：{@link EMDeviceInfo#resource}。
   ///
-  /// Param [username] 用户名。
+  /// Param [username] 用户 ID。
   ///
   /// Param [password] 密码。
   ///
@@ -389,9 +397,9 @@ class EMClient {
   }
 
   ///
-  /// 将指定用户名下的所有设备都踢下线。
+  /// 将指定用户 ID 下的所有设备都踢下线。
   ///
-  /// Param [username] 用户名。
+  /// Param [username] 用户 ID。
   ///
   /// Param [password] 密码。
   ///
@@ -440,7 +448,6 @@ class EMClient {
   }
 
   ///
-
   /// 设置 Chat 服务器连接监听。
   ///
   /// Param [listener] 要设置的 Chat 服务器连接监听。
@@ -624,9 +631,9 @@ class EMClient {
   }
 
   ///
-  /// Gets the `EMGroupManager` class. Make sure to call it after the EMClient has been initialized.
+  /// 获取 `EMGroupManager` 类。请确保在 EMClient 初始化之后调用本方法，详见 {@link EMClient#init(EMOptions)}。
   ///
-  /// **Return** The `EMGroupManager` class.
+  /// **Return** `EMGroupManager` 类。
   ///
   EMGroupManager get groupManager {
     return _groupManager;
