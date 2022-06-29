@@ -234,7 +234,7 @@ class EMChatManager {
   }
 
   ///
-  /// 根据指定会话 ID 和类型的会话对象。
+  /// 根据指定会话 ID 和会话类型获取会话对象。
   ///
   /// 没有找到会返回空值。
   ///
@@ -359,7 +359,7 @@ class EMChatManager {
   ///
   /// 下载消息的附件。
   ///
-  /// 未成功下载的附件，可调用此方法再次下载。
+  /// 若附件自动下载失败，也可以调用此方法下载。
   ///
   /// Param [message] 要下载附件的消息。
   ///
@@ -473,7 +473,7 @@ class EMChatManager {
   ///
   /// 注册消息监听。
   ///
-  /// 接受到新消息等回调可以通过设置此方法进行监听，详见 {@link EMChatManagerListener}。
+  /// 接收到新消息等回调可以通过设置此方法进行监听，详见 {@link EMChatManagerListener}。
   ///
   /// Param [listener] 要注册的消息监听，详见 {@link EMChatManagerListener}。
   ///

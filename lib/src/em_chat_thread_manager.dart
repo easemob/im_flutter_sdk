@@ -388,7 +388,7 @@ class EMChatThreadManager {
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Return** 若调用成功，返回子区详情 {@link ChatMessageThread}；失败则抛出异常。
+  /// **Return** 若调用成功，返回子区详情 {@link ChatMessageThread}，详情中不含成员数量；失败则抛出异常。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
   ///
@@ -442,7 +442,7 @@ class EMChatThreadManager {
   /// 解散子区。
   ///
   /// 只有子区所属群组的群主及管理员可调用该方法。
-  /// 调用成功后，子区所在群的群成员都会收到 {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
+  /// 单设备登录时，子区所在群的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
   /// 多设备情况下其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调。
   /// Event的值为{@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY};
   ///
