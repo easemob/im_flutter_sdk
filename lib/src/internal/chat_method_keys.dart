@@ -132,6 +132,7 @@ class ChatMethodKeys {
   static const String loadMsgWithKeywords = "loadMsgWithKeywords";
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
   static const String loadMsgWithTime = "loadMsgWithTime";
+  static const String messageCount = "messageCount";
 
   /// EMMessage method
   static const String getReactionList = "getReactionList";

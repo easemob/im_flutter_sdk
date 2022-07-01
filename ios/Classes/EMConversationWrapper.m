@@ -93,7 +93,12 @@
         [self updateConversationMessage:call.arguments
                             channelName:call.method
                                  result:result];
-    } else {
+    } else if ([ChatConversationMessageCount isEqualToString:call.method]) {
+        [self messageCount:call.arguments
+               channelName:call.method
+                    result:result];
+    }
+    else {
         [super handleMethodCall:call result:result];
     }
 }
@@ -269,6 +274,20 @@
                       channelName:aChannelName
                             error:error
                            object:@(!error)];
+    }];
+}
+
+- (void)messageCount:(NSDictionary *)param
+         channelName:(NSString *)aChannelName
+              result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:@(conversation.messagesCount)];
     }];
 }
 
