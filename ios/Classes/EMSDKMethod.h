@@ -136,6 +136,7 @@ static NSString *const ChatLoadMsgWithStartId = @"loadMsgWithStartId";
 static NSString *const ChatLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
+static NSString *const ChatConversationMessageCount = @"messageCount";
 
 #pragma mark - EMChatMessageWrapper
 static NSString *const ChatGetReactionList = @"getReactionList";

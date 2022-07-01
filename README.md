@@ -57,15 +57,7 @@ android {
 }
 ```
 
-1. 打开文件 `quick_start/android/app/src/main/AndroidManifest.xml`，在 `</application>` 下添加：
-
-```xml
- <uses-permission android:name="android.permission.INTERNET" />
- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
- <uses-permission android:name="android.permission.WAKE_LOCK"/>
-```
-
-2. 在 `quick_start/android/app/proguard-rules.pro` 中设置免混淆规则：
+1. 在 `quick_start/android/app/proguard-rules.pro` 中设置免混淆规则：
 
 ```java
 -keep class com.hyphenate.** {*;}
@@ -74,10 +66,9 @@ android {
 
 ### 设置 iOS
 
-打开文件 `quick_start/ios/Runner/info.plist`，然后：
+打开文件 `quick_start/ios/Runner.xcodeproj`，然后：
 
-1. 添加 `App Transport Security Settings`；
-2. 在 `App Transport Security Settings` 中添加 `Allow Arbitrary Loads`，值为 `YES`。
+1. 找到 `TARGETS > Runner ` 在 `General` 的 `Deployment Info` 中修改最低版本为 `iOS 10.0`
 
 ### 集成 SDK
 
