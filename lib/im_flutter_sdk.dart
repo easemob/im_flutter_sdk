@@ -18,7 +18,7 @@ export 'src/models/em_conversation.dart' show EMConversation;
 export 'src/models/em_cursor_result.dart' show EMCursorResult;
 export 'src/models/em_deviceInfo.dart' show EMDeviceInfo;
 export 'src/models/em_error.dart' show EMError;
-export 'src/models/em_group.dart' show EMGroup;
+export 'src/models/em_group.dart';
 export 'src/models/em_translate_language.dart' show EMTranslateLanguage;
 export 'src/models/em_presence.dart' show EMPresence;
 
