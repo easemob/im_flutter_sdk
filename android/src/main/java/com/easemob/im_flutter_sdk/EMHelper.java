@@ -30,6 +30,9 @@ import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMPresence;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
+import com.hyphenate.chat.EMSilentModeParam;
+import com.hyphenate.chat.EMSilentModeResult;
+import com.hyphenate.chat.EMSilentModeTime;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -954,7 +957,7 @@ class EMConversationHelper {
         return EMConversation.EMConversationType.Chat;
     }
 
-    private static int typeToInt(EMConversation.EMConversationType type) {
+    static int typeToInt(EMConversation.EMConversationType type) {
         switch (type) {
         case Chat:
             return 0;
@@ -1268,3 +1271,102 @@ class EMChatThreadEventHelper {
     }
 }
 
+
+class EMSilentModeParamHelper {
+    static EMSilentModeParam fromJson(JSONObject obj) throws JSONException {
+        EMSilentModeParam.EMSilentModeParamType type = paramTypeFromInt(obj.getInt("paramType"));
+        EMSilentModeParam param = new EMSilentModeParam(type);;
+        if (obj.has("startTime") && obj.has("endTime")) {
+            EMSilentModeTime startTime = EMSilentModeTimeHelper.fromJson(obj.getJSONObject("startTime"));
+            EMSilentModeTime endTime = EMSilentModeTimeHelper.fromJson(obj.getJSONObject("endTime"));
+            param.setSilentModeInterval(startTime, endTime);
+        }
+
+        if (obj.has("remindType")) {
+            param.setRemindType(pushRemindFromInt(obj.getInt("remindType")));
+        }
+
+        if (obj.has("duration")) {
+            int duration = obj.getInt("duration");
+            param.setSilentModeDuration(duration);
+        }
+        return param;
+    }
+
+    static EMSilentModeParam.EMSilentModeParamType paramTypeFromInt(int iParamType) {
+        EMSilentModeParam.EMSilentModeParamType ret = EMSilentModeParam.EMSilentModeParamType.REMIND_TYPE;
+        if (iParamType == 0) {
+            ret = EMSilentModeParam.EMSilentModeParamType.REMIND_TYPE;
+        }else if (iParamType == 1) {
+            ret = EMSilentModeParam.EMSilentModeParamType.SILENT_MODE_DURATION;
+        }else if (iParamType == 2) {
+            ret = EMSilentModeParam.EMSilentModeParamType.SILENT_MODE_INTERVAL;
+        }
+        return ret;
+    }
+
+    static int pushRemindTypeToInt(EMPushManager.EMPushRemindType type) {
+        int ret = 0;
+        if (type == EMPushManager.EMPushRemindType.ALL) {
+            ret = 0;
+        }else if (type == EMPushManager.EMPushRemindType.MENTION_ONLY) {
+            ret = 1;
+        }else if (type == EMPushManager.EMPushRemindType.NONE) {
+            ret = 2;
+        }
+        return ret;
+    }
+
+    static EMPushManager.EMPushRemindType pushRemindFromInt(int iType) {
+        EMPushManager.EMPushRemindType type = EMPushManager.EMPushRemindType.ALL;
+        if (iType == 0) {
+            type = EMPushManager.EMPushRemindType.ALL;
+        }else if (iType == 1) {
+            type = EMPushManager.EMPushRemindType.MENTION_ONLY;
+        }else if (iType == 2) {
+            type = EMPushManager.EMPushRemindType.NONE;
+        }
+        return type;
+    }
+}
+
+class EMSilentModeTimeHelper {
+    static EMSilentModeTime fromJson(JSONObject obj) throws JSONException {
+        int hour = obj.getInt("hour");
+        int minute = obj.getInt("minute");
+        EMSilentModeTime modeTime = new EMSilentModeTime(hour, minute);
+        return modeTime;
+    }
+
+    static Map<String, Object> toJson(EMSilentModeTime modeTime) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("hour", modeTime.getHour());
+        data.put("minute", modeTime.getMinute());
+        return data;
+    }
+}
+
+class EMSilentModeResultHelper {
+    static Map<String, Object> toJson(EMSilentModeResult modeResult) {
+        Map<String, Object> data = new HashMap<>();
+        if (modeResult.getExpireTimestamp() != 0) {
+            data.put("expireTs", modeResult.getExpireTimestamp());
+        }
+        if (modeResult.getConversationId() != null) {
+            data.put("conversationId", modeResult.getConversationId());
+        }
+        if (modeResult.getConversationType() != null) {
+            data.put("conversationType", EMConversationHelper.typeToInt(modeResult.getConversationType()));
+        }
+        if (modeResult.getSilentModeStartTime() != null) {
+            data.put("startTime", EMSilentModeTimeHelper.toJson(modeResult.getSilentModeStartTime()));
+        }
+        if (modeResult.getSilentModeEndTime() != null) {
+            data.put("endTime", EMSilentModeTimeHelper.toJson(modeResult.getSilentModeEndTime()));
+        }if (modeResult.getRemindType() != null) {
+            data.put("remindType", EMSilentModeParamHelper.pushRemindTypeToInt(modeResult.getRemindType()));
+        }
+
+        return data;
+    }
+}

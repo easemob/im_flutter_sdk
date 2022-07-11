@@ -252,4 +252,218 @@ class EMPushManager {
       }
     }
   }
+
+  // // TODO:
+  // Future<void> reportPushAction(
+  //   {String taskId,
+  //   String provider,
+  //   String action,}
+  // ) async {
+  //   Map req = {};
+  // }
+
+  ///
+  /// Set offline push notification type for the special conversation.
+  ///
+  /// Param [conversationId] The conversation id.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// Param [param]  Push DND parameters offline.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> setConversationSilentMode({
+    required String conversationId,
+    required EMConversationType type,
+    required ChatSilentModeParam param,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    req["conversationType"] = conversationTypeToInt(type);
+    req["param"] = param.toJson();
+
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.setConversationSilentMode, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Remove the setting of offline push notification type for the special conversation.
+  /// After clearing, the session follows the Settings of the current logged-in user  {@link EMPushManager#setSilentModeForAll(ChatSilentModeParam)}.
+  ///
+  /// Param [conversationId] The conversation id.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> removeConversationSilentMode({
+    required String conversationId,
+    required EMConversationType type,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    req["conversationType"] = conversationTypeToInt(type);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.removeConversationSilentMode, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the DND setting of the special conversation.
+  ///
+  /// Param [conversationId] The conversation id.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// **Return** The conversation silent mode.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<ChatSilentModeResult> fetchConversationSilentMode({
+    required String conversationId,
+    required EMConversationType type,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    req["conversationType"] = conversationTypeToInt(type);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchConversationSilentMode, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      Map map = result[ChatMethodKeys.fetchConversationSilentMode];
+      return ChatSilentModeResult.fromJson(map);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Set the DND normal settings for the current login user.
+  ///
+  /// Param [param] Push DND parameters offline.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> setSilentModeForAll({
+    required ChatSilentModeParam param,
+  }) async {
+    Map req = {};
+    req["param"] = param.toJson();
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.setSilentModeForAll,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the DND normal settings of the current login user.
+  ///
+  /// **Return** The normal silent mode.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<ChatSilentModeResult> fetchSilentModeForAll() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.fetchSilentModeForAll);
+    try {
+      EMError.hasErrorFromResult(result);
+      return ChatSilentModeResult.fromJson(
+        result[ChatMethodKeys.fetchSilentModeForAll],
+      );
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Obtain the DND Settings of specified conversations in batches.
+  ///
+  /// Param [conversations]  The conversation list.
+  ///
+  /// **Return** key is conversation id and the value is silent mode.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<Map<String, ChatSilentModeResult>> fetchSilentModeForConversations(
+    List<EMConversation> conversations,
+  ) async {
+    Map<String, int> req = {};
+    for (var item in conversations) {
+      req[item.id] = conversationTypeToInt(item.type);
+    }
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchSilentModeForConversations,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      Map<String, ChatSilentModeResult> ret = {};
+      Map? tmpMap = result[ChatMethodKeys.fetchSilentModeForConversations];
+      if (tmpMap != null) {
+        for (var item in tmpMap.entries) {
+          if (item.key is String && item.value is Map) {
+            ret[item.key] = ChatSilentModeResult.fromJson(item.value);
+          }
+        }
+      }
+      return ret;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Set user push translation language.
+  ///
+  /// Param [languageCode] language code.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> setPreferredNotificationLanguage(String languageCode) async {
+    Map req = {"code": languageCode};
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.setPreferredNotificationLanguage,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  ///  Gets the push translation language set by the user.
+  ///
+  /// **Return** has set language code.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<String?> fetchPreferredNotificationLanguage() async {
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchPreferredNotificationLanguage,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      String? ret = result[ChatMethodKeys.fetchPreferredNotificationLanguage];
+      return ret;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

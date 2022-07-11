@@ -234,6 +234,18 @@ public class EMSDKMethod {
     static final String updateHMSPushToken = "updateHMSPushToken";
     static final String updateFCMPushToken = "updateFCMPushToken";
 
+
+    static final String reportPushAction = "reportPushAction";
+    static final String setConversationSilentMode = "setConversationSilentMode";
+    static final String removeConversationSilentMode = "removeConversationSilentMode";
+    static final String fetchConversationSilentMode = "fetchConversationSilentMode";
+    static final String setSilentModeForAll = "setSilentModeForAll";
+    static final String fetchSilentModeForAll = "fetchSilentModeForAll";
+    static final String fetchSilentModeForConversations = "fetchSilentModeForConversations";
+    static final String setPreferredNotificationLanguage = "setPreferredNotificationLanguage";
+    static final String fetchPreferredNotificationLanguage = "fetchPreferredNotificationLanguage";
+
+
     /// EMUserInfoManager 
     static final String updateOwnUserInfo = "updateOwnUserInfo";
     static final String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
