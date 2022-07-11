@@ -313,3 +313,29 @@ enum DisplayStyle {
   /// The push message presentation style: MessageSummary represents the presentation of message content.
   Summary,
 }
+
+///
+/// Offline push DND parameter type Enumeration class.
+///
+enum ChatSilentModeParamType {
+  /// Offline push notification type.
+  REMIND_TYPE,
+
+  /// Offline push DND duration.
+  SILENT_MODE_DURATION,
+
+  /// Offline push DND period.
+  SILENT_MODE_INTERVAL,
+}
+
+/// Offline push notification type enumeration class.
+enum ChatPushRemindType {
+  /// Collect all offline push.
+  ALL,
+
+  /// Only receive @me offline push.
+  MENTION_ONLY,
+
+  /// Offline push is not collected.
+  NONE,
+}
