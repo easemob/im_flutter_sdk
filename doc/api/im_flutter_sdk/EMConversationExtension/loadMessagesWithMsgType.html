@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the loadMessagesWithMsgType method from the EMConversationExtension extension, for the Dart programming language.">
+  <title>loadMessagesWithMsgType method - EMConversationExtension extension - im_flutter_sdk library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href="../../" data-using-base-href="false">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">im_flutter_sdk</a></li>
+    <li><a href="../../im_flutter_sdk/im_flutter_sdk-library.html">im_flutter_sdk</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension.html">EMConversationExtension</a></li>
+    <li class="self-crumb">loadMessagesWithMsgType method</li>
+  </ol>
+  <div class="self-name">loadMessagesWithMsgType</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<main>
+
+
+  <div id="dartdoc-main-content" class="main-content">
+      <div>
+<h1><span class="kind-method">loadMessagesWithMsgType</span> method 
+    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../im_flutter_sdk/EMMessage-class.html">EMMessage</a></span>&gt;</span></span>&gt;</span></span>
+<span class="name ">loadMessagesWithMsgType</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="loadMessagesWithMsgType-param-type">{<span>required</span> <span class="type-annotation"><a href="../../im_flutter_sdk/MessageType.html">MessageType</a></span> <span class="parameter-name">type</span>, </span></li>
+<li><span class="parameter" id="loadMessagesWithMsgType-param-timestamp"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">timestamp</span> = <span class="default-value">-1</span>, </span></li>
+<li><span class="parameter" id="loadMessagesWithMsgType-param-count"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">count</span> = <span class="default-value">20</span>, </span></li>
+<li><span class="parameter" id="loadMessagesWithMsgType-param-sender"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">sender</span>, </span></li>
+<li><span class="parameter" id="loadMessagesWithMsgType-param-direction"><span class="type-annotation"><a href="../../im_flutter_sdk/EMSearchDirection.html">EMSearchDirection</a></span> <span class="parameter-name">direction</span> = <span class="default-value">EMSearchDirection.Up</span>}</span></li>
+</ol>)
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Retrieves messages from the database according to the following parameters: the message type, the Unix timestamp, max count, sender.</p>
+<p><strong>Note</strong>
+Be cautious about the memory usage when the maxCount is large.</p>
+<p>Param <code>type</code> The message type, including TXT, VOICE, IMAGE, and so on.</p>
+<p>Param <code>timestamp</code> The Unix timestamp for the search.</p>
+<p>Param <code>count</code> The max number of messages to search.</p>
+<p>Param <code>sender</code> The sender of the message. The param can also be used to search in group chat or chat room.</p>
+<p>Param <code>direction</code>  The direction in which the message is loaded: EMSearchDirection.</p>
+<ul>
+<li><code>EMSearchDirection.Up</code>: Messages are retrieved in the reverse chronological order of when the server received messages.</li>
+<li><code>EMSearchDirection.Down</code>: Messages are retrieved in the chronological order of when the server received messages.</li>
+</ul>
+<p><strong>Return</strong> The message list.</p>
+<p><strong>Throws</strong>  A description of the exception. See {@link EMError}.</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Future&lt;List&lt;EMMessage&gt;&gt; loadMessagesWithMsgType({
+  required MessageType type,
+  int timestamp = -1,
+  int count = 20,
+  String? sender,
+  EMSearchDirection direction = EMSearchDirection.Up,
+}) async {
+  Map req = this._toJson();
+  req[&#39;msgType&#39;] = messageTypeToTypeStr(type);
+  req[&#39;timestamp&#39;] = timestamp;
+  req[&#39;count&#39;] = count;
+  req[&#39;direction&#39;] = direction == EMSearchDirection.Up ? &quot;up&quot; : &quot;down&quot;;
+  req.setValueWithOutNull(&quot;sender&quot;, sender);
+  Map result = await _emConversationChannel.invokeMethod(
+      ChatMethodKeys.loadMsgWithMsgType, req);
+  try {
+    EMError.hasErrorFromResult(result);
+    List&lt;EMMessage&gt; list = [];
+    result[ChatMethodKeys.loadMsgWithMsgType]?.forEach((element) {
+      list.add(EMMessage.fromJson(element));
+    });
+    return list;
+  } on EMError catch (e) {
+    throw e;
+  }
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+  <li><a href="../../index.html">im_flutter_sdk</a></li>
+  <li><a href="../../im_flutter_sdk/im_flutter_sdk-library.html">im_flutter_sdk</a></li>
+  <li><a href="../../im_flutter_sdk/EMConversationExtension.html">EMConversationExtension</a></li>
+  <li class="self-crumb">loadMessagesWithMsgType method</li>
+</ol>
+
+
+    <h5>EMConversationExtension extension</h5>
+    <ol>
+
+
+
+
+    <li class="section-title"> <a href="../../im_flutter_sdk/EMConversationExtension.html#instance-properties">Properties</a>
+    </li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/ext.html">ext</a></li>
+
+    <li class="section-title"><a href="../../im_flutter_sdk/EMConversationExtension.html#instance-methods">Methods</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/appendMessage.html">appendMessage</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/deleteAllMessages.html">deleteAllMessages</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/deleteMessage.html">deleteMessage</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/insertMessage.html">insertMessage</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/lastReceivedMessage.html">lastReceivedMessage</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/latestMessage.html">latestMessage</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/loadMessage.html">loadMessage</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/loadMessages.html">loadMessages</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/loadMessagesFromTime.html">loadMessagesFromTime</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/loadMessagesWithKeyword.html">loadMessagesWithKeyword</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/loadMessagesWithMsgType.html">loadMessagesWithMsgType</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/markAllMessagesAsRead.html">markAllMessagesAsRead</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/markMessageAsRead.html">markMessageAsRead</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/setExt.html">setExt</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/unreadCount.html">unreadCount</a></li>
+    <li><a href="../../im_flutter_sdk/EMConversationExtension/updateMessage.html">updateMessage</a></li>
+
+
+
+
+</ol>
+
+  </div><!--/.sidebar-offcanvas-->
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+
+</main>
+
+<footer>
+  <span class="no-break">
+    im_flutter_sdk
+      3.9.3
+  </span>
+
+  
+</footer>
+
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+
+
+</body>
+
+</html>
+

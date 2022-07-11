@@ -194,7 +194,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
 
         String username = param.getString("username");
-        String agoratoken = param.getString("agoratoken");
+        String agoraToken = param.getString("agora_token");
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -205,7 +205,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
         };
 
-        EMClient.getInstance().loginWithAgoraToken(username, agoratoken, callBack);
+        EMClient.getInstance().loginWithAgoraToken(username, agoraToken, callBack);
     }
     private void getToken(JSONObject param, String channelName, Result result) throws JSONException
     {

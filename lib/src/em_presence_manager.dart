@@ -1,8 +1,5 @@
 import 'package:flutter/services.dart';
-import 'internal/chat_method_keys.dart';
-import 'em_listeners.dart';
-import 'models/em_presence.dart';
-import 'models/em_error.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The Manager that defines how to manage presence states.

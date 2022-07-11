@@ -8,7 +8,10 @@
 #import "EMPushManagerWrapper.h"
 #import "EMSDKMethod.h"
 #import "EMPushOptions+Helper.h"
+#import "EMConversation+Helper.h"
 #import "EMGroup+Helper.h"
+#import "EMSilentModeParam+Helper.h"
+#import "EMSilentModeResult+Helper.h"
 
 @implementation EMPushManagerWrapper
 
@@ -26,12 +29,12 @@
                   result:(FlutterResult)result {
     if ([ChatGetImPushConfig isEqualToString:call.method]) {
         [self getImPushConfig:call.arguments
-                   channelName:call.method
-                        result:result];
+                  channelName:call.method
+                       result:result];
     } else if ([ChatGetImPushConfigFromServer isEqualToString:call.method]) {
         [self getImPushConfigFromServer:call.arguments
-                             channelName:call.method
-                                  result:result];
+                            channelName:call.method
+                                 result:result];
     } else if ([ChatUpdatePushNickname isEqualToString:call.method]) {
         [self updatePushNickname:call.arguments
                      channelName:call.method
@@ -68,6 +71,42 @@
         [self getNoPushUsers:call.arguments
                  channelName:call.method
                       result:result];
+    } else if ([ChatReportPushAction isEqualToString:call.method]){
+        [self reportPushAction:call.arguments
+                   channelName:call.method
+                        result:result];
+    } else if ([ChatSetConversationSilentMode isEqualToString:call.method]){
+        [self setConversationSilentMode:call.arguments
+                            channelName:call.method
+                                 result:result];
+    } else if ([ChatRemoveConversationSilentMode isEqualToString:call.method]){
+        [self removeConversationSilentMode:call.arguments
+                               channelName:call.method
+                                    result:result];
+    } else if ([ChatFetchConversationSilentMode isEqualToString:call.method]){
+        [self fetchConversationSilentMode:call.arguments
+                              channelName:call.method
+                                   result:result];
+    } else if ([ChatSetSilentModeForAll isEqualToString:call.method]){
+        [self setSilentModeForAll:call.arguments
+                      channelName:call.method
+                           result:result];
+    } else if ([ChatFetchSilentModeForAll isEqualToString:call.method]){
+        [self fetchSilentModeForAll:call.arguments
+                        channelName:call.method
+                             result:result];
+    } else if ([ChatFetchSilentModeForConversations isEqualToString:call.method]){
+        [self fetchSilentModeForConversations:call.arguments
+                                  channelName:call.method
+                                       result:result];
+    } else if ([ChatSetPreferredNotificationLanguage isEqualToString:call.method]){
+        [self setPreferredNotificationLanguage:call.arguments
+                                   channelName:call.method
+                                        result:result];
+    } else if ([ChatFetchPreferredNotificationLanguage isEqualToString:call.method]){
+        [self fetchPreferredNotificationLanguage:call.arguments
+                                     channelName:call.method
+                                          result:result];
     }
     else{
         [super handleMethodCall:call result:result];
@@ -75,8 +114,8 @@
 }
 
 - (void)getImPushConfig:(NSDictionary *)param
-             channelName:(NSString *)aChannelName
-                  result:(FlutterResult)result {
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     EMPushOptions *options = EMClient.sharedClient.pushManager.pushOptions;
     [weakSelf wrapperCallBack:result
@@ -86,11 +125,11 @@
 }
 
 - (void)getImPushConfigFromServer:(NSDictionary *)param
-                       channelName:(NSString *)aChannelName
-                            result:(FlutterResult)result {
+                      channelName:(NSString *)aChannelName
+                           result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.pushManager getPushNotificationOptionsFromServerWithCompletion:^(EMPushOptions *aOptions, EMError *aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -106,7 +145,7 @@
     NSString *nickname = param[@"nickname"];
     [EMClient.sharedClient.pushManager updatePushDisplayName:nickname
                                                   completion:^(NSString * _Nonnull aDisplayName, EMError * _Nonnull aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -122,7 +161,7 @@
     __weak typeof(self) weakSelf = self;
     
     EMPushDisplayStyle pushStyle = [param[@"pushStyle"] intValue];
-
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         EMError *aError = [EMClient.sharedClient.pushManager updatePushDisplayStyle:pushStyle];
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -144,7 +183,7 @@
     [EMClient.sharedClient.pushManager updatePushServiceForGroups:groupIds
                                                       disablePush:noPush
                                                        completion:^(EMError * _Nonnull aError)
-    {
+     {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -186,8 +225,8 @@
 }
 
 - (void)disablePush:(NSDictionary *)param
-       channelName:(NSString *)aChannelName
-            result:(FlutterResult)result {
+        channelName:(NSString *)aChannelName
+             result:(FlutterResult)result {
     int startTime = [param[@"start"] intValue];
     int endTime = [param[@"end"] intValue];
     __weak typeof(self) weakSelf = self;
@@ -219,8 +258,8 @@
 
 
 - (void)updateUserPushService:(NSDictionary *)param
-                   channelName:(NSString *)aChannelName
-                        result:(FlutterResult)result {
+                  channelName:(NSString *)aChannelName
+                       result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSArray *userIds = param[@"user_ids"];
     bool noPush = [param[@"noPush"] boolValue];
@@ -234,8 +273,8 @@
 }
 
 - (void)getNoPushUsers:(NSDictionary *)param
-            channelName:(NSString *)aChannelName
-                 result:(FlutterResult)result {
+           channelName:(NSString *)aChannelName
+                result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray<NSString *>* userIds = [EMClient.sharedClient.pushManager noPushUIds];
@@ -246,6 +285,142 @@
                                object:userIds];
         });
     });
+}
+
+- (void)reportPushAction:(NSDictionary *)param
+             channelName:(NSString *)aChannelName
+                  result:(FlutterResult)result {
+    
+}
+
+- (void)setConversationSilentMode:(NSDictionary *)param
+                      channelName:(NSString *)aChannelName
+                           result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *conversaionId = param[@"conversationId"];
+    EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
+    EMSilentModeParam *silmentParam = [EMSilentModeParam formJson:param[@"param"]];
+    [EMClient.sharedClient.pushManager setSilentModeForConversation:conversaionId
+                                                   conversationType:type
+                                                             params:silmentParam
+                                                         completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)removeConversationSilentMode:(NSDictionary *)param
+                         channelName:(NSString *)aChannelName
+                              result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *conversaionId = param[@"conversationId"];
+    EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
+    [EMClient.sharedClient.pushManager clearRemindTypeForConversation:conversaionId
+                                                     conversationType:type
+                                                           completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+- (void)fetchConversationSilentMode:(NSDictionary *)param
+                        channelName:(NSString *)aChannelName
+                             result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *conversaionId = param[@"conversationId"];
+    EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
+    [EMClient.sharedClient.pushManager getSilentModeForConversation:conversaionId
+                                                   conversationType:type
+                                                         completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aResult toJson]];
+    }];
+}
+
+- (void)setSilentModeForAll:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    EMSilentModeParam *silmentParam = [EMSilentModeParam formJson:param[@"param"]];
+    [EMClient.sharedClient.pushManager setSilentModeForAll:silmentParam
+                                                completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)fetchSilentModeForAll:(NSDictionary *)param
+                  channelName:(NSString *)aChannelName
+                       result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.pushManager getSilentModeForAllWithCompletion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aResult toJson]];
+    }];
+}
+
+- (void)fetchSilentModeForConversations:(NSDictionary *)param
+                            channelName:(NSString *)aChannelName
+                                 result:(FlutterResult)result {
+    NSMutableArray *conversations = [NSMutableArray array];
+    for (NSString *conversaitonId in param.allKeys) {
+        EMConversationType type = [EMConversation typeFromInt:[param[conversaitonId] intValue]];
+        EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversaitonId type:type createIfNotExist:YES];
+        [conversations addObject:conversation];
+    }
+    
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.pushManager getSilentModeForConversations:conversations
+                                                          completion:^(NSDictionary<NSString *,EMSilentModeResult *> * _Nullable aResult, EMError * _Nullable aError)
+     {
+        
+        NSMutableDictionary *tmpDict = [NSMutableDictionary dictionary];
+        for (NSString *conversationId in aResult.allKeys) {
+            tmpDict[conversationId] = [aResult[conversationId] toJson];
+        }
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:tmpDict];
+    }];
+}
+
+- (void)setPreferredNotificationLanguage:(NSDictionary *)param
+                             channelName:(NSString *)aChannelName
+                                  result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *code = param[@"code"];
+    [EMClient.sharedClient.pushManager setPreferredNotificationLanguage:code completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)fetchPreferredNotificationLanguage:(NSDictionary *)param
+                               channelName:(NSString *)aChannelName
+                                    result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.pushManager getPreferredNotificationLanguageCompletion:^(NSString * _Nullable aLaguangeCode, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:aLaguangeCode];
+    }];
 }
 
 @end

@@ -1,31 +1,34 @@
-import 'em_message.dart';
+import '../internal/inner_headers.dart';
 
+///
+/// The message thread class.
+///
 class EMChatThread {
-  /// sub-zone id
+  /// The message thread ID.
   final String threadId;
 
-  /// Subject of the sub-zone(There will be a list of requested sub-areas and sub-area details)
+  /// The name of the message thread.
   final String? threadName;
 
-  /// create  of the sub-zone, require fetch thread's detail first
+  /// The creator of the message thread.
   final String owner;
 
-  /// A messageId that create sub-zone
+  /// The ID of the parent message of the message thread.
   final String messageId;
 
-  /// A channelId that create sub-zone
+  /// The group ID where the message thread belongs.
   final String parentId;
 
-  /// Member list of the sub-zone, require fetch thread's detail first
+  /// The count of members in the message thread.
   final int membersCount;
 
-  /// Number of messages in subsection
+  /// The count of messages in the message thread.
   final int messageCount;
 
-  /// Timestamp of subarea creation
+  /// The Unix timestamp when the message thread is created. The unit is millisecond.
   final int createAt;
 
-  /// The last message in the sub-area, if it is empty, it means the last message is withdrawn. If it is not empty, it means a new message.
+  /// The last reply in the message thread. If it is empty, the last message is withdrawn.
   final EMMessage? lastMessage;
 
   /// @nodoc
@@ -68,6 +71,65 @@ class EMChatThread {
       createAt: createAt,
       lastMessage: msg,
       threadName: threadName,
+    );
+  }
+}
+
+///
+/// The message thread event class.
+///
+class EMChatThreadEvent {
+  /// Received the operation type of the sub-area from others
+  final EMChatThreadOperation type;
+
+  /// User id of the operation sub-area
+  final String from;
+
+  /// sub-area
+  final EMChatThread? chatThread;
+
+  EMChatThreadEvent._private({
+    required this.type,
+    required this.from,
+    this.chatThread,
+  });
+
+  factory EMChatThreadEvent.fromJson(Map map) {
+    String from = map["from"];
+    int iType = map["type"];
+    EMChatThreadOperation type = EMChatThreadOperation.UnKnown;
+    switch (iType) {
+      case 0:
+        type = EMChatThreadOperation.UnKnown;
+        break;
+      case 1:
+        type = EMChatThreadOperation.Create;
+        break;
+      case 2:
+        type = EMChatThreadOperation.Update;
+        break;
+      case 3:
+        type = EMChatThreadOperation.Delete;
+        break;
+      case 4:
+        type = EMChatThreadOperation.Update_Msg;
+        break;
+    }
+
+    EMChatThread? chatThread = map.getValueWithKey<EMChatThread>(
+      "thread",
+      callback: (map) {
+        if (map == null) {
+          return null;
+        }
+        return EMChatThread.fromJson(map);
+      },
+    );
+
+    return EMChatThreadEvent._private(
+      type: type,
+      from: from,
+      chatThread: chatThread,
     );
   }
 }

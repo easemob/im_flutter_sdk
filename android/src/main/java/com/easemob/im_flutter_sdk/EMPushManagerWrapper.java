@@ -3,9 +3,12 @@ package com.easemob.im_flutter_sdk;
 import android.content.Context;
 
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager.DisplayStyle;
+import com.hyphenate.chat.EMSilentModeParam;
+import com.hyphenate.chat.EMSilentModeResult;
 import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONArray;
@@ -13,7 +16,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -65,8 +71,32 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if (EMSDKMethod.updateUserPushService.equals(call.method)) {
                 updateUserPushService(param, call.method, result);
             }
-            else if (EMSDKMethod.getNoPushUsers.equals(call.method)) {
-                getNoPushUsers(param, call.method, result);
+            else if (EMSDKMethod.reportPushAction.equals(call.method)) {
+                reportPushAction(param, call.method, result);
+            }
+            else if (EMSDKMethod.setConversationSilentMode.equals(call.method)) {
+                setConversationSilentMode(param, call.method, result);
+            }
+            else if (EMSDKMethod.removeConversationSilentMode.equals(call.method)) {
+                removeConversationSilentMode(param, call.method, result);
+            }
+            else if (EMSDKMethod.fetchConversationSilentMode.equals(call.method)) {
+                fetchConversationSilentMode(param, call.method, result);
+            }
+            else if (EMSDKMethod.setSilentModeForAll.equals(call.method)) {
+                setSilentModeForAll(param, call.method, result);
+            }
+            else if (EMSDKMethod.fetchSilentModeForAll.equals(call.method)) {
+                fetchSilentModeForAll(param, call.method, result);
+            }
+            else if (EMSDKMethod.fetchSilentModeForConversations.equals(call.method)) {
+                fetchSilentModeForConversations(param, call.method, result);
+            }
+            else if (EMSDKMethod.setPreferredNotificationLanguage.equals(call.method)) {
+                setPreferredNotificationLanguage(param, call.method, result);
+            }
+            else if (EMSDKMethod.fetchPreferredNotificationLanguage.equals(call.method)) {
+                fetchPreferredNotificationLanguage(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -202,6 +232,93 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
         asyncRunnable(()->{
             EMClient.getInstance().sendFCMTokenToServer(token);
             onSuccess(result, channelName, token);
+        });
+    }
+
+    private void reportPushAction(JSONObject params, String channelName, Result result) throws JSONException {
+
+    }
+
+    private void setConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
+        String conversationId = params.getString("conversationId");
+        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("conversationType"));
+        EMSilentModeParam param = EMSilentModeParamHelper.fromJson(params.getJSONObject("param"));
+        EMClient.getInstance().pushManager().setSilentModeForConversation(conversationId, type, param, new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
+            @Override
+            public void onSuccess(EMSilentModeResult object) {
+                super.updateObject(null);
+            }
+        });
+    }
+    private void removeConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
+        String conversationId = params.getString("conversationId");
+        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("conversationType"));
+        EMClient.getInstance().pushManager().clearRemindTypeForConversation(conversationId, type, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void fetchConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
+        String conversationId = params.getString("conversationId");
+        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("conversationType"));
+        EMClient.getInstance().pushManager().getSilentModeForConversation(conversationId, type, new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
+            @Override
+            public void onSuccess(EMSilentModeResult object) {
+                super.updateObject(EMSilentModeResultHelper.toJson(object));
+            }
+        });
+    }
+
+    private void setSilentModeForAll(JSONObject params, String channelName, Result result) throws JSONException {
+        EMSilentModeParam param =  EMSilentModeParamHelper.fromJson(params.getJSONObject("param"));
+        EMClient.getInstance().pushManager().setSilentModeForAll(param ,new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
+            @Override
+            public void onSuccess(EMSilentModeResult object) {
+                super.updateObject(null);
+            }
+        });
+    }
+
+    private void fetchSilentModeForAll(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().pushManager().getSilentModeForAll(new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
+            @Override
+            public void onSuccess(EMSilentModeResult object) {
+                super.updateObject(EMSilentModeResultHelper.toJson(object));
+            }
+        });
+    }
+    private void fetchSilentModeForConversations(JSONObject params, String channelName, Result result) throws JSONException {
+        Iterator iterator = params.keys();
+        ArrayList<EMConversation> list = new ArrayList<>();
+        while (iterator.hasNext()) {
+            String conversationId = (String)iterator.next();
+            EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt(conversationId));
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conversationId, type, true);
+            list.add(conversation);
+        }
+
+        EMClient.getInstance().pushManager().getSilentModeForConversations(list, new EMValueWrapperCallBack<Map<String, EMSilentModeResult>>(result, channelName) {
+            @Override
+            public void onSuccess(Map<String, EMSilentModeResult> object) {
+                Map<String ,Map> result = new HashMap<>();
+                for (Map.Entry<String, EMSilentModeResult>entry: object.entrySet()) {
+                    result.put(entry.getKey(), EMSilentModeResultHelper.toJson(entry.getValue()));
+                }
+                super.updateObject(result);
+            }
+        });
+
+    }
+
+    private void setPreferredNotificationLanguage(JSONObject params, String channelName, Result result) throws JSONException {
+        String code = params.getString("code");
+        EMClient.getInstance().pushManager().setPreferredNotificationLanguage(code, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void fetchPreferredNotificationLanguage(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().pushManager().getPreferredNotificationLanguage(new EMValueWrapperCallBack<String>(result, channelName){
+            @Override
+            public void onSuccess(String object) {
+                super.onSuccess(object);
+            }
         });
     }
 }

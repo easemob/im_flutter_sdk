@@ -27,7 +27,6 @@
 
 + (EMUserInfo *)fromJson:(NSDictionary *)aJson {
     EMUserInfo *userInfo = EMUserInfo.new;
-    userInfo.userId = aJson[@"userId"];
     userInfo.nickname = aJson[@"nickName"];
     userInfo.avatarUrl = aJson[@"avatarUrl"];
     userInfo.mail = aJson[@"mail"];

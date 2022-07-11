@@ -1,6 +1,4 @@
-import 'package:im_flutter_sdk/src/models/em_presence.dart';
-
-import '../models/em_group_shared_file.dart';
+import '../internal/inner_headers.dart';
 import 'dart:convert' as convert;
 
 Type typeOf<T>() => T;

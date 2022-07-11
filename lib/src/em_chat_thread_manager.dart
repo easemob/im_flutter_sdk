@@ -1,13 +1,10 @@
 import 'package:flutter/services.dart';
-import 'models/em_chat_thread_event.dart';
-import 'em_listeners.dart';
-import 'tools/em_extension.dart';
-import 'internal/chat_method_keys.dart';
-import 'models/em_chat_thread.dart';
-import 'models/em_error.dart';
-import 'models/em_cursor_result.dart';
-import 'models/em_message.dart';
 
+import 'internal/inner_headers.dart';
+
+///
+/// The chat thread manager class.
+///
 class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -203,7 +200,7 @@ class EMChatThreadManager {
   ///
   /// **Throws** A description of the exception. See {@link EMError}.
   ///
-  Future<List<String>> fetchChatThreadMember({
+  Future<List<String>> fetchChatThreadMembers({
     required String chatThreadId,
     String? cursor,
     int limit = 20,
@@ -339,7 +336,7 @@ class EMChatThreadManager {
   /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
   /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
   /// 2. Multiple devices will receive the notification event and you can set {@link com.hyphenate.EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link com.hyphenate.EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)}, where the first parameter is the event,
+  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)}, where the first parameter is the event,
   /// for example, {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_CREATE} for the chat thread creation event.
   ///
   /// Param [name] Chat Thread name. No more than 64 characters in length.
@@ -413,7 +410,7 @@ class EMChatThreadManager {
   /// Leave Chat Thread.
   ///
   /// The operation is available to Chat Thread members.
-  /// After joining chat thread, the multiple devices will receive the notification event.
+  /// After leave chat thread, the multiple devices will receive the notification event.
   /// You can set {@EMMultiDeviceListener} to listen on the event.
   /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
   /// where the first parameter is the event, and chat thread exit event is {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}.
