@@ -53,7 +53,15 @@
 
 - (void)updateOwnUserInfo:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    EMUserInfo *userInfo = [EMUserInfo fromJson:param[@"userInfo"]];
+    NSString *usenrame = EMClient.sharedClient.currentUsername;
+    if (usenrame == nil) {
+        EMError *error = [EMError errorWithDescription:@"User not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:nil];
+        return;
+    }
+    
+    EMUserInfo *userInfo = [EMUserInfo fromJson:param];
+    userInfo.userId = usenrame;
     [EMClient.sharedClient.userInfoManager updateOwnUserInfo:userInfo completion:^(EMUserInfo *aUserInfo, EMError *aError) {
         NSDictionary *objDic = [aUserInfo toJson];
 

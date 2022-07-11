@@ -1,10 +1,7 @@
 import 'dart:core';
 import 'package:flutter/services.dart';
 
-import '../tools/em_extension.dart';
-import '../../im_flutter_sdk.dart';
-import '../internal/chat_method_keys.dart';
-import '../internal/em_transform_tools.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The conversation class, indicating a one-to-one chat, a group chat, or a converation chat. It contains the messages that are sent and received within the converation.
@@ -61,9 +58,7 @@ class EMConversation {
   final bool isChatThread;
 
   Map<String, String>? _ext;
-}
 
-extension EMConversationExtension on EMConversation {
   static const MethodChannel _emConversationChannel =
       const MethodChannel('com.chat.im/chat_conversation', JSONMethodCodec());
 
@@ -492,6 +487,22 @@ extension EMConversationExtension on EMConversation {
         msgList.add(EMMessage.fromJson(element));
       });
       return msgList;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<int> messagesCount() async {
+    Map req = this._toJson();
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
+      ChatMethodKeys.messageCount,
+      req,
+    );
+
+    try {
+      EMError.hasErrorFromResult(result);
+      int count = result[ChatMethodKeys.messageCount];
+      return count;
     } on EMError catch (e) {
       throw e;
     }

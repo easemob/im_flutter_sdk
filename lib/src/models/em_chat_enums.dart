@@ -27,12 +27,6 @@ enum EMConversationType {
   ChatRoom,
 }
 
-@Deprecated('Switch to using EMPushManager#DisplayStyle instead')
-enum EMPushStyle {
-  Simple,
-  Summary,
-}
-
 ///
 /// The enumeration of chat types.
 ///
@@ -251,6 +245,24 @@ enum EMMultiDevicesEvent {
   /// The current user unmuted a member on another device.
   GROUP_REMOVE_MUTE,
 
+  /// The current user added on allow list on another device.
+  GROUP_ADD_USER_ALLOW_LIST,
+
+  /// The current user removed on allow list on another device.
+  GROUP_REMOVE_USER_ALLOW_LIST,
+
+  /// The current user are group ban on another device.
+  GROUP_ALL_BAN,
+
+  /// The current user are remove group ban on another device.
+  GROUP_REMOVE_ALL_BAN,
+
+  /// The current user are group disable on another device.
+  GROUP_DISABLED,
+
+  /// The current user are group able on another device.
+  GROUP_ABLE,
+
   /// User A creates an event in the sub-area of device A1, and other devices logged in to this account will receive this event
   CHAT_THREAD_CREATE,
 
@@ -263,16 +275,67 @@ enum EMMultiDevicesEvent {
   /// User A leaves the event in the sub-area of device A1, and other devices logged in to this account will receive this event
   CHAT_THREAD_LEAVE,
 
-  /// User A is kicked in the sub-area of device A1, and all other devices that log in to this account will receive this event
-  CHAT_THREAD_KICK,
-
   /// User A updates the event in the sub-area of device A1, and other devices logged in to this account will receive this event
   CHAT_THREAD_UPDATE,
+
+  /// User A is kicked in the sub-area of device A1, and all other devices that log in to this account will receive this event
+  CHAT_THREAD_KICK,
 }
+
+///
+/// The message thread event types.
+///
 enum EMChatThreadOperation {
+  /// The unknown type of message thread event.
   UnKnown,
+
+  /// The message thread is created.
   Create,
+
+  /// The message thread is updated.
   Update,
+
+  /// The message thread is destroyed.
   Delete,
+
+  /// The last reply in the message thread is updated.
   Update_Msg,
+}
+
+///
+/// The push styles.
+///
+///
+enum DisplayStyle {
+  /// The push message presentation style: SimpleBanner represents the presentation of a simple message.
+  Simple,
+
+  /// The push message presentation style: MessageSummary represents the presentation of message content.
+  Summary,
+}
+
+///
+/// Offline push DND parameter type Enumeration class.
+///
+enum ChatSilentModeParamType {
+  /// Offline push notification type.
+  REMIND_TYPE,
+
+  /// Offline push DND duration.
+  SILENT_MODE_DURATION,
+
+  /// Offline push DND period.
+  SILENT_MODE_INTERVAL,
+}
+
+/// Offline push notification type enumeration class.
+enum ChatPushRemindType {
+  /// Collect all offline push.
+  ALL,
+
+  /// Only receive @me offline push.
+  MENTION_ONLY,
+
+  /// Offline push is not collected.
+  NONE,
 }

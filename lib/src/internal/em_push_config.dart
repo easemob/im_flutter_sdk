@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import 'inner_headers.dart';
 
 /// The push configuration class, which contains the push configuration information, such as the push style.
 class EMPushConfig {

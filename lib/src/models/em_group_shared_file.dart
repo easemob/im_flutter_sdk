@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The EMGroupSharedFile class, which manages the chat group shared files.

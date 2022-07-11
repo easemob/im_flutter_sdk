@@ -132,6 +132,7 @@ class ChatMethodKeys {
   static const String loadMsgWithKeywords = "loadMsgWithKeywords";
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
   static const String loadMsgWithTime = "loadMsgWithTime";
+  static const String messageCount = "messageCount";
 
   /// EMMessage method
   static const String getReactionList = "getReactionList";
@@ -252,6 +253,21 @@ class ChatMethodKeys {
   static const String updateHMSPushToken = "updateHMSPushToken";
   static const String updateFCMPushToken = "updateFCMPushToken";
   static const String updateAPNsPushToken = "updateAPNsPushToken";
+
+  static const String reportPushAction = "reportPushAction";
+  static const String setConversationSilentMode = "setConversationSilentMode";
+  static const String removeConversationSilentMode =
+      "removeConversationSilentMode";
+  static const String fetchConversationSilentMode =
+      "fetchConversationSilentMode";
+  static const String setSilentModeForAll = "setSilentModeForAll";
+  static const String fetchSilentModeForAll = "fetchSilentModeForAll";
+  static const String fetchSilentModeForConversations =
+      "fetchSilentModeForConversations";
+  static const String setPreferredNotificationLanguage =
+      "setPreferredNotificationLanguage";
+  static const String fetchPreferredNotificationLanguage =
+      "fetchPreferredNotificationLanguage";
 
   /// EMUserInfoManager methods
   static const String updateOwnUserInfo = "updateOwnUserInfo";
