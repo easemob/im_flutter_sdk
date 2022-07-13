@@ -129,6 +129,8 @@ class EMMessage {
   ///
   MessageStatusCallBack? _messageStatusCallBack;
 
+  late final bool onlineState;
+
   void setMessageStatusCallBack(MessageStatusCallBack? callback) {
     _messageStatusCallBack = callback;
     if (callback != null) {
@@ -150,6 +152,7 @@ class EMMessage {
   EMMessage.createReceiveMessage({
     required this.body,
   }) {
+    this.onlineState = true;
     this.direction = MessageDirection.RECEIVE;
   }
 
@@ -172,6 +175,7 @@ class EMMessage {
         this.conversationId = to {
     this.hasRead = true;
     this.direction = MessageDirection.SEND;
+    this.onlineState = true;
   }
 
   void dispose() {
@@ -511,14 +515,15 @@ class EMMessage {
       ..localTime = map.getIntValue("localTime", defaultValue: 0)!
       ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
       ..isChatThreadMessage = map.getBoolValue("isThread", defaultValue: false)!
-      // 提供单独的get方法，每次都去原生侧取。
-      // ..chatThread = map.getValueWithKey<EMChatThread>(
-      //   "thread",
-      //   callback: (obj) {
-      //     return EMChatThread.fromJson(obj);
-      //   },
-      // )
+      ..onlineState = map.getBoolValue("onlineState", defaultValue: true)!
       ..status = messageStatusFromInt(map.intValue("status"));
+    // 提供单独的get方法，每次都去原生侧取。
+    // ..chatThread = map.getValueWithKey<EMChatThread>(
+    //   "thread",
+    //   callback: (obj) {
+    //     return EMChatThread.fromJson(obj);
+    //   },
+    // )
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {

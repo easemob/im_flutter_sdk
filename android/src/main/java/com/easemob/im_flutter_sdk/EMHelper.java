@@ -517,6 +517,7 @@ class EMMessageHelper {
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
         data.put("needGroupAck", message.isNeedGroupAck());
+        data.put("onlineState", message.isOnlineState());
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
