@@ -432,6 +432,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                     if (o2.getLastMessage() == null) {
                         return -1;
                     }
+
+                    if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
+                        return 0;
+                    }
+
                     return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
                 }
             });
@@ -448,8 +453,24 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             try {
                 List<EMConversation> list = new ArrayList<>(
                         EMClient.getInstance().chatManager().fetchConversationsFromServer().values());
-                Collections.sort(list,
-                        (o1, o2) -> (o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1));
+                Collections.sort(list, new Comparator<EMConversation>() {
+                    @Override
+                    public int compare(EMConversation o1, EMConversation o2) {
+                        if (o1.getLastMessage() == null) {
+                            return 1;
+                        }
+
+                        if (o2.getLastMessage() == null) {
+                            return -1;
+                        }
+
+                        if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
+                            return 0;
+                        }
+
+                        return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
+                    }
+                });
                 List<Map> conversations = new ArrayList<>();
                 for (EMConversation conversation : list) {
                     conversations.add(EMConversationHelper.toJson(conversation));
