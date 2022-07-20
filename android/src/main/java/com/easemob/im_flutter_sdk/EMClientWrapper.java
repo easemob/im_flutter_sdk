@@ -32,6 +32,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     static EMClientWrapper wrapper;
     public EMProgressManager progressManager;
+    public String fcmKey;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -269,6 +270,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
+        fcmKey = EMClient.getInstance().getOptions().getPushConfig().getFcmSenderId();
         bindingManagers();
         addEMListener();
         onSuccess(result, channelName, null);
