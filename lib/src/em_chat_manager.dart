@@ -417,7 +417,7 @@ class EMChatManager {
   ///
   /// Gets the conversation list from the server.
   ///
-  /// To use this function, you need to contact our business manager to activate it. After this function is activated, users can pull 10 conversations within 7 days by default (each convesation contains the latest historical message). If you want to adjust the number of conversations or time limit, please contact our business manager.
+  /// To use this function, you need to contact our business manager to activate it. After this function is activated, users can pull 10 conversations within 7 days by default (each conversation contains the latest historical message). If you want to adjust the number of conversations or time limit, please contact our business manager.
   ///
   /// **Return** The conversation list of the current user.
   ///

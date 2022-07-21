@@ -1,5 +1,8 @@
 ## NEXT
 
+## 3.9.4+1
+- 增加ChatSilentMode;
+
 ## 3.9.4
 - 移除过期Api；
 

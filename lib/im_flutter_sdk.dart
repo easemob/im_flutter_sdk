@@ -34,5 +34,6 @@ export 'src/models/em_message.dart' hide MessageCallBackManager;
 export 'src/models/em_download_callback.dart' show EMDownloadCallback;
 export 'src/models/em_message_reaction.dart';
 export 'src/models/em_chat_thread.dart';
+export 'src/models/chat_silent_mode.dart';
 
 export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
