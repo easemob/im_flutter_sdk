@@ -11,6 +11,7 @@ class EMPushManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_push_manager', JSONMethodCodec());
 
+  @Deprecated('')
   Future<EMPushConfigs?> getPushConfigsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
     try {
@@ -39,6 +40,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
+  @Deprecated('')
   Future<void> enableOfflinePush() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.enableOfflinePush);
     try {
@@ -57,6 +59,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
+  @Deprecated('')
   Future<void> disableOfflinePush({
     required int start,
     required int end,
@@ -82,6 +85,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
+  @Deprecated('')
   Future<void> updatePushServiceForGroup({
     required List<String> groupIds,
     required bool enablePush,
@@ -107,6 +111,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
+  @Deprecated('')
   Future<void> updatePushServiceFroUsers({
     required List<String> userIds,
     required bool enablePush,
@@ -128,6 +133,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
+  @Deprecated('')
   Future<List<String>> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
@@ -144,6 +150,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the issue that caused this exception. See {@link EMError}
   ///
+  @Deprecated('')
   Future<List<String>> getNoPushUsersFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushUsers);
     List<String> list = [];
@@ -253,7 +260,6 @@ class EMPushManager {
     }
   }
 
-  // // TODO:
   // Future<void> reportPushAction(
   //   {String taskId,
   //   String provider,
