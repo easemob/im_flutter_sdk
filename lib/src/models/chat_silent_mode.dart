@@ -4,7 +4,7 @@ import '../internal/inner_headers.dart';
 /// Offline push Settings parameter entity class
 ///
 class ChatSilentModeParam {
-  final ChatSilentModeParamType paramType;
+  final ChatSilentModeParamType _paramType;
 
   /// The offline push notification type.
   final ChatPushRemindType? remindType;
@@ -28,7 +28,7 @@ class ChatSilentModeParam {
   )   : this.silentDuration = null,
         this.startTime = null,
         this.endTime = null,
-        this.paramType = ChatSilentModeParamType.REMIND_TYPE;
+        this._paramType = ChatSilentModeParamType.REMIND_TYPE;
 
   ///
   /// Set the offline push DND duration.
@@ -39,7 +39,7 @@ class ChatSilentModeParam {
       : this.startTime = null,
         this.endTime = null,
         this.remindType = null,
-        this.paramType = ChatSilentModeParamType.SILENT_MODE_DURATION;
+        this._paramType = ChatSilentModeParamType.SILENT_MODE_DURATION;
 
   ///
   /// Set the start time of offline push DND, you need to create the start time and end time together.
@@ -53,12 +53,12 @@ class ChatSilentModeParam {
     required this.endTime,
   })  : this.silentDuration = null,
         this.remindType = null,
-        this.paramType = ChatSilentModeParamType.SILENT_MODE_DURATION;
+        this._paramType = ChatSilentModeParamType.SILENT_MODE_INTERVAL;
 
   Map toJson() {
     Map data = Map();
     data.setValueWithOutNull(
-        "paramType", chatSilentModeParamTypeToInt(paramType));
+        "paramType", chatSilentModeParamTypeToInt(_paramType));
     data.setValueWithOutNull("remindType", chatPushRemindTypeToInt(remindType));
     data.setValueWithOutNull("startTime", startTime?.toJson());
     data.setValueWithOutNull("endTime", endTime?.toJson());
@@ -104,14 +104,29 @@ class ChatSilentModeTime {
   }
 }
 
+///
+/// Offline push DND result class.
+///
 class ChatSilentModeResult {
+  /// Obtain the offline push DND expiration timestamp.
   final int? expireTimestamp;
+
+  /// The Conversation Type.
   final EMConversationType conversationType;
+
+  /// The Conversation ID.
   final String conversationId;
+
+  /// The offline push notification type.
   final ChatPushRemindType? remindType;
+
+  /// The start time of offline push DND.
   final ChatSilentModeTime? startTime;
+
+  /// The end time of offline push DND.
   final ChatSilentModeTime? endTime;
 
+  /// @nodoc
   ChatSilentModeResult(
     this.expireTimestamp,
     this.conversationType,

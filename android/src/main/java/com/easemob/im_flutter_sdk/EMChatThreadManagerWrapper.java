@@ -200,7 +200,6 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
     }
 
     private void registerEaseListener() {
-        // TODO:
         EMClient.getInstance().chatThreadManager().addChatThreadChangeListener(new EMChatThreadChangeListener() {
             @Override
             public void onChatThreadCreated(EMChatThreadEvent event) {

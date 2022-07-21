@@ -229,10 +229,8 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void updateFCMPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
         String token = params.getString("token");
-        asyncRunnable(()->{
-            EMClient.getInstance().sendFCMTokenToServer(token);
-            onSuccess(result, channelName, token);
-        });
+        String fcmKey = EMClientWrapper.getInstance().fcmKey;
+        EMClient.getInstance().pushManager().bindDeviceToken(fcmKey, token, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void reportPushAction(JSONObject params, String channelName, Result result) throws JSONException {

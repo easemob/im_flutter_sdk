@@ -151,6 +151,7 @@ class EMMessage {
   ///
   EMMessage.createReceiveMessage({
     required this.body,
+    this.chatType = ChatType.Chat,
   }) {
     this.onlineState = true;
     this.direction = MessageDirection.RECEIVE;
@@ -171,6 +172,7 @@ class EMMessage {
   EMMessage.createSendMessage({
     required this.body,
     this.to,
+    this.chatType = ChatType.Chat,
   })  : this.from = EMClient.getInstance.currentUsername,
         this.conversationId = to {
     this.hasRead = true;
@@ -240,7 +242,9 @@ class EMMessage {
     required String targetId,
     required String content,
     List<String>? targetLanguages,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+          chatType: chatType,
           to: targetId,
           body: EMTextMessageBody(
             content: content,
@@ -268,8 +272,10 @@ class EMMessage {
     required String targetId,
     required String filePath,
     String? displayName,
+    ChatType chatType = ChatType.Chat,
     int? fileSize,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMFileMessageBody(
               localPath: filePath,
@@ -312,7 +318,9 @@ class EMMessage {
     int? fileSize,
     double? width,
     double? height,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMImageMessageBody(
               localPath: filePath,
@@ -356,7 +364,9 @@ class EMMessage {
     String? thumbnailLocalPath,
     double? width,
     double? height,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMVideoMessageBody(
               localPath: filePath,
@@ -392,7 +402,9 @@ class EMMessage {
     int duration = 0,
     int? fileSize,
     String? displayName,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMVoiceMessageBody(
                 localPath: filePath,
@@ -424,7 +436,9 @@ class EMMessage {
     required double longitude,
     String? address,
     String? buildingName,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMLocationMessageBody(
               latitude: latitude,
@@ -447,7 +461,9 @@ class EMMessage {
     required String targetId,
     required action,
     bool deliverOnlineOnly = false,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMCmdMessageBody(
                 action: action, deliverOnlineOnly: deliverOnlineOnly));
@@ -465,9 +481,13 @@ class EMMessage {
   ///
   /// **Return** The message instance.
   ///
-  EMMessage.createCustomSendMessage(
-      {required String targetId, required event, Map<String, String>? params})
-      : this.createSendMessage(
+  EMMessage.createCustomSendMessage({
+    required String targetId,
+    required event,
+    Map<String, String>? params,
+    ChatType chatType = ChatType.Chat,
+  }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMCustomMessageBody(event: event, params: params));
 
