@@ -688,7 +688,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@{@"message": [message toJson]}];
+                           object:[message toJson]];
     }];
 }
 
