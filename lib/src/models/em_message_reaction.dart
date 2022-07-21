@@ -1,3 +1,5 @@
+import '../internal/inner_headers.dart';
+
 ///
 /// The message Reaction instance class, which has the following attributes:
 /// Reaction: The message Reaction.
@@ -38,13 +40,56 @@ class EMMessageReaction {
   factory EMMessageReaction.fromJson(Map map) {
     String reaction = map["reaction"];
     int count = map["count"];
-    bool isAddedBySelf = map["isAddedBySelf"];
-    List<String> userList = map["userList"];
+
+    bool isAddedBySelf =
+        map.getBoolValue("isAddedBySelf", defaultValue: false)!;
+    List<String> userList = [];
+    List<String>? tmp = map.getList("userList", valueCallback: (str) {
+      return str;
+    });
+    if (tmp != null) {
+      userList.addAll(tmp);
+    }
     return EMMessageReaction._private(
       reaction: reaction,
       userCount: count,
       isAddedBySelf: isAddedBySelf,
       userList: userList,
+    );
+  }
+}
+
+///
+/// The message reaction change event class.
+///
+class EMMessageReactionEvent {
+  /// The conversation ID
+  final String conversationId;
+
+  /// The message ID
+  final String messageId;
+
+  /// The Reaction which is changed
+  final List<EMMessageReaction> reactions;
+
+  EMMessageReactionEvent._private({
+    required this.conversationId,
+    required this.messageId,
+    required this.reactions,
+  });
+
+  /// nodoc
+  factory EMMessageReactionEvent.fromJson(Map map) {
+    String conversationId = map["conversationId"];
+    String messageId = map["messageId"];
+    List<EMMessageReaction> reactions = [];
+    map["reactions"]?.forEach((element) {
+      reactions.add(EMMessageReaction.fromJson(element));
+    });
+    return EMMessageReactionEvent._private(
+      conversationId: conversationId,
+      messageId: messageId,
+      reactions: reactions,
     );
   }
 }

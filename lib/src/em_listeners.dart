@@ -1,11 +1,4 @@
-import 'models/em_chat_enums.dart';
-import 'models/em_chat_thread_event.dart';
-
-import 'models/em_group_message_ack.dart';
-import 'models/em_group_shared_file.dart';
-import 'models/em_message.dart';
-import 'models/em_message_reaction_change.dart';
-import 'models/em_presence.dart';
+import 'internal/inner_headers.dart';
 
 ///
 /// The chat connection listener.
@@ -147,6 +140,9 @@ abstract class EMMultiDeviceListener {
   );
 }
 
+///
+///  The custom event listener.
+///
 abstract class EMCustomListener {
   void onDataReceived(Map map);
 }
@@ -159,12 +155,12 @@ abstract class EMCustomListener {
 ///
 /// Register the listener：
 /// ```dart
-///   EMClient.getInstance.contactManager.addContactListener(contactListener);
+///   EMClient.getInstance.contactManager.addContactManagerListener(contactListener);
 /// ```
 ///
 /// Unregister the listener：
 /// ```dart
-///   EMClient.getInstance.contactManager.removeContactListener(contactListener);
+///   EMClient.getInstance.contactManager.removeContactManagerListener(contactListener);
 /// ```
 ///
 abstract class EMContactManagerListener {
@@ -206,6 +202,20 @@ abstract class EMContactManagerListener {
   void onFriendRequestDeclined(String userName);
 }
 
+///
+/// The chat room manager listener.
+///
+/// Register the listener：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.addChatRoomManagerListener(listener);
+/// ```
+///
+/// Unregister the listener：
+/// ```dart
+///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
+/// ```
+///
+
 abstract class EMChatRoomManagerListener {
   ///
   /// Occurs when the chat room is destroyed.
@@ -230,7 +240,7 @@ abstract class EMChatRoomManagerListener {
   ///
   /// Param [roomId] The chatroom ID.
   ///
-  /// Param [participant] The new member's username.
+  /// Param [participant] The exited member's username.
   ///
   void onMemberExitedFromChatRoom(
       String roomId, String? roomName, String participant);
@@ -353,12 +363,12 @@ abstract class EMChatRoomManagerListener {
 ///
 /// Registers a group change listener:
 /// ```dart
-///   EMClient.getInstance.groupManager.addGroupChangeListener(listener);
+///   EMClient.getInstance.groupManager.addGroupManagerListener(listener);
 /// ```
 ///
 /// Unregisters a group change listener:
 /// ```dart
-///   EMClient.getInstance.groupManager.removeGroupChangeListener(listener);
+///   EMClient.getInstance.groupManager.removeGroupManagerListener(listener);
 /// ```
 abstract class EMGroupManagerListener {
   ///
@@ -703,7 +713,7 @@ abstract class EMChatManagerListener {
   ///
   /// Param [list] The Reaction which is changed
   ///
-  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
 }
 
 ///
@@ -733,6 +743,8 @@ class EMChatThreadManagerListener {
   ///
   /// Each member of the group to which the message thread belongs can receive the callback.
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadCreate(EMChatThreadEvent event) {}
 
   ///
@@ -742,6 +754,8 @@ class EMChatThreadManagerListener {
   ///
   /// Each member of the group to which the message thread belongs can receive the callback.
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadUpdate(EMChatThreadEvent event) {}
 
   ///
@@ -749,639 +763,14 @@ class EMChatThreadManagerListener {
   ///
   /// Each member of the group to which the message thread belongs can receive the callback.
   ///
+  /// Param [event] The event;
+  ///
   void onChatThreadDestroy(EMChatThreadEvent event) {}
 
   ///
   /// Occurs when the current user is removed from the message thread by the group owner or a group admin to which the message thread belongs.
   ///
+  /// Param [event] The event;
+  ///
   void onUserKickOutOfChatThread(EMChatThreadEvent event) {}
-}
-
-//////////////////////////////////////////////////////////////////////////
-@Deprecated("Switch to using EMGroupManagerListener instead.")
-abstract class EMGroupChangeListener {
-  ///
-  /// Occurs when an invitation is rejected by the inviter.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [inviter] The username of the inviter.
-  ///
-  /// Param [reason] The reason.
-  ///
-  void onInvitationReceivedFromGroup(
-      String groupId, String? groupName, String inviter, String? reason);
-
-  ///
-  /// Occurs when a group join application is received from an applicant.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [applicant] The username of the applicant.
-  ///
-  /// Param [reason] The reason.
-  ///
-  void onRequestToJoinReceivedFromGroup(
-      String groupId, String? groupName, String applicant, String? reason);
-
-  ///
-  /// Occurs when a group-join application is accepted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [accepter] The username of the accepter.
-  ///
-  void onRequestToJoinAcceptedFromGroup(
-      String groupId, String? groupName, String accepter);
-
-  ///
-  /// Occurs when a group-join application is declined.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [decliner] The username of the decliner.
-  ///
-  /// Param [reason] The reason.
-  ///
-  void onRequestToJoinDeclinedFromGroup(
-      String groupId, String? groupName, String decliner, String? reason);
-
-  ///
-  /// Occurs when a group invitation is approved.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [invitee] The username of the invitee.
-  ///
-  /// Param [reason] The reason.
-  ///
-  void onInvitationAcceptedFromGroup(
-      String groupId, String invitee, String? reason);
-
-  ///
-  /// Occurs when a group invitation is declined.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [invitee] The username of the invitee.
-  ///
-  /// Param [reason] The reason.
-  ///
-  void onInvitationDeclinedFromGroup(
-      String groupId, String invitee, String? reason);
-
-  /// Occurs when a group member is removed from the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  void onUserRemovedFromGroup(String groupId, String? groupName);
-
-  /// Occurs when a group is destroyed.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  void onGroupDestroyed(String groupId, String? groupName);
-
-  /// Occurs when the group invitation is accepted automatically.
-  /// The SDK will join the group before notifying the app of the acceptance of the group invitation.
-  /// For settings, see {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
-  ///
-  /// Param [groupId]			The group ID.
-  /// Param [inviter]			The inviter ID.
-  /// Param [inviteMessage]		The invitation message.
-  ///
-  void onAutoAcceptInvitationFromGroup(
-      String groupId, String inviter, String? inviteMessage);
-
-  /// Occurs when members are added to the mute list of the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [mutes] The members to be muted.
-  ///
-  /// Param [muteExpire] Reserved parameter. The time when the mute state expires.
-  ///
-  void onMuteListAddedFromGroup(
-      String groupId, List<String> mutes, int? muteExpire);
-
-  /// Occurs when members are removed from the mute list of the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [mutes] The members to be removed from the mute list.
-  ///
-  void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
-
-  ///
-  /// Occurs when members are changed to admins.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [admin] The members changed to be admins.
-  ///
-  void onAdminAddedFromGroup(String groupId, String admin);
-
-  ///
-  /// Occurs when an admin permission is removed.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [admin] The member whose admin permission is removed.
-  void onAdminRemovedFromGroup(String groupId, String admin);
-
-  ///
-  /// Occurs when the chat room ownership is transferred.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [newOwner] The new owner.
-  ///
-  /// Param [oldOwner] The previous owner.
-  void onOwnerChangedFromGroup(
-      String groupId, String newOwner, String oldOwner);
-
-  ///
-  /// Occurs when a member joins the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The new member.
-  void onMemberJoinedFromGroup(String groupId, String member);
-
-  ///
-  /// Occurs when a member exits the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The member who exits the group.
-  void onMemberExitedFromGroup(String groupId, String member);
-
-  ///
-  /// Occurs when the announcement changed.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The new announcement.
-  void onAnnouncementChangedFromGroup(String groupId, String announcement);
-
-  /// Occurs when a shared file is added to the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The new shared File.
-  ///
-  void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
-
-  ///
-  /// Occurs when a shared file is deleted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The ID of the shared file that is deleted.
-  ///
-  void onSharedFileDeletedFromGroup(String groupId, String fileId);
-
-  ///
-  /// Occurs when one or more group members are added to the allow list.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [members] The members that are added to the allow list.
-  void onAllowListAddedFromGroup(String groupId, List<String> members);
-
-  ///
-  /// Occurs when one or more group members are removed from the allow list.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [members] The members that are removed from the allow list.
-  void onAllowListRemovedFromGroup(String groupId, List<String> members);
-
-  /// Occurs when all group members are muted or unmuted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [isAllMuted] Whether all group members are muted or unmuted.
-  /// - `true`: Yes;
-  /// - `false`: No.
-
-  void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
-}
-
-///
-/// The group change listener.
-///
-/// Occurs when the following group events happens: requesting to join a group, approving or declining a group request, and kicking a user out of a group.
-///
-/// Registers a group change listener:
-/// ```dart
-///   EMClient.getInstance.groupManager.addGroupChangeListener(listener);
-/// ```
-///
-/// Unregisters a group change listener:
-/// ```dart
-///   EMClient.getInstance.groupManager.removeGroupChangeListener(listener);
-/// ```
-@Deprecated("Switch to using EMGroupManagerListener instead.")
-abstract class EMGroupEventListener {
-  ///
-  /// Occurs when the user receives a group invitation.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [inviter] The invitee ID.
-  ///
-  /// Param [reason] The reason for invitation.
-  ///
-  void onInvitationReceivedFromGroup(
-      String groupId, String? groupName, String inviter, String? reason);
-
-  ///
-  /// Occurs when the group owner or administrator receives a group request from a user.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [applicant] The ID of the user requesting to join the group.
-  ///
-  /// Param [reason] The reason for requesting to join the group.
-  ///
-  void onRequestToJoinReceivedFromGroup(
-      String groupId, String? groupName, String applicant, String? reason);
-
-  ///
-  /// Occurs when a group request is accepted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [accepter] The ID of the user that accepts the group request.
-  ///
-  void onRequestToJoinAcceptedFromGroup(
-      String groupId, String? groupName, String accepter);
-
-  ///
-  /// Occurs when a group request is declined.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  /// Param [decliner] The ID of the user that declines the group request.
-  ///
-  /// Param [reason] The reason for declining.
-  ///
-  void onRequestToJoinDeclinedFromGroup(
-    String groupId,
-    String? groupName,
-    String decliner,
-    String? reason,
-  );
-
-  ///
-  /// Occurs when a group invitation is accepted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [invitee] The invitee ID.
-  ///
-  /// Param [reason] The reason for acceptance.
-  ///
-  void onInvitationAcceptedFromGroup(
-    String groupId,
-    String invitee,
-    String? reason,
-  );
-
-  ///
-  /// Occurs when a group invitation is declined.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [invitee] The invitee ID.
-  ///
-  /// Param [reason] The reason for declining.
-  ///
-  void onInvitationDeclinedFromGroup(
-      String groupId, String invitee, String? reason);
-
-  ///
-  /// Occurs when the current user is removed from the group by the group admin.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  void onUserRemovedFromGroup(String groupId, String? groupName);
-
-  ///
-  /// Occurs when a group is destroyed.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [groupName] The group name.
-  ///
-  void onGroupDestroyed(String groupId, String? groupName);
-
-  ///
-  /// Occurs when the group invitation is accepted automatically.
-  /// For settings, see {@link EMOptions#autoAcceptGroupInvitation(boolean value)}.
-  /// The SDK will join the group before notifying the app of the acceptance of the group invitation.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [inviter] The inviter ID.
-  ///
-  /// Param [inviteMessage] The invitation message.
-  ///
-  void onAutoAcceptInvitationFromGroup(
-      String groupId, String inviter, String? inviteMessage);
-
-  ///
-  /// Occurs when one or more group members are muted.
-  ///
-  /// Note: The mute function is different from a block list.
-  /// A user, when muted, can still see group messages, but cannot send messages in the group.
-  /// However, a user on the block list can neither see nor send group messages.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [mutes] The member(s) added to the mute list.
-  ///
-  /// Param [muteExpire] The mute duration in milliseconds.
-  ///
-  void onMuteListAddedFromGroup(
-      String groupId, List<String> mutes, int? muteExpire);
-
-  ///
-  /// Occurs when one or more group members are unmuted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [mutes] The member(s) added to the mute list.
-  ///
-  void onMuteListRemovedFromGroup(String groupId, List<String> mutes);
-
-  ///
-  /// Occurs when a member is set as an admin.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [admin] The member that is set as an admin.
-  ///
-  void onAdminAddedFromGroup(String groupId, String admin);
-
-  ///
-  /// Occurs when a member's admin privileges are removed.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [admin] The member whose admin privileges are removed.
-  ///
-  void onAdminRemovedFromGroup(String groupId, String admin);
-
-  ///
-  /// Occurs when the group ownership is transferred.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [newOwner] The new owner.
-  ///
-  /// Param [oldOwner] The previous owner.
-  ///
-  void onOwnerChangedFromGroup(
-      String groupId, String newOwner, String oldOwner);
-
-  ///
-  /// Occurs when a member joins a group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The ID of the new member.
-  ///
-  void onMemberJoinedFromGroup(String groupId, String member);
-
-  ///
-  /// Occurs when a member proactively leaves the group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [member] The member leaving the group.
-  ///
-  void onMemberExitedFromGroup(String groupId, String member);
-
-  ///
-  /// Occurs when the announcement is updated.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [announcement] The updated announcement content.
-  ///
-  void onAnnouncementChangedFromGroup(String groupId, String announcement);
-
-  ///
-  /// Occurs when a shared file is added to a group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [sharedFile] The new shared file.
-  ///
-  void onSharedFileAddedFromGroup(String groupId, EMGroupSharedFile sharedFile);
-
-  ///
-  /// Occurs when a shared file is removed from a group.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [fileId] The ID of the removed shared file.
-  ///
-  void onSharedFileDeletedFromGroup(String groupId, String fileId);
-
-  ///
-  /// Occurs when one or more group members are added to the allowlist.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [members] The member(s) removed from the allowlist.
-  ///
-  void onAllowListAddedFromGroup(String groupId, List<String> members);
-
-  ///
-  /// Occurs when one or more members are removed from the allowlist.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [members] The member(s) added to the allowlist.
-  ///
-  void onAllowListRemovedFromGroup(String groupId, List<String> members);
-
-  ///
-  /// Occurs when all group members are muted or unmuted.
-  ///
-  /// Param [groupId] The group ID.
-  ///
-  /// Param [isAllMuted] Whether all group members are muted or unmuted.
-  /// - `true`: Yes;
-  /// - `false`: No.
-  ///
-  void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
-}
-
-@Deprecated("Switch to using EMChatRoomManagerListener instead.")
-abstract class EMChatRoomEventListener {
-  ///
-  /// Occurs when the chat room is destroyed.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [roomName] The chatroom name.
-  ///
-  void onChatRoomDestroyed(String roomId, String? roomName);
-
-  ///
-  /// Occurs when a member join the chatroom.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [participant] The new member's username.
-  ///
-  void onMemberJoinedFromChatRoom(String roomId, String participant);
-
-  ///
-  /// Occurs when a member leaves the chatroom.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [participant] The new member's username.
-  ///
-  void onMemberExitedFromChatRoom(
-      String roomId, String? roomName, String participant);
-
-  ///
-  /// Occurs when a member is dismissed from a chat room.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [roomName] The chatroom name.
-  ///
-  /// Param [participant] The member is dismissed from a chat room.
-  ///
-  void onRemovedFromChatRoom(
-    String roomId,
-    String? roomName,
-    String? participant,
-  );
-
-  ///
-  /// Occurs when there are chat room member(s) muted (added to mute list),
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [mutes] The members to be muted.
-  ///
-  /// Param [expireTime] The mute duration.
-  ///
-  void onMuteListAddedFromChatRoom(
-    String roomId,
-    List<String> mutes,
-    String? expireTime,
-  );
-
-  ///
-  /// Occurs when there are chat room member(s) unmuted (removed from mute list).
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [mutes] The member(s) muted is removed from the mute list.
-  ///
-  void onMuteListRemovedFromChatRoom(
-    String roomId,
-    List<String> mutes,
-  );
-
-  ///
-  /// Occurs when a member has been changed to an admin.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [admin] The member who has been changed to an admin.
-  ///
-  void onAdminAddedFromChatRoom(String roomId, String admin);
-
-  ///
-  /// Occurs when an admin is been removed.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [admin] The member whose admin permission is removed.
-  ///
-  void onAdminRemovedFromChatRoom(String roomId, String admin);
-
-  ///
-  ///  Occurs when the chat room ownership has been transferred.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [newOwner] The new owner.
-  ///
-  /// Param [oldOwner] The previous owner.
-  ///
-  void onOwnerChangedFromChatRoom(
-      String roomId, String newOwner, String oldOwner);
-
-  ///
-  /// Occurs when the announcement changed.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [announcement] The changed announcement.
-  ///
-  void onAnnouncementChangedFromChatRoom(String roomId, String announcement);
-
-  ///
-  /// Occurs when the chat room member(s) is added to the allowlist.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [members] The member(s) to be added to the allowlist.
-  ///
-  void onAllowListAddedFromChatRoom(String roomId, List<String> members);
-
-  ///
-  /// Occurs when the chat room member(s) is removed from the allowlist.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [members] The member(s) is removed from the allowlist.
-  ///
-  void onAllowListRemovedFromChatRoom(String roomId, List<String> members);
-
-  ///
-  /// Occurs when all members in the chat room are muted or unmuted.
-  ///
-  /// Param [roomId] The chatroom ID.
-  ///
-  /// Param [isAllMuted] Whether all chat room members is muted or unmuted.
-  /// - `true`: Yes;
-  /// - `false`: No.
-  ///
-  void onAllChatRoomMemberMuteStateChanged(String roomId, bool isAllMuted);
 }

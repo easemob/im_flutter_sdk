@@ -136,6 +136,7 @@ static NSString *const ChatLoadMsgWithStartId = @"loadMsgWithStartId";
 static NSString *const ChatLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
+static NSString *const ChatConversationMessageCount = @"messageCount";
 
 #pragma mark - EMChatMessageWrapper
 static NSString *const ChatGetReactionList = @"getReactionList";
@@ -242,9 +243,17 @@ static NSString *const ChatUpdateGroupPushService = @"updateGroupPushService";
 static NSString *const ChatGetNoPushGroups = @"getNoPushGroups";
 static NSString *const ChatUpdateUserPushService = @"updateUserPushService";
 static NSString *const ChatGetNoPushUsers = @"getNoPushUsers";
-
-
 static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
+
+static NSString *const ChatReportPushAction = @"reportPushAction";
+static NSString *const ChatSetConversationSilentMode = @"setConversationSilentMode";
+static NSString *const ChatRemoveConversationSilentMode = @"removeConversationSilentMode";
+static NSString *const ChatFetchConversationSilentMode = @"fetchConversationSilentMode";
+static NSString *const ChatSetSilentModeForAll = @"setSilentModeForAll";
+static NSString *const ChatFetchSilentModeForAll = @"fetchSilentModeForAll";
+static NSString *const ChatFetchSilentModeForConversations = @"fetchSilentModeForConversations";
+static NSString *const ChatSetPreferredNotificationLanguage = @"setPreferredNotificationLanguage";
+static NSString *const ChatFetchPreferredNotificationLanguage = @"fetchPreferredNotificationLanguage";
 
 #pragma mark - EMUserInfoManagerWrapper
 static NSString *const ChatUpdateOwnUserInfo = @"updateOwnUserInfo";

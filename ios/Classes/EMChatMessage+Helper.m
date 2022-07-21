@@ -76,10 +76,9 @@
     ret[@"status"] = @([self statusToInt:self.status]);
     ret[@"chatType"] = @([EMChatMessage chatTypeToInt:self.chatType]);
     ret[@"isThread"] = @(self.isChatThreadMessage);
-//    ret[@"thread"] = [self.chatThread toJson];
     ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
-    
+    ret[@"onlineState"] = @(self.onlineState);
     
     return ret;
 }

@@ -21,7 +21,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [EMClient.sharedClient.threadManager addDelegate:self  delegateQueue:dispatch_get_main_queue()];
+        [EMClient.sharedClient.threadManager addDelegate:self delegateQueue:dispatch_get_main_queue()];
     }
     return self;
 }
@@ -165,8 +165,7 @@
                                  result:(FlutterResult)result {
     NSArray *threadIds = param[@"threadIds"];
     __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.threadManager getLastMesssageFromSeverWithChatThreads:threadIds completion:^(NSDictionary<NSString *,EMChatMessage *> * _Nonnull messageMap, EMError * _Nonnull aError) {
-        
+    [EMClient.sharedClient.threadManager getLastMessageFromSeverWithChatThreads:threadIds completion:^(NSDictionary<NSString *,EMChatMessage *> * _Nonnull messageMap, EMError * _Nonnull aError) {
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         for (NSString *key in messageMap.allKeys) {
             dict[key] = [messageMap[key] toJson];
@@ -243,11 +242,12 @@
 - (void)destroyChatThread:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     NSString *threadId = param[@"threadId"];
     __weak typeof(self)weakSelf = self;
-    [EMClient.sharedClient.threadManager destoryChatThread:threadId completion:^(EMError * _Nonnull aError) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:@(YES)];
+    
+    [EMClient.sharedClient.threadManager destroyChatThread:threadId completion:^(EMError * _Nonnull aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(YES)];
     }];
 }
 

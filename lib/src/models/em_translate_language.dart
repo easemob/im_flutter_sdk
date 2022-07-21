@@ -1,19 +1,19 @@
+///
+///  The translation language class, which contains the information of the translation languages.
+///
 class EMTranslateLanguage {
+  /// The code of a target language. For example, the code for simplified Chinese is "zh-Hans".
   final String languageCode;
+
+  /// The language name. For example, the code for simplified Chinese is "Chinese Simplified".
   final String languageName;
+
+  /// The native name of the language. For example, the native name of simplified Chinese is "Chinese (Simplified)".
   final String languageNativeName;
 
-  ///
-  /// The language class, used for encapsulation of language information.
-  ///
   EMTranslateLanguage._private({
-    /// The language code.
     required this.languageCode,
-
-    /// The language name.
     required this.languageName,
-
-    /// The display name of the language on the device.
     required this.languageNativeName,
   });
 

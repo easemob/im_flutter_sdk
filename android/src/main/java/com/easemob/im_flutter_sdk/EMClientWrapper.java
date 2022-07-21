@@ -32,6 +32,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     static EMClientWrapper wrapper;
     public EMProgressManager progressManager;
+    public String fcmKey;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -194,7 +195,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
 
         String username = param.getString("username");
-        String agoratoken = param.getString("agoratoken");
+        String agoraToken = param.getString("agora_token");
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -205,7 +206,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
         };
 
-        EMClient.getInstance().loginWithAgoraToken(username, agoratoken, callBack);
+        EMClient.getInstance().loginWithAgoraToken(username, agoraToken, callBack);
     }
     private void getToken(JSONObject param, String channelName, Result result) throws JSONException
     {
@@ -269,6 +270,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
+        fcmKey = EMClient.getInstance().getOptions().getPushConfig().getFcmSenderId();
         bindingManagers();
         addEMListener();
         onSuccess(result, channelName, null);

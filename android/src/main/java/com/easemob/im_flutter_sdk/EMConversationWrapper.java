@@ -81,6 +81,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.loadMsgWithTime.equals(call.method)) {
                 loadMsgWithTime(param, call.method, result);
             }
+            else if(EMSDKMethod.messageCount.equals(call.method)) {
+                messageCount(param, call.method, result);
+            }
             else
             {
                 super.onMethodCall(call, result);
@@ -294,6 +297,13 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
                 messages.add(EMMessageHelper.toJson(msg));
             }
             onSuccess(result, channelName, messages);
+        });
+    }
+
+    private void messageCount(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        asyncRunnable(()->{
+            onSuccess(result, channelName,  conversation.getAllMsgCount());
         });
     }
 

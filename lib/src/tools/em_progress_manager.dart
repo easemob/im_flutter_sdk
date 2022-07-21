@@ -1,5 +1,4 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/internal/em_channel_manager.dart';
+import '../internal/inner_headers.dart';
 
 class EMProgressManager {
   EMProgressManager() {

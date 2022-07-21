@@ -1,4 +1,4 @@
-import '../models/em_chat_enums.dart';
+import 'inner_headers.dart';
 
 EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
   switch (i) {
@@ -320,4 +320,58 @@ EMConversationType conversationTypeFromInt(int? type) {
       break;
   }
   return ret;
+}
+
+int? chatSilentModeParamTypeToInt(ChatSilentModeParamType? type) {
+  int? ret;
+  if (type == null) {
+    return ret;
+  }
+  switch (type) {
+    case ChatSilentModeParamType.REMIND_TYPE:
+      ret = 0;
+      break;
+    case ChatSilentModeParamType.SILENT_MODE_DURATION:
+      ret = 1;
+      break;
+    case ChatSilentModeParamType.SILENT_MODE_INTERVAL:
+      ret = 2;
+      break;
+  }
+  return ret;
+}
+
+int? chatPushRemindTypeToInt(ChatPushRemindType? type) {
+  int? ret;
+  if (type == null) {
+    return ret;
+  }
+  switch (type) {
+    case ChatPushRemindType.ALL:
+      ret = 0;
+      break;
+    case ChatPushRemindType.MENTION_ONLY:
+      ret = 1;
+      break;
+    case ChatPushRemindType.NONE:
+      ret = 2;
+      break;
+  }
+  return ret;
+}
+
+ChatPushRemindType chatPushRemindTypeFromInt(int iRemindType) {
+  ChatPushRemindType type = ChatPushRemindType.ALL;
+  switch (iRemindType) {
+    case 0:
+      type = ChatPushRemindType.ALL;
+      break;
+    case 1:
+      type = ChatPushRemindType.MENTION_ONLY;
+      break;
+    case 2:
+      type = ChatPushRemindType.NONE;
+      break;
+  }
+  return type;
 }
