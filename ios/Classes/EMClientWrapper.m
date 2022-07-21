@@ -17,6 +17,7 @@
 #import "EMOptions+Helper.h"
 #import "EMUserInfoManagerWrapper.h"
 #import "EMPresenceManagerWrapper.h"
+#import "EMChatThreadManagerWrapper.h""
 #import "EMChatMessageWrapper.h"
 #import "EMProgressManager.h"
 #import "EMListenerHandle.h"
@@ -201,6 +202,7 @@ static EMClientWrapper *wrapper = nil;
     EMUserInfoManagerWrapper *userInfo = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
     EMPresenceManagerWrapper * presence = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
     EMChatMessageWrapper *chatMessage = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
+    EMChatThreadManagerWrapper *thread = [[EMChatThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
     _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager") registrar:self.flutterPluginRegister];
     
 #pragma clang diagnostic pop

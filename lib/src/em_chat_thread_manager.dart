@@ -19,8 +19,10 @@ class EMChatThreadManager {
         _onChatThreadUpdated(argMap);
       } else if (call.method == ChatMethodKeys.onChatThreadDestroy) {
         _onChatThreadDestroyed(argMap);
-      } else if (call.method == ChatMethodKeys.onUserKickOutOfChatThread) {}
-      _onChatThreadUserRemoved(argMap);
+      } else if (call.method == ChatMethodKeys.onUserKickOutOfChatThread) {
+        _onChatThreadUserRemoved(argMap);
+      }
+
       return null;
     });
   }
