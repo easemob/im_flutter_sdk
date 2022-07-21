@@ -564,9 +564,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().translateMessage(msg, list, new EMValueWrapperCallBack<EMMessage>(result, channelName){
             @Override
             public void onSuccess(EMMessage object) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("message", EMMessageHelper.toJson(object));
-                updateObject(data);
+                updateObject(EMMessageHelper.toJson(object));
             }
         });
     }
