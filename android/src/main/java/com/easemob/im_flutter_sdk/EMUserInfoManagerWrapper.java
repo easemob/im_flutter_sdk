@@ -3,8 +3,12 @@ package com.easemob.im_flutter_sdk;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMUserInfo;
+import com.hyphenate.exceptions.HyphenateException;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,8 +47,15 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
     }
 
     private void updateOwnUserInfo(JSONObject params, String channelName, Result result) throws JSONException {
-        JSONObject obj = params.getJSONObject("userInfo");
-        EMUserInfo userInfo = EMUserInfoHelper.fromJson(obj);
+        String username = EMClient.getInstance().getCurrentUser();
+        if (username == null) {
+            HyphenateException e = new HyphenateException(EMError.USER_NOT_LOGIN,"User not login");
+            onError(result, e);
+            return;
+        }
+
+        EMUserInfo userInfo = EMUserInfoHelper.fromJson(params);
+        userInfo.setUserId(username);
         asyncRunnable(() -> {
 
             EMValueWrapperCallBack<String> callBack = new EMValueWrapperCallBack<String>(result, channelName){
@@ -98,7 +109,7 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
     }
 
 
-    void fetchUserInfoByUserId(JSONObject params, String channelName, Result result) throws JSONException {
+    private void fetchUserInfoByUserId(JSONObject params, String channelName, Result result) throws JSONException {
         JSONArray userIdArray = params.getJSONArray("userIds");
         String[] userIds = new String[userIdArray.length()];
         for (int i = 0; i < userIdArray.length(); i++) {
@@ -116,9 +127,8 @@ public class EMUserInfoManagerWrapper extends EMWrapper implements MethodCallHan
 
             EMClient.getInstance().userInfoManager().fetchUserInfoByUserId(userIds, callBack);
         });
-
     }
-
+    
 
     private void fetchUserInfoByIdWithType(JSONObject params, String channelName, Result result) throws JSONException {
         JSONArray userIdArray = params.getJSONArray("userIds");

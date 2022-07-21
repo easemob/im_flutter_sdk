@@ -124,7 +124,7 @@ FILE_dict = {
     
     # /lib/src/models/
     "em_conversation.dart":"chat_conversation.dart",
-    "em_cursor_result.dart":"chat_cursor_result.dart",    
+    "em_cursor_result.dart":"chat_cursor_result.dart",
     "em_deviceInfo.dart":"chat_deviceInfo.dart",
     "em_chat_enums.dart":"chat_enums.dart",
     "em_error.dart":"chat_error.dart",
@@ -160,7 +160,7 @@ FILE_dict = {
     
     # /lib/src/tools/
     "em_extension.dart":"chat_extension.dart",
-    "em_log.dart":"chat_log.dart",    
+    "em_log.dart":"chat_log.dart",
     "em_progress_manager.dart":"chat_progress_manager.dart",
 
     # /ios/
@@ -211,7 +211,7 @@ def walkFile(file):
                     total_podspec_num += 1
                 if file_ext[1] == 'md':
                     total_md_num += 1
-                    
+
                 fullname = os.path.join(root, f)
                 updateFile(fullname)
                 reBackFile(fullname)
@@ -350,13 +350,13 @@ UPDATE_dict = {
     "EMRoomManager":"ChatRoomManager",
     "EMPresence":"ChatPresence",
     "EMTranslateLanguage":"ChatTranslateLanguage",
-  
 
     #podspec
      "= 'im_flutter_sdk'":"= 'agora_chat_sdk'",
 
     #doc
-    "im_flutter_sdk":"agora_chat_sdk",
+    #"im_flutter_sdk":"agora_chat_sdk",
+    
     "环信即时通讯":" Agora ",
 }
 

@@ -474,16 +474,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             name = param.getString("name");
         }
 
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncChangeGroupName(groupId, name, callBack);
+        EMClient.getInstance().groupManager().asyncChangeGroupName(groupId, name, new EMWrapperCallBack(result, channelName, null));
 
     }
 
@@ -494,16 +485,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             desc = param.getString("desc");
         }
 
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncChangeGroupDescription(groupId, desc, callBack);
+        EMClient.getInstance().groupManager().asyncChangeGroupDescription(groupId, desc, new EMWrapperCallBack(result, channelName, null) );
     }
 
     private void leaveGroup(JSONObject param, String channelName, Result result) throws JSONException {
@@ -520,32 +502,13 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void blockGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncBlockGroupMessage(groupId, callBack);
+        EMClient.getInstance().groupManager().asyncBlockGroupMessage(groupId, new EMWrapperCallBack(result, channelName, null) );
     }
 
     private void unblockGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
 
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncUnblockGroupMessage(groupId, callBack);
+        EMClient.getInstance().groupManager().asyncUnblockGroupMessage(groupId,  new EMWrapperCallBack(result, channelName, null));
     }
 
     private void updateGroupOwner(JSONObject param, String channelName, Result result) throws JSONException {
@@ -731,16 +694,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         if (param.has("announcement")) {
             announcement = param.getString("announcement");
         }
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
 
-        EMClient.getInstance().groupManager().asyncUpdateGroupAnnouncement(groupId, announcement, callBack);
+        EMClient.getInstance().groupManager().asyncUpdateGroupAnnouncement(groupId, announcement, new EMWrapperCallBack(result, channelName, null) );
     }
 
     private void updateGroupExt(JSONObject param, String channelName, Result result) throws JSONException {
@@ -771,8 +726,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                     throw new HyphenateException(603,"User has no permission for this operation");
                 }
                 EMClient.getInstance().groupManager().joinGroup(groupId);
-                EMGroup joinedGroup = EMClient.getInstance().groupManager().getGroup(groupId);
-                onSuccess(result, channelName, EMGroupHelper.toJson(joinedGroup));
+
+                onSuccess(result, channelName, null);
             }catch (HyphenateException e){
                 onError(result, e);
             }
@@ -797,16 +752,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             username = param.getString("username");
         }
 
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncAcceptApplication(username, groupId, callBack);
+        EMClient.getInstance().groupManager().asyncAcceptApplication(username, groupId, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void declineJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
@@ -820,16 +766,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             reason = param.getString("reason");
         }
 
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncDeclineApplication(username, groupId, reason, callBack);
+        EMClient.getInstance().groupManager().asyncDeclineApplication(username, groupId, reason, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void acceptInvitationFromGroup(JSONObject param, String channelName, Result result) throws JSONException {
@@ -860,16 +797,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             reason = param.getString("reason");
         }
 
-        EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
-            @Override
-            public void onSuccess() {
-                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-                super.object = EMGroupHelper.toJson(group);
-                super.onSuccess();
-            }
-        };
-
-        EMClient.getInstance().groupManager().asyncDeclineInvitation(groupId, username, reason, callBack);
+        EMClient.getInstance().groupManager().asyncDeclineInvitation(groupId, username, reason, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void registerEaseListener() {

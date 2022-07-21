@@ -1,8 +1,4 @@
-import '../internal/em_transform_tools.dart';
-
-import '../tools/em_extension.dart';
-import 'em_chat_enums.dart';
-import 'em_group_options.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The EMGroup class, which contains the information of the chat group.
@@ -249,5 +245,30 @@ class EMGroup {
   @override
   String toString() {
     return this.toJson().toString();
+  }
+}
+
+///
+/// The class that defines basic information of chat groups.
+///
+class EMGroupInfo {
+  /// The group ID.
+  final String groupId;
+
+  /// The group name.
+  final String? name;
+
+  EMGroupInfo._private({
+    required this.groupId,
+    required this.name,
+  });
+
+  factory EMGroupInfo.fromJson(Map map) {
+    String groupId = map["groupId"];
+    String? groupName = map["name"];
+    return EMGroupInfo._private(
+      groupId: groupId,
+      name: groupName,
+    );
   }
 }

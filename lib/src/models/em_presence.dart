@@ -1,4 +1,4 @@
-import '../tools/em_extension.dart';
+import '../internal/inner_headers.dart';
 
 ///
 /// The presence property class that contains presence properties, including the publisher's user ID and current presence state, and the platform used by the online device, as well as the presence's extension information, update time, and subscription expiration time.
