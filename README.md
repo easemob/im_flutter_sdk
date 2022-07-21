@@ -407,7 +407,7 @@ class _MyHomePageState extends State<MyHomePage>
   void onMessagesRecalled(List<EMMessage> messages) {}
 
   @override
-  void onMessageReactionDidChange(List<EMMessageReactionChange> list) {}
+  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
   
   @override
   void onMessagesReceived(List<EMMessage> messages) {
