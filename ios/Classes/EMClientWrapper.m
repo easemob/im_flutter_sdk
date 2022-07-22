@@ -17,14 +17,24 @@
 #import "EMOptions+Helper.h"
 #import "EMUserInfoManagerWrapper.h"
 #import "EMPresenceManagerWrapper.h"
-#import "EMChatThreadManagerWrapper.h""
+#import "EMChatThreadManagerWrapper.h"
 #import "EMChatMessageWrapper.h"
 #import "EMProgressManager.h"
 #import "EMListenerHandle.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
 {
+    EMChatManagerWrapper *_chatManager;
+    EMContactManagerWrapper *_contactManager;
+    EMConversationWrapper *_conversationManager;
+    EMGroupManagerWrapper *_groupManager;
+    EMChatroomManagerWrapper *_roomManager;
+    EMPushManagerWrapper *_pushManager;
+    EMUserInfoManagerWrapper *_userInfoManager;
+    EMPresenceManagerWrapper *_presenceManager;
+    EMChatThreadManagerWrapper *_threadManager;
     EMProgressManager *_progressManager;
+    EMChatMessageWrapper *_msgWrapper;
 }
 @end
 
@@ -171,14 +181,13 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     
+    
     __weak typeof(self) weakSelf = self;
     
     EMOptions *options = [EMOptions fromJson:param];
 
     [EMClient.sharedClient initializeSDKWithOptions:options];
-    
-    [EMClient.sharedClient removeDelegate:self];
-    [EMClient.sharedClient removeMultiDevicesDelegate:self];
+
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
@@ -191,21 +200,36 @@ static EMClientWrapper *wrapper = nil;
 
 
 - (void)registerManagers {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-    EMChatManagerWrapper * chat = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
-    EMContactManagerWrapper * contact = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
-    EMConversationWrapper *conversation = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
-    EMGroupManagerWrapper * group = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
-    EMChatroomManagerWrapper * chatroom =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
-    EMPushManagerWrapper * push =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
-    EMUserInfoManagerWrapper *userInfo = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
-    EMPresenceManagerWrapper * presence = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
-    EMChatMessageWrapper *chatMessage = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
-    EMChatThreadManagerWrapper *thread = [[EMChatThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
+    _chatManager = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
+    _contactManager = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
+    _conversationManager = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
+    _groupManager = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
+    _roomManager =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
+    _pushManager =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
+    _userInfoManager = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
+    _presenceManager = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
+    _threadManager = [[EMChatThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
     _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager") registrar:self.flutterPluginRegister];
-    
-#pragma clang diagnostic pop
+    _msgWrapper = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
+}
+
+- (void)clearAllListener {
+    [_chatManager unRegisterEaseListener];
+    [_contactManager unRegisterEaseListener];
+    [_conversationManager unRegisterEaseListener];
+    [_groupManager unRegisterEaseListener];
+    [_roomManager unRegisterEaseListener];
+    [_userInfoManager unRegisterEaseListener];
+    [_presenceManager unRegisterEaseListener];
+    [_threadManager unRegisterEaseListener];
+    [_progressManager unRegisterEaseListener];
+    [_msgWrapper unRegisterEaseListener];
+}
+
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient removeDelegate:self];
+    [EMClient.sharedClient removeMultiDevicesDelegate:self];
+    [self clearAllListener];
 }
 
 - (EMProgressManager *)progressManager {

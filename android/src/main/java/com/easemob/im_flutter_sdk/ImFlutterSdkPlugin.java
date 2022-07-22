@@ -25,6 +25,8 @@ public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCa
 
     static final Handler handler = new Handler(Looper.getMainLooper());
 
+    private EMClientWrapper clientWrapper;
+
     public ImFlutterSdkPlugin() {
     }
 
@@ -32,7 +34,11 @@ public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCa
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
         final MethodChannel channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "chat_client");
-        channel.setMethodCallHandler(new EMClientWrapper(flutterPluginBinding, "chat_client"));
+        if (clientWrapper != null) {
+            clientWrapper.unRegisterEaseListener();
+        }
+        clientWrapper = new EMClientWrapper(flutterPluginBinding, "chat_client");
+        channel.setMethodCallHandler(clientWrapper);
     }
 
     @Override

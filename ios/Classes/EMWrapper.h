@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
                  object:(NSObject *__nullable)aObj;
 
 
-
+- (void)unRegisterEaseListener;
 @end
 
 NS_ASSUME_NONNULL_END

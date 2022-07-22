@@ -23,6 +23,10 @@
     return self;
 }
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.contactManager removeDelegate:self];
+}
+
 
 #pragma mark - FlutterPlugin
 

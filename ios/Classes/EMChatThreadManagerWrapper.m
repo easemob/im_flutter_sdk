@@ -27,6 +27,11 @@
 }
 
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.threadManager removeDelegate:self];
+}
+
+
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
