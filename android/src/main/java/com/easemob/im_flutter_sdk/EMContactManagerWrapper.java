@@ -19,6 +19,8 @@ import io.flutter.plugin.common.PluginRegistry;
 
 public class EMContactManagerWrapper extends EMWrapper implements MethodCallHandler {
 
+    private EMContactListener contactListener;
+
     EMContactManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
@@ -189,7 +191,7 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
 
     private void registerEaseListener() {
-        EMClient.getInstance().contactManager().setContactListener(new EMContactListener() {
+        contactListener = new EMContactListener() {
             @Override
             public void onContactAdded(String userName) {
                 EMListenerHandle.getInstance().addHandle(
@@ -250,6 +252,13 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                         }
                 );
             }
-        });
+        };
+
+        EMClient.getInstance().contactManager().setContactListener(contactListener);
+    }
+
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().contactManager().removeContactListener(contactListener);
     }
 }

@@ -38,6 +38,10 @@
 }
 
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.chatManager removeDelegate:self];
+}
+
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call

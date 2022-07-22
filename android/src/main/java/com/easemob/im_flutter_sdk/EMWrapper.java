@@ -36,6 +36,7 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
   public FlutterPlugin.FlutterPluginBinding binging;
   public MethodChannel channel;
 
+
   public void post(Runnable runnable) {
     ImFlutterSdkPlugin.handler.post(runnable);
   }
@@ -54,6 +55,8 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
     });
   }
 
+  public void unRegisterEaseListener() {}
+
   public void onError(MethodChannel.Result result, HyphenateException e) {
     post(()-> {
       Map<String, Object> data = new HashMap<>();
@@ -66,4 +69,6 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
   public void onMethodCall(MethodCall call, MethodChannel.Result result) {
     result.notImplemented();
   }
+
+
 }
