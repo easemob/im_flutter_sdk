@@ -172,7 +172,14 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     
-    if(hasInit) return;
+    if(hasInit)  {
+        [self wrapperCallBack:result
+                      channelName:ChatInit
+                            error:nil
+                           object:nil];
+        
+        return;
+    }
     
     __weak typeof(self) weakSelf = self;
     
