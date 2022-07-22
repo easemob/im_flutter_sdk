@@ -33,6 +33,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     static EMClientWrapper wrapper;
     public EMProgressManager progressManager;
     public String fcmKey;
+    public boolean hasInit;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -267,6 +268,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
+        if (hasInit) {
+            return;
+        }
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
@@ -274,6 +278,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         bindingManagers();
         addEMListener();
         onSuccess(result, channelName, null);
+        hasInit = true;
     }
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {

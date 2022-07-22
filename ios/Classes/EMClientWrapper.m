@@ -25,6 +25,7 @@
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
 {
     EMProgressManager *_progressManager;
+    BOOL hasInit;
 }
 @end
 
@@ -171,6 +172,8 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     
+    if(hasInit) return;
+    
     __weak typeof(self) weakSelf = self;
     
     EMOptions *options = [EMOptions fromJson:param];
@@ -187,6 +190,7 @@ static EMClientWrapper *wrapper = nil;
                   channelName:ChatInit
                         error:nil
                        object:nil];
+    hasInit = YES;
 }
 
 
