@@ -35,11 +35,19 @@
 }
 
 - (void)addHandle:(EMListenerHandleCallback)handle {
+    [_handleList addObject:handle];
+    if (_hasReady) {
+        [self _runHandle];
+    }
+}
+
+- (void)_runHandle {
     @synchronized(self){
-        [_handleList addObject:handle];
-        if (_hasReady) {
-            [self _runHandle];
+        NSArray *ary = _handleList;
+        for (EMListenerHandleCallback callback in ary) {
+            callback();
         }
+        [_handleList removeAllObjects];
     }
 }
 
@@ -51,16 +59,6 @@
 - (void)clearHandle {
     _hasReady = NO;
     @synchronized(self){
-        [_handleList removeAllObjects];
-    }
-}
-
-- (void)_runHandle {
-    @synchronized(self){
-        NSArray *ary = _handleList;
-        for (EMListenerHandleCallback callback in ary) {
-            callback();
-        }
         [_handleList removeAllObjects];
     }
 }

@@ -25,6 +25,9 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 public class EMPresenceManagerWrapper  extends EMWrapper implements MethodChannel.MethodCallHandler {
+
+    private EMPresenceListener presenceListener;
+
     EMPresenceManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
@@ -127,18 +130,22 @@ public class EMPresenceManagerWrapper  extends EMWrapper implements MethodChanne
         });
     }
     private void registerEaseListener() {
-        EMClient.getInstance().presenceManager().addListener(new EMPresenceListener() {
-            @Override
-            public void onPresenceUpdated(List<EMPresence> presences) {
-                Map<String, Object> data = new HashMap<>();
-                List<Map> list = new ArrayList<>();
-                for (EMPresence presence: presences) {
-                    list.add(EMPresenceHelper.toJson(presence));
-                }
-                data.put("presences", list);
 
-                post(() -> channel.invokeMethod(EMSDKMethod.onPresenceStatusChanged, data));
+        presenceListener = presences -> {
+            Map<String, Object> data = new HashMap<>();
+            List<Map> list = new ArrayList<>();
+            for (EMPresence presence: presences) {
+                list.add(EMPresenceHelper.toJson(presence));
             }
-        });
+            data.put("presences", list);
+
+            post(() -> channel.invokeMethod(EMSDKMethod.onPresenceStatusChanged, data));
+        };
+        EMClient.getInstance().presenceManager().addListener(presenceListener);
+    }
+
+    @Override
+    public void unRegisterEaseListener(){
+        EMClient.getInstance().presenceManager().removeListener(presenceListener);
     }
 }

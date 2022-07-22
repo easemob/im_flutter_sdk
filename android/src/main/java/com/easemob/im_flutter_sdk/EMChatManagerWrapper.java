@@ -35,6 +35,8 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler {
 
     private MethodChannel messageChannel;
+    private EMMessageListener messageListener;
+    private EMConversationListener conversationListener;
 
 
     EMChatManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
@@ -42,6 +44,9 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         messageChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "com.chat.im/chat_message", JSONMethodCodec.INSTANCE);
         registerEaseListener();
     }
+
+
+
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
@@ -655,8 +660,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().asyncReportMessage(msgId, tag, reason, new EMWrapperCallBack(result, channelName, true));
     }
 
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().chatManager().removeMessageListener(messageListener);
+        EMClient.getInstance().chatManager().removeConversationListener(conversationListener);
+    }
+
     private void registerEaseListener() {
-        EMClient.getInstance().chatManager().addMessageListener(new EMMessageListener() {
+
+        messageListener = new EMMessageListener() {
             @Override
             public void onMessageReceived(List<EMMessage> messages) {
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
@@ -730,9 +742,9 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessageReactionDidChange, list));
             }
-        });
-        // setup conversation listener
-        EMClient.getInstance().chatManager().addConversationListener(new EMConversationListener() {
+        };
+
+        conversationListener = new EMConversationListener() {
             @Override
             public void onCoversationUpdate() {
                 Map<String, Object> data = new HashMap<>();
@@ -746,7 +758,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 data.put("to", to);
                 post(() -> channel.invokeMethod(EMSDKMethod.onConversationHasRead, data));
             }
-        });
+        };
+
+        EMClient.getInstance().chatManager().addMessageListener(messageListener);
+        EMClient.getInstance().chatManager().addConversationListener(conversationListener);
     }
 
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
