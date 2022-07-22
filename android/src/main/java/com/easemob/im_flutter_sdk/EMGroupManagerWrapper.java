@@ -29,6 +29,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 
 public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandler {
 
+    private EMGroupChangeListener groupChangeListener;
+
     EMGroupManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
@@ -801,7 +803,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private void registerEaseListener() {
-        EMClient.getInstance().groupManager().addGroupChangeListener(new EMGroupChangeListener() {
+        groupChangeListener = new EMGroupChangeListener() {
 
             @Override
             public void onWhiteListAdded(String groupId, List<String> whitelist) {
@@ -1109,6 +1111,12 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                         }
                 );
             }
-        });
+        };
+        EMClient.getInstance().groupManager().addGroupChangeListener(groupChangeListener);
+    }
+
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().groupManager().removeGroupChangeListener(groupChangeListener);
     }
 }

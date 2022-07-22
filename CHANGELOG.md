@@ -1,5 +1,9 @@
 ## NEXT
 
+## 3.9.4+2
+
+- 修复 `EMClient.getInstance.startCallback()` 执行时安卓偶现崩溃；
+
 ## 3.9.4+1
 - 增加ChatSilentMode;
 

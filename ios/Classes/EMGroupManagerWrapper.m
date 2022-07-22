@@ -29,6 +29,11 @@
     return self;
 }
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.groupManager removeDelegate:self];
+}
+
+
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
@@ -1094,8 +1099,6 @@
 
 - (void)groupMuteListDidUpdate:(EMGroup *)aGroup
            removedMutedMembers:(NSArray *)aMutedMembers {
-
-    
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
