@@ -29,6 +29,9 @@
     return self;
 }
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.roomManager removeDelegate:self];
+}
 
 #pragma mark - FlutterPlugin
 

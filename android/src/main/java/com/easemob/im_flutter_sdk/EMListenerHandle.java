@@ -24,9 +24,7 @@ public class EMListenerHandle {
     }
 
     void addHandle(Runnable runnable) {
-        synchronized (emActionHandle){
-            emActionHandle.add(runnable);
-        }
+        emActionHandle.add(runnable);
         if (hasReady) {
             runHandle();
         }
@@ -37,8 +35,8 @@ public class EMListenerHandle {
             List<Runnable> tmp = emActionHandle;
             for (Runnable action : tmp) {
                 action.run();
-                emActionHandle.remove(action);
             }
+            emActionHandle.clear();
         }
     }
 
