@@ -22,6 +22,9 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler {
+
+    private EMChatThreadChangeListener chatThreadChangeListener;
+
     public EMChatThreadManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
@@ -200,7 +203,8 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
     }
 
     private void registerEaseListener() {
-        EMClient.getInstance().chatThreadManager().addChatThreadChangeListener(new EMChatThreadChangeListener() {
+
+        chatThreadChangeListener = new EMChatThreadChangeListener() {
             @Override
             public void onChatThreadCreated(EMChatThreadEvent event) {
                 post(() -> channel.invokeMethod(EMSDKMethod.onChatThreadCreate, EMChatThreadEventHelper.toJson(event)));
@@ -220,6 +224,13 @@ public class EMChatThreadManagerWrapper extends EMWrapper implements MethodChann
             public void onChatThreadUserRemoved(EMChatThreadEvent event) {
                 post(() -> channel.invokeMethod(EMSDKMethod.onUserKickOutOfChatThread, EMChatThreadEventHelper.toJson(event)));
             }
-        });
+        };
+
+        EMClient.getInstance().chatThreadManager().addChatThreadChangeListener(chatThreadChangeListener);
+    }
+
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().chatThreadManager().removeChatThreadChangeListener(chatThreadChangeListener);
     }
 }

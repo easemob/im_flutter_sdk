@@ -25,6 +25,10 @@
     return self;
 }
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.presenceManager removeDelegate:self];
+}
+
 
 
 #pragma mark - FlutterPlugin

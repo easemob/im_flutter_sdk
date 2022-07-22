@@ -25,6 +25,8 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel.MethodCallHandler {
 
+    private EMChatRoomChangeListener chatRoomChangeListener;
+
     EMChatRoomManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
@@ -562,7 +564,8 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     }
 
     private void registerEaseListener() {
-        EMClient.getInstance().chatroomManager().addChatRoomChangeListener(new EMChatRoomChangeListener() {
+
+        chatRoomChangeListener = new EMChatRoomChangeListener() {
 
             @Override
             public void onWhiteListAdded(String chatRoomId, List<String> whitelist) {
@@ -744,6 +747,13 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                         }
                 );
             }
-        });
+        };
+
+        EMClient.getInstance().chatroomManager().addChatRoomChangeListener(chatRoomChangeListener);
+    }
+
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().chatroomManager().removeChatRoomListener(chatRoomChangeListener);
     }
 }

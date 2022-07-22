@@ -31,9 +31,20 @@ import org.json.JSONObject;
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     static EMClientWrapper wrapper;
+    private EMChatManagerWrapper chatManagerWrapper;
+    private EMGroupManagerWrapper groupManagerWrapper;
+    private EMChatRoomManagerWrapper chatRoomManagerWrapper;
+    private EMPushManagerWrapper pushManagerWrapper;
+    private EMPresenceManagerWrapper presenceManagerWrapper;
+    private EMChatThreadManagerWrapper chatThreadManagerWrapper;
+    private EMContactManagerWrapper contactManagerWrapper;
+    private EMUserInfoManagerWrapper userInfoManagerWrapper;
+    private EMConversationWrapper conversationWrapper;
+    private EMMessageWrapper messageWrapper;
     public EMProgressManager progressManager;
+    private EMMultiDeviceListener multiDeviceListener;
+    private EMConnectionListener connectionListener;
     public String fcmKey;
-    public boolean hasInit;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -268,18 +279,14 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        if (hasInit) {
-            onSuccess(result, channelName, null);
-            return;
-        }
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
         fcmKey = EMClient.getInstance().getOptions().getPushConfig().getFcmSenderId();
         bindingManagers();
-        addEMListener();
+        registerEaseListener();
         onSuccess(result, channelName, null);
-        hasInit = true;
+
     }
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {
@@ -310,22 +317,44 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void bindingManagers() {
-        new EMChatManagerWrapper(binging, "chat_manager");
-        new EMContactManagerWrapper(binging, "chat_contact_manager");
-        new EMChatRoomManagerWrapper(binging, "chat_room_manager");
-        new EMGroupManagerWrapper(binging, "chat_group_manager");
-        new EMConversationWrapper(binging, "chat_conversation");
-        new EMPushManagerWrapper(binging, "chat_push_manager");
-        new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
-        new EMPresenceManagerWrapper(binging, "chat_presence_manager");
-        new EMMessageWrapper(binging, "chat_message");
-        new EMChatThreadManagerWrapper(binging, "chat_thread_manager");
+        chatManagerWrapper = new EMChatManagerWrapper(binging, "chat_manager");
+        contactManagerWrapper = new EMContactManagerWrapper(binging, "chat_contact_manager");
+        chatRoomManagerWrapper = new EMChatRoomManagerWrapper(binging, "chat_room_manager");
+        groupManagerWrapper = new EMGroupManagerWrapper(binging, "chat_group_manager");
+        conversationWrapper = new EMConversationWrapper(binging, "chat_conversation");
+        pushManagerWrapper = new EMPushManagerWrapper(binging, "chat_push_manager");
+        userInfoManagerWrapper = new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
+        presenceManagerWrapper = new EMPresenceManagerWrapper(binging, "chat_presence_manager");
+        messageWrapper = new EMMessageWrapper(binging, "chat_message");
+        chatThreadManagerWrapper = new EMChatThreadManagerWrapper(binging, "chat_thread_manager");
         progressManager = new EMProgressManager(binging, "file_progress_manager");
     }
 
+    private void clearAllListener() {
+        if (chatManagerWrapper != null) chatManagerWrapper.unRegisterEaseListener();
+        if (contactManagerWrapper != null) contactManagerWrapper.unRegisterEaseListener();
+        if (chatRoomManagerWrapper != null) chatRoomManagerWrapper.unRegisterEaseListener();
+        if (groupManagerWrapper != null) groupManagerWrapper.unRegisterEaseListener();
+        if (conversationWrapper != null) conversationWrapper.unRegisterEaseListener();
+        if (pushManagerWrapper != null) pushManagerWrapper.unRegisterEaseListener();
+        if (userInfoManagerWrapper != null) userInfoManagerWrapper.unRegisterEaseListener();
+        if (presenceManagerWrapper != null) presenceManagerWrapper.unRegisterEaseListener();
+        if (messageWrapper != null) messageWrapper.unRegisterEaseListener();
+        if (chatThreadManagerWrapper != null) chatThreadManagerWrapper.unRegisterEaseListener();
+        if (progressManager != null) progressManager.unRegisterEaseListener();
+    }
 
-    private void addEMListener() {
-        EMClient.getInstance().addMultiDeviceListener(new EMMultiDeviceListener() {
+    @Override
+    public void unRegisterEaseListener() {
+        EMClient.getInstance().removeConnectionListener(connectionListener);
+        EMClient.getInstance().removeMultiDeviceListener(multiDeviceListener);
+        clearAllListener();
+    }
+
+
+    private void registerEaseListener() {
+
+        multiDeviceListener = new EMMultiDeviceListener() {
             @Override
             public void onContactEvent(int event, String target, String ext) {
                 Map<String, Object> data = new HashMap<>();
@@ -351,10 +380,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 data.put("users", usernames);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
             }
-        });
+        };
 
-        //setup connection listener
-        EMClient.getInstance().addConnectionListener(new EMConnectionListener() {
+        connectionListener = new EMConnectionListener() {
             @Override
             public void onConnected() {
                 Map<String, Object> data = new HashMap<>();
@@ -402,7 +430,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             public void onTokenWillExpire() {
                 post(()-> channel.invokeMethod(EMSDKMethod.onTokenWillExpire, null));
             }
-        });
+        };
+
+        EMClient.getInstance().addConnectionListener(connectionListener);
+        EMClient.getInstance().addMultiDeviceListener(multiDeviceListener);
     }
 }
 
