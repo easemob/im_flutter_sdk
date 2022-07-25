@@ -247,7 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
       autoLogin: false,
     );
     await EMClient.getInstance.init(options);
-    // 告诉sdk ui已经准备好，执行后才会收到`EMChatRoomManagerListener`, `EMContactManagerListener`, `EMGroupManagerListener` 回调。
+    // 通知sdk ui已经准备好，执行后才会收到`EMChatRoomManagerListener`, `EMContactManagerListener`, `EMGroupManagerListener` 回调。
     await EMClient.getInstance.startCallback();
   }
 ```

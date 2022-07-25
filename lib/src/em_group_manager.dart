@@ -15,7 +15,6 @@ class EMGroupManager {
   EMGroupManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
-      print('[EMGroupChange:]' + argMap.toString());
       if (call.method == ChatMethodKeys.onGroupChanged) {
         return _onGroupChanged(argMap);
       }
