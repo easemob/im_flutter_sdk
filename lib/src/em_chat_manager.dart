@@ -275,7 +275,7 @@ class EMChatManager {
   ///
   /// Gets the thread conversation by thread ID.
   ///
-  /// Param [threadId] The conversation ID.
+  /// Param [threadId] The thread ID.
   ///
   /// **Return** The conversation object.
   ///
