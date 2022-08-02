@@ -391,6 +391,11 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
 
             @Override
+            public void onLogout(int errorCode) {
+
+            }
+
+            @Override
             public void onDisconnected(int errorCode) {
                 if (errorCode == 206) {
                     EMListenerHandle.getInstance().clearHandle();

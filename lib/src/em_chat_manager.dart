@@ -272,6 +272,30 @@ class EMChatManager {
     }
   }
 
+  ///
+  /// Gets the thread conversation by thread ID.
+  ///
+  /// Param [threadId] The conversation ID.
+  ///
+  /// **Return** The conversation object.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<EMConversation> getThreadConversation(String threadId) async {
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+      ChatMethodKeys.getThreadConversation,
+      {"con_id", threadId},
+    );
+
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMConversation.fromJson(
+          result[ChatMethodKeys.getThreadConversation]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   /// Marks all messages as read.
   ///
   /// This method is for the local conversations only.

@@ -70,6 +70,7 @@ static NSString *const ChatAckGroupMessageRead = @"ackGroupMessageRead";
 static NSString *const ChatAckConversationRead = @"ackConversationRead";
 static NSString *const ChatRecallMessage = @"recallMessage";
 static NSString *const ChatGetConversation = @"getConversation";
+static NSString *const ChatGetThreadConversation = @"getThreadConversation";
 static NSString *const ChatMarkAllChatMsgAsRead = @"markAllChatMsgAsRead";
 static NSString *const ChatGetUnreadMessageCount = @"getUnreadMessageCount";
 static NSString *const ChatUpdateChatMessage = @"updateChatMessage";

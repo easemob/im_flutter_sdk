@@ -64,6 +64,7 @@ class ChatMethodKeys {
   static const String ackConversationRead = "ackConversationRead";
   static const String recallMessage = "recallMessage";
   static const String getConversation = "getConversation";
+  static const String getThreadConversation = "getThreadConversation";
   static const String markAllChatMsgAsRead = "markAllChatMsgAsRead";
   static const String getUnreadMessageCount = "getUnreadMessageCount";
   static const String updateChatMessage = "updateChatMessage";
