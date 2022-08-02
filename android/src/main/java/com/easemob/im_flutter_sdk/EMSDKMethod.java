@@ -62,6 +62,7 @@ public class EMSDKMethod {
     static final String ackConversationRead = "ackConversationRead";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";
+    static final String getThreadConversation = "getThreadConversation";
     static final String markAllChatMsgAsRead = "markAllChatMsgAsRead";
     static final String getUnreadMessageCount = "getUnreadMessageCount";
     static final String updateChatMessage = "updateChatMessage";

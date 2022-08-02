@@ -66,8 +66,7 @@
         [self ackConversationRead:call.arguments
                       channelName:call.method
                            result:result];
-    }
-    else if ([ChatRecallMessage isEqualToString:call.method]) {
+    } else if ([ChatRecallMessage isEqualToString:call.method]) {
         [self recallMessage:call.arguments
                 channelName:call.method
                      result:result];
@@ -75,6 +74,10 @@
         [self getConversation:call.arguments
                   channelName:call.method
                        result:result];
+    } else if ([ChatGetThreadConversation isEqualToString:call.method]) {
+        [self getThreadConversation:call.arguments
+                        channelName:call.method
+                             result:result];
     } else if ([ChatGetMessage isEqualToString:call.method]) {
         [self getMessageWithMessageId:call.arguments
                           channelName:call.method
@@ -350,6 +353,21 @@
                   channelName:aChannelName
                         error:nil
                        object:[con toJson]];
+}
+
+- (void)getThreadConversation:(NSDictionary *)param
+                  channelName:(NSString *)aChannelName
+                       result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *conId = param[@"con_id"];
+    EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conId
+                                                                                 type:EMConversationTypeGroupChat
+                                                                     createIfNotExist:YES
+                                                                             isThread:YES];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:[conversation toJson]];
 }
 
 - (void)markAllMessagesAsRead:(NSDictionary *)param

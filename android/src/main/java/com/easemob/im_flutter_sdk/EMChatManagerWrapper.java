@@ -66,6 +66,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 recallMessage(param, call.method, result);
             } else if (EMSDKMethod.getConversation.equals(call.method)) {
                 getConversation(param, call.method, result);
+            } else if (EMSDKMethod.getThreadConversation.equals(call.method)) {
+                getThreadConversation(param, call.method, result);
             } else if (EMSDKMethod.markAllChatMsgAsRead.equals(call.method)) {
                 markAllChatMsgAsRead(param, call.method, result);
             } else if (EMSDKMethod.getUnreadMessageCount.equals(call.method)) {
@@ -292,6 +294,14 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
             EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed);
+            onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
+        });
+    }
+
+    private void getThreadConversation(JSONObject param, String channelName, Result result) throws JSONException {
+        String conId = param.getString("con_id");
+        asyncRunnable(() -> {
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, EMConversationType.GroupChat, true, true);
             onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
         });
     }
