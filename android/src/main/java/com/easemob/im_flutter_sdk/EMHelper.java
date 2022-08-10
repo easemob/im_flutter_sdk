@@ -70,10 +70,18 @@ class EMOptionsHelper {
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
         if (!json.getBoolean("enableDNSConfig")) {
-            options.setImPort(json.getInt("imPort"));
-            options.setIMServer(json.getString("imServer"));
-            options.setRestServer(json.getString("restServer"));
-            options.setDnsUrl(json.getString("dnsUrl"));
+            if (json.has("imPort")) {
+                options.setImPort(json.getInt("imPort"));
+            }
+            if (json.has("imServer")) {
+                options.setIMServer(json.getString("imServer"));
+            }
+            if (json.has("restServer")) {
+                options.setRestServer(json.getString("restServer"));
+            }
+            if (json.has("dnsUrl")){
+                options.setDnsUrl(json.getString("dnsUrl"));
+            }
         }
 
         if (json.has("pushConfig")) {
@@ -275,7 +283,7 @@ class EMChatRoomHelper {
         data.put("adminList", chatRoom.getAdminList());
         data.put("memberList", chatRoom.getMemberList());
         data.put("blockList", chatRoom.getBlacklist());
-        data.put("muteList", chatRoom.getMuteList().values());
+        data.put("muteList", chatRoom.getMuteList().keySet().toArray());
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
         data.put("permissionType", intTypeFromPermissionType(chatRoom.getChatRoomPermissionType()));

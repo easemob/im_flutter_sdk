@@ -272,6 +272,30 @@ class EMChatManager {
     }
   }
 
+  ///
+  /// Gets the thread conversation by thread ID.
+  ///
+  /// Param [threadId] The thread ID.
+  ///
+  /// **Return** The conversation object.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<EMConversation> getThreadConversation(String threadId) async {
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+      ChatMethodKeys.getThreadConversation,
+      {"con_id", threadId},
+    );
+
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMConversation.fromJson(
+          result[ChatMethodKeys.getThreadConversation]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   /// Marks all messages as read.
   ///
   /// This method is for the local conversations only.
@@ -660,8 +684,28 @@ class EMChatManager {
 
     Map data = await EMMethodChannel.ChatManager.invokeMethod(
         ChatMethodKeys.deleteRemoteConversation, req);
+    try {
+      EMError.hasErrorFromResult(data);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 
-    EMError.hasErrorFromResult(data);
+  ///
+  /// Deletes messages with timestamp that is before the specified one.
+  ///
+  /// Param [timestamp]  The specified Unix timestamp(milliseconds).
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> deleteMessagesBefore(int timestamp) async {
+    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+        ChatMethodKeys.deleteMessagesBeforeTimestamp, {"timestamp": timestamp});
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   Future<void> _onMessagesReceived(List messages) async {

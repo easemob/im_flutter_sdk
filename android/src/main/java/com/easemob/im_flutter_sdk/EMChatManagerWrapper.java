@@ -66,6 +66,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 recallMessage(param, call.method, result);
             } else if (EMSDKMethod.getConversation.equals(call.method)) {
                 getConversation(param, call.method, result);
+            } else if (EMSDKMethod.getThreadConversation.equals(call.method)) {
+                getThreadConversation(param, call.method, result);
             } else if (EMSDKMethod.markAllChatMsgAsRead.equals(call.method)) {
                 markAllChatMsgAsRead(param, call.method, result);
             } else if (EMSDKMethod.getUnreadMessageCount.equals(call.method)) {
@@ -94,6 +96,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 asyncFetchGroupMessageAckFromServer(param, call.method, result);
             } else if (EMSDKMethod.deleteRemoteConversation.equals(call.method)){
                 deleteRemoteConversation(param, call.method, result);
+            } else if (EMSDKMethod.deleteMessagesBeforeTimestamp.equals(call.method)) {
+                deleteMessagesBefore(param, call.method, result);
             } else if (EMSDKMethod.translateMessage.equals(call.method)) {
                 translateMessage(param, call.method, result);
             } else if (EMSDKMethod.fetchSupportedLanguages.equals(call.method)) {
@@ -292,6 +296,14 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
             EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed);
+            onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
+        });
+    }
+
+    private void getThreadConversation(JSONObject param, String channelName, Result result) throws JSONException {
+        String conId = param.getString("con_id");
+        asyncRunnable(() -> {
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, EMConversationType.GroupChat, true, true);
             onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
         });
     }
@@ -555,6 +567,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMConversationType type = typeFromInt(param.getInt("conversationType"));
         boolean isDeleteRemoteMessage = param.getBoolean("isDeleteRemoteMessage");
         EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void deleteMessagesBefore(JSONObject param, String channelName, Result result) throws JSONException {
+        long timestamp = param.getLong("timestamp");
+        EMClient.getInstance().chatManager().deleteMessagesBeforeTimestamp(timeStamp, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void translateMessage(JSONObject param, String channelName, Result result) throws JSONException {
