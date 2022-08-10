@@ -77,6 +77,7 @@ public class EMSDKMethod {
     static final String getMessage = "getMessage";
     static final String asyncFetchGroupAcks = "asyncFetchGroupAcks";
     static final String deleteRemoteConversation = "deleteRemoteConversation";
+    static final String deleteMessagesBeforeTimestamp = "deleteMessagesBeforeTimestamp";
 
     static final String translateMessage = "translateMessage";
     static final String fetchSupportedLanguages = "fetchSupportLanguages";

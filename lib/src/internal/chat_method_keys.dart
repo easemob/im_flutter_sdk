@@ -80,6 +80,8 @@ class ChatMethodKeys {
   static const String getMessage = "getMessage";
   static const String asyncFetchGroupAcks = "asyncFetchGroupAcks";
   static const String deleteRemoteConversation = "deleteRemoteConversation";
+  static const String deleteMessagesBeforeTimestamp =
+      "deleteMessagesBeforeTimestamp";
 
   static const String translateMessage = "translateMessage";
   static const String fetchSupportLanguages = "fetchSupportLanguages";

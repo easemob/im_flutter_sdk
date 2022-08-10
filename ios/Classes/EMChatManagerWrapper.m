@@ -134,6 +134,10 @@
         [self deleteRemoteConversation:call.arguments
                            channelName:call.method
                                 result:result];
+    } else if ([ChatDeleteMessagesBeforeTimestamp isEqualToString:call.method]){
+        [self deleteMessagesBeforeTimestamp:call.arguments
+                           channelName:call.method
+                                result:result];
     } else if ([ChatTranslateMessage isEqualToString:call.method]) {
         [self translateMessage:call.arguments
                    channelName:call.method
@@ -694,6 +698,20 @@
                       channelName:aChannelName
                             error:aError
                            object:@(!aError)];
+    }];
+}
+
+- (void)deleteMessagesBeforeTimestamp:(NSDictionary *)param
+                          channelName:(NSString *)aChannelName
+                               result:(FlutterResult)result
+{
+    NSUInteger timestamp = [param[@"timestamp"] unsignedIntValue];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager deleteMessagesBefore:timestamp completion:^(EMError *error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@(!error)];
     }];
 }
 
