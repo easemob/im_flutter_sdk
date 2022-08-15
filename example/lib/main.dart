@@ -32,7 +32,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     implements EMChatManagerListener {
-  final String appKey = "easemob-demo#easeim";
+  final String appKey = "easemob-demo#flutter";
 
   ScrollController scrollController = ScrollController();
   String _username = "";
