@@ -425,30 +425,40 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void loadAllConversations(JSONObject param, String channelName, Result result) throws JSONException {
         asyncRunnable(() -> {
-            List<EMConversation> list = new ArrayList<>(
-                    EMClient.getInstance().chatManager().getAllConversations().values());
-            Collections.sort(list, new Comparator<EMConversation>() {
-                @Override
-                public int compare(EMConversation o1, EMConversation o2) {
-                    if (o1.getLastMessage() == null) {
-                        return 1;
-                    }
-
-                    if (o2.getLastMessage() == null) {
-                        return -1;
-                    }
-
-                    if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
-                        return 0;
-                    }
-
-                    return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
-                }
-            });
+            boolean retry = false;
+            List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
             List<Map> conversations = new ArrayList<>();
-            for (EMConversation conversation : list) {
-                conversations.add(EMConversationHelper.toJson(conversation));
-            }
+            do{
+                try{
+                    retry = false;
+                    Collections.sort(list, new Comparator<EMConversation>() {
+                        @Override
+                        public int compare(EMConversation o1, EMConversation o2) {
+                            if (o1 == null && o2 == null) {
+                                return 0;
+                            }
+                            if (o1.getLastMessage() == null) {
+                                return 1;
+                            }
+
+                            if (o2.getLastMessage() == null) {
+                                return -1;
+                            }
+
+                            if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
+                                return 0;
+                            }
+
+                            return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
+                        }
+                    });
+                    for (EMConversation conversation : list) {
+                        conversations.add(EMConversationHelper.toJson(conversation));
+                    }
+                }catch(IllegalArgumentException e) {
+                    retry = true;
+                }
+            }while (retry);
             onSuccess(result, channelName, conversations);
         });
     }
