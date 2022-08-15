@@ -103,7 +103,7 @@ class EMPresenceManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> unSubscribe({
+  Future<void> unsubscribe({
     required List<String> members,
   }) async {
     Map req = {'members': members};
