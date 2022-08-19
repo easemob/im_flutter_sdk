@@ -920,7 +920,7 @@ class EMGroupManager {
   ///
   /// 上传共享文件至群组。
   ///
-  /// @note
+  /// **注意**
   /// 上传共享文件会触发进度回调 @link MessageStatusCallBack#Function(int progress)}。
   ///
   /// Param [groupId] 群组 ID。
@@ -946,7 +946,7 @@ class EMGroupManager {
   ///
   /// 下载指定的群组共享文件。
   ///
-  /// @note
+  /// **注意**
   /// 触发进度回调 @link MessageStatusCallBack#Function(int progress)}。
   ///
   /// Param [groupId] 群组 ID。

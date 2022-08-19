@@ -613,7 +613,7 @@ abstract class EMGroupManagerListener {
 ///
 /// 消息事件监听器。
 ///
-/// @note
+/// **注意**
 /// 该监听器用于监听消息变更：
 ///
 /// - 消息成功发送到对方后，发送方会收到送达回执（需开启送达回执功能，详见 {@link EMOptions#requireDeliveryAck(boolean)}。

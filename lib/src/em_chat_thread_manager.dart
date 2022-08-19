@@ -190,7 +190,7 @@ class EMChatThreadManager {
   ///
   /// 分页获取子区成员。
   ///
-  /// @note
+  /// **注意**
   /// 子区所属群组的所有成员均可调用该方法。
   ///
   /// Param [chatThreadId] 子区 ID。
@@ -273,7 +273,7 @@ class EMChatThreadManager {
   ///
   /// 移除子区成员。
   ///
-  /// @note
+  /// **注意**
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
   /// 被移出的成员会收到 {@link EMChatThreadManagerListener#onUserKickOutOfChatThread} 回调。
@@ -306,7 +306,7 @@ class EMChatThreadManager {
   ///
   /// 修改子区名称。
   ///
-  /// @note
+  /// **注意**
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
   /// 子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadUpdated(EMChatThreadEvent)}.
@@ -339,7 +339,7 @@ class EMChatThreadManager {
   ///
   /// 创建子区。
   ///
-  /// @note
+  /// **注意**
   /// 所有群成员都可以调用。
   /// 子区创建成功后，会出现如下情况：
   ///
@@ -382,7 +382,7 @@ class EMChatThreadManager {
   ///
   /// 加入子区。
   ///
-  /// @note
+  /// **注意**
   /// 子区所属群组的所有成员均可调用该方法。
   ///
   /// 加入成功后，多端多设备登录情况下，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}。
@@ -414,7 +414,7 @@ class EMChatThreadManager {
   ///
   /// 退出子区。
   ///
-  /// @note
+  /// **注意**
   /// 子区中的所有成员均可调用该方法。
   /// 多端多设备登录情况下，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}。
   ///
@@ -442,7 +442,7 @@ class EMChatThreadManager {
   ///
   /// 解散子区。
   ///
-  /// @note
+  /// **注意**
   /// 只有子区所属群组的群主及管理员可调用该方法。
   /// 单设备登录时，子区所在群的所有成员均会收到 {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
   /// 多端多设备登录时，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY}。

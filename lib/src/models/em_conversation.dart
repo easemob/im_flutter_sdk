@@ -206,7 +206,7 @@ class EMConversation {
   ///
   /// 插入一条消息到会话尾部。
   ///
-  /// @note
+  /// **注意**
   /// 请确保消息的 conversation ID 与要插入的会话的 conversationId 一致，消息会被插入 SDK 本地数据库，并且更新会话的 `latestMessage` 等属性。
   /// Param [message] 消息体实例。
   ///
@@ -227,7 +227,7 @@ class EMConversation {
   ///
   /// 更新 SDK 本地数据库的消息。
   ///
-  /// @note
+  /// **注意**
   /// 不能更新消息 ID，消息更新后，会话的 `latestMessage` 等属性进行相应更新。
   /// Param [message] 要更新的消息。
   ///

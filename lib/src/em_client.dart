@@ -97,6 +97,7 @@ class EMClient {
 
   ///
   /// 检查 SDK 是否连接到 Chat 服务器。
+  ///
   /// **Return** SDK 是否连接到 Chat 服务器。
   /// - `true`：是；
   /// - `false`：否。
@@ -300,7 +301,7 @@ class EMClient {
   ///
   /// 修改 App Key。
   ///
-  /// @note
+  /// **注意**
   /// 只有在未登录状态才能修改 App Key。
   ///
   /// Param [newAppKey] App Key，请确保设置该参数。
