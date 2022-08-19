@@ -858,12 +858,14 @@ class EMChatManager {
     };
     req.setValueWithOutNull("groupId", groupId);
     Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.fetchReactionList, req);
+      ChatMethodKeys.fetchReactionList,
+      req,
+    );
 
     try {
       EMError.hasErrorFromResult(result);
       Map<String, List<EMMessageReaction>> ret = {};
-      for (var info in result.entries) {
+      for (var info in result[ChatMethodKeys.fetchReactionList].entries) {
         List<EMMessageReaction> reactions = [];
         for (var item in info.value) {
           reactions.add(EMMessageReaction.fromJson(item));
@@ -940,7 +942,7 @@ class EMChatManager {
         ChatMethodKeys.translateMessage, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMMessage.fromJson(result["message"]);
+      return EMMessage.fromJson(result[ChatMethodKeys.translateMessage]);
     } on EMError catch (e) {
       throw e;
     }

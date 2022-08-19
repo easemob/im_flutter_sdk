@@ -1,3 +1,5 @@
+import '../internal/inner_headers.dart';
+
 ///
 /// 消息 Reaction 实体类，用于指定 Reaction 属性。
 ///
@@ -31,8 +33,16 @@ class EMMessageReaction {
   factory EMMessageReaction.fromJson(Map map) {
     String reaction = map["reaction"];
     int count = map["count"];
-    bool isAddedBySelf = map["isAddedBySelf"];
-    List<String> userList = map["userList"];
+
+    bool isAddedBySelf =
+        map.getBoolValue("isAddedBySelf", defaultValue: false)!;
+    List<String> userList = [];
+    List<String>? tmp = map.getList("userList", valueCallback: (str) {
+      return str;
+    });
+    if (tmp != null) {
+      userList.addAll(tmp);
+    }
     return EMMessageReaction._private(
       reaction: reaction,
       userCount: count,

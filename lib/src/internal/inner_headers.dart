@@ -26,6 +26,7 @@ export '../models/em_presence.dart';
 export '../models/em_push_configs.dart';
 export '../models/em_translate_language.dart';
 export '../models/em_userInfo.dart';
+export '../models/chat_silent_mode.dart';
 
 export '../tools/em_extension.dart';
 export '../tools/em_progress_manager.dart';

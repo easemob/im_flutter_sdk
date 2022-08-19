@@ -21,9 +21,14 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [EMClient.sharedClient.threadManager addDelegate:self  delegateQueue:dispatch_get_main_queue()];
+        [EMClient.sharedClient.threadManager addDelegate:self delegateQueue:dispatch_get_main_queue()];
     }
     return self;
+}
+
+
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.threadManager removeDelegate:self];
 }
 
 

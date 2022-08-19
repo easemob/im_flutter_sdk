@@ -38,6 +38,10 @@
 }
 
 
+- (void)unRegisterEaseListener {
+    [EMClient.sharedClient.chatManager removeDelegate:self];
+}
+
 #pragma mark - FlutterPlugin
 
 - (void)handleMethodCall:(FlutterMethodCall*)call
@@ -688,7 +692,7 @@
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
-                           object:@{@"message": [message toJson]}];
+                           object:[message toJson]];
     }];
 }
 

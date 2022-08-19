@@ -113,6 +113,11 @@ class EMMessage {
   MessageStatusCallBack? _messageStatusCallBack;
 
   ///
+  /// 收到的消息是否为在线消息，只有通过 {@link EMChatManagerListener#onMessagesReceived)} 接收的消息当前值才有意义。
+  ///
+  late final bool onlineState;
+
+  ///
   /// 设置消息状态监听器。
   /// 你需要设置这个监听并依据回调结果更新 UI。
   ///
@@ -136,7 +141,9 @@ class EMMessage {
   ///
   EMMessage.createReceiveMessage({
     required this.body,
+    this.chatType = ChatType.Chat,
   }) {
+    this.onlineState = true;
     this.direction = MessageDirection.RECEIVE;
   }
 
@@ -155,10 +162,12 @@ class EMMessage {
   EMMessage.createSendMessage({
     required this.body,
     this.to,
+    this.chatType = ChatType.Chat,
   })  : this.from = EMClient.getInstance.currentUsername,
         this.conversationId = to {
     this.hasRead = true;
     this.direction = MessageDirection.SEND;
+    this.onlineState = true;
   }
 
   /// 清除引用
@@ -222,7 +231,9 @@ class EMMessage {
     required String targetId,
     required String content,
     List<String>? targetLanguages,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+          chatType: chatType,
           to: targetId,
           body: EMTextMessageBody(
             content: content,
@@ -250,8 +261,10 @@ class EMMessage {
     required String targetId,
     required String filePath,
     String? displayName,
+    ChatType chatType = ChatType.Chat,
     int? fileSize,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMFileMessageBody(
               localPath: filePath,
@@ -294,7 +307,9 @@ class EMMessage {
     int? fileSize,
     double? width,
     double? height,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMImageMessageBody(
               localPath: filePath,
@@ -338,7 +353,9 @@ class EMMessage {
     String? thumbnailLocalPath,
     double? width,
     double? height,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMVideoMessageBody(
               localPath: filePath,
@@ -374,7 +391,9 @@ class EMMessage {
     int duration = 0,
     int? fileSize,
     String? displayName,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMVoiceMessageBody(
                 localPath: filePath,
@@ -406,7 +425,9 @@ class EMMessage {
     required double longitude,
     String? address,
     String? buildingName,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMLocationMessageBody(
               latitude: latitude,
@@ -429,7 +450,9 @@ class EMMessage {
     required String targetId,
     required action,
     bool deliverOnlineOnly = false,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMCmdMessageBody(
                 action: action, deliverOnlineOnly: deliverOnlineOnly));
@@ -447,9 +470,13 @@ class EMMessage {
   ///
   /// **Return** 消息体实例。
   ///
-  EMMessage.createCustomSendMessage(
-      {required String targetId, required event, Map<String, String>? params})
-      : this.createSendMessage(
+  EMMessage.createCustomSendMessage({
+    required String targetId,
+    required event,
+    Map<String, String>? params,
+    ChatType chatType = ChatType.Chat,
+  }) : this.createSendMessage(
+            chatType: chatType,
             to: targetId,
             body: EMCustomMessageBody(event: event, params: params));
 
@@ -497,14 +524,15 @@ class EMMessage {
       ..localTime = map.getIntValue("localTime", defaultValue: 0)!
       ..serverTime = map.getIntValue("serverTime", defaultValue: 0)!
       ..isChatThreadMessage = map.getBoolValue("isThread", defaultValue: false)!
-      // 提供单独的get方法，每次都去原生侧取。
-      // ..chatThread = map.getValueWithKey<EMChatThread>(
-      //   "thread",
-      //   callback: (obj) {
-      //     return EMChatThread.fromJson(obj);
-      //   },
-      // )
+      ..onlineState = map.getBoolValue("onlineState", defaultValue: true)!
       ..status = messageStatusFromInt(map.intValue("status"));
+    // 提供单独的get方法，每次都去原生侧取。
+    // ..chatThread = map.getValueWithKey<EMChatThread>(
+    //   "thread",
+    //   callback: (obj) {
+    //     return EMChatThread.fromJson(obj);
+    //   },
+    // )
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {

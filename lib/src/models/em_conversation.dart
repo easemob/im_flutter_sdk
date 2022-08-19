@@ -483,4 +483,25 @@ class EMConversation {
       throw e;
     }
   }
+
+  ///
+  /// 从本地数据库加载消息数量。
+  ///
+  /// **Return** 消息数量。
+  ///
+  Future<int> messagesCount() async {
+    Map req = this._toJson();
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
+      ChatMethodKeys.messageCount,
+      req,
+    );
+
+    try {
+      EMError.hasErrorFromResult(result);
+      int count = result[ChatMethodKeys.messageCount];
+      return count;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

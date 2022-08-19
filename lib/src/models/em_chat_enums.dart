@@ -311,3 +311,29 @@ enum DisplayStyle {
   /// 显示离线消息的内容。
   Summary,
 }
+
+///
+/// 离线消息推送参数枚举
+///
+enum ChatSilentModeParamType {
+  /// 免打扰类型
+  REMIND_TYPE,
+
+  /// 免打扰持续时间
+  SILENT_MODE_DURATION,
+
+  /// 免打扰时间段
+  SILENT_MODE_INTERVAL,
+}
+
+/// 离线消息推送通知枚举
+enum ChatPushRemindType {
+  /// 所有消息都有推送
+  ALL,
+
+  /// 只有@我的消息才推送
+  MENTION_ONLY,
+
+  /// 所有消息都不推送
+  NONE,
+}

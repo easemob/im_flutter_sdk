@@ -12,6 +12,7 @@ class EMPushManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_push_manager', JSONMethodCodec());
 
+  @Deprecated('')
   Future<EMPushConfigs?> getPushConfigsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getImPushConfig);
     try {
@@ -42,6 +43,7 @@ class EMPushManager {
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
+  @Deprecated('')
   Future<void> enableOfflinePush() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.enableOfflinePush);
     try {
@@ -60,6 +62,7 @@ class EMPushManager {
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
+  @Deprecated('')
   Future<void> disableOfflinePush({
     required int start,
     required int end,
@@ -85,6 +88,7 @@ class EMPushManager {
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
+  @Deprecated('')
   Future<void> updatePushServiceForGroup({
     required List<String> groupIds,
     required bool enablePush,
@@ -110,6 +114,7 @@ class EMPushManager {
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
+  @Deprecated('')
   Future<void> updatePushServiceFroUsers({
     required List<String> userIds,
     required bool enablePush,
@@ -131,6 +136,7 @@ class EMPushManager {
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
+  @Deprecated('')
   Future<List<String>> getNoPushGroupsFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushGroups);
     List<String> list = [];
@@ -147,6 +153,7 @@ class EMPushManager {
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
   ///
+  @Deprecated('')
   Future<List<String>> getNoPushUsersFromCache() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getNoPushUsers);
     List<String> list = [];
@@ -251,6 +258,220 @@ class EMPushManager {
       } on EMError catch (e) {
         throw e;
       }
+    }
+  }
+
+  // Future<void> reportPushAction(
+  //   {String taskId,
+  //   String provider,
+  //   String action,}
+  // ) async {
+  //   Map req = {};
+  // }
+
+  ///
+  /// 设置会话消息免打扰数据。
+  ///
+  /// Param [conversationId] 会话Id。
+  ///
+  /// Param [type] 会话类型。
+  ///
+  /// Param [param]  免打扰数据参数模型，详见ChatSilentModeParam。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<void> setConversationSilentMode({
+    required String conversationId,
+    required EMConversationType type,
+    required ChatSilentModeParam param,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    req["conversationType"] = conversationTypeToInt(type);
+    req["param"] = param.toJson();
+
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.setConversationSilentMode, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// 清除会话离线推送消息提醒类型设置。
+  ///
+  /// Param [conversationId] 会话Id。
+  ///
+  /// Param [type] 会话类型。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<void> removeConversationSilentMode({
+    required String conversationId,
+    required EMConversationType type,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    req["conversationType"] = conversationTypeToInt(type);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.removeConversationSilentMode, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// 获取会话消息免打扰数据。
+  ///
+  /// Param [conversationId] 会话Id。
+  ///
+  /// Param [type] 会话类型。
+  ///
+  /// **Return** 获取结果。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<ChatSilentModeResult> fetchConversationSilentMode({
+    required String conversationId,
+    required EMConversationType type,
+  }) async {
+    Map req = {};
+    req["conversationId"] = conversationId;
+    req["conversationType"] = conversationTypeToInt(type);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchConversationSilentMode, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      Map map = result[ChatMethodKeys.fetchConversationSilentMode];
+      return ChatSilentModeResult.fromJson(map);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// 设置全局消息免打扰数据。
+  ///
+  /// Param [param] 免打扰数据参数模型，详见ChatSilentModeParam。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<void> setSilentModeForAll({
+    required ChatSilentModeParam param,
+  }) async {
+    Map req = {};
+    req["param"] = param.toJson();
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.setSilentModeForAll,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// 获取全局消息免打扰数据。
+  ///
+  /// **Return** 获取结果。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<ChatSilentModeResult> fetchSilentModeForAll() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.fetchSilentModeForAll);
+    try {
+      EMError.hasErrorFromResult(result);
+      return ChatSilentModeResult.fromJson(
+        result[ChatMethodKeys.fetchSilentModeForAll],
+      );
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// 获取多个会话免打扰数据设置。
+  ///
+  /// 注意：一次最多20条数据。如果没设置过或者设置失效，则结果Map中不会返回该条数据。
+  ///
+  /// Param [conversations]  会话数组。
+  ///
+  /// **Return** 获取结果。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<Map<String, ChatSilentModeResult>> fetchSilentModeForConversations(
+    List<EMConversation> conversations,
+  ) async {
+    Map<String, int> req = {};
+    for (var item in conversations) {
+      req[item.id] = conversationTypeToInt(item.type);
+    }
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchSilentModeForConversations,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      Map<String, ChatSilentModeResult> ret = {};
+      Map? tmpMap = result[ChatMethodKeys.fetchSilentModeForConversations];
+      if (tmpMap != null) {
+        for (var item in tmpMap.entries) {
+          if (item.key is String && item.value is Map) {
+            ret[item.key] = ChatSilentModeResult.fromJson(item.value);
+          }
+        }
+      }
+      return ret;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// 设置推送消息的翻译语言。
+  ///
+  /// Param [languageCode] 翻译语言代码。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<void> setPreferredNotificationLanguage(String languageCode) async {
+    Map req = {"code": languageCode};
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.setPreferredNotificationLanguage,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  ///  获取推送消息的翻译语言。
+  ///
+  /// **Return** 获取结果。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  ///
+  Future<String?> fetchPreferredNotificationLanguage() async {
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchPreferredNotificationLanguage,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      String? ret = result[ChatMethodKeys.fetchPreferredNotificationLanguage];
+      return ret;
+    } on EMError catch (e) {
+      throw e;
     }
   }
 }
