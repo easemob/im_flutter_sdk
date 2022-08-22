@@ -272,6 +272,9 @@ class ChatMethodKeys {
   static const String fetchPreferredNotificationLanguage =
       "fetchPreferredNotificationLanguage";
 
+  static const String setPushTemplate = "setPushTemplate";
+  static const String getPushTemplate = "getPushTemplate";
+
   /// EMUserInfoManager methods
   static const String updateOwnUserInfo = "updateOwnUserInfo";
   static const String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";

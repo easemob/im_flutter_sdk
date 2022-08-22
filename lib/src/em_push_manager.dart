@@ -473,4 +473,40 @@ class EMPushManager {
       throw e;
     }
   }
+
+  ///
+  /// Set the push template for offline push.
+  ///
+  /// Param [pushTemplateName] push template name.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<void> setPushTemplate(String pushTemplateName) async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.setPushTemplate, {
+      "pushTemplateName": pushTemplateName,
+    });
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  ///
+  /// Gets the offline push template for Settings.
+  ///
+  /// **Return** The push template name.
+  ///
+  /// **Throws**  A description of the exception. See {@link EMError}.
+  ///
+  Future<String?> getPushTemplate() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getPushTemplate);
+    try {
+      EMError.hasErrorFromResult(result);
+      String? ret = result[ChatMethodKeys.getPushTemplate];
+      return ret;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

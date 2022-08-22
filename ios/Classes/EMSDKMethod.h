@@ -256,6 +256,8 @@ static NSString *const ChatFetchSilentModeForAll = @"fetchSilentModeForAll";
 static NSString *const ChatFetchSilentModeForConversations = @"fetchSilentModeForConversations";
 static NSString *const ChatSetPreferredNotificationLanguage = @"setPreferredNotificationLanguage";
 static NSString *const ChatFetchPreferredNotificationLanguage = @"fetchPreferredNotificationLanguage";
+static NSString *const ChatSetPushTemplate = @"setPushTemplate";
+static NSString *const ChatGetPushTemplate = @"getPushTemplate";
 
 #pragma mark - EMUserInfoManagerWrapper
 static NSString *const ChatUpdateOwnUserInfo = @"updateOwnUserInfo";
