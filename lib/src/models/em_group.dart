@@ -23,6 +23,7 @@ class EMGroup {
     this.isMemberOnly,
     this.isMemberAllowToInvite,
     this.extension,
+    this.isDisabled: false,
   });
 
   ///
@@ -175,6 +176,11 @@ class EMGroup {
   ///
   final String? extension;
 
+  ///
+  /// Whether the group is disabled. The default value for reading or pulling roaming messages from the database is NO
+  ///
+  final bool isDisabled;
+
   @Deprecated(
       "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead.")
   EMGroupOptions? get settings => _options;
@@ -198,6 +204,7 @@ class EMGroup {
     int? maxUserCount = map.intValue("maxUserCount");
     bool? isMemberOnly = map.getBoolValue('isMemberOnly');
     bool? isMemberAllowToInvite = map.getBoolValue('isMemberAllowToInvite');
+    bool? isDisabled = map.getBoolValue("isDisabled");
     String? extension = map.getStringValue("ext");
 
     return EMGroup._private(
@@ -218,6 +225,7 @@ class EMGroup {
       isMemberOnly: isMemberOnly,
       isMemberAllowToInvite: isMemberAllowToInvite,
       extension: extension,
+      isDisabled: isDisabled ?? false,
     );
   }
 
@@ -235,6 +243,7 @@ class EMGroup {
     data.setValueWithOutNull("blockList", blockList);
     data.setValueWithOutNull("muteList", muteList);
     data.setValueWithOutNull("messageBlocked", messageBlocked);
+    data.setValueWithOutNull("isDisabled", isDisabled);
     data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
     data.setValueWithOutNull("options", _options?.toJson());
     data.setValueWithOutNull(

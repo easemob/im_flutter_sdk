@@ -129,6 +129,11 @@ class EMMessage {
   ///
   MessageStatusCallBack? _messageStatusCallBack;
 
+  ///
+  /// Message Online Status
+  ///
+  /// Local database does not store. The default value for reading or pulling roaming messages from the database is YES
+  ///
   late final bool onlineState;
 
   void setMessageStatusCallBack(MessageStatusCallBack? callback) {

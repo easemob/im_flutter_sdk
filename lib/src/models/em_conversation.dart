@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../internal/inner_headers.dart';
 
 ///
-/// The conversation class, indicating a one-to-one chat, a group chat, or a converation chat. It contains the messages that are sent and received within the converation.
+/// The conversation class, indicating a one-to-one chat, a group chat, or a conversation chat. It contains the messages that are sent and received within the conversation.
 ///
 /// The following code shows how to get the number of the unread messages from the conversation.
 /// ```dart
@@ -78,7 +78,7 @@ class EMConversation {
   }
 
   ///
-  /// Gets the lastest message from the conversation.
+  /// Gets the last message from the conversation.
   ///
   /// The operation does not change the unread message count.
   ///
@@ -180,7 +180,7 @@ class EMConversation {
   }
 
   ///
-  /// Inserts a message to a conversation in the local database and the SDK will automatically update the lastest message.
+  /// Inserts a message to a conversation in the local database and the SDK will automatically update the last message.
   ///
   /// Make sure you set the conversation ID as that of the conversation where you want to insert the message.
   ///
@@ -492,6 +492,9 @@ class EMConversation {
     }
   }
 
+  ///
+  /// Message count
+  ///
   Future<int> messagesCount() async {
     Map req = this._toJson();
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(

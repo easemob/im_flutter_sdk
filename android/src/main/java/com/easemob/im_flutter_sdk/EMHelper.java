@@ -157,6 +157,7 @@ class EMGroupHelper {
         EMCommonUtil.putObjectToMap(data, "blockList", group.getBlackList());
         EMCommonUtil.putObjectToMap(data, "muteList", group.getMuteList());
         EMCommonUtil.putObjectToMap(data, "messageBlocked", group.isMsgBlocked());
+        EMCommonUtil.putObjectToMap(data, "isDisabled", group.isDisabled());
         EMCommonUtil.putObjectToMap(data, "isAllMemberMuted", group.isAllMemberMuted());
         EMCommonUtil.putObjectToMap(data, "permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
         EMCommonUtil.putObjectToMap(data, "maxUserCount", group.getMemberCount());
