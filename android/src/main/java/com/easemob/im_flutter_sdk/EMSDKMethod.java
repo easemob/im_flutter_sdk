@@ -246,7 +246,8 @@ public class EMSDKMethod {
     static final String fetchSilentModeForConversations = "fetchSilentModeForConversations";
     static final String setPreferredNotificationLanguage = "setPreferredNotificationLanguage";
     static final String fetchPreferredNotificationLanguage = "fetchPreferredNotificationLanguage";
-
+    static final String setPushTemplate = "setPushTemplate";
+    static final String getPushTemplate = "getPushTemplate";
 
     /// EMUserInfoManager 
     static final String updateOwnUserInfo = "updateOwnUserInfo";
