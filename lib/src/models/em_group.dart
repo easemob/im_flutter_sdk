@@ -15,7 +15,6 @@ class EMGroup {
     this.adminList,
     this.blockList,
     this.muteList,
-    this.noticeEnable,
     this.messageBlocked,
     this.isAllMemberMuted,
     this.permissionType,
@@ -105,9 +104,6 @@ class EMGroup {
   /// To get the correct value, ensure that you call {@link EMGroupManager#fetchMuteListFromServer(String, int?, int?)} before calling this method.
   ///
   final List<String>? muteList;
-
-  @Deprecated("Switch to using EMPushManager#getNoPushGroupsFromCache instead.")
-  final bool? noticeEnable;
 
   ///
   /// Gets whether the group message is blocked.
