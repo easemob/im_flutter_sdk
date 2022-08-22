@@ -308,12 +308,7 @@ class EMChatRoomManagerListenerCallback implements EMChatRoomManagerListener {
     String? roomName,
     String? participant,
   ) {
-    this.onRemovedFromChatRoomCallback?.call(
-          roomId,
-          roomName,
-          participant,
-        );
-    ;
+    this.onRemovedFromChatRoomCallback?.call(roomId, roomName, participant);
   }
 }
 
