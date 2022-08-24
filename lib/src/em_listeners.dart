@@ -153,12 +153,12 @@ abstract class EMCustomListener {
 /// Occurs when the contact changes, including requests to add friends, notifications to delete friends,
 /// requests to accept friends, and requests to reject friends.
 ///
-/// Register the listener：
+/// Register the listener:
 /// ```dart
 ///   EMClient.getInstance.contactManager.addContactManagerListener(contactListener);
 /// ```
 ///
-/// Unregister the listener：
+/// Unregister the listener:
 /// ```dart
 ///   EMClient.getInstance.contactManager.removeContactManagerListener(contactListener);
 /// ```
@@ -261,7 +261,7 @@ abstract class EMChatRoomManagerListener {
   );
 
   ///
-  /// Occurs when there are chat room member(s) muted (added to mute list),
+  /// Occurs when there are chat room member(s) muted (added to mute list).
   ///
   /// Param [roomId] The chatroom ID.
   ///
@@ -717,7 +717,7 @@ abstract class EMChatManagerListener {
 }
 
 ///
-/// The delegate protocol that defines presence callbacks.
+/// The presence manager listener.
 ///
 class EMPresenceManagerListener {
   ///
