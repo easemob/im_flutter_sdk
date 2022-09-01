@@ -143,6 +143,7 @@ abstract class EMMultiDeviceListener {
 ///
 ///  The custom event listener.
 ///
+@Deprecated("Use EMClient#customEvent instead")
 abstract class EMCustomListener {
   void onDataReceived(Map map);
 }
@@ -361,12 +362,12 @@ abstract class EMChatRoomManagerListener {
 ///
 /// Occurs when the following group events happens: requesting to join a group, approving or declining a group request, and kicking a user out of a group.
 ///
-/// Registers a group change listener:
+/// Register a group change listener:
 /// ```dart
 ///   EMClient.getInstance.groupManager.addGroupManagerListener(listener);
 /// ```
 ///
-/// Unregisters a group change listener:
+/// Unregister a group change listener:
 /// ```dart
 ///   EMClient.getInstance.groupManager.removeGroupManagerListener(listener);
 /// ```
@@ -636,7 +637,7 @@ abstract class EMGroupManagerListener {
 ///   EMClient.getInstance.chatManager.removeChatManagerListener(listener);
 /// ```
 ///
-abstract class EMChatManagerListener {
+class EMChatManagerListener {
   ///
   /// Occurs when a message is received.
   ///

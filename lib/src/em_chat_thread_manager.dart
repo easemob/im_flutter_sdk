@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'internal/inner_headers.dart';
 
@@ -9,6 +10,10 @@ class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_thread_manager', JSONMethodCodec());
+
+  final Map<String, EMChatThreadManagerEventHandle> _eventHandleMap = {};
+  // deprecated(3.9.5)
+  final List<EMChatThreadManagerListener> _listeners = [];
 
   EMChatThreadManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
@@ -22,38 +27,49 @@ class EMChatThreadManager {
       } else if (call.method == ChatMethodKeys.onUserKickOutOfChatThread) {
         _onChatThreadUserRemoved(argMap);
       }
-
       return null;
     });
   }
-  final List<EMChatThreadManagerListener> _listeners = [];
 
   ///
-  /// Adds the chat thread manager listener. After calling this method, you can listen for new chat threads when they arrive.
+  /// Adds the chat thread manager event handle. After calling this method, you can handle for chat thread event when they arrive.
   ///
-  /// Param [listener] The chat thread manager listener that listens for new chat thread. See {@link EMChatThreadManagerListener}.
+  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
   ///
-  void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
+  /// Param [handle] The chat thread manager handle that handle for chat thread event. See {@link EMChatThreadManagerEventHandle}.
+  ///
+  void addEventHandle(
+    String identifier,
+    EMChatThreadManagerEventHandle handle,
+  ) {
+    _eventHandleMap[identifier] = handle;
   }
 
   ///
-  /// Removes the chat thread listener.
+  /// Remove the chat thread manager event handle.
   ///
-  /// After adding a chat thread manager listener, you can remove this listener if you do not want to listen for it.
+  /// Param [identifier] The custom handle identifier.
   ///
-  /// Param [listener] The chat thread listener to be removed. See {@link EMChatThreadManagerListener}.
-  ///
-  void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
-    _listeners.remove(listener);
+  void removeEventHandle(String identifier) {
+    _eventHandleMap.remove(identifier);
   }
 
   ///
-  /// Removes all chat thread listeners.
+  /// Get the chat thread manager event handle.
   ///
-  void clearAllChatThreadManagerListeners() {
-    _listeners.clear();
+  /// Param [identifier] The custom handle identifier.
+  ///
+  /// **Return** The chat thread manager event handle.
+  ///
+  EMChatThreadManagerEventHandle? getEventHandle(String identifier) {
+    return _eventHandleMap[identifier];
+  }
+
+  ///
+  /// Clear all chat thread manager event handles.
+  ///
+  void clearEventHandles() {
+    _eventHandleMap.clear();
   }
 
   ///
@@ -502,8 +518,49 @@ class EMChatThreadManager {
     if (event == null) {
       return;
     }
+
+    _eventHandleMap.values.forEach((element) {
+      element.onUserKickOutOfChatThread?.call(
+        EMChatThreadEvent.fromJson(event),
+      );
+    });
+
+    // deprecated(3.9.5)
     _listeners.forEach((element) {
       element.onUserKickOutOfChatThread.call(EMChatThreadEvent.fromJson(event));
     });
+  }
+}
+
+extension ChatThreadManagerDeprecated on EMChatThreadManager {
+  ///
+  /// Adds the chat thread manager listener. After calling this method, you can listen for new chat threads when they arrive.
+  ///
+  /// Param [listener] The chat thread manager listener that listens for new chat thread. See {@link EMChatThreadManagerListener}.
+  ///
+  @Deprecated("Use EMChatThreadManager#addEventHandle to instead.")
+  void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes the chat thread listener.
+  ///
+  /// After adding a chat thread manager listener, you can remove this listener if you do not want to listen for it.
+  ///
+  /// Param [listener] The chat thread listener to be removed. See {@link EMChatThreadManagerListener}.
+  ///
+  @Deprecated("Use EMChatThreadManager#removeEventHandle to instead.")
+  void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all chat thread listeners.
+  ///
+  @Deprecated("Use EMChatThreadManager#clearEventHandles to instead.")
+  void clearAllChatThreadManagerListeners() {
+    _listeners.clear();
   }
 }

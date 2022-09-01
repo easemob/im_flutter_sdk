@@ -30,10 +30,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    implements EMChatManagerListener {
-  final String appKey = "easemob-demo#flutter";
-
+class _MyHomePageState extends State<MyHomePage> {
   ScrollController scrollController = ScrollController();
   String _username = "";
   String _password = "";
@@ -113,11 +110,11 @@ class _MyHomePageState extends State<MyHomePage>
             const SizedBox(height: 10),
             TextField(
               decoration: const InputDecoration(
-                  hintText: "Enter recipient's user name"),
+                  hintText: "Enter the username you want to send"),
               onChanged: (chatId) => _chatId = chatId,
             ),
             TextField(
-              decoration: const InputDecoration(hintText: "Enter message"),
+              decoration: const InputDecoration(hintText: "Enter content"),
               onChanged: (msg) => _messageContent = msg,
             ),
             const SizedBox(height: 10),
@@ -144,22 +141,87 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
+  @override
+  void dispose() {
+    EMClient.getInstance.chatManager.removeEventHandle("customId");
+    super.dispose();
+  }
+
   void _initSDK() async {
     EMOptions options = EMOptions(
-      appKey: appKey,
+      appKey: "easemob-demo#flutter",
       autoLogin: false,
     );
     await EMClient.getInstance.init(options);
   }
 
   void _addChatListener() {
-    EMClient.getInstance.chatManager.addChatManagerListener(this);
-  }
-
-  @override
-  void dispose() {
-    EMClient.getInstance.chatManager.removeChatManagerListener(this);
-    super.dispose();
+    EMClient.getInstance.chatManager.addEventHandle(
+      "customId",
+      EMChatManagerEventHandle(
+        onMessagesReceived: (messages) {
+          for (var msg in messages) {
+            switch (msg.body.type) {
+              case MessageType.TXT:
+                {
+                  EMTextMessageBody body = msg.body as EMTextMessageBody;
+                  _addLogToConsole(
+                    "receive text message: ${body.content}, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.IMAGE:
+                {
+                  _addLogToConsole(
+                    "receive image message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.VIDEO:
+                {
+                  _addLogToConsole(
+                    "receive video message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.LOCATION:
+                {
+                  _addLogToConsole(
+                    "receive location message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.VOICE:
+                {
+                  _addLogToConsole(
+                    "receive voice message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.FILE:
+                {
+                  _addLogToConsole(
+                    "receive image message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.CUSTOM:
+                {
+                  _addLogToConsole(
+                    "receive custom message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.CMD:
+                {
+                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatManagerEventHandle#onCmdMessagesReceived` 回调接收
+                }
+                break;
+            }
+          }
+        },
+      ),
+    );
   }
 
   void _signIn() async {
@@ -169,22 +231,20 @@ class _MyHomePageState extends State<MyHomePage>
     }
 
     try {
-      _addLogToConsole("begin login...");
       await EMClient.getInstance.login(_username, _password);
-      _addLogToConsole("login succeed, username: $_username");
+      _addLogToConsole("sign in succeed, username: $_username");
     } on EMError catch (e) {
-      _addLogToConsole("login failed, code: ${e.code}, desc: ${e.description}");
+      _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
     }
   }
 
   void _signOut() async {
     try {
-      _addLogToConsole("begin logout...");
       await EMClient.getInstance.logout(true);
-      _addLogToConsole("logout succeed, username: $_username");
+      _addLogToConsole("sign out succeed");
     } on EMError catch (e) {
       _addLogToConsole(
-          "logout failed, code: ${e.code}, desc: ${e.description}");
+          "sign out failed, code: ${e.code}, desc: ${e.description}");
     }
   }
 
@@ -195,12 +255,10 @@ class _MyHomePageState extends State<MyHomePage>
     }
 
     try {
-      _addLogToConsole("begin create account...");
       await EMClient.getInstance.createAccount(_username, _password);
-      _addLogToConsole("create account succeed, username: $_username");
+      _addLogToConsole("sign up succeed, username: $_username");
     } on EMError catch (e) {
-      _addLogToConsole(
-          "create account failed, code: ${e.code}, desc: ${e.description}");
+      _addLogToConsole("sign up failed, e: ${e.code} , ${e.description}");
     }
   }
 
@@ -216,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage>
     );
     msg.setMessageStatusCallBack(MessageStatusCallBack(
       onSuccess: () {
-        _addLogToConsole("send message: $_messageContent");
+        _addLogToConsole("send message succeed");
       },
       onError: (e) {
         _addLogToConsole(
@@ -237,94 +295,4 @@ class _MyHomePageState extends State<MyHomePage>
   String get _timeString {
     return DateTime.now().toString().split(".").first;
   }
-
-  @override
-  void onCmdMessagesReceived(List<EMMessage> messages) {}
-
-  @override
-  void onConversationRead(String from, String to) {}
-
-  @override
-  void onConversationsUpdate() {}
-
-  @override
-  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
-
-  @override
-  void onMessagesDelivered(List<EMMessage> messages) {}
-
-  @override
-  void onMessagesRead(List<EMMessage> messages) {}
-
-  @override
-  void onMessagesRecalled(List<EMMessage> messages) {}
-
-  @override
-  void onMessagesReceived(List<EMMessage> messages) {
-    for (var msg in messages) {
-      switch (msg.body.type) {
-        case MessageType.TXT:
-          {
-            EMTextMessageBody body = msg.body as EMTextMessageBody;
-            _addLogToConsole(
-              "receive text message: ${body.content}, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.IMAGE:
-          {
-            _addLogToConsole(
-              "receive image message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.VIDEO:
-          {
-            _addLogToConsole(
-              "receive video message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.LOCATION:
-          {
-            _addLogToConsole(
-              "receive location message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.VOICE:
-          {
-            _addLogToConsole(
-              "receive voice message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.FILE:
-          {
-            _addLogToConsole(
-              "receive image message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.CUSTOM:
-          {
-            _addLogToConsole(
-              "receive custom message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.CMD:
-          {
-            // 当前回调中不会有cmd类型消息，cmd类型消息通过 EMChatManagerListener#onCmdMessagesReceived 回调接收
-          }
-          break;
-      }
-    }
-  }
-
-  @override
-  void onReadAckForGroupMessageUpdated() {}
-
-  @override
-  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
 }

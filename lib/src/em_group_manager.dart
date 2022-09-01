@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'internal/inner_headers.dart';
 
 ///
@@ -10,6 +11,13 @@ class EMGroupManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_group_manager', JSONMethodCodec());
+
+  final Map<String, EMGroupManagerEventHandle> _eventHandleMap = {};
+  // deprecated(3.9.5)
+  final List<EMGroupManagerListener> _listeners = [];
+
+  /// group shared file download callback.
+  EMDownloadCallback? downloadCallback;
 
   /// @nodoc
   EMGroupManager() {
@@ -22,10 +30,46 @@ class EMGroupManager {
     });
   }
 
-  final List<EMGroupManagerListener> _listeners = [];
+  ///
+  /// Adds the group manager event handle. After calling this method, you can handle for new group event when they arrive.
+  ///
+  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  ///
+  /// Param [handle] The group manager handle that handle for room event. See {@link EMGroupManagerEventHandle}.
+  ///
+  void addEventHandle(
+    String identifier,
+    EMGroupManagerEventHandle handle,
+  ) {
+    _eventHandleMap[identifier] = handle;
+  }
 
-  /// group shared file download callback.
-  EMDownloadCallback? downloadCallback;
+  ///
+  /// Remove the group manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  void removeEventHandle(String identifier) {
+    _eventHandleMap.remove(identifier);
+  }
+
+  ///
+  /// Get the group manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  /// **Return** The group manager event handle.
+  ///
+  EMGroupManagerEventHandle? getEventHandle(String identifier) {
+    return _eventHandleMap[identifier];
+  }
+
+  ///
+  /// Clear all group manager event handles.
+  ///
+  void clearEventHandles() {
+    _eventHandleMap.clear();
+  }
 
   ///
   /// Gets the group instance from the cache by group ID.
@@ -1191,39 +1235,143 @@ class EMGroupManager {
     }
   }
 
-  ///
-  /// Registers a group manager listener.
-  ///
-  /// The registered listener needs to be used together with {@link #removeGroupManagerListener(EMGroupManagerListener)}.
-  ///
-  /// Param [listener] The group manager listener to be registered.
-  ///
-  void addGroupManagerListener(EMGroupManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
-  }
-
-  ///
-  /// Removes a group manager listener.
-  ///
-  /// This method removes a group manager listener registered with {@link #addGroupManagerListener(EMGroupManagerListener)}.
-  ///
-  /// Param [listener] The group manager listener to be removed.
-  ///
-  void removeGroupManagerListener(EMGroupManagerListener listener) {
-    _listeners.remove(listener);
-  }
-
-  ///
-  /// Removes all group manager listener.
-  ///
-  void clearAllGroupManagerListeners() {
-    _listeners.clear();
-  }
-
   Future<void> _onGroupChanged(Map? map) async {
+    var type = map!['type'];
+    _eventHandleMap.values.forEach((element) {
+      switch (type) {
+        case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String inviter = map['inviter'];
+          String? reason = map['reason'];
+          element.onInvitationReceivedFromGroup
+              ?.call(groupId, groupName, inviter, reason);
+          break;
+        case EMGroupChangeEvent.ON_INVITATION_ACCEPTED:
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
+          String? reason = map['reason'];
+          element.onInvitationAcceptedFromGroup?.call(groupId, invitee, reason);
+          break;
+        case EMGroupChangeEvent.ON_INVITATION_DECLINED:
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
+          String? reason = map['reason'];
+          element.onInvitationDeclinedFromGroup?.call(groupId, invitee, reason);
+          break;
+        case EMGroupChangeEvent.ON_AUTO_ACCEPT_INVITATION:
+          String groupId = map['groupId'];
+          String inviter = map['inviter'];
+          String? inviteMessage = map['inviteMessage'];
+          element.onAutoAcceptInvitationFromGroup
+              ?.call(groupId, inviter, inviteMessage);
+          break;
+        case EMGroupChangeEvent.ON_USER_REMOVED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          element.onUserRemovedFromGroup?.call(groupId, groupName);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String applicant = map['applicant'];
+          String? reason = map['reason'];
+          element.onRequestToJoinReceivedFromGroup
+              ?.call(groupId, groupName, applicant, reason);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String decliner = map['decliner'];
+          String? reason = map['reason'];
+          element.onRequestToJoinDeclinedFromGroup
+              ?.call(groupId, groupName, decliner, reason);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String accepter = map['accepter'];
+          element.onRequestToJoinAcceptedFromGroup
+              ?.call(groupId, groupName, accepter);
+          break;
+        case EMGroupChangeEvent.ON_GROUP_DESTROYED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          element.onGroupDestroyed?.call(groupId, groupName);
+          break;
+        case EMGroupChangeEvent.ON_MUTE_LIST_ADDED:
+          String groupId = map['groupId'];
+          List<String> mutes = List.from(map['mutes']);
+          int? muteExpire = map['muteExpire'];
+          element.onMuteListAddedFromGroup?.call(groupId, mutes, muteExpire);
+          break;
+        case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
+          String groupId = map['groupId'];
+          List<String> mutes = List.from(map['mutes']);
+          element.onMuteListRemovedFromGroup?.call(groupId, mutes);
+          break;
+        case EMGroupChangeEvent.ON_ADMIN_ADDED:
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
+          element.onAdminAddedFromGroup?.call(groupId, administrator);
+          break;
+        case EMGroupChangeEvent.ON_ADMIN_REMOVED:
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
+          element.onAdminRemovedFromGroup?.call(groupId, administrator);
+          break;
+        case EMGroupChangeEvent.ON_OWNER_CHANGED:
+          String groupId = map['groupId'];
+          String newOwner = map['newOwner'];
+          String oldOwner = map['oldOwner'];
+          element.onOwnerChangedFromGroup?.call(groupId, newOwner, oldOwner);
+          break;
+        case EMGroupChangeEvent.ON_MEMBER_JOINED:
+          String groupId = map['groupId'];
+          String member = map['member'];
+          element.onMemberJoinedFromGroup?.call(groupId, member);
+          break;
+        case EMGroupChangeEvent.ON_MEMBER_EXITED:
+          String groupId = map['groupId'];
+          String member = map['member'];
+          element.onMemberExitedFromGroup?.call(groupId, member);
+          break;
+        case EMGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
+          String groupId = map['groupId'];
+          String announcement = map['announcement'];
+          element.onAnnouncementChangedFromGroup?.call(groupId, announcement);
+          break;
+        case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
+          String groupId = map['groupId'];
+          EMGroupSharedFile sharedFile =
+              EMGroupSharedFile.fromJson(map['sharedFile']);
+          element.onSharedFileAddedFromGroup?.call(groupId, sharedFile);
+          break;
+        case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:
+          String groupId = map['groupId'];
+          String fileId = map['fileId'];
+          element.onSharedFileDeletedFromGroup?.call(groupId, fileId);
+          break;
+        case EMGroupChangeEvent.ON_WHITE_LIST_ADDED:
+          String groupId = map["groupId"];
+          List<String> members = List.from(map['whitelist']);
+          element.onAllowListAddedFromGroup?.call(groupId, members);
+          break;
+        case EMGroupChangeEvent.ON_WHITE_LIST_REMOVED:
+          String groupId = map["groupId"];
+          List<String> members = List.from(map['whitelist']);
+          element.onAllowListRemovedFromGroup?.call(groupId, members);
+          break;
+        case EMGroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isAllMuted = map["isMuted"] as bool;
+          element.onAllGroupMemberMuteStateChanged?.call(groupId, isAllMuted);
+          break;
+      }
+    });
+
+    // deprecated (3.9.5)
     for (var listener in _listeners) {
-      var type = map!['type'];
       switch (type) {
         case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
           String groupId = map['groupId'];
@@ -1355,5 +1503,40 @@ class EMGroupManager {
           break;
       }
     }
+  }
+}
+
+extension EMGroupManagerDeprecated on EMGroupManager {
+  ///
+  /// Registers a group manager listener.
+  ///
+  /// The registered listener needs to be used together with {@link #removeGroupManagerListener(EMGroupManagerListener)}.
+  ///
+  /// Param [listener] The group manager listener to be registered.
+  ///
+  @Deprecated("Use EMGroupManager#addEventHandle to instead.")
+  void addGroupManagerListener(EMGroupManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes a group manager listener.
+  ///
+  /// This method removes a group manager listener registered with {@link #addGroupManagerListener(EMGroupManagerListener)}.
+  ///
+  /// Param [listener] The group manager listener to be removed.
+  ///
+  @Deprecated("Use EMGroupManager#removeEventHandle to instead.")
+  void removeGroupManagerListener(EMGroupManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all group manager listener.
+  ///
+  @Deprecated("Use EMGroupManager#clearEventHandles to instead.")
+  void clearAllGroupManagerListeners() {
+    _listeners.clear();
   }
 }

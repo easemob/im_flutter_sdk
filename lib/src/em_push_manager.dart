@@ -280,7 +280,7 @@ class EMPushManager {
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
   ///
-  Future<void> setSilentModeForConversation({
+  Future<void> setConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
     required ChatSilentModeParam param,
@@ -309,7 +309,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<void> removeSilentModeForConversation({
+  Future<void> removeConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
   }) async {
@@ -336,7 +336,7 @@ class EMPushManager {
   ///
   /// **Throws**  A description of the exception. See {@link EMError}.
   ///
-  Future<ChatSilentModeResult> fetchSilentModeForConversation({
+  Future<ChatSilentModeResult> fetchConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
   }) async {
