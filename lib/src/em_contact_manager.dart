@@ -23,7 +23,7 @@ class EMContactManager {
     });
   }
 
-  final Map<String, EMContactManagerEventHandle> _eventHandleMap = {};
+  final Map<String, EMContactEventHandler> _eventHandlesMap = {};
   // deprecated(3.9.5)
   final List<EMContactManagerListener> _listeners = [];
 
@@ -32,7 +32,7 @@ class EMContactManager {
     String username = event['username'];
     String? reason = event['reason'];
 
-    _eventHandleMap.values.forEach((element) {
+    _eventHandlesMap.values.forEach((element) {
       switch (type) {
         case EMContactChangeEvent.CONTACT_ADD:
           element.onContactAdded?.call(username);
@@ -77,44 +77,44 @@ class EMContactManager {
   }
 
   ///
-  /// Adds the contact manager event handle. After calling this method, you can handle for new contact event when they arrive.
+  /// Adds the contact event handler. After calling this method, you can handle for new contact event when they arrive.
   ///
-  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handle] The contact manager handle that handle for room event. See {@link EMContactManagerEventHandle}.
+  /// Param [handler] The handle for contact event. See {@link EMContactEventHandler}.
   ///
-  void addEventHandle(
+  void addEventHandler(
     String identifier,
-    EMContactManagerEventHandle handle,
+    EMContactEventHandler handler,
   ) {
-    _eventHandleMap[identifier] = handle;
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Remove the contact manager event handle.
+  /// Remove the contact event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removeEventHandle(String identifier) {
-    _eventHandleMap.remove(identifier);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Get the contact manager event handle.
+  /// Get the contact event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// **Return** The contact manager event handle.
+  /// **Return** The contact event handler.
   ///
-  EMContactManagerEventHandle? getEventHandle(String identifier) {
-    return _eventHandleMap[identifier];
+  EMContactEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
   }
 
   ///
-  /// Clear all contact manager event handles.
+  /// Clear all contact event handlers.
   ///
-  void clearEventHandles() {
-    _eventHandleMap.clear();
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -369,7 +369,7 @@ extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// Param [listener] The contact manager listener to be registered: {@link EMContactManagerListener}.
   ///
-  @Deprecated("Use EMContactManager#addEventHandle to instead.")
+  @Deprecated("Use EMContactManager#addEventHandler to instead.")
   void addContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -380,7 +380,7 @@ extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// Param [listener] The contact manager listener to be removed.
   ///
-  @Deprecated("Use EMContactManager#removeEventHandle to instead.")
+  @Deprecated("Use EMContactManager#removeEventHandler to instead.")
   void removeContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -388,7 +388,7 @@ extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// Removes all contact manager listeners.
   ///
-  @Deprecated("Use EMContactManager#clearEventHandles to instead.")
+  @Deprecated("Use EMContactManager#clearEventHandlers to instead.")
   void clearContactManagerListeners() {
     _listeners.clear();
   }

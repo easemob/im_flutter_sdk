@@ -143,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    EMClient.getInstance.chatManager.removeEventHandle("customId");
+    EMClient.getInstance.chatManager.removeEventHandler("customId");
     super.dispose();
   }
 
@@ -156,9 +156,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addChatListener() {
-    EMClient.getInstance.chatManager.addEventHandle(
+    EMClient.getInstance.chatManager.addEventHandler(
       "customId",
-      EMChatManagerEventHandle(
+      EMChatEventHandler(
         onMessagesReceived: (messages) {
           for (var msg in messages) {
             switch (msg.body.type) {

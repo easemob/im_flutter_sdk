@@ -17,7 +17,7 @@ import 'internal/inner_headers.dart';
 /// ```
 ///
 class EMChatManager {
-  final Map<String, EMChatManagerEventHandle> _eventHandleMap = {};
+  final Map<String, EMChatEventHandler> _eventHandlesMap = {};
   // deprecated(3.9.5)
   final List<EMChatManagerListener> _listeners = [];
 
@@ -51,41 +51,44 @@ class EMChatManager {
   }
 
   ///
-  /// Adds the chat manager event handle. After calling this method, you can handle for chat manager event when they arrive.
+  /// Adds the chat event handler. After calling this method, you can handle for chat event when they arrive.
   ///
-  /// Param [identifier] The custom Handle identifier, is used to find the corresponding handle.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handle] The chat manager handle that handle for chat manager event. See {@link EMChatManagerEventHandle}.
+  /// Param [handler] The handler for chat event. See {@link EMChatEventHandler}.
   ///
-  void addEventHandle(String identifier, EMChatManagerEventHandle handle) {
-    _eventHandleMap[identifier] = handle;
+  void addEventHandler(
+    String identifier,
+    EMChatEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Remove the chat manager event handle.
+  /// Remove the chat event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removeEventHandle(String identifier) {
-    _eventHandleMap.remove(identifier);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Get the chat manager event handle.
+  /// Get the chat event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// **Return** The chat manager event handle.
+  /// **Return** The chat event handler.
   ///
-  EMChatManagerEventHandle? getEventHandle(String identifier) {
-    return _eventHandleMap[identifier];
+  EMChatEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
   }
 
   ///
-  /// Clear all chat manager event handles.
+  /// Clear all chat event handlers.
   ///
-  void clearEventHandles() {
-    _eventHandleMap.clear();
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -727,7 +730,7 @@ class EMChatManager {
       messageList.add(EMMessage.fromJson(message));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onMessagesReceived?.call(messageList);
     }
 
@@ -743,7 +746,7 @@ class EMChatManager {
       list.add(EMMessage.fromJson(message));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onCmdMessagesReceived?.call(list);
     }
 
@@ -759,7 +762,7 @@ class EMChatManager {
       list.add(EMMessage.fromJson(message));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onMessagesRead?.call(list);
     }
 
@@ -775,7 +778,7 @@ class EMChatManager {
       list.add(EMGroupMessageAck.fromJson(message));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onGroupMessageRead?.call(list);
     }
 
@@ -786,7 +789,7 @@ class EMChatManager {
   }
 
   Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onReadAckForGroupMessageUpdated?.call();
     }
 
@@ -802,7 +805,7 @@ class EMChatManager {
       list.add(EMMessage.fromJson(message));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onMessagesDelivered?.call(list);
     }
 
@@ -818,7 +821,7 @@ class EMChatManager {
       list.add(EMMessage.fromJson(message));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onMessagesRecalled?.call(list);
     }
 
@@ -829,7 +832,7 @@ class EMChatManager {
   }
 
   Future<void> _onConversationsUpdate(dynamic obj) async {
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onConversationsUpdate?.call();
     }
 
@@ -843,7 +846,7 @@ class EMChatManager {
     String from = (obj as Map)['from'];
     String to = obj['to'];
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onConversationRead?.call(from, to);
     }
 
@@ -859,7 +862,7 @@ class EMChatManager {
       list.add(EMMessageReactionEvent.fromJson(reactionChange));
     }
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       item.onMessageReactionDidChange?.call(list);
     }
 
@@ -1084,7 +1087,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Param [listener] The chat manager listener that listens for new messages. See {@link EMChatManagerListener}.
   ///
-  @Deprecated("Use EMChatManager#addEventHandle to instead.")
+  @Deprecated("Use EMChatManager#addEventHandler to instead.")
   void addChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -1097,7 +1100,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Param [listener] The chat manager listener to be removed. See {@link EMChatManagerListener}.
   ///
-  @Deprecated("Use EMChatManager#removeEventHandle to instead.")
+  @Deprecated("Use EMChatManager#removeEventHandler to instead.")
   void removeChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1105,7 +1108,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Removes all chat manager listeners.
   ///
-  @Deprecated("Use EMChatManager#clearEventHandles to instead.")
+  @Deprecated("Use EMChatManager#clearEventHandlers to instead.")
   void clearAllChatManagerListeners() {
     _listeners.clear();
   }
