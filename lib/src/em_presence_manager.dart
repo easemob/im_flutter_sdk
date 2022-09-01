@@ -10,7 +10,7 @@ class EMPresenceManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_presence_manager', JSONMethodCodec());
 
-  final Map<String, EMPresenceManagerEventHandle> _eventHandleMap = {};
+  final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
   // will deprecated
   final List<EMPresenceManagerListener> _listeners = [];
 
@@ -26,44 +26,44 @@ class EMPresenceManager {
   }
 
   ///
-  /// Adds the presence manager event handle. After calling this method, you can handle for new presence event when they arrive.
+  /// Adds the presence event handler. After calling this method, you can handle for new presence event when they arrive.
   ///
-  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handle] The presence manager handle that handle for room event. See {@link EMPresenceManagerEventHandle}.
+  /// Param [handler] The handle for presence event. See {@link EMPresenceEventHandler}.
   ///
-  void addEventHandle(
+  void addEventHandler(
     String identifier,
-    EMPresenceManagerEventHandle handle,
+    EMPresenceEventHandler handler,
   ) {
-    _eventHandleMap[identifier] = handle;
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Remove the presence manager event handle.
+  /// Remove the presence event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removeEventHandle(String identifier) {
-    _eventHandleMap.remove(identifier);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Get the presence manager event handle.
+  /// Get the presence event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// **Return** The presence manager event handle.
+  /// **Return** The presence event handler.
   ///
-  EMPresenceManagerEventHandle? getEventHandle(String identifier) {
-    return _eventHandleMap[identifier];
+  EMPresenceEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
   }
 
   ///
-  /// Clear all presence manager event handles.
+  /// Clear all presence event handlers.
   ///
-  void clearEventHandles() {
-    _eventHandleMap.clear();
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -206,7 +206,7 @@ class EMPresenceManager {
       pList.add(EMPresence.fromJson(item));
     }
 
-    for (var handle in _eventHandleMap.values) {
+    for (var handle in _eventHandlesMap.values) {
       handle.onPresenceStatusChanged?.call(pList);
     }
 
@@ -221,7 +221,7 @@ extension PresenceDeprecated on EMPresenceManager {
   ///
   /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
   ///
-  @Deprecated("Use EMPresenceManager#addEventHandle to instead.")
+  @Deprecated("Use EMPresenceManager#addEventHandler to instead.")
   void addPresenceManagerListener(EMPresenceManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -232,14 +232,14 @@ extension PresenceDeprecated on EMPresenceManager {
   ///
   /// Param [listener] The presence manager listener to be removed.
   ///
-  @Deprecated("Use EMPresenceManager#removeEventHandle to instead.")
+  @Deprecated("Use EMPresenceManager#removeEventHandler to instead.")
   void removePresenceManagerListener(EMPresenceManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
     }
   }
 
-  @Deprecated("Use EMPresenceManager#clearEventHandles to instead.")
+  @Deprecated("Use EMPresenceManager#clearEventHandlers to instead.")
   void clearAllPresenceManagerListener() {
     _listeners.clear();
   }

@@ -30,14 +30,14 @@ class EMChatRoomManager {
     });
   }
 
-  final Map<String, EMChatRoomManagerEventHandle> _eventHandleMap = {};
+  final Map<String, EMRoomEventHandler> _eventHandlesMap = {};
   // deprecated(3.9.5)
   final List<EMChatRoomManagerListener> _listeners = [];
 
   Future<void> _chatRoomChange(Map event) async {
     String? type = event['type'];
 
-    for (var item in _eventHandleMap.values) {
+    for (var item in _eventHandlesMap.values) {
       switch (type) {
         case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
           String roomId = event['roomId'];
@@ -187,44 +187,44 @@ class EMChatRoomManager {
   }
 
   ///
-  /// Adds the room manager event handle. After calling this method, you can handle for new room event when they arrive.
+  /// Adds the room event handler. After calling this method, you can handle for new room event when they arrive.
   ///
-  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handle] The room manager handle that handle for room event. See {@link EMChatRoomManagerEventHandle}.
+  /// Param [handler] The handle for room event. See {@link EMRoomEventHandler}.
   ///
-  void addEventHandle(
+  void addEventHandler(
     String identifier,
-    EMChatRoomManagerEventHandle handle,
+    EMRoomEventHandler handler,
   ) {
-    _eventHandleMap[identifier] = handle;
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Remove the room manager event handle.
+  /// Remove the room event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removeEventHandle(String identifier) {
-    _eventHandleMap.remove(identifier);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Get the room manager event handle.
+  /// Get the room event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// **Return** The room manager event handle.
+  /// **Return** The room event handler.
   ///
-  EMChatRoomManagerEventHandle? getEventHandle(String identifier) {
-    return _eventHandleMap[identifier];
+  EMRoomEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
   }
 
   ///
-  /// Clear all room manager event handles.
+  /// Clear all room event handlers.
   ///
-  void clearEventHandles() {
-    _eventHandleMap.clear();
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -980,7 +980,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] A chat room listener. See {@link EMChatRoomManagerListener}.
   ///
-  @Deprecated("Use EMChatRoomManager#addEventHandle to instead.")
+  @Deprecated("Use EMChatRoomManager#addEventHandler to instead.")
   void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -992,7 +992,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] The chat room manager listener to be removed.
   ///
-  @Deprecated("Use EMChatRoomManager#removeEventHandle to instead.")
+  @Deprecated("Use EMChatRoomManager#removeEventHandler to instead.")
   void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
@@ -1002,7 +1002,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Removes all chat room manager listener.
   ///
-  @Deprecated("Use EMChatRoomManager#clearEventHandles to instead.")
+  @Deprecated("Use EMChatRoomManager#clearEventHandlers to instead.")
   void clearAllChatRoomManagerListeners() {
     _listeners.clear();
   }

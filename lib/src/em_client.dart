@@ -23,14 +23,14 @@ class EMClient {
   final EMPresenceManager _presenceManager = EMPresenceManager();
   final EMChatThreadManager _chatThreadManager = EMChatThreadManager();
 
-  final Map<String, EMConnectionEventHandle> _connectionEventHandle = {};
-  final Map<String, EMConnectionEventHandle> _multiDeviceEventHandle = {};
+  final Map<String, EMConnectionEventHandler> _connectionEventHandler = {};
+  final Map<String, EMMultiDeviceEventHandler> _multiDeviceEventHandler = {};
 
   // deprecated (3.9.5)
   final List<EMConnectionListener> _connectionListeners = [];
   // deprecated (3.9.5)
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
-  @Deprecated("Use ")
+  @deprecated
   final List<EMCustomListener> _customListeners = [];
   // ignore: unused_field
   EMProgressManager? _progressManager;
@@ -42,12 +42,17 @@ class EMClient {
 
   String? _currentUsername;
 
+  static EMClient get getInstance => _instance ??= EMClient._internal();
+
+  ///
+  /// Set a custom event handle to receive data from iOS or Android devices.
+  ///
+  /// Param [customEvent] The custom event handler.
+  ///
   void Function(Map map)? customEvent;
 
   /// Gets the current logged-in username.
   String? get currentUsername => _currentUsername;
-
-  static EMClient get getInstance => _instance ??= EMClient._internal();
 
   EMClient._internal() {
     _progressManager = EMProgressManager();
@@ -92,6 +97,88 @@ class EMClient {
   }
 
   ///
+  /// Adds the connection event handler. After calling this method, you can handle for new room event when they arrive.
+  ///
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
+  ///
+  /// Param [handler] The handler for connection event. See {@link EMConnectionEventHandler}.
+  ///
+  void addConnectionEventHandler(
+    String identifier,
+    EMConnectionEventHandler handler,
+  ) {
+    _connectionEventHandler[identifier] = handler;
+  }
+
+  ///
+  /// Remove the connection event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  void removeConnectionEventHandler(String identifier) {
+    _connectionEventHandler.remove(identifier);
+  }
+
+  ///
+  /// Get the connection event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  /// **Return** The connection event handler.
+  ///
+  EMConnectionEventHandler? getConnectionEventHandler(String identifier) {
+    return _connectionEventHandler[identifier];
+  }
+
+  ///
+  /// Clear all connection event handlers.
+  ///
+  void clearConnectionEventHandles() {
+    _connectionEventHandler.clear();
+  }
+
+  ///
+  /// Adds the multi-device event handler. After calling this method, you can handle for new room event when they arrive.
+  ///
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
+  ///
+  /// Param [handler] The handler multi-device event. See {@link EMMultiDeviceEventHandler}.
+  ///
+  void addMultiDeviceEventHandler(
+    String identifier,
+    EMMultiDeviceEventHandler handler,
+  ) {
+    _multiDeviceEventHandler[identifier] = handler;
+  }
+
+  ///
+  /// Remove the multi-device event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  void removeMultiDeviceEventHandler(String identifier) {
+    _multiDeviceEventHandler.remove(identifier);
+  }
+
+  ///
+  /// Get the multi-device event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  /// **Return** The multi-device event handler.
+  ///
+  EMMultiDeviceEventHandler? getMultiDeviceEventHandler(String identifier) {
+    return _multiDeviceEventHandler[identifier];
+  }
+
+  ///
+  /// Clear all multi-device event handlers.
+  ///
+  void clearMultiDeviceEventHandles() {
+    _multiDeviceEventHandler.clear();
+  }
+
+  ///
   /// Start contact and group, chatroom callback.
   ///
   /// Reference:
@@ -131,6 +218,7 @@ class EMClient {
   /// **Return** The result of whether the user has logged in before.
   /// `true`: means that the user has logged in before,
   /// `false`: means that the user has not login before or has called {@link #logout()} method.
+  ///
   Future<bool> isLoginBefore() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.isLoggedInBefore);
     try {
@@ -667,6 +755,7 @@ extension EMClientDeprecated on EMClient {
   ///
   ///  Removes all chat server connection listeners.
   ///
+  @deprecated
   void clearAllConnectionListeners() {
     _connectionListeners.clear();
   }
@@ -676,7 +765,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener] The custom native listener to be added.
   ///
-  @deprecated
+  @Deprecated("Use EMClient#customEvent to instead.")
   void addCustomListener(EMCustomListener listener) {
     _customListeners.add(listener);
   }

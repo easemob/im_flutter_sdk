@@ -12,7 +12,7 @@ class EMGroupManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_group_manager', JSONMethodCodec());
 
-  final Map<String, EMGroupManagerEventHandle> _eventHandleMap = {};
+  final Map<String, EMGroupEventHandler> _eventHandlesMap = {};
   // deprecated(3.9.5)
   final List<EMGroupManagerListener> _listeners = [];
 
@@ -31,44 +31,44 @@ class EMGroupManager {
   }
 
   ///
-  /// Adds the group manager event handle. After calling this method, you can handle for new group event when they arrive.
+  /// Adds the group event handler. After calling this method, you can handle for new group event when they arrive.
   ///
-  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handle] The group manager handle that handle for room event. See {@link EMGroupManagerEventHandle}.
+  /// Param [handler] The handle for group event. See {@link EMGroupEventHandler}.
   ///
-  void addEventHandle(
+  void addEventHandler(
     String identifier,
-    EMGroupManagerEventHandle handle,
+    EMGroupEventHandler handler,
   ) {
-    _eventHandleMap[identifier] = handle;
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Remove the group manager event handle.
+  /// Remove the group event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removeEventHandle(String identifier) {
-    _eventHandleMap.remove(identifier);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Get the group manager event handle.
+  /// Get the group event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// **Return** The group manager event handle.
+  /// **Return** The group event handler.
   ///
-  EMGroupManagerEventHandle? getEventHandle(String identifier) {
-    return _eventHandleMap[identifier];
+  EMGroupEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
   }
 
   ///
-  /// Clear all group manager event handles.
+  /// Clear all group event handlers.
   ///
-  void clearEventHandles() {
-    _eventHandleMap.clear();
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -1237,7 +1237,7 @@ class EMGroupManager {
 
   Future<void> _onGroupChanged(Map? map) async {
     var type = map!['type'];
-    _eventHandleMap.values.forEach((element) {
+    _eventHandlesMap.values.forEach((element) {
       switch (type) {
         case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
           String groupId = map['groupId'];
@@ -1514,7 +1514,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Param [listener] The group manager listener to be registered.
   ///
-  @Deprecated("Use EMGroupManager#addEventHandle to instead.")
+  @Deprecated("Use EMGroupManager#addEventHandler to instead.")
   void addGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -1527,7 +1527,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Param [listener] The group manager listener to be removed.
   ///
-  @Deprecated("Use EMGroupManager#removeEventHandle to instead.")
+  @Deprecated("Use EMGroupManager#removeEventHandler to instead.")
   void removeGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1535,7 +1535,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Removes all group manager listener.
   ///
-  @Deprecated("Use EMGroupManager#clearEventHandles to instead.")
+  @Deprecated("Use EMGroupManager#clearEventHandlers to instead.")
   void clearAllGroupManagerListeners() {
     _listeners.clear();
   }

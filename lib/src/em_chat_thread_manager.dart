@@ -11,7 +11,7 @@ class EMChatThreadManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_thread_manager', JSONMethodCodec());
 
-  final Map<String, EMChatThreadManagerEventHandle> _eventHandleMap = {};
+  final Map<String, EMChatThreadEventHandler> _eventHandlesMap = {};
   // deprecated(3.9.5)
   final List<EMChatThreadManagerListener> _listeners = [];
 
@@ -32,44 +32,44 @@ class EMChatThreadManager {
   }
 
   ///
-  /// Adds the chat thread manager event handle. After calling this method, you can handle for chat thread event when they arrive.
+  /// Adds the chat thread event handler. After calling this method, you can handle for chat thread event when they arrive.
   ///
-  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handle] The chat thread manager handle that handle for chat thread event. See {@link EMChatThreadManagerEventHandle}.
+  /// Param [handler] The handle for chat thread event. See {@link EMChatThreadEventHandler}.
   ///
-  void addEventHandle(
+  void addEventHandler(
     String identifier,
-    EMChatThreadManagerEventHandle handle,
+    EMChatThreadEventHandler handler,
   ) {
-    _eventHandleMap[identifier] = handle;
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Remove the chat thread manager event handle.
+  /// Remove the chat thread event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removeEventHandle(String identifier) {
-    _eventHandleMap.remove(identifier);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Get the chat thread manager event handle.
+  /// Get the chat thread event handler.
   ///
-  /// Param [identifier] The custom handle identifier.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// **Return** The chat thread manager event handle.
+  /// **Return** The chat thread event handler.
   ///
-  EMChatThreadManagerEventHandle? getEventHandle(String identifier) {
-    return _eventHandleMap[identifier];
+  EMChatThreadEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
   }
 
   ///
-  /// Clear all chat thread manager event handles.
+  /// Clear all chat thread event handlers.
   ///
-  void clearEventHandles() {
-    _eventHandleMap.clear();
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -519,7 +519,7 @@ class EMChatThreadManager {
       return;
     }
 
-    _eventHandleMap.values.forEach((element) {
+    _eventHandlesMap.values.forEach((element) {
       element.onUserKickOutOfChatThread?.call(
         EMChatThreadEvent.fromJson(event),
       );
@@ -538,7 +538,7 @@ extension ChatThreadManagerDeprecated on EMChatThreadManager {
   ///
   /// Param [listener] The chat thread manager listener that listens for new chat thread. See {@link EMChatThreadManagerListener}.
   ///
-  @Deprecated("Use EMChatThreadManager#addEventHandle to instead.")
+  @Deprecated("Use EMChatThreadManager#addEventHandler to instead.")
   void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -551,7 +551,7 @@ extension ChatThreadManagerDeprecated on EMChatThreadManager {
   ///
   /// Param [listener] The chat thread listener to be removed. See {@link EMChatThreadManagerListener}.
   ///
-  @Deprecated("Use EMChatThreadManager#removeEventHandle to instead.")
+  @Deprecated("Use EMChatThreadManager#removeEventHandler to instead.")
   void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -559,7 +559,7 @@ extension ChatThreadManagerDeprecated on EMChatThreadManager {
   ///
   /// Removes all chat thread listeners.
   ///
-  @Deprecated("Use EMChatThreadManager#clearEventHandles to instead.")
+  @Deprecated("Use EMChatThreadManager#clearEventHandlers to instead.")
   void clearAllChatThreadManagerListeners() {
     _listeners.clear();
   }
