@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'internal/inner_headers.dart';
 
@@ -21,8 +22,15 @@ class EMClient {
 
   final EMPresenceManager _presenceManager = EMPresenceManager();
   final EMChatThreadManager _chatThreadManager = EMChatThreadManager();
+
+  final Map<String, EMConnectionEventHandle> _connectionEventHandle = {};
+  final Map<String, EMConnectionEventHandle> _multiDeviceEventHandle = {};
+
+  // deprecated (3.9.5)
   final List<EMConnectionListener> _connectionListeners = [];
+  // deprecated (3.9.5)
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
+  @Deprecated("Use ")
   final List<EMCustomListener> _customListeners = [];
   // ignore: unused_field
   EMProgressManager? _progressManager;
@@ -33,6 +41,8 @@ class EMClient {
   EMOptions? get options => _options;
 
   String? _currentUsername;
+
+  void Function(Map map)? customEvent;
 
   /// Gets the current logged-in username.
   String? get currentUsername => _currentUsername;
@@ -423,87 +433,6 @@ class EMClient {
     }
   }
 
-  /* Listeners*/
-
-  ///
-  /// Adds the multi-device listener.
-  ///
-  /// Param [listener] The listener to be added: {EMMultiDeviceListener}.
-  ///
-  void addMultiDeviceListener(EMMultiDeviceListener listener) {
-    _multiDeviceListeners.add(listener);
-  }
-
-  ///
-  /// Removes the multi-device listener.
-  ///
-  /// Param [listener] The listener to be removed: {EMMultiDeviceListener}.
-  ///
-  void removeMultiDeviceListener(EMMultiDeviceListener listener) {
-    if (_multiDeviceListeners.contains(listener)) {
-      _multiDeviceListeners.remove(listener);
-    }
-  }
-
-  ///
-  /// Removes all multi-device listener.
-  ///
-  void clearAllMultiDeviceListeners() {
-    _multiDeviceListeners.clear();
-  }
-
-  ///
-  /// Adds the connection listener of chat server.
-  ///
-  /// Param [listener] The chat server connection listener to be added.
-  ///
-  void addConnectionListener(EMConnectionListener listener) {
-    _connectionListeners.add(listener);
-  }
-
-  ///
-  /// Removes the chat server connection listener.
-  ///
-  /// Param [listener]  The chat server connection listener to be removed.
-  ///
-  void removeConnectionListener(EMConnectionListener listener) {
-    if (_connectionListeners.contains(listener)) {
-      _connectionListeners.remove(listener);
-    }
-  }
-
-  ///
-  ///  Removes all chat server connection listeners.
-  ///
-  void clearAllConnectionListeners() {
-    _connectionListeners.clear();
-  }
-
-  ///
-  /// Adds a custom listener to receive data from iOS or Android devices.
-  ///
-  /// Param [listener] The custom native listener to be added.
-  ///
-  void addCustomListener(EMCustomListener listener) {
-    _customListeners.add(listener);
-  }
-
-  ///
-  /// Removes the custom listener.
-  ///
-  /// Param [listener] The custom native listener.
-  ///
-  void removeCustomListener(EMCustomListener listener) {
-    if (_customListeners.contains(listener)) {
-      _customListeners.remove(listener);
-    }
-  }
-
-  /// Removes all custom listeners.
-  void clearAllCustomListeners() {
-    _customListeners.clear();
-  }
-
   Future<void> _onConnected() async {
     for (var listener in _connectionListeners) {
       listener.onConnected();
@@ -589,9 +518,7 @@ class EMClient {
   }
 
   void _onReceiveCustomData(Map map) {
-    for (var listener in _customListeners) {
-      listener.onDataReceived(map);
-    }
+    customEvent?.call(map);
   }
 
   void _onTokenWillExpire(Map? map) {
@@ -681,5 +608,94 @@ class EMClient {
   void _clearAllInfo() {
     _currentUsername = null;
     _userInfoManager.clearUserInfoCache();
+  }
+}
+
+extension EMClientDeprecated on EMClient {
+  ///
+  /// Adds the multi-device listener.
+  ///
+  /// Param [listener] The listener to be added: {EMMultiDeviceListener}.
+  ///
+  @deprecated
+  void addMultiDeviceListener(EMMultiDeviceListener listener) {
+    _multiDeviceListeners.add(listener);
+  }
+
+  ///
+  /// Removes the multi-device listener.
+  ///
+  /// Param [listener] The listener to be removed: {EMMultiDeviceListener}.
+  ///
+  @deprecated
+  void removeMultiDeviceListener(EMMultiDeviceListener listener) {
+    if (_multiDeviceListeners.contains(listener)) {
+      _multiDeviceListeners.remove(listener);
+    }
+  }
+
+  ///
+  /// Removes all multi-device listener.
+  ///
+  @deprecated
+  void clearAllMultiDeviceListeners() {
+    _multiDeviceListeners.clear();
+  }
+
+  ///
+  /// Adds the connection listener of chat server.
+  ///
+  /// Param [listener] The chat server connection listener to be added.
+  ///
+  @deprecated
+  void addConnectionListener(EMConnectionListener listener) {
+    _connectionListeners.add(listener);
+  }
+
+  ///
+  /// Removes the chat server connection listener.
+  ///
+  /// Param [listener]  The chat server connection listener to be removed.
+  ///
+  @deprecated
+  void removeConnectionListener(EMConnectionListener listener) {
+    if (_connectionListeners.contains(listener)) {
+      _connectionListeners.remove(listener);
+    }
+  }
+
+  ///
+  ///  Removes all chat server connection listeners.
+  ///
+  void clearAllConnectionListeners() {
+    _connectionListeners.clear();
+  }
+
+  ///
+  /// Adds a custom listener to receive data from iOS or Android devices.
+  ///
+  /// Param [listener] The custom native listener to be added.
+  ///
+  @deprecated
+  void addCustomListener(EMCustomListener listener) {
+    _customListeners.add(listener);
+  }
+
+  ///
+  /// Removes the custom listener.
+  ///
+  /// Param [listener] The custom native listener.
+  ///
+  @deprecated
+  void removeCustomListener(EMCustomListener listener) {
+    if (_customListeners.contains(listener)) {
+      _customListeners.remove(listener);
+    }
+  }
+
+  /// Removes all custom listeners.
+  @deprecated
+  void clearAllCustomListeners() {
+    _customListeners.clear();
   }
 }

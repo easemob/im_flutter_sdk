@@ -736,7 +736,7 @@
                   channelName:(NSString *)aChannelName
                        result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.chatManager fetchSupportedLangurages:^(NSArray<EMTranslateLanguage *> * _Nullable languages, EMError * _Nullable error) {
+    [EMClient.sharedClient.chatManager fetchSupportedLanguages:^(NSArray<EMTranslateLanguage *> * _Nullable languages, EMError * _Nullable error) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error

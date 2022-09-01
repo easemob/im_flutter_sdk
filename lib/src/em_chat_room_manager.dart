@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'internal/inner_headers.dart';
 
 ///
@@ -29,44 +30,87 @@ class EMChatRoomManager {
     });
   }
 
+  final Map<String, EMChatRoomManagerEventHandle> _eventHandleMap = {};
+  // deprecated(3.9.5)
   final List<EMChatRoomManagerListener> _listeners = [];
-
-  ///
-  /// Registers a chat room manager listener.
-  ///
-  /// After registering the chat room manager listener, you can listen for events in {@link EMChatRoomManagerListener}, for example, users joining and exiting the chat room, adding the specified member to the chat group mute list, updating the chat room allow list, and destroying the chat room.
-  ///
-  /// To stop listening for chat room manager, call {@link #removeChatRoomManagerListener(EMChatRoomManagerListener)}.
-  ///
-  /// Param [listener] A chat room listener. See {@link EMChatRoomManagerListener}.
-  ///
-  void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
-  }
-
-  ///
-  /// Removes a chat room manager listener.
-  /// This method removes the chat room manager listener registered with {@link #addChatRoomManagerListener(EMChatRoomManagerListener)}.
-  ///
-  /// Param [listener] The chat room manager listener to be removed.
-  ///
-  void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
-    if (_listeners.contains(listener)) {
-      _listeners.remove(listener);
-    }
-  }
-
-  ///
-  /// Removes all chat room manager listener.
-  ///
-  void clearAllChatRoomManagerListeners() {
-    _listeners.clear();
-  }
 
   Future<void> _chatRoomChange(Map event) async {
     String? type = event['type'];
 
+    for (var item in _eventHandleMap.values) {
+      switch (type) {
+        case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          item.onChatRoomDestroyed?.call(roomId, roomName);
+          break;
+        case EMChatRoomEvent.ON_MEMBER_JOINED:
+          String roomId = event['roomId'];
+          String participant = event['participant'];
+          item.onMemberJoinedFromChatRoom?.call(roomId, participant);
+          break;
+        case EMChatRoomEvent.ON_MEMBER_EXITED:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          String participant = event['participant'];
+          item.onMemberExitedFromChatRoom?.call(roomId, roomName, participant);
+          break;
+        case EMChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          String participant = event['participant'];
+          item.onRemovedFromChatRoom?.call(roomId, roomName, participant);
+          break;
+        case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
+          String roomId = event['roomId'];
+          List<String> mutes = List.from(event['mutes']);
+          String? expireTime = event['expireTime'];
+          item.onMuteListAddedFromChatRoom?.call(roomId, mutes, expireTime);
+          break;
+        case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> mutes = List.from(event['mutes']);
+          item.onMuteListRemovedFromChatRoom?.call(roomId, mutes);
+          break;
+        case EMChatRoomEvent.ON_ADMIN_ADDED:
+          String roomId = event['roomId'];
+          String admin = event['admin'];
+          item.onAdminAddedFromChatRoom?.call(roomId, admin);
+          break;
+        case EMChatRoomEvent.ON_ADMIN_REMOVED:
+          String roomId = event['roomId'];
+          String admin = event['admin'];
+          item.onAdminRemovedFromChatRoom?.call(roomId, admin);
+          break;
+        case EMChatRoomEvent.ON_OWNER_CHANGED:
+          String roomId = event['roomId'];
+          String newOwner = event['newOwner'];
+          String oldOwner = event['oldOwner'];
+          item.onOwnerChangedFromChatRoom?.call(roomId, newOwner, oldOwner);
+          break;
+        case EMChatRoomEvent.ON_ANNOUNCEMENT_CHANGED:
+          String roomId = event['roomId'];
+          String announcement = event['announcement'];
+          item.onAnnouncementChangedFromChatRoom?.call(roomId, announcement);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
+          String roomId = event['roomId'];
+          List<String> members = List.from(event["whitelist"]);
+          item.onAllowListAddedFromChatRoom?.call(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> members = List.from(event["whitelist"]);
+          item.onAllowListRemovedFromChatRoom?.call(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String roomId = event['roomId'];
+          bool isAllMuted = event['isMuted'];
+          item.onAllChatRoomMemberMuteStateChanged?.call(roomId, isAllMuted);
+          break;
+      }
+    }
+    // deprecated (3.9.5)
     for (var listener in _listeners) {
       switch (type) {
         case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
@@ -140,6 +184,47 @@ class EMChatRoomManager {
           break;
       }
     }
+  }
+
+  ///
+  /// Adds the room manager event handle. After calling this method, you can handle for new room event when they arrive.
+  ///
+  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
+  ///
+  /// Param [handle] The room manager handle that handle for room event. See {@link EMChatRoomManagerEventHandle}.
+  ///
+  void addEventHandle(
+    String identifier,
+    EMChatRoomManagerEventHandle handle,
+  ) {
+    _eventHandleMap[identifier] = handle;
+  }
+
+  ///
+  /// Remove the room manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  void removeEventHandle(String identifier) {
+    _eventHandleMap.remove(identifier);
+  }
+
+  ///
+  /// Get the room manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  /// **Return** The room manager event handle.
+  ///
+  EMChatRoomManagerEventHandle? getEventHandle(String identifier) {
+    return _eventHandleMap[identifier];
+  }
+
+  ///
+  /// Clear all room manager event handles.
+  ///
+  void clearEventHandles() {
+    _eventHandleMap.clear();
   }
 
   ///
@@ -882,5 +967,43 @@ class EMChatRoomManager {
     } on EMError catch (e) {
       throw e;
     }
+  }
+}
+
+extension ChatRoomManagerDeprecated on EMChatRoomManager {
+  ///
+  /// Registers a chat room manager listener.
+  ///
+  /// After registering the chat room manager listener, you can listen for events in {@link EMChatRoomManagerListener}, for example, users joining and exiting the chat room, adding the specified member to the chat group mute list, updating the chat room allow list, and destroying the chat room.
+  ///
+  /// To stop listening for chat room manager, call {@link #removeChatRoomManagerListener(EMChatRoomManagerListener)}.
+  ///
+  /// Param [listener] A chat room listener. See {@link EMChatRoomManagerListener}.
+  ///
+  @Deprecated("Use EMChatRoomManager#addEventHandle to instead.")
+  void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes a chat room manager listener.
+  /// This method removes the chat room manager listener registered with {@link #addChatRoomManagerListener(EMChatRoomManagerListener)}.
+  ///
+  /// Param [listener] The chat room manager listener to be removed.
+  ///
+  @Deprecated("Use EMChatRoomManager#removeEventHandle to instead.")
+  void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
+    if (_listeners.contains(listener)) {
+      _listeners.remove(listener);
+    }
+  }
+
+  ///
+  /// Removes all chat room manager listener.
+  ///
+  @Deprecated("Use EMChatRoomManager#clearEventHandles to instead.")
+  void clearAllChatRoomManagerListeners() {
+    _listeners.clear();
   }
 }

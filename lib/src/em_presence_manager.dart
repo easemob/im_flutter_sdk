@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'event_handler/manager_event_handler.dart';
 import 'internal/inner_headers.dart';
 
 ///
@@ -8,6 +9,9 @@ class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_presence_manager', JSONMethodCodec());
+
+  final Map<String, EMPresenceManagerEventHandle> _eventHandleMap = {};
+  // will deprecated
   final List<EMPresenceManagerListener> _listeners = [];
 
   /// @nodoc
@@ -22,28 +26,44 @@ class EMPresenceManager {
   }
 
   ///
-  /// Registers a new presence manager listener.
+  /// Adds the presence manager event handle. After calling this method, you can handle for new presence event when they arrive.
   ///
-  /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
+  /// Param [identifier] The custom handle identifier, is used to find the corresponding handle.
   ///
-  void addPresenceManagerListener(EMPresenceManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
+  /// Param [handle] The presence manager handle that handle for room event. See {@link EMPresenceManagerEventHandle}.
+  ///
+  void addEventHandle(
+    String identifier,
+    EMPresenceManagerEventHandle handle,
+  ) {
+    _eventHandleMap[identifier] = handle;
   }
 
   ///
-  /// Removes the contact listener.
+  /// Remove the presence manager event handle.
   ///
-  /// Param [listener] The presence manager listener to be removed.
+  /// Param [identifier] The custom handle identifier.
   ///
-  void removePresenceManagerListener(EMPresenceManagerListener listener) {
-    if (_listeners.contains(listener)) {
-      _listeners.remove(listener);
-    }
+  void removeEventHandle(String identifier) {
+    _eventHandleMap.remove(identifier);
   }
 
-  void clearAllPresenceManagerListener() {
-    _listeners.clear();
+  ///
+  /// Get the presence manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  /// **Return** The presence manager event handle.
+  ///
+  EMPresenceManagerEventHandle? getEventHandle(String identifier) {
+    return _eventHandleMap[identifier];
+  }
+
+  ///
+  /// Clear all presence manager event handles.
+  ///
+  void clearEventHandles() {
+    _eventHandleMap.clear();
   }
 
   ///
@@ -186,6 +206,46 @@ class EMPresenceManager {
       pList.add(EMPresence.fromJson(item));
     }
 
+    for (var handle in _eventHandleMap.values) {
+      handle.onPresenceStatusChanged?.call(pList);
+    }
+
+    // ignore: deprecated_member_use_from_same_package
+    _forward(pList);
+  }
+}
+
+extension PresenceDeprecated on EMPresenceManager {
+  ///
+  /// Registers a new presence manager listener.
+  ///
+  /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
+  ///
+  @Deprecated("Use EMPresenceManager#addEventHandle to instead.")
+  void addPresenceManagerListener(EMPresenceManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes the contact listener.
+  ///
+  /// Param [listener] The presence manager listener to be removed.
+  ///
+  @Deprecated("Use EMPresenceManager#removeEventHandle to instead.")
+  void removePresenceManagerListener(EMPresenceManagerListener listener) {
+    if (_listeners.contains(listener)) {
+      _listeners.remove(listener);
+    }
+  }
+
+  @Deprecated("Use EMPresenceManager#clearEventHandles to instead.")
+  void clearAllPresenceManagerListener() {
+    _listeners.clear();
+  }
+
+  @deprecated
+  void _forward(List<EMPresence> pList) {
     for (var listener in _listeners) {
       listener.onPresenceStatusChanged(pList);
     }

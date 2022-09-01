@@ -1,6 +1,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import 'internal/inner_headers.dart';
 
@@ -16,6 +17,8 @@ import 'internal/inner_headers.dart';
 /// ```
 ///
 class EMChatManager {
+  final Map<String, EMChatManagerEventHandle> _eventHandleMap = {};
+  // deprecated(3.9.5)
   final List<EMChatManagerListener> _listeners = [];
 
   /// @nodoc
@@ -45,6 +48,44 @@ class EMChatManager {
       }
       return null;
     });
+  }
+
+  ///
+  /// Adds the chat manager event handle. After calling this method, you can handle for chat manager event when they arrive.
+  ///
+  /// Param [identifier] The custom Handle identifier, is used to find the corresponding handle.
+  ///
+  /// Param [handle] The chat manager handle that handle for chat manager event. See {@link EMChatManagerEventHandle}.
+  ///
+  void addEventHandle(String identifier, EMChatManagerEventHandle handle) {
+    _eventHandleMap[identifier] = handle;
+  }
+
+  ///
+  /// Remove the chat manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  void removeEventHandle(String identifier) {
+    _eventHandleMap.remove(identifier);
+  }
+
+  ///
+  /// Get the chat manager event handle.
+  ///
+  /// Param [identifier] The custom handle identifier.
+  ///
+  /// **Return** The chat manager event handle.
+  ///
+  EMChatManagerEventHandle? getEventHandle(String identifier) {
+    return _eventHandleMap[identifier];
+  }
+
+  ///
+  /// Clear all chat manager event handles.
+  ///
+  void clearEventHandles() {
+    _eventHandleMap.clear();
   }
 
   ///
@@ -495,34 +536,6 @@ class EMChatManager {
   }
 
   ///
-  /// Adds the chat manager listener. After calling this method, you can listen for new messages when they arrive.
-  ///
-  /// Param [listener] The chat manager listener that listens for new messages. See {@link EMChatManagerListener}.
-  ///
-  void addChatManagerListener(EMChatManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
-  }
-
-  ///
-  /// Removes the chat manager listener.
-  ///
-  /// After adding a chat manager listener, you can remove this listener if you do not want to listen for it.
-  ///
-  /// Param [listener] The chat manager listener to be removed. See {@link EMChatManagerListener}.
-  ///
-  void removeChatManagerListener(EMChatManagerListener listener) {
-    _listeners.remove(listener);
-  }
-
-  ///
-  /// Removes all chat manager listeners.
-  ///
-  void clearAllChatManagerListeners() {
-    _listeners.clear();
-  }
-
-  ///
   /// Gets historical messages of the conversation from the server with pagination.
   ///
   /// Param [conversationId] The conversation ID.
@@ -713,6 +726,12 @@ class EMChatManager {
     for (var message in messages) {
       messageList.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onMessagesReceived?.call(messageList);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesReceived(messageList);
     }
@@ -723,6 +742,12 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onCmdMessagesReceived?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onCmdMessagesReceived(list);
     }
@@ -733,6 +758,12 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onMessagesRead?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesRead(list);
     }
@@ -743,12 +774,23 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMGroupMessageAck.fromJson(message));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onGroupMessageRead?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onGroupMessageRead(list);
     }
   }
 
   Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
+    for (var item in _eventHandleMap.values) {
+      item.onReadAckForGroupMessageUpdated?.call();
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onReadAckForGroupMessageUpdated();
     }
@@ -759,6 +801,12 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onMessagesDelivered?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesDelivered(list);
     }
@@ -769,21 +817,38 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onMessagesRecalled?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesRecalled(list);
     }
   }
 
   Future<void> _onConversationsUpdate(dynamic obj) async {
+    for (var item in _eventHandleMap.values) {
+      item.onConversationsUpdate?.call();
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onConversationsUpdate();
     }
   }
 
   Future<void> _onConversationHasRead(dynamic obj) async {
+    String from = (obj as Map)['from'];
+    String to = obj['to'];
+
+    for (var item in _eventHandleMap.values) {
+      item.onConversationRead?.call(from, to);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
-      String from = (obj as Map)['from'];
-      String to = obj['to'];
       listener.onConversationRead(from, to);
     }
   }
@@ -793,12 +858,16 @@ class EMChatManager {
     for (var reactionChange in reactionChangeList) {
       list.add(EMMessageReactionEvent.fromJson(reactionChange));
     }
+
+    for (var item in _eventHandleMap.values) {
+      item.onMessageReactionDidChange?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessageReactionDidChange(list);
     }
   }
-
-  ///// Moderation
 
   ///
   /// Report violation message
@@ -826,8 +895,6 @@ class EMChatManager {
     }
   }
 
-  //// Reaction
-
   ///
   /// Adds a reaction.
   ///
@@ -853,7 +920,6 @@ class EMChatManager {
 
   ///
   /// Deletes a reaction.
-  ///
   ///
   /// Param [messageId] The message ID.
   ///
@@ -1009,5 +1075,38 @@ class EMChatManager {
     } on EMError catch (e) {
       throw e;
     }
+  }
+}
+
+extension ChatManagerDeprecated on EMChatManager {
+  ///
+  /// Adds the chat manager listener. After calling this method, you can listen for new messages when they arrive.
+  ///
+  /// Param [listener] The chat manager listener that listens for new messages. See {@link EMChatManagerListener}.
+  ///
+  @Deprecated("Use EMChatManager#addEventHandle to instead.")
+  void addChatManagerListener(EMChatManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes the chat manager listener.
+  ///
+  /// After adding a chat manager listener, you can remove this listener if you do not want to listen for it.
+  ///
+  /// Param [listener] The chat manager listener to be removed. See {@link EMChatManagerListener}.
+  ///
+  @Deprecated("Use EMChatManager#removeEventHandle to instead.")
+  void removeChatManagerListener(EMChatManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all chat manager listeners.
+  ///
+  @Deprecated("Use EMChatManager#clearEventHandles to instead.")
+  void clearAllChatManagerListeners() {
+    _listeners.clear();
   }
 }
