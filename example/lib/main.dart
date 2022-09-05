@@ -32,7 +32,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   ScrollController scrollController = ScrollController();
-  String _username = "";
+  String _userId = "";
   String _password = "";
   String _messageContent = "";
   String _chatId = "";
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             TextField(
               decoration: const InputDecoration(hintText: "Enter username"),
-              onChanged: (username) => _username = username,
+              onChanged: (username) => _userId = username,
             ),
             TextField(
               decoration: const InputDecoration(hintText: "Enter password"),
@@ -143,13 +143,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    EMClient.getInstance.chatManager.removeEventHandler("customId");
+    EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
 
   void _initSDK() async {
     EMOptions options = EMOptions(
-      appKey: "easemob-demo#flutter",
+      appKey: "<#Your AppKey#>",
       autoLogin: false,
     );
     await EMClient.getInstance.init(options);
@@ -157,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _addChatListener() {
     EMClient.getInstance.chatManager.addEventHandler(
-      "customId",
+      "UNIQUE_HANDLER_ID",
       EMChatEventHandler(
         onMessagesReceived: (messages) {
           for (var msg in messages) {
@@ -225,14 +225,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signIn() async {
-    if (_username.isEmpty || _password.isEmpty) {
+    if (_userId.isEmpty || _password.isEmpty) {
       _addLogToConsole("username or password is null");
       return;
     }
 
     try {
-      await EMClient.getInstance.login(_username, _password);
-      _addLogToConsole("sign in succeed, username: $_username");
+      await EMClient.getInstance.login(_userId, _password);
+      _addLogToConsole("sign in succeed, username: $_userId");
     } on EMError catch (e) {
       _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
     }
@@ -249,14 +249,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signUp() async {
-    if (_username.isEmpty || _password.isEmpty) {
+    if (_userId.isEmpty || _password.isEmpty) {
       _addLogToConsole("username or password is null");
       return;
     }
 
     try {
-      await EMClient.getInstance.createAccount(_username, _password);
-      _addLogToConsole("sign up succeed, username: $_username");
+      await EMClient.getInstance.createAccount(_userId, _password);
+      _addLogToConsole("sign up succeed, username: $_userId");
     } on EMError catch (e) {
       _addLogToConsole("sign up failed, e: ${e.code} , ${e.description}");
     }
