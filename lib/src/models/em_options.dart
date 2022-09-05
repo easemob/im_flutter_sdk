@@ -18,7 +18,7 @@ class EMOptions {
   final bool autoLogin;
 
   ///
-  /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using {@link #init(Context, EMOptions)}.
+  /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using [EMClient.init].
   ///
   /// - `true`: Yes.
   /// - `false`: (Default)No.
@@ -212,7 +212,7 @@ class EMOptions {
       /// - `false`: No.
       this.autoLogin = true,
 
-      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See {@link #init(Context, EMOptions)}.
+      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
       /// - `true`: Yes.
       /// - `false`: (Default) No.
       this.debugModel = false,

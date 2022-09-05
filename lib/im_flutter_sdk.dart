@@ -1,6 +1,7 @@
+
 library im_flutter_sdk;
 
-export 'src/em_client.dart' show EMClient;
+export 'src/em_client.dart';
 
 export 'src/em_chat_manager.dart';
 export 'src/em_chat_thread_manager.dart';

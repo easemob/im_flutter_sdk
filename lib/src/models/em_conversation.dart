@@ -129,7 +129,7 @@ class EMConversation {
   ///
   /// **Return** The unread message count of the conversation.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<int> unreadCount() async {
     Map req = this._toJson();
@@ -152,7 +152,7 @@ class EMConversation {
   ///
   /// Param [messageId] The message ID.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> markMessageAsRead(String messageId) async {
     Map req = this._toJson();
@@ -186,7 +186,7 @@ class EMConversation {
   ///
   /// Param [message] The message instance.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> insertMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -207,7 +207,7 @@ class EMConversation {
   ///
   /// Param [message] The message instance.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> appendMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -228,7 +228,7 @@ class EMConversation {
   ///
   /// Param [message] The message to be updated.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -251,7 +251,7 @@ class EMConversation {
   ///
   /// Param [messageId] The ID of message to be deleted.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> deleteMessage(String messageId) async {
     Map req = this._toJson();
@@ -268,7 +268,7 @@ class EMConversation {
   ///
   /// Deletes all the messages of the conversation from both the memory and local database.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(
@@ -289,7 +289,7 @@ class EMConversation {
   ///
   /// **Return** The message instance.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = this._toJson();
@@ -322,13 +322,13 @@ class EMConversation {
   ///
   /// Param [sender] The sender of the message. The param can also be used to search in group chat or chat room.
   ///
-  /// Param [direction]  The direction in which the message is loaded: EMSearchDirection.
+  /// Param [direction]  The direction in which the message is loaded: [EMSearchDirection].
   /// - `EMSearchDirection.Up`: Messages are retrieved in the reverse chronological order of when the server received messages.
   /// - `EMSearchDirection.Down`: Messages are retrieved in the chronological order of when the server received messages.
   ///
   /// **Return** The message list.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMMessage>> loadMessagesWithMsgType({
     required MessageType type,
@@ -363,7 +363,6 @@ class EMConversation {
   /// Loads messages from the local database before the specified message.
   ///
   /// The loaded messages will also join the existing messages of the conversation stored in the memory.
-  /// The {@link #getAllMessages()} method returns all messages of the conversation loaded in the memory.
   ///
   /// Param [startMsgId] The starting message ID. Message loaded in the memory before this message ID will be loaded. If the `startMsgId` is set as "" or null, the SDK will first load the latest messages in the database.
   ///
@@ -375,7 +374,7 @@ class EMConversation {
   ///
   /// **Return** The message list.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMMessage>> loadMessages({
     String startMsgId = '',
@@ -421,7 +420,7 @@ class EMConversation {
   ///
   /// **Returns** The list of retrieved messages.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
@@ -465,7 +464,7 @@ class EMConversation {
   ///
   /// **Returns** The list of searched messages.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMMessage>> loadMessagesFromTime({
     required int startTime,

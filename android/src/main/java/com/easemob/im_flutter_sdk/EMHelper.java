@@ -1121,6 +1121,7 @@ class EMPushConfigsHelper {
         data.put("noDisturbEndHour", pushConfigs.getNoDisturbEndHour());
         data.put("noDisturbStartHour", pushConfigs.getNoDisturbStartHour());
         data.put("pushStyle", pushConfigs.getDisplayStyle() != EMPushManager.DisplayStyle.SimpleBanner);
+        data.put("displayName", pushConfigs.getDisplayNickname());
         return data;
     }
 }

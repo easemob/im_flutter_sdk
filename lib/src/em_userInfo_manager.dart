@@ -37,7 +37,7 @@ class EMUserInfoManager {
   ///
   /// **Return** The user info.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMUserInfo> updateUserInfo({
     String? nickname,
@@ -77,9 +77,9 @@ class EMUserInfoManager {
   ///
   /// Param [expireTime] The time period(seconds) when the user attributes in the cache expire. If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
   ///
-  /// **Return**  The user properties that are obtained. See {@link EMUserInfo}.
+  /// **Return** The user properties that are obtained. See [EMUserInfo].
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 0}) async {
     String? currentUser = await EMClient.getInstance.getCurrentUsername();
@@ -107,7 +107,7 @@ class EMUserInfoManager {
   ///
   /// **Return** A map that contains key-value pairs where the key is the user ID and the value is user attributes.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<Map<String, EMUserInfo>> fetchUserInfoById(
     List<String> userIds, {
