@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+var appKey = "<#Your AppKey#>";
+
 void main() {
   runApp(const MyApp());
 }
@@ -149,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _initSDK() async {
     EMOptions options = EMOptions(
-      appKey: "<#Your AppKey#>",
+      appKey: appKey,
       autoLogin: false,
     );
     await EMClient.getInstance.init(options);
