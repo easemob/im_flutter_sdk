@@ -44,9 +44,9 @@ class EMClient {
   ///
   /// Set a custom event handle to receive data from iOS or Android devices.
   ///
-  /// Param [customEvent] The custom event handler.
+  /// Param [customEventHandler] The custom event handler.
   ///
-  void Function(Map map)? customEvent;
+  void Function(Map map)? customEventHandler;
 
   /// Gets the current logged-in username.
   String? get currentUserId => _currentUserId;
@@ -675,7 +675,7 @@ class EMClient {
   }
 
   void _onReceiveCustomData(Map map) {
-    customEvent?.call(map);
+    customEventHandler?.call(map);
   }
 
   ///
@@ -822,7 +822,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener] The custom native listener to be added.
   ///
-  @Deprecated("Use #customEvent to instead.")
+  @Deprecated("Use #customEventHandler to instead.")
   void addCustomListener(EMCustomListener listener) {
     _customListeners.add(listener);
   }
