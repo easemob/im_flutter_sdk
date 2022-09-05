@@ -4,6 +4,7 @@ import '../internal/inner_headers.dart';
 class EMPushConfigs {
   EMPushConfigs._private({
     this.displayStyle = DisplayStyle.Simple,
+    this.displayName,
     this.noDisturb = false,
     this.noDisturbStartHour = -1,
     this.noDisturbEndHour = -1,
@@ -15,33 +16,31 @@ class EMPushConfigs {
   final DisplayStyle displayStyle;
 
   ///
+  /// The user's nickname to be displayed in the notification.
+  ///
+  final String? displayName;
+
+  ///
   /// Whether to enable the do-not-disturb mode for push notifications.
   /// - `true`: Yes.
   /// - `false`: No.
-  ///  Sets it by {@link EMPushManager#disableOfflinePush(int, int)}.
+  ///  Sets it by [EMPushManager.disableOfflinePush].
   ///
+  @Deprecated(
+      "Use ChatSilentModeResult property remindType, expireTimestamp and silentModeTime determine whether to enable")
   final bool noDisturb;
 
   ///
   /// The start hour of the do-not-disturb mode for push notifications.
   ///
+  @Deprecated("Use ChatSilentModeResult property startTime instead.")
   final int noDisturbStartHour;
 
   ///
   /// The end hour of the do-not-disturb mode for push notifications.
   ///
+  @Deprecated("Use ChatSilentModeResult property endTime instead.")
   final int noDisturbEndHour;
-
-  // ignore: unused_field
-  DisplayStyle? _displayStyle;
-  // ignore: unused_field
-  bool? _noDisturb;
-  // ignore: unused_field
-  int? _noDisturbStartHour;
-  // ignore: unused_field
-  int? _noDisturbEndHour;
-  // ignore: unused_field
-  List<String>? _noDisturbGroups = [];
 
   /// @nodoc
   factory EMPushConfigs.fromJson(Map map) {
@@ -51,6 +50,7 @@ class EMPushConfigs {
       noDisturb: map.boolValue('noDisturb'),
       noDisturbStartHour: map['noDisturbStartHour'],
       noDisturbEndHour: map['noDisturbEndHour'],
+      displayName: map["displayName"],
     );
   }
 }

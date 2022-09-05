@@ -3,7 +3,7 @@ import '../internal/inner_headers.dart';
 ///
 /// The class for group message read receipts.
 ///
-/// To get the chat group message receipts, call {@link EMChatManager#fetchGroupAcks(String, String?, int)}.
+/// To get the chat group message receipts, call [EMChatManager.fetchGroupAcks].
 ///
 /// ```dart
 ///   EMCursorResult<EMGroupMessageAck> result = await EMClient.getInstance.chatManager.fetchGroupAcks("msgId");
@@ -34,7 +34,7 @@ class EMGroupMessageAck {
   ///
   /// Gets the read receipt extension.
   ///
-  /// For how to set the extension, see {@link EMChatManager#sendGroupMessageReadAck(String, String, String?)}.
+  /// For how to set the extension, see [EMChatManager.sendGroupMessageReadAck].
   ///
   /// **Return** The read receipt extension.
   ///

@@ -104,12 +104,12 @@ class EMMessage {
   ChatType chatType = ChatType.Chat;
 
   ///
-  /// The message direction. see {@link MessageDirection}
+  /// The message direction. see [MessageDirection]
   ///
   MessageDirection direction = MessageDirection.SEND;
 
   ///
-  /// Gets the message sending/reception status. see {@link MessageStatus}
+  /// Gets the message sending/reception status. see [MessageStatus]
   ///
   MessageStatus status = MessageStatus.CREATE;
 
@@ -119,7 +119,7 @@ class EMMessage {
   Map? attributes;
 
   ///
-  /// Message body. We recommend you use {@link EMMessageBody)}.
+  /// Message body. We recommend you use [EMMessageBody].
   ///
   late EMMessageBody body;
 
@@ -597,7 +597,7 @@ class EMMessage {
   ///
   /// **Return** The Reaction list
   ///
-  /// **Throws** A description of the exception. See {@link EMError}
+  /// **Throws** A description of the exception. See [EMError]
   ///
   Future<List<EMMessageReaction>> reactionList() async {
     Map req = {"msgId": msgId};
@@ -624,7 +624,7 @@ class EMMessage {
   ///
   /// **Return** group ack count
   ///
-  /// **Throws** A description of the exception. See {@link EMError}
+  /// **Throws** A description of the exception. See [EMError]
   ///
   Future<int> groupAckCount() async {
     Map req = {"msgId": msgId};
@@ -647,7 +647,7 @@ class EMMessage {
   ///
   /// **Return** overview of the thread
   ///
-  /// **Throws** A description of the exception. See {@link EMError}
+  /// **Throws** A description of the exception. See [EMError]
   ///
   Future<EMChatThread?> chatThread() async {
     Map req = {"msg": msgId};

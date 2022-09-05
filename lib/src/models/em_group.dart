@@ -34,7 +34,7 @@ class EMGroup {
   /// Gets the group name.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
 
   final String? name;
@@ -43,7 +43,7 @@ class EMGroup {
   /// Gets the group description.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
 
   final String? description;
@@ -52,7 +52,7 @@ class EMGroup {
   /// Gets the user ID of the group owner.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   final String? owner;
 
@@ -65,7 +65,7 @@ class EMGroup {
   /// Gets the member count of the group.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String groupId)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   final int? memberCount;
 
@@ -73,7 +73,7 @@ class EMGroup {
   /// Gets the member list of the group.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchMemberListFromServer(String, int?, String?)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchMemberListFromServer] before calling this method.
   ///
 
   final List<String>? memberList;
@@ -82,7 +82,7 @@ class EMGroup {
   /// Gets the admin list of the group.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
 
   final List<String>? adminList;
@@ -93,7 +93,7 @@ class EMGroup {
   /// If no block list is found from the server, the return may be empty.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchBlockListFromServer(String, int?, int?)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchBlockListFromServer] before calling this method.
   ///
   final List<String>? blockList;
 
@@ -101,7 +101,7 @@ class EMGroup {
   /// Gets the mute list of the group.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchMuteListFromServer(String, int?, int?)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchMuteListFromServer] before calling this method.
   ///
   final List<String>? muteList;
 
@@ -109,7 +109,7 @@ class EMGroup {
   /// Gets whether the group message is blocked.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   final bool? messageBlocked;
 
@@ -117,7 +117,7 @@ class EMGroup {
   /// Gets Whether all members are muted.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   final bool? isAllMemberMuted;
 
@@ -128,7 +128,7 @@ class EMGroup {
   /// Gets the current user's role in group.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   final EMGroupPermissionType? permissionType;
 
@@ -136,17 +136,17 @@ class EMGroup {
   /// Gets the maximum number of group members allowed in a group. The parameter is set when the group is created.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   final int? maxUserCount;
 
   ///
   /// Checks whether users cannot join a chat group freely:
   /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members(PrivateOnlyOwnerInvite, PrivateMemberCanInvite, PublicJoinNeedApproval).
-  /// - `false`: No. Users can join freely(PublicOpenJoin).
+  /// - `false`: No. Users can join freely [EMGroupStyle.PublicOpenJoin].
   ///
   /// **Note**
-  /// There are four types of group properties used to define the style of a group: {@link EMGroupManager.EMGroupStyle}.
+  /// There are four types of group properties used to define the style of a group: [EMGroupStyle].
   ///
   /// **Return**
   /// Whether users can join a chat group with only the approval of the group owner(admin):
@@ -159,7 +159,7 @@ class EMGroup {
   /// Checks whether a group member is allowed to invite other users to join the group.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMGroupManager#fetchGroupInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
   /// **Return**
   /// - `true`: Yes;

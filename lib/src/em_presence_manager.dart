@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/services.dart';
 import 'event_handler/manager_event_handler.dart';
 import 'internal/inner_headers.dart';
@@ -30,7 +32,7 @@ class EMPresenceManager {
   ///
   /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  /// Param [handler] The handle for presence event. See {@link EMPresenceEventHandler}.
+  /// Param [handler] The handle for presence event. See [EMPresenceEventHandler].
   ///
   void addEventHandler(
     String identifier,
@@ -71,7 +73,7 @@ class EMPresenceManager {
   ///
   /// Param [description] The extension information of the presence state. It can be set as nil.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> publishPresence(
     String description,
@@ -95,7 +97,7 @@ class EMPresenceManager {
   ///
   /// **Return** Which contains IDs of users whose presence states you have subscribed to.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMPresence>> subscribe({
     required List<String> members,
@@ -121,7 +123,7 @@ class EMPresenceManager {
   ///
   /// Param [members] The array of IDs of users whose presence states you want to unsubscribe from.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> unsubscribe({
     required List<String> members,
@@ -145,7 +147,7 @@ class EMPresenceManager {
   ///
   /// **Return** Which contains IDs of users whose presence states you have subscribed to. Returns null if you subscribe to no user's presence state.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
@@ -176,7 +178,7 @@ class EMPresenceManager {
   ///
   /// **Return** Which contains the users whose presence state you have subscribed to.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,
@@ -210,7 +212,6 @@ class EMPresenceManager {
       handle.onPresenceStatusChanged?.call(pList);
     }
 
-    // ignore: deprecated_member_use_from_same_package
     _forward(pList);
   }
 }
@@ -219,9 +220,9 @@ extension PresenceDeprecated on EMPresenceManager {
   ///
   /// Registers a new presence manager listener.
   ///
-  /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
+  /// Param [listener] The presence manager listener to be registered: [EMPresenceManagerListener].
   ///
-  @Deprecated("Use EMPresenceManager#addEventHandler to instead.")
+  @Deprecated("Use #addEventHandler to instead.")
   void addPresenceManagerListener(EMPresenceManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -232,14 +233,14 @@ extension PresenceDeprecated on EMPresenceManager {
   ///
   /// Param [listener] The presence manager listener to be removed.
   ///
-  @Deprecated("Use EMPresenceManager#removeEventHandler to instead.")
+  @Deprecated("Use #removeEventHandler to instead.")
   void removePresenceManagerListener(EMPresenceManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
     }
   }
 
-  @Deprecated("Use EMPresenceManager#clearEventHandlers to instead.")
+  @Deprecated("Use #clearEventHandlers to instead.")
   void clearAllPresenceManagerListener() {
     _listeners.clear();
   }
