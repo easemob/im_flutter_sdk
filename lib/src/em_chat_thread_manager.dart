@@ -1,8 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-
 import 'internal/inner_headers.dart';
 
 ///
