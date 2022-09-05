@@ -3,8 +3,6 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-
 import 'internal/inner_headers.dart';
 
 ///

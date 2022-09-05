@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:flutter/services.dart';
-import 'event_handler/manager_event_handler.dart';
 import 'internal/inner_headers.dart';
 
 ///
