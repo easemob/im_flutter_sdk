@@ -18,19 +18,13 @@
 ## 前提条件
 
 如果你的目标平台是iOS，你需要满足一下要求：
-- Flutter 2.10 或 以上版本；
-- Dart 2.16 或 以上版本；
-- macOS;
-- Xcode 12.4 或 以上版本；
-- CocoaPods；
-- iOS 10 或以上版本模拟器或真机。
-
-如果你的目标平台是Android，需要满足以下要求：
-- Flutter 2.10 或 以上版本；
-- Dart 2.16 或 以上版本；
-- macOS 或 windows;
-- Android Studio 4.0 或以上版本，包括 JDK 1.8 或以上版本;
+- Xcode 12.4 或以上版本，包括命令行工具;
+- iOS 10 或以上版本;
 - Android SDK API 等级 21 或以上版本；
+- Android Studio 4.0 或以上版本，包括 JDK 1.8 或以上版本;
+- CocoaPods 包管理工具;
+- Flutter 2.10 或以上版本;
+- Dart 2.16 或以上版本;
 
 [配置开发或者运行环境如果遇到问题，请参考这里](https://docs.flutter.dev/get-started/install)
 - 有效的环信即时通讯 IM 开发者账号和 App Key，详见 [环信即时通讯云控制台](https://console.easemob.com/user/login)。
@@ -348,7 +342,8 @@ void _signIn() async {
 ```dart
 void _addChatListener() {
   EMClient.getInstance.chatManager.addEventHandler(
-    "customId",
+    // EMChatEventHandle 对应的 key。
+    "UNIQUE_HANDLER_ID",
     EMChatEventHandler(
       onMessagesReceived: (messages) {
         for (var msg in messages) {
@@ -405,7 +400,7 @@ void _addChatListener() {
               break;
             case MessageType.CMD:
               {
-                // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatEventHandle#onCmdMessagesReceived` 回调接收
+                // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatEventHandler#onCmdMessagesReceived` 回调接收
               }
               break;
           }
