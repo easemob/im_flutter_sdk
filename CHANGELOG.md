@@ -1,5 +1,16 @@
 ## NEXT
 
+## 3.9.5
+
+- 将 AddManagerListener 方法标为过期；
+- 增加 customEventHandler；
+- 添加 EventHandler；
+- 增加 PushTemplate 方法；
+- 增加 Group isDisabled 属性；
+- 增加 PushConfigs displayName 属性；
+- 修改 Api referances;
+- 升级原生依赖为 3.9.5
+
 ## 3.9.4+3
 
 - 修复 安卓端 `loadAllConversations` crash.
