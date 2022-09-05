@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
@@ -8,6 +10,9 @@ class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_presence_manager', JSONMethodCodec());
+
+  final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
+  // will deprecated
   final List<EMPresenceManagerListener> _listeners = [];
 
   /// @nodoc
@@ -22,28 +27,44 @@ class EMPresenceManager {
   }
 
   ///
-  /// Registers a new presence manager listener.
+  /// Adds the presence event handler. After calling this method, you can handle for new presence event when they arrive.
   ///
-  /// Param [listener] The presence manager listener to be registered: {@link EMPresenceManagerListener}.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  void addPresenceManagerListener(EMPresenceManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
+  /// Param [handler] The handle for presence event. See [EMPresenceEventHandler].
+  ///
+  void addEventHandler(
+    String identifier,
+    EMPresenceEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Removes the contact listener.
+  /// Remove the presence event handler.
   ///
-  /// Param [listener] The presence manager listener to be removed.
+  /// Param [identifier] The custom handler identifier.
   ///
-  void removePresenceManagerListener(EMPresenceManagerListener listener) {
-    if (_listeners.contains(listener)) {
-      _listeners.remove(listener);
-    }
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
-  void clearAllPresenceManagerListener() {
-    _listeners.clear();
+  ///
+  /// Get the presence event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  /// **Return** The presence event handler.
+  ///
+  EMPresenceEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// Clear all presence event handlers.
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -51,7 +72,7 @@ class EMPresenceManager {
   ///
   /// Param [description] The extension information of the presence state. It can be set as nil.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> publishPresence(
     String description,
@@ -75,7 +96,7 @@ class EMPresenceManager {
   ///
   /// **Return** Which contains IDs of users whose presence states you have subscribed to.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMPresence>> subscribe({
     required List<String> members,
@@ -101,9 +122,9 @@ class EMPresenceManager {
   ///
   /// Param [members] The array of IDs of users whose presence states you want to unsubscribe from.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
-  Future<void> unSubscribe({
+  Future<void> unsubscribe({
     required List<String> members,
   }) async {
     Map req = {'members': members};
@@ -125,7 +146,7 @@ class EMPresenceManager {
   ///
   /// **Return** Which contains IDs of users whose presence states you have subscribed to. Returns null if you subscribe to no user's presence state.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
@@ -156,7 +177,7 @@ class EMPresenceManager {
   ///
   /// **Return** Which contains the users whose presence state you have subscribed to.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,
@@ -186,6 +207,45 @@ class EMPresenceManager {
       pList.add(EMPresence.fromJson(item));
     }
 
+    for (var handle in _eventHandlesMap.values) {
+      handle.onPresenceStatusChanged?.call(pList);
+    }
+
+    _forward(pList);
+  }
+}
+
+extension PresenceDeprecated on EMPresenceManager {
+  ///
+  /// Registers a new presence manager listener.
+  ///
+  /// Param [listener] The presence manager listener to be registered: [EMPresenceManagerListener].
+  ///
+  @Deprecated("Use #addEventHandler to instead.")
+  void addPresenceManagerListener(EMPresenceManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes the contact listener.
+  ///
+  /// Param [listener] The presence manager listener to be removed.
+  ///
+  @Deprecated("Use #removeEventHandler to instead.")
+  void removePresenceManagerListener(EMPresenceManagerListener listener) {
+    if (_listeners.contains(listener)) {
+      _listeners.remove(listener);
+    }
+  }
+
+  @Deprecated("Use #clearEventHandlers to instead.")
+  void clearAllPresenceManagerListener() {
+    _listeners.clear();
+  }
+
+  @deprecated
+  void _forward(List<EMPresence> pList) {
     for (var listener in _listeners) {
       listener.onPresenceStatusChanged(pList);
     }

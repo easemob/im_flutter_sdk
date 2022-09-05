@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -22,12 +24,37 @@ class EMContactManager {
     });
   }
 
+  final Map<String, EMContactEventHandler> _eventHandlesMap = {};
+
   final List<EMContactManagerListener> _listeners = [];
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
     String username = event['username'];
     String? reason = event['reason'];
+
+    _eventHandlesMap.values.forEach((element) {
+      switch (type) {
+        case EMContactChangeEvent.CONTACT_ADD:
+          element.onContactAdded?.call(username);
+          break;
+        case EMContactChangeEvent.CONTACT_DELETE:
+          element.onContactDeleted?.call(username);
+          break;
+        case EMContactChangeEvent.INVITED:
+          element.onContactInvited?.call(username, reason);
+          break;
+        case EMContactChangeEvent.INVITATION_ACCEPTED:
+          element.onFriendRequestAccepted?.call(username);
+          break;
+        case EMContactChangeEvent.INVITATION_DECLINED:
+          element.onFriendRequestDeclined?.call(username);
+          break;
+        default:
+      }
+    });
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       switch (type) {
         case EMContactChangeEvent.CONTACT_ADD:
@@ -51,13 +78,54 @@ class EMContactManager {
   }
 
   ///
+  /// Adds the contact event handler. After calling this method, you can handle for new contact event when they arrive.
+  ///
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
+  ///
+  /// Param [handler] The handle for contact event. See [EMContactEventHandler].
+  ///
+  void addEventHandler(
+    String identifier,
+    EMContactEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
+  }
+
+  ///
+  /// Remove the contact event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
+  }
+
+  ///
+  /// Get the contact event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  /// **Return** The contact event handler.
+  ///
+  EMContactEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// Clear all contact event handlers.
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
+  }
+
+  ///
   /// Adds a new contact.
   ///
   /// Param [userId] The user to be added.
   ///
   /// Param [reason] (optional) The invitation message.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> addContact(
     String userId, {
@@ -85,7 +153,7 @@ class EMContactManager {
   /// - `true`: Yes.
   /// - `false`: (default) No.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> deleteContact(
     String username, {
@@ -105,7 +173,7 @@ class EMContactManager {
   ///
   /// **Return** The list of contacts.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -129,7 +197,7 @@ class EMContactManager {
   ///
   /// **Return** The contact list.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -155,7 +223,7 @@ class EMContactManager {
   ///
   /// Param [username] The user to be added to the block list.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> addUserToBlockList(
     String username,
@@ -177,7 +245,7 @@ class EMContactManager {
   ///
   /// Param [username] The contact to be removed from the block list.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
@@ -195,7 +263,7 @@ class EMContactManager {
   ///
   /// **Return** The block list obtained from the server.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -219,7 +287,7 @@ class EMContactManager {
   ///
   /// **Return** The block list obtained from the local database.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
@@ -242,7 +310,7 @@ class EMContactManager {
   ///
   /// Param [username] The user who sends the friend invitation.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
@@ -260,7 +328,7 @@ class EMContactManager {
   ///
   /// Param [username] The user who sends the friend invitation.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
@@ -278,7 +346,7 @@ class EMContactManager {
   ///
   /// **Return** The list of unique IDs of users on the other devices if the method succeeds.
   ///
-  /// **Throws**  A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result =
@@ -294,12 +362,15 @@ class EMContactManager {
       throw e;
     }
   }
+}
 
+extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// Registers a new contact manager listener.
   ///
-  /// Param [listener] The contact manager listener to be registered: {@link EMContactManagerListener}.
+  /// Param [listener] The contact manager listener to be registered: [EMContactManagerListener].
   ///
+  @Deprecated("Use #addEventHandler to instead.")
   void addContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -310,6 +381,7 @@ class EMContactManager {
   ///
   /// Param [listener] The contact manager listener to be removed.
   ///
+  @Deprecated("Use #removeEventHandler to instead.")
   void removeContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -317,6 +389,7 @@ class EMContactManager {
   ///
   /// Removes all contact manager listeners.
   ///
+  @Deprecated("Use #clearEventHandlers to instead.")
   void clearContactManagerListeners() {
     _listeners.clear();
   }
