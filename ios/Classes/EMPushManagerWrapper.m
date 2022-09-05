@@ -107,7 +107,12 @@
         [self fetchPreferredNotificationLanguage:call.arguments
                                      channelName:call.method
                                           result:result];
+    } else if ([ChatSetPushTemplate isEqualToString:call.method]) {
+        [self setPushTemplate:call.arguments channelName:call.method result:result];
+    } else if ([ChatGetPushTemplate isEqualToString:call.method]) {
+        [self getPushTemplate:call.arguments channelName:call.method result:result];
     }
+    
     else{
         [super handleMethodCall:call result:result];
     }
@@ -420,6 +425,31 @@
                       channelName:aChannelName
                             error:aError
                            object:aLaguangeCode];
+    }];
+}
+
+- (void)setPushTemplate:(NSDictionary *)param
+                               channelName:(NSString *)aChannelName
+                                    result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *pushTemplateName = param[@"pushTemplateName"];
+    [EMClient.sharedClient.pushManager setPushTemplate:pushTemplateName completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)getPushTemplate:(NSDictionary *)param
+                               channelName:(NSString *)aChannelName
+                                    result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.pushManager getPushTemplate:^(NSString * _Nullable aPushTemplateName, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:aPushTemplateName];
     }];
 }
 

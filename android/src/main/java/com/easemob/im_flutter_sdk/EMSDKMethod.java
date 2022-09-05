@@ -62,6 +62,7 @@ public class EMSDKMethod {
     static final String ackConversationRead = "ackConversationRead";
     static final String recallMessage = "recallMessage";
     static final String getConversation = "getConversation";
+    static final String getThreadConversation = "getThreadConversation";
     static final String markAllChatMsgAsRead = "markAllChatMsgAsRead";
     static final String getUnreadMessageCount = "getUnreadMessageCount";
     static final String updateChatMessage = "updateChatMessage";
@@ -76,6 +77,7 @@ public class EMSDKMethod {
     static final String getMessage = "getMessage";
     static final String asyncFetchGroupAcks = "asyncFetchGroupAcks";
     static final String deleteRemoteConversation = "deleteRemoteConversation";
+    static final String deleteMessagesBeforeTimestamp = "deleteMessagesBeforeTimestamp";
 
     static final String translateMessage = "translateMessage";
     static final String fetchSupportedLanguages = "fetchSupportLanguages";
@@ -244,7 +246,8 @@ public class EMSDKMethod {
     static final String fetchSilentModeForConversations = "fetchSilentModeForConversations";
     static final String setPreferredNotificationLanguage = "setPreferredNotificationLanguage";
     static final String fetchPreferredNotificationLanguage = "fetchPreferredNotificationLanguage";
-
+    static final String setPushTemplate = "setPushTemplate";
+    static final String getPushTemplate = "getPushTemplate";
 
     /// EMUserInfoManager 
     static final String updateOwnUserInfo = "updateOwnUserInfo";

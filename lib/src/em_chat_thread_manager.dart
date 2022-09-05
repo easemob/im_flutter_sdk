@@ -1,5 +1,6 @@
-import 'package:flutter/services.dart';
+// ignore_for_file: deprecated_member_use_from_same_package
 
+import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
 ///
@@ -9,6 +10,10 @@ class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_thread_manager', JSONMethodCodec());
+
+  final Map<String, EMChatThreadEventHandler> _eventHandlesMap = {};
+
+  final List<EMChatThreadManagerListener> _listeners = [];
 
   EMChatThreadManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
@@ -22,38 +27,49 @@ class EMChatThreadManager {
       } else if (call.method == ChatMethodKeys.onUserKickOutOfChatThread) {
         _onChatThreadUserRemoved(argMap);
       }
-
       return null;
     });
   }
-  final List<EMChatThreadManagerListener> _listeners = [];
 
   ///
-  /// Adds the chat thread manager listener. After calling this method, you can listen for new chat threads when they arrive.
+  /// Adds the chat thread event handler. After calling this method, you can handle for chat thread event when they arrive.
   ///
-  /// Param [listener] The chat thread manager listener that listens for new chat thread. See {@link EMChatThreadManagerListener}.
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
-  void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
+  /// Param [handler] The handle for chat thread event. See [EMChatThreadEventHandler].
+  ///
+  void addEventHandler(
+    String identifier,
+    EMChatThreadEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// Removes the chat thread listener.
+  /// Remove the chat thread event handler.
   ///
-  /// After adding a chat thread manager listener, you can remove this listener if you do not want to listen for it.
+  /// Param [identifier] The custom handler identifier.
   ///
-  /// Param [listener] The chat thread listener to be removed. See {@link EMChatThreadManagerListener}.
-  ///
-  void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
-    _listeners.remove(listener);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// Removes all chat thread listeners.
+  /// Get the chat thread event handler.
   ///
-  void clearAllChatThreadManagerListeners() {
-    _listeners.clear();
+  /// Param [identifier] The custom handler identifier.
+  ///
+  /// **Return** The chat thread event handler.
+  ///
+  EMChatThreadEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// Clear all chat thread event handlers.
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -63,7 +79,7 @@ class EMChatThreadManager {
   ///
   /// **Return** The chat thread object.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMChatThread?> fetchChatThread({
     required String chatThreadId,
@@ -89,9 +105,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return** Returns the result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
+  /// **Return** Returns the result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreads({
     String? cursor,
@@ -122,9 +138,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return** result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
+  /// **Return** result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
     required String parentId,
@@ -159,9 +175,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return** The result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread object list.
+  /// **Return** The result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreadsWithParentId({
     required String parentId,
@@ -198,9 +214,9 @@ class EMChatThreadManager {
   ///
   /// Param [limit] The number of fetches at one time. Value range (0, 50].
   ///
-  /// **Return** The result of {@link EMCursorResult}), including the cursor for getting data next time and the chat thread member list.
+  /// **Return** The result of [EMCursorResult], including the cursor for getting data next time and the chat thread member list.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<String>> fetchChatThreadMembers({
     required String chatThreadId,
@@ -235,9 +251,9 @@ class EMChatThreadManager {
   ///
   /// Param [chatThreadIds] Chat Thread id list. The list length is not greater than 20.
   ///
-  /// **Return**  returns a Map collection, the key is the chat thread ID, and the value is the latest message object of the chat thread.
+  /// **Return** returns a Map collection, the key is the chat thread ID, and the value is the latest message object of the chat thread.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<Map<String, EMMessage>> fetchLatestMessageWithChatThreads({
     required List<String> chatThreadIds,
@@ -276,7 +292,7 @@ class EMChatThreadManager {
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> removeMemberFromChatThread({
     required String memberId,
@@ -302,13 +318,13 @@ class EMChatThreadManager {
   ///
   /// The group owner, group administrator and Thread creator have permission.
   /// After modifying chat thread name, members of the organization (group) to which chat thread belongs will receive the update notification event.
-  /// You can set {@link EMChatThreadManagerListener} to listen on the event.
+  /// You can set [EMChatThreadEvent] to listen on the event.
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
   /// Param [newName]  New Chat Thread name. No more than 64 characters in length.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> updateChatThreadName({
     required String chatThreadId,
@@ -335,11 +351,11 @@ class EMChatThreadManager {
   /// Group members have permission.
   /// After chat thread is created, the following notices will appear:
   /// 1. Members of the organization (group) to which chat thread belongs will receive the created notification event,
-  /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
-  /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
-  /// 2. Multiple devices will receive the notification event and you can set {@link com.hyphenate.EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)}, where the first parameter is the event,
-  /// for example, {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_CREATE} for the chat thread creation event.
+  /// and can listen to related events by setting [EMChatThreadEventHandler].
+  /// The event callback function is [EMChatThreadEventHandler.onChatThreadCreate].
+  /// 2. Multiple devices will receive the notification event and you can set [EMMultiDeviceEventHandler] to listen on the event.
+  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent], where the first parameter is the event,
+  /// for example, [EMMultiDevicesEvent.CHAT_THREAD_CREATE] for the chat thread creation event.
   ///
   /// Param [name] Chat Thread name. No more than 64 characters in length.
   ///
@@ -349,7 +365,7 @@ class EMChatThreadManager {
   ///
   /// **Return** EMChatThread object
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMChatThread> createChatThread({
     required String name,
@@ -377,18 +393,18 @@ class EMChatThreadManager {
   /// Join Chat Thread.
   ///
   /// Group members have permission.
-  /// Join successfully, return the Chat Thread details {@link EMChatThread}, the details do not include the number of members.
+  /// Join successfully, return the Chat Thread details [EMChatThread], the details do not include the number of members.
   /// Repeated addition will throw an EMError.
   /// After joining chat thread, the multiple devices will receive the notification event.
-  /// You can set {@link EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
-  /// where the first parameter is the event, and chat thread join event is {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}.
+  /// You can set [EMMultiDeviceEventHandler] to listen on the event.
+  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent],
+  /// where the first parameter is the event, and chat thread join event is [EMMultiDevicesEvent.CHAT_THREAD_JOIN].
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
   /// **Return** The joined chat thread object;
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<EMChatThread> joinChatThread({
     required String chatThreadId,
@@ -413,13 +429,13 @@ class EMChatThreadManager {
   ///
   /// The operation is available to Chat Thread members.
   /// After leave chat thread, the multiple devices will receive the notification event.
-  /// You can set {@EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List),
-  /// where the first parameter is the event, and chat thread exit event is {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}.
+  /// You can set {@EMMultiDeviceEventHandler} to listen on the event.
+  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent],
+  /// where the first parameter is the event, and chat thread exit event is [EMMultiDevicesEvent.CHAT_THREAD_LEAVE].
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> leaveChatThread({
     required String chatThreadId,
@@ -444,15 +460,15 @@ class EMChatThreadManager {
   /// Group owner and group administrator to which the Chat Thread belongs have permission.
   /// After chat thread is disbanded, there will be the following notification:
   /// 1. Members of the organization (group) to which chat thread belongs will receive the disbanded notification event,
-  /// and can listen to related events by setting {@link EMChatThreadManagerListener}.
-  /// The event callback function is {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} .
-  /// 2. Multiple devices will receive the notification event and you can set {@link EMMultiDeviceListener} to listen on the event.
-  /// The event callback function is {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List)}, where the first parameter is the event,
-  /// for example, {@link com.hyphenate.EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY} for the chat thread destruction event.
+  /// and can listen to related events by setting [EMChatThreadEventHandler].
+  /// The event callback function is [EMChatThreadEventHandler.onChatThreadDestroy].
+  /// 2. Multiple devices will receive the notification event and you can set [EMMultiDeviceEventHandler] to listen on the event.
+  /// The event callback function is [EMMultiDeviceEventHandler.onChatThreadEvent], where the first parameter is the event,
+  /// for example, [EMMultiDevicesEvent.CHAT_THREAD_DESTROY] for the chat thread destruction event.
   ///
   /// Param [chatThreadId] Chat Thread ID.
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<void> destroyChatThread({
     required String chatThreadId,
@@ -502,8 +518,49 @@ class EMChatThreadManager {
     if (event == null) {
       return;
     }
+
+    _eventHandlesMap.values.forEach((element) {
+      element.onUserKickOutOfChatThread?.call(
+        EMChatThreadEvent.fromJson(event),
+      );
+    });
+
+    // deprecated(3.9.5)
     _listeners.forEach((element) {
       element.onUserKickOutOfChatThread.call(EMChatThreadEvent.fromJson(event));
     });
+  }
+}
+
+extension ChatThreadManagerDeprecated on EMChatThreadManager {
+  ///
+  /// Adds the chat thread manager listener. After calling this method, you can listen for new chat threads when they arrive.
+  ///
+  /// Param [listener] The chat thread manager listener that listens for new chat thread. See [EMChatThreadManagerListener].
+  ///
+  @Deprecated("Use #addEventHandler to instead.")
+  void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// Removes the chat thread listener.
+  ///
+  /// After adding a chat thread manager listener, you can remove this listener if you do not want to listen for it.
+  ///
+  /// Param [listener] The chat thread listener to be removed. See [EMChatThreadManagerListener].
+  ///
+  @Deprecated("Use #removeEventHandler to instead.")
+  void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// Removes all chat thread listeners.
+  ///
+  @Deprecated("Use #clearEventHandlers to instead.")
+  void clearAllChatThreadManagerListeners() {
+    _listeners.clear();
   }
 }

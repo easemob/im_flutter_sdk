@@ -70,6 +70,7 @@ static NSString *const ChatAckGroupMessageRead = @"ackGroupMessageRead";
 static NSString *const ChatAckConversationRead = @"ackConversationRead";
 static NSString *const ChatRecallMessage = @"recallMessage";
 static NSString *const ChatGetConversation = @"getConversation";
+static NSString *const ChatGetThreadConversation = @"getThreadConversation";
 static NSString *const ChatMarkAllChatMsgAsRead = @"markAllChatMsgAsRead";
 static NSString *const ChatGetUnreadMessageCount = @"getUnreadMessageCount";
 static NSString *const ChatUpdateChatMessage = @"updateChatMessage";
@@ -85,6 +86,7 @@ static NSString *const ChatSearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString *const ChatGetMessage = @"getMessage";
 static NSString *const ChatAsyncFetchGroupAcks = @"asyncFetchGroupAcks";
 static NSString *const ChatDeleteRemoteConversation = @"deleteRemoteConversation";
+static NSString *const ChatDeleteMessagesBeforeTimestamp = @"deleteMessagesBeforeTimestamp";
 
 static NSString *const ChatTranslateMessage = @"translateMessage";
 static NSString *const ChatFetchSupportedLanguages = @"fetchSupportLanguages";
@@ -254,6 +256,8 @@ static NSString *const ChatFetchSilentModeForAll = @"fetchSilentModeForAll";
 static NSString *const ChatFetchSilentModeForConversations = @"fetchSilentModeForConversations";
 static NSString *const ChatSetPreferredNotificationLanguage = @"setPreferredNotificationLanguage";
 static NSString *const ChatFetchPreferredNotificationLanguage = @"fetchPreferredNotificationLanguage";
+static NSString *const ChatSetPushTemplate = @"setPushTemplate";
+static NSString *const ChatGetPushTemplate = @"getPushTemplate";
 
 #pragma mark - EMUserInfoManagerWrapper
 static NSString *const ChatUpdateOwnUserInfo = @"updateOwnUserInfo";

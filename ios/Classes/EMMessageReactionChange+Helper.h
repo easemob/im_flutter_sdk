@@ -6,7 +6,7 @@
 //
 
 #import <HyphenateChat/HyphenateChat.h>
-#import <EaseModeToJson.h>
+#import "EaseModeToJson.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

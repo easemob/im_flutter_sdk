@@ -43,3 +43,5 @@ export '../em_message_status_callback.dart';
 export '../em_presence_manager.dart';
 export '../em_push_manager.dart';
 export '../em_userInfo_manager.dart';
+export '../em_push_manager.dart';
+export '../event_handler/manager_event_handler.dart';
