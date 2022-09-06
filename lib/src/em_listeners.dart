@@ -21,7 +21,7 @@ import 'internal/inner_headers.dart';
 ///     EMClient.getInstance.removeConnectionListener(mConnectionListener);
 ///   ```
 ///
-@Deprecated("Use EMConnectionEventHandler to instead.")
+@Deprecated("Use EMConnectionEventHandler to instead")
 abstract class EMConnectionListener {
   ///
   /// Occurs when the SDK connects to the chat server successfully.
@@ -94,7 +94,7 @@ abstract class EMConnectionListener {
 /// ```dart
 ///   EMClient.getInstance.removeMultiDeviceListener(mMultiDeviceListener);
 /// ```
-@Deprecated("Use EMMultiDeviceEventHandler to instead.")
+@Deprecated("Use EMMultiDeviceEventHandler to instead")
 abstract class EMMultiDeviceListener {
   ///
   /// The multi-device event callback of contact.
@@ -166,7 +166,7 @@ abstract class EMCustomListener {
 ///   EMClient.getInstance.contactManager.removeContactManagerListener(contactListener);
 /// ```
 ///
-@Deprecated("Use EMContactEventHandler to instead.")
+@Deprecated("Use EMContactEventHandler to instead")
 abstract class EMContactManagerListener {
   ///
   /// Occurs when user is added as a contact by another user.
@@ -219,7 +219,7 @@ abstract class EMContactManagerListener {
 ///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
 /// ```
 ///
-@Deprecated("Use EMChatRoomEventHandler to instead.")
+@Deprecated("Use EMChatRoomEventHandler to instead")
 abstract class EMChatRoomManagerListener {
   ///
   /// Occurs when the chat room is destroyed.
@@ -374,7 +374,7 @@ abstract class EMChatRoomManagerListener {
 /// ```dart
 ///   EMClient.getInstance.groupManager.removeGroupManagerListener(listener);
 /// ```
-@Deprecated("Use EMGroupEventHandler to instead.")
+@Deprecated("Use EMGroupEventHandler to instead")
 abstract class EMGroupManagerListener {
   ///
   /// Occurs when the user receives a group invitation.
@@ -641,7 +641,7 @@ abstract class EMGroupManagerListener {
 ///   EMClient.getInstance.chatManager.removeChatManagerListener(listener);
 /// ```
 ///
-@Deprecated("Use EMChatEventHandler to instead.")
+@Deprecated("Use EMChatEventHandler to instead")
 class EMChatManagerListener {
   ///
   /// Occurs when a message is received.
@@ -725,7 +725,7 @@ class EMChatManagerListener {
 ///
 /// The presence manager listener.
 ///
-@Deprecated("Use EMPresenceEventHandler to instead.")
+@Deprecated("Use EMPresenceEventHandler to instead")
 class EMPresenceManagerListener {
   ///
   /// Occurs when the presence state of a subscribed user changes.
@@ -744,7 +744,7 @@ class EMPresenceManagerListener {
 /// Removes a message thread event listener:
 /// EMClient.getInstance.chatThreadManager.removeChatThreadManagerListener(listener);
 ///
-@Deprecated("Use EMChatThreadEventHandler to instead.")
+@Deprecated("Use EMChatThreadEventHandler to instead")
 class EMChatThreadManagerListener {
   ///
   /// Occurs when a message thread is created.

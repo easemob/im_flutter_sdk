@@ -981,7 +981,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] A chat room listener. See [EMChatRoomManagerListener].
   ///
-  @Deprecated("Use EMChatRoomManager#addEventHandler to instead.")
+  @Deprecated("Use EMChatRoomManageraddEventHandler to instead")
   void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -993,7 +993,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] The chat room manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead.")
+  @Deprecated("Use #removeEventHandler to instead")
   void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
@@ -1003,7 +1003,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Removes all chat room manager listener.
   ///
-  @Deprecated("Use #clearEventHandlers to instead.")
+  @Deprecated("Use #clearEventHandlers to instead")
   void clearAllChatRoomManagerListeners() {
     _listeners.clear();
   }

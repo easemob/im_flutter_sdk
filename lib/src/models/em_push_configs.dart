@@ -33,13 +33,13 @@ class EMPushConfigs {
   ///
   /// The start hour of the do-not-disturb mode for push notifications.
   ///
-  @Deprecated("Use ChatSilentModeResult property startTime instead.")
+  @Deprecated("Use ChatSilentModeResult property startTime instead")
   final int noDisturbStartHour;
 
   ///
   /// The end hour of the do-not-disturb mode for push notifications.
   ///
-  @Deprecated("Use ChatSilentModeResult property endTime instead.")
+  @Deprecated("Use ChatSilentModeResult property endTime instead")
   final int noDisturbEndHour;
 
   /// @nodoc

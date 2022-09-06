@@ -178,7 +178,7 @@ class EMGroup {
   final bool isDisabled;
 
   @Deprecated(
-      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead.")
+      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead")
   EMGroupOptions? get settings => _options;
 
   /// @nodoc

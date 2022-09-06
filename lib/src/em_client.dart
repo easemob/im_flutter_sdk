@@ -760,7 +760,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener] The listener to be added: {EMMultiDeviceListener}.
   ///
-  @Deprecated("Use #addMultiDeviceEventHandler to instead.")
+  @Deprecated("Use #addMultiDeviceEventHandler to instead")
   void addMultiDeviceListener(EMMultiDeviceListener listener) {
     _multiDeviceListeners.add(listener);
   }
@@ -770,7 +770,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener] The listener to be removed: {EMMultiDeviceListener}.
   ///
-  @Deprecated("Use #removeMultiDeviceEventHandler to instead.")
+  @Deprecated("Use #removeMultiDeviceEventHandler to instead")
   void removeMultiDeviceListener(EMMultiDeviceListener listener) {
     if (_multiDeviceListeners.contains(listener)) {
       _multiDeviceListeners.remove(listener);
@@ -780,7 +780,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Removes all multi-device listener.
   ///
-  @Deprecated("Use #clearMultiDeviceEventHandles to instead.")
+  @Deprecated("Use #clearMultiDeviceEventHandles to instead")
   void clearAllMultiDeviceListeners() {
     _multiDeviceListeners.clear();
   }
@@ -790,7 +790,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener] The chat server connection listener to be added.
   ///
-  @Deprecated("Use #addConnectionEventHandler to instead.")
+  @Deprecated("Use #addConnectionEventHandler to instead")
   void addConnectionListener(EMConnectionListener listener) {
     _connectionListeners.add(listener);
   }
@@ -800,7 +800,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener]  The chat server connection listener to be removed.
   ///
-  @Deprecated("Use #removeConnectionEventHandler to instead.")
+  @Deprecated("Use #removeConnectionEventHandler to instead")
   void removeConnectionListener(EMConnectionListener listener) {
     if (_connectionListeners.contains(listener)) {
       _connectionListeners.remove(listener);
@@ -810,7 +810,7 @@ extension EMClientDeprecated on EMClient {
   ///
   ///  Removes all chat server connection listeners.
   ///
-  @Deprecated("Use #clearConnectionEventHandles to instead.")
+  @Deprecated("Use #clearConnectionEventHandles to instead")
   void clearAllConnectionListeners() {
     _connectionListeners.clear();
   }
@@ -820,7 +820,7 @@ extension EMClientDeprecated on EMClient {
   ///
   /// Param [listener] The custom native listener to be added.
   ///
-  @Deprecated("Use #customEventHandler to instead.")
+  @Deprecated("Use #customEventHandler to instead")
   void addCustomListener(EMCustomListener listener) {
     _customListeners.add(listener);
   }
@@ -848,12 +848,12 @@ extension EMClientDeprecated on EMClient {
   ///
   /// **Return** The current login user ID.
   ///
-  @Deprecated("Use #getCurrentUserId to instead.")
+  @Deprecated("Use #getCurrentUserId to instead")
   Future<String?> getCurrentUsername() async {
     return getCurrentUserId();
   }
 
   /// Gets the current logged-in username.
-  @Deprecated("Use #currentUserId to instead.")
+  @Deprecated("Use #currentUserId to instead")
   String? get currentUsername => _currentUserId;
 }
