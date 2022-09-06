@@ -35,11 +35,11 @@ class EMClient {
   /// 通过 [EMOptions] 获取配置信息。
   EMOptions? get options => _options;
 
-  String? _currentUsername;
+  String? _currentUserId;
 
   /// 获取当前登录用户的用户 ID。
-  @Deprecated("Use [currentUserId] to instead");
-  String? get currentUsername => _currentUsername;
+  @Deprecated("Use [currentUserId] to instead")
+  String? get currentUsername => _currentUserId;
 
   static EMClient get getInstance => _instance ??= EMClient._internal();
 
@@ -290,7 +290,8 @@ class EMClient {
   ) async {
     EMLog.v('create account: $username : $password');
     Map req = {'username': username, 'password': password};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.createAccount, req);
+    Map result =
+        await ClientChannel.invokeMethod(ChatMethodKeys.createAccount, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {

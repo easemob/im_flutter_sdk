@@ -196,6 +196,11 @@ class EMGroup {
   ///
   final String? extension;
 
+  ///
+  /// 组是否禁用，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
+  ///
+  final bool isDisabled;
+
   /// @nodoc
   factory EMGroup.fromJson(Map map) {
     String groupId = map['groupId'];

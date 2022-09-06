@@ -19,7 +19,7 @@ import 'internal/inner_headers.dart';
 class EMChatManager {
   final Map<String, EMChatEventHandler> _eventHandlesMap = {};
 
-  final List<EMChatEventHandler> _listeners = [];
+  final List<EMChatManagerListener> _listeners = [];
 
   /// @nodoc
   EMChatManager() {
