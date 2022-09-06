@@ -13,6 +13,7 @@ import 'internal/inner_headers.dart';
 ///     EMClient.getInstance.removeConnectionListener(mConnectionListener);
 ///   ```
 ///
+@Deprecated("Use EMConnectionEventHandler to instead")
 abstract class EMConnectionListener {
   ///
   /// 成功连接到 chat 服务器时触发的回调。
@@ -74,7 +75,10 @@ abstract class EMConnectionListener {
 /// 多设备事件监听器。
 ///
 /// 该监听器监听联系人事件和群组事件。
-///
+/// ```dart
+///   EMClient.getInstance.removeMultiDeviceListener(mMultiDeviceListener);
+/// ```
+@Deprecated("Use EMMultiDeviceEventHandler to instead")
 abstract class EMMultiDeviceListener {
   ///
   /// 联系人事件监听回调。
@@ -125,6 +129,7 @@ abstract class EMMultiDeviceListener {
 ///
 /// 自定义事件监听器。
 ///
+@Deprecated("Use EMClient#customEvent instead")
 abstract class EMCustomListener {
   void onDataReceived(Map map);
 }
@@ -144,6 +149,7 @@ abstract class EMCustomListener {
 ///   EMClient.getInstance.contactManager.removeContactManagerListener(contactListener);
 /// ```
 ///
+@Deprecated("Use EMContactEventHandler to instead")
 abstract class EMContactManagerListener {
   ///
   /// 添加好友回调。
@@ -196,7 +202,7 @@ abstract class EMContactManagerListener {
 ///   EMClient.getInstance.chatRoomManager.removeChatRoomManagerListener(listener);
 /// ```
 ///
-
+@Deprecated("Use EMChatRoomEventHandler to instead")
 abstract class EMChatRoomManagerListener {
   ///
   /// 聊天室解散的回调。
@@ -630,7 +636,8 @@ abstract class EMGroupManagerListener {
 ///   EMClient.getInstance.chatManager.removeChatManagerListener(listener);
 /// ```
 ///
-abstract class EMChatManagerListener {
+@Deprecated("Use EMChatEventHandler to instead")
+class EMChatManagerListener {
   ///
   /// 收到消息回调。
   ///
@@ -713,6 +720,7 @@ abstract class EMChatManagerListener {
 ///
 /// 在线状态订阅监听器接口。
 ///
+@Deprecated("Use EMPresenceEventHandler to instead")
 class EMPresenceManagerListener {
   ///
   /// 收到被订阅用户的在线状态发生变化。
@@ -731,6 +739,7 @@ class EMPresenceManagerListener {
 /// 移除子区监听:
 /// EMClient.getInstance.chatThreadManager.removeChatThreadManagerListener(listener);
 ///
+@Deprecated("Use EMChatThreadEventHandler to instead")
 class EMChatThreadManagerListener {
   ///
   /// 子区创建回调。

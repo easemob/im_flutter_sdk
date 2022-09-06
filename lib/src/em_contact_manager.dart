@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -22,12 +24,37 @@ class EMContactManager {
     });
   }
 
+  final Map<String, EMContactEventHandler> _eventHandlesMap = {};
+
   final List<EMContactManagerListener> _listeners = [];
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
     String username = event['username'];
     String? reason = event['reason'];
+
+    _eventHandlesMap.values.forEach((element) {
+      switch (type) {
+        case EMContactChangeEvent.CONTACT_ADD:
+          element.onContactAdded?.call(username);
+          break;
+        case EMContactChangeEvent.CONTACT_DELETE:
+          element.onContactDeleted?.call(username);
+          break;
+        case EMContactChangeEvent.INVITED:
+          element.onContactInvited?.call(username, reason);
+          break;
+        case EMContactChangeEvent.INVITATION_ACCEPTED:
+          element.onFriendRequestAccepted?.call(username);
+          break;
+        case EMContactChangeEvent.INVITATION_DECLINED:
+          element.onFriendRequestDeclined?.call(username);
+          break;
+        default:
+      }
+    });
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       switch (type) {
         case EMContactChangeEvent.CONTACT_ADD:
@@ -51,13 +78,54 @@ class EMContactManager {
   }
 
   ///
-  /// 添加好友。
+  /// 添加 [EMContactEventHandler] 。
+  ///
+  /// Param [identifier] handler对应的id，可用于删除handler。
+  ///
+  /// Param [handler] 添加的 [EMContactEventHandler]。
+  ///
+  void addEventHandler(
+    String identifier,
+    EMContactEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
+  }
+
+  ///
+  /// 移除 [EMContactEventHandler] 。
+  ///
+  /// Param [identifier] 需要移除 handler 对应的 id。
+  ///
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
+  }
+
+  ///
+  /// 获取 [EMContactEventHandler] 。
+  ///
+  /// Param [identifier] 要获取 handler 对应的 id。
+  ///
+  /// **Return** 返回 id 对应的 handler 。
+  ///
+  EMContactEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// 清除所有的 [EMContactEventHandler] 。
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
+  }
+
+  ///
+  /// 添加联系人。
   ///
   /// Param [userId] 要添加的好友的用户 ID。
   ///
   /// Param [reason] （可选）添加为好友的原因。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<void> addContact(
     String userId, {
@@ -85,7 +153,7 @@ class EMContactManager {
   /// - `true`：是；
   /// - （默认）`false`：否。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。
   ///
   Future<void> deleteContact(
     String username, {
@@ -105,7 +173,7 @@ class EMContactManager {
   ///
   /// **Return** 联系人列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -129,7 +197,7 @@ class EMContactManager {
   ///
   /// **Return** 调用成功会返回好友列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -155,7 +223,7 @@ class EMContactManager {
   ///
   /// Param [username] 要加入黑名单的用户的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<void> addUserToBlockList(
     String username,
@@ -177,7 +245,7 @@ class EMContactManager {
   ///
   /// Param [username] 要在黑名单中移除的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
@@ -195,7 +263,7 @@ class EMContactManager {
   ///
   /// **Return** 该方法调用成功会返回黑名单列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -219,7 +287,7 @@ class EMContactManager {
   ///
   /// **Return** 该方法调用成功会返回黑名单列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
@@ -242,7 +310,7 @@ class EMContactManager {
   ///
   /// Param [username] 发起好友邀请的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
@@ -260,7 +328,7 @@ class EMContactManager {
   ///
   /// Param [username] 发起好友邀请的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
@@ -278,7 +346,7 @@ class EMContactManager {
   ///
   /// **Return** 该方法调用成功会返回 ID 列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError] 。
   ///
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result =
@@ -294,12 +362,15 @@ class EMContactManager {
       throw e;
     }
   }
+}
 
+extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// 注册联系人监听器。
   ///
   /// Param [listener] 要注册的联系人监听器。
   ///
+  @Deprecated("Use EMContactManager.addEventHandler to instead")
   void addContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -310,6 +381,7 @@ class EMContactManager {
   ///
   /// Param [listener] 要移除的联系人监听器。
   ///
+  @Deprecated("Use EMContactManager.removeEventHandler to instead")
   void removeContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -317,6 +389,7 @@ class EMContactManager {
   ///
   /// 移除所有的联系人监听。
   ///
+  @Deprecated("Use EMContactManager.clearEventHandlers to instead")
   void clearContactManagerListeners() {
     _listeners.clear();
   }

@@ -64,6 +64,7 @@ class ChatMethodKeys {
   static const String ackConversationRead = "ackConversationRead";
   static const String recallMessage = "recallMessage";
   static const String getConversation = "getConversation";
+  static const String getThreadConversation = "getThreadConversation";
   static const String markAllChatMsgAsRead = "markAllChatMsgAsRead";
   static const String getUnreadMessageCount = "getUnreadMessageCount";
   static const String updateChatMessage = "updateChatMessage";
@@ -79,6 +80,8 @@ class ChatMethodKeys {
   static const String getMessage = "getMessage";
   static const String asyncFetchGroupAcks = "asyncFetchGroupAcks";
   static const String deleteRemoteConversation = "deleteRemoteConversation";
+  static const String deleteMessagesBeforeTimestamp =
+      "deleteMessagesBeforeTimestamp";
 
   static const String translateMessage = "translateMessage";
   static const String fetchSupportLanguages = "fetchSupportLanguages";
@@ -268,6 +271,9 @@ class ChatMethodKeys {
       "setPreferredNotificationLanguage";
   static const String fetchPreferredNotificationLanguage =
       "fetchPreferredNotificationLanguage";
+
+  static const String setPushTemplate = "setPushTemplate";
+  static const String getPushTemplate = "getPushTemplate";
 
   /// EMUserInfoManager methods
   static const String updateOwnUserInfo = "updateOwnUserInfo";

@@ -4,7 +4,7 @@ import '../internal/inner_headers.dart';
 /// 聊天室信息类，包含内存中的聊天室信息。
 ///
 /// **Note**
-/// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+/// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
 ///
 class EMChatRoom {
   EMChatRoom._private({
@@ -67,35 +67,35 @@ class EMChatRoom {
   /// 从内存中获取聊天室 ID。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final String roomId;
 
   /// 从内存中获取聊天室名称。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final String? name;
 
   /// 从内存中获取聊天室描述。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final String? description;
 
   /// 从内存中获取聊天室所有者 ID。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final String? owner;
 
   /// 从内存中获取聊天室公告。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final String? announcement;
 
@@ -103,7 +103,7 @@ class EMChatRoom {
   /// 从内存中获取聊天室在线用户数量。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final int? memberCount;
 
@@ -111,7 +111,7 @@ class EMChatRoom {
   /// 从内存中获取聊天室最大人数限制，在创建聊天室时设置。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final int? maxUsers;
 
@@ -119,7 +119,7 @@ class EMChatRoom {
   /// 从内存中获取聊天室管理员列表。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final List<String>? adminList;
 
@@ -127,7 +127,7 @@ class EMChatRoom {
   /// 从内存中获取聊天室成员列表。
   ///
   /// **Note**
-  /// 如需最新数据，需从服务器获取：{@link EMChatRoomManager#fetchChatRoomMembers(String, int?, int?)}。
+  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomMembers]。
   ///
   final List<String>? memberList;
 
@@ -135,7 +135,7 @@ class EMChatRoom {
   /// 从内存中获取聊天室黑名单列表。
   ///
   /// **Note**
-  /// 如果需要获取最新值，请调用：{@link EMChatRoomManager#fetchChatRoomBlockList(String, int?, int?)}。
+  /// 如果需要获取最新值，请调用：[EMChatRoomManager.fetchChatRoomBlockList]。
   ///
   final List<String>? blockList;
 
@@ -143,7 +143,7 @@ class EMChatRoom {
   /// 从内存中获取禁言列表。
   ///
   /// **Note**
-  /// 如果需要获取最新值，请调用 {@link EMChatRoomManager#fetchChatRoomMuteList(String, int?, int?)}。
+  /// 如果需要获取最新值，请调用 [EMChatRoomManager.fetchChatRoomMuteList]。
   ///
   final List<String>? muteList;
 
@@ -153,14 +153,14 @@ class EMChatRoom {
   /// - `false`：关闭全员禁言。
   ///
   /// **Note**
-  /// 如果需要获取最新值，请调用 {@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如果需要获取最新值，请调用 [EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final bool? isAllMemberMuted;
 
-  /// 从内存中获取当前用户在聊天室角色，详见 {@link EMChatRoomPermissionType}。
+  /// 从内存中获取当前用户在聊天室角色，详见 [EMChatRoomPermissionType]。
   ///
   /// **Note**
-  /// 如果需要获取最新值，请调用 {@link EMChatRoomManager#fetchChatRoomInfoFromServer}。
+  /// 如果需要获取最新值，请调用 [EMChatRoomManager.fetchChatRoomInfoFromServer]。
   ///
   final EMChatRoomPermissionType permissionType;
 }

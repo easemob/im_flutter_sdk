@@ -1,7 +1,8 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import "dart:async";
 
 import 'package:flutter/services.dart';
-
 import 'internal/inner_headers.dart';
 
 ///
@@ -16,11 +17,13 @@ import 'internal/inner_headers.dart';
 /// ```
 ///
 class EMChatManager {
-  final List<EMChatManagerListener> _listeners = [];
+  final Map<String, EMChatEventHandler> _eventHandlesMap = {};
+
+  final List<EMChatEventHandler> _listeners = [];
 
   /// @nodoc
   EMChatManager() {
-    EMMethodChannel.ChatManager.setMethodCallHandler((MethodCall call) async {
+    ChatChannel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
       } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {
@@ -48,21 +51,61 @@ class EMChatManager {
   }
 
   ///
+  /// 添加 [EMChatEventHandler] 。
+  ///
+  /// Param [identifier] handler对应的id，可用于删除handler。
+  ///
+  /// Param [handler] 添加的 [EMChatEventHandler]。
+  ///
+  void addEventHandler(
+    String identifier,
+    EMChatEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
+  }
+
+  ///
+  /// 移除 [EMChatEventHandler] 。
+  ///
+  /// Param [identifier] 需要移除 handler 对应的 id。
+  ///
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
+  }
+
+  ///
+  /// 获取 [EMChatEventHandler] 。
+  ///
+  /// Param [identifier] 要获取 handler 对应的 id。
+  ///
+  /// **Return** 返回 id 对应的 handler 。
+  ///
+  EMChatEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// 清除所有的 [EMChatEventHandler] 。
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
+  }
+
   /// 发送消息。
   ///
   /// **Note**
   /// 如果是语音，图片类等有附件的消息，SDK 会自动上传附件。
-  /// 可以通过 {@link EMOptions#serverTransfer(boolean)} 设置是否上传到聊天服务器。
+  /// 可以通过 [EMOptions.serverTransfer] 设置是否上传到聊天服务器。
   ///
-  /// 发送消息的状态，可以通过设置 {@link EMMessage#setMessageStatusListener(EMMessageStatusListener)} 进行监听。
+  /// 发送消息的状态，可以通过设置 [EMMessage.setMessageStatusCallBack] 进行监听。
   ///
   /// Param [message] 待发送消息对象，不能为空。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMMessage> sendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
     try {
       EMError.hasErrorFromResult(result);
@@ -81,11 +124,11 @@ class EMChatManager {
   ///
   /// Param [message] 需要重发的消息。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMMessage> resendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.resendMessage, message.toJson());
     try {
       EMError.hasErrorFromResult(result);
@@ -103,21 +146,21 @@ class EMChatManager {
   /// 发送消息的已读回执，该方法只针对单聊会话。
   ///
   /// **Warning**
-  /// 该方法只有在 {@link EMOptions#requireAck(bool)} 为 `true` 时才生效。
+  /// 该方法只有在 [EMOptions.requireAck] 为 `true` 时才生效。
   ///
   /// **Note**
-  /// 群消息已读回执，详见 {@link #sendGroupMessageReadAck(String, String, String)}。
+  /// 群消息已读回执，详见 [sendGroupMessageReadAck]。
   ///
-  /// 推荐进入会话页面时调用 {@link #sendConversationReadAck(String)}，其他情况下调用该方法以减少调用频率。
+  /// 推荐进入会话页面时调用 [sendConversationReadAck]，其他情况下调用该方法以减少调用频率。
   ///
   /// Param [message] The message body.
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<bool> sendMessageReadAck(EMMessage message) async {
     Map req = {"to": message.from, "msg_id": message.msgId};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.ackMessageRead, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.ackMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.ackMessageRead);
@@ -129,11 +172,11 @@ class EMChatManager {
   ///
   /// 发送群消息已读回执。
   ///
-  /// 前提条件：设置了{@link EMOptions#requireAck(bool)} 和 {@link EMMessage#needGroupAck(bool)}。
+  /// 前提条件：设置了[EMOptions.requireAck] 和 [EMMessage.needGroupAck]。
   ///
   /// **Note**
-  /// 发送单聊消息已读回执，详见 {@link #sendMessageReadAck(EMMessage)}；
-  /// 会话已读回执，详见 {@link #sendConversationReadAck(String)}。
+  /// 发送单聊消息已读回执，详见 [sendMessageReadAck]；
+  /// 会话已读回执，详见 [sendConversationReadAck]。
   ///
   /// Param [msgId] 消息 ID。
   ///
@@ -141,7 +184,7 @@ class EMChatManager {
   ///
   /// Param [content] 扩展信息。用户自己定义的关键字，接收后，解析出自定义的字符串，可以自行处理。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<bool> sendGroupMessageReadAck(
     String msgId,
@@ -154,8 +197,8 @@ class EMChatManager {
     };
     req.setValueWithOutNull("content", content);
 
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.ackGroupMessageRead, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.ackMessageRead);
@@ -168,19 +211,19 @@ class EMChatManager {
   /// 发送会话的已读回执，该方法只针对单聊会话。
   ///
   /// 该方法会通知服务器将此会话未读数设置为 0，对话方（包含多端多设备）将会在下面这个回调方法中接收到回调：
-  /// {@link EMChatManagerListener#onConversationRead(String, String)}。
+  /// [EMChatEventHandler.onConversationRead]。
   ///
   /// **Note**
-  /// 发送群组消息已读回执见 {@link #sendGroupMessageReadAck(String, String, String)}。
+  /// 发送群组消息已读回执见 [sendGroupMessageReadAck]。
   ///
   /// Param [conversationId] 会话 ID。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws** A description of the exception. See [EMError].
   ///
   Future<bool> sendConversationReadAck(String conversationId) async {
     Map req = {"con_id": conversationId};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.ackConversationRead, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.ackConversationRead, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.ackConversationRead);
@@ -194,12 +237,12 @@ class EMChatManager {
   ///
   /// Param [messageId] 消息 ID。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> recallMessage(String messageId) async {
     Map req = {"msg_id": messageId};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.recallMessage, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.recallMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -214,13 +257,12 @@ class EMChatManager {
   ///
   /// **Return** 根据指定 ID 获取的消息对象，如果消息不存在会返回空值。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = {"msg_id": messageId};
     Map<String, dynamic> result =
-        await EMMethodChannel.ChatManager.invokeMethod(
-            ChatMethodKeys.getMessage, req);
+        await ChatChannel.invokeMethod(ChatMethodKeys.getMessage, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getMessage)) {
@@ -240,16 +282,15 @@ class EMChatManager {
   ///
   /// Param [conversationId] 会话 ID。
   ///
-  /// Param [type] 会话类型，详见 {@link EMConversationType}。
+  /// Param [type] 会话类型，详见 [EMConversationType]。
   ///
   /// Param [createIfNeed] 没找到相应会话时是否自动创建。
-  ///                        - （Default)`true` 表示没有找到相应会话时会自动创建会话；
+  ///                        - (Default)`true` 表示没有找到相应会话时会自动创建会话；
   ///                        - `false` 表示没有找到相应会话时不创建会话。
-  ///
   ///
   /// **Return**  根据指定 ID 以及会话类型找到的会话对象，如果没有找到会返回空值。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMConversation?> getConversation(
     String conversationId, {
@@ -261,8 +302,8 @@ class EMChatManager {
       "type": conversationTypeToInt(type),
       "createIfNeed": createIfNeed
     };
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.getConversation, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.getConversation, req);
     try {
       EMError.hasErrorFromResult(result);
       EMConversation? ret;
@@ -276,15 +317,40 @@ class EMChatManager {
   }
 
   ///
+  /// 根据 threadId 获取 thread 会话。
+  ///
+  /// Param [threadId] thread ID.
+  ///
+  /// **Return** 对应的会话.
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
+  Future<EMConversation> getThreadConversation(String threadId) async {
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.getThreadConversation,
+      {"con_id", threadId},
+    );
+
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMConversation.fromJson(
+          result[ChatMethodKeys.getThreadConversation]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// 设置所有会话已读。
+  ///
   /// 把所有的会话都设成已读。
   ///
   /// 这里针对的是本地会话。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> markAllConversationsAsRead() async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.markAllChatMsgAsRead);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.markAllChatMsgAsRead);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -297,11 +363,11 @@ class EMChatManager {
   ///
   /// **Return** 未读消息数。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<int> getUnreadMessageCount() async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.getUnreadMessageCount);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.getUnreadMessageCount);
     try {
       int ret = 0;
       EMError.hasErrorFromResult(result);
@@ -319,12 +385,12 @@ class EMChatManager {
   ///
   /// 会同时更新本地内存和数据库。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = {"message": message.toJson()};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.updateChatMessage, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.updateChatMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -340,7 +406,7 @@ class EMChatManager {
   ///
   /// Param [messages] 需要导入数据库的消息。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> importMessages(List<EMMessage> messages) async {
     List<Map> list = [];
@@ -348,8 +414,8 @@ class EMChatManager {
       list.add(element.toJson());
     });
     Map req = {"messages": list};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.importMessages, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.importMessages, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -364,10 +430,10 @@ class EMChatManager {
   ///
   /// Param [message] 要下载附件的消息。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> downloadAttachment(EMMessage message) async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.downloadAttachment, {"message": message.toJson()});
     try {
       EMError.hasErrorFromResult(result);
@@ -381,10 +447,10 @@ class EMChatManager {
   ///
   /// Param [message] 要下载缩略图的消息，一般图片消息和视频消息有缩略图。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> downloadThumbnail(EMMessage message) async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.downloadThumbnail, {"message": message.toJson()});
     try {
       EMError.hasErrorFromResult(result);
@@ -400,11 +466,11 @@ class EMChatManager {
   ///
   /// **Return**  返回获取的会话。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMConversation>> loadAllConversations() async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.loadAllConversations);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.loadAllConversations);
     try {
       EMError.hasErrorFromResult(result);
       List<EMConversation> conversationList = [];
@@ -424,10 +490,10 @@ class EMChatManager {
   ///
   /// **Return** 返回获取的会话列表。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMConversation>> getConversationsFromServer() async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.getConversationsFromServer);
     try {
       EMError.hasErrorFromResult(result);
@@ -454,15 +520,15 @@ class EMChatManager {
   ///                        - `true` 代表删除成功；
   ///                        - `false` 代表删除失败。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<bool> deleteConversation(
     String conversationId, {
     bool deleteMessages = true,
   }) async {
     Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.deleteConversation, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.deleteConversation, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.deleteConversation);
@@ -472,43 +538,11 @@ class EMChatManager {
   }
 
   ///
-  /// 注册消息监听。
-  ///
-  /// 接收到新消息等回调可以通过设置此方法进行监听，详见 {@link EMChatManagerListener}。
-  ///
-  /// Param [listener] 要注册的消息监听，详见 {@link EMChatManagerListener}。
-  ///
-  void addChatManagerListener(EMChatManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
-  }
-
-  ///
-  /// 移除消息监听。
-  ///
-  /// 需要先添加 {@link #addMessageListener(addChatManagerListener)} 监听，再调用本方法。
-  ///
-  /// Param [listener] 要移除的监听。
-  ///
-  void removeChatManagerListener(EMChatManagerListener listener) {
-    _listeners.remove(listener);
-  }
-
-  ///
-  /// 移除所有消息监听。
-  ///
-  void clearAllChatManagerListeners() {
-    _listeners.clear();
-  }
-
-  ///
-  /// 从服务器获取指定会话的消息历史记录。
-  ///
-  /// 分页获取。
+  /// 分页获取历史消息
   ///
   /// Param [conversationId] 会话 ID。
   ///
-  /// Param [type] 会话类型，详见 {@link EMConversationType}。
+  /// Param [type] 会话类型. 详见 [EMConversationType].
   ///
   /// Param [pageSize] 每页获取的消息数量。
   ///
@@ -516,7 +550,7 @@ class EMChatManager {
   ///
   /// **Return** 返回消息列表和用于继续获取历史消息的 Cursor。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMCursorResult<EMMessage>> fetchHistoryMessages({
     required String conversationId,
@@ -529,7 +563,7 @@ class EMChatManager {
     req['type'] = conversationTypeToInt(type);
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.fetchHistoryMessages, req);
     try {
       EMError.hasErrorFromResult(result);
@@ -558,7 +592,7 @@ class EMChatManager {
   ///
   /// **Return**  获取的消息列表。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMMessage>> searchMsgFromDB(
     String keywords, {
@@ -574,8 +608,8 @@ class EMChatManager {
     req['from'] = from;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
 
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.searchChatMsgFromDB, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMMessage> list = [];
@@ -594,9 +628,11 @@ class EMChatManager {
   /// 分页获取。
   ///
   /// **Note**
-  /// 发送群组消息回执，详见 {@link {@link #sendConversationReadAck(String)}。
+  /// 发送群组消息回执，详见 [sendConversationReadAck]。
   ///
   /// Param [msgId] 消息 ID。
+  ///
+  /// Param [groupId] 群组 ID。
   ///
   /// Param [startAckId] 已读回执的 ID，如果为空，从最新的回执向前开始获取。
   ///
@@ -604,7 +640,7 @@ class EMChatManager {
   ///
   /// **Return** 返回回执列表和用于下次获取群消息回执的 cursor。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMCursorResult<EMGroupMessageAck>> fetchGroupAcks(
     String msgId,
@@ -616,8 +652,8 @@ class EMChatManager {
     req["pageSize"] = pageSize;
     req.setValueWithOutNull("ack_id", startAckId);
 
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.asyncFetchGroupAcks, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
 
     try {
       EMError.hasErrorFromResult(result);
@@ -639,14 +675,14 @@ class EMChatManager {
   ///
   /// Param [conversationId] 会话 ID。
   ///
-  /// Param [conversationType] 会话类型，详见 {@link EMConversationType}。
+  /// Param [conversationType] 会话类型，详见 [EMConversationType]。
   ///
   /// Param [isDeleteMessage] 删除会话时是否同时删除历史消息记录。
   ///
   /// - （默认）`true`：是；
   /// - `false`：否。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> deleteRemoteConversation(
     String conversationId, {
@@ -664,10 +700,30 @@ class EMChatManager {
     }
     req["isDeleteRemoteMessage"] = isDeleteMessage;
 
-    Map data = await EMMethodChannel.ChatManager.invokeMethod(
+    Map data = await ChatChannel.invokeMethod(
         ChatMethodKeys.deleteRemoteConversation, req);
+    try {
+      EMError.hasErrorFromResult(data);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 
-    EMError.hasErrorFromResult(data);
+  ///
+  /// 删除某时间之前的消息；
+  ///
+  /// Param [timestamp]  Unix 时间戳，单位 毫秒。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
+  Future<void> deleteMessagesBefore(int timestamp) async {
+    Map result = await ChatChannel.invokeMethod(
+        ChatMethodKeys.deleteMessagesBeforeTimestamp, {"timestamp": timestamp});
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   Future<void> _onMessagesReceived(List messages) async {
@@ -675,6 +731,12 @@ class EMChatManager {
     for (var message in messages) {
       messageList.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesReceived?.call(messageList);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesReceived(messageList);
     }
@@ -685,6 +747,12 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onCmdMessagesReceived?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onCmdMessagesReceived(list);
     }
@@ -695,6 +763,12 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRead?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesRead(list);
     }
@@ -705,12 +779,23 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMGroupMessageAck.fromJson(message));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onGroupMessageRead?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onGroupMessageRead(list);
     }
   }
 
   Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
+    for (var item in _eventHandlesMap.values) {
+      item.onReadAckForGroupMessageUpdated?.call();
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onReadAckForGroupMessageUpdated();
     }
@@ -721,6 +806,12 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesDelivered?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesDelivered(list);
     }
@@ -731,21 +822,38 @@ class EMChatManager {
     for (var message in messages) {
       list.add(EMMessage.fromJson(message));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRecalled?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessagesRecalled(list);
     }
   }
 
   Future<void> _onConversationsUpdate(dynamic obj) async {
+    for (var item in _eventHandlesMap.values) {
+      item.onConversationsUpdate?.call();
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onConversationsUpdate();
     }
   }
 
   Future<void> _onConversationHasRead(dynamic obj) async {
+    String from = (obj as Map)['from'];
+    String to = obj['to'];
+
+    for (var item in _eventHandlesMap.values) {
+      item.onConversationRead?.call(from, to);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
-      String from = (obj as Map)['from'];
-      String to = obj['to'];
       listener.onConversationRead(from, to);
     }
   }
@@ -755,6 +863,12 @@ class EMChatManager {
     for (var reactionChange in reactionChangeList) {
       list.add(EMMessageReactionEvent.fromJson(reactionChange));
     }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessageReactionDidChange?.call(list);
+    }
+
+    // deprecated(3.9.5)
     for (var listener in _listeners) {
       listener.onMessageReactionDidChange(list);
     }
@@ -769,7 +883,7 @@ class EMChatManager {
   ///
   /// Param [reason] 举报原因。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError].
   ///
   Future<void> reportMessage({
     required String messageId,
@@ -777,16 +891,14 @@ class EMChatManager {
     required String reason,
   }) async {
     Map req = {"msgId": messageId, "tag": tag, "reason": reason};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.reportMessage, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.reportMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
       throw e;
     }
   }
-
-  //// Reaction
 
   ///
   /// 添加 Reaction。
@@ -795,15 +907,15 @@ class EMChatManager {
   ///
   /// Param [reaction] Reaction 的内容。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError].
   ///
   Future<void> addReaction({
     required String messageId,
     required String reaction,
   }) async {
     Map req = {"reaction": reaction, "msgId": messageId};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.addReaction, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.addReaction, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -818,15 +930,15 @@ class EMChatManager {
   ///
   /// Param [reaction] 要删除的 Reaction。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> removeReaction({
     required String messageId,
     required String reaction,
   }) async {
     Map req = {"reaction": reaction, "msgId": messageId};
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.removeReaction, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.removeReaction, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -845,7 +957,7 @@ class EMChatManager {
   ///
   /// **Return** 若调用成功，返回 Reaction 列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError].
   ///
   Future<Map<String, List<EMMessageReaction>>> fetchReactionList({
     required List<String> messageIds,
@@ -857,7 +969,7 @@ class EMChatManager {
       "chatType": chatTypeToInt(chatType),
     };
     req.setValueWithOutNull("groupId", groupId);
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
+    Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.fetchReactionList,
       req,
     );
@@ -889,9 +1001,9 @@ class EMChatManager {
   ///
   /// Param [pageSize] 每页期望返回的 Reaction 数量。
   ///
-  /// **Return** 若调用成功，返回 Reaction 详情。
+  /// **Return** 若调用成功，返回 [EMMessageReaction] 详情。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError].
   ///
   Future<EMCursorResult<EMMessageReaction>> fetchReactionDetail({
     required String messageId,
@@ -905,8 +1017,8 @@ class EMChatManager {
     };
     req.setValueWithOutNull("cursor", cursor);
     req.setValueWithOutNull("pageSize", pageSize);
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.fetchReactionDetail, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.fetchReactionDetail, req);
 
     try {
       EMError.hasErrorFromResult(result);
@@ -929,7 +1041,7 @@ class EMChatManager {
   ///
   /// **Return** 译文。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError].
   ///
   Future<EMMessage> translateMessage({
     required EMMessage msg,
@@ -938,8 +1050,8 @@ class EMChatManager {
     Map req = {};
     req["message"] = msg.toJson();
     req["languages"] = languages;
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.translateMessage, req);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.translateMessage, req);
     try {
       EMError.hasErrorFromResult(result);
       return EMMessage.fromJson(result[ChatMethodKeys.translateMessage]);
@@ -953,11 +1065,11 @@ class EMChatManager {
   ///
   /// **Return** 翻译服务支持的语言列表。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError].
   ///
   Future<List<EMTranslateLanguage>> fetchSupportedLanguages() async {
-    Map result = await EMMethodChannel.ChatManager.invokeMethod(
-        ChatMethodKeys.fetchSupportLanguages);
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.fetchSupportLanguages);
     try {
       EMError.hasErrorFromResult(result);
       List<EMTranslateLanguage> list = [];
@@ -968,5 +1080,40 @@ class EMChatManager {
     } on EMError catch (e) {
       throw e;
     }
+  }
+}
+
+extension ChatManagerDeprecated on EMChatManager {
+  ///
+  /// 注册消息监听。
+  ///
+  /// 接收到新消息等回调可以通过设置此方法进行监听，详见 [EMChatManagerListener]。
+  ///
+  /// Param [listener] 要注册的消息监听。
+  ///
+  @Deprecated("Use EMChatManager.addEventHandler to instead")
+  void addChatManagerListener(EMChatManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// 移除消息监听。
+  ///
+  /// 需要先添加 [addChatManagerListener] 监听，再调用本方法。
+  ///
+  /// Param [listener] 要移除的监听。
+  ///
+  @Deprecated("Use EMChatManager.removeEventHandler to instead")
+  void removeChatManagerListener(EMChatManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// 移除所有消息监听。
+  ///
+  @Deprecated("Use EMChatManager.clearEventHandlers to instead")
+  void clearAllChatManagerListeners() {
+    _listeners.clear();
   }
 }

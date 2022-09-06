@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -11,11 +13,17 @@ class EMGroupManager {
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_group_manager', JSONMethodCodec());
 
+  final Map<String, EMGroupEventHandler> _eventHandlesMap = {};
+  // deprecated(3.9.5)
+  final List<EMGroupManagerListener> _listeners = [];
+
+  /// 群文件下载回调。
+  EMDownloadCallback? downloadCallback;
+
   /// @nodoc
   EMGroupManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
-      print('[EMGroupChange:]' + argMap.toString());
       if (call.method == ChatMethodKeys.onGroupChanged) {
         return _onGroupChanged(argMap);
       }
@@ -23,12 +31,46 @@ class EMGroupManager {
     });
   }
 
-  final List<EMGroupManagerListener> _listeners = [];
+  ///
+  /// 添加 [EMGroupEventHandler] 。
+  ///
+  /// Param [identifier] handler对应的id，可用于删除handler。
+  ///
+  /// Param [handler] 添加的 [EMChatEventHandler]。
+  ///
+  void addEventHandler(
+    String identifier,
+    EMGroupEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
+  }
 
   ///
-  /// 群文件下载回调。
+  /// 移除 [EMGroupEventHandler] 。
   ///
-  EMDownloadCallback? downloadCallback;
+  /// Param [identifier] 需要移除 handler 对应的 id。
+  ///
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
+  }
+
+  ///
+  /// 获取 [EMGroupEventHandler] 。
+  ///
+  /// Param [identifier] 要获取 handler 对应的 id。
+  ///
+  /// **Return** 返回 id 对应的 handler 。
+  ///
+  EMGroupEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// 清除所有的 [EMGroupEventHandler] 。
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
+  }
 
   ///
   /// 根据群组 ID，从本地缓存中获取指定群组。
@@ -37,7 +79,7 @@ class EMGroupManager {
   ///
   /// **Return** 返回群组对象。如果群组不存在，返回 null。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<EMGroup?> getGroupWithId(String groupId) async {
     Map req = {'groupId': groupId};
@@ -60,7 +102,7 @@ class EMGroupManager {
   ///
   /// **Return** 群组列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<List<EMGroup>> getJoinedGroups() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getJoinedGroups);
@@ -78,11 +120,11 @@ class EMGroupManager {
   ///
   /// 从服务器中获取当前用户加入的所有群组。
   ///
-  /// 此操作只返回群组列表，不包含所有成员的信息。如果要更新某个群组包括成员的全部信息，需要再调用 {@link #fetchGroupInfoFromServer(String groupId)}。
+  /// 此操作只返回群组列表，不包含所有成员的信息。如果要更新某个群组包括成员的全部信息，需要再调用 [fetchGroupInfoFromServer]。
   ///
   /// **Return** 当前用户加入的群组的列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
 
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
     int pageSize = 200,
@@ -109,9 +151,9 @@ class EMGroupManager {
   ///
   /// Param [cursor] 从这个游标位置开始取数据，首次获取数据时传 `null`，按照用户加入公开群组时间的顺序还是逆序获取数据。
   ///
-  /// **Return** 包含用于下次获取数据的 cursor 以及群组列表。返回的结果中，当 `EMCursorResult.getCursor()` 为空字符串 ("") 时，表示没有更多数据。
+  /// **Return** 包含用于下次获取数据的 cursor 以及群组列表。返回的结果中，当 [EMCursorResult.cursor] 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<EMCursorResult<EMGroupInfo>> fetchPublicGroupsFromServer({
     int pageSize = 200,
@@ -137,7 +179,7 @@ class EMGroupManager {
   /// 创建群组。
   ///
   /// 群组创建成功后，会更新内存及数据库中的数据，多端多设备会收到相应的通知事件，将群组更新到内存及数据库中。
-  /// 可通过设置 {@link com.EMMultiDeviceListener} 监听相关事件，事件回调函数为 {@link com.EMMultiDeviceListener#onGroupEvent(int, String, List)}，第一个参数为事件，创建群组事件为 {@link com.EMMultiDeviceListener#GROUP_CREATE}。
+  /// 可通过设置 [EMMultiDeviceEventHandler] 监听相关事件，事件回调函数为 [EMMultiDeviceEventHandler.onGroupEvent]，第一个参数为事件，创建群组事件为 [EMMultiDevicesEvent.GROUP_CREATE]。
   ///
   /// Param [groupName] 群组名称。
   ///
@@ -147,16 +189,16 @@ class EMGroupManager {
   ///
   /// Param [inviteReason] 用户入群邀请信息。
   ///
-  /// Param [options] 群组的其他选项。请参见 {@link EMGroupOptions}。
+  /// Param [options] 群组的其他选项。请参见 [EMGroupOptions]。
   /// 群组的其他选项。
   /// - 群最大成员数，默认值为 200；
-  /// - 群组类型，详见 {@link EMGroupManager.EMGroupStyle}，默认为 {@link EMGroupStyle#EMGroupStylePrivateOnlyOwnerInvite}；
+  /// - 群组类型，详见 [EMGroupStyle]，默认为 [EMGroupStyle.PrivateOnlyOwnerInvite]；
   /// - 邀请进群是否需要对方同意，默认为 false，即邀请后直接进群；
   /// - 群组详情扩展。
   ///
   /// **Return** 创建成功的群对象。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<EMGroup> createGroup({
     String? groupName,
@@ -183,13 +225,13 @@ class EMGroupManager {
   ///
   /// 从服务器获取群组的详细信息。
   ///
-  /// 该方法不获取成员。如需获取成员，使用 {@link #getGroupMemberListFromServer(String, int?, String?)}。
+  /// 该方法不获取成员。如需获取成员，使用 [fetchMemberListFromServer]。
   ///
   /// Param [groupId] 群组 ID。
   ///
   /// **Return** 群组描述。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<EMGroup> fetchGroupInfoFromServer(
     String groupId, {
@@ -222,9 +264,9 @@ class EMGroupManager {
   ///
   /// Param [cursor] 从这个游标位置开始取数据，首次获取数据时传 null 即可。
   ///
-  /// **Return** 分页获取结果 {@link EMCursorResult}，包含用于下次获取数据的 cursor 以及群组成员列表。返回的结果中，当 `EMCursorResult.getCursor()` 为空字符串 ("") 时，表示没有更多数据。
+  /// **Return** 分页获取结果 [EMCursorResult]，包含用于下次获取数据的 [EMCursorResult.cursor] 以及群组成员列表。返回的结果中，当 [EMCursorResult.cursor] 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<EMCursorResult<String>> fetchMemberListFromServer(
     String groupId, {
@@ -263,7 +305,7 @@ class EMGroupManager {
   ///
   /// **Return** 返回的黑名单列表。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<List<String>> fetchBlockListFromServer(
     String groupId, {
@@ -296,7 +338,7 @@ class EMGroupManager {
   ///
   /// **Return** 群组的禁言列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<Map<String, int>> fetchMuteListFromServer(
     String groupId, {
@@ -332,7 +374,7 @@ class EMGroupManager {
   ///
   /// **Return** 群组的白名单。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<List<String>> fetchAllowListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
@@ -361,7 +403,7 @@ class EMGroupManager {
   /// - `true`: 是；
   /// - `false`: 否。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<bool> isMemberInAllowListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
@@ -386,7 +428,7 @@ class EMGroupManager {
   ///
   /// **Return** 返回共享文件列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<List<EMGroupSharedFile>> fetchGroupFileListFromServer(
     String groupId, {
@@ -417,7 +459,7 @@ class EMGroupManager {
   ///
   /// **Return** 群组公告。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<String?> fetchAnnouncementFromServer(String groupId) async {
     Map req = {'groupId': groupId};
@@ -442,7 +484,7 @@ class EMGroupManager {
   ///
   /// Param [welcome] 欢迎消息。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> addMembers(
     String groupId,
@@ -474,7 +516,7 @@ class EMGroupManager {
   ///
   /// Param [reason] 邀请原因。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> inviterUser(
     String groupId,
@@ -508,7 +550,7 @@ class EMGroupManager {
   ///
   /// Param [members] 要删除的成员的用户 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> removeMembers(
     String groupId,
@@ -534,7 +576,7 @@ class EMGroupManager {
   ///
   /// Param [members] 要加入黑名单的用户 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> blockMembers(
     String groupId,
@@ -558,7 +600,7 @@ class EMGroupManager {
   ///
   /// Param [members] 要从黑名单中移除的用户。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> unblockMembers(
     String groupId,
@@ -583,7 +625,7 @@ class EMGroupManager {
   ///
   /// Param [name] 修改后的群组名称。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> changeGroupName(
     String groupId,
@@ -608,7 +650,7 @@ class EMGroupManager {
   ///
   /// Param [desc] 修改后的群描述。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> changeGroupDescription(
     String groupId,
@@ -629,7 +671,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> leaveGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -648,7 +690,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> destroyGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -667,7 +709,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> blockGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -684,7 +726,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> unblockGroup(String groupId) async {
     Map req = {'groupId': groupId};
@@ -707,7 +749,7 @@ class EMGroupManager {
   ///
   /// **Return** 返回新群主。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> changeOwner(
     String groupId,
@@ -732,9 +774,9 @@ class EMGroupManager {
   ///
   /// Param [memberId]  要添加的管理员的用户 ID。
   ///
-  /// **Return**  返回更新后的群组对象。
+  /// **Return** 返回更新后的群组对象。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> addAdmin(
     String groupId,
@@ -760,7 +802,7 @@ class EMGroupManager {
   ///
   /// **Return** 返回更新后的群组对象。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> removeAdmin(
     String groupId,
@@ -788,7 +830,7 @@ class EMGroupManager {
   ///
   /// **Return** 返回更新后的群组对象。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> muteMembers(
     String groupId,
@@ -813,7 +855,7 @@ class EMGroupManager {
   ///
   /// Param [members] 要解除禁言的成员列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> unMuteMembers(
     String groupId,
@@ -835,7 +877,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> muteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
@@ -855,7 +897,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> unMuteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
@@ -877,7 +919,7 @@ class EMGroupManager {
   ///
   /// Param [members] 要添加至白名单的成员列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> addAllowList(
     String groupId,
@@ -901,7 +943,7 @@ class EMGroupManager {
   ///
   /// Param [members] 要移除白名单的成员列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> removeAllowList(
     String groupId,
@@ -921,13 +963,13 @@ class EMGroupManager {
   /// 上传共享文件至群组。
   ///
   /// **注意**
-  /// 上传共享文件会触发进度回调 @link MessageStatusCallBack#Function(int progress)}。
+  /// 上传共享文件会触发进度回调 [MessageStatusCallBack.onProgress]。
   ///
   /// Param [groupId] 群组 ID。
   ///
   /// Param [filePath] 共享文件的本地路径。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> uploadGroupSharedFile(
     String groupId,
@@ -947,7 +989,7 @@ class EMGroupManager {
   /// 下载指定的群组共享文件。
   ///
   /// **注意**
-  /// 触发进度回调 @link MessageStatusCallBack#Function(int progress)}。
+  /// 触发进度回调 [MessageStatusCallBack.onProgress]。
   ///
   /// Param [groupId] 群组 ID。
   ///
@@ -955,7 +997,7 @@ class EMGroupManager {
   ///
   /// Param [savePath] 共享文件的本地路径。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> downloadGroupSharedFile({
     required String groupId,
@@ -981,7 +1023,7 @@ class EMGroupManager {
   ///
   /// Param [fileId] 共享文件的 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> removeGroupSharedFile(
     String groupId,
@@ -1006,7 +1048,7 @@ class EMGroupManager {
   ///
   /// Param [announcement] 群组公告。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> updateGroupAnnouncement(
     String groupId,
@@ -1031,7 +1073,7 @@ class EMGroupManager {
   ///
   /// Param [extension] 群组扩展字段。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> updateGroupExtension(
     String groupId,
@@ -1050,11 +1092,11 @@ class EMGroupManager {
   ///
   /// 当前登录用户加入公开群。
   ///
-  /// 若是自由加入的公开群，直接进入群组；若公开群需验证，群主同意后才能入群。详见 {@link EMGroupStyle}。
+  /// 若是自由加入的公开群，直接进入群组；若公开群需验证，群主同意后才能入群。详见 [EMGroupStyle]。
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> joinPublicGroup(
     String groupId,
@@ -1072,13 +1114,13 @@ class EMGroupManager {
   ///
   /// 申请加入群组。
   ///
-  /// 该方法仅适用于需要验证的公开群组，即类型为 {@link EMGroupStyle#EMGroupStylePublicJoinNeedApproval} 的群组。
+  /// 该方法仅适用于需要验证的公开群组，即类型为 [EMGroupStyle.PublicJoinNeedApproval] 的群组。
   ///
   /// Param [groupId] 群组 ID。
   ///
   /// Param [reason] 申请入群的原因。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> requestToJoinPublicGroup(
     String groupId, {
@@ -1104,7 +1146,7 @@ class EMGroupManager {
   ///
   /// Param [username] 申请人的用户 ID。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> acceptJoinApplication(
     String groupId,
@@ -1131,7 +1173,7 @@ class EMGroupManager {
   ///
   /// Param [reason] 拒绝理由。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> declineJoinApplication(
     String groupId,
@@ -1159,7 +1201,7 @@ class EMGroupManager {
   ///
   /// **Return** 用户已接受邀请的群组对象。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<EMGroup> acceptInvitation(
     String groupId,
@@ -1185,7 +1227,7 @@ class EMGroupManager {
   ///
   /// Param [reason] 拒绝理由。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> declineInvitation({
     required String groupId,
@@ -1203,39 +1245,143 @@ class EMGroupManager {
     }
   }
 
-  ///
-  /// 注册群变动事件监听器。
-  ///
-  /// 如需删除群变动事件监听器，可调用 {@link #removeGroupManagerListener(EMGroupManagerListener)}。
-  ///
-  /// Param [listener] 要注册的群组事件监听器。
-  ///
-  void addGroupManagerListener(EMGroupManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
-  }
-
-  ///
-  /// 移除群组变化监听器。
-  ///
-  /// 该方法在注册 {@link #addGroupManagerListener(EMGroupManagerListener)}后调用。
-  ///
-  /// Param [listener] 要移除的群组监听器。
-  ///
-  void removeGroupManagerListener(EMGroupManagerListener listener) {
-    _listeners.remove(listener);
-  }
-
-  ///
-  /// 移除所有群组变化监听器。
-  ///
-  void clearAllGroupManagerListeners() {
-    _listeners.clear();
-  }
-
   Future<void> _onGroupChanged(Map? map) async {
+    var type = map!['type'];
+    _eventHandlesMap.values.forEach((element) {
+      switch (type) {
+        case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String inviter = map['inviter'];
+          String? reason = map['reason'];
+          element.onInvitationReceivedFromGroup
+              ?.call(groupId, groupName, inviter, reason);
+          break;
+        case EMGroupChangeEvent.ON_INVITATION_ACCEPTED:
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
+          String? reason = map['reason'];
+          element.onInvitationAcceptedFromGroup?.call(groupId, invitee, reason);
+          break;
+        case EMGroupChangeEvent.ON_INVITATION_DECLINED:
+          String groupId = map['groupId'];
+          String invitee = map['invitee'];
+          String? reason = map['reason'];
+          element.onInvitationDeclinedFromGroup?.call(groupId, invitee, reason);
+          break;
+        case EMGroupChangeEvent.ON_AUTO_ACCEPT_INVITATION:
+          String groupId = map['groupId'];
+          String inviter = map['inviter'];
+          String? inviteMessage = map['inviteMessage'];
+          element.onAutoAcceptInvitationFromGroup
+              ?.call(groupId, inviter, inviteMessage);
+          break;
+        case EMGroupChangeEvent.ON_USER_REMOVED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          element.onUserRemovedFromGroup?.call(groupId, groupName);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_RECEIVED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String applicant = map['applicant'];
+          String? reason = map['reason'];
+          element.onRequestToJoinReceivedFromGroup
+              ?.call(groupId, groupName, applicant, reason);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String decliner = map['decliner'];
+          String? reason = map['reason'];
+          element.onRequestToJoinDeclinedFromGroup
+              ?.call(groupId, groupName, decliner, reason);
+          break;
+        case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          String accepter = map['accepter'];
+          element.onRequestToJoinAcceptedFromGroup
+              ?.call(groupId, groupName, accepter);
+          break;
+        case EMGroupChangeEvent.ON_GROUP_DESTROYED:
+          String groupId = map['groupId'];
+          String? groupName = map['groupName'];
+          element.onGroupDestroyed?.call(groupId, groupName);
+          break;
+        case EMGroupChangeEvent.ON_MUTE_LIST_ADDED:
+          String groupId = map['groupId'];
+          List<String> mutes = List.from(map['mutes']);
+          int? muteExpire = map['muteExpire'];
+          element.onMuteListAddedFromGroup?.call(groupId, mutes, muteExpire);
+          break;
+        case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
+          String groupId = map['groupId'];
+          List<String> mutes = List.from(map['mutes']);
+          element.onMuteListRemovedFromGroup?.call(groupId, mutes);
+          break;
+        case EMGroupChangeEvent.ON_ADMIN_ADDED:
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
+          element.onAdminAddedFromGroup?.call(groupId, administrator);
+          break;
+        case EMGroupChangeEvent.ON_ADMIN_REMOVED:
+          String groupId = map['groupId'];
+          String administrator = map['administrator'];
+          element.onAdminRemovedFromGroup?.call(groupId, administrator);
+          break;
+        case EMGroupChangeEvent.ON_OWNER_CHANGED:
+          String groupId = map['groupId'];
+          String newOwner = map['newOwner'];
+          String oldOwner = map['oldOwner'];
+          element.onOwnerChangedFromGroup?.call(groupId, newOwner, oldOwner);
+          break;
+        case EMGroupChangeEvent.ON_MEMBER_JOINED:
+          String groupId = map['groupId'];
+          String member = map['member'];
+          element.onMemberJoinedFromGroup?.call(groupId, member);
+          break;
+        case EMGroupChangeEvent.ON_MEMBER_EXITED:
+          String groupId = map['groupId'];
+          String member = map['member'];
+          element.onMemberExitedFromGroup?.call(groupId, member);
+          break;
+        case EMGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
+          String groupId = map['groupId'];
+          String announcement = map['announcement'];
+          element.onAnnouncementChangedFromGroup?.call(groupId, announcement);
+          break;
+        case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
+          String groupId = map['groupId'];
+          EMGroupSharedFile sharedFile =
+              EMGroupSharedFile.fromJson(map['sharedFile']);
+          element.onSharedFileAddedFromGroup?.call(groupId, sharedFile);
+          break;
+        case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:
+          String groupId = map['groupId'];
+          String fileId = map['fileId'];
+          element.onSharedFileDeletedFromGroup?.call(groupId, fileId);
+          break;
+        case EMGroupChangeEvent.ON_WHITE_LIST_ADDED:
+          String groupId = map["groupId"];
+          List<String> members = List.from(map['whitelist']);
+          element.onAllowListAddedFromGroup?.call(groupId, members);
+          break;
+        case EMGroupChangeEvent.ON_WHITE_LIST_REMOVED:
+          String groupId = map["groupId"];
+          List<String> members = List.from(map['whitelist']);
+          element.onAllowListRemovedFromGroup?.call(groupId, members);
+          break;
+        case EMGroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isAllMuted = map["isMuted"] as bool;
+          element.onAllGroupMemberMuteStateChanged?.call(groupId, isAllMuted);
+          break;
+      }
+    });
+
+    // deprecated (3.9.5)
     for (var listener in _listeners) {
-      var type = map!['type'];
       switch (type) {
         case EMGroupChangeEvent.ON_INVITATION_RECEIVED:
           String groupId = map['groupId'];
@@ -1367,5 +1513,40 @@ class EMGroupManager {
           break;
       }
     }
+  }
+}
+
+extension EMGroupManagerDeprecated on EMGroupManager {
+  ///
+  /// 注册群变动事件监听器。
+  ///
+  /// 如需删除群变动事件监听器，可调用 [removeGroupManagerListener]。
+  ///
+  /// Param [listener] 要注册的群组事件监听器。
+  ///
+  @Deprecated("Use EMGroupManager.addEventHandler to instead")
+  void addGroupManagerListener(EMGroupManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// 移除群组变化监听器。
+  ///
+  /// 该方法在注册 [addGroupManagerListener] 后调用。
+  ///
+  /// Param [listener] 要移除的群组监听器。
+  ///
+  @Deprecated("Use EMGroupManager.removeEventHandler to instead")
+  void removeGroupManagerListener(EMGroupManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// 移除所有群组变化监听器。
+  ///
+  @Deprecated("Use EMGroupManager.clearEventHandlers to instead")
+  void clearAllGroupManagerListeners() {
+    _listeners.clear();
   }
 }

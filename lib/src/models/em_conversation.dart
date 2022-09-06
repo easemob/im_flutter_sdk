@@ -1,6 +1,5 @@
 import 'dart:core';
 import 'package:flutter/services.dart';
-
 import '../internal/inner_headers.dart';
 
 ///
@@ -8,7 +7,6 @@ import '../internal/inner_headers.dart';
 ///
 /// 以下示例代码展示如何从会话中获取未读消息数：
 /// ```dart
-///   // The `ConversationId` can be the other party ID, the group ID, or the chat room ID.
 ///   EMConversation? con = await EMClient.getInstance.chatManager.getConversation(conversationId);
 ///   int? unreadCount = con?.unreadCount;
 /// ```
@@ -134,7 +132,7 @@ class EMConversation {
   ///
   /// **Return** 会话的消息未读数量。
   ///
-  /// **Throws**  如果有异常会在此抛出，包含错误码和原因，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在此抛出，包含错误码和原因，详见 [EMError]。
   ///
   Future<int> unreadCount() async {
     Map req = this._toJson();
@@ -157,7 +155,7 @@ class EMConversation {
   ///
   /// Param [messageId] 消息 ID。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> markMessageAsRead(String messageId) async {
     Map req = this._toJson();
@@ -185,11 +183,11 @@ class EMConversation {
   }
 
   ///
-  /// 插入一条消息在 SDK 本地数据库，消息的 conversation ID 应该和会话的 conversation ID 一致，消息会根据消息里的时间戳被插入 SDK 本地数据库，并且更新会话的 `latestMessage` 等属性。
+  /// 插入一条消息在 SDK 本地数据库，消息的 conversation ID 应该和会话的 conversation ID 一致，消息会根据消息里的时间戳被插入 SDK 本地数据库，并且更新会话的 [latestMessage] 等属性。
   ///
   /// Param [message] 消息体实例。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> insertMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -207,10 +205,10 @@ class EMConversation {
   /// 插入一条消息到会话尾部。
   ///
   /// **注意**
-  /// 请确保消息的 conversation ID 与要插入的会话的 conversationId 一致，消息会被插入 SDK 本地数据库，并且更新会话的 `latestMessage` 等属性。
+  /// 请确保消息的 conversation ID 与要插入的会话的 conversationId 一致，消息会被插入 SDK 本地数据库，并且更新会话的 [latestMessage] 等属性。
   /// Param [message] 消息体实例。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> appendMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -228,10 +226,10 @@ class EMConversation {
   /// 更新 SDK 本地数据库的消息。
   ///
   /// **注意**
-  /// 不能更新消息 ID，消息更新后，会话的 `latestMessage` 等属性进行相应更新。
+  /// 不能更新消息 ID，消息更新后，会话的 [latestMessage] 等属性进行相应更新。
   /// Param [message] 要更新的消息。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> updateMessage(EMMessage message) async {
     Map req = this._toJson();
@@ -251,7 +249,7 @@ class EMConversation {
   ///
   /// Param [messageId] 要删除的消息。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> deleteMessage(String messageId) async {
     Map req = this._toJson();
@@ -268,7 +266,7 @@ class EMConversation {
   ///
   /// 同时从内存和本地数据库中删除会话中的所有消息。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<void> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(
@@ -289,7 +287,7 @@ class EMConversation {
   ///
   /// **Return** 消息实例。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = this._toJson();
@@ -325,7 +323,7 @@ class EMConversation {
   ///
   /// **Return** 消息列表。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMMessage>> loadMessagesWithMsgType({
     required MessageType type,
@@ -359,7 +357,6 @@ class EMConversation {
   ///
   /// 根据传入的参数从本地数据库加载 startMsgId 之前(存储顺序)指定数量的消息。
   ///
-  /// 加载到的 messages 也会加入到当前会话的缓存中，通过 {@link #getAllMessages()} 将会返回所有加载的消息。
   ///
   /// Param [startMsgId] 加载这个 ID 之前的 message，如果传入 "" 或者 null，将从最近的消息开始加载。
   ///
@@ -369,7 +366,7 @@ class EMConversation {
   ///
   /// **Return** 消息列表。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMMessage>> loadMessages({
     String startMsgId = '',
@@ -413,7 +410,7 @@ class EMConversation {
   ///
   /// **Return** 消息列表。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
@@ -457,7 +454,7 @@ class EMConversation {
   ///
   /// **Return** 消息列表。
   ///
-  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   Future<List<EMMessage>> loadMessagesFromTime({
     required int startTime,

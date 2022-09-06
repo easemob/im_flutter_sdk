@@ -6,7 +6,7 @@
 
 下图展示在客户端发送和接收一对一文本消息的工作流程。
 
-![img](https://docs-im.easemob.com/_media/ccim/web/sendandreceivemsg.png?w=800&tok=54ca33)
+<img src=https://docs-im.easemob.com/_media/ccim/web/sendandreceivemsg.png width="80%">
 
 如上图所示，发送和接收单聊消息的步骤如下：
 
@@ -18,19 +18,13 @@
 ## 前提条件
 
 如果你的目标平台是iOS，你需要满足一下要求：
-- Flutter 2.10 或 以上版本；
-- Dart 2.16 或 以上版本；
-- macOS;
-- Xcode 12.4 或 以上版本；
-- CocoaPods；
-- iOS 10 或以上版本模拟器或真机。
-
-如果你的目标平台是Android，需要满足以下要求：
-- Flutter 2.10 或 以上版本；
-- Dart 2.16 或 以上版本；
-- macOS 或 windows;
-- Android Studio 4.0 或以上版本，包括 JDK 1.8 或以上版本;
+- Xcode 12.4 或以上版本，包括命令行工具;
+- iOS 10 或以上版本;
 - Android SDK API 等级 21 或以上版本；
+- Android Studio 4.0 或以上版本，包括 JDK 1.8 或以上版本;
+- CocoaPods 包管理工具;
+- Flutter 2.10 或以上版本;
+- Dart 2.16 或以上版本;
 
 [配置开发或者运行环境如果遇到问题，请参考这里](https://docs.flutter.dev/get-started/install)
 - 有效的环信即时通讯 IM 开发者账号和 App Key，详见 [环信即时通讯云控制台](https://console.easemob.com/user/login)。
@@ -93,8 +87,6 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 ```dart
 class _MyHomePageState extends State<MyHomePage> {
-  // 测试用 Appkey
-  final String appKey = "easemob-demo#easeim";
   ScrollController scrollController = ScrollController();
   String _username = "";
   String _password = "";
@@ -243,11 +235,11 @@ class _MyHomePageState extends State<MyHomePage> {
 ```dart
   void _initSDK() async {
     EMOptions options = EMOptions(
-      appKey: appKey,
+      appKey: "<#Your AppKey#>",
       autoLogin: false,
     );
     await EMClient.getInstance.init(options);
-    // 告诉sdk ui已经准备好，执行后才会收到`EMChatRoomManagerListener`, `EMContactManagerListener`, `EMGroupManagerListener` 回调。
+    // 通知sdk ui已经准备好，执行后才会收到`EMChatRoomEventHandler`, `EMContactEventHandler`, `EMGroupEventHandler` 回调。
     await EMClient.getInstance.startCallback();
   }
 ```
@@ -282,29 +274,19 @@ void _signUp() async {
 在 `_signIn` 方法中添加登录代码。
 
 ```dart
-  void _signIn() async {
-    if (_username.isEmpty || _password.isEmpty) {
-      _addLogToConsole("username or password is null");
-      return;
-    }
-
-    String? agoraToken = await HttpRequestManager.loginToAppServer(
-      username: _username,
-      password: _password,
-    );
-    if (agoraToken != null) {
-      _addLogToConsole("fetch agora token succeed, begin login");
-      try {
-        await EMClient.getInstance.loginWithAgoraToken(_username, agoraToken);
-        _addLogToConsole("login succeed, username: $_username");
-      } on EMError catch (e) {
-        _addLogToConsole(
-            "login failed, code: ${e.code}, desc: ${e.description}");
-      }
-    } else {
-      _addLogToConsole("fetch agora token failed");
-    }
+void _signIn() async {
+  if (_userId.isEmpty || _password.isEmpty) {
+    _addLogToConsole("username or password is null");
+    return;
   }
+
+  try {
+    await EMClient.getInstance.login(_userId, _password);
+    _addLogToConsole("sign in succeed, username: $_userId");
+  } on EMError catch (e) {
+    _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
+  }
+}
 ```
 
 ### 添加退出
@@ -358,121 +340,86 @@ void _signUp() async {
 在 `_addChatListener` 方法中添加代码。
 
 ```dart
-  void _addChatListener() {
-    EMClient.getInstance.chatManager.addChatManagerListener(this);
-  }
+void _addChatListener() {
+  EMClient.getInstance.chatManager.addEventHandler(
+    // EMChatEventHandle 对应的 key。
+    "UNIQUE_HANDLER_ID",
+    EMChatEventHandler(
+      onMessagesReceived: (messages) {
+        for (var msg in messages) {
+          switch (msg.body.type) {
+            case MessageType.TXT:
+              {
+                EMTextMessageBody body = msg.body as EMTextMessageBody;
+                _addLogToConsole(
+                  "receive text message: ${body.content}, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.IMAGE:
+              {
+                _addLogToConsole(
+                  "receive image message, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.VIDEO:
+              {
+                _addLogToConsole(
+                  "receive video message, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.LOCATION:
+              {
+                _addLogToConsole(
+                  "receive location message, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.VOICE:
+              {
+                _addLogToConsole(
+                  "receive voice message, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.FILE:
+              {
+                _addLogToConsole(
+                  "receive image message, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.CUSTOM:
+              {
+                _addLogToConsole(
+                  "receive custom message, from: ${msg.from}",
+                );
+              }
+              break;
+            case MessageType.CMD:
+              {
+                // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatEventHandler#onCmdMessagesReceived` 回调接收
+              }
+              break;
+          }
+        }
+      },
+    ),
+  );
+}
 ```
 
 ### 移除消息监听
 
-在 `iniState` 方法下方添加代码移除监听：
+在 `dispose` 方法中添加代码移除监听：
 
 ```dart
-  @override
-  void dispose() {
-    EMClient.getInstance.chatManager.removeChatManagerListener(this);
-    super.dispose();
-  }
-```
-
-### 接收消息
-
-接收消息需要对象继承 `EMChatManagerDelegate` 并实现相关的回调方法，同时将对象加入到监听列表中。
-
-示例代码如下：
-
-```dart
-class _MyHomePageState extends State<MyHomePage>
-    implements EMChatManagerListener {
-
-  ...
-
 @override
-  void onCmdMessagesReceived(List<EMMessage> messages) {}
-
-  @override
-  void onConversationRead(String from, String to) {}
-
-  @override
-  void onConversationsUpdate() {}
-
-  @override
-  void onGroupMessageRead(List<EMGroupMessageAck> groupMessageAcks) {}
-
-  @override
-  void onMessagesDelivered(List<EMMessage> messages) {}
-
-  @override
-  void onMessagesRead(List<EMMessage> messages) {}
-
-  @override
-  void onMessagesRecalled(List<EMMessage> messages) {}
-
-  @override
-  void onMessageReactionDidChange(List<EMMessageReactionEvent> list) {}
-  
-  @override
-  void onMessagesReceived(List<EMMessage> messages) {
-    for (var msg in messages) {
-      switch (msg.body.type) {
-        case MessageType.TXT:
-          {
-            EMTextMessageBody body = msg.body as EMTextMessageBody;
-            _addLogToConsole(
-              "receive text message: ${body.content}, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.IMAGE:
-          {
-            _addLogToConsole(
-              "receive image message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.VIDEO:
-          {
-            _addLogToConsole(
-              "receive video message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.LOCATION:
-          {
-            _addLogToConsole(
-              "receive location message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.VOICE:
-          {
-            _addLogToConsole(
-              "receive voice message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.FILE:
-          {
-            _addLogToConsole(
-              "receive image message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.CUSTOM:
-          {
-            _addLogToConsole(
-              "receive custom message, from: ${msg.from}",
-            );
-          }
-          break;
-        case MessageType.CMD:
-          {
-            // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatManagerListener#onCmdMessagesReceived` 回调接收
-          }
-          break;
-      }
-    }
-  }
+void dispose() {
+  EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
+  super.dispose();
 }
 ```
 

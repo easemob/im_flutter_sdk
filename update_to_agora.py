@@ -350,6 +350,11 @@ UPDATE_dict = {
     "EMRoomManager":"ChatRoomManager",
     "EMPresence":"ChatPresence",
     "EMTranslateLanguage":"ChatTranslateLanguage",
+    "EMContact":"Contact",
+    "EMConnection":"Connection",
+    "EMMultiDevice":"ChatMultiDevice",
+    "EMChatEventHandler":"ChatEventHandler",
+    
 
     #podspec
      "= 'im_flutter_sdk'":"= 'agora_chat_sdk'",

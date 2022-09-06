@@ -4,7 +4,7 @@ import '../internal/inner_headers.dart';
 /// 群组信息类，包含内存中的群组相关信息。
 ///
 /// **Note**
-/// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+/// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
 ///
 class EMGroup {
   EMGroup._private({
@@ -18,7 +18,6 @@ class EMGroup {
     this.adminList,
     this.blockList,
     this.muteList,
-    this.noticeEnable,
     this.messageBlocked,
     this.isAllMemberMuted,
     this.permissionType,
@@ -26,6 +25,7 @@ class EMGroup {
     this.isMemberOnly,
     this.isMemberAllowToInvite,
     this.extension,
+    this.isDisabled: false,
   });
 
   /// 群组 ID。
@@ -34,7 +34,7 @@ class EMGroup {
   /// 从内存中获取群组名称。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 群组名称。
   ///
@@ -43,7 +43,7 @@ class EMGroup {
   /// 从内存中获取群组描述。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 群组描述。
   ///
@@ -52,7 +52,7 @@ class EMGroup {
   /// 从内存中获取群主用户 ID。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 群主用户 ID。
   ///
@@ -61,14 +61,14 @@ class EMGroup {
   /// 从内存中获取群公告内容。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   final String? announcement;
 
   /// 从内存中获取群组成员数量。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 群组成员数量。
   ///
@@ -77,7 +77,7 @@ class EMGroup {
   /// 从内存中获取群组成员列表。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link #fetchMemberListFromServer(String, int?, String?)}.。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchMemberListFromServer]。
   ///
   /// **Return** 群组成员列表。
   ///
@@ -87,7 +87,7 @@ class EMGroup {
   /// 从内存中获取群组管理员列表。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 群组管理员列表。
   ///
@@ -99,7 +99,7 @@ class EMGroup {
   /// 如果没有找到会返回空列表。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchBlockListFromServer(String, int?, int?)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchBlockListFromServer]。
   ///
   /// 只有群主和管理员可以调用该方法。
   ///
@@ -113,20 +113,17 @@ class EMGroup {
   /// 只有群主和管理员可以调用该方法。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager# fetchMuteListFromServer(String, int?, int?)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchMuteListFromServer]。
   ///
   /// **Return** 群组禁言名单。
   ///
   final List<String>? muteList;
 
-  @Deprecated("Switch to using EMPushManager#getNoPushGroupsFromCache instead.")
-  final bool? noticeEnable;
-
   ///
   /// 从内存中获取消息是否被屏蔽。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取： [EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 消息是否被屏蔽。
   /// - `true`: 是；
@@ -138,7 +135,7 @@ class EMGroup {
   /// 从内存中获取是否已经全员禁言。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取： [EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 是否全员禁言。
   /// - `true`: 是；
@@ -152,7 +149,7 @@ class EMGroup {
   /// 从内存中获取当前用户在群组中的角色。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取： [EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 当前用户在群组中的角色。
   ///
@@ -162,7 +159,7 @@ class EMGroup {
   /// 从内存中获取群组最大人数限制，创建时确定。
   //
   /// **Note**
-  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取： [EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return** 群组最大人数限制。
   ///
@@ -171,10 +168,10 @@ class EMGroup {
   ///
   /// 从内存中获取群组类型：成员是否能自由加入，还是需要申请或者被邀请。
   ///
-  /// 群组有四个类型属性，`isMemberOnly`是除了 {@link EMGroupManager.EMGroupStyle#EMGroupStylePublicOpenJoin} 之外的三种属性，表示该群不是自由加入的群组。
+  /// 群组有四个类型属性，`isMemberOnly`是除了 [EMGroupStyle.PublicOpenJoin] 之外的三种属性，表示该群不是自由加入的群组。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取： {@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return**
   ///  - `true`：进群需要群主邀请，群成员邀请，或者群主和管理员同意入群申请；
@@ -186,7 +183,7 @@ class EMGroup {
   /// 从内存中获取是否允许成员邀请他人进群。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchGroupInfoFromServer(String)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
   ///
   /// **Return**
   /// - `true`: 允许;
@@ -218,6 +215,7 @@ class EMGroup {
     int? maxUserCount = map.intValue("maxUserCount");
     bool? isMemberOnly = map.getBoolValue('isMemberOnly');
     bool? isMemberAllowToInvite = map.getBoolValue('isMemberAllowToInvite');
+    bool? isDisabled = map.getBoolValue("isDisabled");
     String? extension = map.getStringValue("ext");
 
     return EMGroup._private(
@@ -238,6 +236,7 @@ class EMGroup {
       isMemberOnly: isMemberOnly,
       isMemberAllowToInvite: isMemberAllowToInvite,
       extension: extension,
+      isDisabled: isDisabled ?? false,
     );
   }
 
@@ -255,6 +254,7 @@ class EMGroup {
     data.setValueWithOutNull("blockList", blockList);
     data.setValueWithOutNull("muteList", muteList);
     data.setValueWithOutNull("messageBlocked", messageBlocked);
+    data.setValueWithOutNull("isDisabled", isDisabled);
     data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
     data.setValueWithOutNull("options", _options?.toJson());
     data.setValueWithOutNull(

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
@@ -8,6 +10,9 @@ class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_presence_manager', JSONMethodCodec());
+
+  final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
+  // will deprecated
   final List<EMPresenceManagerListener> _listeners = [];
 
   /// @nodoc
@@ -22,31 +27,44 @@ class EMPresenceManager {
   }
 
   ///
-  /// 添加用户状态变化监听器。
+  /// 添加 [EMPresenceEventHandler] 。
   ///
-  /// Param [listener] 状态变化监听类 {@link EMPresenceManagerListener}。
+  /// Param [identifier] handler对应的id，可用于删除handler。
   ///
-  void addPresenceManagerListener(EMPresenceManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
+  /// Param [handler] 添加的 [EMChatEventHandler]。
+  ///
+  void addEventHandler(
+    String identifier,
+    EMPresenceEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// 移除用户状态变化监听器。
+  /// 移除 [EMPresenceEventHandler] 。
   ///
-  /// Param [listener] 状态变化监听类 {@link EMPresenceManagerListener}。
+  /// Param [identifier] 需要移除 handler 对应的 id。
   ///
-  void removePresenceManagerListener(EMPresenceManagerListener listener) {
-    if (_listeners.contains(listener)) {
-      _listeners.remove(listener);
-    }
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// 移除所有用户状态监听器。
+  /// 获取 [EMPresenceEventHandler] 。
   ///
-  void clearAllPresenceManagerListener() {
-    _listeners.clear();
+  /// Param [identifier] 要获取 handler 对应的 id。
+  ///
+  /// **Return** 返回 id 对应的 handler 。
+  ///
+  EMPresenceEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// 清除所有的 [EMPresenceEventHandler] 。
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -54,7 +72,7 @@ class EMPresenceManager {
   ///
   /// Param [description] 用户在线状态的扩展信息。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   ///
   Future<void> publishPresence(
     String description,
@@ -78,7 +96,7 @@ class EMPresenceManager {
   ///
   /// **Return** 返回被订阅用户的当前状态。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   ///
   Future<List<EMPresence>> subscribe({
     required List<String> members,
@@ -104,9 +122,9 @@ class EMPresenceManager {
   ///
   /// Param [members] 要取消订阅在线状态的用户 ID 数组。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   ///
-  Future<void> unSubscribe({
+  Future<void> unsubscribe({
     required List<String> members,
   }) async {
     Map req = {'members': members};
@@ -128,7 +146,7 @@ class EMPresenceManager {
   ///
   /// **Return** 返回订阅的在线状态所属的用户 ID。若当前未订阅任何用户的在线状态，返回空列表。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   ///
   Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
@@ -159,7 +177,7 @@ class EMPresenceManager {
   ///
   /// **Return** 被订阅用户的当前状态。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   ///
   Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,
@@ -189,6 +207,46 @@ class EMPresenceManager {
       pList.add(EMPresence.fromJson(item));
     }
 
+    for (var handle in _eventHandlesMap.values) {
+      handle.onPresenceStatusChanged?.call(pList);
+    }
+
+    _forward(pList);
+  }
+}
+
+extension PresenceDeprecated on EMPresenceManager {
+  ///
+  /// 添加用户状态变化监听器。
+  ///
+  /// Param [listener] 状态变化监听类 [EMPresenceManagerListener]。
+  ///
+  @Deprecated("Use EMPresenceManager.addEventHandler to instead")
+  void addPresenceManagerListener(EMPresenceManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// 移除用户状态变化监听器。
+  ///
+  /// Param [listener] 状态变化监听类。
+  ///
+  @Deprecated("Use EMPresenceManager.removeEventHandler to instead")
+  void removePresenceManagerListener(EMPresenceManagerListener listener) {
+    if (_listeners.contains(listener)) {
+      _listeners.remove(listener);
+    }
+  }
+
+  /// 移除所有用户状态监听器。
+  @Deprecated("Use EMPresenceManager.clearEventHandlers to instead")
+  void clearAllPresenceManagerListener() {
+    _listeners.clear();
+  }
+
+  @deprecated
+  void _forward(List<EMPresence> pList) {
     for (var listener in _listeners) {
       listener.onPresenceStatusChanged(pList);
     }

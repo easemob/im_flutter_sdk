@@ -1,5 +1,6 @@
-import 'package:flutter/services.dart';
+// ignore_for_file: deprecated_member_use_from_same_package
 
+import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
 ///
@@ -9,6 +10,10 @@ class EMChatThreadManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
       '$_channelPrefix/chat_thread_manager', JSONMethodCodec());
+
+  final Map<String, EMChatThreadEventHandler> _eventHandlesMap = {};
+
+  final List<EMChatThreadManagerListener> _listeners = [];
 
   EMChatThreadManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
@@ -22,40 +27,49 @@ class EMChatThreadManager {
       } else if (call.method == ChatMethodKeys.onUserKickOutOfChatThread) {
         _onChatThreadUserRemoved(argMap);
       }
-
       return null;
     });
   }
-  final List<EMChatThreadManagerListener> _listeners = [];
 
   ///
-  /// 注册子区监听。
+  /// 添加 [EMChatThreadEventHandler] 。
   ///
-  /// 接收到子区等回调可以通过设置此方法进行监听，详见 {@link EMChatThreadManagerListener}。
+  /// Param [identifier] handler对应的id，可用于删除handler。
   ///
-  /// Param [listener] 要注册的消息监听，详见 {@link EMChatThreadManagerListener}。
+  /// Param [handler] 添加的 [EMChatThreadEventHandler]。
   ///
-  void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
+  void addEventHandler(
+    String identifier,
+    EMChatThreadEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
   }
 
   ///
-  /// 移除子区监听。
+  /// 移除 [EMChatThreadEventHandler] 。
   ///
-  /// 该方法移除的是通过{@link #addChatThreadManagerListener(EMChatThreadManagerListener)} 方法添加的监听。
+  /// Param [identifier] 需要移除 handler 对应的 id。
   ///
-  /// Param [listener] 要移除的监听。
-  ///
-  void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
-    _listeners.remove(listener);
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
   }
 
   ///
-  /// 移除所有子区监听。
+  /// 获取 [EMChatThreadEventHandler] 。
   ///
-  void clearAllChatThreadManagerListeners() {
-    _listeners.clear();
+  /// Param [identifier] 要获取 handler 对应的 id。
+  ///
+  /// **Return** 返回 id 对应的 handler 。
+  ///
+  EMChatThreadEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  ///
+  /// 清除所有的 [EMChatThreadEventHandler] 。
+  ///
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   ///
@@ -65,7 +79,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区详情；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<EMChatThread?> fetchChatThread({
     required String chatThreadId,
@@ -93,7 +107,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreads({
     String? cursor,
@@ -126,7 +140,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
     required String parentId,
@@ -163,7 +177,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreadsWithParentId({
     required String parentId,
@@ -203,7 +217,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区成员列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<List<String>> fetchChatThreadMembers({
     required String chatThreadId,
@@ -240,7 +254,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 若调用成功，返回子区的最新一条消息列表；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<Map<String, EMMessage>> fetchLatestMessageWithChatThreads({
     required List<String> chatThreadIds,
@@ -278,13 +292,13 @@ class EMChatThreadManager {
   /// **注意**
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
-  /// 被移出的成员会收到 {@link EMChatThreadManagerListener#onUserKickOutOfChatThread} 回调。
+  /// 被移出的成员会收到 [EMChatThreadEventHandler.onUserKickOutOfChatThread] 回调。
   ///
   /// Param [memberId] 被移出子区的成员的用户 ID。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** A description of the exception. See {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<void> removeMemberFromChatThread({
     required String memberId,
@@ -311,13 +325,13 @@ class EMChatThreadManager {
   /// **注意**
   /// 只有子区所属群主、群管理员及子区创建者可调用该方法。
   ///
-  /// 子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadUpdated(EMChatThreadEvent)}.
+  /// 子区所属群组的所有成员均会收到 [EMChatThreadEventHandler.onChatThreadUpdate]。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
   /// Param [newName] 子区的新名称。长度不超过 64 个字符。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   ///
   Future<void> updateChatThreadName({
     required String chatThreadId,
@@ -345,9 +359,9 @@ class EMChatThreadManager {
   /// 所有群成员都可以调用。
   /// 子区创建成功后，会出现如下情况：
   ///
-  /// - 单设备登录时，子区所属群组的所有成员均会收到  {@link EMChatThreadManagerListener#onChatThreadCreated(EMChatThreadEvent)}.
+  /// - 单设备登录时，子区所属群组的所有成员均会收到 [EMChatThreadEventHandler.onChatThreadCreate]。
   ///
-  /// - 多端多设备登录时，各设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(EMMultiDevicesEvent, String, List)} 回调。
+  /// - 多端多设备登录时，各设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调。
   ///
   /// Param [name] 要创建的子区的名称。长度不超过 64 个字符。
   ///
@@ -357,7 +371,7 @@ class EMChatThreadManager {
   ///
   /// **Return** 调用成功时，返回创建的子区对象；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<EMChatThread> createChatThread({
     required String name,
@@ -387,13 +401,13 @@ class EMChatThreadManager {
   /// **注意**
   /// 子区所属群组的所有成员均可调用该方法。
   ///
-  /// 加入成功后，多端多设备登录情况下，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_JOIN}。
+  /// 加入成功后，多端多设备登录情况下，其他设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [EMMultiDevicesEvent.CHAT_THREAD_JOIN]。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Return** 若调用成功，返回子区详情 {@link ChatMessageThread}，详情中不含成员数量；失败则抛出异常。
+  /// **Return** 若调用成功，返回子区详情 [EMChatThread]，详情中不含成员数量；失败则抛出异常。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<EMChatThread> joinChatThread({
     required String chatThreadId,
@@ -418,11 +432,11 @@ class EMChatThreadManager {
   ///
   /// **注意**
   /// 子区中的所有成员均可调用该方法。
-  /// 多端多设备登录情况下，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@link EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_LEAVE}。
+  /// 多端多设备登录情况下，其他设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [EMMultiDevicesEvent.CHAT_THREAD_LEAVE]。
   ///
   /// Param [chatThreadId] 要退出的子区 ID。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<void> leaveChatThread({
     required String chatThreadId,
@@ -446,12 +460,12 @@ class EMChatThreadManager {
   ///
   /// **注意**
   /// 只有子区所属群组的群主及管理员可调用该方法。
-  /// 单设备登录时，子区所在群的所有成员均会收到 {@link EMChatThreadManagerListener#onChatThreadDestroyed(EMChatThreadEvent)} 。
-  /// 多端多设备登录时，其他设备会收到 {@link EMMultiDeviceListener#onChatThreadEvent(int, String, List) 回调，Event 的值为 {@EMMultiDeviceListener#EMMultiDevicesEvent.CHAT_THREAD_DESTROY}。
+  /// 单设备登录时，子区所在群的所有成员均会收到 [EMChatThreadEventHandler.onChatThreadDestroy] 。
+  /// 多端多设备登录时，其他设备会收到 [EMMultiDeviceEventHandler.onChatThreadEvent] 回调，Event 的值为 [EMMultiDevicesEvent.CHAT_THREAD_DESTROY]。
   ///
   /// Param [chatThreadId] 子区 ID。
   ///
-  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}.
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError] 。
   ///
   Future<void> destroyChatThread({
     required String chatThreadId,
@@ -501,8 +515,51 @@ class EMChatThreadManager {
     if (event == null) {
       return;
     }
+
+    _eventHandlesMap.values.forEach((element) {
+      element.onUserKickOutOfChatThread?.call(
+        EMChatThreadEvent.fromJson(event),
+      );
+    });
+
+    // deprecated(3.9.5)
     _listeners.forEach((element) {
       element.onUserKickOutOfChatThread.call(EMChatThreadEvent.fromJson(event));
     });
+  }
+}
+
+extension ChatThreadManagerDeprecated on EMChatThreadManager {
+  ///
+  /// 注册子区监听。
+  ///
+  /// 接收到子区等回调可以通过设置此方法进行监听，详见 [EMChatThreadManagerListener]。
+  ///
+  /// Param [listener] 要注册的消息监听 。
+  ///
+  @Deprecated("Use EMChatThreadManager.addEventHandler to instead")
+  void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
+    _listeners.add(listener);
+  }
+
+  ///
+  /// 移除子区监听。
+  ///
+  /// 该方法移除的是通过 [addChatThreadManagerListener] 方法添加的监听。
+  ///
+  /// Param [listener] 要移除的监听。
+  ///
+  @Deprecated("Use EMChatThreadManager.removeEventHandler to instead")
+  void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
+    _listeners.remove(listener);
+  }
+
+  ///
+  /// 移除所有子区监听。
+  ///
+  @Deprecated("Use EMChatThreadManager.clearEventHandlers to instead")
+  void clearAllChatThreadManagerListeners() {
+    _listeners.clear();
   }
 }

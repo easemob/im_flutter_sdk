@@ -3,7 +3,7 @@ import '../internal/inner_headers.dart';
 ///
 /// 群组消息回执类。
 ///
-/// 调用 {@link EMChatManager#fetchGroupAcks(String, String?, int)} 方法，示例代码如下：
+/// 调用 [EMChatManager.fetchGroupAcks] 方法，示例代码如下：
 ///
 /// ```dart
 ///   EMCursorResult<EMGroupMessageAck> result = await EMClient.getInstance.chatManager.fetchGroupAcks("msgId");
@@ -22,7 +22,7 @@ class EMGroupMessageAck {
   ///
   /// 已读回执扩展内容。
   ///
-  /// 设定该扩展内容详见 {@link EMChatManager#sendGroupMessageReadAck(String, String, String?)}。
+  /// 设定该扩展内容详见 [EMChatManager.sendGroupMessageReadAck]。
   ///
   final String? content;
 
