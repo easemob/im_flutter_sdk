@@ -1086,7 +1086,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Param [listener] The chat manager listener that listens for new messages. See [EMChatManagerListener].
   ///
-  @Deprecated("Use #addEventHandler to instead.")
+  @Deprecated("Use addEventHandler to instead")
   void addChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -1099,7 +1099,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Param [listener] The chat manager listener to be removed. See [EMChatManagerListener].
   ///
-  @Deprecated("Use #removeEventHandler to instead.")
+  @Deprecated("Use #removeEventHandler to instead")
   void removeChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1107,7 +1107,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Removes all chat manager listeners.
   ///
-  @Deprecated("Use #clearEventHandlers to instead.")
+  @Deprecated("Use #clearEventHandlers to instead")
   void clearAllChatManagerListeners() {
     _listeners.clear();
   }

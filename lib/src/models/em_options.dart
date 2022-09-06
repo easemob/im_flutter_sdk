@@ -136,9 +136,9 @@ class EMOptions {
 
   /// Enable OPPO PUSH on OPPO devices.
   ///
-  /// Param [appId] The app ID for OPPO PUSH.
+  /// Param [appKey] The app id for OPPO PUSH.
   ///
-  /// Param [appKey] The app key for OPPO PUSH.
+  /// Param [secret] The app secret for OPPO PUSH.
   ///
   void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
@@ -169,21 +169,14 @@ class EMOptions {
     _pushConfig.fcmId = appId;
   }
 
+  ///
   /// Enable vivo Push on vivo devices.
-  ///
-  /// Param [appId] The app ID for vivo Push.
-  ///
-  /// Param [appKey] The app key for vivo Push.
   ///
   void enableVivoPush() {
     _pushConfig.enableVivoPush = true;
   }
 
   /// Enable Huawei Push on Huawei devices.
-  ///
-  /// Param [appId] The app ID for HuaWei Push.
-  ///
-  /// Param [appKey] The app key for HuaWei Push.
   ///
   void enableHWPush() {
     _pushConfig.enableHWPush = true;
@@ -193,6 +186,7 @@ class EMOptions {
   /// Enables Apple Push Notification service (APNs) on iOS devices.
   ///
   /// Param [certName] The APNs certificate name.
+  ///
   void enableAPNs(String certName) {
     _pushConfig.enableAPNS = true;
     _pushConfig.apnsCertName = certName;

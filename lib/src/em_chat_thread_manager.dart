@@ -538,7 +538,7 @@ extension ChatThreadManagerDeprecated on EMChatThreadManager {
   ///
   /// Param [listener] The chat thread manager listener that listens for new chat thread. See [EMChatThreadManagerListener].
   ///
-  @Deprecated("Use #addEventHandler to instead.")
+  @Deprecated("Use addEventHandler to instead")
   void addChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -551,7 +551,7 @@ extension ChatThreadManagerDeprecated on EMChatThreadManager {
   ///
   /// Param [listener] The chat thread listener to be removed. See [EMChatThreadManagerListener].
   ///
-  @Deprecated("Use #removeEventHandler to instead.")
+  @Deprecated("Use #removeEventHandler to instead")
   void removeChatThreadManagerListener(EMChatThreadManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -559,7 +559,7 @@ extension ChatThreadManagerDeprecated on EMChatThreadManager {
   ///
   /// Removes all chat thread listeners.
   ///
-  @Deprecated("Use #clearEventHandlers to instead.")
+  @Deprecated("Use #clearEventHandlers to instead")
   void clearAllChatThreadManagerListeners() {
     _listeners.clear();
   }
