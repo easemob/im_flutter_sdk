@@ -2,7 +2,7 @@ import '../internal/inner_headers.dart';
 
 class EMProgressManager {
   EMProgressManager() {
-    EMMethodChannel.ProgressChannel.setMethodCallHandler((call) async {
+    ProgressChannel.setMethodCallHandler((call) async {
       Map? arg = call.arguments;
       if (arg != null) {
         if (call.method == "onSuccess") {

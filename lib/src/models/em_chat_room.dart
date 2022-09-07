@@ -124,7 +124,7 @@ class EMChatRoom {
   /// Gets the chat room admin list.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final List<String>? adminList;
 
@@ -132,7 +132,7 @@ class EMChatRoom {
   /// Gets the member list.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomMembers(String, bool?)}
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomMembers].
   ///
   final List<String>? memberList;
 
@@ -140,7 +140,7 @@ class EMChatRoom {
   /// Gets the chat room block list.
   ///
   /// **Note**
-  /// To get the block list, you can call {@link EMChatRoomManager#fetchChatRoomBlockList(String, int?, int?)}.
+  /// To get the block list, you can call [EMChatRoomManager.fetchChatRoomBlockList].
   ///
   final List<String>? blockList;
 
@@ -148,7 +148,7 @@ class EMChatRoom {
   /// Gets the mute list of the chat room.
   ///
   /// **Note**
-  /// To get the mute list, you can call {@link EMChatRoomManager#fetchChatRoomMuteList(String, int?, int?)}.
+  /// To get the mute list, you can call [EMChatRoomManager.fetchChatRoomMuteList].
   ///
   final List<String>? muteList;
 
@@ -156,15 +156,15 @@ class EMChatRoom {
   /// Checks whether all members are muted in the chat room from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final bool? isAllMemberMuted;
 
   ///
-  /// Gets the current user's role in the chat room. The role types: {@link EMChatRoomPermissionType}.
+  /// Gets the current user's role in the chat room. The role types: [EMChatRoomPermissionType].
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final EMChatRoomPermissionType permissionType;
 }

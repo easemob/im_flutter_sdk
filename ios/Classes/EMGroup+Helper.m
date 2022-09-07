@@ -25,7 +25,7 @@
     ret[@"noticeEnable"] = @(self.isPushNotificationEnabled);
     ret[@"messageBlocked"] = @(self.isBlocked);
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
-
+    ret[@"isDisabled"] = @(self.isDisabled);
     ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
     
     if (self.settings != nil) {

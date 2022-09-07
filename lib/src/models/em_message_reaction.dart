@@ -25,7 +25,8 @@ class EMMessageReaction {
   /// The list of users that added this Reaction
   ///
   /// **Note**
-  /// To get the entire list of users adding this Reaction, you can call {@link #getReactionDetail(EMChatManager)} which returns the user list with pagination. Other methods like {@link #reactionList(EMMessage)}, {@link #getReactionList(EMChatManager)} or {@link messageReactionDidChange(EMChatManagerListener)} can get the first three users.
+  /// To get the entire list of users adding this Reaction, you can call [EMChatManager.fetchReactionDetail] which returns the user list with pagination.
+  /// Other methods like [EMMessage.reactionList], [EMChatManager.fetchReactionList] or [EMChatEventHandler.onMessageReactionDidChange] can get the first three users.
   ///
   final List<String> userList;
 
