@@ -14,6 +14,7 @@
     data[@"pushStyle"] = @(self.displayStyle != EMPushDisplayStyleSimpleBanner);
     data[@"noDisturbStartHour"] = @(self.noDisturbingStartH);
     data[@"noDisturbEndHour"] = @(self.noDisturbingEndH);
+    data[@"displayName"] = self.displayName;
     return data;
 }
 

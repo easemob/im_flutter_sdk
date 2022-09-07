@@ -18,7 +18,7 @@ class EMOptions {
   final bool autoLogin;
 
   ///
-  /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using {@link #init(Context, EMOptions)}.
+  /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using [EMClient.init].
   ///
   /// - `true`: Yes.
   /// - `false`: (Default)No.
@@ -136,9 +136,9 @@ class EMOptions {
 
   /// Enable OPPO PUSH on OPPO devices.
   ///
-  /// Param [appId] The app ID for OPPO PUSH.
+  /// Param [appKey] The app id for OPPO PUSH.
   ///
-  /// Param [appKey] The app key for OPPO PUSH.
+  /// Param [secret] The app secret for OPPO PUSH.
   ///
   void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
@@ -169,21 +169,14 @@ class EMOptions {
     _pushConfig.fcmId = appId;
   }
 
+  ///
   /// Enable vivo Push on vivo devices.
-  ///
-  /// Param [appId] The app ID for vivo Push.
-  ///
-  /// Param [appKey] The app key for vivo Push.
   ///
   void enableVivoPush() {
     _pushConfig.enableVivoPush = true;
   }
 
   /// Enable Huawei Push on Huawei devices.
-  ///
-  /// Param [appId] The app ID for HuaWei Push.
-  ///
-  /// Param [appKey] The app key for HuaWei Push.
   ///
   void enableHWPush() {
     _pushConfig.enableHWPush = true;
@@ -193,6 +186,7 @@ class EMOptions {
   /// Enables Apple Push Notification service (APNs) on iOS devices.
   ///
   /// Param [certName] The APNs certificate name.
+  ///
   void enableAPNs(String certName) {
     _pushConfig.enableAPNS = true;
     _pushConfig.apnsCertName = certName;
@@ -212,7 +206,7 @@ class EMOptions {
       /// - `false`: No.
       this.autoLogin = true,
 
-      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See {@link #init(Context, EMOptions)}.
+      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
       /// - `true`: Yes.
       /// - `false`: (Default) No.
       this.debugModel = false,

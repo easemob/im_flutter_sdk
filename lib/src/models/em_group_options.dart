@@ -11,12 +11,12 @@ class EMGroupOptions {
   ///
   /// Param [maxCount] The maximum number of members in a group. The default value is 200.
   ///
-  /// Param [inviteNeedConfirm] Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
+  /// Param [inviteNeedConfirm] Whether you can automatically add a user to the chat group depends on the settings of [inviteNeedConfirm] and [EMOptions.autoAcceptGroupInvitation].
   ///
-  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of `EMOptions#autoAcceptGroupInvitation`.
-  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of {@link EMOptions#autoAcceptGroupInvitation(boolean)} on the invitee's client.
-  ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
-  ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
+  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of [EMOptions.autoAcceptGroupInvitation].
+  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of [EMOptions.autoAcceptGroupInvitation] on the invitee's client.
+  /// - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
+  /// - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
   ///
   /// Param [ext] Group detail extensions which can be in the JSON format to contain more group information.
   ///
@@ -44,10 +44,10 @@ class EMGroupOptions {
   ///
   /// Whether you need the approval from the user when adding this user to the chat group.
   ///
-  /// Whether you can automatically add a user to the chat group depends on the settings of {GroupOptions#inviteNeedConfirm} and {EMOptions#autoAcceptGroupInvitation}.
+  /// Whether you can automatically add a user to the chat group depends on the settings of [inviteNeedConfirm] and [EMOptions.autoAcceptGroupInvitation].
   ///
-  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of `EMOptions#autoAcceptGroupInvitation`.
-  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of {@link EMOptions#autoAcceptGroupInvitation(boolean)} on the invitee's client.
+  /// - If `inviteNeedConfirm` is set to `false`, you can add the invitee directly to the chat group, regardless of the settings of [EMOptions.autoAcceptGroupInvitation].
+  /// - If `inviteNeedConfirm` is set to `true`, whether the invitee automatically joins the chat group or not depends on the settings of [EMOptions.autoAcceptGroupInvitation] on the invitee's client.
   ///    - If `autoAcceptGroupInvitation` is set to `true`, the invitee automatically joins the chat group.
   ///    - If `autoAcceptGroupInvitation` is set to `false`, the invitee does not join the chat group until this invitee approves the group invitation.
   ///

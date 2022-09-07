@@ -98,6 +98,12 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if (EMSDKMethod.fetchPreferredNotificationLanguage.equals(call.method)) {
                 fetchPreferredNotificationLanguage(param, call.method, result);
             }
+            else if (EMSDKMethod.getPushTemplate.equals(call.method)) {
+                getPushTemplate(param, call.method, result);
+            }
+            else if (EMSDKMethod.setPushTemplate.equals(call.method)) {
+                setPushTemplate(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -313,6 +319,20 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void fetchPreferredNotificationLanguage(JSONObject params, String channelName, Result result) throws JSONException {
         EMClient.getInstance().pushManager().getPreferredNotificationLanguage(new EMValueWrapperCallBack<String>(result, channelName){
+            @Override
+            public void onSuccess(String object) {
+                super.onSuccess(object);
+            }
+        });
+    }
+
+    private void setPushTemplate(JSONObject params, String channelName, Result result) throws JSONException {
+        String pushTemplateName = params.getString("pushTemplateName");
+        EMClient.getInstance().pushManager().setPushTemplate(pushTemplateName, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void getPushTemplate(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().pushManager().getPushTemplate(new EMValueWrapperCallBack<String>(result, channelName) {
             @Override
             public void onSuccess(String object) {
                 super.onSuccess(object);
