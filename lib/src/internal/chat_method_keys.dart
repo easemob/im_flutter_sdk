@@ -180,6 +180,11 @@ class ChatMethodKeys {
   static const String muteAllChatRoomMembers = "muteAllChatRoomMembers";
   static const String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
 
+  static const String fetchChatRoomAttributes = "fetchChatRoomAttributes";
+  static const String fetchChatRoomAllAttributes = "fetchChatRoomAllAttributes";
+  static const String setChatRoomAttributes = "setChatRoomAttributes";
+  static const String removeChatRoomAttributes = "removeChatRoomAttributes";
+
   /// EMChatRoomManagerListener
   static const String chatRoomChange = "onChatRoomChanged";
 

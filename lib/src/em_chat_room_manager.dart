@@ -109,6 +109,26 @@ class EMChatRoomManager {
           bool isAllMuted = event['isMuted'];
           item.onAllChatRoomMemberMuteStateChanged?.call(roomId, isAllMuted);
           break;
+        case EMChatRoomEvent.ON_ATTRIBUTES_UPDATED:
+          String roomId = event['roomId'];
+          Map<String, String> attributes = event["attributes"];
+          String fromId = event["fromId"];
+          item.onAttributesUpdatedFromChatRoom?.call(
+            roomId,
+            attributes,
+            fromId,
+          );
+          break;
+        case EMChatRoomEvent.ON_ATTRIBUTES_REMOVED:
+          String roomId = event['roomId'];
+          List<String> keys = event["keys"];
+          String fromId = event["fromId"];
+          item.onAttributesRemovedFromChatRoom?.call(
+            roomId,
+            keys,
+            fromId,
+          );
+          break;
       }
     }
     // deprecated (3.9.5)
@@ -969,6 +989,90 @@ class EMChatRoomManager {
       throw e;
     }
   }
+
+  Future<Map<String, String>?> fetchChatRoomAttributes(
+    String roomId,
+    List<String>? keys,
+  ) async {
+    Map req = {
+      "roomId": roomId,
+      "keys": keys,
+    };
+
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchChatRoomAttributes,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomAttributes];
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Map<String, String>?> fetchChatRoomAllAttributes(String roomId) async {
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchChatRoomAllAttributes,
+      {"roomId": roomId},
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomAllAttributes];
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> addAttributes(
+    String roomId, {
+    required Map<String, String> attributes,
+    bool deleteWhenLeft = false,
+    bool overwrite = false,
+    void Function(Map<String, String>)? failureInfo,
+  }) async {
+    Map req = {
+      "roomId": roomId,
+      "attributes": attributes,
+      "autoDelete": deleteWhenLeft,
+      "forced": overwrite,
+    };
+
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.setChatRoomAttributes,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      failureInfo?.call((result[ChatMethodKeys.setChatRoomAttributes]));
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> removeAttributes(
+    String roomId, {
+    required List<String> keys,
+    bool force = false,
+    void Function(Map<String, String>)? failureInfo,
+  }) async {
+    Map req = {
+      "roomId": roomId,
+      "keys": keys,
+      "forced": force,
+    };
+
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.removeChatRoomAttributes,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      failureInfo?.call((result[ChatMethodKeys.removeChatRoomAttributes]));
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }
 
 extension ChatRoomManagerDeprecated on EMChatRoomManager {
@@ -981,7 +1085,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] A chat room listener. See [EMChatRoomManagerListener].
   ///
-  @Deprecated("Use EMChatRoomManageraddEventHandler to instead")
+  @Deprecated("Use EMChatRoomManager#addEventHandler to instead")
   void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -993,7 +1097,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] The chat room manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use EMChatRoomManager#removeEventHandler to instead")
   void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);

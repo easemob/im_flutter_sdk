@@ -461,13 +461,13 @@ static EMClientWrapper *wrapper = nil;
 }
 
 // 声网token即将过期
-- (void)tokenWillExpire:(int)aErrorCode {
+- (void)tokenWillExpire:(EMErrorCode)aErrorCode {
     [self.channel invokeMethod:ChatOnTokenWillExpire
                      arguments:nil];
 }
 
 // 声网token过期
-- (void)tokenDidExpire:(int)aErrorCode {
+- (void)tokenDidExpire:(EMErrorCode)aErrorCode {
     [EMListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnTokenDidExpire
                      arguments:nil];
@@ -538,6 +538,16 @@ static EMClientWrapper *wrapper = nil;
     data[@"threadId"] = aThreadId;
     data[@"users"] = aExt;
     [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    [[EMClient sharedClient] applicationDidEnterBackground:application];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    [[EMClient sharedClient] applicationWillEnterForeground:application];
 }
 
 @end

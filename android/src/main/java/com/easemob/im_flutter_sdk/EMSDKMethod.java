@@ -165,7 +165,10 @@ public class EMSDKMethod {
 
     static final String muteAllChatRoomMembers = "muteAllChatRoomMembers";
     static final String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
-
+    static final String fetchChatRoomAttributes = "fetchChatRoomAttributes";
+    static final String fetchChatRoomAllAttributes = "fetchChatRoomAllAttributes";
+    static final String setChatRoomAttributes = "setChatRoomAttributes";
+    static final String removeChatRoomAttributes = "removeChatRoomAttributes";
 
     // EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChanged";
