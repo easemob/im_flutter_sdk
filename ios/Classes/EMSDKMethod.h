@@ -179,7 +179,10 @@ static NSString *const ChatIsMemberInChatRoomWhiteListFromServer = @"isMemberInC
 
 static NSString *const ChatMuteAllChatRoomMembers = @"muteAllChatRoomMembers";
 static NSString *const ChatUnMuteAllChatRoomMembers = @"unMuteAllChatRoomMembers";
-
+static NSString *const ChatFetchChatRoomAttributes = @"fetchChatRoomAttributes";
+static NSString *const ChatFetchChatRoomAllAttributes = @"fetchChatRoomAllAttributes";
+static NSString *const ChatSetChatRoomAttributes = @"setChatRoomAttributes";
+static NSString *const ChatRemoveChatRoomAttributes  = @"removeChatRoomAttributes";
 
 static NSString *const ChatChatroomChanged = @"onChatRoomChanged";
 

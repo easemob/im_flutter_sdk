@@ -408,6 +408,20 @@ class EMChatRoomEventHandler {
     String? participant,
   )? onRemovedFromChatRoom;
 
+  /// Occurs when the custom chat room attributes (key-value) are updated.
+  final void Function(
+    String roomId,
+    Map<String, String> attributes,
+    String from,
+  )? onAttributesUpdatedFromChatRoom;
+
+  /// Occurs when the custom chat room attributes (key-value) are removed.
+  final void Function(
+    String roomId,
+    List<String> removedKeys,
+    String from,
+  )? onAttributesRemovedFromChatRoom;
+
   ///
   /// The chat room manager listener callback.
   ///
@@ -437,6 +451,10 @@ class EMChatRoomEventHandler {
   ///
   /// Param [onRemovedFromChatRoom] The chat room member(s) is removed from the allowlist callback.
   ///
+  /// Param [onAttributesUpdatedFromChatRoom] The chat room attributes updated callback.
+  ///
+  /// Param [onAttributesRemovedFromChatRoom] The chat room attributes removed callback.
+  ///
   EMChatRoomEventHandler({
     this.onAdminAddedFromChatRoom,
     this.onAdminRemovedFromChatRoom,
@@ -451,6 +469,8 @@ class EMChatRoomEventHandler {
     this.onMuteListRemovedFromChatRoom,
     this.onOwnerChangedFromChatRoom,
     this.onRemovedFromChatRoom,
+    this.onAttributesUpdatedFromChatRoom,
+    this.onAttributesRemovedFromChatRoom,
   });
 }
 

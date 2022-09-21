@@ -159,6 +159,14 @@ class EMOptions {
     _pushConfig.miAppKey = appKey;
   }
 
+  /// Enable MeiZu Push on MeiZu devices.
+  /// Param [appId] The app ID for MeiZu Push.
+  /// Param [appKey] The app key for MeiZu Push.
+  void enableMeiZuPush(String appId, String appKey) {
+    _pushConfig.mzAppId = appId;
+    _pushConfig.mzAppKey = appKey;
+  }
+
   ///
   /// Enable Firebase Cloud Messaging (FCM) push on devices that support Google Play.
   ///
