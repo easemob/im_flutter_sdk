@@ -109,11 +109,16 @@ class EMChatRoomManager {
           bool isAllMuted = event['isMuted'];
           item.onAllChatRoomMemberMuteStateChanged?.call(roomId, isAllMuted);
           break;
+        case EMChatRoomEvent.ON_SPECIFICATION_CHANGED:
+          EMChatRoom room = EMChatRoom.fromJson(event["room"]);
+          item.onSpecificationChanged?.call(room);
+          break;
         case EMChatRoomEvent.ON_ATTRIBUTES_UPDATED:
           String roomId = event['roomId'];
-          Map<String, String> attributes = event["attributes"];
+          Map<String, String> attributes =
+              event["attributes"].cast<String, String>();
           String fromId = event["fromId"];
-          item.onAttributesUpdatedFromChatRoom?.call(
+          item.onAttributesUpdated?.call(
             roomId,
             attributes,
             fromId,
@@ -121,9 +126,9 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_ATTRIBUTES_REMOVED:
           String roomId = event['roomId'];
-          List<String> keys = event["keys"];
+          List<String> keys = event["keys"].cast<String>();
           String fromId = event["fromId"];
-          item.onAttributesRemovedFromChatRoom?.call(
+          item.onAttributesRemoved?.call(
             roomId,
             keys,
             fromId,
@@ -1005,7 +1010,8 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomAttributes];
+      return result[ChatMethodKeys.fetchChatRoomAttributes]
+          ?.cast<String, String>();
     } on EMError catch (e) {
       throw e;
     }
@@ -1018,18 +1024,18 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomAllAttributes];
+      return result[ChatMethodKeys.fetchChatRoomAllAttributes]
+          ?.cast<String, String>();
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  Future<void> addAttributes(
+  Future<Map<String, String>?> addAttributes(
     String roomId, {
     required Map<String, String> attributes,
     bool deleteWhenLeft = false,
     bool overwrite = false,
-    void Function(Map<String, String>)? failureInfo,
   }) async {
     Map req = {
       "roomId": roomId,
@@ -1044,17 +1050,17 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      failureInfo?.call((result[ChatMethodKeys.setChatRoomAttributes]));
+      return result[ChatMethodKeys.setChatRoomAttributes]
+          ?.cast<String, String>();
     } on EMError catch (e) {
       throw e;
     }
   }
 
-  Future<void> removeAttributes(
+  Future<Map<String, String>?> removeAttributes(
     String roomId, {
     required List<String> keys,
     bool force = false,
-    void Function(Map<String, String>)? failureInfo,
   }) async {
     Map req = {
       "roomId": roomId,
@@ -1068,7 +1074,8 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      failureInfo?.call((result[ChatMethodKeys.removeChatRoomAttributes]));
+      return result[ChatMethodKeys.removeChatRoomAttributes]
+          ?.cast<String, String>();
     } on EMError catch (e) {
       throw e;
     }

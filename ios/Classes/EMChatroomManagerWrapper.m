@@ -933,6 +933,17 @@
     }];
 }
 
+- (void)chatroomSpecificationDidUpdate:(EMChatroom *)aChatroom {
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"chatroomSpecificationChanged",
+            @"room":[aChatroom toJson]
+        };
+        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+    }];
+}
+
 - (void)chatroomAttributesDidUpdated:(NSString *_Nonnull)roomId
                         attributeMap:(NSDictionary<NSString *, NSString *> *_Nullable)attributeMap
                                 from:(NSString *_Nonnull)fromId {

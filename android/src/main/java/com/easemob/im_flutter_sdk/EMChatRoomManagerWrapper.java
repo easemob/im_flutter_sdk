@@ -860,6 +860,18 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             }
 
             @Override
+            public void onSpecificationChanged(EMChatRoom room) {
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("room", EMChatRoomHelper.toJson(room));
+                            data.put("type", "onSpecificationChanged");
+                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+                        }
+                );
+            }
+
+            @Override
             public void onAttributesUpdate(String chatRoomId, Map<String, String> attributeMap, String from) {
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
@@ -867,19 +879,21 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", chatRoomId);
                             data.put("type", "chatroomAttributesDidUpdated");
                             data.put("attributes", attributeMap);
+                            data.put("fromId", from);
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
             }
 
             @Override
-            public void onAttributesRemoved(String chatRoomId, Map<String, String> attributeMap, String from) {
+            public void onAttributesRemoved(String chatRoomId, List<String> keyList, String from) {
                 EMListenerHandle.getInstance().addHandle(
-                        ()-> {
+                        () -> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
-                            data.put("keys", attributeMap.values().toArray());
+                            data.put("keys", keyList);
                             data.put("type", "chatroomAttributesDidRemoved");
+                            data.put("fromId", from);
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
