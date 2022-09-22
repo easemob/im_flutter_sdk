@@ -21,6 +21,7 @@ class EMChatRoomEvent {
   static const String ON_WHITE_LIST_ADDED = "chatroomWhiteListAdded";
   static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED =
       "chatroomAllMemberMuteStateChanged";
+  static const String ON_SPECIFICATION_CHANGED = "chatroomSpecificationChanged";
   static const String ON_ATTRIBUTES_UPDATED = "chatroomAttributesDidUpdated";
   static const String ON_ATTRIBUTES_REMOVED = "chatroomAttributesDidRemoved";
 }
