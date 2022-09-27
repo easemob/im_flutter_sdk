@@ -709,8 +709,8 @@
         }
         [weakSelf wrapperCallBack:result
                       channelName:channel
-                            error:failureKeys.count == 0 ? error : nil 
-                           object:failureKeys];
+                            error:tmp.count == 0 ? error : nil 
+                           object:tmp];
     };
     
     if (forced) {
