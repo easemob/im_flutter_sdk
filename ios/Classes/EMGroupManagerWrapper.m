@@ -355,9 +355,18 @@
 
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:[param[@"pageNum"] intValue]
-                                                                 pageSize:[param[@"pageSize"] intValue]
-                                                               completion:^(NSArray *aList, EMError *aError)
+    
+    
+    int pageNum = [param[@"pageNum"] intValue];
+    int pageSize = [param[@"pageSize"] intValue];
+    BOOL needRole = [param[@"needRole"] boolValue];
+    BOOL needMumberCount = [param[@"needMumberCount"] boolValue];
+    
+    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:pageNum
+                                                                 pageSize:pageSize
+                                                         needAffiliations:needMumberCount
+                                                                 needRole:needRole
+                                                               completion:^(NSArray<EMGroup *> *aList, EMError * _Nullable aError)
      {
         NSMutableArray *list = [NSMutableArray array];
         for (EMGroup *group in aList) {
@@ -367,8 +376,8 @@
                       channelName:aChannelName
                             error:aError
                            object:list];
-        
     }];
+
 }
 
 - (void)getPublicGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {

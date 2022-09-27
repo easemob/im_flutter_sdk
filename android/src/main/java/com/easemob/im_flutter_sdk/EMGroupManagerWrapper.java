@@ -178,6 +178,16 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             pageNum = param.getInt("pageNum");
         }
 
+        boolean needMemberCount = false;
+        if (param.has("needMemberCount")) {
+            needMemberCount = param.getBoolean("needMemberCount");
+        }
+
+        boolean needRole = false;
+        if (param.has("needRole")) {
+            needRole = param.getBoolean("needRole");
+        }
+
         EMValueWrapperCallBack<List<EMGroup>> callBack = new EMValueWrapperCallBack<List<EMGroup>>(result,
                 channelName) {
             @Override
@@ -190,7 +200,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().asyncGetJoinedGroupsFromServer(pageNum, pageSize, callBack);
+        EMClient.getInstance().groupManager().asyncGetJoinedGroupsFromServer(pageNum, pageSize, needMemberCount, needRole,callBack);
     }
 
     private void getPublicGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {

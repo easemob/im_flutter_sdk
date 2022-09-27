@@ -122,6 +122,14 @@ class EMGroupManager {
   ///
   /// This method returns a group list which does not contain member information. If you want to update information of a group to include its member information, call [fetchGroupInfoFromServer].
   ///
+  /// Param [pageSize] The size of groups per page.
+  ///
+  /// Param [pageNum] The page number.
+  ///
+  /// Param [needMemberCount] The return result contains the number of group members
+  ///
+  /// Param [needRole] The result contains the current user's role in the group
+  ///
   /// **Return** The list of groups that the current user joins.
   ///
   /// **Throws** A description of the exception. See [EMError].
@@ -129,8 +137,15 @@ class EMGroupManager {
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
     int pageSize = 200,
     int pageNum = 1,
+    bool needMemberCount = false,
+    bool needRole = false,
   }) async {
-    Map req = {'pageSize': pageSize, 'pageNum': pageNum};
+    Map req = {
+      'pageSize': pageSize,
+      'pageNum': pageNum,
+      "needMemberCount": needMemberCount,
+      "needRole": needRole,
+    };
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getJoinedGroupsFromServer, req);
     try {

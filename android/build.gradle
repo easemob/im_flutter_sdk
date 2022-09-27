@@ -49,5 +49,5 @@ tasks.withType(JavaCompile){
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'io.hyphenate:hyphenate-chat:3.9.6.1'
+    implementation 'io.hyphenate:hyphenate-chat:3.9.6.2'
 }

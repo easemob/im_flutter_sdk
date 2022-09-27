@@ -701,19 +701,25 @@
     BOOL autoDelete = [param[@"autoDelete"] boolValue];
     BOOL forced = [param[@"forced"] boolValue];
     __weak typeof(self) weakSelf = self;
+    
+    void (^block)(EMError *, NSDictionary <NSString *, EMError *>*) = ^(EMError *error, NSDictionary <NSString *, EMError *> *failureKeys) {
+        NSMutableDictionary *tmp = [NSMutableDictionary dictionary];
+        for (NSString *key in failureKeys) {
+            tmp[key] = @(failureKeys[key].code);
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:channel
+                            error:failureKeys.count == 0 ? error : nil 
+                           object:failureKeys];
+    };
+    
     if (forced) {
-        [EMClient.sharedClient.roomManager setChatroomAttributesForced:roomId attributes:attributes autoDelete:autoDelete completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,NSString *> * _Nullable failureKeys) {
-            [weakSelf wrapperCallBack:result
-                          channelName:channel
-                                error:aError
-                               object:failureKeys];
+        [EMClient.sharedClient.roomManager setChatroomAttributesForced:roomId attributes:attributes autoDelete:autoDelete completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,EMError *> * _Nullable failureKeys) {
+            block(aError, failureKeys);
         }];
     }else {
-        [EMClient.sharedClient.roomManager setChatroomAttributes:roomId attributes:attributes autoDelete:autoDelete completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,NSString *> * _Nullable failureKeys) {
-            [weakSelf wrapperCallBack:result
-                          channelName:channel
-                                error:aError
-                               object:failureKeys];
+        [EMClient.sharedClient.roomManager setChatroomAttributes:roomId attributes:attributes autoDelete:autoDelete completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,EMError *> * _Nullable failureKeys) {
+            block(aError, failureKeys);
         }];
     }
 }
@@ -723,21 +729,30 @@
     NSArray *keys = param[@"keys"];
     BOOL forced = [param[@"forced"] boolValue];
     __weak typeof(self) weakSelf = self;
+    
+    
+    void (^block)(EMError *, NSDictionary<NSString *, EMError*> *) = ^(EMError *error, NSDictionary <NSString * ,EMError *> *failureKeys) {
+        NSMutableDictionary *tmp = [NSMutableDictionary dictionary];
+        for (NSString *key in failureKeys.allKeys) {
+            tmp[key] = @(failureKeys[key].code);
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:channel
+                            error:tmp.count == 0 ? error : nil
+                           object:tmp];
+    };
+    
     if (forced) {
         [EMClient.sharedClient.roomManager removeChatroomAttributesForced:roomId
                                                                attributes:keys
-                                                          completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,NSString *> * _Nullable failureKeys) {
-            [weakSelf wrapperCallBack:result
-                          channelName:channel
-                                error:failureKeys == nil ? aError : nil
-                               object:failureKeys];
+                                                          completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,EMError *> * _Nullable failureKeys) {
+            block(aError, failureKeys);
         }];
     } else {
-        [EMClient.sharedClient.roomManager removeChatroomAttributes:roomId attributes:keys completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,NSString *> * _Nullable failureKeys) {
-            [weakSelf wrapperCallBack:result
-                          channelName:channel
-                                error:failureKeys == nil ? aError : nil
-                               object:failureKeys];
+        [EMClient.sharedClient.roomManager removeChatroomAttributes:roomId
+                                                         attributes:keys
+                                                    completionBlock:^(EMError * _Nullable aError, NSDictionary<NSString *,EMError *> * _Nullable failureKeys) {
+            block(aError, failureKeys);
         }];
     }
 }
