@@ -4,6 +4,7 @@ import com.hyphenate.EMChatRoomChangeListener;
 import com.hyphenate.EMResultCallBack;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMPageResult;
@@ -611,9 +612,9 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         }
 
         EMChatRoomManagerWrapper current = this;
-        EMResultCallBack callback = new EMResultCallBack() {
+        EMResultCallBack callback = new EMResultCallBack<Map<String, Integer>>() {
             @Override
-            public void onSuccess(int code, Object value) {
+            public void onSuccess(int code, Map<String, Integer> value) {
                 asyncRunnable(()->{
                     current.onSuccess(result, channelName, value);
                 });
@@ -651,9 +652,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         }
 
         EMChatRoomManagerWrapper current = this;
-        EMResultCallBack callback = new EMResultCallBack() {
+        EMResultCallBack callback = new EMResultCallBack<Map<String, Integer>>() {
+
             @Override
-            public void onSuccess(int code, Object value) {
+            public void onSuccess(int code, Map<String, Integer> value) {
                 asyncRunnable(()->{
                     current.onSuccess(result, channelName, value);
                 });
