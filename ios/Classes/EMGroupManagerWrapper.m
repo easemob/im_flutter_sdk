@@ -944,8 +944,10 @@
 #pragma mark - EMGroupManagerDelegate
 
 - (void)groupInvitationDidReceive:(NSString *)aGroupId
-                          inviter:(NSString *)aInviter
-                          message:(NSString *)aMessage {
+                        groupName:(NSString * _Nonnull)aGroupName
+                          inviter:(NSString * _Nonnull)aInviter
+                          message:(NSString * _Nullable)aMessage
+{
 
     
     __weak typeof(self) weakSelf = self;
@@ -953,6 +955,7 @@
         NSDictionary *map = @{
             @"type":@"groupInvitationReceived",
             @"groupId":aGroupId,
+            @"groupName": aGroupName,
             @"inviter":aInviter,
             @"message":aMessage
         };
