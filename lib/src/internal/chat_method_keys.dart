@@ -181,7 +181,6 @@ class ChatMethodKeys {
   static const String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
 
   static const String fetchChatRoomAttributes = "fetchChatRoomAttributes";
-  static const String fetchChatRoomAllAttributes = "fetchChatRoomAllAttributes";
   static const String setChatRoomAttributes = "setChatRoomAttributes";
   static const String removeChatRoomAttributes = "removeChatRoomAttributes";
 

@@ -100,8 +100,6 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                 unMuteAllChatRoomsMembers(param, call.method, result);
             } else if (EMSDKMethod.fetchChatRoomAttributes.equals(call.method)){
                 fetchChatRoomAttributes(param, call.method, result);
-            } else if (EMSDKMethod.fetchChatRoomAllAttributes.equals(call.method)){
-                fetchChatRoomAllAttributes(param, call.method, result);
             } else if (EMSDKMethod.setChatRoomAttributes.equals(call.method)){
                 setChatRoomAttributes(param, call.method, result);
             } else if (EMSDKMethod.removeChatRoomAttributes.equals(call.method)){
@@ -584,11 +582,6 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             }
         }
         EMClient.getInstance().chatroomManager().asyncFetchChatroomAttributesFromServer(roomId, keys, new EMValueWrapperCallBack(result, channelName));
-    }
-
-    public void fetchChatRoomAllAttributes(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        String roomId = param.getString("roomId");
-        EMClient.getInstance().chatroomManager().asyncFetchChatRoomAllAttributesFromSever(roomId, new EMValueWrapperCallBack(result, channelName));
     }
 
     public void setChatRoomAttributes(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
