@@ -185,9 +185,6 @@
     else if ([ChatFetchChatRoomAttributes isEqualToString:call.method]) {
         [self fetchChatRoomAttributes:call.arguments channelName:call.method result:result];
     }
-    else if ([ChatFetchChatRoomAllAttributes isEqualToString:call.method]) {
-        [self fetchChatRoomAllAttributes:call.arguments channelName:call.method result:result];
-    }
     else if ([ChatSetChatRoomAttributes isEqualToString:call.method]) {
         [self setChatRoomAttributes:call.arguments channelName:call.method result:result];
     }
@@ -684,16 +681,6 @@
     }];
 }
 
-- (void)fetchChatRoomAllAttributes:(NSDictionary *)param channelName:(NSString *)channel result:(FlutterResult)result {
-    NSString *roomId = param[@"roomId"];
-    __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.roomManager fetchChatroomAllAttributes:roomId completion:^(EMError * _Nullable aError, NSDictionary<NSString *,NSString *> * _Nullable properties) {
-        [weakSelf wrapperCallBack:result
-                      channelName:channel
-                            error:aError
-                           object:properties];
-    }];
-}
 
 - (void)setChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)channel result:(FlutterResult)result {
     NSString *roomId = param[@"roomId"];
