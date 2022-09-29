@@ -1,6 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.EMChatRoomChangeListener;
+import com.hyphenate.EMError;
 import com.hyphenate.EMResultCallBack;
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMClient;
@@ -607,10 +608,11 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         EMChatRoomManagerWrapper current = this;
 
         EMResultCallBack callback = (EMResultCallBack<Map<String, Integer>>) (code, value) -> asyncRunnable(()->{
-            if (value.size() > 0) {
+            if (value.size() > 0 || code == EMError.EM_NO_ERROR) {
                 current.onSuccess(result, channelName, value);
             }else {
                 HyphenateException e = new HyphenateException(code, "");
+                current.onError(result, e);
             }
         });
 
@@ -638,7 +640,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
         EMChatRoomManagerWrapper current = this;
         EMResultCallBack callback = (EMResultCallBack<Map<String, Integer>>) (code, value) -> asyncRunnable(()->{
-            if (value.size() > 0) {
+            if (value.size() > 0 || code == EMError.EM_NO_ERROR) {
                 current.onSuccess(result, channelName, value);
             }else {
                 HyphenateException e = new HyphenateException(code, "");
