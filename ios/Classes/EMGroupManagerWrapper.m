@@ -364,7 +364,7 @@
     
     [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:pageNum
                                                                  pageSize:pageSize
-                                                         needAffiliations:needMumberCount
+                                                          needMemberCount:needMumberCount
                                                                  needRole:needRole
                                                                completion:^(NSArray<EMGroup *> *aList, EMError * _Nullable aError)
      {
