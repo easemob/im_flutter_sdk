@@ -605,22 +605,14 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         }
 
         EMChatRoomManagerWrapper current = this;
-        EMResultCallBack callback = new EMResultCallBack<Map<String, Integer>>() {
-            @Override
-            public void onSuccess(int code, Map<String, Integer> value) {
-                asyncRunnable(()->{
-                    current.onSuccess(result, channelName, value);
-                });
-            }
 
-            @Override
-            public void onError(int error, String errorMsg) {
-                HyphenateException e = new HyphenateException(error, errorMsg);
-                asyncRunnable(()->{
-                    current.onError(result, e);
-                });
+        EMResultCallBack callback = (EMResultCallBack<Map<String, Integer>>) (code, value) -> asyncRunnable(()->{
+            if (value.size() > 0) {
+                current.onSuccess(result, channelName, value);
+            }else {
+                HyphenateException e = new HyphenateException(code, "");
             }
-        };
+        });
 
         if (forced) {
             EMClient.getInstance().chatroomManager().asyncSetChatroomAttributesForced(roomId, attributes, autoDelete, callback);
@@ -645,27 +637,18 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
         }
 
         EMChatRoomManagerWrapper current = this;
-        EMResultCallBack callback = new EMResultCallBack<Map<String, Integer>>() {
-
-            @Override
-            public void onSuccess(int code, Map<String, Integer> value) {
-                asyncRunnable(()->{
-                    current.onSuccess(result, channelName, value);
-                });
+        EMResultCallBack callback = (EMResultCallBack<Map<String, Integer>>) (code, value) -> asyncRunnable(()->{
+            if (value.size() > 0) {
+                current.onSuccess(result, channelName, value);
+            }else {
+                HyphenateException e = new HyphenateException(code, "");
+                current.onError(result, e);
             }
-
-            @Override
-            public void onError(int error, String errorMsg) {
-                HyphenateException e = new HyphenateException(error, errorMsg);
-                asyncRunnable(()->{
-                    current.onError(result, e);
-                });
-            }
-        };
+        });
         if (forced){
-            EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAttributesFromSeverForced(roomId, keys, callback);
+            EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAttributesFromServerForced(roomId, keys, callback);
         }else {
-            EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAttributesFromSever(roomId, keys, callback);
+            EMClient.getInstance().chatroomManager().asyncRemoveChatRoomAttributesFromServer(roomId, keys, callback);
         }
     }
 
