@@ -21,7 +21,7 @@ A new flutter plugin project.
   s.public_header_files = 'Classes/**/*.h'
 
   s.dependency 'Flutter'
-  s.dependency 'HyphenateChat','3.9.7'
+  s.dependency 'HyphenateChat','3.9.7.1'
   s.ios.deployment_target = '10.0'
 
 end
