@@ -45,4 +45,4 @@ export '../em_push_manager.dart';
 export '../em_userInfo_manager.dart';
 export '../em_push_manager.dart';
 export '../event_handler/manager_event_handler.dart';
-export '../tools/em_area_code.dart';
+export '../tools/area_code.dart';
