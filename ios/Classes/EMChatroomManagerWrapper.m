@@ -946,9 +946,9 @@
     }];
 }
 
-- (void)chatroomAttributesDidUpdated:(NSString *_Nonnull)roomId
+- (void)chatroomAttributesDidUpdated:(NSString *)roomId
                         attributeMap:(NSDictionary<NSString *, NSString *> *)attributeMap
-                                from:(NSString *_Nonnull)fromId {
+                                from:(NSString *)fromId {
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
@@ -960,9 +960,9 @@
         [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
     }];
 }
-- (void)chatroomAttributesDidRemoved:(NSString *_Nonnull)roomId
-                          attributes:(NSArray<__kindof NSString *> *)attributes
-                                from:(NSString *_Nonnull)fromId {
+- (void)chatroomAttributesDidRemoved:(NSString *)roomId
+                          attributes:(NSArray<NSString *> *)attributes
+                                from:(NSString *)fromId {
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
