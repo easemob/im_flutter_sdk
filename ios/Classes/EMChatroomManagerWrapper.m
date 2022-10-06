@@ -947,7 +947,7 @@
 }
 
 - (void)chatroomAttributesDidUpdated:(NSString *_Nonnull)roomId
-                        attributeMap:(NSDictionary<NSString *, NSString *> *_Nullable)attributeMap
+                        attributeMap:(NSDictionary<NSString *, NSString *> *)attributeMap
                                 from:(NSString *_Nonnull)fromId {
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
@@ -961,7 +961,7 @@
     }];
 }
 - (void)chatroomAttributesDidRemoved:(NSString *_Nonnull)roomId
-                          attributes:(NSArray<__kindof NSString *> *_Nullable)attributes
+                          attributes:(NSArray<__kindof NSString *> *)attributes
                                 from:(NSString *_Nonnull)fromId {
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
