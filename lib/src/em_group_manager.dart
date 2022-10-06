@@ -135,8 +135,8 @@ class EMGroupManager {
   /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
-    int pageSize = 200,
-    int pageNum = 1,
+    int pageSize = 20,
+    int pageNum = 0,
     bool needMemberCount = false,
     bool needRole = false,
   }) async {
