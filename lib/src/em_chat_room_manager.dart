@@ -995,10 +995,10 @@ class EMChatRoomManager {
     }
   }
 
-  /// Fetch the properties of chatroom form server.
-  /// Param [roomId] The chatroom ID.
-  /// Param [keys] Chat room attribute keys.Empty callback all.
-  /// **Return** Chat room attributes key-values
+  /// Gets the list of custom chat room attributes based on the attribute key list.
+  /// Param [roomId] The chat room ID.
+  /// Param [keys] The key list of attributes to get. If you set it as `null` or leave it empty, this method retrieves all custom attributes.
+  /// **Return** The chat room attributes in key-value pairs.
   /// **Throws** A description of the exception. See [EMError].
   Future<Map<String, String>?> fetchChatRoomAttributes(
     String roomId,
@@ -1022,23 +1022,22 @@ class EMChatRoomManager {
     }
   }
 
-  /// Sets a custom chat room attribute.
+  /// Sets custom chat room attributes.
   /// Param [roomId] The chat room ID.
-  /// Param [attributes] The custom chat room attributes in key-value pairs, where the key is the attribute name and the value is the attribute value.
+  /// Param [attributes] The chat room attributes to add. The attributes are in key-value format.
   /// Note:
-  /// The chat room attribute key that specifies the attribute name. The attribute name can contain 128 characters at most.
-  /// * A chat room can have a maximum of 100 custom attributes. The following character sets are supported:
+  /// In a key-value pair, the key is the attribute name that can contain 128 characters at most; the value is the attribute value that cannot exceed 4096 characters.
+  /// A chat room can have a maximum of 100 custom attributes and the total length of custom chat room attributes cannot exceed 10 GB for each app. Attribute keys support the following character sets:
   /// * - 26 lowercase English letters (a-z)
   /// * - 26 uppercase English letters (A-Z)
   /// * - 10 numbers (0-9)
   /// * - "_", "-", "."
-  /// The chat room attribute value. The attribute value can contain a maximum of 4096 characters. The total length of custom chat room attributes cannot exceed 10 GB for each app.
   ///
-  /// Param [deleteWhenLeft] Delete when leaving the chat room.
-  /// Param [overwrite] Whether properties set by others are allowed to be overridden.
-  /// **Return** `failureKeys map` in key-value format, where the key is the attribute key and the value is the reason for the failure.
+  /// Param [deleteWhenLeft] Whether to delete the chat room attributes set by the member when he or she exits the chat room.
+  /// Param [overwrite] Whether to overwrite the attributes with same key set by others.
+  /// **Return** `failureKeys map` is returned in key-value format, where the key is the attribute key and the value is the reason for the failure.
   /// **Throws** A description of the exception. See [EMError].
-  Future<Map<String, String>?> addAttributes(
+  Future<Map<String, int>?> addAttributes(
     String roomId, {
     required Map<String, String> attributes,
     bool deleteWhenLeft = false,
@@ -1057,8 +1056,7 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.setChatRoomAttributes]
-          ?.cast<String, String>();
+      return result[ChatMethodKeys.setChatRoomAttributes]?.cast<String, int>();
     } on EMError catch (e) {
       throw e;
     }
@@ -1066,11 +1064,11 @@ class EMChatRoomManager {
 
   /// Removes custom chat room attributes.
   /// Param [roomId] The chat room ID.
-  /// Param [keys] The keys of the chat room attributes to remove.
-  /// Param [force] force implement, When true, you can delete properties that you did not set.
-  /// **Return** `failureKeys map` in key-value format, where the key is the attribute key and the value is the reason for the failure.
+  /// Param [keys] The keys of the custom chat room attributes to remove.
+  /// Param [force] Whether to remove the attributes with same key set by others.
+  /// **Return** `failureKeys map` is returned in key-value format, where the key is the attribute key and the value is the reason for the failure.
   /// **Throws** A description of the exception. See [EMError].
-  Future<Map<String, String>?> removeAttributes(
+  Future<Map<String, int>?> removeAttributes(
     String roomId, {
     required List<String> keys,
     bool force = false,
@@ -1088,7 +1086,7 @@ class EMChatRoomManager {
     try {
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.removeChatRoomAttributes]
-          ?.cast<String, String>();
+          ?.cast<String, int>();
     } on EMError catch (e) {
       throw e;
     }
