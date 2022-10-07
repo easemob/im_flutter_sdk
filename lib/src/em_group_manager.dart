@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'dart:async';
+import 'dart:js_util';
 
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
@@ -1383,6 +1384,15 @@ class EMGroupManager {
           bool isAllMuted = map["isMuted"] as bool;
           element.onAllGroupMemberMuteStateChanged?.call(groupId, isAllMuted);
           break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          element.onSpecificationDidUpdate?.call(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisabled"] as bool;
+          element.onDisableChanged?.call(groupId, isDisable);
+          break;
       }
     });
 
@@ -1516,6 +1526,15 @@ class EMGroupManager {
           String groupId = map["groupId"];
           bool isAllMuted = map["isMuted"] as bool;
           listener.onAllGroupMemberMuteStateChanged(groupId, isAllMuted);
+          break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          listener.onSpecificationDidUpdate(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisable"] as bool;
+          listener.onDisableChange(groupId, isDisable);
           break;
       }
     }

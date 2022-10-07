@@ -53,4 +53,7 @@ class EMGroupChangeEvent {
   static const String ON_WHITE_LIST_ADDED = "groupWhiteListAdded";
   static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED =
       "groupAllMemberMuteStateChanged";
+  static const String ON_SPECIFICATION_DID_UPDATE =
+      "groupSpecificationDidUpdate";
+  static const String ON_STATE_CHANGED = "groupStateChanged";
 }
