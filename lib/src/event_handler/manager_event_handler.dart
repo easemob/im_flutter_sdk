@@ -407,7 +407,7 @@ class EMChatRoomEventHandler {
     String? roomName,
     String? participant,
   )? onRemovedFromChatRoom;
-  
+
   /// Occurs when the chat room specifications changes. All chat room members receive this event.
   final void Function(EMChatRoom room)? onSpecificationChanged;
 
@@ -818,6 +818,17 @@ class EMGroupEventHandler {
     EMGroupSharedFile sharedFile,
   )? onSharedFileAddedFromGroup;
 
+  /// Occurs when the group detail information is updated.
+  final void Function(
+    EMGroup group,
+  )? onSpecificationDidUpdate;
+
+  /// Occurs when the group is enabled or disabled.
+  final void Function(
+    String groupId,
+    bool isDisable,
+  )? onDisableChanged;
+
   ///
   /// Occurs when a shared file is removed from a group.
   ///
@@ -881,6 +892,10 @@ class EMGroupEventHandler {
   ///
   /// Param [onUserRemovedFromGroup] Current user is removed from the group by the group admin callback.
   ///
+  /// Param [onSpecificationDidUpdate] Occurs when the group detail information is updated.
+  ///
+  /// Param [onDisableChanged] /// Occurs when the group is enabled or disabled.
+  ///
   EMGroupEventHandler({
     this.onAdminAddedFromGroup,
     this.onAdminRemovedFromGroup,
@@ -904,6 +919,8 @@ class EMGroupEventHandler {
     this.onSharedFileAddedFromGroup,
     this.onSharedFileDeletedFromGroup,
     this.onUserRemovedFromGroup,
+    this.onSpecificationDidUpdate,
+    this.onDisableChanged,
   });
 }
 

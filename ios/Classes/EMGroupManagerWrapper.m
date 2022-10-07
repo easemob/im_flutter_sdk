@@ -1287,8 +1287,6 @@
 
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
              removedSharedFile:(NSString *)aFileId {
-
-    
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
@@ -1301,5 +1299,30 @@
     }];
 }
 
+
+- (void)groupSpecificationDidUpdate:(EMGroup *)aGroup {
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"groupSpecificationDidUpdate",
+            @"group": [aGroup toJson]
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
+}
+- (void)groupStateChanged:(EMGroup *)aGroup
+               isDisabled:(BOOL)aDisabled {
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"groupStateChanged",
+            @"groupId":aGroup.groupId,
+            @"isDisabled":@(aDisabled)
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
+}
 
 @end

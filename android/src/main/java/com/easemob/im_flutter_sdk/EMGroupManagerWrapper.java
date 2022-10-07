@@ -1121,6 +1121,31 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                         }
                 );
             }
+
+            @Override
+            public void onSpecificationChanged(EMGroup group) {
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "groupSpecificationDidUpdate");
+                            data.put("group", EMGroupHelper.toJson(group));
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onStateChanged(EMGroup group, boolean isDisabled) {
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "groupStateChanged");
+                            data.put("groupId", group.getGroupId());
+                            data.put("isDisabled", isDisabled);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+            }
         };
         EMClient.getInstance().groupManager().addGroupChangeListener(groupChangeListener);
     }
