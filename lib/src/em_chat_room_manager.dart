@@ -109,6 +109,31 @@ class EMChatRoomManager {
           bool isAllMuted = event['isMuted'];
           item.onAllChatRoomMemberMuteStateChanged?.call(roomId, isAllMuted);
           break;
+        case EMChatRoomEvent.ON_SPECIFICATION_CHANGED:
+          EMChatRoom room = EMChatRoom.fromJson(event["room"]);
+          item.onSpecificationChanged?.call(room);
+          break;
+        case EMChatRoomEvent.ON_ATTRIBUTES_UPDATED:
+          String roomId = event['roomId'];
+          Map<String, String> attributes =
+              event["attributes"].cast<String, String>();
+          String fromId = event["fromId"];
+          item.onAttributesUpdated?.call(
+            roomId,
+            attributes,
+            fromId,
+          );
+          break;
+        case EMChatRoomEvent.ON_ATTRIBUTES_REMOVED:
+          String roomId = event['roomId'];
+          List<String> keys = event["keys"].cast<String>();
+          String fromId = event["fromId"];
+          item.onAttributesRemoved?.call(
+            roomId,
+            keys,
+            fromId,
+          );
+          break;
       }
     }
     // deprecated (3.9.5)
@@ -969,6 +994,103 @@ class EMChatRoomManager {
       throw e;
     }
   }
+
+  /// Gets the list of custom chat room attributes based on the attribute key list.
+  /// Param [roomId] The chat room ID.
+  /// Param [keys] The key list of attributes to get. If you set it as `null` or leave it empty, this method retrieves all custom attributes.
+  /// **Return** The chat room attributes in key-value pairs.
+  /// **Throws** A description of the exception. See [EMError].
+  Future<Map<String, String>?> fetchChatRoomAttributes(
+    String roomId,
+    List<String>? keys,
+  ) async {
+    Map req = {
+      "roomId": roomId,
+      "keys": keys,
+    };
+
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.fetchChatRoomAttributes,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomAttributes]
+          ?.cast<String, String>();
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// Sets custom chat room attributes.
+  /// Param [roomId] The chat room ID.
+  /// Param [attributes] The chat room attributes to add. The attributes are in key-value format.
+  /// Note:
+  /// In a key-value pair, the key is the attribute name that can contain 128 characters at most; the value is the attribute value that cannot exceed 4096 characters.
+  /// A chat room can have a maximum of 100 custom attributes and the total length of custom chat room attributes cannot exceed 10 GB for each app. Attribute keys support the following character sets:
+  /// * - 26 lowercase English letters (a-z)
+  /// * - 26 uppercase English letters (A-Z)
+  /// * - 10 numbers (0-9)
+  /// * - "_", "-", "."
+  ///
+  /// Param [deleteWhenLeft] Whether to delete the chat room attributes set by the member when he or she exits the chat room.
+  /// Param [overwrite] Whether to overwrite the attributes with same key set by others.
+  /// **Return** `failureKeys map` is returned in key-value format, where the key is the attribute key and the value is the reason for the failure.
+  /// **Throws** A description of the exception. See [EMError].
+  Future<Map<String, int>?> addAttributes(
+    String roomId, {
+    required Map<String, String> attributes,
+    bool deleteWhenLeft = false,
+    bool overwrite = false,
+  }) async {
+    Map req = {
+      "roomId": roomId,
+      "attributes": attributes,
+      "autoDelete": deleteWhenLeft,
+      "forced": overwrite,
+    };
+
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.setChatRoomAttributes,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.setChatRoomAttributes]?.cast<String, int>();
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// Removes custom chat room attributes.
+  /// Param [roomId] The chat room ID.
+  /// Param [keys] The keys of the custom chat room attributes to remove.
+  /// Param [force] Whether to remove the attributes with same key set by others.
+  /// **Return** `failureKeys map` is returned in key-value format, where the key is the attribute key and the value is the reason for the failure.
+  /// **Throws** A description of the exception. See [EMError].
+  Future<Map<String, int>?> removeAttributes(
+    String roomId, {
+    required List<String> keys,
+    bool force = false,
+  }) async {
+    Map req = {
+      "roomId": roomId,
+      "keys": keys,
+      "forced": force,
+    };
+
+    Map result = await _channel.invokeMethod(
+      ChatMethodKeys.removeChatRoomAttributes,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.removeChatRoomAttributes]
+          ?.cast<String, int>();
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }
 
 extension ChatRoomManagerDeprecated on EMChatRoomManager {
@@ -981,7 +1103,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] A chat room listener. See [EMChatRoomManagerListener].
   ///
-  @Deprecated("Use EMChatRoomManageraddEventHandler to instead")
+  @Deprecated("Use EMChatRoomManager#addEventHandler to instead")
   void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -993,7 +1115,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] The chat room manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use EMChatRoomManager#removeEventHandler to instead")
   void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
