@@ -122,15 +122,30 @@ class EMGroupManager {
   ///
   /// This method returns a group list which does not contain member information. If you want to update information of a group to include its member information, call [fetchGroupInfoFromServer].
   ///
+  /// Param [pageSize] The size of groups per page.
+  ///
+  /// Param [pageNum] The page number.
+  ///
+  /// Param [needMemberCount] The return result contains the number of group members
+  ///
+  /// Param [needRole] The result contains the current user's role in the group
+  ///
   /// **Return** The list of groups that the current user joins.
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
-    int pageSize = 200,
-    int pageNum = 1,
+    int pageSize = 20,
+    int pageNum = 0,
+    bool needMemberCount = false,
+    bool needRole = false,
   }) async {
-    Map req = {'pageSize': pageSize, 'pageNum': pageNum};
+    Map req = {
+      'pageSize': pageSize,
+      'pageNum': pageNum,
+      "needMemberCount": needMemberCount,
+      "needRole": needRole,
+    };
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getJoinedGroupsFromServer, req);
     try {
@@ -1368,6 +1383,15 @@ class EMGroupManager {
           bool isAllMuted = map["isMuted"] as bool;
           element.onAllGroupMemberMuteStateChanged?.call(groupId, isAllMuted);
           break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          element.onSpecificationDidUpdate?.call(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisabled"] as bool;
+          element.onDisableChanged?.call(groupId, isDisable);
+          break;
       }
     });
 
@@ -1501,6 +1525,15 @@ class EMGroupManager {
           String groupId = map["groupId"];
           bool isAllMuted = map["isMuted"] as bool;
           listener.onAllGroupMemberMuteStateChanged(groupId, isAllMuted);
+          break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          listener.onSpecificationDidUpdate(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisable"] as bool;
+          listener.onDisableChange(groupId, isDisable);
           break;
       }
     }

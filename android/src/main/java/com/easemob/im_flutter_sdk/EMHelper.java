@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import static com.hyphenate.chat.EMOptions.AreaCode.AREA_CODE_GLOB;
+
 import android.content.Context;
 
 import com.hyphenate.chat.EMChatRoom;
@@ -67,6 +69,7 @@ class EMOptionsHelper {
         options.setAutoDownloadThumbnail(json.getBoolean("isAutoDownload"));
         options.allowChatroomOwnerLeave(json.getBoolean("isChatRoomOwnerLeaveAllowed"));
         options.setAutoTransferMessageAttachments(json.getBoolean("serverTransfer"));
+        options.setAreaCode(json.getInt("areaCode"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
         if (!json.getBoolean("enableDNSConfig")) {
@@ -92,7 +95,6 @@ class EMOptionsHelper {
             }
             if (pushConfig.getBoolean("enableFCM")) {
                 builder.enableFCM(pushConfig.getString("fcmId"));
-                options.setUseFCM(true);
             }
             if (pushConfig.getBoolean("enableOppoPush")) {
                 builder.enableOppoPush(pushConfig.getString("oppoAppKey"), pushConfig.getString("oppoAppSecret"));

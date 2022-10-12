@@ -132,6 +132,11 @@ class EMOptions {
   /// The custom IM server port.
   final int? imPort;
 
+  /// The area code.
+  /// This attribute is used to restrict the scope of accessible edge nodes. The default value is `AreaCodeGLOB`.
+  /// This attribute can be set only when you call [EMClient.init]. The attribute setting cannot be changed during the app runtime.
+  final int areaCode;
+
   EMPushConfig _pushConfig = EMPushConfig();
 
   /// Enable OPPO PUSH on OPPO devices.
@@ -157,6 +162,14 @@ class EMOptions {
     _pushConfig.enableMiPush = true;
     _pushConfig.miAppId = appId;
     _pushConfig.miAppKey = appKey;
+  }
+
+  /// Enable MeiZu Push on MeiZu devices.
+  /// Param [appId] The app ID for MeiZu Push.
+  /// Param [appKey] The app key for MeiZu Push.
+  void enableMeiZuPush(String appId, String appKey) {
+    _pushConfig.mzAppId = appId;
+    _pushConfig.mzAppKey = appKey;
   }
 
   ///
@@ -195,93 +208,95 @@ class EMOptions {
   ///
   /// Sets the app options.
   ///
-  EMOptions(
-      {
+  EMOptions({
+    /// Param [appKey] The app key that you get from the console when creating an app.
+    required this.appKey,
 
-      /// Param [appKey] The app key that you get from the console when creating an app.
-      required this.appKey,
+    /// Param [autoLogin] Whether to enable automatic login.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.autoLogin = true,
 
-      /// Param [autoLogin] Whether to enable automatic login.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.autoLogin = true,
+    /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
+    /// - `true`: Yes.
+    /// - `false`: (Default) No.
+    this.debugModel = false,
 
-      /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
-      /// - `true`: Yes.
-      /// - `false`: (Default) No.
-      this.debugModel = false,
+    /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
+    /// - `true`: Yes;
+    /// - `false`: (Default) No.
+    this.acceptInvitationAlways = false,
 
-      /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
-      /// - `true`: Yes;
-      /// - `false`: (Default) No.
-      this.acceptInvitationAlways = false,
+    /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+    /// - `true`: Yes;
+    /// - `false`: (Default) No.
+    this.autoAcceptGroupInvitation = false,
 
-      /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
-      /// - `true`: Yes;
-      /// - `false`: (Default) No.
-      this.autoAcceptGroupInvitation = false,
+    /// Param [requireAck] Whether the read receipt is required.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.requireAck = true,
 
-      /// Param [requireAck] Whether the read receipt is required.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.requireAck = true,
+    /// Param [requireDeliveryAck] Whether the delivery receipt is required.
+    /// - `true`: Yes;
+    /// - `false`: (Default) No.
+    this.requireDeliveryAck = false,
 
-      /// Param [requireDeliveryAck] Whether the delivery receipt is required.
-      /// - `true`: Yes;
-      /// - `false`: (Default) No.
-      this.requireDeliveryAck = false,
+    /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.deleteMessagesAsExitGroup = true,
 
-      /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.deleteMessagesAsExitGroup = true,
+    /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.deleteMessagesAsExitChatRoom = true,
 
-      /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.deleteMessagesAsExitChatRoom = true,
+    /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.isChatRoomOwnerLeaveAllowed = true,
 
-      /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.isChatRoomOwnerLeaveAllowed = true,
+    /// Param [sortMessageByServerTime] Whether to sort the messages by the time the server receives messages.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.sortMessageByServerTime = true,
 
-      /// Param [sortMessageByServerTime] Whether to sort the messages by the time the server receives messages.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.sortMessageByServerTime = true,
+    /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.usingHttpsOnly = true,
 
-      /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.usingHttpsOnly = true,
+    /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.serverTransfer = true,
 
-      /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.serverTransfer = true,
+    /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.isAutoDownloadThumbnail = true,
 
-      /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.isAutoDownloadThumbnail = true,
+    /// Param [enableDNSConfig] Whether to enable DNS.
+    /// - `true`: (Default) Yes;
+    /// - `false`: No.
+    this.enableDNSConfig = true,
 
-      /// Param [enableDNSConfig] Whether to enable DNS.
-      /// - `true`: (Default) Yes;
-      /// - `false`: No.
-      this.enableDNSConfig = true,
+    /// Param [dnsUrl] The DNS url.
+    this.dnsUrl,
 
-      /// Param [dnsUrl] The DNS url.
-      this.dnsUrl,
+    /// Param [restServer] The REST server for private deployments.
+    this.restServer,
 
-      /// Param [restServer] The REST server for private deployments.
-      this.restServer,
+    /// Param [imPort] The IM server port for private deployments.
+    this.imPort,
 
-      /// Param [imPort] The IM server port for private deployments.
-      this.imPort,
+    /// Param [imServer] The IM server URL for private deployment.
+    this.imServer,
 
-      /// Param [imServer] The IM server URL for private deployment.
-      this.imServer});
+    /// Param [areaCode] The area code.
+    this.areaCode = AreaCode.GLOB,
+  });
 
   /// @nodoc
   factory EMOptions.fromJson(Map<String, dynamic> json) {
@@ -307,6 +322,7 @@ class EMOptions {
       imServer: json.stringValue("imServer"),
       restServer: json.stringValue("restServer"),
       dnsUrl: json.stringValue("dnsUrl"),
+      areaCode: json.intValue("areaCode") ?? AreaCode.GLOB,
     );
 
     ret._pushConfig = EMPushConfig();
@@ -349,6 +365,7 @@ class EMOptions {
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();
+    data["areaCode"] = this.areaCode;
     return data;
   }
 

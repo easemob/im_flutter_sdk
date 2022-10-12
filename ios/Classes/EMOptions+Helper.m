@@ -31,6 +31,7 @@
     data[@"imServer"] = self.chatServer;
     data[@"restServer"] = self.restServer;
     data[@"dnsUrl"] = self.dnsURL;
+    data[@"areaCode"] = @(self.area);
     
     return data;
 }
@@ -55,7 +56,7 @@
     options.chatServer = aJson[@"imServer"];
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
-    
+    options.area = [aJson[@"areaCode"] intValue];
     return options;
 }
 @end

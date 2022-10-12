@@ -621,6 +621,12 @@ abstract class EMGroupManagerListener {
   /// - `false`: No.
   ///
   void onAllGroupMemberMuteStateChanged(String groupId, bool isAllMuted);
+
+  /// Occurs when the group detail information is updated.
+  void onSpecificationDidUpdate(EMGroup group);
+
+  /// Occurs when the group is enabled or disabled.
+  void onDisableChange(String groupId, bool isDisable);
 }
 
 ///
