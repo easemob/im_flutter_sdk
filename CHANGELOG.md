@@ -1,5 +1,11 @@
 ## NEXT
 
+## 3.9.7+1
+
+修复:
+  1. 修复 安卓 fcm send id偶现为空的问题；
+  2. 修复 安卓 `SilentModeResult` expireTs 为空的问题；
+
 ## 3.9.7
 
 新增特性:
