@@ -1362,9 +1362,7 @@ class EMSilentModeTimeHelper {
 class EMSilentModeResultHelper {
     static Map<String, Object> toJson(EMSilentModeResult modeResult) {
         Map<String, Object> data = new HashMap<>();
-        if (modeResult.getExpireTimestamp() != 0) {
-            data.put("expireTs", modeResult.getExpireTimestamp());
-        }
+        data.put("expireTs", modeResult.getExpireTimestamp());
         if (modeResult.getConversationId() != null) {
             data.put("conversationId", modeResult.getConversationId());
         }
