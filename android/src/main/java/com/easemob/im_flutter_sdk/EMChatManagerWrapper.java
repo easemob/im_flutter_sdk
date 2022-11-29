@@ -46,8 +46,6 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
 
-
-
     @Override
     public void onMethodCall(MethodCall call, Result result) {
         JSONObject param = (JSONObject) call.arguments;
@@ -239,6 +237,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         asyncRunnable(()->{
             try {
                 EMClient.getInstance().chatManager().ackGroupMessageRead(to, msgId, finalContent);
+                onSuccess(result, channelName, true);
             } catch (HyphenateException e) {
                 onError(result, e);
             }
@@ -436,6 +435,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void loadAllConversations(JSONObject param, String channelName, Result result) throws JSONException {
+        if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().length() == 0) {
+            onSuccess(result, channelName, new ArrayList<>());
+            return;
+        }
         List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
         asyncRunnable(() -> {
             boolean retry = false;
@@ -536,12 +539,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void searchChatMsgFromDB(JSONObject param, String channelName, Result result) throws JSONException {
         String keywords = param.getString("keywords");
-        long timeStamp = param.getLong("timeStamp");
+        long timestamp = param.getLong("timestamp");
         int count = param.getInt("maxCount");
         String from = param.getString("from");
         EMSearchDirection direction = searchDirectionFromString(param.getString("direction"));
         asyncRunnable(() -> {
-            List<EMMessage> msgList = EMClient.getInstance().chatManager().searchMsgFromDB(keywords, timeStamp, count,
+            List<EMMessage> msgList = EMClient.getInstance().chatManager().searchMsgFromDB(keywords, timestamp, count,
                     from, direction);
             List<Map> messages = new ArrayList<>();
             for (EMMessage msg : msgList) {

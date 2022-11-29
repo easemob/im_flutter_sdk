@@ -345,7 +345,7 @@
     __weak typeof(self) weakSelf = self;
     
     EMMessageBodyType type = [EMMessageBody typeFromString:param[@"msgType"]];
-    long long timeStamp = [param[@"timeStamp"] longLongValue];
+    long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *sender = param[@"sender"];
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
@@ -355,7 +355,7 @@
     {
         
         [conversation loadMessagesWithType:type
-                                 timestamp:timeStamp
+                                 timestamp:timestamp
                                      count:count
                                   fromUser:sender
                            searchDirection:direction
