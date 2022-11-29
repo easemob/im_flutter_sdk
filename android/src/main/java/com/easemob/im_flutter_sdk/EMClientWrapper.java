@@ -129,7 +129,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             else if (EMSDKMethod.renewToken.equals(call.method)){
                 renewToken(param, call.method, result);
             } else if (EMSDKMethod.startCallback.equals(call.method)) {
-                startCallback();
+                startCallback(param, call.method, result);
             }
             else  {
                 super.onMethodCall(call, result);
@@ -311,8 +311,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         });
     }
 
-    private void startCallback() {
+    private void startCallback(JSONObject param, String channelName, Result result) {
         EMListenerHandle.getInstance().startCallback();
+        onSuccess(result, channelName, null);
     }
 
     private void bindingManagers() {
