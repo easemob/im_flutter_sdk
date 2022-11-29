@@ -57,6 +57,7 @@
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
     options.area = [aJson[@"areaCode"] intValue];
+    
     return options;
 }
 @end

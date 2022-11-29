@@ -170,7 +170,9 @@ static EMClientWrapper *wrapper = nil;
              channelName:call.method
                   result:result];
     }else if ([ChatStartCallback isEqualToString:call.method]){
-        [self startCallBack];
+        [self startCallBack:call.arguments
+                channelName:call.method
+                     result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -439,8 +441,13 @@ static EMClientWrapper *wrapper = nil;
     }];
 }
 
-- (void)startCallBack {
+- (void)startCallBack:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    __weak typeof(self)weakSelf = self;
     [EMListenerHandle.sharedInstance startCallback];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
 }
 
 #pragma - mark EMClientDelegate
