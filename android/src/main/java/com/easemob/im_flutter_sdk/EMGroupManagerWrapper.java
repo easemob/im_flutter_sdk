@@ -979,7 +979,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAutoAcceptInvitationFromGroup");
+                            data.put("type", "groupAutoAcceptInvitation");
                             data.put("groupId", groupId);
                             data.put("inviter", inviter);
                             data.put("inviteMessage", inviteMessage);
