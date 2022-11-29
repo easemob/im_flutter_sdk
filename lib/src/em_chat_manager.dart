@@ -585,7 +585,7 @@ class EMChatManager {
   ///
   /// Param [keywords] The keywords in message.
   ///
-  /// Param [timeStamp] The Unix timestamp for search, in milliseconds.
+  /// Param [timestamp] The Unix timestamp for search, in milliseconds.
   ///
   /// Param [maxCount] The maximum number of messages to retrieve each time.
   ///
@@ -597,14 +597,14 @@ class EMChatManager {
   ///
   Future<List<EMMessage>> searchMsgFromDB(
     String keywords, {
-    int timeStamp = -1,
+    int timestamp = -1,
     int maxCount = 20,
     String from = '',
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
     Map req = Map();
     req['keywords'] = keywords;
-    req['timeStamp'] = timeStamp;
+    req['timestamp'] = timestamp;
     req['maxCount'] = maxCount;
     req['from'] = from;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
