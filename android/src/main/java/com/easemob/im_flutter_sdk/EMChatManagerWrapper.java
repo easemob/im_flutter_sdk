@@ -435,6 +435,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void loadAllConversations(JSONObject param, String channelName, Result result) throws JSONException {
+        if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().length() == 0) {
+            onSuccess(result, channelName, new ArrayList<>());
+            return;
+        }
         List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
         asyncRunnable(() -> {
             boolean retry = false;
