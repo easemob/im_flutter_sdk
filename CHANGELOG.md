@@ -1,5 +1,9 @@
 ## NEXT
 
+## 3.9.7+3
+修复：
+1. 安卓不会执行 onAutoAcceptInvitationFromGroup 回调；
+
 ## 3.9.7+2
 
 修复：
