@@ -586,7 +586,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().aysncMuteGroupMembers(groupId, members, duration, callBack);
+        EMClient.getInstance().groupManager().asyncMuteGroupMembers(groupId, members, duration, callBack);
     }
 
     private void unMuteMembers(JSONObject param, String channelName, Result result) throws JSONException {
