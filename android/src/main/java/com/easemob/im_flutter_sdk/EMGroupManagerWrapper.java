@@ -965,7 +965,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupGroupDestroyed");
+                            data.put("type", "groupDestroyed");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
