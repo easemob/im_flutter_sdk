@@ -1,5 +1,10 @@
 ## NEXT
 
+## 3.9.7+4
+修复：
+1. 安卓不执行onGroupDestroyed回调；
+2. 构造位置消息时无法设置buildingName；
+
 ## 3.9.7+3
 修复：
 1. 安卓不会执行 onAutoAcceptInvitationFromGroup 回调；
