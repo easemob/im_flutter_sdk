@@ -451,6 +451,7 @@ class EMMessage {
               latitude: latitude,
               longitude: longitude,
               address: address,
+              buildingName: buildingName,
             ));
 
   /// Creates a command message for sending.
