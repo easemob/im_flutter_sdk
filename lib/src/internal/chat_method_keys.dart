@@ -1,3 +1,4 @@
+/// @nodoc
 class ChatMethodKeys {
   /// EMClient methods
   static const String init = "init";

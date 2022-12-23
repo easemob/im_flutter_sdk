@@ -1,3 +1,4 @@
+/// @nodoc
 import 'package:flutter/services.dart';
 
 const channelPrefix = 'com.chat.im';

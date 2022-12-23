@@ -1,3 +1,4 @@
+/// @nodoc
 import 'inner_headers.dart';
 
 EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
