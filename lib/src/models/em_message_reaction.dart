@@ -79,7 +79,7 @@ class EMMessageReactionEvent {
     required this.reactions,
   });
 
-  /// nodoc
+  /// @nodoc
   factory EMMessageReactionEvent.fromJson(Map map) {
     String conversationId = map["conversationId"];
     String messageId = map["messageId"];

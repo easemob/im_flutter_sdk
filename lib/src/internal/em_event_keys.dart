@@ -1,3 +1,4 @@
+/// @nodoc
 class EMContactChangeEvent {
   static const String CONTACT_ADD = 'onContactAdded';
   static const String CONTACT_DELETE = 'onContactDeleted';
@@ -6,6 +7,7 @@ class EMContactChangeEvent {
   static const String INVITATION_DECLINED = 'onFriendRequestDeclined';
 }
 
+/// @nodoc
 class EMChatRoomEvent {
   static const String ON_CHAT_ROOM_DESTROYED = "chatroomDestroyed";
   static const String ON_MEMBER_JOINED = "chatroomMemberJoined";
@@ -26,6 +28,7 @@ class EMChatRoomEvent {
   static const String ON_ATTRIBUTES_REMOVED = "chatroomAttributesDidRemoved";
 }
 
+/// @nodoc
 class EMGroupChangeEvent {
   static const String ON_INVITATION_RECEIVED = "groupInvitationReceived";
   static const String ON_INVITATION_ACCEPTED = "groupInvitationAccepted";
