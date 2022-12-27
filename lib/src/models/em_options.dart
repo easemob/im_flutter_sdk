@@ -126,6 +126,9 @@ class EMOptions {
   /// 是否使用自定义 IM 服务的端口。用于私有化部署。
   final int? imPort;
 
+  /// 连接边缘节点区域区域，默认为AreaCodeGLOB，只有初始化 [EMClient.init] 时设置有效。
+  final int areaCode;
+
   EMPushConfig _pushConfig = EMPushConfig();
 
   /// 开启 Oppo 推送。
@@ -151,6 +154,14 @@ class EMOptions {
     _pushConfig.enableMiPush = true;
     _pushConfig.miAppId = appId;
     _pushConfig.miAppKey = appKey;
+  }
+
+  /// Enable MeiZu Push on MeiZu devices.
+  /// Param [appId] The app ID for MeiZu Push.
+  /// Param [appKey] The app key for MeiZu Push.
+  void enableMeiZuPush(String appId, String appKey) {
+    _pushConfig.mzAppId = appId;
+    _pushConfig.mzAppKey = appKey;
   }
 
   ///
@@ -190,6 +201,7 @@ class EMOptions {
   ///
   /// 设置推送。
   ///
+
   /// Param [appKey] 创建 app 时在 console 后台上注册的 app 唯一识别符。
   ///
   /// Param [autoLogin] 是否开启自动登录。
@@ -256,6 +268,7 @@ class EMOptions {
   ///
   /// Param [imServer] 私有部署时的 IM 服务器地址。
   ///
+  /// Param [areaCode] 设置链接区域，默认是AreaCodeGLOB。
   EMOptions({
     required this.appKey,
     this.autoLogin = true,
@@ -276,6 +289,7 @@ class EMOptions {
     this.restServer,
     this.imPort,
     this.imServer,
+    this.areaCode = AreaCode.GLOB,
   });
 
   /// @nodoc
@@ -302,6 +316,7 @@ class EMOptions {
       imServer: json.stringValue("imServer"),
       restServer: json.stringValue("restServer"),
       dnsUrl: json.stringValue("dnsUrl"),
+      areaCode: json.intValue("areaCode") ?? AreaCode.GLOB,
     );
 
     ret._pushConfig = EMPushConfig();
@@ -344,6 +359,7 @@ class EMOptions {
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();
+    data["areaCode"] = this.areaCode;
     return data;
   }
 

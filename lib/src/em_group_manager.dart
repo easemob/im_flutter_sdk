@@ -127,10 +127,17 @@ class EMGroupManager {
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
 
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
-    int pageSize = 200,
-    int pageNum = 1,
+    int pageSize = 20,
+    int pageNum = 0,
+    bool needMemberCount = false,
+    bool needRole = false,
   }) async {
-    Map req = {'pageSize': pageSize, 'pageNum': pageNum};
+    Map req = {
+      'pageSize': pageSize,
+      'pageNum': pageNum,
+      "needMemberCount": needMemberCount,
+      "needRole": needRole,
+    };
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getJoinedGroupsFromServer, req);
     try {
@@ -1377,6 +1384,15 @@ class EMGroupManager {
           bool isAllMuted = map["isMuted"] as bool;
           element.onAllGroupMemberMuteStateChanged?.call(groupId, isAllMuted);
           break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          element.onSpecificationDidUpdate?.call(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisabled"] as bool;
+          element.onDisableChanged?.call(groupId, isDisable);
+          break;
       }
     });
 
@@ -1510,6 +1526,15 @@ class EMGroupManager {
           String groupId = map["groupId"];
           bool isAllMuted = map["isMuted"] as bool;
           listener.onAllGroupMemberMuteStateChanged(groupId, isAllMuted);
+          break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          listener.onSpecificationDidUpdate(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisable"] as bool;
+          listener.onDisableChange(groupId, isDisable);
           break;
       }
     }

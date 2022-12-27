@@ -1,3 +1,4 @@
+/// @nodoc
 export '../em_listeners.dart';
 
 export 'chat_method_keys.dart';
@@ -45,3 +46,4 @@ export '../em_push_manager.dart';
 export '../em_userInfo_manager.dart';
 export '../em_push_manager.dart';
 export '../event_handler/manager_event_handler.dart';
+export '../tools/area_code.dart';

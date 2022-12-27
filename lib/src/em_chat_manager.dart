@@ -584,7 +584,7 @@ class EMChatManager {
   ///
   /// Param [keywords] 关键词。
   ///
-  /// Param [timeStamp] 搜索消息的时间点，Unix 时间戳。
+  /// Param [timestamp] 搜索消息的时间点，Unix 时间戳。
   ///
   /// Param [maxCount] 搜索结果的最大条数。
   ///
@@ -596,14 +596,14 @@ class EMChatManager {
   ///
   Future<List<EMMessage>> searchMsgFromDB(
     String keywords, {
-    int timeStamp = -1,
+    int timestamp = -1,
     int maxCount = 20,
     String from = '',
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
     Map req = Map();
     req['keywords'] = keywords;
-    req['timeStamp'] = timeStamp;
+    req['timestamp'] = timestamp;
     req['maxCount'] = maxCount;
     req['from'] = from;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";

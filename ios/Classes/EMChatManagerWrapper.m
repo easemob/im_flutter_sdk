@@ -648,12 +648,12 @@
                      result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *keywords = param[@"keywords"];
-    long long timeStamp = [param[@"timeStamp"] longLongValue];
+    long long timestamp = [param[@"timestamp"] longLongValue];
     int maxCount = [param[@"maxCount"] intValue];
     NSString *from = param[@"from"];
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     [EMClient.sharedClient.chatManager loadMessagesWithKeyword:keywords
-                                                     timestamp:timeStamp
+                                                     timestamp:timestamp
                                                          count:maxCount
                                                       fromUser:from
                                                searchDirection:direction

@@ -153,8 +153,12 @@ class _MyHomePageState extends State<MyHomePage> {
     EMOptions options = EMOptions(
       appKey: appKey,
       autoLogin: false,
+      debugModel: true,
     );
-    await EMClient.getInstance.init(options);
+
+    await EMClient.getInstance.init(
+      options,
+    );
   }
 
   void _addChatListener() {

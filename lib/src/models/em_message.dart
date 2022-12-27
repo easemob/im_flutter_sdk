@@ -435,6 +435,7 @@ class EMMessage {
               latitude: latitude,
               longitude: longitude,
               address: address,
+              buildingName: buildingName,
             ));
 
   /// 创建一条待发送的命令消息。

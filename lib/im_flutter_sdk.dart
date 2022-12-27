@@ -37,3 +37,4 @@ export 'src/models/em_chat_thread.dart';
 export 'src/models/chat_silent_mode.dart';
 export 'src/event_handler/manager_event_handler.dart';
 export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
+export 'src/tools/area_code.dart';

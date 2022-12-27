@@ -3,7 +3,3 @@
 @interface ImFlutterSdkPlugin : NSObject<FlutterPlugin>
 
 @end
-
-@interface FlutterAppDelegate(EaseMob)
-
-@end

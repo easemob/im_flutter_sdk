@@ -1,3 +1,4 @@
+/// @nodoc
 import 'inner_headers.dart';
 
 /// The push configuration class, which contains the push configuration information, such as the push style.

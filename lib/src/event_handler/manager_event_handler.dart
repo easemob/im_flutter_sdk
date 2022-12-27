@@ -384,6 +384,23 @@ class EMChatRoomEventHandler {
     String? participant,
   )? onRemovedFromChatRoom;
 
+  /// Occurs when the chat room specifications changes. All chat room members receive this event.
+  final void Function(EMChatRoom room)? onSpecificationChanged;
+
+  /// Occurs when the custom chat room attributes (key-value) are updated.
+  final void Function(
+    String roomId,
+    Map<String, String> attributes,
+    String from,
+  )? onAttributesUpdated;
+
+  /// Occurs when the custom chat room attributes (key-value) are removed.
+  final void Function(
+    String roomId,
+    List<String> removedKeys,
+    String from,
+  )? onAttributesRemoved;
+
   ///
   /// 聊天室事件监听器。
   ///
@@ -413,6 +430,12 @@ class EMChatRoomEventHandler {
   ///
   /// Param [onRemovedFromChatRoom] 被移出聊天室事件。
   ///
+  /// Param [onSpecificationChanged] The chat room specification changed callback.
+  ///
+  /// Param [onAttributesUpdated] The chat room attributes updated callback.
+  ///
+  /// Param [onAttributesRemoved] The chat room attributes removed callback.
+  ///
   EMChatRoomEventHandler({
     this.onAdminAddedFromChatRoom,
     this.onAdminRemovedFromChatRoom,
@@ -427,6 +450,9 @@ class EMChatRoomEventHandler {
     this.onMuteListRemovedFromChatRoom,
     this.onOwnerChangedFromChatRoom,
     this.onRemovedFromChatRoom,
+    this.onSpecificationChanged,
+    this.onAttributesUpdated,
+    this.onAttributesRemoved,
   });
 }
 
@@ -760,6 +786,17 @@ class EMGroupEventHandler {
     EMGroupSharedFile sharedFile,
   )? onSharedFileAddedFromGroup;
 
+  /// Occurs when the group detail information is updated.
+  final void Function(
+    EMGroup group,
+  )? onSpecificationDidUpdate;
+
+  /// Occurs when the group is enabled or disabled.
+  final void Function(
+    String groupId,
+    bool isDisable,
+  )? onDisableChanged;
+
   ///
   /// 群文件被删除事件。
   ///
@@ -823,6 +860,10 @@ class EMGroupEventHandler {
   ///
   /// Param [onUserRemovedFromGroup] 当前用户被移出群组。
   ///
+  /// Param [onSpecificationDidUpdate] Occurs when the group detail information is updated.
+  ///
+  /// Param [onDisableChanged] /// Occurs when the group is enabled or disabled.
+  ///
   EMGroupEventHandler({
     this.onAdminAddedFromGroup,
     this.onAdminRemovedFromGroup,
@@ -846,6 +887,8 @@ class EMGroupEventHandler {
     this.onSharedFileAddedFromGroup,
     this.onSharedFileDeletedFromGroup,
     this.onUserRemovedFromGroup,
+    this.onSpecificationDidUpdate,
+    this.onDisableChanged,
   });
 }
 

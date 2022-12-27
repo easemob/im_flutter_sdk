@@ -355,9 +355,18 @@
 
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:[param[@"pageNum"] intValue]
-                                                                 pageSize:[param[@"pageSize"] intValue]
-                                                               completion:^(NSArray *aList, EMError *aError)
+    
+    
+    int pageNum = [param[@"pageNum"] intValue];
+    int pageSize = [param[@"pageSize"] intValue];
+    BOOL needRole = [param[@"needRole"] boolValue];
+    BOOL needMumberCount = [param[@"needMumberCount"] boolValue];
+    
+    [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:pageNum
+                                                                 pageSize:pageSize
+                                                          needMemberCount:needMumberCount
+                                                                 needRole:needRole
+                                                               completion:^(NSArray<EMGroup *> *aList, EMError * _Nullable aError)
      {
         NSMutableArray *list = [NSMutableArray array];
         for (EMGroup *group in aList) {
@@ -367,8 +376,8 @@
                       channelName:aChannelName
                             error:aError
                            object:list];
-        
     }];
+
 }
 
 - (void)getPublicGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -935,15 +944,18 @@
 #pragma mark - EMGroupManagerDelegate
 
 - (void)groupInvitationDidReceive:(NSString *)aGroupId
-                          inviter:(NSString *)aInviter
-                          message:(NSString *)aMessage {
+                        groupName:(NSString * _Nonnull)aGroupName
+                          inviter:(NSString * _Nonnull)aInviter
+                          message:(NSString * _Nullable)aMessage
+{
 
     
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onInvitationReceived",
+            @"type":@"groupInvitationReceived",
             @"groupId":aGroupId,
+            @"groupName": aGroupName,
             @"inviter":aInviter,
             @"message":aMessage
         };
@@ -960,7 +972,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onInvitationAccepted",
+            @"type":@"groupInvitationAccepted",
             @"groupId":aGroup.groupId,
             @"invitee":aInvitee
         };
@@ -978,7 +990,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onInvitationDeclined",
+            @"type":@"groupInvitationDeclined",
             @"groupId":aGroup.groupId,
             @"invitee":aInvitee,
             @"reason":aReason
@@ -996,7 +1008,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onAutoAcceptInvitationFromGroup",
+            @"type":@"groupAutoAcceptInvitation",
             @"groupId":aGroup.groupId,
             @"message":aMessage,
             @"inviter":aInviter
@@ -1014,9 +1026,9 @@
     [EMListenerHandle.sharedInstance addHandle:^{
         NSString *type;
         if (aReason == EMGroupLeaveReasonBeRemoved) {
-            type = @"onUserRemoved";
+            type = @"groupUserRemoved";
         } else if (aReason == EMGroupLeaveReasonDestroyed) {
-            type = @"onGroupDestroyed";
+            type = @"groupDestroyed";
         }
         NSDictionary *map = @{
             @"type":type,
@@ -1037,7 +1049,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onRequestToJoinReceived",
+            @"type":@"groupRequestToJoinReceived",
             @"groupId":aGroup.groupId,
             @"applicant":aUsername,
             @"reason":aReason
@@ -1054,7 +1066,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onRequestToJoinDeclined",
+            @"type":@"groupRequestToJoinDeclined",
             @"groupId":aGroupId,
             @"reason":aReason
         };
@@ -1069,7 +1081,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onRequestToJoinAccepted",
+            @"type":@"groupRequestToJoinAccepted",
             @"groupId":aGroup.groupId,
             @"groupName":aGroup.groupName,
             @"accepter":aGroup.owner,
@@ -1087,7 +1099,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onMuteListAdded",
+            @"type":@"groupMuteListAdded",
             @"groupId":aGroup.groupId,
             @"mutes":aMutedMembers,
             @"muteExpire":[NSNumber numberWithInteger:aMuteExpire]
@@ -1102,7 +1114,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onMuteListRemoved",
+            @"type":@"groupMuteListRemoved",
             @"groupId":aGroup.groupId,
             @"mutes":aMutedMembers
         };
@@ -1118,7 +1130,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onWhiteListAdded",
+            @"type":@"groupWhiteListAdded",
             @"groupId":aGroup.groupId,
             @"whitelist":aMembers
         };
@@ -1134,7 +1146,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onWhiteListRemoved",
+            @"type":@"groupWhiteListRemoved",
             @"groupId":aGroup.groupId,
             @"whitelist":aMembers
         };
@@ -1150,7 +1162,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onAllMemberMuteStateChanged",
+            @"type":@"groupAllMemberMuteStateChanged",
             @"groupId":aGroup.groupId,
             @"isMuted":@(aMuted)
         };
@@ -1166,7 +1178,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onAdminAdded",
+            @"type":@"groupAdminAdded",
             @"groupId":aGroup.groupId,
             @"administrator":aAdmin
         };
@@ -1182,7 +1194,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onAdminRemoved",
+            @"type":@"groupAdminRemoved",
             @"groupId":aGroup.groupId,
             @"administrator":aAdmin
         };
@@ -1199,7 +1211,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onOwnerChanged",
+            @"type":@"groupOwnerChanged",
             @"groupId":aGroup.groupId,
             @"newOwner":aNewOwner,
             @"oldOwner":aOldOwner
@@ -1216,7 +1228,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onMemberJoined",
+            @"type":@"groupMemberJoined",
             @"groupId":aGroup.groupId,
             @"member":aUsername
         };
@@ -1232,7 +1244,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onMemberExited",
+            @"type":@"groupMemberExited",
             @"groupId":aGroup.groupId,
             @"member":aUsername
         };
@@ -1248,7 +1260,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onAnnouncementChanged",
+            @"type":@"groupAnnouncementChanged",
             @"groupId":aGroup.groupId,
             @"announcement":aAnnouncement
         };
@@ -1264,7 +1276,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onSharedFileAdded",
+            @"type":@"groupSharedFileAdded",
             @"groupId":aGroup.groupId,
             @"sharedFile":[aSharedFile toJson]
         };
@@ -1275,12 +1287,10 @@
 
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
              removedSharedFile:(NSString *)aFileId {
-
-    
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"onSharedFileDeleted",
+            @"type":@"groupSharedFileDeleted",
             @"groupId":aGroup.groupId,
             @"fileId":aFileId
         };
@@ -1289,5 +1299,30 @@
     }];
 }
 
+
+- (void)groupSpecificationDidUpdate:(EMGroup *)aGroup {
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"groupSpecificationDidUpdate",
+            @"group": [aGroup toJson]
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
+}
+- (void)groupStateChanged:(EMGroup *)aGroup
+               isDisabled:(BOOL)aDisabled {
+    __weak typeof(self) weakSelf = self;
+    [EMListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"groupStateChanged",
+            @"groupId":aGroup.groupId,
+            @"isDisabled":@(aDisabled)
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                         arguments:map];
+    }];
+}
 
 @end

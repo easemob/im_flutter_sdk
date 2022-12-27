@@ -1,5 +1,45 @@
 ## NEXT
 
+# 3.9.9
+修复：
+修复极端情况下 SDK 崩溃的问题。
+
+## 3.9.7+4
+修复：
+1. 安卓不执行onGroupDestroyed回调；
+2. 构造位置消息时无法设置buildingName；
+
+## 3.9.7+3
+修复：
+1. 安卓不会执行 onAutoAcceptInvitationFromGroup 回调；
+
+## 3.9.7+2
+
+修复：
+1. 修复 StartCallback() 不会回调的问题；
+2. 修复 iOS 根据时间获取消息失败的问题；
+
+## 3.9.7+1
+
+修复:
+  1. 修复 安卓 fcm send id偶现为空的问题；
+  2. 修复 安卓 `SilentModeResult` expireTs 为空的问题；
+
+## 3.9.7
+
+新增特性:
+  1. 新增聊天室自定义属性功能。
+  2. 新增 `areaCode` 方法限制连接边缘节点的范围。
+  3. `EMGroup` 中增加 `isDisabled` 属性显示群组禁用状态，需要开发者在服务端设置。该属性在调用 `EMGroupManager` 中的 `fetchGroupInfoFromServer` 方法获取群组详情时返回。
+
+优化：
+  1. 移除 SDK 一部分冗余日志。
+
+修复
+  1. 修复极少数场景下，从服务器获取较大数量的消息时失败的问题。
+  2. 修复数据统计不正确的问题。
+  3. 修复极少数场景下打印日志导致的崩溃。
+
 ## 3.9.5
 
 - 将 AddManagerListener 方法标为过期；
