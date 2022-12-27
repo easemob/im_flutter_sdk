@@ -586,7 +586,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             }
         };
 
-        EMClient.getInstance().groupManager().aysncMuteGroupMembers(groupId, members, duration, callBack);
+        EMClient.getInstance().groupManager().asyncMuteGroupMembers(groupId, members, duration, callBack);
     }
 
     private void unMuteMembers(JSONObject param, String channelName, Result result) throws JSONException {
@@ -965,7 +965,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupGroupDestroyed");
+                            data.put("type", "groupDestroyed");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -979,7 +979,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAutoAcceptInvitationFromGroup");
+                            data.put("type", "groupAutoAcceptInvitation");
                             data.put("groupId", groupId);
                             data.put("inviter", inviter);
                             data.put("inviteMessage", inviteMessage);
