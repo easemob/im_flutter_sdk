@@ -279,7 +279,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
         asyncRunnable(() -> {
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            if(msg == null) {
+                onSuccess(result, channelName, null);
+            }else {
+                onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            }
         });
     }
 
@@ -775,8 +779,9 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         };
 
         conversationListener = new EMConversationListener() {
+
             @Override
-            public void onCoversationUpdate() {
+            public void onConversationUpdate() {
                 Map<String, Object> data = new HashMap<>();
                 post(() -> channel.invokeMethod(EMSDKMethod.onConversationUpdate, data));
             }

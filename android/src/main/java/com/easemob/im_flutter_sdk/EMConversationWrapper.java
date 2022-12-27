@@ -210,7 +210,11 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         String msgId = params.getString("msg_id");
         asyncRunnable(()->{
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            if(msg == null) {
+                onSuccess(result, channelName, null);
+            }else {
+                onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            }
         });
     }
 
