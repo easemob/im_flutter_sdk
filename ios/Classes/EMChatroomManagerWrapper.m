@@ -539,7 +539,7 @@
     __weak typeof(self) weakSelf = self;
     
     NSArray *muteMembers = param[@"muteMembers"];
-    NSInteger muteMilliseconds = [param[@"duration"] integerValue];
+    long muteMilliseconds = [param[@"duration"] longValue];
     NSString *chatroomId = param[@"roomId"];
     [EMClient.sharedClient.roomManager muteMembers:muteMembers
                                   muteMilliseconds:muteMilliseconds
