@@ -188,7 +188,7 @@ class EMChatManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
-  Future<bool> sendGroupMessageReadAck(
+  Future<void> sendGroupMessageReadAck(
     String msgId,
     String groupId, {
     String? content,
@@ -203,7 +203,6 @@ class EMChatManager {
         await ChatChannel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(ChatMethodKeys.ackMessageRead);
     } on EMError catch (e) {
       throw e;
     }
