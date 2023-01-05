@@ -127,6 +127,8 @@ public class EMSDKMethod {
     static final String loadMsgWithMsgType = "loadMsgWithMsgType";
     static final String loadMsgWithTime = "loadMsgWithTime";
     static final String messageCount = "messageCount";
+    static final String removeMsgFromServerWithMsgList = "removeMsgFromServerWithMsgList";
+    static final String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
 
     // EMMessage method
     static final String getReactionList = "getReactionList";

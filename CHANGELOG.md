@@ -1,8 +1,16 @@
 ## NEXT
 
+
+# 3.9.9+1
+修复：
+1. 修复ios群已读回执不执行；
+
+新增：
+1. 增加会话根据时间删除服务器漫游消息api `EMConversation#removeServerMessageBeforeTimeStamp(timestamp)`。
+
 # 3.9.9
 修复：
-修复极端情况下 SDK 崩溃的问题。
+1.修复极端情况下 SDK 崩溃的问题。
 
 ## 3.9.7+4
 修复：
