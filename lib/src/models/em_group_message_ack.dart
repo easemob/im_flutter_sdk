@@ -22,7 +22,7 @@ class EMGroupMessageAck {
   ///
   /// **Return** The read receipt ID.
   ///
-  final String ackId;
+  final String? ackId;
 
   ///
   /// Gets the username of the user who sends the read receipt.
@@ -56,7 +56,7 @@ class EMGroupMessageAck {
   /// @nodoc
   factory EMGroupMessageAck.fromJson(Map map) {
     EMGroupMessageAck ack = EMGroupMessageAck._private(
-      ackId: map["ack_id"] as String,
+      ackId: map["ack_id"],
       messageId: map["msg_id"] as String,
       from: map["from"] as String,
       content: map["content"],
@@ -68,7 +68,7 @@ class EMGroupMessageAck {
   }
 
   EMGroupMessageAck._private({
-    required this.ackId,
+    this.ackId,
     required this.messageId,
     required this.from,
     required this.content,
