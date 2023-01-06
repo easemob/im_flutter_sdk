@@ -247,6 +247,8 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
+  /// Param [fetchMembers] Whether to get group members. By default, a list of 200 members is fetched.
+  ///
   /// **Return** The group instance.
   ///
   /// **Throws** A description of the exception. See [EMError].
