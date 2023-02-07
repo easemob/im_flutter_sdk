@@ -28,7 +28,7 @@ void main() {
 
 void initSDK() async {
   var options = EMOptions(
-    appKey: 'easemob-demo#easeim',
+    appKey: 'easemob-demo#flutter',
     deleteMessagesAsExitGroup: false,
     deleteMessagesAsExitChatRoom: false,
     autoAcceptGroupInvitation: true,

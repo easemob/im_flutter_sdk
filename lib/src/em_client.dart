@@ -25,7 +25,7 @@ class EMClient {
   final List<EMConnectionListener> _connectionListeners = [];
   final List<EMMultiDeviceListener> _multiDeviceListeners = [];
   final List<EMCustomListener> _customListeners = [];
-
+  
   EMOptions? _options;
 
   /// Gets the configurations.

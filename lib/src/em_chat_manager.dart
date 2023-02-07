@@ -24,8 +24,26 @@ class EMChatManager {
 
   final List<EMChatManagerListener> _messageListeners = [];
 
+  final Map<String, EMMessageCallbackEvent> _messageCallbackMap = {};
+
+  /// 添加消息状态变化回调
+  void addMessageCallbackEvent(String key, EMMessageCallbackEvent event) {
+    _messageCallbackMap[key] = event;
+  }
+
+  /// 移除消息状态变化回调
+  void removeMessageCallbackEvent(String key) {
+    _messageCallbackMap.remove(key);
+  }
+
+  /// 清除所有消息状态变化回调
+  void removeAllMessageCallEvents() {
+    _messageCallbackMap.clear();
+  }
+
   /// @nodoc
   EMChatManager() {
+    MessageCallBackManager.getInstance;
     _channel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -731,4 +749,56 @@ class EMChatManager {
       listener.onConversationRead(from, to);
     }
   }
+}
+
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
+
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      int? localTime = argMap['localTime'];
+      if (localTime == null) return;
+      String localId = localTime.toString();
+      EMClient.getInstance.chatManager._messageCallbackMap.values
+          .toList()
+          .forEach((element) {
+        if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+          int progress = argMap['progress'];
+          element.onProgress?.call(localId, progress);
+        } else if (call.method == ChatMethodKeys.onMessageError) {
+          EMMessage msg = EMMessage.fromJson(argMap['message']);
+          element.onError?.call(localId, msg);
+        } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+          EMMessage msg = EMMessage.fromJson(argMap['message']);
+          element.onSuccess?.call(localId, msg);
+        }
+      });
+
+      return null;
+    });
+  }
+}
+
+class EMMessageCallbackEvent {
+  EMMessageCallbackEvent({
+    this.onSuccess,
+    this.onError,
+    this.onProgress,
+  });
+
+  /// 发送成功回调
+  final void Function(String, EMMessage)? onSuccess;
+
+  /// 发送失败回调
+  final void Function(String, EMMessage)? onError;
+
+  /// 发送进度回调
+  final void Function(String, int)? onProgress;
 }

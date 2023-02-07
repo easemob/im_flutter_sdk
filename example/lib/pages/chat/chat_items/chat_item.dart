@@ -23,6 +23,7 @@ class ChatItem extends StatefulWidget {
     this.errorBtnOnTap,
     this.avatarOnTap,
   });
+
   final EMMessage msg;
 
   /// 长按消息bubble
@@ -44,21 +45,6 @@ class ChatItem extends StatefulWidget {
 class ChatItemState extends State<ChatItem> {
   void initState() {
     super.initState();
-    widget.msg.setMessageStatusCallBack(MessageStatusCallBack(onSuccess: () {
-      if (mounted) {
-        setState(() {});
-      }
-    }, onError: (error) {
-      if (mounted) {
-        setState(() {});
-      }
-    }, onReadAck: () {
-      if (mounted) {
-        setState(() {});
-      }
-    }, onProgress: (progress) {
-      debugPrint("progress --- $progress");
-    }));
   }
 
   @override
@@ -119,7 +105,6 @@ class ChatItemState extends State<ChatItem> {
   }
 
   void dispose() {
-    widget.msg.dispose();
     super.dispose();
   }
 

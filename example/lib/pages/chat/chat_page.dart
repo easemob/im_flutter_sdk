@@ -72,6 +72,22 @@ class _ChatPageState extends State<ChatPage>
     _moreView = ChatMoreView(items);
     // 添加环信回调监听
     EMClient.getInstance.chatManager.addChatManagerListener(this);
+    // 添加消息状态监听
+    EMClient.getInstance.chatManager.addMessageCallbackEvent(
+        widget.conversation.id,
+        EMMessageCallbackEvent(
+          onSuccess: (p0, p1) {
+            int index = _msgList.indexWhere((element) => p0 == element.localId);
+            _msgList.setRange(index, index + 1, [p1]);
+            setState(() {});
+          },
+          onError: (p0, p1) {
+            int index = _msgList.indexWhere((element) => p0 == element.localId);
+            _msgList.setRange(index, index + 1, [p1]);
+            setState(() {});
+          },
+          onProgress: (p0, p1) {},
+        ));
     EMClient.getInstance.chatRoomManager.addChatRoomChangeListener(this);
     // 设置所有消息已读
     widget.conversation.markAllMessagesAsRead();
@@ -108,6 +124,9 @@ class _ChatPageState extends State<ChatPage>
       EMClient.getInstance.chatRoomManager
           .leaveChatRoom(widget.conversation.id);
     }
+    // 删除消息状态监听
+    EMClient.getInstance.chatManager
+        .removeMessageCallbackEvent(widget.conversation.id);
     super.dispose();
   }
 
