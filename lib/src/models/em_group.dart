@@ -22,7 +22,7 @@ class EMGroup {
     this.isMemberOnly,
     this.isMemberAllowToInvite,
     this.extension,
-    this.isDisabled: false,
+    this.isDisabled = false,
   });
 
   ///

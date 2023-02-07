@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "<#Your AppKey#>";
+// var appKey = "<#Your AppKey#>";
+const String appKey = "easemob-demo#flutter";
 
 void main() {
   runApp(const MyApp());
@@ -162,6 +163,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addChatListener() {
+    EMClient.getInstance.chatManager.addMessageEvent(
+        "UNIQUE_HANDLER_ID",
+        ChatMessageEvent(
+          onSuccess: (msgId, msg) {
+            _addLogToConsole("send message succeed");
+          },
+          onProgress: (msgId, progress) {
+            _addLogToConsole("send message succeed");
+          },
+          onError: (msgId, msg, error) {
+            _addLogToConsole(
+              "send message failed, code: ${error.code}, desc: ${error.description}",
+            );
+          },
+        ));
+
     EMClient.getInstance.chatManager.addEventHandler(
       "UNIQUE_HANDLER_ID",
       EMChatEventHandler(
@@ -278,16 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
       targetId: _chatId,
       content: _messageContent,
     );
-    msg.setMessageStatusCallBack(MessageStatusCallBack(
-      onSuccess: () {
-        _addLogToConsole("send message succeed");
-      },
-      onError: (e) {
-        _addLogToConsole(
-          "send message failed, code: ${e.code}, desc: ${e.description}",
-        );
-      },
-    ));
+
     EMClient.getInstance.chatManager.sendMessage(msg);
   }
 

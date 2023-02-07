@@ -185,27 +185,30 @@
     
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param];
-    
+    __block NSString *msgId = msg.messageId;
+
     [EMClient.sharedClient.chatManager sendMessage:msg
                                           progress:^(int progress) {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
-            @"localTime":@(msg.localTime)
+            @"localId":msgId
         }];
     } completion:^(EMChatMessage *message, EMError *error) {
+        NSLog(@"msgid: end %@", msg.messageId);
+        NSLog(@"msgId: before %@", msgId);
         if (error) {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
-                @"localTime":@(msg.localTime),
+                @"localId":msgId,
                 @"message":[message toJson]
             }];
         }else {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
-                @"localTime":@(msg.localTime)
+                @"localId":msgId
             }];
         }
     }];
@@ -222,27 +225,27 @@
     
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param];
-    
+    __block NSString *msgId = msg.messageId;
     [EMClient.sharedClient.chatManager resendMessage:msg
                                             progress:^(int progress) {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
-            @"localTime":@(msg.localTime)
+            @"localId":msgId
         }];
     } completion:^(EMChatMessage *message, EMError *error) {
         if (error) {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
-                @"localTime":@(msg.localTime),
+                @"localId":msgId,
                 @"message":[message toJson]
             }];
         }else {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
-                @"localTime":@(msg.localTime)
+                @"localId":msgId
             }];
         }
     }];

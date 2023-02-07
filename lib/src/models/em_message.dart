@@ -126,26 +126,14 @@ class EMMessage {
   late EMMessageBody body;
 
   ///
-  /// Sets the message status change callback.
-  /// Your app should set messageStatusCallBack to get the message status and then refresh the UI accordingly.
-  ///
-  MessageStatusCallBack? _messageStatusCallBack;
-
-  ///
   /// Message Online Status
   ///
   /// Local database does not store. The default value for reading or pulling roaming messages from the database is YES
   ///
   late final bool onlineState;
 
-  void setMessageStatusCallBack(MessageStatusCallBack? callback) {
-    _messageStatusCallBack = callback;
-    if (callback != null) {
-      MessageCallBackManager.getInstance.addMessage(this);
-    } else {
-      MessageCallBackManager.getInstance.removeMessage(localTime.toString());
-    }
-  }
+  @Deprecated('Switch ChatManager#addMessageEvent to instead.')
+  void setMessageStatusCallBack(MessageStatusCallBack? callback) {}
 
   EMMessage._private();
 
@@ -187,49 +175,7 @@ class EMMessage {
     this.onlineState = true;
   }
 
-  void dispose() {
-    MessageCallBackManager.getInstance.removeMessage(localTime.toString());
-  }
-
-  void _onMessageError(Map<String, dynamic> map) {
-    EMMessage msg = EMMessage.fromJson(map['message']);
-    this._msgId = msg.msgId;
-    this.status = msg.status;
-    this.body = msg.body;
-    _messageStatusCallBack?.onError?.call(EMError.fromJson(map['error']));
-    return null;
-  }
-
-  void _onMessageProgressChanged(Map<String, dynamic> map) {
-    int progress = map['progress'];
-    _messageStatusCallBack?.onProgress?.call(progress);
-    return null;
-  }
-
-  void _onMessageSuccess(Map<String, dynamic> map) {
-    EMMessage msg = EMMessage.fromJson(map['message']);
-    this._msgId = msg.msgId;
-    this.status = msg.status;
-    this.body = msg.body;
-    _messageStatusCallBack?.onSuccess?.call();
-
-    return null;
-  }
-
-  void _onMessageReadAck(Map<String, dynamic> map) {
-    EMMessage msg = EMMessage.fromJson(map);
-    this.hasReadAck = msg.hasReadAck;
-    _messageStatusCallBack?.onReadAck?.call();
-
-    return null;
-  }
-
-  void _onMessageDeliveryAck(Map<String, dynamic> map) {
-    EMMessage msg = EMMessage.fromJson(map);
-    this.hasDeliverAck = msg.hasDeliverAck;
-    _messageStatusCallBack?.onDeliveryAck?.call();
-    return null;
-  }
+  void dispose() {}
 
   ///
   /// Creates a text message for sending.
@@ -667,47 +613,6 @@ class EMMessage {
       }
     } on EMError catch (e) {
       throw e;
-    }
-  }
-}
-
-class MessageCallBackManager {
-  static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _emMessageChannel =
-      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
-  Map<String, EMMessage> cacheHandleMap = {};
-  static MessageCallBackManager? _instance;
-  static MessageCallBackManager get getInstance =>
-      _instance = _instance ?? MessageCallBackManager._internal();
-
-  MessageCallBackManager._internal() {
-    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
-      Map<String, dynamic> argMap = call.arguments;
-      int? localTime = argMap['localTime'];
-      EMMessage? handle = cacheHandleMap[localTime.toString()];
-
-      if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
-        return handle?._onMessageProgressChanged(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageError) {
-        return handle?._onMessageError(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageSuccess) {
-        return handle?._onMessageSuccess(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageReadAck) {
-        return handle?._onMessageReadAck(argMap);
-      } else if (call.method == ChatMethodKeys.onMessageDeliveryAck) {
-        return handle?._onMessageDeliveryAck(argMap);
-      }
-      return null;
-    });
-  }
-
-  void addMessage(EMMessage message) {
-    cacheHandleMap[message.localTime.toString()] = message;
-  }
-
-  void removeMessage(String key) {
-    if (cacheHandleMap.containsKey(key)) {
-      cacheHandleMap.remove(key);
     }
   }
 }
