@@ -98,13 +98,21 @@ class EMChatManager {
   /// For attachment messages such as voice, image, or video messages, the SDK automatically uploads the attachment.
   /// You can set whether to upload the attachment to the chat sever using [EMOptions.serverTransfer].
   ///
-  /// To listen for the status of sending messages, call [EMMessage.setMessageStatusCallBack].
+  /// To listen for the status of sending messages, call [EMChatManager.addMessageEvent].
   ///
   /// Param [message] The message object to be sent: [EMMessage].
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
-  Future<EMMessage> sendMessage(EMMessage message) async {
+  Future<EMMessage> sendMessage(
+    EMMessage message, {
+    void Function(
+      void Function(EMMessage)? onSuccess,
+      void Function(EMMessage)? onError,
+      void Function(int)? onProgress,
+    )?
+        callback,
+  }) async {
     message.status = MessageStatus.PROGRESS;
     Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
@@ -1077,6 +1085,30 @@ class EMChatManager {
       throw e;
     }
   }
+
+  void addMessageEvent(String identifier, ChatMessageEvent event) {
+    MessageCallBackManager.getInstance.addMessageEvent(identifier, event);
+  }
+
+  void removeMessageEvent(String identifier) {
+    MessageCallBackManager.getInstance.removeMessageEvent(identifier);
+  }
+
+  void clearMessageEvent() {
+    MessageCallBackManager.getInstance.clearAllMessageEvents();
+  }
+}
+
+class ChatMessageEvent {
+  ChatMessageEvent({
+    this.onSuccess,
+    this.onError,
+    this.onProgress,
+  });
+
+  final void Function(String msgId, EMMessage msg)? onSuccess;
+  final void Function(String msgId, EMMessage msg, EMError error)? onError;
+  final void Function(String msgId, int progress)? onProgress;
 }
 
 extension ChatManagerDeprecated on EMChatManager {
@@ -1109,5 +1141,52 @@ extension ChatManagerDeprecated on EMChatManager {
   @Deprecated("Use #clearEventHandlers to instead")
   void clearAllChatManagerListeners() {
     _listeners.clear();
+  }
+}
+
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  Map<String, ChatMessageEvent> cacheHandleMap = {};
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
+
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      String? localId = argMap['localId'];
+      if (localId == null) return;
+      cacheHandleMap.forEach((key, value) {
+        if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+          int progress = argMap["progress"];
+          value.onProgress?.call(localId, progress);
+        } else if (call.method == ChatMethodKeys.onMessageError) {
+          EMMessage msg = EMMessage.fromJson(argMap['message']);
+          EMError err = EMError.fromJson(argMap['error']);
+          value.onError?.call(localId, msg, err);
+        } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+          EMMessage msg = EMMessage.fromJson(argMap['message']);
+          value.onSuccess?.call(localId, msg);
+        }
+      });
+
+      return null;
+    });
+  }
+
+  void addMessageEvent(String key, ChatMessageEvent event) {
+    cacheHandleMap[key] = event;
+  }
+
+  void removeMessageEvent(String key) {
+    if (cacheHandleMap.containsKey(key)) {
+      cacheHandleMap.remove(key);
+    }
+  }
+
+  void clearAllMessageEvents() {
+    cacheHandleMap.clear();
   }
 }

@@ -1,8 +1,10 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 library im_flutter_sdk;
 
 export 'src/em_client.dart';
 
-export 'src/em_chat_manager.dart';
+export 'src/em_chat_manager.dart' hide MessageCallBackManager;
 export 'src/em_chat_thread_manager.dart';
 export 'src/em_contact_manager.dart';
 export 'src/em_group_manager.dart';
@@ -30,7 +32,7 @@ export 'src/models/em_group_shared_file.dart' show EMGroupSharedFile;
 export 'src/models/em_group_options.dart' show EMGroupOptions;
 export 'src/models/em_chat_enums.dart';
 
-export 'src/models/em_message.dart' hide MessageCallBackManager;
+export 'src/models/em_message.dart';
 export 'src/models/em_download_callback.dart' show EMDownloadCallback;
 export 'src/models/em_message_reaction.dart';
 export 'src/models/em_chat_thread.dart';

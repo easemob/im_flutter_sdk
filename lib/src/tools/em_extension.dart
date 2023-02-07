@@ -154,7 +154,7 @@ extension MapExtension on Map {
     return ret;
   }
 
-  List<T>? getList<T>(String key, {valueCallback: MapResultCallback}) {
+  List<T>? getList<T>(String key, {valueCallback = MapResultCallback}) {
     List<T>? ret;
     if (this.containsKey(key)) {
       List list = this[key];
