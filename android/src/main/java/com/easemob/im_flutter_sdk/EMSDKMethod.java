@@ -87,6 +87,9 @@ public class EMSDKMethod {
     static final String fetchReactionList = "fetchReactionList";
     static final String fetchReactionDetail = "fetchReactionDetail";
     static final String reportMessage = "reportMessage";
+    static final String fetchConversationsFromServerWithPage = "fetchConversationsFromServerWithPage";
+    static final String removeMessagesFromServerWithMsgIds = "removeMessagesFromServerWithMsgIds";
+    static final String removeMessagesFromServerWithTs = "removeMessagesFromServerWithTs";
 
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
