@@ -60,8 +60,8 @@ class EMGroupMessageAck {
       messageId: map["msg_id"] as String,
       from: map["from"] as String,
       content: map["content"],
-      readCount: map.getIntValue("count", defaultValue: 0)!,
-      timestamp: map.getIntValue("timestamp", defaultValue: 0)!,
+      readCount: map["count"] ?? 0,
+      timestamp: map["timestamp"] ?? 0,
     );
 
     return ack;

@@ -57,12 +57,11 @@ class ChatSilentModeParam {
 
   Map toJson() {
     Map data = Map();
-    data.setValueWithOutNull(
-        "paramType", chatSilentModeParamTypeToInt(_paramType));
-    data.setValueWithOutNull("remindType", chatPushRemindTypeToInt(remindType));
-    data.setValueWithOutNull("startTime", startTime?.toJson());
-    data.setValueWithOutNull("endTime", endTime?.toJson());
-    data.setValueWithOutNull("duration", silentDuration);
+    data.add("paramType", chatSilentModeParamTypeToInt(_paramType));
+    data.add("remindType", chatPushRemindTypeToInt(remindType));
+    data.add("startTime", startTime?.toJson());
+    data.add("endTime", endTime?.toJson());
+    data.add("duration", silentDuration);
     return data;
   }
 }

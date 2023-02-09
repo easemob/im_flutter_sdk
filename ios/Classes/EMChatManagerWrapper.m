@@ -864,6 +864,8 @@
     int pageSize = [param[@"pageSize"] intValue];
     int pageNum = [param[@"pageNum"] intValue];
     
+    __weak typeof(self) weakSelf = self;
+    
     [EMClient.sharedClient.chatManager getConversationsFromServerByPage:pageNum
                                                                pageSize:pageSize
                                                              completion:^(NSArray<EMConversation *> * _Nullable aConversations, EMError * _Nullable aError)
@@ -880,10 +882,10 @@
             [conList addObject:[conversation toJson]];
         }
         
-        [self wrapperCallBack:result
-                  channelName:aChannelName
-                        error:aError
-                       object:conList];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:conList];
     }];
 }
 

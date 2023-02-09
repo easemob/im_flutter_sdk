@@ -25,14 +25,14 @@ class EMUserInfo {
   factory EMUserInfo.fromJson(Map map) {
     EMUserInfo info = EMUserInfo._private(
       map["userId"],
-      nickName: map.getStringValue("nickName"),
-      avatarUrl: map.getStringValue("avatarUrl"),
-      mail: map.getStringValue("mail"),
-      phone: map.getStringValue("phone"),
-      gender: map.getIntValue("gender", defaultValue: 0)!,
-      sign: map.getStringValue("sign"),
-      birth: map.getStringValue("birth"),
-      ext: map.getStringValue("ext"),
+      nickName: map["nickName"],
+      avatarUrl: map["avatarUrl"],
+      mail: map["mail"],
+      phone: map["phone"],
+      gender: map["gender"] ?? 0,
+      sign: map["sign"],
+      birth: map["birth"],
+      ext: map["ext"],
     );
     return info;
   }

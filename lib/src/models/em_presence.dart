@@ -30,11 +30,10 @@ class EMPresence {
 
   /// @nodoc
   factory EMPresence.fromJson(Map map) {
-    String publisher = map.getStringValue("publisher", defaultValue: "")!;
-    String statusDescription =
-        map.getStringValue("statusDescription", defaultValue: "")!;
-    int latestTime = map.getIntValue("lastTime", defaultValue: 0)!;
-    int expiryTime = map.getIntValue("expiryTime", defaultValue: 0)!;
+    String publisher = map["publisher"] ?? "";
+    String statusDescription = map["statusDescription"] ?? "";
+    int latestTime = map["lastTime"] ?? 0;
+    int expiryTime = map["expiryTime"] ?? 0;
     Map<String, int>? statusDetails = map["statusDetails"]?.cast<String, int>();
     return EMPresence._private(
         publisher, statusDescription, statusDetails, latestTime, expiryTime);
@@ -64,7 +63,7 @@ class EMPresenceStatusDetail {
   /// @nodoc
   factory EMPresenceStatusDetail.fromJson(Map map) {
     String device = map["device"];
-    int status = map.getIntValue("status", defaultValue: 0)!;
+    int status = map["status"] ?? 0;
     return EMPresenceStatusDetail._private(device, status);
   }
 }

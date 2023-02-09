@@ -29,18 +29,17 @@ class EMChatRoom {
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private(
         roomId: map["roomId"],
-        name: map.getStringValue("name"),
-        description: map.getStringValue("desc"),
-        owner: map.getStringValue("owner"),
-        memberCount: map.getIntValue("memberCount"),
-        maxUsers: map.getIntValue("maxUsers"),
-        adminList: map.listValue<String>("adminList"),
-        memberList: map.listValue<String>("memberList"),
-        blockList: map.listValue<String>("blockList"),
-        muteList: map.listValue<String>("muteList"),
-        announcement: map.getStringValue("announcement"),
-        permissionType:
-            chatRoomPermissionTypeFromInt(map.getIntValue("permissionType")),
+        name: map["name"],
+        description: map["desc"],
+        owner: map["owner"],
+        memberCount: map["memberCount"],
+        maxUsers: map["maxUsers"],
+        adminList: map["adminList"],
+        memberList: map["memberList"],
+        blockList: map["blockList"],
+        muteList: map["muteList"],
+        announcement: map["announcement"],
+        permissionType: chatRoomPermissionTypeFromInt(map["permissionType"]),
         isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
 
@@ -48,17 +47,17 @@ class EMChatRoom {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['roomId'] = roomId;
-    data.setValueWithOutNull("name", name);
-    data.setValueWithOutNull("desc", description);
-    data.setValueWithOutNull("owner", owner);
-    data.setValueWithOutNull("memberCount", memberCount);
-    data.setValueWithOutNull("maxUsers", maxUsers);
-    data.setValueWithOutNull("adminList", adminList);
-    data.setValueWithOutNull("memberList", memberList);
-    data.setValueWithOutNull("blockList", blockList);
-    data.setValueWithOutNull("muteList", muteList);
-    data.setValueWithOutNull("announcement", announcement);
-    data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
+    data.add("name", name);
+    data.add("desc", description);
+    data.add("owner", owner);
+    data.add("memberCount", memberCount);
+    data.add("maxUsers", maxUsers);
+    data.add("adminList", adminList);
+    data.add("memberList", memberList);
+    data.add("blockList", blockList);
+    data.add("muteList", muteList);
+    data.add("announcement", announcement);
+    data.add("isAllMemberMuted", isAllMemberMuted);
     data['permissionType'] = chatRoomPermissionTypeToInt(permissionType);
 
     return data;

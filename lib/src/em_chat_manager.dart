@@ -205,7 +205,7 @@ class EMChatManager {
       "msg_id": msgId,
       "group_id": groupId,
     };
-    req.setValueWithOutNull("content", content);
+    req.add("content", content);
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
@@ -654,7 +654,7 @@ class EMChatManager {
   }) async {
     Map req = {"msg_id": msgId, "group_id": groupId};
     req["pageSize"] = pageSize;
-    req.setValueWithOutNull("ack_id", startAckId);
+    req.add("ack_id", startAckId);
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
@@ -972,7 +972,7 @@ class EMChatManager {
       "msgIds": messageIds,
       "chatType": chatTypeToInt(chatType),
     };
-    req.setValueWithOutNull("groupId", groupId);
+    req.add("groupId", groupId);
     Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.fetchReactionList,
       req,
@@ -1019,8 +1019,8 @@ class EMChatManager {
       "msgId": messageId,
       "reaction": reaction,
     };
-    req.setValueWithOutNull("cursor", cursor);
-    req.setValueWithOutNull("pageSize", pageSize);
+    req.add("cursor", cursor);
+    req.add("pageSize", pageSize);
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.fetchReactionDetail, req);
 

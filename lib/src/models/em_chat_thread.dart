@@ -116,7 +116,7 @@ class EMChatThreadEvent {
         break;
     }
 
-    EMChatThread? chatThread = map.getValueWithKey<EMChatThread>(
+    EMChatThread? chatThread = map.getValue<EMChatThread>(
       "thread",
       callback: (map) {
         if (map == null) {

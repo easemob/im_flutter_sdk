@@ -42,8 +42,7 @@ class EMMessageReaction {
     String reaction = map["reaction"];
     int count = map["count"];
 
-    bool isAddedBySelf =
-        map.getBoolValue("isAddedBySelf", defaultValue: false)!;
+    bool isAddedBySelf = map["isAddedBySelf"] ?? false;
     List<String> userList = [];
     List<String>? tmp = map.getList("userList", valueCallback: (str) {
       return str;
