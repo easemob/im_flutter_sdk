@@ -114,7 +114,7 @@ class EMChatThreadManager {
     int limit = 20,
   }) async {
     Map req = {"pageSize": limit};
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchJoinedChatThreads, req);
     try {
@@ -151,7 +151,7 @@ class EMChatThreadManager {
       "parentId": parentId,
       "pageSize": limit,
     };
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchChatThreadsWithParentId, req);
     try {
@@ -188,7 +188,7 @@ class EMChatThreadManager {
       "parentId": parentId,
       "pageSize": limit,
     };
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchJoinedChatThreadsWithParentId, req);
     try {
@@ -227,7 +227,7 @@ class EMChatThreadManager {
       "pageSize": limit,
       "threadId": chatThreadId,
     };
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.fetchChatThreadMember,
       req,
@@ -267,9 +267,7 @@ class EMChatThreadManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      Map? map = result.getMapValue(
-        ChatMethodKeys.fetchLastMessageWithChatThreads,
-      );
+      Map? map = result["ChatMethodKeys.fetchLastMessageWithChatThreads"];
       Map<String, EMMessage> ret = {};
       if (map == null) {
         return ret;

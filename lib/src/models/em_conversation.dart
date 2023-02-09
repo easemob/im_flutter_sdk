@@ -23,7 +23,7 @@ class EMConversation {
       map["con_id"],
       conversationTypeFromInt(map["type"]),
       ext,
-      map.getBoolValue("isThread", defaultValue: false)!,
+      map["isThread"] ?? false,
     );
 
     return ret;
@@ -66,7 +66,7 @@ class EMConversation {
 
   Future<void> setExt(Map<String, String>? ext) async {
     Map req = this._toJson();
-    req.setValueWithOutNull("ext", ext);
+    req.add("ext", ext);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.syncConversationExt, req);
     try {
@@ -342,7 +342,7 @@ class EMConversation {
     req['timestamp'] = timestamp;
     req['count'] = count;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-    req.setValueWithOutNull("sender", sender);
+    req.add("sender", sender);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
     try {
@@ -434,7 +434,7 @@ class EMConversation {
     req['count'] = count;
     req['timestamp'] = timestamp;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-    req.setValueWithOutNull("sender", sender);
+    req.add("sender", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);
