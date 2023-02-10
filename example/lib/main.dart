@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-// var appKey = "<#Your AppKey#>";
-const String appKey = "easemob-demo#flutter";
+var appKey = "<#Your AppKey#>";
 
 void main() {
   runApp(const MyApp());
