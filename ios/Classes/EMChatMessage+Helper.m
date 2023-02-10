@@ -55,6 +55,7 @@
     // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
     msg.isChatThreadMessage = [aJson[@"isThread"] boolValue];
     msg.ext = aJson[@"attributes"];
+    msg.priority = [aJson[@"chatroomMessagePriority"] integerValue];
     return msg;
 }
 

@@ -405,7 +405,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         String conversationId = params.getString("convId");
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
         EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conversationId, type, true);
-        long timestamp = Long.parseLong(params.getString("timestamp"));
+        long timestamp = 0;
+        if(params.has("timestamp")) {
+            timestamp = params.getLong("timestamp");
+        }
         conversation.removeMessagesFromServer(timestamp, new EMWrapperCallBack(result, channelName, null));
     }
 
