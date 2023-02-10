@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import "dart:async";
+import 'dart:ffi';
 
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
@@ -507,6 +508,71 @@ class EMChatManager {
         conversationList.add(EMConversation.fromJson(element));
       });
       return conversationList;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<List<EMConversation>> fetchConversationListFromServer({
+    int pageNum = 1,
+    int pageSize = 20,
+  }) async {
+    Map request = {
+      "pageNum": pageNum,
+      "pageSize": pageSize,
+    };
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.fetchConversationsFromServerWithPage,
+      request,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMConversation> conversationList = [];
+      result[ChatMethodKeys.fetchConversationsFromServerWithPage]
+          ?.forEach((element) {
+        conversationList.add(EMConversation.fromJson(element));
+      });
+      return conversationList;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> removeMessagesFromServerWithMsgIds(
+      {required String conversationId,
+      required EMConversationType type,
+      required List<String> msgIds}) async {
+    Map request = {
+      "convId": conversationId,
+      "type": type.index,
+      "msgIds": msgIds,
+    };
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.removeMessagesFromServerWithMsgIds,
+      request,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> removeMessagesFromServerWithTs(
+      {required String conversationId,
+      required EMConversationType type,
+      required int timestamp}) async {
+    Map request = {
+      "convId": conversationId,
+      "type": type.index,
+      "timestamp": timestamp,
+    };
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.removeMessagesFromServerWithTs,
+      request,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
       throw e;
     }

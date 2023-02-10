@@ -132,7 +132,11 @@ class EMMessage {
   ///
   late final bool onlineState;
 
-  ChatRoomMessagePriority priority = ChatRoomMessagePriority.High;
+  late ChatRoomMessagePriority? _priority;
+
+  set chatroomMessagePriority(ChatRoomMessagePriority priority) {
+    _priority = priority;
+  }
 
   @Deprecated('Switch ChatManager#addMessageEvent to instead.')
   void setMessageStatusCallBack(MessageStatusCallBack? callback) {}
@@ -467,6 +471,9 @@ class EMMessage {
     data.add("serverTime", serverTime);
     data.add("status", messageStatusToInt(this.status));
     data.add("isThread", isChatThreadMessage);
+    if (_priority != null) {
+      data.add("chatroomMessagePriority", _priority!.index);
+    }
 
     return data;
   }
