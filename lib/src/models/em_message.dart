@@ -132,7 +132,7 @@ class EMMessage {
   ///
   late final bool onlineState;
 
-  late ChatRoomMessagePriority? _priority;
+  ChatRoomMessagePriority? _priority;
 
   set chatroomMessagePriority(ChatRoomMessagePriority priority) {
     _priority = priority;
