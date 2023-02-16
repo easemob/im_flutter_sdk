@@ -167,11 +167,17 @@
                 channelName:call.method
                      result:result];
     } else if ([ChatFetchConversationsFromServerWithPage isEqualToString: call.method]) {
-        
+        [self fetchConversationsFromServerWithPage:call.arguments
+                                       channelName:call.method
+                                            result:result];
     } else if ([ChatRemoveMessagesFromServerWithMsgIds isEqualToString: call.method]) {
-        
-    } else if   ([ChatRemoveMessagesFromServerWithTs isEqualToString: call.method]) {
-        
+        [self removeMessagesFromServerWithMsgIds:call.arguments
+                                     channelName:call.method
+                                          result:result];
+    } else if ([ChatRemoveMessagesFromServerWithTs isEqualToString: call.method]) {
+        [self removeMessagesFromServerWithTs:call.arguments
+                                 channelName:call.method
+                                      result:result];
     }
     else {
         [super handleMethodCall:call result:result];
