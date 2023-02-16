@@ -720,7 +720,7 @@
                           channelName:(NSString *)aChannelName
                                result:(FlutterResult)result
 {
-    NSUInteger timestamp = [param[@"timestamp"] unsignedIntValue];
+    long timestamp = [param[@"timestamp"] longValue];
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.chatManager deleteMessagesBefore:timestamp completion:^(EMError *error) {
         [weakSelf wrapperCallBack:result
