@@ -538,7 +538,7 @@ class EMChatManager {
     }
   }
 
-  Future<void> removeMessagesFromServerWithMsgIds(
+  Future<void> deleteRemoteMessagesWithIds(
       {required String conversationId,
       required EMConversationType type,
       required List<String> msgIds}) async {
@@ -558,7 +558,7 @@ class EMChatManager {
     }
   }
 
-  Future<void> removeMessagesFromServerWithTs(
+  Future<void> deleteRemoteMessagesWithTs(
       {required String conversationId,
       required EMConversationType type,
       required int timestamp}) async {
