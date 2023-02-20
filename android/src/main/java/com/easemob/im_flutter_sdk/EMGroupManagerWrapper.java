@@ -45,8 +45,6 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 getGroupWithId(param, call.method, result);
             } else if (EMSDKMethod.getJoinedGroups.equals(call.method)) {
                 getJoinedGroups(param, call.method, result);
-            } else if (EMSDKMethod.getGroupsWithoutPushNotification.equals(call.method)) {
-                getGroupsWithoutPushNotification(param, call.method, result);
             } else if (EMSDKMethod.getJoinedGroupsFromServer.equals(call.method)) {
                 getJoinedGroupsFromServer(param, call.method, result);
             } else if (EMSDKMethod.getPublicGroupsFromServer.equals(call.method)) {
@@ -157,14 +155,6 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             groupList.add(EMGroupHelper.toJson(group));
         }
         onSuccess(result, channelName, groupList);
-    }
-
-    private void getGroupsWithoutPushNotification(JSONObject param, String channelName, Result result)
-            throws JSONException {
-        asyncRunnable(() -> {
-            List<String> groups = EMClient.getInstance().pushManager().getNoPushGroups();
-            onSuccess(result, channelName, groups);
-        });
     }
 
     private void getJoinedGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {

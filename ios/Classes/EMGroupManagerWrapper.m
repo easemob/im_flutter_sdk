@@ -50,12 +50,7 @@
                   channelName:call.method
                        result:result];
     }
-    else if ([ChatGetGroupsWithoutPushNotification isEqualToString:call.method])
-    {
-        [self getGroupsWithoutPushNotification:call.arguments
-                                   channelName:call.method
-                                        result:result];
-    }
+
     else if ([ChatGetJoinedGroupsFromServer isEqualToString:call.method])
     {
         [self getJoinedGroupsFromServer:call.arguments
@@ -336,20 +331,6 @@
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
-                       object:list];
-}
-
-- (void)getGroupsWithoutPushNotification:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    EMError *error = nil;
-    NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&error];
-    NSMutableArray *list = [NSMutableArray array];
-    for (EMGroup *group in groups) {
-        [list addObject:[group toJson]];
-    }
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:error
                        object:list];
 }
 
