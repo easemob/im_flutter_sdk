@@ -180,7 +180,6 @@ public class EMSDKMethod {
     /// EMGroupManager
     static final String getGroupWithId = "getGroupWithId";
     static final String getJoinedGroups = "getJoinedGroups";
-    static final String getGroupsWithoutPushNotification = "getGroupsWithoutPushNotification";
     static final String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
     static final String getPublicGroupsFromServer = "getPublicGroupsFromServer";
     static final String createGroup = "createGroup";

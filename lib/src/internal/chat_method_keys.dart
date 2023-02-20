@@ -202,8 +202,6 @@ class ChatMethodKeys {
   /// EMGroupManager
   static const String getGroupWithId = "getGroupWithId";
   static const String getJoinedGroups = "getJoinedGroups";
-  static const String getGroupsWithoutPushNotification =
-      "getGroupsWithoutPushNotification";
   static const String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
   static const String getPublicGroupsFromServer = "getPublicGroupsFromServer";
   static const String createGroup = "createGroup";

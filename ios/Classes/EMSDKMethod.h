@@ -195,7 +195,6 @@ static NSString *const ChatChatroomChanged = @"onChatRoomChanged";
 
 static NSString *const ChatGetGroupWithId = @"getGroupWithId";
 static NSString *const ChatGetJoinedGroups = @"getJoinedGroups";
-static NSString *const ChatGetGroupsWithoutPushNotification = @"getGroupsWithoutPushNotification";
 static NSString *const ChatGetJoinedGroupsFromServer = @"getJoinedGroupsFromServer";
 static NSString *const ChatGetPublicGroupsFromServer = @"getPublicGroupsFromServer";
 static NSString *const ChatCreateGroup = @"createGroup";
