@@ -1,10 +1,7 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-// var appKey = "<#Your AppKey#>";
-var appKey = "easemob-demo#flutter";
+var appKey = "<#Your AppKey#>";
 
 void main() {
   runApp(const MyApp());
@@ -250,12 +247,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signIn() async {
-    EMMessage msg =
-        EMMessage.createCmdSendMessage(targetId: "targetId", action: "action");
-    if (msg.chatType == ChatType.ChatRoom) {
-      msg.chatroomMessagePriority = ChatRoomMessagePriority.High;
-    }
-
     if (_userId.isEmpty || _password.isEmpty) {
       _addLogToConsole("username or password is null");
       return;
@@ -280,23 +271,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signUp() async {
-    EMConversation? conv =
-        await EMClient.getInstance.chatManager.getConversation(
-      "du003",
-    );
-
-    EMMessage? msg = await conv?.latestMessage();
-    int ts = msg?.serverTime ?? 0;
-
-    await EMClient.getInstance.chatManager.deleteRemoteMessagesWithTs(
-        conversationId: "du003",
-        type: EMConversationType.Chat,
-        timestamp: ts + 100000);
-
-    EMCursorResult<EMMessage> result = await EMClient.getInstance.chatManager
-        .fetchHistoryMessages(conversationId: "du003");
-    debugPrint("result : ${result.data.length}");
-
     if (_userId.isEmpty || _password.isEmpty) {
       _addLogToConsole("username or password is null");
       return;
