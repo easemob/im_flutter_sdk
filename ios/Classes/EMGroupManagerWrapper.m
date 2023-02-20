@@ -354,17 +354,17 @@
 }
 
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
     
+    __weak typeof(self) weakSelf = self;
     
     int pageNum = [param[@"pageNum"] intValue];
     int pageSize = [param[@"pageSize"] intValue];
     BOOL needRole = [param[@"needRole"] boolValue];
-    BOOL needMumberCount = [param[@"needMumberCount"] boolValue];
+    BOOL needMemberCount = [param[@"needMemberCount"] boolValue];
     
     [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:pageNum
                                                                  pageSize:pageSize
-                                                          needMemberCount:needMumberCount
+                                                          needMemberCount:needMemberCount
                                                                  needRole:needRole
                                                                completion:^(NSArray<EMGroup *> *aList, EMError * _Nullable aError)
      {
