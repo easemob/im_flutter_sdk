@@ -509,46 +509,4 @@ class EMConversation {
       throw e;
     }
   }
-
-/*
-  /// Delete messages from the session (both local storage and server storage).
-  ///
-  /// [msgIds] that you want delete message ids form current conversation.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  Future<void> removeServerMessageWithIds(List<String> msgIds) async {
-    Map req = this._toJson();
-    req["msgIds"] = msgIds;
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-      ChatMethodKeys.removeMsgFromServerWithMsgList,
-      req,
-    );
-
-    try {
-      EMError.hasErrorFromResult(result);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-*/
-
-  /// Delete messages from the session (both local storage and server storage).
-  ///
-  /// [timestamp] The message timestamp before which message to delete form current conversation.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  Future<void> removeServerMessageBeforeTimeStamp(int timestamp) async {
-    Map req = this._toJson();
-    req["timestamp"] = timestamp;
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-      ChatMethodKeys.removeMsgFromServerWithTimeStamp,
-      req,
-    );
-
-    try {
-      EMError.hasErrorFromResult(result);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
 }
