@@ -321,16 +321,7 @@ void _signIn() async {
       targetId: _chatId,
       content: _messageContent,
     );
-    msg.setMessageStatusCallBack(MessageStatusCallBack(
-      onSuccess: () {
-        _addLogToConsole("send message succeed");
-      },
-      onError: (e) {
-        _addLogToConsole(
-          "send message failed, code: ${e.code}, desc: ${e.description}",
-        );
-      },
-    ));
+
     EMClient.getInstance.chatManager.sendMessage(msg);
   }
 ```
@@ -341,6 +332,26 @@ void _signIn() async {
 
 ```dart
 void _addChatListener() {
+
+  // 添加消息状态变更监听
+  EMClient.getInstance.chatManager.addMessageEvent(
+      // ChatMessageEvent 对应的 key。
+        "UNIQUE_HANDLER_ID",
+        ChatMessageEvent(
+          onSuccess: (msgId, msg) {
+            _addLogToConsole("send message succeed");
+          },
+          onProgress: (msgId, progress) {
+            _addLogToConsole("send message succeed");
+          },
+          onError: (msgId, msg, error) {
+            _addLogToConsole(
+              "send message failed, code: ${error.code}, desc: ${error.description}",
+            );
+          },
+        ));
+
+  // 添加收消息监听
   EMClient.getInstance.chatManager.addEventHandler(
     // EMChatEventHandle 对应的 key。
     "UNIQUE_HANDLER_ID",
@@ -400,7 +411,7 @@ void _addChatListener() {
               break;
             case MessageType.CMD:
               {
-                // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatEventHandler#onCmdMessagesReceived` 回调接收
+                // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatEventHandler.onCmdMessagesReceived] 回调接收
               }
               break;
           }
@@ -418,6 +429,7 @@ void _addChatListener() {
 ```dart
 @override
 void dispose() {
+  EMClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID");
   EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
   super.dispose();
 }
