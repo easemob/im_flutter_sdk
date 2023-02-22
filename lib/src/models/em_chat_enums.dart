@@ -340,8 +340,14 @@ enum ChatPushRemindType {
   NONE,
 }
 
+/// Chat room message priorities.
 enum ChatRoomMessagePriority {
+  /// High
   High,
+
+  /// Normal
   Normal,
+
+  /// Low
   Low,
 }

@@ -134,6 +134,8 @@ class EMMessage {
 
   ChatRoomMessagePriority? _priority;
 
+  /// Sets the priority of chat room messages.
+  /// param [priority] The priority of chat room messages. The default value is `Normal`, indicating the normal priority. For details, see[ChatRoomMessagePriority].
   set chatroomMessagePriority(ChatRoomMessagePriority priority) {
     _priority = priority;
   }

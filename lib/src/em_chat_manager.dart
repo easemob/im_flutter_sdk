@@ -513,6 +513,15 @@ class EMChatManager {
     }
   }
 
+  /// fetch the conversations from the server.
+  ///
+  /// Param [pageNum] The current page number.
+  ///
+  /// Param [pageSize] The number of conversations to get on each page.
+  ///
+  /// **Return** The conversation list of the current user.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
   Future<List<EMConversation>> fetchConversationListFromServer({
     int pageNum = 1,
     int pageSize = 20,
@@ -538,6 +547,13 @@ class EMChatManager {
     }
   }
 
+  /// Unidirectionally removes historical message by message ID from the server.
+  ///
+  /// Param [conversationId] The conversation ID.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// Param [msgIds] The list of IDs of messages to be removed.
   Future<void> deleteRemoteMessagesWithIds(
       {required String conversationId,
       required EMConversationType type,
@@ -558,7 +574,14 @@ class EMChatManager {
     }
   }
 
-  Future<void> deleteRemoteMessagesWithTs(
+  /// Unidirectionally removes historical message by timestamp from the server.
+  ///
+  /// Param [conversationId] The conversation ID.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// Param [timestamp] The UNIX timestamp in millisecond. Messages with a timestamp smaller than the specified one will be removed.
+  Future<void> deleteRemoteMessagesBefore(
       {required String conversationId,
       required EMConversationType type,
       required int timestamp}) async {
@@ -578,7 +601,6 @@ class EMChatManager {
     }
   }
 
-  ///
   /// Deletes a conversation and its related messages from the local database.
   ///
   /// If you set [deleteMessages] to `true`, the local historical messages are deleted when the conversation is deleted.
@@ -1152,19 +1174,29 @@ class EMChatManager {
     }
   }
 
+  /// Adds a message status listener.
+  ///
+  /// Param [identifier] The ID of the message status listener. The ID is required when you delete a message status listener.
+  ///
+  /// Param [event] The message status event.
   void addMessageEvent(String identifier, ChatMessageEvent event) {
     MessageCallBackManager.getInstance.addMessageEvent(identifier, event);
   }
 
+  /// Removes a message status listener.
+  ///
+  /// Param [identifier] The ID of the message status listener. The ID is set when you add a message status listener.
   void removeMessageEvent(String identifier) {
     MessageCallBackManager.getInstance.removeMessageEvent(identifier);
   }
 
+  /// Clears all message status listeners.
   void clearMessageEvent() {
     MessageCallBackManager.getInstance.clearAllMessageEvents();
   }
 }
 
+/// The message status event class.
 class ChatMessageEvent {
   ChatMessageEvent({
     this.onSuccess,
@@ -1172,8 +1204,25 @@ class ChatMessageEvent {
     this.onProgress,
   });
 
+  /// Occurs when a message is successfully sent or downloaded.
+  ///
+  /// Param [msgId] The pre-sending message ID or the ID of the message that is successfully downloaded.
+  ///
+  /// Param [msg] The message that is successfully sent or downloaded.
   final void Function(String msgId, EMMessage msg)? onSuccess;
+
+  /// Occurs when a message fails to be sent or downloaded.
+  ///
+  /// Param [msgId] The pre-sending message ID or the ID of the message that fails to be downloaded.
+  ///
+  /// Param [msg] The message that fails to be sent or downloaded.
   final void Function(String msgId, EMMessage msg, EMError error)? onError;
+
+  /// Occurs when there is a progress for message upload or download. This event is triggered when a message is being uploaded or downloaded.
+  ///
+  /// Param [msgId] The ID of the message that is being uploaded or downloaded.
+  ///
+  /// Param [progress] The upload or download progress.
   final void Function(String msgId, int progress)? onProgress;
 }
 
