@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import "dart:async";
-import 'dart:ffi';
 
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
