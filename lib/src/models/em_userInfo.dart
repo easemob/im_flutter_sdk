@@ -1,5 +1,3 @@
-import '../internal/inner_headers.dart';
-
 ///
 /// The EMUserInfo class, which contains the user attributes, such as the nickname, description, and avatar.
 ///

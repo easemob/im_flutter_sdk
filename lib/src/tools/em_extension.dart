@@ -1,4 +1,3 @@
-import '../internal/inner_headers.dart';
 import 'dart:convert' as convert;
 
 Type typeOf<T>() => T;
