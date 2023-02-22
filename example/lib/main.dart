@@ -145,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    EMClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID");
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
@@ -236,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case MessageType.CMD:
                 {
-                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatManagerEventHandle#onCmdMessagesReceived` 回调接收
+                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
                 }
                 break;
             }
