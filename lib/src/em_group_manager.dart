@@ -1563,7 +1563,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Param [listener] The group manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use [removeEventHandler] to instead")
   void removeGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1571,7 +1571,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Removes all group manager listener.
   ///
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearAllGroupManagerListeners() {
     _listeners.clear();
   }

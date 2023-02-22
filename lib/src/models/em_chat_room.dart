@@ -4,7 +4,7 @@ import '../internal/inner_headers.dart';
 /// The chat room instance class.
 ///
 /// **Note**
-/// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+/// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
 ///
 class EMChatRoom {
   EMChatRoom._private({
@@ -67,7 +67,7 @@ class EMChatRoom {
   /// Gets the chat room ID.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String roomId;
 
@@ -75,7 +75,7 @@ class EMChatRoom {
   /// Gets the chat room name from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String? name;
 
@@ -83,7 +83,7 @@ class EMChatRoom {
   /// Gets the chat room description from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String? description;
 
@@ -91,7 +91,7 @@ class EMChatRoom {
   /// Gets the chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String? owner;
 
@@ -99,7 +99,7 @@ class EMChatRoom {
   /// Gets the chat room announcement in the chat room from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomAnnouncement(String)} before calling this method. Otherwise, the return value may not be correct.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomAnnouncement] before calling this method. Otherwise, the return value may not be correct.
   ///
   final String? announcement;
 
@@ -107,7 +107,7 @@ class EMChatRoom {
   /// Gets the number of online members from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final int? memberCount;
 
@@ -115,7 +115,7 @@ class EMChatRoom {
   /// Gets the maximum number of members in the chat room from the memory, which is set/specified when the chat room is created.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final int? maxUsers;
 

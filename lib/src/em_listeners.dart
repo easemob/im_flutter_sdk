@@ -145,7 +145,7 @@ abstract class EMMultiDeviceListener {
 ///
 ///  The custom event listener.
 ///
-@Deprecated("Use EMClient#customEvent instead")
+@Deprecated("Use [EMClient.customEventHandler] instead")
 abstract class EMCustomListener {
   void onDataReceived(Map map);
 }

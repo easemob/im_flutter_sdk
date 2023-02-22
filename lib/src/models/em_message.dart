@@ -140,7 +140,7 @@ class EMMessage {
     _priority = priority;
   }
 
-  @Deprecated('Switch ChatManager#addMessageEvent to instead.')
+  @Deprecated('Switch [ChatManager.addMessageEvent] to instead.')
   void setMessageStatusCallBack(MessageStatusCallBack? callback) {}
 
   EMMessage._private();
