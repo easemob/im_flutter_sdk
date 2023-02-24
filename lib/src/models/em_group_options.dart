@@ -68,7 +68,7 @@ class EMGroupOptions {
     data['style'] = groupStyleTypeToInt(style);
     data['maxCount'] = maxCount;
     data['inviteNeedConfirm'] = inviteNeedConfirm;
-    data.setValueWithOutNull("ext", ext);
+    data.add("ext", ext);
     return data;
   }
 

@@ -339,3 +339,15 @@ enum ChatPushRemindType {
   /// Offline push is not collected.
   NONE,
 }
+
+/// Chat room message priorities.
+enum ChatRoomMessagePriority {
+  /// High
+  High,
+
+  /// Normal
+  Normal,
+
+  /// Low
+  Low,
+}

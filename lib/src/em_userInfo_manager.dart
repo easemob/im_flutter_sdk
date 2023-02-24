@@ -52,14 +52,14 @@ class EMUserInfoManager {
     String? ext,
   }) async {
     Map req = {};
-    req.setValueWithOutNull("nickName", nickname);
-    req.setValueWithOutNull("avatarUrl", avatarUrl);
-    req.setValueWithOutNull("mail", mail);
-    req.setValueWithOutNull("phone", phone);
-    req.setValueWithOutNull("gender", gender);
-    req.setValueWithOutNull("sign", sign);
-    req.setValueWithOutNull("birth", birth);
-    req.setValueWithOutNull("ext", ext);
+    req.add("nickName", nickname);
+    req.add("avatarUrl", avatarUrl);
+    req.add("mail", mail);
+    req.add("phone", phone);
+    req.add("gender", gender);
+    req.add("sign", sign);
+    req.add("birth", birth);
+    req.add("ext", ext);
 
     try {
       Map result =

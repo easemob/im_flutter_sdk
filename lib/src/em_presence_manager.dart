@@ -232,14 +232,14 @@ extension PresenceDeprecated on EMPresenceManager {
   ///
   /// Param [listener] The presence manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use [removeEventHandler] to instead")
   void removePresenceManagerListener(EMPresenceManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
     }
   }
 
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearAllPresenceManagerListener() {
     _listeners.clear();
   }

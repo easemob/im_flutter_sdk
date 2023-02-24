@@ -318,11 +318,11 @@ class EMOptions {
       serverTransfer: json.boolValue('serverTransfer'),
       usingHttpsOnly: json.boolValue('usingHttpsOnly'),
       enableDNSConfig: json.boolValue('enableDNSConfig'),
-      imPort: json.intValue("imPort"),
-      imServer: json.stringValue("imServer"),
-      restServer: json.stringValue("restServer"),
-      dnsUrl: json.stringValue("dnsUrl"),
-      areaCode: json.intValue("areaCode") ?? AreaCode.GLOB,
+      imPort: json["imPort"],
+      imServer: json["imServer"],
+      restServer: json["restServer"],
+      dnsUrl: json["dnsUrl"],
+      areaCode: json["areaCode"] ?? AreaCode.GLOB,
     );
 
     ret._pushConfig = EMPushConfig();
@@ -336,32 +336,28 @@ class EMOptions {
   /// @nodoc
   Map toJson() {
     Map data = new Map();
-    data.setValueWithOutNull("appKey", appKey);
-    data.setValueWithOutNull("autoLogin", autoLogin);
-    data.setValueWithOutNull("debugModel", debugModel);
-    data.setValueWithOutNull("acceptInvitationAlways", acceptInvitationAlways);
-    data.setValueWithOutNull(
+    data.add("appKey", appKey);
+    data.add("autoLogin", autoLogin);
+    data.add("debugModel", debugModel);
+    data.add("acceptInvitationAlways", acceptInvitationAlways);
+    data.add(
       "autoAcceptGroupInvitation",
       autoAcceptGroupInvitation,
     );
-    data.setValueWithOutNull(
-        "deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
-    data.setValueWithOutNull(
-        "deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
-    data.setValueWithOutNull("dnsUrl", dnsUrl);
-    data.setValueWithOutNull("enableDNSConfig", enableDNSConfig);
-    data.setValueWithOutNull("imPort", imPort);
-    data.setValueWithOutNull("imServer", imServer);
-    data.setValueWithOutNull("isAutoDownload", isAutoDownloadThumbnail);
-    data.setValueWithOutNull(
-        "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
-    data.setValueWithOutNull("requireAck", requireAck);
-    data.setValueWithOutNull("requireDeliveryAck", requireDeliveryAck);
-    data.setValueWithOutNull("restServer", restServer);
-    data.setValueWithOutNull("serverTransfer", serverTransfer);
-    data.setValueWithOutNull(
-        "sortMessageByServerTime", sortMessageByServerTime);
-    data.setValueWithOutNull("usingHttpsOnly", usingHttpsOnly);
+    data.add("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
+    data.add("deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
+    data.add("dnsUrl", dnsUrl);
+    data.add("enableDNSConfig", enableDNSConfig);
+    data.add("imPort", imPort);
+    data.add("imServer", imServer);
+    data.add("isAutoDownload", isAutoDownloadThumbnail);
+    data.add("isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
+    data.add("requireAck", requireAck);
+    data.add("requireDeliveryAck", requireDeliveryAck);
+    data.add("restServer", restServer);
+    data.add("serverTransfer", serverTransfer);
+    data.add("sortMessageByServerTime", sortMessageByServerTime);
+    data.add("usingHttpsOnly", usingHttpsOnly);
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();

@@ -176,7 +176,7 @@ class EMGroupManager {
     String? cursor,
   }) async {
     Map req = {'pageSize': pageSize};
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getPublicGroupsFromServer, req);
     try {
@@ -226,10 +226,10 @@ class EMGroupManager {
     required EMGroupOptions options,
   }) async {
     Map req = {'options': options.toJson()};
-    req.setValueWithOutNull("groupName", groupName);
-    req.setValueWithOutNull("desc", desc);
-    req.setValueWithOutNull("inviteMembers", inviteMembers);
-    req.setValueWithOutNull("inviteReason", inviteReason);
+    req.add("groupName", groupName);
+    req.add("desc", desc);
+    req.add("inviteMembers", inviteMembers);
+    req.add("inviteReason", inviteReason);
 
     Map result = await _channel.invokeMethod(ChatMethodKeys.createGroup, req);
     try {
@@ -246,6 +246,8 @@ class EMGroupManager {
   /// This method does not get member information. If member information is required, call [fetchMemberListFromServer].
   ///
   /// Param [groupId] The group ID.
+  ///
+  /// Param [fetchMembers] Whether to get group members. By default, a list of 200 members is fetched.
   ///
   /// **Return** The group instance.
   ///
@@ -296,7 +298,7 @@ class EMGroupManager {
       'groupId': groupId,
       'pageSize': pageSize,
     };
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.getGroupMemberListFromServer,
       req,
@@ -509,7 +511,7 @@ class EMGroupManager {
     String? welcome,
   }) async {
     Map req = {'groupId': groupId, 'members': members};
-    req.setValueWithOutNull("welcome", welcome);
+    req.add("welcome", welcome);
     Map result = await _channel.invokeMethod(ChatMethodKeys.addMembers, req);
     try {
       EMError.hasErrorFromResult(result);
@@ -542,7 +544,7 @@ class EMGroupManager {
       'groupId': groupId,
       'members': members,
     };
-    req.setValueWithOutNull("reason", reason);
+    req.add("reason", reason);
 
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.inviterUser,
@@ -1133,7 +1135,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId};
-    req.setValueWithOutNull('reason', reason);
+    req.add('reason', reason);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.requestToJoinPublicGroup, req);
     try {
@@ -1187,7 +1189,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId, 'username': username};
-    req.setValueWithOutNull('reason', reason);
+    req.add('reason', reason);
 
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.declineJoinApplication, req);
@@ -1241,7 +1243,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
-    req.setValueWithOutNull('reason', reason);
+    req.add('reason', reason);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.declineInvitationFromGroup, req);
     try {
@@ -1561,7 +1563,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Param [listener] The group manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use [removeEventHandler] to instead")
   void removeGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1569,7 +1571,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Removes all group manager listener.
   ///
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearAllGroupManagerListeners() {
     _listeners.clear();
   }

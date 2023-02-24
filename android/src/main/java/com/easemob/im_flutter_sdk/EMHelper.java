@@ -324,6 +324,7 @@ class EMMessageHelper {
 
     static EMMessage fromJson(JSONObject json) throws JSONException {
         EMMessage message = null;
+
         JSONObject bodyJson = json.getJSONObject("body");
         String type = bodyJson.getString("type");
         if (json.getString("direction").equals("send")) {
@@ -446,6 +447,16 @@ class EMMessageHelper {
         }
 
         message.setStatus(statusFromInt(json.getInt("status")));
+        if (json.has("chatroomMessagePriority")) {
+            int intPriority = json.getInt("chatroomMessagePriority");
+            if (intPriority == 0) {
+                message.setPriority(EMMessage.EMChatRoomMessagePriority.PriorityHigh);
+            }else if (intPriority == 1) {
+                message.setPriority(EMMessage.EMChatRoomMessagePriority.PriorityNormal);
+            }else if (intPriority == 2) {
+                message.setPriority(EMMessage.EMChatRoomMessagePriority.PriorityLow);
+            }
+        }
         message.setChatType(chatTypeFromInt(json.getInt("chatType")));
         if (json.has("msgId")){
             message.setMsgId(json.getString("msgId"));

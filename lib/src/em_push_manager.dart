@@ -433,7 +433,7 @@ extension EMPushManagerDeprecated on EMPushManager {
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
   ///
-  @Deprecated("Use #setSilentModeForAll to instead")
+  @Deprecated("Use [setSilentModeForAll] to instead")
   Future<void> enableOfflinePush() async {
     Map result =
         await PushChannel.invokeMethod(ChatMethodKeys.enableOfflinePush);
@@ -453,7 +453,7 @@ extension EMPushManagerDeprecated on EMPushManager {
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
   ///
-  @Deprecated("Use #setSilentModeForAll to instead")
+  @Deprecated("Use [setSilentModeForAll] to instead")
   Future<void> disableOfflinePush({
     required int start,
     required int end,
@@ -497,7 +497,7 @@ extension EMPushManagerDeprecated on EMPushManager {
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
   ///
-  @Deprecated('Use EMPushManager#setConversationSilentMode to instead')
+  @Deprecated('Use [EMPushManager.setConversationSilentMode] to instead')
   Future<void> updatePushServiceFroUsers({
     required List<String> userIds,
     required bool enablePush,

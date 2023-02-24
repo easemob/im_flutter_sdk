@@ -93,6 +93,13 @@ class ChatMethodKeys {
   static const String fetchReactionDetail = "fetchReactionDetail";
   static const String reportMessage = "reportMessage";
 
+  static const String fetchConversationsFromServerWithPage =
+      "fetchConversationsFromServerWithPage";
+  static const String removeMessagesFromServerWithMsgIds =
+      "removeMessagesFromServerWithMsgIds";
+  static const String removeMessagesFromServerWithTs =
+      "removeMessagesFromServerWithTs";
+
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
@@ -137,8 +144,10 @@ class ChatMethodKeys {
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
   static const String loadMsgWithTime = "loadMsgWithTime";
   static const String messageCount = "messageCount";
-  static const String removeMsgFromServerWithMsgList = "removeMsgFromServerWithMsgList";
-  static const String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
+  static const String removeMsgFromServerWithMsgList =
+      "removeMsgFromServerWithMsgList";
+  static const String removeMsgFromServerWithTimeStamp =
+      "removeMsgFromServerWithTimeStamp";
 
   /// EMMessage method
   static const String getReactionList = "getReactionList";
@@ -193,8 +202,6 @@ class ChatMethodKeys {
   /// EMGroupManager
   static const String getGroupWithId = "getGroupWithId";
   static const String getJoinedGroups = "getJoinedGroups";
-  static const String getGroupsWithoutPushNotification =
-      "getGroupsWithoutPushNotification";
   static const String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
   static const String getPublicGroupsFromServer = "getPublicGroupsFromServer";
   static const String createGroup = "createGroup";
