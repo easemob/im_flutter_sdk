@@ -396,9 +396,9 @@ class EMChatRoomManager {
     Map req = Map();
     req['subject'] = name;
     req['maxUserCount'] = maxUserCount;
-    req.setValueWithOutNull("desc", desc);
-    req.setValueWithOutNull("welcomeMsg", welcomeMsg);
-    req.setValueWithOutNull("members", members);
+    req.add("desc", desc);
+    req.add("welcomeMsg", welcomeMsg);
+    req.add("members", members);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.createChatRoom, req);
     try {
@@ -500,7 +500,7 @@ class EMChatRoomManager {
     int pageSize = 200,
   }) async {
     Map req = {"roomId": roomId, "pageSize": pageSize};
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
     try {
@@ -1103,7 +1103,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] A chat room listener. See [EMChatRoomManagerListener].
   ///
-  @Deprecated("Use EMChatRoomManager#addEventHandler to instead")
+  @Deprecated("Use [EMChatRoomManager.addEventHandler] to instead")
   void addChatRoomManagerListener(EMChatRoomManagerListener listener) {
     _listeners.remove(listener);
     _listeners.add(listener);
@@ -1115,7 +1115,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Param [listener] The chat room manager listener to be removed.
   ///
-  @Deprecated("Use EMChatRoomManager#removeEventHandler to instead")
+  @Deprecated("Use [EMChatRoomManager.removeEventHandler] to instead")
   void removeChatRoomManagerListener(EMChatRoomManagerListener listener) {
     if (_listeners.contains(listener)) {
       _listeners.remove(listener);
@@ -1125,7 +1125,7 @@ extension ChatRoomManagerDeprecated on EMChatRoomManager {
   ///
   /// Removes all chat room manager listener.
   ///
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearAllChatRoomManagerListeners() {
     _listeners.clear();
   }

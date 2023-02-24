@@ -98,13 +98,21 @@ class EMChatManager {
   /// For attachment messages such as voice, image, or video messages, the SDK automatically uploads the attachment.
   /// You can set whether to upload the attachment to the chat sever using [EMOptions.serverTransfer].
   ///
-  /// To listen for the status of sending messages, call [EMMessage.setMessageStatusCallBack].
+  /// To listen for the status of sending messages, call [EMChatManager.addMessageEvent].
   ///
   /// Param [message] The message object to be sent: [EMMessage].
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
-  Future<EMMessage> sendMessage(EMMessage message) async {
+  Future<EMMessage> sendMessage(
+    EMMessage message, {
+    void Function(
+      void Function(EMMessage)? onSuccess,
+      void Function(EMMessage)? onError,
+      void Function(int)? onProgress,
+    )?
+        callback,
+  }) async {
     message.status = MessageStatus.PROGRESS;
     Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
@@ -197,7 +205,7 @@ class EMChatManager {
       "msg_id": msgId,
       "group_id": groupId,
     };
-    req.setValueWithOutNull("content", content);
+    req.add("content", content);
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
@@ -504,7 +512,94 @@ class EMChatManager {
     }
   }
 
+  /// fetch the conversations from the server.
   ///
+  /// Param [pageNum] The current page number.
+  ///
+  /// Param [pageSize] The number of conversations to get on each page.
+  ///
+  /// **Return** The conversation list of the current user.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  Future<List<EMConversation>> fetchConversationListFromServer({
+    int pageNum = 1,
+    int pageSize = 20,
+  }) async {
+    Map request = {
+      "pageNum": pageNum,
+      "pageSize": pageSize,
+    };
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.fetchConversationsFromServerWithPage,
+      request,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMConversation> conversationList = [];
+      result[ChatMethodKeys.fetchConversationsFromServerWithPage]
+          ?.forEach((element) {
+        conversationList.add(EMConversation.fromJson(element));
+      });
+      return conversationList;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// Unidirectionally removes historical message by message ID from the server.
+  ///
+  /// Param [conversationId] The conversation ID.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// Param [msgIds] The list of IDs of messages to be removed.
+  Future<void> deleteRemoteMessagesWithIds(
+      {required String conversationId,
+      required EMConversationType type,
+      required List<String> msgIds}) async {
+    Map request = {
+      "convId": conversationId,
+      "type": type.index,
+      "msgIds": msgIds,
+    };
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.removeMessagesFromServerWithMsgIds,
+      request,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// Unidirectionally removes historical message by timestamp from the server.
+  ///
+  /// Param [conversationId] The conversation ID.
+  ///
+  /// Param [type] The conversation type.
+  ///
+  /// Param [timestamp] The UNIX timestamp in millisecond. Messages with a timestamp smaller than the specified one will be removed.
+  Future<void> deleteRemoteMessagesBefore(
+      {required String conversationId,
+      required EMConversationType type,
+      required int timestamp}) async {
+    Map request = {
+      "convId": conversationId,
+      "type": type.index,
+      "timestamp": timestamp,
+    };
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.removeMessagesFromServerWithTs,
+      request,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   /// Deletes a conversation and its related messages from the local database.
   ///
   /// If you set [deleteMessages] to `true`, the local historical messages are deleted when the conversation is deleted.
@@ -646,7 +741,7 @@ class EMChatManager {
   }) async {
     Map req = {"msg_id": msgId, "group_id": groupId};
     req["pageSize"] = pageSize;
-    req.setValueWithOutNull("ack_id", startAckId);
+    req.add("ack_id", startAckId);
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
@@ -964,7 +1059,7 @@ class EMChatManager {
       "msgIds": messageIds,
       "chatType": chatTypeToInt(chatType),
     };
-    req.setValueWithOutNull("groupId", groupId);
+    req.add("groupId", groupId);
     Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.fetchReactionList,
       req,
@@ -1011,8 +1106,8 @@ class EMChatManager {
       "msgId": messageId,
       "reaction": reaction,
     };
-    req.setValueWithOutNull("cursor", cursor);
-    req.setValueWithOutNull("pageSize", pageSize);
+    req.add("cursor", cursor);
+    req.add("pageSize", pageSize);
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.fetchReactionDetail, req);
 
@@ -1077,6 +1172,59 @@ class EMChatManager {
       throw e;
     }
   }
+
+  /// Adds a message status listener.
+  ///
+  /// Param [identifier] The ID of the message status listener. The ID is required when you delete a message status listener.
+  ///
+  /// Param [event] The message status event.
+  void addMessageEvent(String identifier, ChatMessageEvent event) {
+    MessageCallBackManager.getInstance.addMessageEvent(identifier, event);
+  }
+
+  /// Removes a message status listener.
+  ///
+  /// Param [identifier] The ID of the message status listener. The ID is set when you add a message status listener.
+  void removeMessageEvent(String identifier) {
+    MessageCallBackManager.getInstance.removeMessageEvent(identifier);
+  }
+
+  /// Clears all message status listeners.
+  void clearMessageEvent() {
+    MessageCallBackManager.getInstance.clearAllMessageEvents();
+  }
+}
+
+/// The message status event class.
+/// During message delivery, the message ID will be changed from a local uuid to a global unique ID that is generated by the server to uniquely identify a message on all devices using the SDK.
+/// This API should be implemented in the chat page widget to listen for message status changes.
+class ChatMessageEvent {
+  ChatMessageEvent({
+    this.onSuccess,
+    this.onError,
+    this.onProgress,
+  });
+
+  /// Occurs when a message is successfully sent or downloaded.
+  ///
+  /// Param [msgId] The pre-sending message ID or the ID of the message that is successfully downloaded.
+  ///
+  /// Param [msg] The message that is successfully sent or downloaded.
+  final void Function(String msgId, EMMessage msg)? onSuccess;
+
+  /// Occurs when a message fails to be sent or downloaded.
+  ///
+  /// Param [msgId] The pre-sending message ID or the ID of the message that fails to be downloaded.
+  ///
+  /// Param [msg] The message that fails to be sent or downloaded.
+  final void Function(String msgId, EMMessage msg, EMError error)? onError;
+
+  /// Occurs when there is a progress for message upload or download. This event is triggered when a message is being uploaded or downloaded.
+  ///
+  /// Param [msgId] The ID of the message that is being uploaded or downloaded.
+  ///
+  /// Param [progress] The upload or download progress.
+  final void Function(String msgId, int progress)? onProgress;
 }
 
 extension ChatManagerDeprecated on EMChatManager {
@@ -1098,7 +1246,7 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Param [listener] The chat manager listener to be removed. See [EMChatManagerListener].
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use [removeEventHandler] to instead")
   void removeChatManagerListener(EMChatManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1106,8 +1254,55 @@ extension ChatManagerDeprecated on EMChatManager {
   ///
   /// Removes all chat manager listeners.
   ///
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearAllChatManagerListeners() {
     _listeners.clear();
+  }
+}
+
+class MessageCallBackManager {
+  static const _channelPrefix = 'com.chat.im';
+  static const MethodChannel _emMessageChannel =
+      const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
+  Map<String, ChatMessageEvent> cacheHandleMap = {};
+  static MessageCallBackManager? _instance;
+  static MessageCallBackManager get getInstance =>
+      _instance = _instance ?? MessageCallBackManager._internal();
+
+  MessageCallBackManager._internal() {
+    _emMessageChannel.setMethodCallHandler((MethodCall call) async {
+      Map<String, dynamic> argMap = call.arguments;
+      String? localId = argMap['localId'];
+      if (localId == null) return;
+      cacheHandleMap.forEach((key, value) {
+        if (call.method == ChatMethodKeys.onMessageProgressUpdate) {
+          int progress = argMap["progress"];
+          value.onProgress?.call(localId, progress);
+        } else if (call.method == ChatMethodKeys.onMessageError) {
+          EMMessage msg = EMMessage.fromJson(argMap['message']);
+          EMError err = EMError.fromJson(argMap['error']);
+          value.onError?.call(localId, msg, err);
+        } else if (call.method == ChatMethodKeys.onMessageSuccess) {
+          EMMessage msg = EMMessage.fromJson(argMap['message']);
+          value.onSuccess?.call(localId, msg);
+        }
+      });
+
+      return null;
+    });
+  }
+
+  void addMessageEvent(String key, ChatMessageEvent event) {
+    cacheHandleMap[key] = event;
+  }
+
+  void removeMessageEvent(String key) {
+    if (cacheHandleMap.containsKey(key)) {
+      cacheHandleMap.remove(key);
+    }
+  }
+
+  void clearAllMessageEvents() {
+    cacheHandleMap.clear();
   }
 }

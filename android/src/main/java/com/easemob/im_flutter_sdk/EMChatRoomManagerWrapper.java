@@ -296,7 +296,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
     private void muteChatRoomMembers(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String roomId = param.getString("roomId");
-        long duration = Long.parseLong(param.getString("duration"));
+        long duration = param.getLong("duration");
         JSONArray muteMembers = param.getJSONArray("muteMembers");
         List<String> muteMembersList = new ArrayList<>();
         for (int i = 0; i < muteMembers.length(); i++) {

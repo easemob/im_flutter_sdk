@@ -87,6 +87,9 @@ public class EMSDKMethod {
     static final String fetchReactionList = "fetchReactionList";
     static final String fetchReactionDetail = "fetchReactionDetail";
     static final String reportMessage = "reportMessage";
+    static final String fetchConversationsFromServerWithPage = "fetchConversationsFromServerWithPage";
+    static final String removeMessagesFromServerWithMsgIds = "removeMessagesFromServerWithMsgIds";
+    static final String removeMessagesFromServerWithTs = "removeMessagesFromServerWithTs";
 
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
@@ -177,7 +180,6 @@ public class EMSDKMethod {
     /// EMGroupManager
     static final String getGroupWithId = "getGroupWithId";
     static final String getJoinedGroups = "getJoinedGroups";
-    static final String getGroupsWithoutPushNotification = "getGroupsWithoutPushNotification";
     static final String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
     static final String getPublicGroupsFromServer = "getPublicGroupsFromServer";
     static final String createGroup = "createGroup";

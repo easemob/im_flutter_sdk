@@ -1,5 +1,20 @@
 ## NEXT
 
+## 4.0.0 Easemob IM Flutter 端发版说明
+
+#### 新增特性
+
+- 依赖的原生平台 `iOS` 和 `Android` 的 SDK 升级为 v4.0.0 版本。
+- 新增 `EMChatManager#fetchConversationListFromServer` 方法实现从服务器分页获取会话列表。
+- 新增 `EMMessage#chatroomMessagePriority` 属性实现聊天室消息优先级功能，确保高优先级消息优先处理。
+
+#### 优化
+
+修改发送消息结果的回调由 `EMMessage#setMessageStatusCallBack` 修改为 `EMChatManager#addMessageEvent`。
+
+#### 修复
+
+修复 `EMChatManager#deleteMessagesBeforeTimestamp` 执行失败的问题。
 
 # 3.9.9+1
 修复：

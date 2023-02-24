@@ -50,12 +50,7 @@
                   channelName:call.method
                        result:result];
     }
-    else if ([ChatGetGroupsWithoutPushNotification isEqualToString:call.method])
-    {
-        [self getGroupsWithoutPushNotification:call.arguments
-                                   channelName:call.method
-                                        result:result];
-    }
+
     else if ([ChatGetJoinedGroupsFromServer isEqualToString:call.method])
     {
         [self getJoinedGroupsFromServer:call.arguments
@@ -339,32 +334,18 @@
                        object:list];
 }
 
-- (void)getGroupsWithoutPushNotification:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    EMError *error = nil;
-    NSArray *groups = [EMClient.sharedClient.groupManager getGroupsWithoutPushNotification:&error];
-    NSMutableArray *list = [NSMutableArray array];
-    for (EMGroup *group in groups) {
-        [list addObject:[group toJson]];
-    }
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:error
-                       object:list];
-}
-
 - (void)getJoinedGroupsFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
     
+    __weak typeof(self) weakSelf = self;
     
     int pageNum = [param[@"pageNum"] intValue];
     int pageSize = [param[@"pageSize"] intValue];
     BOOL needRole = [param[@"needRole"] boolValue];
-    BOOL needMumberCount = [param[@"needMumberCount"] boolValue];
+    BOOL needMemberCount = [param[@"needMemberCount"] boolValue];
     
     [EMClient.sharedClient.groupManager getJoinedGroupsFromServerWithPage:pageNum
                                                                  pageSize:pageSize
-                                                          needMemberCount:needMumberCount
+                                                          needMemberCount:needMemberCount
                                                                  needRole:needRole
                                                                completion:^(NSArray<EMGroup *> *aList, EMError * _Nullable aError)
      {

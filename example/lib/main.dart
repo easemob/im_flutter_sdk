@@ -145,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    EMClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID");
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
@@ -162,6 +163,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addChatListener() {
+    EMClient.getInstance.chatManager.addMessageEvent(
+        "UNIQUE_HANDLER_ID",
+        ChatMessageEvent(
+          onSuccess: (msgId, msg) {
+            _addLogToConsole("send message succeed");
+          },
+          onProgress: (msgId, progress) {
+            _addLogToConsole("send message succeed");
+          },
+          onError: (msgId, msg, error) {
+            _addLogToConsole(
+              "send message failed, code: ${error.code}, desc: ${error.description}",
+            );
+          },
+        ));
+
     EMClient.getInstance.chatManager.addEventHandler(
       "UNIQUE_HANDLER_ID",
       EMChatEventHandler(
@@ -220,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case MessageType.CMD:
                 {
-                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatManagerEventHandle#onCmdMessagesReceived` 回调接收
+                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
                 }
                 break;
             }
@@ -278,16 +295,7 @@ class _MyHomePageState extends State<MyHomePage> {
       targetId: _chatId,
       content: _messageContent,
     );
-    msg.setMessageStatusCallBack(MessageStatusCallBack(
-      onSuccess: () {
-        _addLogToConsole("send message succeed");
-      },
-      onError: (e) {
-        _addLogToConsole(
-          "send message failed, code: ${e.code}, desc: ${e.description}",
-        );
-      },
-    ));
+
     EMClient.getInstance.chatManager.sendMessage(msg);
   }
 

@@ -22,7 +22,7 @@ class EMGroup {
     this.isMemberOnly,
     this.isMemberAllowToInvite,
     this.extension,
-    this.isDisabled: false,
+    this.isDisabled = false,
   });
 
   ///
@@ -184,24 +184,24 @@ class EMGroup {
   /// @nodoc
   factory EMGroup.fromJson(Map map) {
     String groupId = map['groupId'];
-    String? name = map.stringValue("name");
-    String? description = map.stringValue("desc");
-    String? owner = map.stringValue("owner");
-    String? announcement = map.stringValue("announcement");
+    String? name = map["name"];
+    String? description = map["desc"];
+    String? owner = map["owner"];
+    String? announcement = map["announcement"];
     int? memberCount = map["memberCount"];
-    List<String>? memberList = map.listValue<String>("memberList");
-    List<String>? adminList = map.listValue<String>("adminList");
-    List<String>? blockList = map.listValue<String>("blockList");
-    List<String>? muteList = map.listValue<String>("muteList");
-    bool? messageBlocked = map.getBoolValue('messageBlocked');
-    bool? isAllMemberMuted = map.getBoolValue('isAllMemberMuted');
+    List<String>? memberList = map["memberList"];
+    List<String>? adminList = map["adminList"];
+    List<String>? blockList = map["blockList"];
+    List<String>? muteList = map["muteList"];
+    bool? messageBlocked = map["messageBlocked"];
+    bool? isAllMemberMuted = map["isAllMemberMuted"];
     EMGroupPermissionType? permissionType =
         permissionTypeFromInt(map['permissionType']);
-    int? maxUserCount = map.intValue("maxUserCount");
-    bool? isMemberOnly = map.getBoolValue('isMemberOnly');
-    bool? isMemberAllowToInvite = map.getBoolValue('isMemberAllowToInvite');
-    bool? isDisabled = map.getBoolValue("isDisabled");
-    String? extension = map.getStringValue("ext");
+    int? maxUserCount = map["maxUserCount"];
+    bool? isMemberOnly = map["isMemberOnly"];
+    bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
+    bool? isDisabled = map["isDisabled"];
+    String? extension = map["ext"];
 
     return EMGroup._private(
       groupId: groupId,
@@ -228,22 +228,21 @@ class EMGroup {
   /// @nodoc
   Map toJson() {
     Map data = Map();
-    data.setValueWithOutNull("groupId", groupId);
-    data.setValueWithOutNull("name", name);
-    data.setValueWithOutNull("desc", description);
-    data.setValueWithOutNull("owner", owner);
-    data.setValueWithOutNull("announcement", announcement);
-    data.setValueWithOutNull("memberCount", memberCount);
-    data.setValueWithOutNull("memberList", memberList);
-    data.setValueWithOutNull("adminList", adminList);
-    data.setValueWithOutNull("blockList", blockList);
-    data.setValueWithOutNull("muteList", muteList);
-    data.setValueWithOutNull("messageBlocked", messageBlocked);
-    data.setValueWithOutNull("isDisabled", isDisabled);
-    data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
-    data.setValueWithOutNull("options", _options?.toJson());
-    data.setValueWithOutNull(
-        "permissionType", permissionTypeToInt(permissionType));
+    data.add("groupId", groupId);
+    data.add("name", name);
+    data.add("desc", description);
+    data.add("owner", owner);
+    data.add("announcement", announcement);
+    data.add("memberCount", memberCount);
+    data.add("memberList", memberList);
+    data.add("adminList", adminList);
+    data.add("blockList", blockList);
+    data.add("muteList", muteList);
+    data.add("messageBlocked", messageBlocked);
+    data.add("isDisabled", isDisabled);
+    data.add("isAllMemberMuted", isAllMemberMuted);
+    data.add("options", _options?.toJson());
+    data.add("permissionType", permissionTypeToInt(permissionType));
     return data;
   }
 

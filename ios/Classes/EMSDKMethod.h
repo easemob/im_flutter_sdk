@@ -96,6 +96,10 @@ static NSString *const ChatRemoveReaction = @"removeReaction";
 static NSString *const ChatFetchReactionList = @"fetchReactionList";
 static NSString *const ChatFetchReactionDetail = @"fetchReactionDetail";
 static NSString *const ChatReportMessage = @"reportMessage";
+static NSString *const ChatFetchConversationsFromServerWithPage = @"fetchConversationsFromServerWithPage";
+static NSString *const ChatRemoveMessagesFromServerWithMsgIds = @"removeMessagesFromServerWithMsgIds";
+static NSString *const ChatRemoveMessagesFromServerWithTs = @"removeMessagesFromServerWithTs";
+
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
@@ -191,7 +195,6 @@ static NSString *const ChatChatroomChanged = @"onChatRoomChanged";
 
 static NSString *const ChatGetGroupWithId = @"getGroupWithId";
 static NSString *const ChatGetJoinedGroups = @"getJoinedGroups";
-static NSString *const ChatGetGroupsWithoutPushNotification = @"getGroupsWithoutPushNotification";
 static NSString *const ChatGetJoinedGroupsFromServer = @"getJoinedGroupsFromServer";
 static NSString *const ChatGetPublicGroupsFromServer = @"getPublicGroupsFromServer";
 static NSString *const ChatCreateGroup = @"createGroup";
