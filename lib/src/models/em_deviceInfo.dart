@@ -23,18 +23,18 @@ class EMDeviceInfo {
   /// @nodoc
   factory EMDeviceInfo.fromJson(Map map) {
     return EMDeviceInfo._private(
-      map["resource"],
-      map["deviceUUID"],
-      map["deviceName"],
+      map["resource"] ?? '',
+      map["deviceUUID"] ?? '',
+      map["deviceName"] ?? '',
     );
   }
 
   /// The information of other login devices.
-  final String? resource;
+  final String resource;
 
   /// The UUID of the device.
-  final String? deviceUUID;
+  final String deviceUUID;
 
   /// The device type. For example: "Pixel 6 Pro".
-  final String? deviceName;
+  final String deviceName;
 }

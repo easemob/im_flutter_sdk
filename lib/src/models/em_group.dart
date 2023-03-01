@@ -6,21 +6,21 @@ import '../internal/inner_headers.dart';
 class EMGroup {
   EMGroup._private({
     required this.groupId,
-    this.name,
-    this.description,
-    this.owner,
-    this.announcement,
-    this.memberCount,
-    this.memberList,
-    this.adminList,
-    this.blockList,
-    this.muteList,
-    this.messageBlocked,
-    this.isAllMemberMuted,
-    this.permissionType,
-    this.maxUserCount,
-    this.isMemberOnly,
-    this.isMemberAllowToInvite,
+    this.name = '',
+    this.description = '',
+    this.owner = '',
+    this.announcement = '',
+    this.memberCount = 0,
+    required this.memberList,
+    required this.adminList,
+    required this.blockList,
+    required this.muteList,
+    this.messageBlocked = false,
+    this.isAllMemberMuted = false,
+    required this.permissionType,
+    this.maxUserCount = 0,
+    this.isMemberOnly = false,
+    this.isMemberAllowToInvite = false,
     this.extension,
     this.isDisabled = false,
   });
@@ -37,7 +37,7 @@ class EMGroup {
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
 
-  final String? name;
+  final String name;
 
   ///
   /// Gets the group description.
@@ -46,7 +46,7 @@ class EMGroup {
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
 
-  final String? description;
+  final String description;
 
   ///
   /// Gets the user ID of the group owner.
@@ -54,12 +54,12 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
-  final String? owner;
+  final String owner;
 
   ///
   ///  The content of the group announcement.
   ///
-  final String? announcement;
+  final String announcement;
 
   ///
   /// Gets the member count of the group.
@@ -67,7 +67,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
-  final int? memberCount;
+  final int memberCount;
 
   ///
   /// Gets the member list of the group.
@@ -76,7 +76,7 @@ class EMGroup {
   /// To get the correct value, ensure that you call [EMGroupManager.fetchMemberListFromServer] before calling this method.
   ///
 
-  final List<String>? memberList;
+  final List<String> memberList;
 
   ///
   /// Gets the admin list of the group.
@@ -85,7 +85,7 @@ class EMGroup {
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
 
-  final List<String>? adminList;
+  final List<String> adminList;
 
   ///
   /// Gets the block list of the group.
@@ -95,7 +95,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchBlockListFromServer] before calling this method.
   ///
-  final List<String>? blockList;
+  final List<String> blockList;
 
   ///
   /// Gets the mute list of the group.
@@ -103,7 +103,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchMuteListFromServer] before calling this method.
   ///
-  final List<String>? muteList;
+  final List<String> muteList;
 
   ///
   /// Gets whether the group message is blocked.
@@ -111,7 +111,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
-  final bool? messageBlocked;
+  final bool messageBlocked;
 
   ///
   /// Gets Whether all members are muted.
@@ -119,7 +119,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
-  final bool? isAllMemberMuted;
+  final bool isAllMemberMuted;
 
   ///
   EMGroupOptions? _options;
@@ -130,7 +130,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
-  final EMGroupPermissionType? permissionType;
+  final EMGroupPermissionType permissionType;
 
   ///
   /// Gets the maximum number of group members allowed in a group. The parameter is set when the group is created.
@@ -138,7 +138,7 @@ class EMGroup {
   /// **Note**
   /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
   ///
-  final int? maxUserCount;
+  final int maxUserCount;
 
   ///
   /// Checks whether users cannot join a chat group freely:
@@ -153,7 +153,7 @@ class EMGroup {
   /// - `true`: Yes. Needs the approval from the group owner(admin) or being invited by group members.
   /// - `false`: No.
   ///
-  final bool? isMemberOnly;
+  final bool isMemberOnly;
 
   ///
   /// Checks whether a group member is allowed to invite other users to join the group.
@@ -165,7 +165,7 @@ class EMGroup {
   /// - `true`: Yes;
   /// - `false`: No. Only the group owner or admin can invite others to join the group.
   ///
-  final bool? isMemberAllowToInvite;
+  final bool isMemberAllowToInvite;
 
   ///
   /// Group detail extensions which can be in the JSON format to contain more group information.
@@ -183,45 +183,25 @@ class EMGroup {
 
   /// @nodoc
   factory EMGroup.fromJson(Map map) {
-    String groupId = map['groupId'];
-    String? name = map["name"];
-    String? description = map["desc"];
-    String? owner = map["owner"];
-    String? announcement = map["announcement"];
-    int? memberCount = map["memberCount"];
-    List<String>? memberList = map["memberList"];
-    List<String>? adminList = map["adminList"];
-    List<String>? blockList = map["blockList"];
-    List<String>? muteList = map["muteList"];
-    bool? messageBlocked = map["messageBlocked"];
-    bool? isAllMemberMuted = map["isAllMemberMuted"];
-    EMGroupPermissionType? permissionType =
-        permissionTypeFromInt(map['permissionType']);
-    int? maxUserCount = map["maxUserCount"];
-    bool? isMemberOnly = map["isMemberOnly"];
-    bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
-    bool? isDisabled = map["isDisabled"];
-    String? extension = map["ext"];
-
     return EMGroup._private(
-      groupId: groupId,
-      name: name,
-      description: description,
-      owner: owner,
-      announcement: announcement,
-      memberCount: memberCount,
-      memberList: memberList,
-      adminList: adminList,
-      blockList: blockList,
-      muteList: muteList,
-      messageBlocked: messageBlocked,
-      isAllMemberMuted: isAllMemberMuted,
-      permissionType: permissionType,
-      maxUserCount: maxUserCount,
-      isMemberOnly: isMemberOnly,
-      isMemberAllowToInvite: isMemberAllowToInvite,
-      extension: extension,
-      isDisabled: isDisabled ?? false,
+      groupId: map['groupId'] ?? '',
+      name: map["name"] ?? '',
+      description: map["desc"] ?? '',
+      owner: map["owner"] ?? '',
+      announcement: map["announcement"] ?? '',
+      memberCount: map["memberCount"] ?? 0,
+      memberList: List.from(map["memberList"] ?? []),
+      adminList: List.from(map["adminList"] ?? []),
+      blockList: List.from(map["blockList"] ?? []),
+      muteList: List.from(map["muteList"] ?? []),
+      messageBlocked: map["messageBlocked"] ?? false,
+      isAllMemberMuted: map["isAllMemberMuted"] ?? false,
+      permissionType: permissionTypeFromInt(map['permissionType']),
+      maxUserCount: map["maxUserCount"] ?? 0,
+      isMemberOnly: map["isMemberOnly"] ?? false,
+      isMemberAllowToInvite: map["isMemberAllowToInvite"] ?? false,
+      extension: map["ext"] ?? '',
+      isDisabled: map["isDisabled"] ?? false,
     );
   }
 

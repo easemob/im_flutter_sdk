@@ -480,8 +480,8 @@ class EMMessage {
   /// @nodoc
   factory EMMessage.fromJson(Map<String, dynamic> map) {
     return EMMessage._private()
-      ..to = map["to"]
-      ..from = map["from"]
+      ..to = map["to"] ?? ''
+      ..from = map["from"] ?? ''
       ..body = _bodyFromMap(map["body"])!
       ..attributes = map.getMapValue("attributes")
       ..direction = map["direction"] == 'send'
@@ -491,8 +491,8 @@ class EMMessage {
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
-      .._msgId = map["msgId"]
-      ..conversationId = map["conversationId"]
+      .._msgId = map["msgId"] ?? ''
+      ..conversationId = map["conversationId"] ?? ''
       ..chatType = chatTypeFromInt(map["chatType"])
       ..localTime = map["localTime"] ?? 0
       ..serverTime = map["serverTime"] ?? 0
@@ -712,8 +712,8 @@ class EMLocationMessageBody extends EMMessageBody {
       : super.fromJson(map: map, type: MessageType.LOCATION) {
     this.latitude = map["latitude"] ?? 0.0;
     this.longitude = map["longitude"] ?? 0.0;
-    this._address = map["address"];
-    this._buildingName = map["buildingName"];
+    this._address = map["address"] ?? '';
+    this._buildingName = map["buildingName"] ?? '';
   }
 
   /// @nodoc
@@ -768,13 +768,12 @@ class EMFileMessageBody extends EMMessageBody {
   EMFileMessageBody.fromJson(
       {required Map map, MessageType type = MessageType.FILE})
       : super.fromJson(map: map, type: type) {
-    this.secret = map["secret"];
-    this.remotePath = map["remotePath"];
-    this.fileSize = map["fileSize"];
-    this.localPath = map["localPath"] ?? "";
-    this.displayName = map["displayName"];
-    this.fileStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]);
+    this.secret = map["secret"] ?? '';
+    this.remotePath = map["remotePath"] ?? '';
+    this.fileSize = map["fileSize"] ?? 0;
+    this.localPath = map["localPath"] ?? '';
+    this.displayName = map["displayName"] ?? '';
+    this.fileStatus = EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]);
   }
 
   /// @nodoc
@@ -861,14 +860,13 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// @nodoc
   EMImageMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.IMAGE) {
-    this.thumbnailLocalPath = map["thumbnailLocalPath"];
-    this.thumbnailRemotePath = map["thumbnailRemotePath"];
-    this.thumbnailSecret = map["thumbnailSecret"];
+    this.thumbnailLocalPath = map["thumbnailLocalPath"] ?? '';
+    this.thumbnailRemotePath = map["thumbnailRemotePath"] ?? '';
+    this.thumbnailSecret = map["thumbnailSecret"] ?? '';
     this.sendOriginalImage = map["sendOriginalImage"] ?? false;
-    this.height = map["height"];
-    this.width = map["width"];
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
+    this.height = map["height"] ?? 0.0;
+    this.width = map["width"] ?? 0.0;
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
   }
 
   /// @nodoc
@@ -932,7 +930,7 @@ class EMTextMessageBody extends EMMessageBody {
           map: map,
           type: MessageType.TXT,
         ) {
-    this.content = map["content"] ?? "";
+    this.content = map["content"] ?? '';
     this.targetLanguages = map.getList<String>(
       "targetLanguages",
       valueCallback: (item) {
@@ -1004,12 +1002,12 @@ class EMVideoMessageBody extends EMFileMessageBody {
   /// @nodoc
   EMVideoMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VIDEO) {
-    this.duration = map["duration"];
-    this.thumbnailLocalPath = map["thumbnailLocalPath"];
-    this.thumbnailRemotePath = map["thumbnailRemotePath"];
-    this.thumbnailSecret = map["thumbnailSecret"];
-    this.height = map["height"];
-    this.width = map["width"];
+    this.duration = map["duration"] ?? 0;
+    this.thumbnailLocalPath = map["thumbnailLocalPath"] ?? '';
+    this.thumbnailRemotePath = map["thumbnailRemotePath"] ?? '';
+    this.thumbnailSecret = map["thumbnailSecret"] ?? '';
+    this.height = map["height"] ?? 0.0;
+    this.width = map["width"] ?? 0.0;
     this.thumbnailStatus =
         EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
   }

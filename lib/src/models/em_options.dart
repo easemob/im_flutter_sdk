@@ -318,10 +318,10 @@ class EMOptions {
       serverTransfer: json.boolValue('serverTransfer'),
       usingHttpsOnly: json.boolValue('usingHttpsOnly'),
       enableDNSConfig: json.boolValue('enableDNSConfig'),
-      imPort: json["imPort"],
-      imServer: json["imServer"],
-      restServer: json["restServer"],
-      dnsUrl: json["dnsUrl"],
+      imPort: json["imPort"] ?? 0,
+      imServer: json["imServer"] ?? '',
+      restServer: json["restServer"] ?? '',
+      dnsUrl: json["dnsUrl"] ?? '',
       areaCode: json["areaCode"] ?? AreaCode.GLOB,
     );
 
@@ -340,10 +340,7 @@ class EMOptions {
     data.add("autoLogin", autoLogin);
     data.add("debugModel", debugModel);
     data.add("acceptInvitationAlways", acceptInvitationAlways);
-    data.add(
-      "autoAcceptGroupInvitation",
-      autoAcceptGroupInvitation,
-    );
+    data.add("autoAcceptGroupInvitation", autoAcceptGroupInvitation);
     data.add("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
     data.add("deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
     data.add("dnsUrl", dnsUrl);
