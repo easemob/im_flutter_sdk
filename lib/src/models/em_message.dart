@@ -710,8 +710,8 @@ class EMLocationMessageBody extends EMMessageBody {
   /// @nodoc
   EMLocationMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.LOCATION) {
-    this.latitude = map["latitude"] ?? 0.0;
-    this.longitude = map["longitude"] ?? 0.0;
+    this.latitude = (map["latitude"] ?? 0).toDouble();
+    this.longitude = (map["longitude"] ?? 0).toDouble();
     this._address = map["address"];
     this._buildingName = map["buildingName"];
   }
@@ -865,8 +865,8 @@ class EMImageMessageBody extends EMFileMessageBody {
     this.thumbnailRemotePath = map["thumbnailRemotePath"];
     this.thumbnailSecret = map["thumbnailSecret"];
     this.sendOriginalImage = map["sendOriginalImage"] ?? false;
-    this.height = map["height"];
-    this.width = map["width"];
+    this.height = (map["height"] ?? 0).toDouble();
+    this.width = (map["width"] ?? 0).toDouble();
     this.thumbnailStatus =
         EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
   }
@@ -879,8 +879,8 @@ class EMImageMessageBody extends EMFileMessageBody {
     data.add("thumbnailRemotePath", thumbnailRemotePath);
     data.add("thumbnailSecret", thumbnailSecret);
     data.add("sendOriginalImage", sendOriginalImage);
-    data.add("height", height);
-    data.add("width", width);
+    data.add("height", height ?? 0.0);
+    data.add("width", width ?? 0.0);
     data.add("thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
     return data;
   }
@@ -1008,8 +1008,8 @@ class EMVideoMessageBody extends EMFileMessageBody {
     this.thumbnailLocalPath = map["thumbnailLocalPath"];
     this.thumbnailRemotePath = map["thumbnailRemotePath"];
     this.thumbnailSecret = map["thumbnailSecret"];
-    this.height = map["height"];
-    this.width = map["width"];
+    this.height = (map["height"] ?? 0).toDouble();
+    this.width = (map["width"] ?? 0).toDouble();
     this.thumbnailStatus =
         EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
   }
@@ -1022,8 +1022,8 @@ class EMVideoMessageBody extends EMFileMessageBody {
     data.add("thumbnailLocalPath", thumbnailLocalPath);
     data.add("thumbnailRemotePath", thumbnailRemotePath);
     data.add("thumbnailSecret", thumbnailSecret);
-    data.add("height", height);
-    data.add("width", width);
+    data.add("height", height ?? 0.0);
+    data.add("width", width ?? 0.0);
     data.add("thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
 
     return data;
