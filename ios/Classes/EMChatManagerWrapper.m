@@ -637,7 +637,7 @@
             break;
         }
         e = nil;
-    } while (false);
+    } while (NO);
     if (e != nil) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
