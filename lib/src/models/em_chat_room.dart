@@ -9,17 +9,17 @@ import '../internal/inner_headers.dart';
 class EMChatRoom {
   EMChatRoom._private({
     required this.roomId,
-    this.name,
-    this.description,
-    this.owner,
-    this.announcement,
-    this.memberCount,
-    this.maxUsers,
-    this.adminList,
-    this.memberList,
-    this.blockList,
-    this.muteList,
-    this.isAllMemberMuted,
+    this.name = '',
+    this.description = '',
+    this.owner = '',
+    this.announcement = '',
+    this.memberCount = 0,
+    this.maxUsers = 0,
+    required this.adminList,
+    required this.memberList,
+    required this.blockList,
+    required this.muteList,
+    this.isAllMemberMuted = false,
     this.permissionType = EMChatRoomPermissionType.None,
   });
 
@@ -29,16 +29,16 @@ class EMChatRoom {
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private(
         roomId: map["roomId"],
-        name: map["name"],
-        description: map["desc"],
-        owner: map["owner"],
-        memberCount: map["memberCount"],
-        maxUsers: map["maxUsers"],
-        adminList: map["adminList"],
-        memberList: map["memberList"],
-        blockList: map["blockList"],
-        muteList: map["muteList"],
-        announcement: map["announcement"],
+        name: map["name"] ?? '',
+        description: map["desc"] ?? '',
+        owner: map["owner"] ?? '',
+        memberCount: map["memberCount"] ?? 0,
+        maxUsers: map["maxUsers"] ?? 0,
+        adminList: List.from(map["adminList"] ?? []),
+        memberList: List.from(map["memberList"] ?? []),
+        blockList: List.from(map["blockList"] ?? []),
+        muteList: List.from(map["muteList"] ?? []),
+        announcement: map["announcement"] ?? '',
         permissionType: chatRoomPermissionTypeFromInt(map["permissionType"]),
         isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
@@ -77,7 +77,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final String? name;
+  final String name;
 
   ///
   /// Gets the chat room description from the memory.
@@ -85,7 +85,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final String? description;
+  final String description;
 
   ///
   /// Gets the chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
@@ -93,7 +93,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final String? owner;
+  final String owner;
 
   ///
   /// Gets the chat room announcement in the chat room from the memory.
@@ -101,7 +101,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomAnnouncement] before calling this method. Otherwise, the return value may not be correct.
   ///
-  final String? announcement;
+  final String announcement;
 
   ///
   /// Gets the number of online members from the memory.
@@ -109,7 +109,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final int? memberCount;
+  final int memberCount;
 
   ///
   /// Gets the maximum number of members in the chat room from the memory, which is set/specified when the chat room is created.
@@ -117,7 +117,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final int? maxUsers;
+  final int maxUsers;
 
   ///
   /// Gets the chat room admin list.
@@ -125,7 +125,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final List<String>? adminList;
+  final List<String> adminList;
 
   ///
   /// Gets the member list.
@@ -133,7 +133,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomMembers].
   ///
-  final List<String>? memberList;
+  final List<String> memberList;
 
   ///
   /// Gets the chat room block list.
@@ -141,7 +141,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the block list, you can call [EMChatRoomManager.fetchChatRoomBlockList].
   ///
-  final List<String>? blockList;
+  final List<String> blockList;
 
   ///
   /// Gets the mute list of the chat room.
@@ -149,7 +149,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the mute list, you can call [EMChatRoomManager.fetchChatRoomMuteList].
   ///
-  final List<String>? muteList;
+  final List<String> muteList;
 
   ///
   /// Checks whether all members are muted in the chat room from the memory.
@@ -157,7 +157,7 @@ class EMChatRoom {
   /// **Note**
   /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
-  final bool? isAllMemberMuted;
+  final bool isAllMemberMuted;
 
   ///
   /// Gets the current user's role in the chat room. The role types: [EMChatRoomPermissionType].
