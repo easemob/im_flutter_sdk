@@ -44,7 +44,7 @@
     if (self.settings.style == EMGroupStylePrivateOnlyOwnerInvite ||
         self.settings.style == EMGroupStylePrivateMemberCanInvite ||
         self.settings.style == EMGroupStylePublicJoinNeedApproval) {
-        return true;
+        return YES;
     }
 
     return NO;
