@@ -629,7 +629,7 @@ class EMClient {
   Future<void> _onMultiDeviceGroupEvent(Map map) async {
     EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
     String target = map['target'];
-    List<String> users = map['users'];
+    List<String>? users = map.getList("users");
 
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onGroupEvent?.call(event, target, users);

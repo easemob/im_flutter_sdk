@@ -52,14 +52,20 @@ extension MapExtension on Map {
     return ret;
   }
 
-  List<T>? getList<T>(String key, {valueCallback = MapResultCallback}) {
+  List<T>? getList<T>(String key, {MapResultCallback? valueCallback}) {
     List<T>? ret;
     if (this.containsKey(key)) {
       List list = this[key];
 
       List<T> typeList = [];
       for (var item in list) {
-        typeList.add(valueCallback(item));
+        if (valueCallback != null) {
+          typeList.add(valueCallback(item));
+        } else {
+          if (item is T) {
+            typeList.add(item);
+          }
+        }
       }
       if (typeList.length > 0) {
         ret = typeList;

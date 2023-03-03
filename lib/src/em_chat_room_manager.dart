@@ -64,13 +64,13 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> mutes = List.from(event['mutes']);
+          List<String> mutes = List.from(event['mutes'] ?? []);
           String? expireTime = event['expireTime'];
           item.onMuteListAddedFromChatRoom?.call(roomId, mutes, expireTime);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> mutes = List.from(event['mutes']);
+          List<String> mutes = List.from(event['mutes'] ?? []);
           item.onMuteListRemovedFromChatRoom?.call(roomId, mutes);
           break;
         case EMChatRoomEvent.ON_ADMIN_ADDED:
@@ -96,12 +96,12 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> members = List.from(event["whitelist"]);
+          List<String> members = List.from(event["whitelist"] ?? []);
           item.onAllowListAddedFromChatRoom?.call(roomId, members);
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> members = List.from(event["whitelist"]);
+          List<String> members = List.from(event["whitelist"] ?? []);
           item.onAllowListRemovedFromChatRoom?.call(roomId, members);
           break;
         case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
@@ -163,13 +163,13 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> mutes = List.from(event['mutes']);
+          List<String> mutes = List.from(event['mutes'] ?? []);
           String? expireTime = event['expireTime'];
           listener.onMuteListAddedFromChatRoom(roomId, mutes, expireTime);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> mutes = List.from(event['mutes']);
+          List<String> mutes = List.from(event['mutes'] ?? []);
           listener.onMuteListRemovedFromChatRoom(roomId, mutes);
           break;
         case EMChatRoomEvent.ON_ADMIN_ADDED:
@@ -195,12 +195,12 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> members = List.from(event["whitelist"]);
+          List<String> members = List.from(event["whitelist"] ?? []);
           listener.onAllowListAddedFromChatRoom(roomId, members);
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
           String roomId = event['roomId'];
-          List<String> members = List.from(event["whitelist"]);
+          List<String> members = List.from(event["whitelist"] ?? []);
           listener.onAllowListRemovedFromChatRoom(roomId, members);
           break;
         case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
