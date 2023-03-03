@@ -933,12 +933,7 @@ class EMTextMessageBody extends EMMessageBody {
           type: MessageType.TXT,
         ) {
     this.content = map["content"] ?? "";
-    this.targetLanguages = map.getList<String>(
-      "targetLanguages",
-      valueCallback: (item) {
-        return item;
-      },
-    );
+    this.targetLanguages = map.getList("targetLanguages");
     if (map.containsKey("translations")) {
       this.translations = map["translations"]?.cast<String, String>();
     }

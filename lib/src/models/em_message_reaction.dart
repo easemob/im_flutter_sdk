@@ -44,9 +44,7 @@ class EMMessageReaction {
 
     bool isAddedBySelf = map["isAddedBySelf"] ?? false;
     List<String> userList = [];
-    List<String>? tmp = map.getList("userList", valueCallback: (str) {
-      return str;
-    });
+    List<String>? tmp = map.getList("userList");
     if (tmp != null) {
       userList.addAll(tmp);
     }
