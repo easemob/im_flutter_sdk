@@ -189,10 +189,10 @@ class EMGroup {
     String? owner = map["owner"];
     String? announcement = map["announcement"];
     int? memberCount = map["memberCount"];
-    List<String>? memberList = map["memberList"];
-    List<String>? adminList = map["adminList"];
-    List<String>? blockList = map["blockList"];
-    List<String>? muteList = map["muteList"];
+    List<String>? memberList = map.getList("memberList");
+    List<String>? adminList = map.getList("adminList");
+    List<String>? blockList = map.getList("blockList");
+    List<String>? muteList = map.getList("muteList");
     bool? messageBlocked = map["messageBlocked"];
     bool? isAllMemberMuted = map["isAllMemberMuted"];
     EMGroupPermissionType? permissionType =
