@@ -749,7 +749,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", roomId);
                             data.put("roomName", roomName);
                             data.put("participant", participant);
-                            data.put("type", "chatroomRemovedFromChatRoom");
+                            data.put("type", "chatroomRemoved");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
