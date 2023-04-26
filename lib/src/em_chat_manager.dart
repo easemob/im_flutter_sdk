@@ -17,12 +17,16 @@ import 'internal/inner_headers.dart';
 /// ```
 ///
 class EMChatManager {
-  final Map<String, EMChatEventHandler> _eventHandlesMap = {};
+  static Map<String, EMChatEventHandler> _eventHandlesMap = {};
 
   final List<EMChatManagerListener> _listeners = [];
 
+  static EMChatManager get _instance => EMChatManager._();
+
+  factory EMChatManager() => _instance;
+
   /// @nodoc
-  EMChatManager() {
+  EMChatManager._() {
     ChatChannel.setMethodCallHandler((MethodCall call) async {
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
@@ -1266,6 +1270,7 @@ class MessageCallBackManager {
       const MethodChannel('$_channelPrefix/chat_message', JSONMethodCodec());
   Map<String, ChatMessageEvent> cacheHandleMap = {};
   static MessageCallBackManager? _instance;
+
   static MessageCallBackManager get getInstance =>
       _instance = _instance ?? MessageCallBackManager._internal();
 
