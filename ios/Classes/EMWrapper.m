@@ -43,7 +43,7 @@
         if (aObj) {
             dic[aChannelName] = aObj;
         }
-        
+
         easemob_dispatch_main_async_safe(^(){
             result(dic);
         });
@@ -58,7 +58,7 @@
 
 
 + (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
-    
+
 }
 
 @end

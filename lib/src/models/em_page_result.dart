@@ -11,7 +11,7 @@ class EMPageResult<T> {
 
   /// @nodoc
   factory EMPageResult.fromJson(Map map,
-      {dataItemCallback: PageResultCallback}) {
+      {dataItemCallback = PageResultCallback}) {
     EMPageResult<T> result = EMPageResult<T>._private();
     result.._pageCount = map['count'];
     result.._data = [];

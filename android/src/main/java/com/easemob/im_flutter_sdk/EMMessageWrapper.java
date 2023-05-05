@@ -51,8 +51,10 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         ArrayList<Map<String, Object>> list = new ArrayList<>();
         if (msg != null) {
             List<EMMessageReaction> reactions = msg.getMessageReaction();
-            for (int i = 0; i < reactions.size(); i++) {
-                list.add(EMMessageReactionHelper.toJson(reactions.get(i)));
+            if (reactions != null) {
+                for (int i = 0; i < reactions.size(); i++) {
+                    list.add(EMMessageReactionHelper.toJson(reactions.get(i)));
+                }
             }
         }
         onSuccess(result, channelName, list);

@@ -134,7 +134,7 @@ class EMContactManager {
     Map req = {
       'username': userId,
     };
-    req.setValueWithOutNull("reason", reason);
+    req.add("reason", reason);
 
     Map result = await _channel.invokeMethod(ChatMethodKeys.addContact, req);
     try {
@@ -381,7 +381,7 @@ extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// Param [listener] The contact manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use [removeEventHandler] to instead")
   void removeContactManagerListener(EMContactManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -389,7 +389,7 @@ extension EMContactManagerDeprecated on EMContactManager {
   ///
   /// Removes all contact manager listeners.
   ///
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearContactManagerListeners() {
     _listeners.clear();
   }

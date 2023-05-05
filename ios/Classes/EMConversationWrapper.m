@@ -97,6 +97,14 @@
         [self messageCount:call.arguments
                channelName:call.method
                     result:result];
+    } else if ([ChatRemoveMsgFromServerWithMsgList isEqualToString:call.method]) {
+        [self removeMsgFromServerWithMsgList:call.arguments
+                                 channelName:call.method
+                                      result:result];
+    } else if ([ChatRemoveMsgFromServerWithTimeStamp isEqualToString:call.method]) {
+        [self removeMsgFromServerWithTimeStamp:call.arguments
+                                   channelName:call.method
+                                        result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -140,7 +148,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         EMChatMessage *msg = conversation.latestMessage;
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -156,7 +164,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         EMChatMessage *msg = conversation.lastReceivedMessage;
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -172,7 +180,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         NSString *msgId = param[@"msg_id"];
         EMError *error = nil;
         [conversation markMessageAsReadWithId:msgId error:&error];
@@ -191,7 +199,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         NSDictionary *ext = param[@"ext"];
         conversation.ext = ext;
         [weakSelf wrapperCallBack:result
@@ -224,7 +232,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         NSDictionary *msgDict = param[@"msg"];
         EMChatMessage *msg = [EMChatMessage fromJson:msgDict];
         
@@ -244,7 +252,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         NSDictionary *msgDict = param[@"msg"];
         EMChatMessage *msg = [EMChatMessage fromJson:msgDict];
         
@@ -264,7 +272,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         NSDictionary *msgDict = param[@"msg"];
         EMChatMessage *msg = [EMChatMessage fromJson:msgDict];
         
@@ -296,7 +304,7 @@
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         NSString *msgId = param[@"msg_id"];
         EMError *error = nil;
         [conversation deleteMessageWithId:msgId error:&error];
@@ -319,6 +327,36 @@
                       channelName:aChannelName
                             error:error
                            object:@(!error)];
+    }];
+}
+
+- (void)removeMsgFromServerWithMsgList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation){
+        NSArray *msgIds = param[@"msgIds"];
+        [conversation removeMessagesFromServerMessageIds:msgIds completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }];
+}
+
+- (void)removeMsgFromServerWithTimeStamp:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation){
+        long timestamp = [param[@"timestamp"] longValue];
+        [conversation removeMessagesFromServerWithTimeStamp:timestamp completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
     }];
 }
 
@@ -345,22 +383,22 @@
     __weak typeof(self) weakSelf = self;
     
     EMMessageBodyType type = [EMMessageBody typeFromString:param[@"msgType"]];
-    long long timeStamp = [param[@"timeStamp"] longLongValue];
+    long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *sender = param[@"sender"];
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         
         [conversation loadMessagesWithType:type
-                                 timestamp:timeStamp
+                                 timestamp:timestamp
                                      count:count
                                   fromUser:sender
                            searchDirection:direction
                                 completion:^(NSArray *aMessages, EMError *aError)
-        {
+         {
             NSMutableArray *msgJsonAry = [NSMutableArray array];
             for (EMChatMessage *msg in aMessages) {
                 [msgJsonAry addObject:[msg toJson]];
@@ -381,12 +419,12 @@
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     
     [self getConversationWithParam:param
-                         completion:^(EMConversation *conversation) {
+                        completion:^(EMConversation *conversation) {
         [conversation loadMessagesStartFromId:startId
                                         count:count
                               searchDirection:direction
                                    completion:^(NSArray *aMessages, EMError *aError)
-        {
+         {
             NSMutableArray *jsonMsgs = [NSMutableArray array];
             for (EMChatMessage *msg in aMessages) {
                 [jsonMsgs addObject:[msg toJson]];
@@ -410,7 +448,7 @@
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         
         [conversation loadMessagesWithKeyword:keywords
                                     timestamp:timestamp
@@ -418,7 +456,7 @@
                                      fromUser:sender
                               searchDirection:direction
                                    completion:^(NSArray *aMessages, EMError *aError)
-        {
+         {
             NSMutableArray *msgJsonAry = [NSMutableArray array];
             for (EMChatMessage *msg in aMessages) {
                 [msgJsonAry addObject:[msg toJson]];
@@ -438,13 +476,13 @@
     int count = [param[@"count"] intValue];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
-    {
+     {
         
         [conversation loadMessagesFrom:startTime
                                     to:entTime
                                  count:count
                             completion:^(NSArray *aMessages, EMError *aError)
-        {
+         {
             NSMutableArray *msgJsonAry = [NSMutableArray array];
             for (EMChatMessage *msg in aMessages) {
                 [msgJsonAry addObject:[msg toJson]];

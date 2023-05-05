@@ -8,7 +8,6 @@ buildscript {
     }
 
     dependencies {
-        // classpath 'com.android.tools.build:gradle:3.5.0'
         classpath 'com.android.tools.build:gradle:4.2.0'
     }
 }
@@ -49,5 +48,5 @@ tasks.withType(JavaCompile){
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'io.hyphenate:hyphenate-chat:3.9.5'
+    implementation 'io.hyphenate:hyphenate-chat:4.0.1'
 }

@@ -12,6 +12,7 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessageBody;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -83,6 +84,12 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             }
             else if(EMSDKMethod.messageCount.equals(call.method)) {
                 messageCount(param, call.method, result);
+            }
+            else if (EMSDKMethod.removeMsgFromServerWithMsgList.equals(call.method)) {
+                removeMsgFromServerWithMsgList(param, call.method, result);
+            }
+            else if (EMSDKMethod.removeMsgFromServerWithTimeStamp.equals(call.method)) {
+                removeMsgFromServerWithTimeStamp(param, call.method, result);
             }
             else
             {
@@ -210,7 +217,11 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         String msgId = params.getString("msg_id");
         asyncRunnable(()->{
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            if(msg == null) {
+                onSuccess(result, channelName, null);
+            }else {
+                onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            }
         });
     }
 
@@ -305,6 +316,22 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         asyncRunnable(()->{
             onSuccess(result, channelName,  conversation.getAllMsgCount());
         });
+    }
+
+    private void removeMsgFromServerWithMsgList(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray jsonAry = params.getJSONArray("msgIds");
+        List<String> msgIds = new ArrayList<>();
+        for (int i = 0; i < jsonAry.length(); i++) {
+            msgIds.add((String) jsonAry.get(i));
+        }
+        EMConversation conversation = conversationWithParam(params);
+        conversation.removeMessagesFromServer(msgIds, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void removeMsgFromServerWithTimeStamp(JSONObject params, String channelName, Result result) throws JSONException {
+        long timestamp = params.getLong("timestamp");
+        EMConversation conversation = conversationWithParam(params);
+        conversation.removeMessagesFromServer(timestamp, new EMWrapperCallBack(result, channelName, null));
     }
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
