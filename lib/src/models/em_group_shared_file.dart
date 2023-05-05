@@ -65,11 +65,11 @@ class EMGroupSharedFile {
   /// @nodoc
   Map toJson() {
     Map data = Map();
-    data.setValueWithOutNull("fileId", _fileId);
-    data.setValueWithOutNull("name", _fileName);
-    data.setValueWithOutNull("owner", _fileOwner);
-    data.setValueWithOutNull("createTime", _createTime);
-    data.setValueWithOutNull("fileSize", _fileSize);
+    data.add("fileId", _fileId);
+    data.add("name", _fileName);
+    data.add("owner", _fileOwner);
+    data.add("createTime", _createTime);
+    data.add("fileSize", _fileSize);
     return data;
   }
 }

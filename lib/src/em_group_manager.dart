@@ -122,15 +122,30 @@ class EMGroupManager {
   ///
   /// This method returns a group list which does not contain member information. If you want to update information of a group to include its member information, call [fetchGroupInfoFromServer].
   ///
+  /// Param [pageSize] The size of groups per page.
+  ///
+  /// Param [pageNum] The page number.
+  ///
+  /// Param [needMemberCount] The return result contains the number of group members
+  ///
+  /// Param [needRole] The result contains the current user's role in the group
+  ///
   /// **Return** The list of groups that the current user joins.
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
-    int pageSize = 200,
-    int pageNum = 1,
+    int pageSize = 20,
+    int pageNum = 0,
+    bool needMemberCount = false,
+    bool needRole = false,
   }) async {
-    Map req = {'pageSize': pageSize, 'pageNum': pageNum};
+    Map req = {
+      'pageSize': pageSize,
+      'pageNum': pageNum,
+      "needMemberCount": needMemberCount,
+      "needRole": needRole,
+    };
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getJoinedGroupsFromServer, req);
     try {
@@ -161,7 +176,7 @@ class EMGroupManager {
     String? cursor,
   }) async {
     Map req = {'pageSize': pageSize};
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getPublicGroupsFromServer, req);
     try {
@@ -211,10 +226,10 @@ class EMGroupManager {
     required EMGroupOptions options,
   }) async {
     Map req = {'options': options.toJson()};
-    req.setValueWithOutNull("groupName", groupName);
-    req.setValueWithOutNull("desc", desc);
-    req.setValueWithOutNull("inviteMembers", inviteMembers);
-    req.setValueWithOutNull("inviteReason", inviteReason);
+    req.add("groupName", groupName);
+    req.add("desc", desc);
+    req.add("inviteMembers", inviteMembers);
+    req.add("inviteReason", inviteReason);
 
     Map result = await _channel.invokeMethod(ChatMethodKeys.createGroup, req);
     try {
@@ -231,6 +246,8 @@ class EMGroupManager {
   /// This method does not get member information. If member information is required, call [fetchMemberListFromServer].
   ///
   /// Param [groupId] The group ID.
+  ///
+  /// Param [fetchMembers] Whether to get group members. By default, a list of 200 members is fetched.
   ///
   /// **Return** The group instance.
   ///
@@ -281,7 +298,7 @@ class EMGroupManager {
       'groupId': groupId,
       'pageSize': pageSize,
     };
-    req.setValueWithOutNull("cursor", cursor);
+    req.add("cursor", cursor);
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.getGroupMemberListFromServer,
       req,
@@ -494,7 +511,7 @@ class EMGroupManager {
     String? welcome,
   }) async {
     Map req = {'groupId': groupId, 'members': members};
-    req.setValueWithOutNull("welcome", welcome);
+    req.add("welcome", welcome);
     Map result = await _channel.invokeMethod(ChatMethodKeys.addMembers, req);
     try {
       EMError.hasErrorFromResult(result);
@@ -527,7 +544,7 @@ class EMGroupManager {
       'groupId': groupId,
       'members': members,
     };
-    req.setValueWithOutNull("reason", reason);
+    req.add("reason", reason);
 
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.inviterUser,
@@ -1118,7 +1135,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId};
-    req.setValueWithOutNull('reason', reason);
+    req.add('reason', reason);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.requestToJoinPublicGroup, req);
     try {
@@ -1172,7 +1189,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId, 'username': username};
-    req.setValueWithOutNull('reason', reason);
+    req.add('reason', reason);
 
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.declineJoinApplication, req);
@@ -1226,7 +1243,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
-    req.setValueWithOutNull('reason', reason);
+    req.add('reason', reason);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.declineInvitationFromGroup, req);
     try {
@@ -1302,13 +1319,13 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_ADDED:
           String groupId = map['groupId'];
-          List<String> mutes = List.from(map['mutes']);
+          List<String> mutes = List.from(map['mutes'] ?? []);
           int? muteExpire = map['muteExpire'];
           element.onMuteListAddedFromGroup?.call(groupId, mutes, muteExpire);
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
           String groupId = map['groupId'];
-          List<String> mutes = List.from(map['mutes']);
+          List<String> mutes = List.from(map['mutes'] ?? []);
           element.onMuteListRemovedFromGroup?.call(groupId, mutes);
           break;
         case EMGroupChangeEvent.ON_ADMIN_ADDED:
@@ -1355,18 +1372,27 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_WHITE_LIST_ADDED:
           String groupId = map["groupId"];
-          List<String> members = List.from(map['whitelist']);
+          List<String> members = List.from(map['whitelist'] ?? []);
           element.onAllowListAddedFromGroup?.call(groupId, members);
           break;
         case EMGroupChangeEvent.ON_WHITE_LIST_REMOVED:
           String groupId = map["groupId"];
-          List<String> members = List.from(map['whitelist']);
+          List<String> members = List.from(map['whitelist'] ?? []);
           element.onAllowListRemovedFromGroup?.call(groupId, members);
           break;
         case EMGroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
           String groupId = map["groupId"];
           bool isAllMuted = map["isMuted"] as bool;
           element.onAllGroupMemberMuteStateChanged?.call(groupId, isAllMuted);
+          break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          element.onSpecificationDidUpdate?.call(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisabled"] as bool;
+          element.onDisableChanged?.call(groupId, isDisable);
           break;
       }
     });
@@ -1436,13 +1462,13 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_ADDED:
           String groupId = map['groupId'];
-          List<String> mutes = List.from(map['mutes']);
+          List<String> mutes = List.from(map['mutes'] ?? []);
           int? muteExpire = map['muteExpire'];
           listener.onMuteListAddedFromGroup(groupId, mutes, muteExpire);
           break;
         case EMGroupChangeEvent.ON_MUTE_LIST_REMOVED:
           String groupId = map['groupId'];
-          List<String> mutes = List.from(map['mutes']);
+          List<String> mutes = List.from(map['mutes'] ?? []);
           listener.onMuteListRemovedFromGroup(groupId, mutes);
           break;
         case EMGroupChangeEvent.ON_ADMIN_ADDED:
@@ -1489,18 +1515,27 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_WHITE_LIST_ADDED:
           String groupId = map["groupId"];
-          List<String> members = List.from(map['whitelist']);
+          List<String> members = List.from(map['whitelist'] ?? []);
           listener.onAllowListAddedFromGroup(groupId, members);
           break;
         case EMGroupChangeEvent.ON_WHITE_LIST_REMOVED:
           String groupId = map["groupId"];
-          List<String> members = List.from(map['whitelist']);
+          List<String> members = List.from(map['whitelist'] ?? []);
           listener.onAllowListRemovedFromGroup(groupId, members);
           break;
         case EMGroupChangeEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
           String groupId = map["groupId"];
           bool isAllMuted = map["isMuted"] as bool;
           listener.onAllGroupMemberMuteStateChanged(groupId, isAllMuted);
+          break;
+        case EMGroupChangeEvent.ON_SPECIFICATION_DID_UPDATE:
+          EMGroup group = EMGroup.fromJson(map["group"]);
+          listener.onSpecificationDidUpdate(group);
+          break;
+        case EMGroupChangeEvent.ON_STATE_CHANGED:
+          String groupId = map["groupId"];
+          bool isDisable = map["isDisable"] as bool;
+          listener.onDisableChange(groupId, isDisable);
           break;
       }
     }
@@ -1528,7 +1563,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Param [listener] The group manager listener to be removed.
   ///
-  @Deprecated("Use #removeEventHandler to instead")
+  @Deprecated("Use [removeEventHandler] to instead")
   void removeGroupManagerListener(EMGroupManagerListener listener) {
     _listeners.remove(listener);
   }
@@ -1536,7 +1571,7 @@ extension EMGroupManagerDeprecated on EMGroupManager {
   ///
   /// Removes all group manager listener.
   ///
-  @Deprecated("Use #clearEventHandlers to instead")
+  @Deprecated("Use [clearEventHandlers] to instead")
   void clearAllGroupManagerListeners() {
     _listeners.clear();
   }

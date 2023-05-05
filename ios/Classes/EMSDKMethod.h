@@ -96,6 +96,10 @@ static NSString *const ChatRemoveReaction = @"removeReaction";
 static NSString *const ChatFetchReactionList = @"fetchReactionList";
 static NSString *const ChatFetchReactionDetail = @"fetchReactionDetail";
 static NSString *const ChatReportMessage = @"reportMessage";
+static NSString *const ChatFetchConversationsFromServerWithPage = @"fetchConversationsFromServerWithPage";
+static NSString *const ChatRemoveMessagesFromServerWithMsgIds = @"removeMessagesFromServerWithMsgIds";
+static NSString *const ChatRemoveMessagesFromServerWithTs = @"removeMessagesFromServerWithTs";
+
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
@@ -139,6 +143,8 @@ static NSString *const ChatLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
 static NSString *const ChatConversationMessageCount = @"messageCount";
+static NSString *const ChatRemoveMsgFromServerWithMsgList = @"removeMsgFromServerWithMsgList";
+static NSString *const ChatRemoveMsgFromServerWithTimeStamp = @"removeMsgFromServerWithTimeStamp";
 
 #pragma mark - EMChatMessageWrapper
 static NSString *const ChatGetReactionList = @"getReactionList";
@@ -179,7 +185,9 @@ static NSString *const ChatIsMemberInChatRoomWhiteListFromServer = @"isMemberInC
 
 static NSString *const ChatMuteAllChatRoomMembers = @"muteAllChatRoomMembers";
 static NSString *const ChatUnMuteAllChatRoomMembers = @"unMuteAllChatRoomMembers";
-
+static NSString *const ChatFetchChatRoomAttributes = @"fetchChatRoomAttributes";
+static NSString *const ChatSetChatRoomAttributes = @"setChatRoomAttributes";
+static NSString *const ChatRemoveChatRoomAttributes  = @"removeChatRoomAttributes";
 
 static NSString *const ChatChatroomChanged = @"onChatRoomChanged";
 
@@ -187,7 +195,6 @@ static NSString *const ChatChatroomChanged = @"onChatRoomChanged";
 
 static NSString *const ChatGetGroupWithId = @"getGroupWithId";
 static NSString *const ChatGetJoinedGroups = @"getJoinedGroups";
-static NSString *const ChatGetGroupsWithoutPushNotification = @"getGroupsWithoutPushNotification";
 static NSString *const ChatGetJoinedGroupsFromServer = @"getJoinedGroupsFromServer";
 static NSString *const ChatGetPublicGroupsFromServer = @"getPublicGroupsFromServer";
 static NSString *const ChatCreateGroup = @"createGroup";

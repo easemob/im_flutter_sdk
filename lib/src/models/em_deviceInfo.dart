@@ -13,9 +13,9 @@ class EMDeviceInfo {
   /// @nodoc
   Map toJson() {
     Map data = Map();
-    data.setValueWithOutNull("resource", resource);
-    data.setValueWithOutNull("deviceUUID", deviceUUID);
-    data.setValueWithOutNull("deviceName", deviceName);
+    data.add("resource", resource);
+    data.add("deviceUUID", deviceUUID);
+    data.add("deviceName", deviceName);
 
     return data;
   }
@@ -23,9 +23,9 @@ class EMDeviceInfo {
   /// @nodoc
   factory EMDeviceInfo.fromJson(Map map) {
     return EMDeviceInfo._private(
-      map.getStringValue("resource"),
-      map.getStringValue("deviceUUID"),
-      map.getStringValue("deviceName"),
+      map["resource"],
+      map["deviceUUID"],
+      map["deviceName"],
     );
   }
 

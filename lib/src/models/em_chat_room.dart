@@ -4,7 +4,7 @@ import '../internal/inner_headers.dart';
 /// The chat room instance class.
 ///
 /// **Note**
-/// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+/// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
 ///
 class EMChatRoom {
   EMChatRoom._private({
@@ -29,18 +29,17 @@ class EMChatRoom {
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private(
         roomId: map["roomId"],
-        name: map.getStringValue("name"),
-        description: map.getStringValue("desc"),
-        owner: map.getStringValue("owner"),
-        memberCount: map.getIntValue("memberCount"),
-        maxUsers: map.getIntValue("maxUsers"),
-        adminList: map.listValue<String>("adminList"),
-        memberList: map.listValue<String>("memberList"),
-        blockList: map.listValue<String>("blockList"),
-        muteList: map.listValue<String>("muteList"),
-        announcement: map.getStringValue("announcement"),
-        permissionType:
-            chatRoomPermissionTypeFromInt(map.getIntValue("permissionType")),
+        name: map["name"],
+        description: map["desc"],
+        owner: map["owner"],
+        memberCount: map["memberCount"],
+        maxUsers: map["maxUsers"],
+        adminList: map.getList("adminList"),
+        memberList: map.getList("memberList"),
+        blockList: map.getList("blockList"),
+        muteList: map.getList("muteList"),
+        announcement: map["announcement"],
+        permissionType: chatRoomPermissionTypeFromInt(map["permissionType"]),
         isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
 
@@ -48,17 +47,17 @@ class EMChatRoom {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['roomId'] = roomId;
-    data.setValueWithOutNull("name", name);
-    data.setValueWithOutNull("desc", description);
-    data.setValueWithOutNull("owner", owner);
-    data.setValueWithOutNull("memberCount", memberCount);
-    data.setValueWithOutNull("maxUsers", maxUsers);
-    data.setValueWithOutNull("adminList", adminList);
-    data.setValueWithOutNull("memberList", memberList);
-    data.setValueWithOutNull("blockList", blockList);
-    data.setValueWithOutNull("muteList", muteList);
-    data.setValueWithOutNull("announcement", announcement);
-    data.setValueWithOutNull("isAllMemberMuted", isAllMemberMuted);
+    data.add("name", name);
+    data.add("desc", description);
+    data.add("owner", owner);
+    data.add("memberCount", memberCount);
+    data.add("maxUsers", maxUsers);
+    data.add("adminList", adminList);
+    data.add("memberList", memberList);
+    data.add("blockList", blockList);
+    data.add("muteList", muteList);
+    data.add("announcement", announcement);
+    data.add("isAllMemberMuted", isAllMemberMuted);
     data['permissionType'] = chatRoomPermissionTypeToInt(permissionType);
 
     return data;
@@ -68,7 +67,7 @@ class EMChatRoom {
   /// Gets the chat room ID.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String roomId;
 
@@ -76,7 +75,7 @@ class EMChatRoom {
   /// Gets the chat room name from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String? name;
 
@@ -84,7 +83,7 @@ class EMChatRoom {
   /// Gets the chat room description from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String? description;
 
@@ -92,7 +91,7 @@ class EMChatRoom {
   /// Gets the chat room owner ID. If this method returns an empty string, the SDK fails to get chat room details.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final String? owner;
 
@@ -100,7 +99,7 @@ class EMChatRoom {
   /// Gets the chat room announcement in the chat room from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomAnnouncement(String)} before calling this method. Otherwise, the return value may not be correct.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomAnnouncement] before calling this method. Otherwise, the return value may not be correct.
   ///
   final String? announcement;
 
@@ -108,7 +107,7 @@ class EMChatRoom {
   /// Gets the number of online members from the memory.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final int? memberCount;
 
@@ -116,7 +115,7 @@ class EMChatRoom {
   /// Gets the maximum number of members in the chat room from the memory, which is set/specified when the chat room is created.
   ///
   /// **Note**
-  /// To get the correct value, ensure that you call {@ link EMChatRoomManager#fetchChatRoomInfoFromServer(String)} before calling this method.
+  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
   ///
   final int? maxUsers;
 

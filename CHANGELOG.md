@@ -1,5 +1,85 @@
 ## NEXT
 
+## 4.0.0+4
+
+#### 修复
+- 安卓构建视频消息崩溃的问题。
+
+## 4.0.0+3
+
+#### 修复
+- 安卓 `onRemovedFromChatRoom` 不回调。
+
+## 4.0.0+2
+
+#### 修复
+
+- 修复List<String>? 转换失败；
+- 修复图片消息和视频消息转换失败；
+
+## 4.0.0
+
+#### 新增特性
+
+- 依赖的原生平台 `iOS` 和 `Android` 的 SDK 升级为 v4.0.0 版本。
+- 新增 `EMChatManager#fetchConversationListFromServer` 方法实现从服务器分页获取会话列表。
+- 新增 `EMMessage#chatroomMessagePriority` 属性实现聊天室消息优先级功能，确保高优先级消息优先处理。
+
+#### 优化
+
+修改发送消息结果的回调由 `EMMessage#setMessageStatusCallBack` 修改为 `EMChatManager#addMessageEvent`。
+
+#### 修复
+
+修复 `EMChatManager#deleteMessagesBeforeTimestamp` 执行失败的问题。
+
+# 3.9.9+1
+修复：
+1. 修复ios群已读回执不执行；
+
+新增：
+1. 增加会话根据时间删除服务器漫游消息api `EMConversation#removeServerMessageBeforeTimeStamp(timestamp)`。
+
+# 3.9.9
+修复：
+1.修复极端情况下 SDK 崩溃的问题。
+
+## 3.9.7+4
+修复：
+1. 安卓不执行onGroupDestroyed回调；
+2. 构造位置消息时无法设置buildingName；
+
+## 3.9.7+3
+修复：
+1. 安卓不会执行 onAutoAcceptInvitationFromGroup 回调；
+
+## 3.9.7+2
+
+修复：
+1. 修复 StartCallback() 不会回调的问题；
+2. 修复 iOS 根据时间获取消息失败的问题；
+
+## 3.9.7+1
+
+修复:
+  1. 修复 安卓 fcm send id偶现为空的问题；
+  2. 修复 安卓 `SilentModeResult` expireTs 为空的问题；
+
+## 3.9.7
+
+新增特性:
+  1. 新增聊天室自定义属性功能。
+  2. 新增 `areaCode` 方法限制连接边缘节点的范围。
+  3. `EMGroup` 中增加 `isDisabled` 属性显示群组禁用状态，需要开发者在服务端设置。该属性在调用 `EMGroupManager` 中的 `fetchGroupInfoFromServer` 方法获取群组详情时返回。
+
+优化：
+  1. 移除 SDK 一部分冗余日志。
+
+修复
+  1. 修复极少数场景下，从服务器获取较大数量的消息时失败的问题。
+  2. 修复数据统计不正确的问题。
+  3. 修复极少数场景下打印日志导致的崩溃。
+
 ## 3.9.5
 
 - 将 AddManagerListener 方法标为过期；

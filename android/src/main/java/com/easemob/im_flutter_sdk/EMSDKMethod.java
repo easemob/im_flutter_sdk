@@ -87,6 +87,9 @@ public class EMSDKMethod {
     static final String fetchReactionList = "fetchReactionList";
     static final String fetchReactionDetail = "fetchReactionDetail";
     static final String reportMessage = "reportMessage";
+    static final String fetchConversationsFromServerWithPage = "fetchConversationsFromServerWithPage";
+    static final String removeMessagesFromServerWithMsgIds = "removeMessagesFromServerWithMsgIds";
+    static final String removeMessagesFromServerWithTs = "removeMessagesFromServerWithTs";
 
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
@@ -127,6 +130,8 @@ public class EMSDKMethod {
     static final String loadMsgWithMsgType = "loadMsgWithMsgType";
     static final String loadMsgWithTime = "loadMsgWithTime";
     static final String messageCount = "messageCount";
+    static final String removeMsgFromServerWithMsgList = "removeMsgFromServerWithMsgList";
+    static final String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
 
     // EMMessage method
     static final String getReactionList = "getReactionList";
@@ -165,7 +170,9 @@ public class EMSDKMethod {
 
     static final String muteAllChatRoomMembers = "muteAllChatRoomMembers";
     static final String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
-
+    static final String fetchChatRoomAttributes = "fetchChatRoomAttributes";
+    static final String setChatRoomAttributes = "setChatRoomAttributes";
+    static final String removeChatRoomAttributes = "removeChatRoomAttributes";
 
     // EMChatRoomManagerListener
     static final String chatRoomChange = "onChatRoomChanged";
@@ -173,7 +180,6 @@ public class EMSDKMethod {
     /// EMGroupManager
     static final String getGroupWithId = "getGroupWithId";
     static final String getJoinedGroups = "getJoinedGroups";
-    static final String getGroupsWithoutPushNotification = "getGroupsWithoutPushNotification";
     static final String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
     static final String getPublicGroupsFromServer = "getPublicGroupsFromServer";
     static final String createGroup = "createGroup";

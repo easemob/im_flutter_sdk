@@ -44,7 +44,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     public EMProgressManager progressManager;
     private EMMultiDeviceListener multiDeviceListener;
     private EMConnectionListener connectionListener;
-    public String fcmKey;
+
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -129,7 +129,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             else if (EMSDKMethod.renewToken.equals(call.method)){
                 renewToken(param, call.method, result);
             } else if (EMSDKMethod.startCallback.equals(call.method)) {
-                startCallback();
+                startCallback(param, call.method, result);
             }
             else  {
                 super.onMethodCall(call, result);
@@ -282,11 +282,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
-        fcmKey = EMClient.getInstance().getOptions().getPushConfig().getFcmSenderId();
+
         bindingManagers();
         registerEaseListener();
         onSuccess(result, channelName, null);
-
     }
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {
@@ -312,8 +311,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         });
     }
 
-    private void startCallback() {
+    private void startCallback(JSONObject param, String channelName, Result result) {
         EMListenerHandle.getInstance().startCallback();
+        onSuccess(result, channelName, null);
     }
 
     private void bindingManagers() {

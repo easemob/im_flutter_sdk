@@ -42,12 +42,9 @@ class EMMessageReaction {
     String reaction = map["reaction"];
     int count = map["count"];
 
-    bool isAddedBySelf =
-        map.getBoolValue("isAddedBySelf", defaultValue: false)!;
+    bool isAddedBySelf = map["isAddedBySelf"] ?? false;
     List<String> userList = [];
-    List<String>? tmp = map.getList("userList", valueCallback: (str) {
-      return str;
-    });
+    List<String>? tmp = map.getList("userList");
     if (tmp != null) {
       userList.addAll(tmp);
     }
@@ -79,7 +76,7 @@ class EMMessageReactionEvent {
     required this.reactions,
   });
 
-  /// nodoc
+  /// @nodoc
   factory EMMessageReactionEvent.fromJson(Map map) {
     String conversationId = map["conversationId"];
     String messageId = map["messageId"];

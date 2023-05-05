@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'internal/inner_headers.dart';
 
+@Deprecated('Switch [ChatManager.addMessageEvent] to instead.')
 class MessageStatusCallBack {
   final void Function(int progress)? onProgress;
 

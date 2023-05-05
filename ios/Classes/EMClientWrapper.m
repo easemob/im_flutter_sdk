@@ -170,7 +170,9 @@ static EMClientWrapper *wrapper = nil;
              channelName:call.method
                   result:result];
     }else if ([ChatStartCallback isEqualToString:call.method]){
-        [self startCallBack];
+        [self startCallBack:call.arguments
+                channelName:call.method
+                     result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -439,8 +441,13 @@ static EMClientWrapper *wrapper = nil;
     }];
 }
 
-- (void)startCallBack {
+- (void)startCallBack:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    __weak typeof(self)weakSelf = self;
     [EMListenerHandle.sharedInstance startCallback];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
 }
 
 #pragma - mark EMClientDelegate
@@ -461,13 +468,13 @@ static EMClientWrapper *wrapper = nil;
 }
 
 // 声网token即将过期
-- (void)tokenWillExpire:(int)aErrorCode {
+- (void)tokenWillExpire:(EMErrorCode)aErrorCode {
     [self.channel invokeMethod:ChatOnTokenWillExpire
                      arguments:nil];
 }
 
 // 声网token过期
-- (void)tokenDidExpire:(int)aErrorCode {
+- (void)tokenDidExpire:(EMErrorCode)aErrorCode {
     [EMListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnTokenDidExpire
                      arguments:nil];
@@ -538,6 +545,16 @@ static EMClientWrapper *wrapper = nil;
     data[@"threadId"] = aThreadId;
     data[@"users"] = aExt;
     [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    [[EMClient sharedClient] applicationDidEnterBackground:application];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    [[EMClient sharedClient] applicationWillEnterForeground:application];
 }
 
 @end
