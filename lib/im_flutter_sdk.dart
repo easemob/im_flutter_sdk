@@ -12,7 +12,6 @@ export 'src/em_chat_room_manager.dart';
 export 'src/em_push_manager.dart';
 export 'src/em_userInfo_manager.dart';
 export 'src/em_presence_manager.dart';
-export 'src/em_listeners.dart';
 
 export 'src/models/em_group_message_ack.dart' show EMGroupMessageAck;
 export 'src/models/em_chat_room.dart' show EMChatRoom;
@@ -38,5 +37,4 @@ export 'src/models/em_message_reaction.dart';
 export 'src/models/em_chat_thread.dart';
 export 'src/models/chat_silent_mode.dart';
 export 'src/event_handler/manager_event_handler.dart';
-export 'src/em_message_status_callback.dart' show MessageStatusCallBack;
 export 'src/tools/area_code.dart';

@@ -1,7 +1,9 @@
 /// @nodoc
 import 'inner_headers.dart';
 
+/// ~english
 /// The push configuration class, which contains the push configuration information, such as the push style.
+/// ~end
 class EMPushConfig {
   String? mzAppId = '';
   String? mzAppKey = '';

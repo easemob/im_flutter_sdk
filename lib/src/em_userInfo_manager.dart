@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 
 import 'internal/inner_headers.dart';
 
-///
+/// ~english
 /// The user attribute manager class, which gets and sets the user attributes.
-///
+/// ~end
 class EMUserInfoManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -16,7 +16,7 @@ class EMUserInfoManager {
   // The map of effective contacts.
   Map<String, EMUserInfo> _effectiveUserInfoMap = Map();
 
-  ///
+  /// ~english
   /// Modifies the user attributes of the current user.
   ///
   /// Param [nickname] The nickname of the user.
@@ -40,7 +40,7 @@ class EMUserInfoManager {
   /// **Return** The user info.
   ///
   /// **Throws** A description of the exception. See [EMError].
-  ///
+  /// ~end
   Future<EMUserInfo> updateUserInfo({
     String? nickname,
     String? avatarUrl,
@@ -74,7 +74,7 @@ class EMUserInfoManager {
     }
   }
 
-  ///
+  /// ~english
   /// Gets the current user's attributes from the server.
   ///
   /// Param [expireTime] The time period(seconds) when the user attributes in the cache expire. If the interval between two callers is less than or equal to the value you set in the parameter, user attributes are obtained directly from the local cache; otherwise, they are obtained from the server. For example, if you set this parameter to 120(2 minutes), once this method is called again within 2 minutes, the SDK returns the attributes obtained last time.
@@ -82,9 +82,9 @@ class EMUserInfoManager {
   /// **Return** The user properties that are obtained. See [EMUserInfo].
   ///
   /// **Throws** A description of the exception. See [EMError].
-  ///
+  /// ~end
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 0}) async {
-    String? currentUser = await EMClient.getInstance.getCurrentUsername();
+    String? currentUser = await EMClient.getInstance.getCurrentUserId();
     if (currentUser != null) {
       try {
         Map<String, EMUserInfo> ret = await fetchUserInfoById(
@@ -100,7 +100,7 @@ class EMUserInfoManager {
     return null;
   }
 
-  ///
+  /// ~english
   /// Gets user attributes of the specified users.
   ///
   /// Param [userIds] The username array.
@@ -110,7 +110,7 @@ class EMUserInfoManager {
   /// **Return** A map that contains key-value pairs where the key is the user ID and the value is user attributes.
   ///
   /// **Throws** A description of the exception. See [EMError].
-  ///
+  /// ~end
   Future<Map<String, EMUserInfo>> fetchUserInfoById(
     List<String> userIds, {
     int expireTime = 0,
@@ -151,6 +151,9 @@ class EMUserInfoManager {
     }
   }
 
+  /// ~english
+  /// clear all userInfo cache.
+  ///  ~end
   void clearUserInfoCache() {
     _effectiveUserInfoMap.clear();
   }
