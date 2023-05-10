@@ -82,9 +82,9 @@
 
     
     [EMClient.sharedClient.userInfoManager updateOwnUserInfo:userInfoValue withType:userInfoType completion:^(EMUserInfo *aUserInfo, EMError *aError) {
-        
+        __strong typeof (self)strongSelf = weakSelf;
         NSDictionary *objDic = [aUserInfo toJson];
-        [weakSelf wrapperCallBack:result
+        [strongSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
                            object:objDic];

@@ -33,19 +33,14 @@
     EMUserInfoManagerWrapper *_userInfoManager;
     EMPresenceManagerWrapper *_presenceManager;
     EMChatThreadManagerWrapper *_threadManager;
-    EMProgressManager *_progressManager;
     EMChatMessageWrapper *_msgWrapper;
+    EMProgressManager *_progressManager;
 }
 @end
 
 @implementation EMClientWrapper
 
-static EMClientWrapper *wrapper = nil;
 
-
-+ (EMClientWrapper *)sharedWrapper {
-    return wrapper;
-}
 
 - (void)sendDataToFlutter:(NSDictionary *)aData {
     if (aData == nil) {
@@ -55,15 +50,6 @@ static EMClientWrapper *wrapper = nil;
                      arguments:aData];
 }
 
-+ (EMClientWrapper *)channelName:(NSString *)aChannelName
-                       registrar:(NSObject<FlutterPluginRegistrar>*)registrar
-{
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        wrapper = [[EMClientWrapper alloc] initWithChannelName:aChannelName registrar:registrar];
-    });
-    return wrapper;
-}
 
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -183,7 +169,6 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     
-    
     __weak typeof(self) weakSelf = self;
     
     EMOptions *options = [EMOptions fromJson:param];
@@ -206,12 +191,13 @@ static EMClientWrapper *wrapper = nil;
     _contactManager = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
     _conversationManager = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
     _groupManager = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
+    _groupManager.clientWrapper = self;
     _roomManager =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
     _pushManager =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
     _userInfoManager = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
     _presenceManager = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
     _threadManager = [[EMChatThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
-    _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager") registrar:self.flutterPluginRegister];
+
     _msgWrapper = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
 }
 
@@ -224,8 +210,8 @@ static EMClientWrapper *wrapper = nil;
     [_userInfoManager unRegisterEaseListener];
     [_presenceManager unRegisterEaseListener];
     [_threadManager unRegisterEaseListener];
-    [_progressManager unRegisterEaseListener];
     [_msgWrapper unRegisterEaseListener];
+    [super unRegisterEaseListener];
 }
 
 - (void)unRegisterEaseListener {
@@ -556,5 +542,6 @@ static EMClientWrapper *wrapper = nil;
 {
     [[EMClient sharedClient] applicationWillEnterForeground:application];
 }
+
 
 @end

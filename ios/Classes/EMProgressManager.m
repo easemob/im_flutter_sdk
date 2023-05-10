@@ -4,11 +4,12 @@
 //
 //  Created by 杜洁鹏 on 2022/5/23.
 //
-
+#import <Flutter/Flutter.h>
+#import <HyphenateChat/HyphenateChat.h>
 #import "EMProgressManager.h"
 #import "EMError+Helper.h"
 
-@interface EMProgressManager () <EMChatManagerDelegate>
+@interface EMProgressManager ()
 
 @end
 
@@ -20,7 +21,6 @@
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
 
-        
     }
     return self;
 }
@@ -36,5 +36,10 @@
 - (void)sendDownloadErrorToFlutter:(NSString *)fileId error:(EMError *)error {
     [self.channel invokeMethod:@"onError" arguments:@{@"fileId":fileId, @"error": [error toJson]}];
 }
+
+
+- (void)unRegisterEaseListener {
+}
+
 
 @end
