@@ -786,13 +786,13 @@
                                                          sharedFileId:fileId
                                                              progress:^(int progress)
      {
-        [EMClientWrapper.sharedWrapper.progressManager sendDownloadProgressToFlutter:fileId progress:progress];
+        [self.clientWrapper.progressManager sendDownloadProgressToFlutter:fileId progress:progress];
     } completion:^(EMGroup *aGroup, EMError *aError)
      {
         if (aError) {
-            [EMClientWrapper.sharedWrapper.progressManager sendDownloadErrorToFlutter:fileId error:aError];
+            [self.clientWrapper.progressManager sendDownloadErrorToFlutter:fileId error:aError];
         }else {
-            [EMClientWrapper.sharedWrapper.progressManager sendDownloadSuccessToFlutter:fileId path:savePath];
+            [self.clientWrapper.progressManager sendDownloadSuccessToFlutter:fileId path:savePath];
         }
     }];
     [self wrapperCallBack:result
