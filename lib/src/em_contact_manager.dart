@@ -8,6 +8,10 @@ import 'internal/inner_headers.dart';
 /// ~english
 /// The contact manager class, which manages chat contacts such as adding, deleting, retrieving, and modifying contacts.
 /// ~end
+///
+/// ~chinese
+/// `EMContactManager` 是联系人管理类，用于记录、查询和修改用户的联系人列表。
+/// ~end
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';
   static const MethodChannel _channel = const MethodChannel(
@@ -60,6 +64,14 @@ class EMContactManager {
   ///
   /// Param [handler] The handle for contact event. See [EMContactEventHandler].
   /// ~end
+  ///
+  /// ~chinese
+  /// 添加联系人事件处理程序。调用此方法后，您可以在新的联系人事件到达时处理它们。
+  ///
+  /// Param [identifier] 自定义处理程序标识符，用于查找相应的处理程序。
+  ///
+  /// Param [handler] 事件的句柄. See [EMContactEventHandler].
+  /// ~end
   void addEventHandler(
     String identifier,
     EMContactEventHandler handler,
@@ -72,6 +84,12 @@ class EMContactManager {
   ///
   /// Param [identifier] The custom handler identifier.
   /// ~end
+  ///
+  /// ~chinese
+  /// 删除联系人事件处理程序。
+  ///
+  /// Param [identifier] 自定义处理程序标识符。
+  /// ~end
   void removeEventHandler(String identifier) {
     _eventHandlesMap.remove(identifier);
   }
@@ -83,13 +101,25 @@ class EMContactManager {
   ///
   /// **Return** The contact event handler.
   /// ~end
+  ///
+  /// ~chinese
+  /// 获取联系人事件处理程序。
+  ///
+  /// Param [identifier] 自定义处理程序标识符。
+  ///
+  /// **Return** 事件的句柄。
+  /// ~end
   EMContactEventHandler? getEventHandler(String identifier) {
     return _eventHandlesMap[identifier];
   }
 
   /// ~english
   /// Clear all contact event handlers.
+  /// ~end
   ///
+  /// ~chinese
+  /// 清除所有联系人事件处理程序。
+  /// ~end
   void clearEventHandlers() {
     _eventHandlesMap.clear();
   }
@@ -102,6 +132,16 @@ class EMContactManager {
   /// Param [reason] (optional) The invitation message.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 添加联系人
+  ///
+  /// Param [userId] 要添加的好友的用户 ID。
+  ///
+  /// Param [reason] （可选）添加为好友的原因。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   /// ~end
   Future<void> addContact(
     String userId, {
@@ -131,6 +171,18 @@ class EMContactManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+  ///
+  /// ~chinese
+  /// 删除联系人及其相关的会话。
+  ///
+  /// Param [username] 要删除的联系人用户 ID。
+  ///
+  /// Param [keepConversation] 是否保留要删除的联系人的会话。
+  /// - `true`：是；
+  /// - （默认）`false`：否。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// ~end
   Future<void> deleteContact(
     String username, {
     bool keepConversation = false,
@@ -150,6 +202,14 @@ class EMContactManager {
   /// **Return** The list of contacts.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取联系人列表。
+  ///
+  /// **Return** 联系人列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   /// ~end
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -174,6 +234,14 @@ class EMContactManager {
   /// **Return** The contact list.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从数据库获取好友列表。
+  ///
+  /// **Return** 调用成功会返回好友列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   /// ~end
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -201,6 +269,15 @@ class EMContactManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+  ///
+  /// ~chinese
+  /// 将指定用户加入黑名单。
+  /// 你可以向黑名单中用户发消息，但是接收不到对方发送的消息。
+  ///
+  /// Param [username] 要加入黑名单的用户的用户 ID。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// ~end
   Future<void> addUserToBlockList(
     String username,
   ) async {
@@ -223,6 +300,14 @@ class EMContactManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+  ///
+  /// ~chinese
+  /// 将指定用户移除黑名单。
+  ///
+  /// Param [username] 要在黑名单中移除的用户 ID。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// ~end
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
     Map result = await _channel.invokeMethod(
@@ -240,6 +325,14 @@ class EMContactManager {
   /// **Return** The block list obtained from the server.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取黑名单列表。
+  ///
+  /// **Return** 该方法调用成功会返回黑名单列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   /// ~end
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -265,6 +358,14 @@ class EMContactManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+  ///
+  /// ~chinese
+  /// 从本地数据库获取黑名单列表。
+  ///
+  /// **Return** 该方法调用成功会返回黑名单列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// ~end
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
     try {
@@ -288,6 +389,14 @@ class EMContactManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+  ///
+  /// ~chinese
+  /// 接受加好友的邀请。
+  ///
+  /// Param [username] 发起好友邀请的用户 ID。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// ~end
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
     Map result =
@@ -306,6 +415,14 @@ class EMContactManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+  ///
+  /// ~chinese
+  /// 拒绝加好友的邀请。
+  ///
+  /// Param [username] 发起好友邀请的用户 ID。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// ~end
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
     Map result =
@@ -323,6 +440,14 @@ class EMContactManager {
   /// **Return** The list of unique IDs of users on the other devices if the method succeeds.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取登录用户在其他登录设备上唯一 ID，该 ID 由 username + "/" + resource 组成。
+  ///
+  /// **Return** 该方法调用成功会返回 ID 列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
   /// ~end
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result =
