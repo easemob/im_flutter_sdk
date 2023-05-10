@@ -27,9 +27,11 @@
                                                                               codec:codec];
         self.channel = channel;
         [registrar addMethodCallDelegate:self channel:channel];
+        
     }
     return self;
 }
+
 
 
 - (void)wrapperCallBack:(FlutterResult)result
@@ -50,7 +52,9 @@
     }
 }
 
-- (void)unRegisterEaseListener {}
+- (void)unRegisterEaseListener {
+   
+}
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     result(FlutterMethodNotImplemented);
@@ -59,6 +63,14 @@
 
 + (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
 
+}
+
+- (void)detachFromEngineForRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+    
+}
+
+-(void)dealloc{
+    NSLog(@"wrapper dealloc");
 }
 
 @end

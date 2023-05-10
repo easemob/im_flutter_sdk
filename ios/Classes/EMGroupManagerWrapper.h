@@ -7,11 +7,12 @@
 //
 
 #import "EMWrapper.h"
+#import "EMClientWrapper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EMGroupManagerWrapper : EMWrapper
-
+@property (nonatomic, weak) EMClientWrapper *clientWrapper;
 @end
 
 NS_ASSUME_NONNULL_END
