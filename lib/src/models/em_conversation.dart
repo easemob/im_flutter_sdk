@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../internal/inner_headers.dart';
 
-///
+/// ~english
 /// The conversation class, indicating a one-to-one chat, a group chat, or a conversation chat. It contains the messages that are sent and received within the conversation.
 ///
 /// The following code shows how to get the number of the unread messages from the conversation.
@@ -12,7 +12,18 @@ import '../internal/inner_headers.dart';
 ///   EMConversation? con = await EMClient.getInstance.chatManager.getConversation(conversationId);
 ///   int? unreadCount = con?.unreadCount;
 /// ```
+/// ~end
 ///
+/// ~chinese
+/// 会话类，用于定义单聊会话、群聊会话和聊天室会话。每类会话中包含发送和接收的消息。
+///
+/// 以下示例代码展示如何从会话中获取未读消息数：
+/// ```dart
+///   // The `ConversationId` can be the other party ID, the group ID, or the chat room ID.
+///   EMConversation? con = await EMClient.getInstance.chatManager.getConversation(conversationId);
+///   int? unreadCount = con?.unreadCount;
+/// ```
+/// ~end
 class EMConversation {
   EMConversation._private(this.id, this.type, this._ext, this.isChatThread);
 
@@ -38,23 +49,45 @@ class EMConversation {
     return data;
   }
 
-  ///
+  /// ~english
   /// The conversation ID.
   ///
   /// For one-to-one chat，the conversation ID is the username of the other party.
   /// For group chat, the conversation ID is the group ID, not the group name.
   /// For chat room, the conversation ID is the chat room ID, not the chat room name.
   /// For help desk, the conversation ID is the username of the other party.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取会话 ID。
+  ///
+  /// 对于单聊类型，会话 ID 同时也是对方用户的名称。
+  /// 对于群聊类型，会话 ID 同时也是对方群组的 ID，并不同于群组的名称。
+  /// 对于聊天室类型，会话 ID 同时也是聊天室的 ID，并不同于聊天室的名称。
+  /// 对于 HelpDesk 类型，会话 ID 与单聊类型相同，是对方用户的名称。
+  ///
+  /// **Return** 会话 ID。
+  /// ~end
   final String id;
 
-  ///
+  /// ~english
   /// The conversation type.
+  /// ~end
   ///
+  /// ~chinese
+  /// 会话类型。
+  /// ~end
   final EMConversationType type;
 
-  ///
+  /// ~english
   /// Is chat thread conversation.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否为子区会话。
+  /// - `true`：是；
+  /// - `false`：否。
+  /// ~end
   final bool isChatThread;
 
   Map<String, String>? _ext;
@@ -77,7 +110,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Gets the last message from the conversation.
   ///
   /// The operation does not change the unread message count.
@@ -85,7 +118,17 @@ class EMConversation {
   /// The SDK gets the latest message from the local memory first. If no message is found, the SDK loads the message from the local database and then puts it in the memory.
   ///
   /// **Return** The message instance.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取会话的最新一条消息。
+  ///
+  /// 不影响未读数统计。
+  ///
+  /// 会先从缓存中获取，如果没有则从本地数据库获取后存入缓存。
+  ///
+  /// **Return** 消息体实例。
+  /// ~end
   Future<EMMessage?> latestMessage() async {
     Map req = this._toJson();
     Map result = await _emConversationChannel.invokeMethod(
@@ -102,11 +145,17 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Gets the latest message from the conversation.
   ///
   /// **Return** The message instance.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取最近收到的一条消息。
+  ///
+  /// **Return** 消息体实例。
+  /// ~end
   Future<EMMessage?> lastReceivedMessage() async {
     Map req = this._toJson();
     Map result = await _emConversationChannel.invokeMethod(
@@ -124,13 +173,21 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Gets the unread message count of the conversation.
   ///
   /// **Return** The unread message count of the conversation.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取会话的消息未读数。
+  ///
+  /// **Return** 会话的消息未读数量。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包含错误码和原因，详见 [EMError]。
+  /// ~end
   Future<int> unreadCount() async {
     Map req = this._toJson();
     Map result = await _emConversationChannel.invokeMethod(
@@ -147,13 +204,21 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Marks a message as read.
   ///
   /// Param [messageId] The message ID.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 将消息标为已读。
+  ///
+  /// Param [messageId] 消息 ID。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> markMessageAsRead(String messageId) async {
     Map req = this._toJson();
     req['msg_id'] = messageId;
@@ -166,9 +231,13 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Marks all messages as read.
+  /// ~end
   ///
+  /// ~chinese
+  /// 将所有消息标为已读。
+  /// ~end
   Future<void> markAllMessagesAsRead() async {
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.markAllMessagesAsRead, this._toJson());
@@ -179,7 +248,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Inserts a message to a conversation in the local database and the SDK will automatically update the last message.
   ///
   /// Make sure you set the conversation ID as that of the conversation where you want to insert the message.
@@ -187,7 +256,15 @@ class EMConversation {
   /// Param [message] The message instance.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 插入一条消息在 SDK 本地数据库，消息的 conversation ID 应该和会话的 conversation ID 一致，消息会根据消息里的时间戳被插入 SDK 本地数据库，并且更新会话的 `latestMessage` 等属性。
+  ///
+  /// Param [message] 消息体实例。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> insertMessage(EMMessage message) async {
     Map req = this._toJson();
     req['msg'] = message.toJson();
@@ -200,7 +277,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Inserts a message to the end of a conversation in the local database.
   ///
   /// Make sure you set the conversation ID as that of the conversation where you want to insert the message.
@@ -208,7 +285,17 @@ class EMConversation {
   /// Param [message] The message instance.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 插入一条消息到会话尾部。
+  ///
+  /// @note
+  /// 请确保消息的 conversation ID 与要插入的会话的 conversationId 一致，消息会被插入 SDK 本地数据库，并且更新会话的 `latestMessage` 等属性。
+  /// Param [message] 消息体实例。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> appendMessage(EMMessage message) async {
     Map req = this._toJson();
     req['msg'] = message.toJson();
@@ -221,7 +308,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Updates a message in the local database.
   ///
   /// The latestMessage of the conversation and other properties will be updated accordingly. The message ID of the message, however, remains the same.
@@ -229,7 +316,17 @@ class EMConversation {
   /// Param [message] The message to be updated.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 更新 SDK 本地数据库的消息。
+  ///
+  /// @note
+  /// 不能更新消息 ID，消息更新后，会话的 `latestMessage` 等属性进行相应更新。
+  /// Param [message] 要更新的消息。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> updateMessage(EMMessage message) async {
     Map req = this._toJson();
     req['msg'] = message.toJson();
@@ -243,7 +340,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Deletes a message in the local database.
   ///
   /// **Note**
@@ -252,7 +349,15 @@ class EMConversation {
   /// Param [messageId] The ID of message to be deleted.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 删除会话中的一条消息，同时清除内存和数据库中的消息。
+  ///
+  /// Param [messageId] 要删除的消息。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> deleteMessage(String messageId) async {
     Map req = this._toJson();
     req['msg_id'] = messageId;
@@ -265,11 +370,17 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Deletes all the messages of the conversation from both the memory and local database.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 同时从内存和本地数据库中删除会话中的所有消息。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> deleteAllMessages() async {
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.clearAllMessages, this._toJson());
@@ -280,7 +391,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Gets the message with a specific message ID.
   ///
   /// If the message is already loaded into the memory cache, the message will be directly returned; otherwise, the message will be loaded from the local database and loaded in the memory.
@@ -290,7 +401,19 @@ class EMConversation {
   /// **Return** The message instance.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取指定 ID 的消息。
+  ///
+  /// 优先从内存中加载，如果内存中没有则从数据库中加载，并将其插入到内存中。
+  ///
+  /// Param [messageId] 消息 ID。
+  ///
+  /// **Return** 消息实例。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = this._toJson();
     req['msg_id'] = messageId;
@@ -308,7 +431,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Retrieves messages from the database according to the following parameters: the message type, the Unix timestamp, max count, sender.
   ///
   /// **Note**
@@ -329,7 +452,27 @@ class EMConversation {
   /// **Return** The message list.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 根据消息类型、搜索消息的时间点、搜索结果的最大条数、搜索来源和搜索方向从 SDK 本地数据库中搜索指定数量的消息。
+  ///
+  /// **Note** 当 maxCount 非常大时，需要考虑内存消耗。
+  ///
+  /// Param [type] 消息类型，文本、图片、语音等等。
+  ///
+  /// Param [timestamp] 搜索时间。
+  ///
+  /// Param [count] 搜索结果的最大条数。
+  ///
+  /// Param [sender] 搜索来自某人的消息，也可用于搜索群组或聊天室里的消息。
+  ///
+  /// Param [direction] 消息加载的方向。
+  ///
+  /// **Return** 消息列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<List<EMMessage>> loadMessagesWithMsgType({
     required MessageType type,
     int timestamp = -1,
@@ -357,7 +500,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Loads multiple messages from the local database.
   ///
   /// Loads messages from the local database before the specified message.
@@ -375,7 +518,25 @@ class EMConversation {
   /// **Return** The message list.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 从本地数据库加载消息。
+  ///
+  /// 根据传入的参数从本地数据库加载 startMsgId 之前(存储顺序)指定数量的消息。
+  ///
+  /// 加载到的 messages 也会加入到当前会话的缓存中，通过 {@link #getAllMessages()} 将会返回所有加载的消息。
+  ///
+  /// Param [startMsgId] 加载这个 ID 之前的 message，如果传入 "" 或者 null，将从最近的消息开始加载。
+  ///
+  /// Param [loadCount] 加载的条数。
+  ///
+  /// Param [direction]  消息的加载方向。
+  ///
+  /// **Return** 消息列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<List<EMMessage>> loadMessages({
     String startMsgId = '',
     int loadCount = 20,
@@ -401,7 +562,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Loads messages from the local database by the following parameters: keywords, timestamp, max count, sender, search direction.
   ///
   /// **Note** Pay attention to the memory usage when the maxCount is large.
@@ -421,7 +582,27 @@ class EMConversation {
   /// **Returns** The list of retrieved messages.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 根据消息中的关键词、搜索消息的时间点、搜索结果的最大条数、搜索来源和搜索方向从 SDK 本地数据库中搜索指定数量的消息。
+  ///
+  /// 注意：当 maxCount 非常大时，需要考虑内存消耗。
+  ///
+  /// Param [keywords] 搜索消息中的关键词。
+  ///
+  /// Param [sender] 消息发送方（用户、群组或聊天室）。
+  ///
+  /// Param [timestamp] 搜索消息的时间点。
+  ///
+  /// Param [count] 搜索结果的最大条数。
+  ///
+  /// Param [direction] 消息搜索方向。
+  ///
+  /// **Return** 消息列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
     String? sender,
@@ -451,7 +632,7 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Loads messages from the local database according the following parameters: start timestamp, end timestamp, count.
   ///
   /// **Note** Pay attention to the memory usage when the maxCount is large.
@@ -465,7 +646,23 @@ class EMConversation {
   /// **Returns** The list of searched messages.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 加载一个时间段内的消息，不超过最大数量。
+  ///
+  /// 注意：当 maxCount 非常大时，需要考虑内存消耗。
+  ///
+  ///  Param [startTime] 搜索的起始时间。
+  ///
+  ///  Param [endTime] 搜索的结束时间。
+  ///
+  ///  Param [count] 搜索结果的最大条数。
+  ///
+  /// **Return** 消息列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<List<EMMessage>> loadMessagesFromTime({
     required int startTime,
     required int endTime,
@@ -491,9 +688,13 @@ class EMConversation {
     }
   }
 
-  ///
+  /// ~english
   /// Message count
+  /// ~end
   ///
+  /// ~chinese
+  /// 会话中的消息数
+  /// ~end
   Future<int> messagesCount() async {
     Map req = this._toJson();
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(

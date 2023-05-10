@@ -12,8 +12,6 @@ class EMPresenceManager {
       '$_channelPrefix/chat_presence_manager', JSONMethodCodec());
 
   final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
-  // will deprecated
-  final List<EMPresenceManagerListener> _listeners = [];
 
   /// @nodoc
   EMPresenceManager() {
@@ -209,45 +207,6 @@ class EMPresenceManager {
 
     for (var handle in _eventHandlesMap.values) {
       handle.onPresenceStatusChanged?.call(pList);
-    }
-
-    _forward(pList);
-  }
-}
-
-extension PresenceDeprecated on EMPresenceManager {
-  ///
-  /// Registers a new presence manager listener.
-  ///
-  /// Param [listener] The presence manager listener to be registered: [EMPresenceManagerListener].
-  ///
-  @Deprecated("Use addEventHandler to instead")
-  void addPresenceManagerListener(EMPresenceManagerListener listener) {
-    _listeners.remove(listener);
-    _listeners.add(listener);
-  }
-
-  ///
-  /// Removes the contact listener.
-  ///
-  /// Param [listener] The presence manager listener to be removed.
-  ///
-  @Deprecated("Use [removeEventHandler] to instead")
-  void removePresenceManagerListener(EMPresenceManagerListener listener) {
-    if (_listeners.contains(listener)) {
-      _listeners.remove(listener);
-    }
-  }
-
-  @Deprecated("Use [clearEventHandlers] to instead")
-  void clearAllPresenceManagerListener() {
-    _listeners.clear();
-  }
-
-  @deprecated
-  void _forward(List<EMPresence> pList) {
-    for (var listener in _listeners) {
-      listener.onPresenceStatusChanged(pList);
     }
   }
 }

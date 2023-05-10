@@ -5,9 +5,14 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
+/// ~english
+/// The EMClient class, which is the entry point of the Chat SDK.
+/// With this class, you can log in, log out, and access other functionalities such as group and chatroom.
+/// ~end
 ///
-/// The EMClient class, which is the entry point of the Chat SDK. With this class, you can log in, log out, and access other functionalities such as group and chatroom.
-///
+/// ~chinese
+/// 该类是 Chat SDK 的入口，负责登录、退出及连接管理等，由此可以获得其他模块的入口。
+/// ~end
 class EMClient {
   static EMClient? _instance;
   final EMChatManager _chatManager = EMChatManager();
@@ -23,30 +28,49 @@ class EMClient {
   final Map<String, EMConnectionEventHandler> _connectionEventHandler = {};
   final Map<String, EMMultiDeviceEventHandler> _multiDeviceEventHandler = {};
 
-  final List<EMConnectionListener> _connectionListeners = [];
-  final List<EMMultiDeviceListener> _multiDeviceListeners = [];
-  @deprecated
-  final List<EMCustomListener> _customListeners = [];
   // ignore: unused_field
   EMProgressManager? _progressManager;
 
   EMOptions? _options;
 
+  /// ~english
   /// Gets the configurations.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取配置信息。
+  /// ~end
   EMOptions? get options => _options;
 
   String? _currentUserId;
 
+  /// ~english
+  /// Obtain instance.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取SDK实例
+  /// ~end
   static EMClient get getInstance => _instance ??= EMClient._internal();
 
-  ///
+  /// ~english
   /// Set a custom event handle to receive data from iOS or Android devices.
   ///
   /// Param [customEventHandler] The custom event handler.
+  /// ~end
   ///
+  /// ~chinese
+  /// 设置一个自定义事件句柄来接收来自iOS或Android设备的数据。
+  /// ~end
   void Function(Map map)? customEventHandler;
 
-  /// Gets the current logged-in username.
+  /// ~english
+  /// Gets the current logged-in userId.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前登录用户id
+  /// ~end
   String? get currentUserId => _currentUserId;
 
   EMClient._internal() {
@@ -91,13 +115,21 @@ class EMClient {
     });
   }
 
-  ///
+  /// ~english
   /// Adds the connection event handler. After calling this method, you can handle for new room event when they arrive.
   ///
   /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
   /// Param [handler] The handler for connection event. See [EMConnectionEventHandler].
+  /// ~end
   ///
+  /// ~chinese
+  /// 添加连接状态监听事件。
+  ///
+  /// Param [identifier] 监听事件对应 ID。
+  ///
+  /// Param [handler] 监听的事件。 请见 [EMConnectionEventHandler]。
+  /// ~end
   void addConnectionEventHandler(
     String identifier,
     EMConnectionEventHandler handler,
@@ -105,40 +137,66 @@ class EMClient {
     _connectionEventHandler[identifier] = handler;
   }
 
-  ///
+  /// ~english
   /// Remove the connection event handler.
   ///
   /// Param [identifier] The custom handler identifier.
+  /// ~end
   ///
+  /// ~chinese
+  /// 移除连接状态监听事件。
+  ///
+  /// Param [identifier] 监听事件对应 ID。
+  /// ~end
   void removeConnectionEventHandler(String identifier) {
     _connectionEventHandler.remove(identifier);
   }
 
-  ///
+  /// ~english
   /// Get the connection event handler.
   ///
   /// Param [identifier] The custom handler identifier.
   ///
   /// **Return** The connection event handler.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取连接状态监听事件。
+  ///
+  /// Param [identifier] 监听事件对应 ID。
+  ///
+  /// **Return** 连接状态监听。
+  /// ~end
   EMConnectionEventHandler? getConnectionEventHandler(String identifier) {
     return _connectionEventHandler[identifier];
   }
 
-  ///
+  /// ~english
   /// Clear all connection event handlers.
+  /// ~end
   ///
+  /// ~chinese
+  /// 清除所以连接状态监听。
+  /// ~end
   void clearConnectionEventHandles() {
     _connectionEventHandler.clear();
   }
 
-  ///
+  /// ~english
   /// Adds the multi-device event handler. After calling this method, you can handle for new room event when they arrive.
   ///
   /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
   ///
   /// Param [handler] The handler multi-device event. See [EMMultiDeviceEventHandler].
+  /// ~end
   ///
+  /// ~chinese
+  /// 添加多设备事件监听。
+  ///
+  /// Param [identifier] 多设备事件监听对应 ID。
+  ///
+  /// Param [handler] 多设备事件监听。 请见 [EMMultiDeviceEventHandler]。
+  /// ~end
   void addMultiDeviceEventHandler(
     String identifier,
     EMMultiDeviceEventHandler handler,
@@ -146,39 +204,64 @@ class EMClient {
     _multiDeviceEventHandler[identifier] = handler;
   }
 
-  ///
+  /// ~english
   /// Remove the multi-device event handler.
   ///
   /// Param [identifier] The custom handler identifier.
+  /// ~end
   ///
+  /// ~chinese
+  /// 移除多设备事件监听。
+  ///
+  /// Param [identifier] 要移除多设备事件监听对应的 ID。
+  /// ~end
   void removeMultiDeviceEventHandler(String identifier) {
     _multiDeviceEventHandler.remove(identifier);
   }
 
-  ///
+  /// ~english
   /// Get the multi-device event handler.
   ///
   /// Param [identifier] The custom handler identifier.
   ///
   /// **Return** The multi-device event handler.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取多设备事件监听。
+  ///
+  /// Param [identifier] 多设备事件监听对应的 ID。
+  ///
+  /// **Return** 多设备事件监听。
+  /// ~end
   EMMultiDeviceEventHandler? getMultiDeviceEventHandler(String identifier) {
     return _multiDeviceEventHandler[identifier];
   }
 
-  ///
+  /// ~english
   /// Clear all multi-device event handlers.
+  /// ~end
   ///
+  /// ~chinese
+  /// 清除所有多设备事件监听。
+  /// ~end
   void clearMultiDeviceEventHandles() {
     _multiDeviceEventHandler.clear();
   }
 
-  ///
+  /// ~english
   /// Start contact and group, chatroom callback.
   ///
   /// Reference:
   /// Call this method when you ui is ready, then will receive [EMChatRoomEventHandler], [EMContactEventHandler], [EMGroupEventHandler] event.
+  /// ~end
   ///
+  /// ~chinese
+  /// /// 开始回调通知。
+  ///
+  /// Reference:
+  /// 当UI准备好后调用，调用之后才能收到 [EMChatRoomEventHandler], [EMContactEventHandler], [EMGroupEventHandler] 监听。
+  /// ~end
   Future<void> startCallback() async {
     Map result = await ClientChannel.invokeMethod(ChatMethodKeys.startCallback);
     try {
@@ -188,12 +271,20 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Checks whether the SDK is connected to the chat server.
   ///
   /// **Return** the result whether the SDK is connected to the chat server.
   /// `true`: means that the SDK is connected to the chat server.
   /// `false`: means not.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 检查 SDK 是否连接到 Chat 服务器。
+  /// **Return** SDK 是否连接到 Chat 服务器。
+  /// - `true`：是；
+  /// - `false`：否。
+  /// ~end
   Future<bool> isConnected() async {
     Map result = await ClientChannel.invokeMethod(ChatMethodKeys.isConnected);
     try {
@@ -204,7 +295,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Checks whether the user has logged in before and did not log out.
   ///
   /// Reference:
@@ -213,7 +304,15 @@ class EMClient {
   /// **Return** The result of whether the user has logged in before.
   /// `true`: means that the user has logged in before,
   /// `false`: means that the user has not login before or has called [logout] method.
+  /// ~end
   ///
+  /// ~chinese
+  /// 检查用户是否已登录 Chat 服务。
+  ///
+  /// **Return** 用户是否已经登录 Chat 服务。
+  ///   - `true`：是；
+  ///   - `false`：否。
+  /// ~end
   Future<bool> isLoginBefore() async {
     Map result =
         await ClientChannel.invokeMethod(ChatMethodKeys.isLoggedInBefore);
@@ -225,11 +324,17 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Gets the current login user ID.
   ///
   /// **Return** The current login user ID.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取当前登录的用户 ID。
+  ///
+  /// **Return** 当前登录的用户 ID。
+  /// ~end
   Future<String?> getCurrentUserId() async {
     Map result =
         await ClientChannel.invokeMethod(ChatMethodKeys.getCurrentUser);
@@ -247,7 +352,15 @@ class EMClient {
     }
   }
 
+  /// ~english
   /// Gets the token of the current logged-in user.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取当前登录账号的 Token。
+  ///
+  /// **Return** 当前登录账号的 Token。
+  /// ~end
   Future<String> getAccessToken() async {
     Map result = await ClientChannel.invokeMethod(ChatMethodKeys.getToken);
     try {
@@ -258,19 +371,25 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Initializes the SDK.
   ///
   /// Param [options] The configurations: [EMOptions]. Ensure that you set this parameter.
+  /// ~end
   ///
+  /// ~chinese
+  /// 初始化 SDK。
+  ///
+  /// Param [options] 配置，不可为空。
+  /// ~end
   Future<void> init(EMOptions options) async {
     _options = options;
     EMLog.v('init: $options');
     await ClientChannel.invokeMethod(ChatMethodKeys.init, options.toJson());
-    _currentUserId = await getCurrentUsername();
+    _currentUserId = await getCurrentUserId();
   }
 
-  ///
+  /// ~english
   /// Register a new user.
   ///
   /// Param [userId] The userId. The maximum length is 64 characters. Ensure that you set this parameter.
@@ -281,7 +400,17 @@ class EMClient {
   /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 创建账号。
+  ///
+  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。请确保同一个 app 下，userId 唯一；`userId` 用户 ID 是会公开的信息，请勿使用 UUID、邮箱地址、手机号等敏感信息。
+  ///
+  /// Param [password] 密码，长度不超过 64 个字符。请确保你对该参数设值。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> createAccount(String userId, String password) async {
     EMLog.v('create account: $userId : $password');
     Map req = {'username': userId, 'password': password};
@@ -294,7 +423,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// An app user logs in to the chat server with a password or token.
   ///
   /// Param [userId] The username.
@@ -306,7 +435,21 @@ class EMClient {
   /// `false`: Log in with token.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 使用密码或 Token 登录服务器。
+  ///
+  /// Param [userId] 用户 ID。
+  ///
+  /// Param [pwdOrToken] 登录密码或 Token。
+  ///
+  /// Param [isPassword] 是否用密码登录。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> login(String userId, String pwdOrToken,
       [bool isPassword = true]) async {
     EMLog.v('login: $userId : $pwdOrToken, isPassword: $isPassword');
@@ -324,7 +467,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// An app user logs in to the chat server by username and Agora token. This method supports automatic login.
   ///
   /// See also: Another method to login to chat server is to login with user ID and token, See [login].
@@ -334,7 +477,20 @@ class EMClient {
   /// Param [agoraToken] The Agora token.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 用声网 Token 登录服务器，该方法支持自动登录。
+  ///
+  /// **Note**
+  /// 通过 token 登录服务器的方法见 {@link #login(String, String, bool)}。
+  ///
+  /// Param [userId] 用户 ID。
+  ///
+  /// Param [agoraToken] 声网 Token。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> loginWithAgoraToken(String userId, String agoraToken) async {
     Map req = {
       "username": userId,
@@ -351,7 +507,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Renews the Agora token.
   ///
   /// If a user is logged in with an Agora token, when the token expires, you need to call this method to update the token.
@@ -359,7 +515,15 @@ class EMClient {
   /// Param [agoraToken] The new Agora token.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 当用户在声网 token 登录状态时，且在 [EMConnectionEventHandler.onTokenWillExpire] 实现类中收到 token 即将过期事件的回调通知可以调用这个 API 来更新 token，避免因 token 失效产生的未知问题。
+  ///
+  /// Param [agoraToken] 新声网 Token.
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> renewAgoraToken(String agoraToken) async {
     Map req = {"agora_token": agoraToken};
 
@@ -372,7 +536,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// An app user logs out.
   ///
   /// Param [unbindDeviceToken] Whether to unbind the token when logout.
@@ -381,7 +545,17 @@ class EMClient {
   /// `false` No.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 退出登录。
+  ///
+  /// Param [unbindDeviceToken] 退出时是否解绑设备 token。
+  /// - （默认）`true`：是。
+  /// - `false`：否。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> logout([
     bool unbindDeviceToken = true,
   ]) async {
@@ -396,7 +570,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Updates the App Key, which is the unique identifier to access Agora Chat.
   ///
   /// You can retrieve the new App Key from Agora Console.
@@ -406,7 +580,18 @@ class EMClient {
   /// Param [newAppKey] The App Key. Ensure that you set this parameter.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 修改 App Key。
+  ///
+  /// @note
+  /// 只有在未登录状态才能修改 App Key。
+  ///
+  /// Param [newAppKey] App Key，请确保设置该参数。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<bool> changeAppKey({required String newAppKey}) async {
     EMLog.v('changeAppKey: $newAppKey');
     Map req = {'appKey': newAppKey};
@@ -420,7 +605,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Compresses the debug log into a gzip archive.
   ///
   /// Best practice is to delete this debug archive as soon as it is no longer used.
@@ -428,7 +613,15 @@ class EMClient {
   /// **Return** The path of the compressed gzip file.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 压缩 log 文件，并返回压缩后的文件路径。强烈建议方法完成之后删除该压缩文件。
+  ///
+  /// **Return** 压缩后的 log 文件路径。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<String> compressLogs() async {
     EMLog.v('compressLogs:');
     Map result = await ClientChannel.invokeMethod(ChatMethodKeys.compressLogs);
@@ -440,7 +633,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Gets all the information about the logged in devices under the specified account.
   ///
   /// Param [userId] The username you want to get the device information.
@@ -450,7 +643,19 @@ class EMClient {
   /// **Return** TThe list of the logged-in devices.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取指定账号下登录的在线设备列表。
+  ///
+  /// Param [userId] 用户 ID。
+  ///
+  /// Param [password] 密码。
+  ///
+  /// **Return**  获取到到设备列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String userId, required String password}) async {
     EMLog.v('getLoggedInDevicesFromServer: $userId, "******"');
@@ -469,7 +674,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Forces the specified account to log out from the specified device.
   ///
   /// Param [userId] The account you want to force logout.
@@ -479,7 +684,19 @@ class EMClient {
   /// Param [resource] The device ID. For how to fetch the device ID, See [EMDeviceInfo.resource].
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 在指定账号下，根据设备 ID，将指定设备下线，设备 ID：{@link EMDeviceInfo#resource}。
+  ///
+  /// Param [userId] 用户 ID。
+  ///
+  /// Param [password] 密码。
+  ///
+  /// Param [resource] 设备 ID，详见 {@link EMDeviceInfo#resource}。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<bool> kickDevice(
       {required String userId,
       required String password,
@@ -496,7 +713,7 @@ class EMClient {
     }
   }
 
-  ///
+  /// ~english
   /// Kicks out all the devices logged in under the specified account.
   ///
   /// Param [userId] The account you want to log out from all the devices.
@@ -504,7 +721,17 @@ class EMClient {
   /// Param [password] The password.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 将指定用户 ID 下的所有设备都踢下线。
+  ///
+  /// Param [userId] 用户 ID。
+  ///
+  /// Param [password] 密码。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
   Future<void> kickAllDevices(
       {required String userId, required String password}) async {
     EMLog.v('kickAllDevices: $userId, "******"');
@@ -522,19 +749,11 @@ class EMClient {
     for (var handler in _connectionEventHandler.values) {
       handler.onConnected?.call();
     }
-
-    for (var listener in _connectionListeners) {
-      listener.onConnected();
-    }
   }
 
   Future<void> _onDisconnected() async {
     for (var handler in _connectionEventHandler.values) {
       handler.onDisconnected?.call();
-    }
-
-    for (var listener in _connectionListeners) {
-      listener.onDisconnected();
     }
   }
 
@@ -542,19 +761,11 @@ class EMClient {
     for (var handler in _connectionEventHandler.values) {
       handler.onUserDidLoginFromOtherDevice?.call();
     }
-
-    for (var listener in _connectionListeners) {
-      listener.onUserDidLoginFromOtherDevice();
-    }
   }
 
   Future<void> _onUserDidRemoveFromServer() async {
     for (var handler in _connectionEventHandler.values) {
       handler.onUserDidRemoveFromServer?.call();
-    }
-
-    for (var listener in _connectionListeners) {
-      listener.onUserDidRemoveFromServer();
     }
   }
 
@@ -562,19 +773,11 @@ class EMClient {
     for (var handler in _connectionEventHandler.values) {
       handler.onUserDidForbidByServer?.call();
     }
-
-    for (var listener in _connectionListeners) {
-      listener.onUserDidForbidByServer();
-    }
   }
 
   Future<void> _onUserDidChangePassword() async {
     for (var handler in _connectionEventHandler.values) {
       handler.onUserDidChangePassword?.call();
-    }
-
-    for (var listener in _connectionListeners) {
-      listener.onUserDidChangePassword();
     }
   }
 
@@ -582,18 +785,11 @@ class EMClient {
     for (var handler in _connectionEventHandler.values) {
       handler.onUserDidLoginTooManyDevice?.call();
     }
-
-    for (var listener in _connectionListeners) {
-      listener.onUserDidLoginTooManyDevice();
-    }
   }
 
   Future<void> _onUserKickedByOtherDevice() async {
     for (var handler in _connectionEventHandler.values) {
       handler.onUserKickedByOtherDevice?.call();
-    }
-    for (var listener in _connectionListeners) {
-      listener.onUserKickedByOtherDevice();
     }
   }
 
@@ -601,28 +797,17 @@ class EMClient {
     for (var handler in _connectionEventHandler.values) {
       handler.onDisconnected?.call();
     }
-    for (var listener in _connectionListeners) {
-      listener.onDisconnected();
-    }
   }
 
   void _onTokenWillExpire(Map? map) {
     for (var item in _connectionEventHandler.values) {
       item.onTokenWillExpire?.call();
     }
-
-    for (EMConnectionListener listener in _connectionListeners) {
-      listener.onTokenWillExpire();
-    }
   }
 
   void _onTokenDidExpire(Map? map) {
     for (var item in _connectionEventHandler.values) {
       item.onTokenDidExpire?.call();
-    }
-
-    for (EMConnectionListener listener in _connectionListeners) {
-      listener.onTokenDidExpire();
     }
   }
 
@@ -634,10 +819,6 @@ class EMClient {
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onGroupEvent?.call(event, target, users);
     }
-
-    for (var listener in _multiDeviceListeners) {
-      listener.onGroupEvent(event, target, users);
-    }
   }
 
   Future<void> _onMultiDeviceContactEvent(Map map) async {
@@ -647,10 +828,6 @@ class EMClient {
 
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onContactEvent?.call(event, target, ext);
-    }
-
-    for (var listener in _multiDeviceListeners) {
-      listener.onContactEvent(event, target, ext);
     }
   }
 
@@ -662,88 +839,128 @@ class EMClient {
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onChatThreadEvent?.call(event, target, users);
     }
-
-    for (var listener in _multiDeviceListeners) {
-      listener.onChatThreadEvent(
-        convertIntToEMMultiDevicesEvent(map['event'])!,
-        map['target'],
-        map['users'],
-      );
-    }
   }
 
   void _onReceiveCustomData(Map map) {
     customEventHandler?.call(map);
   }
 
-  ///
+  /// ~english
   /// Gets the [EMChatManager] class. Make sure to call it after EMClient has been initialized.
   ///
   /// **Return** The `EMChatManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMChatManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return**  `EMChatManager` 类。
+  /// ~end
   EMChatManager get chatManager {
     return _chatManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMContactManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMContactManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMContactManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMContactManager` 类。
+  /// ~end
   EMContactManager get contactManager {
     return _contactManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMChatRoomManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMChatRoomManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMChatRoomManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMChatRoomManager` 类。
+  /// ~end
   EMChatRoomManager get chatRoomManager {
     return _chatRoomManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMGroupManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMGroupManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMGroupManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMGroupManager` 类。
+  /// ~end
   EMGroupManager get groupManager {
     return _groupManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMPushManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMPushManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMPushManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMPushManager` 类。
+  /// ~end
   EMPushManager get pushManager {
     return _pushManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMUserInfoManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMUserInfoManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMUserInfoManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMUserInfoManager` 类。
+  /// ~end
   EMUserInfoManager get userInfoManager {
     return _userInfoManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMChatThreadManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMChatThreadManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMChatThreadManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMChatThreadManager` 类。
+  /// ~end
   EMChatThreadManager get chatThreadManager {
     return _chatThreadManager;
   }
 
-  ///
+  /// ~english
   /// Gets the [EMPresenceManager] class. Make sure to call it after the EMClient has been initialized.
   ///
   /// **Return** The `EMPresenceManager` class.
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取 [EMPresenceManager] 类。请确保在 EMClient 初始化之后调用本方法，详见 [EMClient.init]。
+  ///
+  /// **Return** `EMPresenceManager` 类。
+  /// ~end
   EMPresenceManager get presenceManager {
     return _presenceManager;
   }
@@ -752,108 +969,4 @@ class EMClient {
     _currentUserId = null;
     _userInfoManager.clearUserInfoCache();
   }
-}
-
-extension EMClientDeprecated on EMClient {
-  ///
-  /// Adds the multi-device listener.
-  ///
-  /// Param [listener] The listener to be added: {EMMultiDeviceListener}.
-  ///
-  @Deprecated("Use [addMultiDeviceEventHandler] to instead")
-  void addMultiDeviceListener(EMMultiDeviceListener listener) {
-    _multiDeviceListeners.add(listener);
-  }
-
-  ///
-  /// Removes the multi-device listener.
-  ///
-  /// Param [listener] The listener to be removed: {EMMultiDeviceListener}.
-  ///
-  @Deprecated("Use [removeMultiDeviceEventHandler] to instead")
-  void removeMultiDeviceListener(EMMultiDeviceListener listener) {
-    if (_multiDeviceListeners.contains(listener)) {
-      _multiDeviceListeners.remove(listener);
-    }
-  }
-
-  ///
-  /// Removes all multi-device listener.
-  ///
-  @Deprecated("Use [clearMultiDeviceEventHandles] to instead")
-  void clearAllMultiDeviceListeners() {
-    _multiDeviceListeners.clear();
-  }
-
-  ///
-  /// Adds the connection listener of chat server.
-  ///
-  /// Param [listener] The chat server connection listener to be added.
-  ///
-  @Deprecated("Use [addConnectionEventHandler] to instead")
-  void addConnectionListener(EMConnectionListener listener) {
-    _connectionListeners.add(listener);
-  }
-
-  ///
-  /// Removes the chat server connection listener.
-  ///
-  /// Param [listener]  The chat server connection listener to be removed.
-  ///
-  @Deprecated("Use [removeConnectionEventHandler] to instead")
-  void removeConnectionListener(EMConnectionListener listener) {
-    if (_connectionListeners.contains(listener)) {
-      _connectionListeners.remove(listener);
-    }
-  }
-
-  ///
-  ///  Removes all chat server connection listeners.
-  ///
-  @Deprecated("Use [clearConnectionEventHandles] to instead")
-  void clearAllConnectionListeners() {
-    _connectionListeners.clear();
-  }
-
-  ///
-  /// Adds a custom listener to receive data from iOS or Android devices.
-  ///
-  /// Param [listener] The custom native listener to be added.
-  ///
-  @Deprecated("Use [customEventHandler] to instead")
-  void addCustomListener(EMCustomListener listener) {
-    _customListeners.add(listener);
-  }
-
-  ///
-  /// Removes the custom listener.
-  ///
-  /// Param [listener] The custom native listener.
-  ///
-  @deprecated
-  void removeCustomListener(EMCustomListener listener) {
-    if (_customListeners.contains(listener)) {
-      _customListeners.remove(listener);
-    }
-  }
-
-  /// Removes all custom listeners.
-  @deprecated
-  void clearAllCustomListeners() {
-    _customListeners.clear();
-  }
-
-  ///
-  /// Gets the current login user ID.
-  ///
-  /// **Return** The current login user ID.
-  ///
-  @Deprecated("Use [getCurrentUserId] to instead")
-  Future<String?> getCurrentUsername() async {
-    return getCurrentUserId();
-  }
-
-  /// Gets the current logged-in username.
-  @Deprecated("Use [currentUserId] to instead")
-  String? get currentUsername => _currentUserId;
 }
