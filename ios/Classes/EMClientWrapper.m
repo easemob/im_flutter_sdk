@@ -199,6 +199,8 @@
     _threadManager = [[EMChatThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
 
     _msgWrapper = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
+    
+    _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager")  registrar:self.flutterPluginRegister];
 }
 
 - (void)clearAllListener {

@@ -25,11 +25,19 @@ public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCa
 
     static final Handler handler = new Handler(Looper.getMainLooper());
 
-    private EMClientWrapper clientWrapper;
+    static EMClientWrapper clientWrapper;
 
     public ImFlutterSdkPlugin() {
     }
 
+    static public void clearWrapper(){
+        clientWrapper = null;
+    }
+    static public void sendDataToFlutter(final Map data) {
+        if (clientWrapper != null) {
+            clientWrapper.sendDataToFlutter(data);
+        }
+    }
 
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
@@ -108,18 +116,18 @@ class EMDownloadCallback implements EMCallBack {
 
     @Override
     public void onSuccess() {
-        EMClientWrapper.getInstance().progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
+//        EMClientWrapper.getInstance().progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
     }
 
     @Override
     public void onError(int code, String error) {
-        HyphenateException e = new HyphenateException(code, error);
-        EMClientWrapper.getInstance().progressManager.sendDownloadErrorToFlutter(fileId, e);
+//        HyphenateException e = new HyphenateException(code, error);
+//        EMClientWrapper.getInstance().progressManager.sendDownloadErrorToFlutter(fileId, e);
     }
 
     @Override
     public void onProgress(int progress, String status) {
-        EMClientWrapper.getInstance().progressManager.sendDownloadProgressToFlutter(fileId, progress);
+//        EMClientWrapper.getInstance().progressManager.sendDownloadProgressToFlutter(fileId, progress);
     }
 }
 

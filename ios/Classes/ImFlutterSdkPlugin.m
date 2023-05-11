@@ -12,11 +12,21 @@
 
 @implementation ImFlutterSdkPlugin
 
+static EMClientWrapper *wrapper;
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    [[EMClientWrapper alloc] initWithChannelName:EMChannelName(@"chat_client") registrar:registrar];
+    wrapper = [[EMClientWrapper alloc] initWithChannelName:EMChannelName(@"chat_client") registrar:registrar];
 }
 
++ (void)clearWrapper{
+    wrapper = nil;
+}
+
++ (void)sendDataToFlutter:(NSDictionary *)aData {
+    if (wrapper) {
+        [wrapper sendDataToFlutter:aData];
+    }
+}
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
 }

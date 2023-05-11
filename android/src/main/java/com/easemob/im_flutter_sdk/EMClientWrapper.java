@@ -30,7 +30,6 @@ import org.json.JSONObject;
 
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
-    static EMClientWrapper wrapper;
     private EMChatManagerWrapper chatManagerWrapper;
     private EMGroupManagerWrapper groupManagerWrapper;
     private EMChatRoomManagerWrapper chatRoomManagerWrapper;
@@ -48,11 +47,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        wrapper = this;
-    }
 
-    public static EMClientWrapper getInstance() {
-        return wrapper;
     }
 
     public void sendDataToFlutter(final Map data) {
@@ -61,7 +56,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }
         post(()-> channel.invokeMethod(EMSDKMethod.onSendDataToFlutter, data));
     }
-
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
@@ -321,6 +315,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         contactManagerWrapper = new EMContactManagerWrapper(binging, "chat_contact_manager");
         chatRoomManagerWrapper = new EMChatRoomManagerWrapper(binging, "chat_room_manager");
         groupManagerWrapper = new EMGroupManagerWrapper(binging, "chat_group_manager");
+        groupManagerWrapper.clientWrapper = this;
         conversationWrapper = new EMConversationWrapper(binging, "chat_conversation");
         pushManagerWrapper = new EMPushManagerWrapper(binging, "chat_push_manager");
         userInfoManagerWrapper = new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
