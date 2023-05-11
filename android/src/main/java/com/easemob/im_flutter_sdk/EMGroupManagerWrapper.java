@@ -31,6 +31,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private EMGroupChangeListener groupChangeListener;
 
+    public EMClientWrapper clientWrapper;
+
     EMGroupManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
         registerEaseListener();
@@ -673,7 +675,23 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         }
 
         EMClient.getInstance().groupManager().asyncDownloadGroupSharedFile(groupId, fileId, savePath,
-                new EMDownloadCallback(fileId, savePath));
+                new EMDownloadCallback(fileId, savePath){
+                    @Override
+                    public void onSuccess() {
+                        clientWrapper.progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
+                    }
+
+                    @Override
+                    public void onProgress(int progress, String status) {
+                        clientWrapper.progressManager.sendDownloadProgressToFlutter(fileId, progress);
+                    }
+
+                    @Override
+                    public void onError(int code, String error) {
+                        HyphenateException e = new HyphenateException(code, error);
+                        clientWrapper.progressManager.sendDownloadErrorToFlutter(fileId, e);
+                    }
+                });
 
         post(()->{
             onSuccess(result, channelName, true);

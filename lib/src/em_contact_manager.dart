@@ -10,7 +10,7 @@ import 'internal/inner_headers.dart';
 /// ~end
 ///
 /// ~chinese
-/// `EMContactManager` 是联系人管理类，用于记录、查询和修改用户的联系人列表。
+/// 联系人管理类，用于记录、查询和修改用户的联系人列表。
 /// ~end
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';

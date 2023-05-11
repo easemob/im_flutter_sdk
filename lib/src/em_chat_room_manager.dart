@@ -13,7 +13,7 @@ import 'internal/inner_headers.dart';
 ///       await EMClient.getInstance.chatRoomManager.joinChatRoom(chatRoomId);
 ///   } on EMError catch (e) {
 ///       debugPrint(e.toString());
-//    }
+///   }
 /// ```
 /// ~end
 ///
