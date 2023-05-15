@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "<#Your AppKey#>";
+var appKey = "easemob-demo#flutter";
 
 void main() {
   runApp(const MyApp());
@@ -167,14 +167,14 @@ class _MyHomePageState extends State<MyHomePage> {
         "UNIQUE_HANDLER_ID",
         ChatMessageEvent(
           onSuccess: (msgId, msg) {
-            _addLogToConsole("send message succeed");
+            _addLogToConsole("on message succeed");
           },
           onProgress: (msgId, progress) {
-            _addLogToConsole("send message succeed");
+            _addLogToConsole("on message progress");
           },
           onError: (msgId, msg, error) {
             _addLogToConsole(
-              "send message failed, code: ${error.code}, desc: ${error.description}",
+              "on message failed, code: ${error.code}, desc: ${error.description}",
             );
           },
         ));
@@ -223,8 +223,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case MessageType.FILE:
                 {
+                  EMClient.getInstance.chatManager.downloadAttachment(msg);
                   _addLogToConsole(
-                    "receive image message, from: ${msg.from}",
+                    "receive file message, from: ${msg.from}",
                   );
                 }
                 break;

@@ -472,7 +472,7 @@
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
-            @"localTime":@(msg.localTime)
+            @"localId":msg.messageId
         }];
     } completion:^(EMChatMessage *message, EMError *error)
      {
@@ -480,14 +480,14 @@
             [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
-                @"localTime":@(msg.localTime),
+                @"localId":msg.messageId,
                 @"message":[message toJson]
             }];
         }else {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
-                @"localTime":@(msg.localTime)
+                @"localId":msg.messageId
             }];
         }
     }];
@@ -510,7 +510,7 @@
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
                                     arguments:@{
             @"progress":@(progress),
-            @"localTime":@(msg.localTime)
+            @"localId":msg.messageId
         }];
     } completion:^(EMChatMessage *message, EMError *error)
      {
@@ -518,14 +518,14 @@
             [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
-                @"localTime":@(msg.localTime),
+                @"localId":msg.messageId,
                 @"message":[message toJson]
             }];
         }else {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
-                @"localTime":@(msg.localTime)
+                @"localId":msg.messageId
             }];
         }
     }];
