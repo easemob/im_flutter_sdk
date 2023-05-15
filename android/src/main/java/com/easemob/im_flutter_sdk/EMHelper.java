@@ -12,6 +12,7 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
 import com.hyphenate.chat.EMDeviceInfo;
+import com.hyphenate.chat.EMFetchMessageOption;
 import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
@@ -441,6 +442,8 @@ class EMMessageHelper {
 
         message.setIsChatThreadMessage(json.getBoolean("isThread"));
 
+        message.deliverOnlineOnly(json.getBoolean("deliverOnlineOnly"));
+
         message.setLocalTime(json.getLong("localTime"));
         if (json.has("serverTime")){
             message.setMsgTime(json.getLong("serverTime"));
@@ -540,6 +543,7 @@ class EMMessageHelper {
         data.put("hasRead", !message.isUnread());
         data.put("needGroupAck", message.isNeedGroupAck());
         data.put("onlineState", message.isOnlineState());
+
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
@@ -1391,4 +1395,12 @@ class EMSilentModeResultHelper {
 
         return data;
     }
+}
+
+class FetchHistoryOptionsHelper {
+//    static EMFetchMessageOption fromJson(JSONObject obj) throws JSONException {
+//        EMFetchMessageOption options = new EMFetchMessageOption();
+//        obj.has('')
+//
+//    }
 }

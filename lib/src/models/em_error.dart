@@ -47,3 +47,4 @@ class EMError {
     return "code: " + code.toString() + " desc: " + description;
   }
 }
+

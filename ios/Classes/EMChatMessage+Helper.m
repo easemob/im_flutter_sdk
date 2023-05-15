@@ -50,6 +50,7 @@
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
     msg.isRead = [aJson[@"hasRead"] boolValue];
     msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
+    msg.deliverOnlineOnly = [aJson[@"deliverOnlineOnly"] boolValue];
     // read only
     // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
     // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
@@ -83,6 +84,7 @@
     ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
     ret[@"onlineState"] = @(self.onlineState);
+    ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);
     
     return ret;
 }
