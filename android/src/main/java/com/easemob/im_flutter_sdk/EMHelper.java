@@ -1398,9 +1398,64 @@ class EMSilentModeResultHelper {
 }
 
 class FetchHistoryOptionsHelper {
-//    static EMFetchMessageOption fromJson(JSONObject obj) throws JSONException {
-//        EMFetchMessageOption options = new EMFetchMessageOption();
-//        obj.has('')
-//
-//    }
+    static EMFetchMessageOption fromJson(JSONObject json) throws JSONException {
+        EMFetchMessageOption options = new EMFetchMessageOption();
+        if (json.getString("direction") == "up") {
+            options.setDirection(EMConversation.EMSearchDirection.UP);
+        }else {
+            options.setDirection(EMConversation.EMSearchDirection.DOWN);
+        }
+        options.setIsSave(json.getBoolean("needSave"));
+        options.setStartTime(json.getLong("startTs"));
+        options.setEndTime(json.getLong("endTs"));
+        if (json.has("from")){
+            options.setFrom(json.getString("from"));
+        }
+        if (json.has("msgTypes")){
+            List<EMMessage.Type> list = new ArrayList<>();
+            JSONArray array = json.getJSONArray("msgTypes");
+            for (int i = 0; i < array.length(); i++) {
+                String type = array.getString(i);
+                switch (type) {
+                    case "txt": {
+                        list.add(Type.TXT);
+                    }
+                    break;
+                    case "img": {
+                        list.add(Type.IMAGE);
+                    }
+                    break;
+                    case "loc": {
+                        list.add(Type.LOCATION);
+                    }
+                    break;
+                    case "video": {
+                        list.add(Type.VIDEO);
+                    }
+                    break;
+                    case "voice": {
+                        list.add(Type.VOICE);
+                    }
+                    break;
+                    case "file": {
+                        list.add(Type.FILE);
+                    }
+                    break;
+                    case "cmd": {
+                        list.add(Type.CMD);
+                    }
+                    break;
+                    case "custom": {
+                        list.add(Type.CUSTOM);
+                    }
+                    break;
+                }
+            }
+            if (list.size() > 0) {
+                options.setMsgTypes(list);
+            }
+        }
+
+        return options;
+    }
 }

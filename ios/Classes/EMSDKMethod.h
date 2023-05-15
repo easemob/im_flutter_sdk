@@ -82,6 +82,7 @@ static NSString *const ChatGetConversationsFromServer = @"getConversationsFromSe
 
 static NSString *const ChatDeleteConversation = @"deleteConversation";
 static NSString *const ChatFetchHistoryMessages = @"fetchHistoryMessages";
+static NSString *const ChatFetchHistoryMessagesByOptions = @"fetchHistoryMessagesByOptions";
 static NSString *const ChatSearchChatMsgFromDB = @"searchChatMsgFromDB";
 static NSString *const ChatGetMessage = @"getMessage";
 static NSString *const ChatAsyncFetchGroupAcks = @"asyncFetchGroupAcks";

@@ -87,6 +87,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 deleteConversation(param, call.method, result);
             } else if (EMSDKMethod.fetchHistoryMessages.equals(call.method)) {
                 fetchHistoryMessages(param, call.method, result);
+            } else if (EMSDKMethod.fetchHistoryMessagesByOptions.equals(call.method)) {
+                fetchHistoryMessagesByOptions(param, call.method, result);
             } else if (EMSDKMethod.searchChatMsgFromDB.equals(call.method)) {
                 searchChatMsgFromDB(param, call.method, result);
             } else if (EMSDKMethod.getMessage.equals(call.method)) {
@@ -625,6 +627,31 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }
         });
     }
+
+    private void fetchHistoryMessagesByOptions(JSONObject param, String channelName, Result result) throws JSONException {
+        String conId = param.getString("con_id");
+        EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
+        int pageSize = param.getInt("pageSize");
+        String cursor = null;
+        if (param.has("cursor")) {
+             cursor = param.getString("cursor");
+        }
+        EMFetchMessageOption option = null;
+        if (param.has("options")) {
+            option = FetchHistoryOptionsHelper.fromJson(param.getJSONObject("options"));
+        }
+
+        EMValueWrapperCallBack<EMCursorResult<EMMessage>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMMessage>>(result,
+                channelName) {
+            @Override
+            public void onSuccess(EMCursorResult<EMMessage> result) {
+                updateObject(EMCursorResultHelper.toJson(result));
+            }
+        };
+
+        EMClient.getInstance().chatManager().asyncFetchHistoryMessages(conId, type, pageSize, cursor, option, callBack);
+    }
+
 
     private void searchChatMsgFromDB(JSONObject param, String channelName, Result result) throws JSONException {
         String keywords = param.getString("keywords");

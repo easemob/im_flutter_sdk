@@ -1001,6 +1001,8 @@ class EMChatManager {
     int pageSize = 50,
   }) async {
     Map req = Map();
+    req.add('con_id', conversationId);
+    req.add('type', conversationTypeToInt(type));
     req.add('pageSize', pageSize);
     req.add('cursor', cursor);
     req.add('options', options?.toJson());
