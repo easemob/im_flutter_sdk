@@ -141,7 +141,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
   /// **Return** Returns the result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
@@ -153,7 +153,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] 开始获取数据的游标位置。首次调用方法时可以不传，按用户加入子区时间的倒序获取数据。
   ///
-  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的子区数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
@@ -186,7 +186,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
   /// **Return** result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
@@ -200,7 +200,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] 开始取数据的游标位置。首次获取数据时可以不传，按子区创建时间的倒序获取数据。
   ///
-  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的子区数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
@@ -237,7 +237,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
   /// **Return** The result of [EMCursorResult], including the cursor for getting data next time and the chat thread object list.
   ///
@@ -251,7 +251,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] 开始取数据的游标位置。首次调用方法时可以不传，按用户加入子区时间的倒序获取数据。
   ///
-  /// Param [limit] 每页期望返回的子区数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的子区数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区列表；失败则抛出异常。
   ///
@@ -290,7 +290,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] The initial value can be empty or empty string.
   ///
-  /// Param [limit] The number of fetches at one time. Value range (0, 50].
+  /// Param [limit] The number of fetches at one time. Value range [1, 50].
   ///
   /// **Return** The result of [EMCursorResult], including the cursor for getting data next time and the chat thread member list.
   ///
@@ -307,7 +307,7 @@ class EMChatThreadManager {
   ///
   /// Param [cursor] 开始获取数据的游标位置，首次调用方法时传 `null` 或空字符串，按成员加入子区时间的正序获取数据。
   ///
-  /// Param [limit] 每页期望返回的成员数。取值范围为 (1,50]。
+  /// Param [limit] 每页期望返回的成员数。取值范围为 [1,50]。
   ///
   /// **Return** 若调用成功，返回子区成员列表；失败则抛出异常。
   ///

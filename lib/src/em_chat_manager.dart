@@ -3,6 +3,7 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'internal/inner_headers.dart';
 
 /// ~english
@@ -160,8 +161,7 @@ class EMChatManager {
       void Function(EMMessage)? onSuccess,
       void Function(EMMessage)? onError,
       void Function(int)? onProgress,
-    )?
-        callback,
+    )? callback,
   }) async {
     message.status = MessageStatus.PROGRESS;
     Map result = await ChatChannel.invokeMethod(
@@ -967,6 +967,58 @@ class EMChatManager {
   }
 
   /// ~english
+  /// [FetchMessageOptions] paging from the server to retrieve the history message for the specified session.
+  ///
+  /// Param [conversationId] The conversation ID, which is the user ID of the peer user for one-to-one chat, but the group ID for group chat.
+  ///
+  /// Param [type] The conversation type. You can set this parameter only to [EMConversationType.Chat] or [EMConversationType.GroupChat].
+  ///
+  /// Param [options] The parameter configuration class for pulling historical messages from the server. See [FetchMessageOptions].
+  ///
+  /// Param [cursor] The cursor position from which to start querying data.
+  ///
+  /// Param [pageSize] The number of messages that you expect to get on each page. The value range is [1,50].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 根据 [FetchMessageOptions] 从服务器分页获取指定会话的历史消息。
+  ///
+  /// Param [conversationId] 会话 ID。
+  ///
+  /// Param [type] 会话类型，只支持 [EMConversationType.Chat] 和群组 [EMConversationType.GroupChat] 。
+  ///
+  /// Param [options] 查询历史消息的参数配置接口，详见 [FetchMessageOptions]。
+  ///
+  /// Param [cursor] 查询的起始游标位置。
+  ///
+  /// Param [pageSize] 每页期望获取的消息条数。取值范围为 [1,50]。
+  /// ~end
+  Future<EMCursorResult<EMMessage>> fetchHistoryMessagesByOption(
+    String conversationId,
+    EMConversationType type, {
+    FetchMessageOptions? options,
+    String? cursor,
+    int pageSize = 50,
+  }) async {
+    Map req = Map();
+    req.add('pageSize', pageSize);
+    req.add('cursor', cursor);
+    req.add('options', options?.toJson());
+    Map result = await ChatChannel.invokeMethod(
+        ChatMethodKeys.fetchHistoryMessagesByOptions, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<EMMessage>.fromJson(
+          result[ChatMethodKeys.fetchHistoryMessagesByOptions],
+          dataItemCallback: (value) {
+        return EMMessage.fromJson(value);
+      });
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Retrieves messages from the database according to the parameters.
   ///
   /// **Note**
@@ -1381,7 +1433,7 @@ class EMChatManager {
   ///
   /// Param [chatType] The chat type. Only one-to-one chat [ChatType.Chat] and group chat [ChatType.GroupChat] are allowed.
   ///
-  /// Param [groupId] which is invalid only when the chat type is group chat.
+  /// Param [groupId] which is valid only when the chat type is group chat.
   ///
   /// **Return** The Reaction list under the specified message ID（[EMMessageReaction.userList] is the summary data, which only contains the information of the first three users）.
   ///

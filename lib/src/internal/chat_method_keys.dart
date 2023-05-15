@@ -77,6 +77,8 @@ class ChatMethodKeys {
   static const String deleteConversation = "deleteConversation";
 
   static const String fetchHistoryMessages = "fetchHistoryMessages";
+  static const String fetchHistoryMessagesByOptions =
+      "fetchHistoryMessagesByOptions";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
   static const String getMessage = "getMessage";
   static const String asyncFetchGroupAcks = "asyncFetchGroupAcks";

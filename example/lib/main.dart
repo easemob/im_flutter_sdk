@@ -155,20 +155,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _addChatListener() {
     EMClient.getInstance.chatManager.addMessageEvent(
-        "UNIQUE_HANDLER_ID",
-        ChatMessageEvent(
-          onSuccess: (msgId, msg) {
-            _addLogToConsole("send message succeed");
-          },
-          onProgress: (msgId, progress) {
-            _addLogToConsole("send message succeed");
-          },
-          onError: (msgId, msg, error) {
-            _addLogToConsole(
-              "send message failed, code: ${error.code}, desc: ${error.description}",
-            );
-          },
-        ));
+      "UNIQUE_HANDLER_ID",
+      ChatMessageEvent(
+        onSuccess: (msgId, msg) {
+          _addLogToConsole("on message succeed");
+        },
+        onProgress: (msgId, progress) {
+          _addLogToConsole("on message Progress");
+        },
+        onError: (msgId, msg, error) {
+          _addLogToConsole(
+            "on message failed, code: ${error.code}, desc: ${error.description}",
+          );
+        },
+      ),
+    );
 
     EMClient.getInstance.chatManager.addEventHandler(
       "UNIQUE_HANDLER_ID",
@@ -214,8 +215,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case MessageType.FILE:
                 {
+                  EMClient.getInstance.chatManager.downloadAttachment(msg);
                   _addLogToConsole(
-                    "receive image message, from: ${msg.from}",
+                    "receive file message, from: ${msg.from}",
                   );
                 }
                 break;

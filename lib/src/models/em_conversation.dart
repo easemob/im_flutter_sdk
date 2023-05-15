@@ -392,6 +392,28 @@ class EMConversation {
   }
 
   /// ~english
+  /// Deletes messages sent or received in a certain period from the local database.
+  ///
+  /// Param [startTs] The starting UNIX timestamp for message deletion. The unit is millisecond.
+  ///
+  /// Param [endTs] The end UNIX timestamp for message deletion. The unit is millisecond.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从本地数据库中删除指定时间段内的消息。
+  ///
+  /// Param [startTs] 删除消息的起始时间。UNIX 时间戳，单位为毫秒。
+  ///
+  /// Param [endTs] 删除消息的结束时间。UNIX 时间戳，单位为毫秒。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> deleteMessageWithTs(int startTs, int endTs) async {}
+
+  /// ~english
   /// Gets the message with a specific message ID.
   ///
   /// If the message is already loaded into the memory cache, the message will be directly returned; otherwise, the message will be loaded from the local database and loaded in the memory.

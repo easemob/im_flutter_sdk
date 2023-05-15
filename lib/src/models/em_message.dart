@@ -214,6 +214,21 @@ class EMMessage {
   Map? attributes;
 
   /// ~english
+  /// Whether the message is delivered only when the recipient(s) is/are online:
+  ///
+  /// - `true`：The message is delivered only when the recipient(s) is/are online. If the recipient is offline, the message is discarded.
+  /// - `false` (Default) ：The message is delivered when the recipient(s) is/are online. If the recipient(s) is/are offline, the message will not be delivered to them until they get online.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息是否只投递给在线用户：
+  ///
+  /// - `true`：只有消息接收方在线时才能投递成功。若接收方离线，则消息会被丢弃。
+  /// - `false`（默认）：如果用户在线，则直接投递；如果用户离线，消息会在用户上线时投递。
+  /// ~end
+  bool deliverOnlineOnly = false;
+
+  /// ~english
   /// Message body. We recommend you use [EMMessageBody].
   /// ~end
   ///
@@ -754,6 +769,7 @@ class EMMessage {
     if (_priority != null) {
       data.add("chatroomMessagePriority", _priority!.index);
     }
+    data.add('deliverOnlineOnly', deliverOnlineOnly);
 
     return data;
   }
@@ -778,7 +794,8 @@ class EMMessage {
       ..localTime = map["localTime"] ?? 0
       ..serverTime = map["serverTime"] ?? 0
       ..isChatThreadMessage = map["isThread"] ?? false
-      ..onlineState = map["true"] ?? true
+      ..onlineState = map["onlineState"] ?? true
+      ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
       ..status = messageStatusFromInt(map["status"]);
   }
 

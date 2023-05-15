@@ -444,7 +444,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
-                    map.put("localTime", msg.localTime());
+                    map.put("localId", msg.getMsgId());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
                 });
             }
@@ -454,7 +454,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("progress", progress);
-                    map.put("localTime", msg.localTime());
+                    map.put("localId", msg.getMsgId());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageProgressUpdate, map);
                 });
             }
@@ -467,7 +467,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
-                    map.put("localTime", msg.localTime());
+                    map.put("localId", msg.getMsgId());
                     map.put("error", data);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
                 });
@@ -488,7 +488,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
-                    map.put("localTime", msg.localTime());
+                    map.put("localId", msg.getMsgId());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
                 });
             }
@@ -498,7 +498,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("progress", progress);
-                    map.put("localTime", msg.localTime());
+                    map.put("localId", msg.getMsgId());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageProgressUpdate, map);
                 });
             }
@@ -511,7 +511,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("message", EMMessageHelper.toJson(msg));
-                    map.put("localTime", msg.localTime());
+                    map.put("localId", msg.getMsgId());
                     map.put("error", data);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
                 });
