@@ -155,21 +155,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _addChatListener() {
     EMClient.getInstance.chatManager.addMessageEvent(
-      "UNIQUE_HANDLER_ID",
-      ChatMessageEvent(
-        onSuccess: (msgId, msg) {
-          _addLogToConsole("on message succeed");
-        },
-        onProgress: (msgId, progress) {
-          _addLogToConsole("on message Progress");
-        },
-        onError: (msgId, msg, error) {
-          _addLogToConsole(
-            "on message failed, code: ${error.code}, desc: ${error.description}",
-          );
-        },
-      ),
-    );
+        "UNIQUE_HANDLER_ID",
+        ChatMessageEvent(
+          onSuccess: (msgId, msg) {
+            _addLogToConsole("on message succeed");
+          },
+          onProgress: (msgId, progress) {
+            _addLogToConsole("on message progress");
+          },
+          onError: (msgId, msg, error) {
+            _addLogToConsole(
+              "on message failed, code: ${error.code}, desc: ${error.description}",
+            );
+          },
+        ));
 
     EMClient.getInstance.chatManager.addEventHandler(
       "UNIQUE_HANDLER_ID",
