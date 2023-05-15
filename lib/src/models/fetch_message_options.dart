@@ -145,7 +145,7 @@ class FetchMessageOptions {
     data.add('endTs', endTs);
     data.add('from', from);
     data.add('needSave', needSave);
-    data.add('msgType',
+    data.add('msgTypes',
         msgTypes?.toSet().map<String>((e) => messageTypeToTypeStr(e)).toList());
 
     return data;

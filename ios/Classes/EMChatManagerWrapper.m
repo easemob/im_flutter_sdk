@@ -15,6 +15,7 @@
 #import "EMCursorResult+Helper.h"
 #import "EMMessageReaction+Helper.h"
 #import "EMMessageReactionChange+Helper.h"
+#import "EMFetchServerMessagesOption+Helper.h"
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
@@ -122,6 +123,10 @@
         [self fetchHistoryMessages:call.arguments
                        channelName:call.method
                             result:result];
+    } else if ([ChatFetchHistoryMessagesByOptions isEqualToString:call.method]) {
+        [self fetchHistoryMessagesByOptions:call.arguments
+                                channelName:call.method
+                                     result:result];
     } else if ([ChatSearchChatMsgFromDB isEqualToString:call.method]) {
         [self searchChatMsgFromDB:call.arguments
                       channelName:call.method
@@ -612,6 +617,26 @@
                                                                   pageSize:pageSize
                                                                 completion:^(EMCursorResult *aResult, EMError *aError)
      {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aResult toJson]];
+    }];
+}
+
+- (void)fetchHistoryMessagesByOptions:(NSDictionary *)param
+                          channelName:(NSString *)aChannelName
+                               result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *conversationId = param[@"con_id"];
+    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
+    int pageSize = [param[@"pageSize"] intValue];
+    NSString *cursor = param[@"cursor"];
+    EMFetchServerMessagesOption *options;
+    if(param[@"options"]) {
+        options = [EMFetchServerMessagesOption formJson:param[@"options"]];
+    }
+    [EMClient.sharedClient.chatManager fetchMessagesFromServerBy:conversationId conversationType:type cursor:cursor pageSize:pageSize option:options completion:^(EMCursorResult<EMChatMessage *> * _Nullable aResult, EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
