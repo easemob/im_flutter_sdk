@@ -81,11 +81,11 @@ class EMPresence {
 /// ~end
 class EMPresenceStatusDetail {
   /// ~english
-  /// The platform used by the current online device of the publisher, which can be "ios", "android", "linux", "windows", or "webim".
+  /// The platform used by the current online device of the publisher, which can be "ios", "android", "linux", "win", or "webim".
   /// ~end
   ///
   /// ~chinese
-  /// 发布在线设备，可能是 "ios", "android", "linux", "windows", "webim"。
+  /// 发布在线设备，可能是 "ios", "android", "linux", "win", "webim"。
   /// ~end
   final String device;
 

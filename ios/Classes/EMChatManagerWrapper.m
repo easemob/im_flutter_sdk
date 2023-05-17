@@ -597,8 +597,8 @@
         }
         msg.body = body;
     }
-    NSMutableDictionary *msgDict = [[msg toJson] mutableCopy];
-    return msgDict;
+    
+    return [msg toJson];
 }
 
 - (void)loadAllConversations:(NSDictionary *)param

@@ -782,10 +782,10 @@ enum EMMultiDevicesEvent {
   CHAT_THREAD_KICK,
 
   /// ~english
-  /// If user A modifies a custom member attribute on device A1, 
+  /// If user A modifies a custom member attribute on device A1,
   /// this event is triggered on another device that the user logs in with the same account.
   /// ~end
-  /// 
+  ///
   /// ~chinese
   /// 若用户 A 在设备 A1 上修改群成员自定义属性，该事件会在登录该账号的其他设备触发。
   /// ~end
@@ -979,4 +979,31 @@ enum ChatRoomMessagePriority {
   /// 低
   /// ~end
   Low,
+}
+
+/// ~english
+/// Operation type of reaction.
+/// ~end
+///
+/// ~chinese
+/// reaction 操作种类。
+/// ~end
+enum ReactionOperate {
+  /// ~english
+  /// Remove
+  /// ~end
+  ///
+  /// ~chinese
+  /// 删除
+  /// ~end
+  Remove,
+
+  /// ~english
+  /// Add
+  /// ~end
+  ///
+  /// ~chinese
+  /// 添加
+  /// ~end
+  Add,
 }

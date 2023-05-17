@@ -120,10 +120,20 @@ class EMMessageReactionEvent {
   /// ~end
   final List<EMMessageReaction> reactions;
 
+  /// ~english
+  /// Details of changed operation.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 发生变化的操作详情。
+  /// ~end
+  final List<ReactionOperation> operations;
+
   EMMessageReactionEvent._private({
     required this.conversationId,
     required this.messageId,
     required this.reactions,
+    required this.operations,
   });
 
   /// @nodoc
@@ -134,10 +144,17 @@ class EMMessageReactionEvent {
     map["reactions"]?.forEach((element) {
       reactions.add(EMMessageReaction.fromJson(element));
     });
+
+    List<ReactionOperation> operations = [];
+    map["operations"]?.forEach((e) {
+      operations.add(ReactionOperation.fromJson(e));
+    });
+
     return EMMessageReactionEvent._private(
       conversationId: conversationId,
       messageId: messageId,
       reactions: reactions,
+      operations: operations,
     );
   }
 }

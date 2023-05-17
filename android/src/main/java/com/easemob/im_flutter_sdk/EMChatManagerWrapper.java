@@ -437,6 +437,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
     }
 
+
     private void downloadAttachment(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage tempMsg = EMMessageHelper.fromJson(param.getJSONObject("message"));
         final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
@@ -445,7 +446,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             public void onSuccess() {
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("message", updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.SUCCESSED, msg, false));
                     map.put("localId", msg.getMsgId());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
                 });
@@ -468,7 +469,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 data.put("description", desc);
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("message", updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.FAILED, msg, false));
                     map.put("localId", msg.getMsgId());
                     map.put("error", data);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
@@ -477,7 +478,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().downloadAttachment(msg);
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, false));
         });
     }
 
@@ -489,7 +490,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             public void onSuccess() {
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("message", updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.SUCCESSED, msg, true));
                     map.put("localId", msg.getMsgId());
                     messageChannel.invokeMethod(EMSDKMethod.onMessageSuccess, map);
                 });
@@ -512,7 +513,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 data.put("description", desc);
                 post(() -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("message", EMMessageHelper.toJson(msg));
+                    map.put("message", updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.FAILED, msg, true));
                     map.put("localId", msg.getMsgId());
                     map.put("error", data);
                     messageChannel.invokeMethod(EMSDKMethod.onMessageError, map);
@@ -521,8 +522,63 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().downloadThumbnail(msg);
-            onSuccess(result, channelName, EMMessageHelper.toJson(msg));
+            onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, true));
         });
+    }
+
+    private Map<String, Object> updateDownloadStatus(EMFileMessageBody.EMDownloadStatus downloadStatus, EMMessage msg, boolean isThumbnail) {
+        boolean canUpdate = false;
+        switch (msg.getType()) {
+            case FILE:
+            case VOICE: {
+                if (isThumbnail) {
+                    break;
+                }
+            }
+            case IMAGE:
+            case VIDEO:
+            {
+                canUpdate = true;
+            }
+            break;
+            default:
+                break;
+        }
+        if (canUpdate) {
+            EMMessageBody body = msg.getBody();
+            if (msg.getType() == EMMessage.Type.FILE) {
+                EMFileMessageBody tmpBody = (EMFileMessageBody) body;
+                tmpBody.setDownloadStatus(downloadStatus);
+                body = tmpBody;
+            }else if (msg.getType() == EMMessage.Type.VOICE) {
+                EMVoiceMessageBody tmpBody = (EMVoiceMessageBody) body;
+                tmpBody.setDownloadStatus(downloadStatus);
+                body = tmpBody;
+            }else if (msg.getType() == EMMessage.Type.IMAGE) {
+                EMImageMessageBody tmpBody = (EMImageMessageBody) body;
+                if (isThumbnail) {
+                    // android not support now.
+                    // tmpBody.setThumbnailDownloadStatus(downloadStatus);
+                }else {
+                    tmpBody.setDownloadStatus(downloadStatus);
+                }
+
+                body = tmpBody;
+            }else if (msg.getType() == EMMessage.Type.VIDEO) {
+                EMVideoMessageBody tmpBody = (EMVideoMessageBody) body;
+                if (isThumbnail) {
+                    // android not support now.
+                    // tmpBody.setThumbnailDownloadStatus(downloadStatus);
+                }else {
+                    tmpBody.setDownloadStatus(downloadStatus);
+                }
+
+                body = tmpBody;
+            }
+
+            msg.setBody(body);
+        }
+        return EMMessageHelper.toJson(msg);
     }
 
     private void loadAllConversations(JSONObject param, String channelName, Result result) throws JSONException {
