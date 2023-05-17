@@ -22,8 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson;
 - (NSDictionary *)toJson;
 + (EMMessageBodyType)typeFromString:(NSString *)aStrType;
-
-
++ (EMDownloadStatus)downloadStatusFromInt:(int)aStatus;
++ (int)downloadStatusToInt:(EMDownloadStatus)aStatus;
 @end
 
 NS_ASSUME_NONNULL_END

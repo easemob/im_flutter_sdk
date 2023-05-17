@@ -780,6 +780,16 @@ enum EMMultiDevicesEvent {
   /// 用户 A 在设备 A1 上将其他用户踢出子区，则设备 A2 上会收到该事件。
   /// ~end
   CHAT_THREAD_KICK,
+
+  /// ~english
+  /// If user A modifies a custom member attribute on device A1, 
+  /// this event is triggered on another device that the user logs in with the same account.
+  /// ~end
+  /// 
+  /// ~chinese
+  /// 若用户 A 在设备 A1 上修改群成员自定义属性，该事件会在登录该账号的其他设备触发。
+  /// ~end
+  GROUP_MEMBER_ATTRIBUTES_CHANGED,
 }
 
 /// ~english

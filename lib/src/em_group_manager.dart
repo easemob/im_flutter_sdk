@@ -1841,6 +1841,105 @@ class EMGroupManager {
     }
   }
 
+  /// ~english
+  /// Sets custom attributes of a group member.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [userId] The user ID of the group member for whom the custom attributes are set.
+  ///
+  /// Param [attributes] The map of custom attributes in key-value format. In a key-value pair,
+  /// if the value is set to an empty string, the custom attribute will be deleted.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置群成员自定义属性。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [userId] 要设置自定义属性的群成员的用户 ID。
+  ///
+  /// Param [attributes] 要设置的群成员自定义属性的 map，为 key-value 格式。对于一个 key-value 键值对，若 value 设置空字符串即删除该自定义属性。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<void> setMemberAttributes({
+    required String groupId,
+    required String userId,
+    required Map<String, String> attributes,
+  }) async {
+    Map req = {'groupId': groupId, 'userId': userId};
+    req.add('attributes', attributes);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.setMemberAttributesFromGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Gets all custom attributes of a group member.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [userId] The user ID of the group member whose all custom attributes are retrieved.
+  ///
+  /// **Return** The user attributes.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取单个群成员所有自定义属性。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [userId] 要获取的自定义属性的群成员的用户 ID。
+  ///
+  /// **Return** 需要查询的用户属性。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<Map<String, String>?> fetchMemberAttributes({
+    required String groupId,
+    required String userId,
+  }) async {
+    Map req = {'groupId': groupId, 'userId': userId};
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchMemberAttributesFromGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchMemberAttributesFromGroup]
+          ?.cast<String, String>();
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Map<String, Map<String, String>>?> fetchMembersAttributes({
+    required String groupId,
+    required List<String> userIds,
+    List<String>? keys,
+  }) async {
+    Map req = {'groupId': groupId, 'userIds': userIds};
+    req.add("keys", keys);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchMembersAttributesFromGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+
+      // TODO: 需要验证
+      return result[ChatMethodKeys.fetchMembersAttributesFromGroup]
+          ?.cast<Map<String, Map<String, String>>>();
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   Future<void> _onGroupChanged(Map? map) async {
     var type = map!['type'];
     _eventHandlesMap.values.forEach((element) {
@@ -1982,6 +2081,18 @@ class EMGroupManager {
           bool isDisable = map["isDisabled"] as bool;
           element.onDisableChanged?.call(groupId, isDisable);
           break;
+        case EMGroupChangeEvent.ON_ATTRIBUTES_CHANGED_OF_MEMBER:
+          String groupId = map["groupId"];
+          String userId = map["userId"];
+          Map<String, String>? attributes =
+              map["attributes"].cast<String, String>();
+          String? operatorId = map["operatorId"];
+          element.onAttributesChangedOfGroupMember?.call(
+            groupId,
+            userId,
+            attributes,
+            operatorId,
+          );
       }
     });
   }

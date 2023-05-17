@@ -81,6 +81,10 @@
         [self clearAllMessages:call.arguments
                    channelName:call.method
                         result:result];
+    } else if ([ChatDeleteMessagesWithTs isEqualToString:call.method]) {
+        [self deleteMessagesWithTs:call.arguments
+                   channelName:call.method
+                        result:result];
     } else if ([ChatInsertMsg isEqualToString:call.method]) {
         [self insertMessage:call.arguments
                 channelName:call.method
@@ -323,6 +327,21 @@
                         completion:^(EMConversation *conversation){
         EMError *error = nil;
         [conversation deleteAllMessages:&error];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@(!error)];
+    }];
+}
+
+- (void)deleteMessagesWithTs:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    int startTs = [param[@"startTs"] intValue];
+    int endTs = [param[@"endTs"] intValue];
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation){
+        EMError *error = [conversation removeMessagesStart:startTs to:endTs];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error

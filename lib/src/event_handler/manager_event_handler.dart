@@ -1393,6 +1393,37 @@ class EMGroupEventHandler {
   )? onUserRemovedFromGroup;
 
   /// ~english
+  /// Occurs when a custom attribute(s) of a group member is/are changed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [userId] The user ID of the group member whose custom attributes are changed.
+  ///
+  /// Param [attributes] The modified custom attributes, in key-value format.
+  ///
+  /// Param [operatorId] The user ID of the operator.
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组成员自定义属性有变更。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [userId] 自定义属性变更的群成员的用户 ID。
+  ///
+  /// Param [attributes] 修改后的自定义属性，key-value 格式。
+  ///
+  /// Param [operatorId] 操作者的用户 ID。
+  /// ~end
+  final void Function(
+    String groupId,
+    String userId,
+    Map<String, String>? attributes,
+    String? operatorId,
+  )? onAttributesChangedOfGroupMember;
+
+  /// ~english
   /// The group manager listener callback.
   ///
   /// Param [onAdminAddedFromGroup] A member is set as an admin callback.
@@ -1442,6 +1473,8 @@ class EMGroupEventHandler {
   /// Param [onSpecificationDidUpdate] Occurs when the group detail information is updated.
   ///
   /// Param [onDisableChanged] Occurs when the group is enabled or disabled.
+  ///
+  /// Param [onAttributesChangedOfGroupMember] Occurs when a custom attribute(s) of a group member is/are changed.
   /// ~end
   ///
   /// ~chinese
@@ -1494,6 +1527,8 @@ class EMGroupEventHandler {
   /// Param [onSpecificationDidUpdate] 群详情变更回调。
   ///
   /// Param [onDisableChanged] 群是禁用状态变更。
+  ///
+  /// Param [onAttributesChangedOfGroupMember] 群组成员自定义属性有变更。
   /// ~end
   EMGroupEventHandler({
     this.onAdminAddedFromGroup,
@@ -1520,6 +1555,7 @@ class EMGroupEventHandler {
     this.onUserRemovedFromGroup,
     this.onSpecificationDidUpdate,
     this.onDisableChanged,
+    this.onAttributesChangedOfGroupMember,
   });
 }
 
