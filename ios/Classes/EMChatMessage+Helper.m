@@ -265,6 +265,51 @@
     return ret;
 }
 
+
++ (EMDownloadStatus)downloadStatusFromInt:(int)aStatus {
+    EMDownloadStatus ret = EMDownloadStatusPending;
+    switch (aStatus) {
+        case 0:
+            ret = EMDownloadStatusDownloading;
+            break;
+        case 1:
+            ret = EMDownloadStatusSucceed;
+            break;
+        case 2:
+            ret = EMDownloadStatusFailed;
+            break;
+        case 3:
+            ret = EMDownloadStatusPending;
+            break;
+        default:
+            break;
+    }
+    
+    return ret;
+}
+
++ (int)downloadStatusToInt:(EMDownloadStatus)aStatus {
+    int ret = 0;
+    switch (aStatus) {
+        case EMDownloadStatusDownloading:
+            ret = 0;
+            break;
+        case EMDownloadStatusSucceed:
+            ret = 1;
+            break;
+        case EMDownloadStatusFailed:
+            ret = 2;
+            break;
+        case EMDownloadStatusPending:
+            ret = 3;
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
+
 @end
 
 #pragma mark - txt
@@ -407,7 +452,7 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
 }
 
@@ -418,52 +463,10 @@
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
     ret[@"fileSize"] = @(self.fileLength);
-    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
     return ret;
 }
 
-- (EMDownloadStatus)downloadStatusFromInt:(int)aStatus {
-    EMDownloadStatus ret = EMDownloadStatusPending;
-    switch (aStatus) {
-        case 0:
-            ret = EMDownloadStatusDownloading;
-            break;
-        case 1:
-            ret = EMDownloadStatusSucceed;
-            break;
-        case 2:
-            ret = EMDownloadStatusFailed;
-            break;
-        case 3:
-            ret = EMDownloadStatusPending;
-            break;
-        default:
-            break;
-    }
-    
-    return ret;
-}
-
-- (int)downloadStatusToInt:(EMDownloadStatus)aStatus {
-    int ret = 0;
-    switch (aStatus) {
-        case EMDownloadStatusDownloading:
-            ret = 0;
-            break;
-        case EMDownloadStatusSucceed:
-            ret = 1;
-            break;
-        case EMDownloadStatusFailed:
-            ret = 2;
-            break;
-        case EMDownloadStatusPending:
-            ret = 3;
-            break;
-        default:
-            break;
-    }
-    return ret;
-}
 
 @end
 
@@ -485,12 +488,12 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
     ret.size = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
-    ret.thumbnailDownloadStatus = [ret downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
+    ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
     ret.compressionRatio = [aJson[@"sendOriginalImage"] boolValue] ? 1.0 : 0.6;
     return ret;
 }
@@ -500,8 +503,8 @@
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
-    ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
-    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);
+    ret[@"thumbnailStatus"] = @([EMMessageBody downloadStatusToInt:self.thumbnailDownloadStatus]);
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
     ret[@"width"] = @(self.size.width);
     ret[@"height"] = @(self.size.height);
     ret[@"fileSize"] = @(self.fileLength);
@@ -533,7 +536,7 @@
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
-    ret.thumbnailDownloadStatus = [ret downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
+    ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
     ret.thumbnailSize = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
     return ret;
 }
@@ -546,7 +549,7 @@
     ret[@"remotePath"] = self.remotePath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
-    ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
+    ret[@"thumbnailStatus"] = @([EMMessageBody downloadStatusToInt:self.thumbnailDownloadStatus]);
     ret[@"width"] = @(self.thumbnailSize.width);
     ret[@"height"] = @(self.thumbnailSize.height);
     ret[@"fileSize"] = @(self.fileLength);
@@ -571,7 +574,7 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.duration = [aJson[@"duration"] intValue];
-    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
 }
 
@@ -583,7 +586,7 @@
     ret[@"fileSize"] = @(self.fileLength);
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
-    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);;
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);;
     return ret;
 }
 

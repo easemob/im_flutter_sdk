@@ -122,6 +122,8 @@ public class EMSDKMethod {
     static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";
     static final String clearAllMessages = "clearAllMessages";
+
+    static final String deleteMessagesWithTs = "deleteMessagesWithTs";
     static final String insertMessage = "insertMessage";
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
@@ -223,6 +225,10 @@ public class EMSDKMethod {
     static final String declineJoinApplication = "declineJoinApplication";
     static final String acceptInvitationFromGroup = "acceptInvitationFromGroup";
     static final String declineInvitationFromGroup = "declineInvitationFromGroup";
+    static final String setMemberAttributesFromGroup = "setMemberAttributesFromGroup";
+    static final String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
+
+    static final String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
 
     /// EMGroupManagerListener
     static final String onGroupChanged = "onGroupChanged";

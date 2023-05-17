@@ -411,7 +411,18 @@ class EMConversation {
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> deleteMessageWithTs(int startTs, int endTs) async {}
+  Future<void> deleteMessagesWithTs(int startTs, int endTs) async {
+    Map req = this._toJson();
+    req['startTs'] = startTs;
+    req['endTs'] = endTs;
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.deleteMessagesWithTs, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 
   /// ~english
   /// Gets the message with a specific message ID.

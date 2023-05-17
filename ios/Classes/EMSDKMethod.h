@@ -134,6 +134,7 @@ static NSString *const ChatRemoveMsg = @"removeMessage";
 static NSString *const ChatGetLatestMsg = @"getLatestMessage";
 static NSString *const ChatGetLatestMsgFromOthers = @"getLatestMessageFromOthers";
 static NSString *const ChatClearAllMsg = @"clearAllMessages";
+static NSString *const ChatDeleteMessagesWithTs = @"deleteMessagesWithTs";
 static NSString *const ChatInsertMsg = @"insertMessage";
 static NSString *const ChatAppendMsg = @"appendMessage";
 static NSString *const ChatUpdateConversationMsg = @"updateConversationMessage";
@@ -238,6 +239,9 @@ static NSString *const ChatAcceptJoinApplication = @"acceptJoinApplication";
 static NSString *const ChatDeclineJoinApplication = @"declineJoinApplication";
 static NSString *const ChatAcceptInvitationFromGroup = @"acceptInvitationFromGroup";
 static NSString *const ChatDeclineInvitationFromGroup = @"declineInvitationFromGroup";
+static NSString *const ChatSetMemberAttributesFromGroup = @"setMemberAttributesFromGroup";
+static NSString *const ChatFetchMemberAttributesFromGroup = @"fetchMemberAttributesFromGroup";
+static NSString *const ChatFetchMembersAttributesFromGroup = @"fetchMembersAttributesFromGroup";
 
 static NSString *const ChatOnGroupChanged = @"onGroupChanged";
 

@@ -470,8 +470,8 @@
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    EMChatMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    [EMClient.sharedClient.chatManager downloadMessageAttachment:needDownMSg
+    EMChatMessage *needDownMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageAttachment:needDownMsg
                                                         progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
@@ -482,13 +482,15 @@
     } completion:^(EMChatMessage *message, EMError *error)
      {
         if (error) {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusFailed message:message thumbnail:NO];
             [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{
                 @"error":[error toJson],
                 @"localId": msg.messageId,
-                @"message":[message toJson]
+                @"message":msgDict
             }];
         }else {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:NO];
             [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
                 @"message":[message toJson],
@@ -497,10 +499,66 @@
         }
     }];
     
+    NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:NO];
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
-                       object:[msg toJson]];
+                       object:msgDict];
+}
+
+// 用于修改下载状态。
+- (NSDictionary *)updateDownloadStatus:(EMDownloadStatus)status
+                               message:(EMChatMessage *)msg
+                             thumbnail:(BOOL)isThumbnail
+{
+    BOOL canUpdate = NO;
+    switch(msg.body.type){
+        case EMMessageBodyTypeFile:
+        case EMMessageBodyTypeVoice:{
+            if(isThumbnail) {
+                break;
+            }
+        }
+        case EMMessageBodyTypeVideo:
+        case EMMessageBodyTypeImage:{
+            canUpdate = YES;
+        }
+            break;
+        default:
+            break;
+    }
+    
+    if(canUpdate) {
+        EMMessageBody *body = msg.body;
+        if(msg.body.type == EMMessageBodyTypeFile) {
+            EMFileMessageBody *tmpBody = (EMFileMessageBody *)body;
+            tmpBody.downloadStatus = status;
+            body = tmpBody;
+        }else if(msg.body.type == EMMessageBodyTypeVoice) {
+            EMVoiceMessageBody *tmpBody = (EMVoiceMessageBody *)body;
+            tmpBody.downloadStatus = status;
+            body = tmpBody;
+        }else if(msg.body.type == EMMessageBodyTypeImage) {
+            EMImageMessageBody *tmpBody = (EMImageMessageBody *)body;
+            if(isThumbnail) {
+                tmpBody.thumbnailDownloadStatus = status;
+            }else {
+                tmpBody.downloadStatus = status;
+            }
+            body = tmpBody;
+        }else if(msg.body.type == EMMessageBodyTypeVideo) {
+            EMVideoMessageBody *tmpBody = (EMVideoMessageBody *)body;
+            if(isThumbnail) {
+                tmpBody.thumbnailDownloadStatus = status;
+            }else {
+                tmpBody.downloadStatus = status;
+            }
+            body = tmpBody;
+        }
+        msg.body = body;
+    }
+    NSMutableDictionary *msgDict = [[msg toJson] mutableCopy];
+    return msgDict;
 }
 
 - (void)downloadThumbnail:(NSDictionary *)param
@@ -508,8 +566,8 @@
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    EMChatMessage *needDownMSg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMSg
+    EMChatMessage *needDownMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMsg
                                                        progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate

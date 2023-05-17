@@ -137,6 +137,7 @@ class ChatMethodKeys {
   static const String getLatestMessage = "getLatestMessage";
   static const String getLatestMessageFromOthers = "getLatestMessageFromOthers";
   static const String clearAllMessages = "clearAllMessages";
+  static const String deleteMessagesWithTs = "deleteMessagesWithTs";
   static const String insertMessage = "insertMessage";
   static const String appendMessage = "appendMessage";
   static const String updateConversationMessage = "updateConversationMessage";
@@ -252,6 +253,12 @@ class ChatMethodKeys {
   static const String declineJoinApplication = "declineJoinApplication";
   static const String acceptInvitationFromGroup = "acceptInvitationFromGroup";
   static const String declineInvitationFromGroup = "declineInvitationFromGroup";
+  static const String setMemberAttributesFromGroup =
+      "setMemberAttributesFromGroup";
+  static const String fetchMemberAttributesFromGroup =
+      "fetchMemberAttributesFromGroup";
+  static const String fetchMembersAttributesFromGroup =
+      "fetchMembersAttributesFromGroup";
 
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
