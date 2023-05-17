@@ -493,13 +493,53 @@
             NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:NO];
             [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
                                         arguments:@{
-                @"message":[message toJson],
+                @"message":msgDict,
                 @"localId": msg.messageId
             }];
         }
     }];
     
     NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:NO];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:msgDict];
+}
+
+- (void)downloadThumbnail:(NSDictionary *)param
+              channelName:(NSString *)aChannelName
+                   result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *needDownMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMsg
+                                                       progress:^(int progress)
+     {
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
+                                    arguments:@{
+            @"progress":@(progress),
+            @"localId":msg.messageId
+        }];
+    } completion:^(EMChatMessage *message, EMError *error)
+     {
+        if (error) {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusFailed message:message thumbnail:YES];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
+                                        arguments:@{
+                @"error":[error toJson],
+                @"localId":msg.messageId,
+                @"message":msgDict
+            }];
+        }else {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:YES];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
+                                        arguments:@{
+                @"message":msgDict,
+                @"localId":msg.messageId
+            }];
+        }
+    }];
+    NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:YES];
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
                         error:nil
@@ -559,44 +599,6 @@
     }
     NSMutableDictionary *msgDict = [[msg toJson] mutableCopy];
     return msgDict;
-}
-
-- (void)downloadThumbnail:(NSDictionary *)param
-              channelName:(NSString *)aChannelName
-                   result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    EMChatMessage *needDownMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMsg
-                                                       progress:^(int progress)
-     {
-        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
-                                    arguments:@{
-            @"progress":@(progress),
-            @"localId":msg.messageId
-        }];
-    } completion:^(EMChatMessage *message, EMError *error)
-     {
-        if (error) {
-            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
-                                        arguments:@{
-                @"error":[error toJson],
-                @"localId":msg.messageId,
-                @"message":[message toJson]
-            }];
-        }else {
-            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
-                                        arguments:@{
-                @"message":[message toJson],
-                @"localId":msg.messageId
-            }];
-        }
-    }];
-    
-    [weakSelf wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:[msg toJson]];
 }
 
 - (void)loadAllConversations:(NSDictionary *)param
