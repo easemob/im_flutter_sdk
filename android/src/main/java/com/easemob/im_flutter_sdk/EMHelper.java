@@ -26,6 +26,7 @@ import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.chat.EMMessageReactionChange;
+import com.hyphenate.chat.EMMessageReactionOperation;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
@@ -1241,11 +1242,28 @@ class EMMessageReactionChangeHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("conversationId", change.getConversionID());
         data.put("messageId", change.getMessageId());
-        ArrayList<Map<String, Object>> list = new ArrayList<>();
+        ArrayList<Map<String, Object>> reactions = new ArrayList<>();
         for (int i = 0; i < change.getMessageReactionList().size(); i++) {
-            list.add(EMMessageReactionHelper.toJson(change.getMessageReactionList().get(i)));
+            reactions.add(EMMessageReactionHelper.toJson(change.getMessageReactionList().get(i)));
         }
-        data.put("reactions", list);
+        data.put("reactions", reactions);
+
+        ArrayList<Map<String, Object>> operations = new ArrayList<>();
+        for (int i = 0; i < change.getOperations().size(); i++) {
+            operations.add(EMMessageReactionOperationHelper.toJson(change.getOperations().get(i)));
+        }
+        data.put("operations", operations);
+
+        return data;
+    }
+}
+
+class EMMessageReactionOperationHelper {
+    static Map<String, Object> toJson(EMMessageReactionOperation operation) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", operation.getUserId());
+        data.put("reaction", operation.getReaction());
+        data.put("operate", operation.getOperation() == EMMessageReactionOperation.Operation.REMOVE ? 0 : 1);
 
         return data;
     }

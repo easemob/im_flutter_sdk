@@ -7,6 +7,7 @@
 
 #import "EMMessageReactionChange+Helper.h"
 #import "EMMessageReaction+Helper.h"
+#import "EMMessageReactionOperation+Helper.h"
 
 @implementation EMMessageReactionChange (Helper)
 
@@ -18,8 +19,13 @@
     for (EMMessageReaction *reaction in self.reactions) {
         [reactions addObject:[reaction toJson]];
     }
-    
     ret[@"reactions"] = reactions;
+    
+    NSMutableArray *operations = [NSMutableArray array];
+    for (EMMessageReactionOperation *operation in self.operations) {
+        [operations addObject:[operation toJson]];
+    };
+    ret[@"operations"] = operations;
     return ret;
 }
 

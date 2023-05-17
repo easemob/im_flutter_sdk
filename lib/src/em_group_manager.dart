@@ -1902,7 +1902,7 @@ class EMGroupManager {
   ///
   /// **Return** 需要查询的用户属性。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<Map<String, String>?> fetchMemberAttributes({
     required String groupId,
@@ -1920,6 +1920,34 @@ class EMGroupManager {
     }
   }
 
+  /// ~english
+  /// Gets custom attributes of multiple group members by attribute key.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [userIds] The array of user IDs of group members whose custom attributes are retrieved.(limitation is ten.More than callback error. )
+  ///
+  /// Param [keys] The array of keys of custom attributes to be retrieved.
+  ///
+  /// **Return** The users attributes.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 根据指定的属性 key 获取多个群成员的自定义属性
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [userIds] 要获取自定义属性的群成员的用户 ID 数组。（最多10个，多则报错）
+  ///
+  /// Param [keys] 要获取自定义属性的 key 的数组。
+  ///
+  /// **Return** 需要查询的用户属性。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<Map<String, Map<String, String>>?> fetchMembersAttributes({
     required String groupId,
     required List<String> userIds,
