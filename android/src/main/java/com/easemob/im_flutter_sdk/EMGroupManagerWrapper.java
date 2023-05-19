@@ -847,7 +847,13 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         String groupId = param.getString("groupId");
         String userId = param.getString("userId");
 
-        EMClient.getInstance().groupManager().asyncFetchGroupMemberAllAttributes(groupId, userId, new EMValueWrapperCallBack<>(result, channelName));
+        EMClient.getInstance().groupManager().asyncFetchGroupMemberAllAttributes(groupId, userId, new EMValueWrapperCallBack<Map<String,Map<String,String>>>(result, channelName){
+
+            @Override
+            public void onSuccess(Map<String, Map<String, String>> object) {
+                updateObject(object.get(userId));
+            }
+        });
     }
 
     private void fetchMembersAttributes(JSONObject param, String channelName, Result result) throws JSONException {
