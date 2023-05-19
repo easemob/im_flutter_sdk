@@ -31,6 +31,7 @@ export 'src/models/em_group_shared_file.dart';
 export 'src/models/em_group_options.dart';
 export 'src/models/fetch_message_options.dart';
 export 'src/models/em_chat_enums.dart';
+export 'src/models/reaction_operation.dart';
 
 export 'src/models/em_message.dart';
 export 'src/models/em_download_callback.dart';
@@ -38,4 +39,4 @@ export 'src/models/em_message_reaction.dart';
 export 'src/models/em_chat_thread.dart';
 export 'src/models/chat_silent_mode.dart';
 export 'src/event_handler/manager_event_handler.dart';
-export 'src/tools/area_code.dart';
+export 'src/tools/chat_area_code.dart';
