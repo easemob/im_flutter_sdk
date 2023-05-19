@@ -272,7 +272,7 @@ class EMOptions {
   /// 此属性用于限制可访问边缘节点的范围。缺省值为AreaCodeGLOB。
   /// 此属性只能在调用[EMClient.init]时设置。在应用程序运行期间不能更改属性设置。
   /// ~end
-  final int serverAreaCode;
+  final int chatAreaCode;
 
   EMPushConfig _pushConfig = EMPushConfig();
 
@@ -429,7 +429,7 @@ class EMOptions {
   ///
   /// Param [imServer] The IM server URL for private deployment.
   ///
-  /// Param [serverAreaCode] The area code.
+  /// Param [chatAreaCode] The area code.
   ///
   /// ~end
   ///
@@ -501,7 +501,7 @@ class EMOptions {
   ///
   /// Param [imServer] 私有部署时的 IM 服务器地址。
   ///
-  /// Param [serverAreaCode] server 区域码.
+  /// Param [chatAreaCode] server 区域码.
   /// ~end
   EMOptions({
     required this.appKey,
@@ -523,7 +523,7 @@ class EMOptions {
     this.restServer,
     this.imPort,
     this.imServer,
-    this.serverAreaCode = AreaCode.GLOB,
+    this.chatAreaCode = ChatAreaCode.GLOB,
   });
 
   /// @nodoc
@@ -550,7 +550,7 @@ class EMOptions {
       imServer: json["imServer"],
       restServer: json["restServer"],
       dnsUrl: json["dnsUrl"],
-      serverAreaCode: json["areaCode"] ?? AreaCode.GLOB,
+      chatAreaCode: json["areaCode"] ?? ChatAreaCode.GLOB,
     );
 
     ret._pushConfig = EMPushConfig();
@@ -589,7 +589,7 @@ class EMOptions {
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();
-    data["areaCode"] = this.serverAreaCode;
+    data["areaCode"] = this.chatAreaCode;
     return data;
   }
 

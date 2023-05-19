@@ -971,6 +971,9 @@
     NSString *groupId = param[@"groupId"];
     NSArray *userIds = param[@"userIds"];
     NSArray *keys = param[@"keys"];
+    if(!keys) {
+        keys = [NSArray new];
+    }
 
     [EMClient.sharedClient.groupManager fetchMembersAttributes:groupId userIds:userIds keys:keys completion:^(NSDictionary<NSString *,NSDictionary<NSString *,NSString *> *> * _Nullable attributes, EMError * _Nullable error) {
         [weakSelf wrapperCallBack:result
