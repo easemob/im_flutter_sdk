@@ -39,6 +39,9 @@
 @end
 
 @implementation EMClientWrapper
+{
+    EMOptions *_options;
+}
 
 static EMClientWrapper *wrapper = nil;
 
@@ -183,12 +186,12 @@ static EMClientWrapper *wrapper = nil;
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     
-    
+    if(_options != nil) return;
     __weak typeof(self) weakSelf = self;
     
-    EMOptions *options = [EMOptions fromJson:param];
+    _options = [EMOptions fromJson:param];
 
-    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient initializeSDKWithOptions:_options];
 
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
