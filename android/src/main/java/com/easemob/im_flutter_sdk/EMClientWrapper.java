@@ -30,7 +30,6 @@ import org.json.JSONObject;
 
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
-    private EMOptions options;
     static EMClientWrapper wrapper;
     private EMChatManagerWrapper chatManagerWrapper;
     private EMGroupManagerWrapper groupManagerWrapper;
@@ -280,8 +279,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        if(options != null) return;
-        options = EMOptionsHelper.fromJson(param, this.context);
+        EMOptions options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
 
