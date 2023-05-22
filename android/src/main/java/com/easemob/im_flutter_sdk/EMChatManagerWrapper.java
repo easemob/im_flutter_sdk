@@ -870,6 +870,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void registerEaseListener() {
 
+        if (messageListener != null) {
+            EMClient.getInstance().chatManager().removeMessageListener(messageListener);
+        }
+
         messageListener = new EMMessageListener() {
             @Override
             public void onMessageReceived(List<EMMessage> messages) {
@@ -946,6 +950,9 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }
         };
 
+        if (conversationListener != null) {
+            EMClient.getInstance().chatManager().removeConversationListener(conversationListener);
+        }
         conversationListener = new EMConversationListener() {
 
             @Override

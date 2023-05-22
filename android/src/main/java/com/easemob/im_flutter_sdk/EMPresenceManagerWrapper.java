@@ -131,6 +131,10 @@ public class EMPresenceManagerWrapper  extends EMWrapper implements MethodChanne
     }
     private void registerEaseListener() {
 
+        if (presenceListener != null) {
+            EMClient.getInstance().presenceManager().removeListener(presenceListener);
+        }
+
         presenceListener = presences -> {
             Map<String, Object> data = new HashMap<>();
             List<Map> list = new ArrayList<>();

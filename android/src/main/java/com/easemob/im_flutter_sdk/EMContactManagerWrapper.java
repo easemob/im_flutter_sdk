@@ -191,6 +191,11 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
 
 
     private void registerEaseListener() {
+
+        if (contactListener != null) {
+            EMClient.getInstance().contactManager().removeContactListener(contactListener);
+        }
+
         contactListener = new EMContactListener() {
             @Override
             public void onContactAdded(String userName) {

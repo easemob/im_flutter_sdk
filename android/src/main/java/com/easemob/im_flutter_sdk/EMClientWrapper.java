@@ -349,6 +349,11 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void registerEaseListener() {
 
+        if (multiDeviceListener != null) {
+            EMClient.getInstance().removeMultiDeviceListener(multiDeviceListener);
+        }
+
+
         multiDeviceListener = new EMMultiDeviceListener() {
             @Override
             public void onContactEvent(int event, String target, String ext) {
@@ -376,6 +381,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
             }
         };
+
+        if (connectionListener != null) {
+            EMClient.getInstance().removeConnectionListener(connectionListener);
+        }
 
         connectionListener = new EMConnectionListener() {
             @Override

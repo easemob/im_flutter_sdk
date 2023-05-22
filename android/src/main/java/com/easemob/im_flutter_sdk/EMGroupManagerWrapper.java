@@ -881,6 +881,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private void registerEaseListener() {
+
+        if (groupChangeListener != null) {
+            EMClient.getInstance().groupManager().removeGroupChangeListener(groupChangeListener);
+        }
         groupChangeListener = new EMGroupChangeListener() {
 
             @Override
