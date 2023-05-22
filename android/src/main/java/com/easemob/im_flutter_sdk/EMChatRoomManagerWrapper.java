@@ -656,6 +656,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
     private void registerEaseListener() {
 
+        if (chatRoomChangeListener != null) {
+            EMClient.getInstance().chatroomManager().removeChatRoomListener(chatRoomChangeListener);
+        }
+
         chatRoomChangeListener = new EMChatRoomChangeListener() {
 
             @Override
