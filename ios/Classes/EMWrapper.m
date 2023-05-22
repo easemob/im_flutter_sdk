@@ -27,7 +27,6 @@
                                                                               codec:codec];
         self.channel = channel;
         [registrar addMethodCallDelegate:self channel:channel];
-        
     }
     return self;
 }
@@ -66,7 +65,7 @@
 }
 
 - (void)detachFromEngineForRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    
+    [self unRegisterEaseListener];
 }
 
 -(void)dealloc{
