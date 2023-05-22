@@ -28,7 +28,6 @@
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
         [EMClient.sharedClient.chatManager addDelegate:self delegateQueue:nil];
-        
         FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
         self.messageChannel = [FlutterMethodChannel methodChannelWithName:@"com.chat.im/chat_message"
                                                           binaryMessenger:[registrar messenger]

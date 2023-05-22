@@ -38,7 +38,9 @@
 }
 @end
 
-@implementation EMClientWrapper
+@implementation EMClientWrapper {
+    EMOptions *_options;
+}
 
 
 
@@ -55,7 +57,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [registrar addApplicationDelegate:self];
+      
     }
     return self;
 }
@@ -171,14 +173,21 @@
     
     __weak typeof(self) weakSelf = self;
     
-    EMOptions *options = [EMOptions fromJson:param];
+    if(_options) {
+        [weakSelf wrapperCallBack:result
+                      channelName:ChatInit
+                            error:nil
+                           object:nil];
+        return;
+    }
+    
+    _options = [EMOptions fromJson:param];
 
-    [EMClient.sharedClient initializeSDKWithOptions:options];
+    [EMClient.sharedClient initializeSDKWithOptions:_options];
 
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
-    
     [weakSelf wrapperCallBack:result
                   channelName:ChatInit
                         error:nil
@@ -187,6 +196,7 @@
 
 
 - (void)registerManagers {
+    [self clearAllListener];
     _chatManager = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
     _contactManager = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
     _conversationManager = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
@@ -214,12 +224,14 @@
     [_threadManager unRegisterEaseListener];
     [_msgWrapper unRegisterEaseListener];
     [super unRegisterEaseListener];
+    [EMClient.sharedClient removeDelegate:self];
+    [EMClient.sharedClient removeMultiDevicesDelegate:self];
 }
 
+// 由父类调用，不需要调用 clearAllListener方法，每个manager中都由父类调用。
 - (void)unRegisterEaseListener {
     [EMClient.sharedClient removeDelegate:self];
     [EMClient.sharedClient removeMultiDevicesDelegate:self];
-    [self clearAllListener];
 }
 
 - (EMProgressManager *)progressManager {

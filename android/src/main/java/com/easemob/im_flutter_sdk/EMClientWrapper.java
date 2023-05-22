@@ -44,10 +44,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private EMMultiDeviceListener multiDeviceListener;
     private EMConnectionListener connectionListener;
 
+    private EMOptions options;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-
     }
 
     public void sendDataToFlutter(final Map data) {
@@ -273,7 +273,11 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        EMOptions options = EMOptionsHelper.fromJson(param, this.context);
+        if (options != null) {
+            onSuccess(result, channelName, null);
+            return;
+        }
+        options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
 
