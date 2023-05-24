@@ -547,6 +547,13 @@
     [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
 }
 
+- (void)multiDevicesMessageBeRemoved:(NSString *)conversationId deviceId:(NSString *)deviceId {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"convId"] = conversationId;
+    data[@"deviceId"] = deviceId;
+    [self.channel invokeMethod:ChatOnMultiDeviceRemoveMessagesEvent arguments:data];
+}
+
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
     [[EMClient sharedClient] applicationDidEnterBackground:application];

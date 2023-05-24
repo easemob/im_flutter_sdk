@@ -105,6 +105,9 @@ class EMClient {
         _onMultiDeviceContactEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onMultiDeviceThreadEvent) {
         _onMultiDeviceThreadEvent(argMap!);
+      } else if (call.method ==
+          ChatMethodKeys.onMultiDeviceRemoveMessagesEvent) {
+        _onMultiDeviceRoamMessagesRemovedEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
         _onReceiveCustomData(argMap!);
       } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
@@ -838,6 +841,14 @@ class EMClient {
 
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onChatThreadEvent?.call(event, target, users);
+    }
+  }
+
+  Future<void> _onMultiDeviceRoamMessagesRemovedEvent(Map map) async {
+    String convId = map['convId'];
+    String deviceId = map['deviceId'];
+    for (var handler in _multiDeviceEventHandler.values) {
+      handler.onRemoteMessagesRemoved?.call(convId, deviceId);
     }
   }
 

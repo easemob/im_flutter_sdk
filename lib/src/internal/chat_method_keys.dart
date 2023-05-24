@@ -25,6 +25,7 @@ class ChatMethodKeys {
   static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
   static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
   static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
+  static const String onMultiDeviceRemoveMessagesEvent = "onMultiDeviceRemoveMessagesEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
   static const String onUserDidLoginFromOtherDevice =
