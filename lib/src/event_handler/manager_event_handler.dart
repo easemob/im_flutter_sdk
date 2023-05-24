@@ -275,6 +275,26 @@ class EMMultiDeviceEventHandler {
   )? onChatThreadEvent;
 
   /// ~english
+  /// Callback to other devices after conversation deleted message from server after enabling multiple devices.
+  ///
+  /// Param [conversationId] The conversation id.
+  ///
+  /// Param [deviceId] The device id.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 开启多设备后对单个会话删除漫游消息后对其他设备的回调。
+  ///
+  /// Param [conversationId] 被删除的会话id。
+  ///
+  /// Param [deviceId] 操作删除的设备id。
+  /// ~end
+  final void Function(
+    String conversationId,
+    String deviceId,
+  )? onRemoteMessagesRemoved;
+
+  /// ~english
   /// The multi-device event handler.
   ///
   /// Param [onContactEvent] The multi-device event of contact.
@@ -282,6 +302,8 @@ class EMMultiDeviceEventHandler {
   /// Param [onGroupEvent] The multi-device event of group.
   ///
   /// Param [onChatThreadEvent] The multi-device event of thread.
+  ///
+  /// Param [onRemoteMessagesRemoved] The multi-device event of roam messages removed.
   /// ~end
   ///
   /// ~chinese
@@ -292,11 +314,14 @@ class EMMultiDeviceEventHandler {
   /// Param [onGroupEvent] 多设备群组事件。
   ///
   /// Param [onChatThreadEvent] 多设备 Thread 事件。
+  ///
+  /// Param [onRemoteMessagesRemoved] 多设备漫游消息删除事件。
   /// ~end
   EMMultiDeviceEventHandler({
     this.onContactEvent,
     this.onGroupEvent,
     this.onChatThreadEvent,
+    this.onRemoteMessagesRemoved,
   });
 }
 

@@ -384,6 +384,14 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 data.put("users", usernames);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
             }
+
+            @Override
+            public void onMessageRemoved(String conversationId, String deviceId) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("convId", conversationId);
+                data.put("deviceId", deviceId);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceRemoveMessagesEvent, data));
+            }
         };
 
         if (connectionListener != null) {

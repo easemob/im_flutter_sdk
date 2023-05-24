@@ -34,6 +34,8 @@ public class EMSDKMethod {
     static final String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
     static final String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
     static final String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
+
+    static final String onMultiDeviceRemoveMessagesEvent = "onMultiDeviceRemoveMessagesEvent";
     static final String onSendDataToFlutter = "onSendDataToFlutter";
     static final String onTokenWillExpire = "onTokenWillExpire";
     static final String onTokenDidExpire = "onTokenDidExpire";
