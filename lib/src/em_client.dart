@@ -114,6 +114,8 @@ class EMClient {
         _onTokenWillExpire(argMap);
       } else if (call.method == ChatMethodKeys.onTokenDidExpire) {
         _onTokenDidExpire(argMap);
+      } else if (call.method == ChatMethodKeys.onAppActiveNumberReachLimit) {
+        _onAppActiveNumberReachLimit(argMap);
       }
     });
   }
@@ -811,6 +813,12 @@ class EMClient {
   void _onTokenDidExpire(Map? map) {
     for (var item in _connectionEventHandler.values) {
       item.onTokenDidExpire?.call();
+    }
+  }
+
+  void _onAppActiveNumberReachLimit(Map? map) {
+    for (var item in _connectionEventHandler.values) {
+      item.onAppActiveNumberReachLimit?.call();
     }
   }
 

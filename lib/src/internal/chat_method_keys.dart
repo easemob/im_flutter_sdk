@@ -25,7 +25,8 @@ class ChatMethodKeys {
   static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
   static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
   static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
-  static const String onMultiDeviceRemoveMessagesEvent = "onMultiDeviceRemoveMessagesEvent";
+  static const String onMultiDeviceRemoveMessagesEvent =
+      "onMultiDeviceRemoveMessagesEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
   static const String onUserDidLoginFromOtherDevice =
@@ -41,6 +42,8 @@ class ChatMethodKeys {
   static const String onSendDataToFlutter = "onSendDataToFlutter";
   static const String onTokenWillExpire = "onTokenWillExpire";
   static const String onTokenDidExpire = "onTokenDidExpire";
+  static const String onAppActiveNumberReachLimit =
+      'onAppActiveNumberReachLimit';
 
   /// EMContactManager methods
   static const String addContact = "addContact";

@@ -464,13 +464,20 @@
 }
 
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
- 
+    if (aError.code == EMErrorServerServingForbidden) {
+         [self userDidForbidByServer];
+    }else if (aError.code == EMAppActiveNumbersReachLimitation) {
+        [self activeNumbersReachLimitation];
+    }
+}
+
+- (void)activeNumbersReachLimitation {
+    [self.channel invokeMethod:ChatOnAppActiveNumberReachLimit arguments:nil];
 }
 
 // 声网token即将过期
 - (void)tokenWillExpire:(EMErrorCode)aErrorCode {
-    [self.channel invokeMethod:ChatOnTokenWillExpire
-                     arguments:nil];
+    [self.channel invokeMethod:ChatOnTokenWillExpire arguments:nil];
 }
 
 // 声网token过期
@@ -497,6 +504,7 @@
     [self.channel invokeMethod:ChatOnUserDidForbidByServer
                      arguments:nil];
 }
+
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {
     [EMListenerHandle.sharedInstance clearHandle];

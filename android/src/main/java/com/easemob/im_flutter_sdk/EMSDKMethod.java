@@ -30,7 +30,7 @@ public class EMSDKMethod {
     static final String onUserDidLoginTooManyDevice = "onUserDidLoginTooManyDevice";
     static final String onUserKickedByOtherDevice = "onUserKickedByOtherDevice";
     static final String onUserAuthenticationFailed = "onUserAuthenticationFailed";
-
+    static final String onAppActiveNumberReachLimit = "onAppActiveNumberReachLimit";
     static final String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
     static final String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
     static final String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";

@@ -437,6 +437,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                     EMListenerHandle.getInstance().clearHandle();
                     post(() -> channel.invokeMethod(EMSDKMethod.onUserAuthenticationFailed, null));
                 }
+                else if (errorCode == 8) {
+                    post(() -> channel.invokeMethod(EMSDKMethod.onAppActiveNumberReachLimit, null));
+                }
                 else {
                     post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, null));
                 }
