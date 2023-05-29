@@ -140,6 +140,15 @@ class EMConnectionEventHandler {
   final VoidCallback? onTokenDidExpire;
 
   /// ~english
+  ///  The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit .
+  /// ~end
+  ///
+  /// ~chinese
+  /// 应用程序的日活跃用户数量（DAU）或月活跃用户数量（MAU）达到上限。
+  /// ~end
+  final VoidCallback? onAppActiveNumberReachLimit;
+
+  /// ~english
   /// The chat connection listener callback.
   ///
   /// Param [onConnected] The SDK connects to the chat server successfully callback.
@@ -163,6 +172,9 @@ class EMConnectionEventHandler {
   /// Param [onTokenWillExpire] The token is about to expire callback.
   ///
   /// Param [onTokenDidExpire] The token has expired callback.
+  ///
+  /// Param [onAppActiveNumberReachLimit] The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit callback.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -189,6 +201,8 @@ class EMConnectionEventHandler {
   /// Param [onTokenWillExpire] Agora token 即将过期时回调。
   ///
   /// Param [onTokenDidExpire] Agora token 已过期时回调。
+  /// 
+  /// Param [onAppActiveNumberReachLimit] 应用程序的日活跃用户数量（DAU）或月活跃用户数量（MAU）达到上限时回调。
   /// ~end
   EMConnectionEventHandler({
     this.onConnected,
@@ -202,6 +216,7 @@ class EMConnectionEventHandler {
     this.onUserAuthenticationFailed,
     this.onTokenWillExpire,
     this.onTokenDidExpire,
+    this.onAppActiveNumberReachLimit,
   });
 }
 
