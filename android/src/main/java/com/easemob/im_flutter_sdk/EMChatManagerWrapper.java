@@ -567,8 +567,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }else if (msg.getType() == EMMessage.Type.VIDEO) {
                 EMVideoMessageBody tmpBody = (EMVideoMessageBody) body;
                 if (isThumbnail) {
-                    // android not support now.
-                    // tmpBody.setThumbnailDownloadStatus(downloadStatus);
+                    tmpBody.setThumbnailDownloadStatus(downloadStatus);
                 }else {
                     tmpBody.setDownloadStatus(downloadStatus);
                 }
