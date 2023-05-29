@@ -1329,8 +1329,11 @@ class EMChatRoomManager {
   ) async {
     Map req = {
       "roomId": roomId,
-      "keys": keys,
     };
+
+    if (keys != null) {
+      req['keys'] = keys;
+    }
 
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.fetchChatRoomAttributes,
