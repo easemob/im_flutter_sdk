@@ -670,12 +670,8 @@
     EMConversationType type = (EMConversationType)[param[@"type"] intValue];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *startMsgId = param[@"startMsgId"];
-    [EMClient.sharedClient.chatManager asyncFetchHistoryMessagesFromServer:conversationId
-                                                          conversationType:type
-                                                            startMessageId:startMsgId
-                                                                  pageSize:pageSize
-                                                                completion:^(EMCursorResult *aResult, EMError *aError)
-     {
+    EMMessageFetchHistoryDirection direction = [param[@"direction"] intValue] == 0 ? EMMessageFetchHistoryDirectionUp : EMMessageFetchHistoryDirectionDown;
+    [EMClient.sharedClient.chatManager asyncFetchHistoryMessagesFromServer:conversationId conversationType:type startMessageId:startMsgId fetchDirection:direction pageSize:pageSize completion:^(EMCursorResult<EMChatMessage *> * _Nullable aResult, EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError

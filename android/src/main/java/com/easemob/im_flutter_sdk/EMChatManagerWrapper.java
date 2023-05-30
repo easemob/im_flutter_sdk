@@ -672,10 +672,11 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
         int pageSize = param.getInt("pageSize");
         String startMsgId = param.getString("startMsgId");
+        EMSearchDirection direction = param.optInt("direction") == 0 ? EMSearchDirection.UP : EMSearchDirection.DOWN;
         asyncRunnable(() -> {
             try {
                 EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
-                        type, pageSize, startMsgId);
+                        type, pageSize, startMsgId, direction);
                 onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
             } catch (HyphenateException e) {
                 onError(result, e);
