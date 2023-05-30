@@ -919,6 +919,8 @@ class EMChatManager {
   ///
   /// Param [pageSize] The number of messages per page.
   ///
+  /// Param [direction] The direction of the search to be fetched. See [EMSearchDirection].
+  ///
   /// Param [startMsgId] The ID of the message from which you start to get the historical messages. If `null` is passed, the SDK gets messages in reverse chronological order.
   ///
   /// **Return** The obtained messages and the cursor for the next fetch action.
@@ -935,6 +937,8 @@ class EMChatManager {
   ///
   /// Param [pageSize] 每页获取的消息数量。
   ///
+  /// Param [direction] 要搜索的消息方向. 见 [EMSearchDirection].
+  ///
   /// Param [startMsgId] 获取历史消息的开始消息 ID，如果为空，从最新的消息向前开始获取。
   ///
   /// **Return** 返回消息列表和用于继续获取历史消息的 [EMCursorResult]
@@ -945,6 +949,7 @@ class EMChatManager {
     required String conversationId,
     EMConversationType type = EMConversationType.Chat,
     int pageSize = 20,
+    EMSearchDirection direction = EMSearchDirection.Up,
     String startMsgId = '',
   }) async {
     Map req = Map();
@@ -952,6 +957,7 @@ class EMChatManager {
     req['type'] = conversationTypeToInt(type);
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
+    req['direction'] = direction.index;
     Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.fetchHistoryMessages, req);
     try {

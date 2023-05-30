@@ -1,5 +1,32 @@
 ## NEXT
 
+## 4.0.2
+
+#### 新增：
+- 增加 `GroupManager#setMemberAttributes` 方法，用于设置群成员属性；
+- 增加 `GroupManager#fetchMemberAttributes` 和 `GroupManager#fetchMembersAttributes` 方法用户获取群成员属性；
+- 增加 `GroupEventHandler#onAttributesChangedOfGroupMember` 群成员属性变更回调;
+- 增加 `ChatManager#fetchHistoryMessagesByOption` 方法；
+- 增加 `Conversation#deleteMessagesWithTs` 方法；
+- 增加 `Message#deliverOnlineOnly` 属性用于设置只向在线用户投递消息；
+
+#### 修复：
+- 修复安卓 hot reload 后回调多次的问题；
+- 修复iOS 获取聊天室属性key传null导致的崩溃问题；
+
+#### 优化：
+- 增加
+
+## 4.0.0+7
+
+#### 修复
+- 修复初始化无返回的问题。
+
+## 4.0.0+6
+
+#### 修复
+- 修复下载附件结束后状态不准确的问题。
+
 ## 4.0.0+5
 
 #### 修复
