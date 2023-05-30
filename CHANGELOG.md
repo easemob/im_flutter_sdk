@@ -15,7 +15,7 @@
 - 修复iOS 获取聊天室属性key传null导致的崩溃问题；
 
 #### 优化：
-- 增加
+- 为`ChatManager#fetchHistoryMessages` 方法增加获取方向；
 
 ## 4.0.0+7
 
