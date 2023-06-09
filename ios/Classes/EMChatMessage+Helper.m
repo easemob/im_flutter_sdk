@@ -533,7 +533,9 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
+    if (aJson[@"thumbnailLocalPath"]) {
+        ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
+    }
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
     ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];

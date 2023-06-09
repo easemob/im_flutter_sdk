@@ -113,8 +113,11 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getImPushConfig(JSONObject params, String channelName,  Result result) throws JSONException {
-        EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigs();
-        onSuccess(result, channelName, EMPushConfigsHelper.toJson(configs));
+        asyncRunnable(()->{
+            EMPushConfigs configs = EMClient.getInstance().pushManager().getPushConfigs();
+            onSuccess(result, channelName, EMPushConfigsHelper.toJson(configs));
+        });
+
     }
 
     private void getImPushConfigFromServer(JSONObject params, String channelName,  Result result) throws JSONException {

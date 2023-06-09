@@ -195,7 +195,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
-        onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
+        });
     }
 
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
@@ -216,15 +218,21 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
     private void getToken(JSONObject param, String channelName, Result result) throws JSONException
     {
-        onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
+        });
     }
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
-        onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore());
+        });
     }
 
     private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
-        onSuccess(result, channelName, EMClient.getInstance().isConnected());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().isConnected());
+        });
     }
 
     private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
@@ -269,7 +277,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 onError(result, e);
             }
         });
-
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
@@ -283,19 +290,22 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
         bindingManagers();
         registerEaseListener();
+
         onSuccess(result, channelName, null);
     }
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {
         String agoraToken = param.getString("agora_token");
-        EMClient.getInstance().renewToken(agoraToken);
-        onSuccess(result, channelName, null);
+        asyncRunnable(()->{
+            EMClient.getInstance().renewToken(agoraToken);
+            onSuccess(result, channelName, null);
+        });
     }
 
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
-        new Thread(() -> {
+        asyncRunnable(()->{
             try {
                 List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(username, password);
                 List<Map> jsonList = new ArrayList <>();

@@ -148,22 +148,26 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void getGroupWithId(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-        EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-        if (group != null) {
-            onSuccess(result, channelName, EMGroupHelper.toJson(group));
-        } else {
-            onSuccess(result, channelName, null);
-        }
+        asyncRunnable(() -> {
+            EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
+            if (group != null) {
+                onSuccess(result, channelName, EMGroupHelper.toJson(group));
+            } else {
+                onSuccess(result, channelName, null);
+            }
+        });
     }
 
     private void getJoinedGroups(JSONObject param, String channelName, Result result) throws JSONException {
-        EMClient.getInstance().groupManager().loadAllGroups();
-        List<EMGroup> groups = EMClient.getInstance().groupManager().getAllGroups();
-        List<Map> groupList = new ArrayList<>();
-        for (EMGroup group : groups) {
-            groupList.add(EMGroupHelper.toJson(group));
-        }
-        onSuccess(result, channelName, groupList);
+        asyncRunnable(() -> {
+            EMClient.getInstance().groupManager().loadAllGroups();
+            List<EMGroup> groups = EMClient.getInstance().groupManager().getAllGroups();
+            List<Map> groupList = new ArrayList<>();
+            for (EMGroup group : groups) {
+                groupList.add(EMGroupHelper.toJson(group));
+            }
+            onSuccess(result, channelName, groupList);
+        });
     }
 
     private void getJoinedGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
