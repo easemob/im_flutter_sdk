@@ -106,7 +106,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
     private void getUnreadMsgCount(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-
         asyncRunnable(()->{
             onSuccess(result, channelName,  conversation.getUnreadMsgCount());   
         });

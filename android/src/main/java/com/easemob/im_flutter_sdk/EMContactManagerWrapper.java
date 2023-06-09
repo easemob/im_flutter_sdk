@@ -150,8 +150,10 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
     }
 
     private void getBlockListFromDB(JSONObject params, String channelName, Result result) throws JSONException {
-        List contacts = EMClient.getInstance().contactManager().getBlackListUsernames();
-        onSuccess(result, channelName, contacts);
+        asyncRunnable(()->{
+            List contacts = EMClient.getInstance().contactManager().getBlackListUsernames();
+            onSuccess(result, channelName, contacts);
+        });
     }
 
     private void acceptInvitation(JSONObject params, String channelName, Result result) throws JSONException {
