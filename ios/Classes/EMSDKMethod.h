@@ -242,6 +242,7 @@ static NSString *const ChatDeclineJoinApplication = @"declineJoinApplication";
 static NSString *const ChatAcceptInvitationFromGroup = @"acceptInvitationFromGroup";
 static NSString *const ChatDeclineInvitationFromGroup = @"declineInvitationFromGroup";
 static NSString *const ChatSetMemberAttributesFromGroup = @"setMemberAttributesFromGroup";
+static NSString *const ChatRemoveMemberAttributesFromGroup = @"removeMemberAttributesFromGroup";
 static NSString *const ChatFetchMemberAttributesFromGroup = @"fetchMemberAttributesFromGroup";
 static NSString *const ChatFetchMembersAttributesFromGroup = @"fetchMembersAttributesFromGroup";
 

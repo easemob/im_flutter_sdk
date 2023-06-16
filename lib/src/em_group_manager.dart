@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'internal/inner_headers.dart';
 
@@ -1846,7 +1845,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [userId] The user ID of the group member for whom the custom attributes are set.
+  /// Param [userId] The user ID of the group member for whom the custom attributes are set, The default is the current user.
   ///
   /// Param [attributes] The map of custom attributes in key-value format. In a key-value pair,
   /// if the value is set to an empty string, the custom attribute will be deleted.
@@ -1859,7 +1858,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [userId] 要设置自定义属性的群成员的用户 ID。
+  /// Param [userId] 要设置自定义属性的群成员的用户 ID，默认为当前用户。
   ///
   /// Param [attributes] 要设置的群成员自定义属性的 map，为 key-value 格式。对于一个 key-value 键值对，若 value 设置空字符串即删除该自定义属性。
   ///
@@ -1867,13 +1866,63 @@ class EMGroupManager {
   /// ~end
   Future<void> setMemberAttributes({
     required String groupId,
-    required String userId,
     required Map<String, String> attributes,
+    String? userId,
   }) async {
-    Map req = {'groupId': groupId, 'userId': userId};
+    Map req = {
+      'groupId': groupId,
+    };
+    if (userId != null) {
+      req.add('userId', userId);
+    }
     req.add('attributes', attributes);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.setMemberAttributesFromGroup, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Removes custom attributes of a group member.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [keys] The custom attributes corresponding key.
+  ///
+  /// Param [userId] The user ID of the group member for whom the custom attributes are remove, The default is the current user.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置群成员自定义属性。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [keys] 要删除群成员自定义属性对应的key。
+  ///
+  /// Param [userId] 要设置自定义属性的群成员的用户 ID，默认为当前用户。
+  ///
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<void> removeMemberAttributes({
+    required String groupId,
+    required List<String> keys,
+    String? userId,
+  }) async {
+    Map req = {
+      'groupId': groupId,
+    };
+    if (userId != null) {
+      req.add('userId', userId);
+    }
+    req.add('keys', keys);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.removeMemberAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1886,7 +1935,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [userId] The user ID of the group member whose all custom attributes are retrieved.
+  /// Param [userId] The user ID of the group member whose all custom attributes are retrieved. The default is the current user.
   ///
   /// **Return** The user attributes.
   ///
@@ -1898,23 +1947,30 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [userId] 要获取的自定义属性的群成员的用户 ID。
+  /// Param [userId] 要获取的自定义属性的群成员的用户 ID, 默认为当前用户。
   ///
   /// **Return** 需要查询的用户属性。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
-  Future<Map<String, String>?> fetchMemberAttributes({
+  Future<Map<String, String>> fetchMemberAttributes({
     required String groupId,
-    required String userId,
+    String? userId,
   }) async {
-    Map req = {'groupId': groupId, 'userId': userId};
+    Map req = {'groupId': groupId};
+    if (userId != null) {
+      req.add('userId', userId);
+    }
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchMemberAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchMemberAttributesFromGroup]
-          ?.cast<String, String>();
+      Map<String, String> ret = {};
+      result[ChatMethodKeys.fetchMemberAttributesFromGroup]
+          .forEach((key, value) {
+        ret[key] = value;
+      });
+      return ret;
     } on EMError catch (e) {
       throw e;
     }
@@ -1948,7 +2004,7 @@ class EMGroupManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
-  Future<Map<String, Map<String, String>>?> fetchMembersAttributes({
+  Future<Map<String, Map<String, String>>> fetchMembersAttributes({
     required String groupId,
     required List<String> userIds,
     List<String>? keys,
@@ -1959,10 +2015,18 @@ class EMGroupManager {
         ChatMethodKeys.fetchMembersAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
-
-      // TODO: 需要验证
-      return result[ChatMethodKeys.fetchMembersAttributesFromGroup]
-          ?.cast<Map<String, Map<String, String>>>();
+      var map = result[ChatMethodKeys.fetchMembersAttributesFromGroup];
+      Map<String, Map<String, String>> ret = {};
+      if (map is Map) {
+        map.keys.forEach((element) {
+          if (map[element] is Map) {
+            Map<String, String> value =
+                Map<String, String>.from(map[element] ?? {});
+            ret[element] = value;
+          }
+        });
+      }
+      return ret;
     } on EMError catch (e) {
       throw e;
     }

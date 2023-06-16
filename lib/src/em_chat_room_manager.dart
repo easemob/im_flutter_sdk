@@ -1323,10 +1323,10 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<Map<String, String>?> fetchChatRoomAttributes(
-    String roomId,
+  Future<Map<String, String>?> fetchChatRoomAttributes({
+    required String roomId,
     List<String>? keys,
-  ) async {
+  }) async {
     Map req = {
       "roomId": roomId,
     };

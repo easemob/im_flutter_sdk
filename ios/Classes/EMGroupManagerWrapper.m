@@ -305,6 +305,9 @@
     else if ([ChatSetMemberAttributesFromGroup isEqualToString:call.method]) {
         [self setMemberAttributes:call.arguments channelName:call.method result:result];
     }
+    else if ([ChatRemoveMemberAttributesFromGroup isEqualToString:call.method]) {
+        [self removeMemberAttributes:call.arguments channelName:call.method result:result];
+    }
     else if ([ChatFetchMemberAttributesFromGroup isEqualToString:call.method]) {
         [self fetchMemberAttributes:call.arguments channelName:call.method result:result];
     }
@@ -934,6 +937,9 @@
     
     NSString *groupId = param[@"groupId"];
     NSString *userId = param[@"userId"];
+    if(userId == nil){
+        userId = EMClient.sharedClient.currentUsername;
+    }
     NSDictionary *attributes = param[@"attributes"];
     
     [EMClient.sharedClient.groupManager setMemberAttribute:groupId
@@ -948,12 +954,40 @@
     }];
 }
 
+- (void)removeMemberAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    
+    NSString *groupId = param[@"groupId"];
+    NSString *userId = param[@"userId"];
+    if(userId == nil){
+        userId = EMClient.sharedClient.currentUsername;
+    }
+    NSArray *keys = param[@"keys"];
+    NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+    for (NSString *key in keys) {
+        attrs[key] = @"";
+    }
+    
+    [EMClient.sharedClient.groupManager setMemberAttribute:groupId
+                                                    userId:userId
+                                                attributes:attrs
+                                                completion:^(EMError * _Nullable error)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:nil];
+    }];
+}
+
 - (void)fetchMemberAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     
     NSString *groupId = param[@"groupId"];
     NSString *userId = param[@"userId"];
-
+    if(userId == nil){
+        userId = EMClient.sharedClient.currentUsername;
+    }
     [EMClient.sharedClient.groupManager fetchMemberAttribute:groupId
                                                        userId:userId
                                                    completion:^(NSDictionary<NSString *,NSString *> * properties, EMError * aError)
