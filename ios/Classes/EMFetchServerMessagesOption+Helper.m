@@ -12,8 +12,8 @@
 + (EMFetchServerMessagesOption *)formJson:(NSDictionary *)dict {
     EMFetchServerMessagesOption *options = [[EMFetchServerMessagesOption alloc] init];
     options.direction = [dict[@"direction"] isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
-    options.startTime = [dict[@"startTs"] intValue];
-    options.endTime = [dict[@"endTs"] intValue];
+    options.startTime = [dict[@"startTs"] longValue];
+    options.endTime = [dict[@"endTs"] longValue];
     options.from = dict[@"from"];
     options.isSave = [dict[@"needSave"] boolValue];
     NSArray *types = dict[@"msgTypes"];
