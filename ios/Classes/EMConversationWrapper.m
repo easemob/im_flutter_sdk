@@ -337,8 +337,8 @@
 - (void)deleteMessagesWithTs:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
-    int startTs = [param[@"startTs"] intValue];
-    int endTs = [param[@"endTs"] intValue];
+    long startTs = [param[@"startTs"] longValue];
+    long endTs = [param[@"endTs"] longValue];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation){
         EMError *error = [conversation removeMessagesStart:startTs to:endTs];
