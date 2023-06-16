@@ -228,8 +228,8 @@ public class EMSDKMethod {
     static final String acceptInvitationFromGroup = "acceptInvitationFromGroup";
     static final String declineInvitationFromGroup = "declineInvitationFromGroup";
     static final String setMemberAttributesFromGroup = "setMemberAttributesFromGroup";
+    static final String removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup";
     static final String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
-
     static final String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
 
     /// EMGroupManagerListener

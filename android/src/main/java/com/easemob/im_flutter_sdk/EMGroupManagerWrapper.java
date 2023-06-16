@@ -134,6 +134,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 declineInvitationFromGroup(param, call.method, result);
             } else if (EMSDKMethod.setMemberAttributesFromGroup.equals(call.method)) {
                 setMemberAttributes(param, call.method, result);
+            } else if (EMSDKMethod.removeMemberAttributesFromGroup.equals(call.method)) {
+                removeMemberAttributes(param, call.method, result);
             } else if (EMSDKMethod.fetchMemberAttributesFromGroup.equals(call.method)) {
                 fetchMemberAttributes(param, call.method, result);
             } else if (EMSDKMethod.fetchMembersAttributesFromGroup.equals(call.method)) {
@@ -832,8 +834,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void setMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-        String userId = param.getString("userId");
-
+        String userId = param.optString("userId");
+        if (userId == "") {
+            userId = EMClient.getInstance().getCurrentUser();
+        }
         Map<String, String> attributes = new HashMap<>();
 
         JSONObject jsonObject = param.getJSONObject("attributes");
@@ -846,15 +850,34 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         EMClient.getInstance().groupManager().asyncSetGroupMemberAttributes(groupId, userId, attributes, new EMWrapperCallBack(result, channelName, null));
     }
 
+    private void removeMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        String userId = param.optString("userId");
+        if (userId == "") {
+            userId = EMClient.getInstance().getCurrentUser();
+        }
+        Map<String, String> attributes = new HashMap<>();
+
+        JSONArray ja = param.getJSONArray("keys");
+        for (int i = 0; i < ja.length(); i++) {
+            attributes.put(ja.optString(i),"" );
+        }
+
+        EMClient.getInstance().groupManager().asyncSetGroupMemberAttributes(groupId, userId, attributes, new EMWrapperCallBack(result, channelName, null));
+    }
+
     private void fetchMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-        String userId = param.getString("userId");
-
+        String userId = param.optString("userId");
+        if (userId == "") {
+            userId = EMClient.getInstance().getCurrentUser();
+        }
+        String finalUserId = userId;
         EMClient.getInstance().groupManager().asyncFetchGroupMemberAllAttributes(groupId, userId, new EMValueWrapperCallBack<Map<String,Map<String,String>>>(result, channelName){
 
             @Override
             public void onSuccess(Map<String, Map<String, String>> object) {
-                updateObject(object.get(userId));
+                updateObject(object.get(finalUserId));
             }
         });
     }
