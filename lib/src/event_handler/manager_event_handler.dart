@@ -201,7 +201,7 @@ class EMConnectionEventHandler {
   /// Param [onTokenWillExpire] Agora token 即将过期时回调。
   ///
   /// Param [onTokenDidExpire] Agora token 已过期时回调。
-  /// 
+  ///
   /// Param [onAppActiveNumberReachLimit] 应用程序的日活跃用户数量（DAU）或月活跃用户数量（MAU）达到上限时回调。
   /// ~end
   EMConnectionEventHandler({

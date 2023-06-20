@@ -257,10 +257,14 @@ class ChatMethodKeys {
   static const String declineJoinApplication = "declineJoinApplication";
   static const String acceptInvitationFromGroup = "acceptInvitationFromGroup";
   static const String declineInvitationFromGroup = "declineInvitationFromGroup";
-  static const String setMemberAttributesFromGroup = "setMemberAttributesFromGroup";
-  static const String removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup";
-  static const String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
-  static const String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
+  static const String setMemberAttributesFromGroup =
+      "setMemberAttributesFromGroup";
+  static const String removeMemberAttributesFromGroup =
+      "removeMemberAttributesFromGroup";
+  static const String fetchMemberAttributesFromGroup =
+      "fetchMemberAttributesFromGroup";
+  static const String fetchMembersAttributesFromGroup =
+      "fetchMembersAttributesFromGroup";
 
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
