@@ -19,7 +19,7 @@ extension MapExtension on Map {
     }
   }
 
-  void add(String key, dynamic value) {
+  void putIfNotNull(String key, dynamic value) {
     if (value == null) {
       return;
     }

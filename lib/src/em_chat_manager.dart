@@ -297,7 +297,7 @@ class EMChatManager {
       "msg_id": msgId,
       "group_id": groupId,
     };
-    req.add("content", content);
+    req.putIfNotNull("content", content);
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.ackGroupMessageRead, req);
@@ -335,7 +335,7 @@ class EMChatManager {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<bool> sendConversationReadAck(String conversationId) async {
-    Map req = {"con_id": conversationId};
+    Map req = {"convId": conversationId};
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.ackConversationRead, req);
     try {
@@ -447,7 +447,7 @@ class EMChatManager {
     bool createIfNeed = true,
   }) async {
     Map req = {
-      "con_id": conversationId,
+      "convId": conversationId,
       "type": conversationTypeToInt(type),
       "createIfNeed": createIfNeed
     };
@@ -487,7 +487,7 @@ class EMChatManager {
   Future<EMConversation> getThreadConversation(String threadId) async {
     Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.getThreadConversation,
-      {"con_id", threadId},
+      {"convId", threadId},
     );
 
     try {
@@ -705,6 +705,8 @@ class EMChatManager {
     }
   }
 
+  @Deprecated('Use [fetchConversation] instead')
+
   /// ~english
   /// Gets the conversation list from the server.
   ///
@@ -738,6 +740,8 @@ class EMChatManager {
       throw e;
     }
   }
+
+  @Deprecated('Use [fetchConversation] instead')
 
   /// ~english
   /// fetch the conversations from the server.
@@ -782,6 +786,59 @@ class EMChatManager {
         conversationList.add(EMConversation.fromJson(element));
       });
       return conversationList;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Get the list of conversations from the server with pagination.
+  ///
+  /// The SDK retrieves the list of conversations in the reverse chronological order of their active time (the timestamp of the last message).
+  /// If there is no message in the conversation, the SDK retrieves the list of conversations in the reverse chronological order of their creation time.
+  ///
+  /// Param [cursor] The position from which to start getting data. the SDK retrieves conversations from the latest active one if no set.
+  ///
+  /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
+  ///
+  /// **Return** The conversation list of the current user.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 分页从服务器获取获取会话列表。
+  ///
+  /// SDK 按照会话活跃时间（会话的最后一条消息的时间戳）倒序返回会话列表。
+  /// 若会话中没有消息，则 SDK 按照会话创建时间的倒序返回会话列表。
+  ///
+  /// Param [cursor] 查询的开始位置，如不传， SDK 从最新活跃的会话开始获取。
+  ///
+  /// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,50]。
+  ///
+  /// **Return** 当前用户的会话列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<EMCursorResult<EMConversation>> fetchConversation({
+    String? cursor,
+    int pageSize = 20,
+  }) async {
+    Map map = {
+      "pageSize": pageSize,
+    };
+    map.putIfNotNull('cursor', cursor);
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.getConversationsFromServerWithCursor,
+      map,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(
+          result[ChatMethodKeys.getConversationsFromServerWithCursor],
+          dataItemCallback: (map) {
+        return EMConversation.fromJson(map);
+      });
     } on EMError catch (e) {
       throw e;
     }
@@ -899,7 +956,7 @@ class EMChatManager {
     String conversationId, {
     bool deleteMessages = true,
   }) async {
-    Map req = {"con_id": conversationId, "deleteMessages": deleteMessages};
+    Map req = {"convId": conversationId, "deleteMessages": deleteMessages};
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.deleteConversation, req);
     try {
@@ -953,7 +1010,7 @@ class EMChatManager {
     String startMsgId = '',
   }) async {
     Map req = Map();
-    req['con_id'] = conversationId;
+    req['convId'] = conversationId;
     req['type'] = conversationTypeToInt(type);
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
@@ -1007,11 +1064,11 @@ class EMChatManager {
     int pageSize = 50,
   }) async {
     Map req = Map();
-    req.add('con_id', conversationId);
-    req.add('type', conversationTypeToInt(type));
-    req.add('pageSize', pageSize);
-    req.add('cursor', cursor);
-    req.add('options', options?.toJson());
+    req.putIfNotNull('convId', conversationId);
+    req.putIfNotNull('type', conversationTypeToInt(type));
+    req.putIfNotNull('pageSize', pageSize);
+    req.putIfNotNull('cursor', cursor);
+    req.putIfNotNull('options', options?.toJson());
     Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.fetchHistoryMessagesByOptions, req);
     try {
@@ -1133,7 +1190,7 @@ class EMChatManager {
   }) async {
     Map req = {"msg_id": msgId, "group_id": groupId};
     req["pageSize"] = pageSize;
-    req.add("ack_id", startAckId);
+    req.putIfNotNull("ack_id", startAckId);
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.asyncFetchGroupAcks, req);
@@ -1229,104 +1286,6 @@ class EMChatManager {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
       throw e;
-    }
-  }
-
-  Future<void> _onMessagesReceived(List messages) async {
-    List<EMMessage> messageList = [];
-    for (var message in messages) {
-      messageList.add(EMMessage.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onMessagesReceived?.call(messageList);
-    }
-  }
-
-  Future<void> _onCmdMessagesReceived(List messages) async {
-    List<EMMessage> list = [];
-    for (var message in messages) {
-      list.add(EMMessage.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onCmdMessagesReceived?.call(list);
-    }
-  }
-
-  Future<void> _onMessagesRead(List messages) async {
-    List<EMMessage> list = [];
-    for (var message in messages) {
-      list.add(EMMessage.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onMessagesRead?.call(list);
-    }
-  }
-
-  Future<void> _onGroupMessageRead(List messages) async {
-    List<EMGroupMessageAck> list = [];
-    for (var message in messages) {
-      list.add(EMGroupMessageAck.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onGroupMessageRead?.call(list);
-    }
-  }
-
-  Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
-    for (var item in _eventHandlesMap.values) {
-      item.onReadAckForGroupMessageUpdated?.call();
-    }
-  }
-
-  Future<void> _onMessagesDelivered(List messages) async {
-    List<EMMessage> list = [];
-    for (var message in messages) {
-      list.add(EMMessage.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onMessagesDelivered?.call(list);
-    }
-  }
-
-  Future<void> _onMessagesRecalled(List messages) async {
-    List<EMMessage> list = [];
-    for (var message in messages) {
-      list.add(EMMessage.fromJson(message));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onMessagesRecalled?.call(list);
-    }
-  }
-
-  Future<void> _onConversationsUpdate(dynamic obj) async {
-    for (var item in _eventHandlesMap.values) {
-      item.onConversationsUpdate?.call();
-    }
-  }
-
-  Future<void> _onConversationHasRead(dynamic obj) async {
-    String from = (obj as Map)['from'];
-    String to = obj['to'];
-
-    for (var item in _eventHandlesMap.values) {
-      item.onConversationRead?.call(from, to);
-    }
-  }
-
-  Future<void> _messageReactionDidChange(List reactionChangeList) async {
-    List<EMMessageReactionEvent> list = [];
-    for (var reactionChange in reactionChangeList) {
-      list.add(EMMessageReactionEvent.fromJson(reactionChange));
-    }
-
-    for (var item in _eventHandlesMap.values) {
-      item.onMessageReactionDidChange?.call(list);
     }
   }
 
@@ -1470,7 +1429,7 @@ class EMChatManager {
       "msgIds": messageIds,
       "chatType": chatTypeToInt(chatType),
     };
-    req.add("groupId", groupId);
+    req.putIfNotNull("groupId", groupId);
     Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.fetchReactionList,
       req,
@@ -1533,8 +1492,8 @@ class EMChatManager {
       "msgId": messageId,
       "reaction": reaction,
     };
-    req.add("cursor", cursor);
-    req.add("pageSize", pageSize);
+    req.putIfNotNull("cursor", cursor);
+    req.putIfNotNull("pageSize", pageSize);
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.fetchReactionDetail, req);
 
@@ -1621,6 +1580,98 @@ class EMChatManager {
   }
 
   /// ~english
+  /// Gets the list of pinned conversations from the server with pagination.
+  ///
+  /// The SDK returns the pinned conversations in the reverse chronological order of their pinning.
+  ///
+  /// Param [cursor] The position from which to start getting data. the SDK retrieves conversations from the latest pinned one if no set.
+  ///
+  /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
+  ///
+  /// **Return** The pinned conversation list of the current user.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 分页从服务器获取置顶会话。
+  ///
+  /// SDK 按照会话的置顶时间的倒序返回会话列表。
+  ///
+  /// Param [cursor] 查询的开始位置，如不传， SDK 从最新置顶的会话开始查询。
+  ///
+  /// Param [pageSize] 每页期望返回的会话数量。取值范围为 [1,50]。
+  ///
+  /// **Return** 当前用户的置顶会话列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<EMCursorResult<EMConversation>> fetchPinnedConversations({
+    String? cursor,
+    int pageSize = 20,
+  }) async {
+    Map map = {
+      "pageSize": pageSize,
+    };
+    map.putIfNotNull('cursor', cursor);
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.getPinnedConversationsFromServerWithCursor,
+      map,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(
+          result[ChatMethodKeys.getPinnedConversationsFromServerWithCursor],
+          dataItemCallback: (map) {
+        return EMConversation.fromJson(map);
+      });
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Sets whether to pin a conversation.
+  ///
+  /// Param [conversationId] The conversation ID.
+  ///
+  /// Param [isPinned]  Whether to pin a conversation:
+  /// - true: Pin the conversation.
+  /// - false: Unpin the conversation.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置是否置顶会话。
+  ///
+  /// Param [conversationId] 会话 ID。
+  ///
+  /// Param [isPinned] 是否置顶会话：
+  /// - true: 置顶会话。
+  /// - false: 取消置顶会话。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> pinConversation(
+      {required String conversationId, required bool isPinned}) async {
+    Map map = {
+      'convId': conversationId,
+      'isPinned': 'isPinned',
+    };
+
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.pinConversation,
+      map,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Adds a message status listener.
   ///
   /// Param [identifier] The ID of the message status listener. The ID is required when you delete a message status listener.
@@ -1663,6 +1714,104 @@ class EMChatManager {
   /// ~end
   void clearMessageEvent() {
     MessageCallBackManager.getInstance.clearAllMessageEvents();
+  }
+
+  Future<void> _onMessagesReceived(List messages) async {
+    List<EMMessage> messageList = [];
+    for (var message in messages) {
+      messageList.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesReceived?.call(messageList);
+    }
+  }
+
+  Future<void> _onCmdMessagesReceived(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onCmdMessagesReceived?.call(list);
+    }
+  }
+
+  Future<void> _onMessagesRead(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRead?.call(list);
+    }
+  }
+
+  Future<void> _onGroupMessageRead(List messages) async {
+    List<EMGroupMessageAck> list = [];
+    for (var message in messages) {
+      list.add(EMGroupMessageAck.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onGroupMessageRead?.call(list);
+    }
+  }
+
+  Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
+    for (var item in _eventHandlesMap.values) {
+      item.onReadAckForGroupMessageUpdated?.call();
+    }
+  }
+
+  Future<void> _onMessagesDelivered(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesDelivered?.call(list);
+    }
+  }
+
+  Future<void> _onMessagesRecalled(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRecalled?.call(list);
+    }
+  }
+
+  Future<void> _onConversationsUpdate(dynamic obj) async {
+    for (var item in _eventHandlesMap.values) {
+      item.onConversationsUpdate?.call();
+    }
+  }
+
+  Future<void> _onConversationHasRead(dynamic obj) async {
+    String from = (obj as Map)['from'];
+    String to = obj['to'];
+
+    for (var item in _eventHandlesMap.values) {
+      item.onConversationRead?.call(from, to);
+    }
+  }
+
+  Future<void> _messageReactionDidChange(List reactionChangeList) async {
+    List<EMMessageReactionEvent> list = [];
+    for (var reactionChange in reactionChangeList) {
+      list.add(EMMessageReactionEvent.fromJson(reactionChange));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessageReactionDidChange?.call(list);
+    }
   }
 }
 

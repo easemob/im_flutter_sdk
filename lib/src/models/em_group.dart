@@ -392,21 +392,21 @@ class EMGroup {
   /// @nodoc
   Map toJson() {
     Map data = Map();
-    data.add("groupId", groupId);
-    data.add("name", name);
-    data.add("desc", description);
-    data.add("owner", owner);
-    data.add("announcement", announcement);
-    data.add("memberCount", memberCount);
-    data.add("memberList", memberList);
-    data.add("adminList", adminList);
-    data.add("blockList", blockList);
-    data.add("muteList", muteList);
-    data.add("messageBlocked", messageBlocked);
-    data.add("isDisabled", isDisabled);
-    data.add("isAllMemberMuted", isAllMemberMuted);
-    data.add("options", _options?.toJson());
-    data.add("permissionType", permissionTypeToInt(permissionType));
+    data.putIfNotNull("groupId", groupId);
+    data.putIfNotNull("name", name);
+    data.putIfNotNull("desc", description);
+    data.putIfNotNull("owner", owner);
+    data.putIfNotNull("announcement", announcement);
+    data.putIfNotNull("memberCount", memberCount);
+    data.putIfNotNull("memberList", memberList);
+    data.putIfNotNull("adminList", adminList);
+    data.putIfNotNull("blockList", blockList);
+    data.putIfNotNull("muteList", muteList);
+    data.putIfNotNull("messageBlocked", messageBlocked);
+    data.putIfNotNull("isDisabled", isDisabled);
+    data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
+    data.putIfNotNull("options", _options?.toJson());
+    data.putIfNotNull("permissionType", permissionTypeToInt(permissionType));
     return data;
   }
 

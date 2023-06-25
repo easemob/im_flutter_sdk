@@ -355,9 +355,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
-        String con_id = params.getString("con_id");
+        String convId = params.getString("convId");
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
-        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(con_id, type, true);
+        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(convId, type, true);
         return conversation;
     }
 

@@ -150,7 +150,7 @@ class EMContactManager {
     Map req = {
       'username': userId,
     };
-    req.add("reason", reason);
+    req.putIfNotNull("reason", reason);
 
     Map result = await _channel.invokeMethod(ChatMethodKeys.addContact, req);
     try {

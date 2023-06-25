@@ -104,11 +104,11 @@ class ChatSilentModeParam {
 
   Map toJson() {
     Map data = Map();
-    data.add("paramType", chatSilentModeParamTypeToInt(_paramType));
-    data.add("remindType", chatPushRemindTypeToInt(remindType));
-    data.add("startTime", startTime?.toJson());
-    data.add("endTime", endTime?.toJson());
-    data.add("duration", silentDuration);
+    data.putIfNotNull("paramType", chatSilentModeParamTypeToInt(_paramType));
+    data.putIfNotNull("remindType", chatPushRemindTypeToInt(remindType));
+    data.putIfNotNull("startTime", startTime?.toJson());
+    data.putIfNotNull("endTime", endTime?.toJson());
+    data.putIfNotNull("duration", silentDuration);
     return data;
   }
 }

@@ -19,7 +19,7 @@ class EMOptions {
   /// ~chinese
   /// 创建 app 时在 console 后台上注册的 app 唯一识别符。
   /// ~end
-  late final String appKey;
+  final String appKey;
 
   /// ~english
   /// Whether to enable automatic login.
@@ -274,6 +274,17 @@ class EMOptions {
   /// ~end
   final int chatAreaCode;
 
+  /// ~english
+  /// Whether to include empty conversations when the SDK loads conversations from the local database:
+  /// - `true`: Yes;
+  /// - `false`: (Default) No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否使用自定义 IM 服务的端口。用于私有化部署。
+  /// ~end
+  final bool enableEmptyConversation;
+
   EMPushConfig _pushConfig = EMPushConfig();
 
   /// ~english
@@ -431,6 +442,8 @@ class EMOptions {
   ///
   /// Param [chatAreaCode] The area code.
   ///
+  /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -502,6 +515,9 @@ class EMOptions {
   /// Param [imServer] 私有部署时的 IM 服务器地址。
   ///
   /// Param [chatAreaCode] server 区域码.
+  ///
+  /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
+  ///
   /// ~end
   EMOptions({
     required this.appKey,
@@ -524,6 +540,7 @@ class EMOptions {
     this.imPort,
     this.imServer,
     this.chatAreaCode = ChatAreaCode.GLOB,
+    this.enableEmptyConversation = false,
   });
 
   /// @nodoc
@@ -538,6 +555,7 @@ class EMOptions {
       acceptInvitationAlways: json.boolValue('acceptInvitationAlways'),
       autoAcceptGroupInvitation: json.boolValue('autoAcceptGroupInvitation'),
       deleteMessagesAsExitGroup: json.boolValue('deleteMessagesAsExitGroup'),
+      enableEmptyConversation: json.boolValue('loadEmptyConversations'),
       deleteMessagesAsExitChatRoom:
           json.boolValue('deleteMessagesAsExitChatRoom'),
       isAutoDownloadThumbnail: json.boolValue('isAutoDownload'),
@@ -564,28 +582,31 @@ class EMOptions {
   /// @nodoc
   Map toJson() {
     Map data = new Map();
-    data.add("appKey", appKey);
-    data.add("autoLogin", autoLogin);
-    data.add("debugModel", debugModel);
-    data.add("acceptInvitationAlways", acceptInvitationAlways);
-    data.add(
+    data.putIfNotNull("appKey", appKey);
+    data.putIfNotNull("autoLogin", autoLogin);
+    data.putIfNotNull("debugModel", debugModel);
+    data.putIfNotNull("acceptInvitationAlways", acceptInvitationAlways);
+    data.putIfNotNull(
       "autoAcceptGroupInvitation",
       autoAcceptGroupInvitation,
     );
-    data.add("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
-    data.add("deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
-    data.add("dnsUrl", dnsUrl);
-    data.add("enableDNSConfig", enableDNSConfig);
-    data.add("imPort", imPort);
-    data.add("imServer", imServer);
-    data.add("isAutoDownload", isAutoDownloadThumbnail);
-    data.add("isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
-    data.add("requireAck", requireAck);
-    data.add("requireDeliveryAck", requireDeliveryAck);
-    data.add("restServer", restServer);
-    data.add("serverTransfer", serverTransfer);
-    data.add("sortMessageByServerTime", sortMessageByServerTime);
-    data.add("usingHttpsOnly", usingHttpsOnly);
+    data.putIfNotNull("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
+    data.putIfNotNull(
+        "deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
+    data.putIfNotNull("dnsUrl", dnsUrl);
+    data.putIfNotNull("enableDNSConfig", enableDNSConfig);
+    data.putIfNotNull("imPort", imPort);
+    data.putIfNotNull("imServer", imServer);
+    data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
+    data.putIfNotNull(
+        "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
+    data.putIfNotNull("requireAck", requireAck);
+    data.putIfNotNull("requireDeliveryAck", requireDeliveryAck);
+    data.putIfNotNull("restServer", restServer);
+    data.putIfNotNull("serverTransfer", serverTransfer);
+    data.putIfNotNull("sortMessageByServerTime", sortMessageByServerTime);
+    data.putIfNotNull("usingHttpsOnly", usingHttpsOnly);
+    data.putIfNotNull('loadEmptyConversations', enableEmptyConversation);
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();

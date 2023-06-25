@@ -24,6 +24,7 @@
     data[@"isAutoDownload"] = @(self.autoDownloadThumbnail);
     data[@"isChatRoomOwnerLeaveAllowed"] = @(self.canChatroomOwnerLeave);
     data[@"serverTransfer"] = @(self.isAutoTransferMessageAttachments);
+    data[@"loadEmptyConversations"] = @(self.loadEmptyConversations);
     data[@"usingHttpsOnly"] = @(self.usingHttpsOnly);
     data[@"pushConfig"] = @{@"pushConfig": @{@"apnsCertName": self.apnsCertName}};
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
@@ -49,6 +50,7 @@
     options.autoDownloadThumbnail = [aJson[@"isAutoDownload"] boolValue];
     options.canChatroomOwnerLeave = [aJson[@"isChatRoomOwnerLeaveAllowed"] boolValue];
     options.isAutoTransferMessageAttachments = [aJson[@"serverTransfer"] boolValue];
+    options.loadEmptyConversations = [aJson[@"loadEmptyConversations"] boolValue];
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
     options.apnsCertName = aJson[@"pushConfig"][@"apnsCertName"];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];

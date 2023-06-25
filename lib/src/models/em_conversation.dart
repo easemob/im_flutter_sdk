@@ -25,16 +25,25 @@ import '../internal/inner_headers.dart';
 /// ```
 /// ~end
 class EMConversation {
-  EMConversation._private(this.id, this.type, this._ext, this.isChatThread);
+  EMConversation._private(
+    this.id,
+    this.type,
+    this._ext,
+    this.isChatThread,
+    this.isPinned,
+    this.pinnedTime,
+  );
 
   /// @nodoc
   factory EMConversation.fromJson(Map<String, dynamic> map) {
     Map<String, String>? ext = map["ext"]?.cast<String, String>();
     EMConversation ret = EMConversation._private(
-      map["con_id"],
+      map["convId"],
       conversationTypeFromInt(map["type"]),
       ext,
       map["isThread"] ?? false,
+      map["isPinned"] ?? false,
+      map["pinnedTime"] ?? 0,
     );
 
     return ret;
@@ -44,7 +53,7 @@ class EMConversation {
   Map<String, dynamic> _toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data["type"] = conversationTypeToInt(this.type);
-    data["con_id"] = this.id;
+    data["convId"] = this.id;
     data["isThread"] = this.isChatThread;
     return data;
   }
@@ -90,16 +99,58 @@ class EMConversation {
   /// ~end
   final bool isChatThread;
 
+  /// ~english
+  /// Whether the conversation is pinned:
+  /// - `true`: Yes;
+  /// - `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否为置顶会话：
+  /// - `true`：是；
+  /// - `false`：否。
+  /// ~end
+  final bool isPinned;
+
+  /// ~english
+  ///  The UNIX timestamp when the conversation is pinned. The unit is millisecond. This value is `0` when the conversation is not pinned.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 会话置顶的 UNIX 时间戳，单位为毫秒。未置顶时值为 `0`。
+  /// ~end
+  final int pinnedTime;
+
   Map<String, String>? _ext;
 
   static const MethodChannel _emConversationChannel =
       const MethodChannel('com.chat.im/chat_conversation', JSONMethodCodec());
 
+  /// ~english
+  /// The conversation extension attribute.
+  ///
+  /// This attribute is not available for thread conversations.
+  /// ~end
+  /// ~chinese
+  /// 获取会话扩展属性。
+  ///
+  /// 子区功能目前版本暂不可设置。
+  /// ~end
   Map<String, String>? get ext => _ext;
 
+  /// ~english
+  /// Set the conversation extension attribute.
+  ///
+  /// This attribute is not available for thread conversations.
+  /// ~end
+  /// ~chinese
+  /// 设置会话扩展属性。
+  ///
+  /// 子区功能目前版本暂不可设置。
+  /// ~end
   Future<void> setExt(Map<String, String>? ext) async {
     Map req = this._toJson();
-    req.add("ext", ext);
+    req.putIfNotNull("ext", ext);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.syncConversationExt, req);
     try {
@@ -518,7 +569,7 @@ class EMConversation {
     req['timestamp'] = timestamp;
     req['count'] = count;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-    req.add("sender", sender);
+    req.putIfNotNull("sender", sender);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
     try {
@@ -648,7 +699,7 @@ class EMConversation {
     req['count'] = count;
     req['timestamp'] = timestamp;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-    req.add("sender", sender);
+    req.putIfNotNull("sender", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);

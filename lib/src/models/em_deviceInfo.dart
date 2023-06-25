@@ -17,9 +17,9 @@ class EMDeviceInfo {
   /// @nodoc
   Map toJson() {
     Map data = Map();
-    data.add("resource", resource);
-    data.add("deviceUUID", deviceUUID);
-    data.add("deviceName", deviceName);
+    data.putIfNotNull("resource", resource);
+    data.putIfNotNull("deviceUUID", deviceUUID);
+    data.putIfNotNull("deviceName", deviceName);
 
     return data;
   }

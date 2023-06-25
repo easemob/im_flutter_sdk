@@ -256,7 +256,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void ackConversationRead(JSONObject param, String channelName, Result result) throws JSONException {
-        String conversationId = param.getString("con_id");
+        String conversationId = param.getString("convId");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatManager().ackConversationRead(conversationId);
@@ -299,7 +299,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getConversation(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         boolean createIfNeed = true;
         if (param.has("createIfNeed")) {
             createIfNeed = param.getBoolean("createIfNeed");
@@ -315,7 +315,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getThreadConversation(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         asyncRunnable(() -> {
             EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, EMConversationType.GroupChat, true, true);
             onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
@@ -659,7 +659,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void deleteConversation(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         boolean isDelete = param.getBoolean("deleteMessages");
         asyncRunnable(() -> {
             boolean ret = EMClient.getInstance().chatManager().deleteConversation(conId, isDelete);
@@ -668,7 +668,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void fetchHistoryMessages(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
         int pageSize = param.getInt("pageSize");
         String startMsgId = param.getString("startMsgId");
@@ -685,7 +685,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void fetchHistoryMessagesByOptions(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
         int pageSize = param.getInt("pageSize");
         String cursor = null;

@@ -54,17 +54,17 @@ class EMChatRoom {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['roomId'] = roomId;
-    data.add("name", name);
-    data.add("desc", description);
-    data.add("owner", owner);
-    data.add("memberCount", memberCount);
-    data.add("maxUsers", maxUsers);
-    data.add("adminList", adminList);
-    data.add("memberList", memberList);
-    data.add("blockList", blockList);
-    data.add("muteList", muteList);
-    data.add("announcement", announcement);
-    data.add("isAllMemberMuted", isAllMemberMuted);
+    data.putIfNotNull("name", name);
+    data.putIfNotNull("desc", description);
+    data.putIfNotNull("owner", owner);
+    data.putIfNotNull("memberCount", memberCount);
+    data.putIfNotNull("maxUsers", maxUsers);
+    data.putIfNotNull("adminList", adminList);
+    data.putIfNotNull("memberList", memberList);
+    data.putIfNotNull("blockList", blockList);
+    data.putIfNotNull("muteList", muteList);
+    data.putIfNotNull("announcement", announcement);
+    data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
     data['permissionType'] = chatRoomPermissionTypeToInt(permissionType);
 
     return data;

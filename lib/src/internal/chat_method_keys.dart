@@ -27,6 +27,8 @@ class ChatMethodKeys {
   static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
   static const String onMultiDeviceRemoveMessagesEvent =
       "onMultiDeviceRemoveMessagesEvent";
+  static const String onMultiDevicesConversationEvent =
+      "onMultiDevicesConversationEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
   static const String onUserDidLoginFromOtherDevice =
@@ -105,6 +107,12 @@ class ChatMethodKeys {
       "removeMessagesFromServerWithMsgIds";
   static const String removeMessagesFromServerWithTs =
       "removeMessagesFromServerWithTs";
+
+  static const String getConversationsFromServerWithCursor =
+      'getConversationsFromServerWithCursor';
+  static const String getPinnedConversationsFromServerWithCursor =
+      'getPinnedConversationsFromServerWithCursor';
+  static const String pinConversation = 'pinConversation';
 
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";

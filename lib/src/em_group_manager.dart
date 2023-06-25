@@ -249,7 +249,7 @@ class EMGroupManager {
     String? cursor,
   }) async {
     Map req = {'pageSize': pageSize};
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.getPublicGroupsFromServer, req);
     try {
@@ -325,10 +325,10 @@ class EMGroupManager {
     required EMGroupOptions options,
   }) async {
     Map req = {'options': options.toJson()};
-    req.add("groupName", groupName);
-    req.add("desc", desc);
-    req.add("inviteMembers", inviteMembers);
-    req.add("inviteReason", inviteReason);
+    req.putIfNotNull("groupName", groupName);
+    req.putIfNotNull("desc", desc);
+    req.putIfNotNull("inviteMembers", inviteMembers);
+    req.putIfNotNull("inviteReason", inviteReason);
 
     Map result = await _channel.invokeMethod(ChatMethodKeys.createGroup, req);
     try {
@@ -429,7 +429,7 @@ class EMGroupManager {
       'groupId': groupId,
       'pageSize': pageSize,
     };
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.getGroupMemberListFromServer,
       req,
@@ -738,7 +738,7 @@ class EMGroupManager {
     String? welcome,
   }) async {
     Map req = {'groupId': groupId, 'members': members};
-    req.add("welcome", welcome);
+    req.putIfNotNull("welcome", welcome);
     Map result = await _channel.invokeMethod(ChatMethodKeys.addMembers, req);
     try {
       EMError.hasErrorFromResult(result);
@@ -789,7 +789,7 @@ class EMGroupManager {
       'groupId': groupId,
       'members': members,
     };
-    req.add("reason", reason);
+    req.putIfNotNull("reason", reason);
 
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.inviterUser,
@@ -1672,7 +1672,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId};
-    req.add('reason', reason);
+    req.putIfNotNull('reason', reason);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.requestToJoinPublicGroup, req);
     try {
@@ -1752,7 +1752,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId, 'username': username};
-    req.add('reason', reason);
+    req.putIfNotNull('reason', reason);
 
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.declineJoinApplication, req);
@@ -1830,7 +1830,7 @@ class EMGroupManager {
     String? reason,
   }) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
-    req.add('reason', reason);
+    req.putIfNotNull('reason', reason);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.declineInvitationFromGroup, req);
     try {
@@ -1873,9 +1873,9 @@ class EMGroupManager {
       'groupId': groupId,
     };
     if (userId != null) {
-      req.add('userId', userId);
+      req.putIfNotNull('userId', userId);
     }
-    req.add('attributes', attributes);
+    req.putIfNotNull('attributes', attributes);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.setMemberAttributesFromGroup, req);
     try {
@@ -1918,9 +1918,9 @@ class EMGroupManager {
       'groupId': groupId,
     };
     if (userId != null) {
-      req.add('userId', userId);
+      req.putIfNotNull('userId', userId);
     }
-    req.add('keys', keys);
+    req.putIfNotNull('keys', keys);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.removeMemberAttributesFromGroup, req);
     try {
@@ -1959,7 +1959,7 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId};
     if (userId != null) {
-      req.add('userId', userId);
+      req.putIfNotNull('userId', userId);
     }
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchMemberAttributesFromGroup, req);
@@ -2010,7 +2010,7 @@ class EMGroupManager {
     List<String>? keys,
   }) async {
     Map req = {'groupId': groupId, 'userIds': userIds};
-    req.add("keys", keys);
+    req.putIfNotNull("keys", keys);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchMembersAttributesFromGroup, req);
     try {

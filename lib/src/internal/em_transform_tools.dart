@@ -65,6 +65,14 @@ EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
       return EMMultiDevicesEvent.CHAT_THREAD_KICK;
     case 45:
       return EMMultiDevicesEvent.CHAT_THREAD_UPDATE;
+    case 46:
+      return EMMultiDevicesEvent.GROUP_MEMBER_ATTRIBUTES_CHANGED;
+    case 60:
+      return EMMultiDevicesEvent.CONVERSATION_PINNED;
+    case 61:
+      return EMMultiDevicesEvent.CONVERSATION_UNPINNED;
+    case 62:
+      return EMMultiDevicesEvent.CONVERSATION_DELETE;
   }
   return null;
 }
