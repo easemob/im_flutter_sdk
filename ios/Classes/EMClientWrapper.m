@@ -40,6 +40,7 @@
 
 @implementation EMClientWrapper
 
+
 static EMClientWrapper *wrapper = nil;
 
 
@@ -182,7 +183,6 @@ static EMClientWrapper *wrapper = nil;
 
 #pragma mark - Actions
 - (void)initSDKWithDict:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    
     
     __weak typeof(self) weakSelf = self;
     
