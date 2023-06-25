@@ -544,42 +544,6 @@ class EMOptions {
   });
 
   /// @nodoc
-  factory EMOptions.fromJson(Map<String, dynamic> json) {
-    var ret = EMOptions(
-      appKey: json['appKey'],
-      autoLogin: json.boolValue('autoLogin'),
-      debugModel: json.boolValue('debugModel'),
-      requireAck: json.boolValue('requireAck'),
-      requireDeliveryAck: json.boolValue('requireDeliveryAck'),
-      sortMessageByServerTime: json.boolValue('sortMessageByServerTime'),
-      acceptInvitationAlways: json.boolValue('acceptInvitationAlways'),
-      autoAcceptGroupInvitation: json.boolValue('autoAcceptGroupInvitation'),
-      deleteMessagesAsExitGroup: json.boolValue('deleteMessagesAsExitGroup'),
-      enableEmptyConversation: json.boolValue('loadEmptyConversations'),
-      deleteMessagesAsExitChatRoom:
-          json.boolValue('deleteMessagesAsExitChatRoom'),
-      isAutoDownloadThumbnail: json.boolValue('isAutoDownload'),
-      isChatRoomOwnerLeaveAllowed:
-          json.boolValue('isChatRoomOwnerLeaveAllowed'),
-      serverTransfer: json.boolValue('serverTransfer'),
-      usingHttpsOnly: json.boolValue('usingHttpsOnly'),
-      enableDNSConfig: json.boolValue('enableDNSConfig'),
-      imPort: json["imPort"],
-      imServer: json["imServer"],
-      restServer: json["restServer"],
-      dnsUrl: json["dnsUrl"],
-      chatAreaCode: json["areaCode"] ?? ChatAreaCode.GLOB,
-    );
-
-    ret._pushConfig = EMPushConfig();
-    if (json['pushConfig'] != null) {
-      ret._pushConfig.updateFromJson(json);
-    }
-
-    return ret;
-  }
-
-  /// @nodoc
   Map toJson() {
     Map data = new Map();
     data.putIfNotNull("appKey", appKey);
