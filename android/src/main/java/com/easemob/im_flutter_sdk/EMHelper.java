@@ -74,6 +74,7 @@ class EMOptionsHelper {
         options.setAreaCode(json.getInt("areaCode"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+        options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
         if (!json.getBoolean("enableDNSConfig")) {
             if (json.has("imPort")) {
                 options.setImPort(json.getInt("imPort"));
@@ -430,7 +431,6 @@ class EMMessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-
         message.setAcked(json.getBoolean("hasReadAck"));
         if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
@@ -487,6 +487,16 @@ class EMMessageHelper {
                 }
             }
         }
+
+        if (json.has("receiverList")) {
+            ArrayList<String> receiverList = new ArrayList<>();
+            JSONArray ja = json.getJSONArray("receiverList");
+            for (int i = 0; i < ja.length(); i++) {
+                receiverList.add((String) ja.get(i));
+            }
+            message.setReceiverList(receiverList);
+        }
+
         return message;
     }
 
@@ -959,6 +969,8 @@ class EMConversationHelper {
         data.put("convId", conversation.conversationId());
         data.put("type", typeToInt(conversation.getType()));
         data.put("isThread", conversation.isChatThread());
+        data.put("isPinned", conversation.isPinned());
+        data.put("pinnedTime", conversation.getPinnedTime());
         try {
             data.put("ext", jsonStringToMap(conversation.getExtField()));
         } catch (JSONException e) {
@@ -1087,6 +1099,10 @@ class EMCursorResultHelper {
 
                 if (obj instanceof EMChatThread) {
                     jsonList.add(EMChatThreadHelper.toJson((EMChatThread) obj));
+                }
+
+                if (obj instanceof EMConversation) {
+                    jsonList.add(EMConversationHelper.toJson((EMConversation) obj));
                 }
             }
         }

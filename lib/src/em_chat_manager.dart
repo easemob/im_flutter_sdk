@@ -1657,7 +1657,7 @@ class EMChatManager {
       {required String conversationId, required bool isPinned}) async {
     Map map = {
       'convId': conversationId,
-      'isPinned': 'isPinned',
+      'isPinned': isPinned,
     };
 
     Map result = await ChatChannel.invokeMethod(

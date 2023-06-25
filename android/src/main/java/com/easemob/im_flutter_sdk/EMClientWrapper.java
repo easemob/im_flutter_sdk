@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import static com.easemob.im_flutter_sdk.EMConversationHelper.typeToInt;
+
 import java.util.ArrayList;
 
 import java.util.Map;
@@ -18,6 +20,7 @@ import io.flutter.plugin.common.PluginRegistry;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
@@ -401,6 +404,15 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 data.put("convId", conversationId);
                 data.put("deviceId", deviceId);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceRemoveMessagesEvent, data));
+            }
+
+            @Override
+            public void onConversationEvent(int event, String conversationId, EMConversation.EMConversationType type) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("event", Integer.valueOf(event));
+                data.put("convId", conversationId);
+                data.put("convType", typeToInt(type));
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDevicesConversationEvent, data));
             }
         };
 

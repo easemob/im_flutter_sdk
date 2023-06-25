@@ -34,8 +34,8 @@ public class EMSDKMethod {
     static final String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
     static final String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
     static final String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
-
     static final String onMultiDeviceRemoveMessagesEvent = "onMultiDeviceRemoveMessagesEvent";
+    static final String onMultiDevicesConversationEvent = "onMultiDevicesConversationEvent";
     static final String onSendDataToFlutter = "onSendDataToFlutter";
     static final String onTokenWillExpire = "onTokenWillExpire";
     static final String onTokenDidExpire = "onTokenDidExpire";
@@ -94,6 +94,9 @@ public class EMSDKMethod {
     static final String removeMessagesFromServerWithMsgIds = "removeMessagesFromServerWithMsgIds";
     static final String removeMessagesFromServerWithTs = "removeMessagesFromServerWithTs";
 
+    static final String getConversationsFromServerWithCursor = "getConversationsFromServerWithCursor";
+    static final String getPinnedConversationsFromServerWithCursor = "getPinnedConversationsFromServerWithCursor";
+    static final String pinConversation = "pinConversation";
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
