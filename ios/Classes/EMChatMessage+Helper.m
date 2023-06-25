@@ -60,6 +60,10 @@
         msg.priority = [aJson[@"chatroomMessagePriority"] integerValue];
     }
     
+    if(aJson[@"receiverList"]) {
+        msg.receiverList = aJson[@"receiverList"];
+    }
+    
     return msg;
 }
 
@@ -85,7 +89,7 @@
     ret[@"body"] = [self.body toJson];
     ret[@"onlineState"] = @(self.onlineState);
     ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);
-    
+    ret[@"receiverList"] = self.receiverList;
     return ret;
 }
 

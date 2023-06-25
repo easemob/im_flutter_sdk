@@ -229,6 +229,19 @@ class EMMessage {
   bool deliverOnlineOnly = false;
 
   /// ~english
+  /// The recipient list of a targeted message.
+  ///
+  /// This property is used only for messages in groups and chat rooms.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 定向消息的接收方。
+  ///
+  /// 该属性仅对群组和聊天室中的消息有效，则消息发送给群组或聊天室的所有成员。
+  /// ~end
+  List<String>? receiverList;
+
+  /// ~english
   /// Message body. We recommend you use [EMMessageBody].
   /// ~end
   ///
@@ -749,27 +762,30 @@ class EMMessage {
   /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data.add("from", from);
-    data.add("to", to);
-    data.add("body", body.toJson());
-    data.add("attributes", attributes);
-    data.add(
+    data.putIfNotNull("from", from);
+    data.putIfNotNull("to", to);
+    data.putIfNotNull("body", body.toJson());
+    data.putIfNotNull("attributes", attributes);
+    data.putIfNotNull(
         "direction", this.direction == MessageDirection.SEND ? 'send' : 'rec');
-    data.add("hasRead", hasRead);
-    data.add("hasReadAck", hasReadAck);
-    data.add("hasDeliverAck", hasDeliverAck);
-    data.add("needGroupAck", needGroupAck);
-    data.add("msgId", msgId);
-    data.add("conversationId", this.conversationId ?? this.to);
-    data.add("chatType", chatTypeToInt(chatType));
-    data.add("localTime", localTime);
-    data.add("serverTime", serverTime);
-    data.add("status", messageStatusToInt(this.status));
-    data.add("isThread", isChatThreadMessage);
+    data.putIfNotNull("hasRead", hasRead);
+    data.putIfNotNull("hasReadAck", hasReadAck);
+    data.putIfNotNull("hasDeliverAck", hasDeliverAck);
+    data.putIfNotNull("needGroupAck", needGroupAck);
+    data.putIfNotNull("msgId", msgId);
+    data.putIfNotNull("conversationId", this.conversationId ?? this.to);
+    data.putIfNotNull("chatType", chatTypeToInt(chatType));
+    data.putIfNotNull("localTime", localTime);
+    data.putIfNotNull("serverTime", serverTime);
+    data.putIfNotNull("status", messageStatusToInt(this.status));
+    data.putIfNotNull("isThread", isChatThreadMessage);
     if (_priority != null) {
-      data.add("chatroomMessagePriority", _priority!.index);
+      data.putIfNotNull("chatroomMessagePriority", _priority!.index);
     }
-    data.add('deliverOnlineOnly', deliverOnlineOnly);
+    data.putIfNotNull('deliverOnlineOnly', deliverOnlineOnly);
+    if (receiverList != null) {
+      data.putIfNotNull('receiverList', receiverList);
+    }
 
     return data;
   }
@@ -796,7 +812,8 @@ class EMMessage {
       ..isChatThreadMessage = map["isThread"] ?? false
       ..onlineState = map["onlineState"] ?? true
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
-      ..status = messageStatusFromInt(map["status"]);
+      ..status = messageStatusFromInt(map["status"])
+      ..receiverList = map["receiverList"]?.cast<String>();
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {
@@ -1003,8 +1020,8 @@ class EMCmdMessageBody extends EMMessageBody {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data.add("action", action);
-    data.add("deliverOnlineOnly", deliverOnlineOnly);
+    data.putIfNotNull("action", action);
+    data.putIfNotNull("deliverOnlineOnly", deliverOnlineOnly);
 
     return data;
   }
@@ -1090,8 +1107,8 @@ class EMLocationMessageBody extends EMMessageBody {
     final Map<String, dynamic> data = super.toJson();
     data['latitude'] = this.latitude;
     data['longitude'] = this.longitude;
-    data.add("address", this._address);
-    data.add("buildingName", this._buildingName);
+    data.putIfNotNull("address", this._address);
+    data.putIfNotNull("buildingName", this._buildingName);
     return data;
   }
 
@@ -1190,12 +1207,12 @@ class EMFileMessageBody extends EMMessageBody {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data.add("secret", this.secret);
-    data.add("remotePath", this.remotePath);
-    data.add("fileSize", this.fileSize);
-    data.add("localPath", this.localPath);
-    data.add("displayName", this.displayName);
-    data.add("fileStatus", downloadStatusToInt(this.fileStatus));
+    data.putIfNotNull("secret", this.secret);
+    data.putIfNotNull("remotePath", this.remotePath);
+    data.putIfNotNull("fileSize", this.fileSize);
+    data.putIfNotNull("localPath", this.localPath);
+    data.putIfNotNull("displayName", this.displayName);
+    data.putIfNotNull("fileStatus", downloadStatusToInt(this.fileStatus));
 
     return data;
   }
@@ -1342,13 +1359,14 @@ class EMImageMessageBody extends EMFileMessageBody {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data.add("thumbnailLocalPath", thumbnailLocalPath);
-    data.add("thumbnailRemotePath", thumbnailRemotePath);
-    data.add("thumbnailSecret", thumbnailSecret);
-    data.add("sendOriginalImage", sendOriginalImage);
-    data.add("height", height ?? 0.0);
-    data.add("width", width ?? 0.0);
-    data.add("thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    data.putIfNotNull("thumbnailLocalPath", thumbnailLocalPath);
+    data.putIfNotNull("thumbnailRemotePath", thumbnailRemotePath);
+    data.putIfNotNull("thumbnailSecret", thumbnailSecret);
+    data.putIfNotNull("sendOriginalImage", sendOriginalImage);
+    data.putIfNotNull("height", height ?? 0.0);
+    data.putIfNotNull("width", width ?? 0.0);
+    data.putIfNotNull(
+        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
     return data;
   }
 
@@ -1464,8 +1482,8 @@ class EMTextMessageBody extends EMMessageBody {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
     data['content'] = this.content;
-    data.add("targetLanguages", this.targetLanguages);
-    data.add("translations", this.translations);
+    data.putIfNotNull("targetLanguages", this.targetLanguages);
+    data.putIfNotNull("translations", this.translations);
     return data;
   }
 
@@ -1572,13 +1590,14 @@ class EMVideoMessageBody extends EMFileMessageBody {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data.add("duration", duration);
-    data.add("thumbnailLocalPath", thumbnailLocalPath);
-    data.add("thumbnailRemotePath", thumbnailRemotePath);
-    data.add("thumbnailSecret", thumbnailSecret);
-    data.add("height", height ?? 0.0);
-    data.add("width", width ?? 0.0);
-    data.add("thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    data.putIfNotNull("duration", duration);
+    data.putIfNotNull("thumbnailLocalPath", thumbnailLocalPath);
+    data.putIfNotNull("thumbnailRemotePath", thumbnailRemotePath);
+    data.putIfNotNull("thumbnailSecret", thumbnailSecret);
+    data.putIfNotNull("height", height ?? 0.0);
+    data.putIfNotNull("width", width ?? 0.0);
+    data.putIfNotNull(
+        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
 
     return data;
   }
@@ -1700,7 +1719,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data.add("duration", duration);
+    data.putIfNotNull("duration", duration);
     return data;
   }
 
@@ -1743,8 +1762,8 @@ class EMCustomMessageBody extends EMMessageBody {
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
-    data.add("event", event);
-    data.add("params", params);
+    data.putIfNotNull("event", event);
+    data.putIfNotNull("params", params);
 
     return data;
   }

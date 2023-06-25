@@ -447,6 +447,7 @@ enum EMSearchDirection {
 ///
 /// 本枚举类以用户 A 同时登录设备 A1 和 设备 A2 为例，描述多设备登录各事件的触发时机。
 /// ~end
+
 enum EMMultiDevicesEvent {
   /// ~english
   /// The current user removed a contact on another device.
@@ -790,6 +791,33 @@ enum EMMultiDevicesEvent {
   /// 若用户 A 在设备 A1 上修改群成员自定义属性，该事件会在登录该账号的其他设备触发。
   /// ~end
   GROUP_MEMBER_ATTRIBUTES_CHANGED,
+
+  /// ~english
+  /// If user A pins a conversation on device A1, this event is triggered on device A2
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户 A 在设备 A1 置顶会话，则设备 A2 上会收到该事件。
+  /// ~end
+  CONVERSATION_PINNED,
+
+  /// ~english
+  /// If user A unpins a conversation on device A1, this event is triggered on device A2.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户 A 在设备 A1取消置顶会话，则设备 A2 上会收到该事件。
+  /// ~end
+  CONVERSATION_UNPINNED,
+
+  /// ~english
+  /// If user A deletes a conversation on device A1, this event is triggered on device A2.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户 A 在设备 A1 删除会话，则设备 A2 上会收到该事件。
+  /// ~end
+  CONVERSATION_DELETE,
 }
 
 /// ~english

@@ -427,9 +427,9 @@ class EMChatRoomManager {
     Map req = Map();
     req['subject'] = name;
     req['maxUserCount'] = maxUserCount;
-    req.add("desc", desc);
-    req.add("welcomeMsg", welcomeMsg);
-    req.add("members", members);
+    req.putIfNotNull("desc", desc);
+    req.putIfNotNull("welcomeMsg", welcomeMsg);
+    req.putIfNotNull("members", members);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.createChatRoom, req);
     try {
@@ -581,7 +581,7 @@ class EMChatRoomManager {
     int pageSize = 200,
   }) async {
     Map req = {"roomId": roomId, "pageSize": pageSize};
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
     try {

@@ -108,6 +108,9 @@ class EMClient {
       } else if (call.method ==
           ChatMethodKeys.onMultiDeviceRemoveMessagesEvent) {
         _onMultiDeviceRoamMessagesRemovedEvent(argMap!);
+      } else if (call.method ==
+          ChatMethodKeys.onMultiDevicesConversationEvent) {
+        _onMultiDevicesConversationEvent(argMap!);
       } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
         _onReceiveCustomData(argMap!);
       } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
@@ -857,6 +860,15 @@ class EMClient {
     String deviceId = map['deviceId'];
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onRemoteMessagesRemoved?.call(convId, deviceId);
+    }
+  }
+
+  Future<void> _onMultiDevicesConversationEvent(Map map) async {
+    EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
+    String convId = map['convId'];
+    EMConversationType type = conversationTypeFromInt(map['convType']);
+    for (var handler in _multiDeviceEventHandler.values) {
+      handler.onConversationEvent?.call(event, convId, type);
     }
   }
 

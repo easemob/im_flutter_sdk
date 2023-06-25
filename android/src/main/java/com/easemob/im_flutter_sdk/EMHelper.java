@@ -956,7 +956,7 @@ class EMConversationHelper {
 
     static Map<String, Object> toJson(EMConversation conversation) {
         Map<String, Object> data = new HashMap<>();
-        data.put("con_id", conversation.conversationId());
+        data.put("convId", conversation.conversationId());
         data.put("type", typeToInt(conversation.getType()));
         data.put("isThread", conversation.isChatThread());
         try {

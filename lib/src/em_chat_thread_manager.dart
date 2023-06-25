@@ -164,7 +164,7 @@ class EMChatThreadManager {
     int limit = 20,
   }) async {
     Map req = {"pageSize": limit};
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.fetchJoinedChatThreads, req);
     try {
@@ -215,7 +215,7 @@ class EMChatThreadManager {
       "parentId": parentId,
       "pageSize": limit,
     };
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchChatThreadsWithParentId, req);
     try {
@@ -266,7 +266,7 @@ class EMChatThreadManager {
       "parentId": parentId,
       "pageSize": limit,
     };
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.fetchJoinedChatThreadsWithParentId, req);
     try {
@@ -322,7 +322,7 @@ class EMChatThreadManager {
       "pageSize": limit,
       "threadId": chatThreadId,
     };
-    req.add("cursor", cursor);
+    req.putIfNotNull("cursor", cursor);
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.fetchChatThreadMember,
       req,

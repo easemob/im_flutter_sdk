@@ -27,11 +27,12 @@ static NSString *const ChatGetCurrentUser = @"getCurrentUser";
 static NSString *const ChatIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const ChatIsConnected = @"isConnected";
 
-
 static NSString *const ChatOnMultiDeviceGroupEvent = @"onMultiDeviceGroupEvent";
 static NSString *const ChatOnMultiDeviceContactEvent = @"onMultiDeviceContactEvent";
 static NSString *const ChatOnMultiDeviceThreadEvent = @"onMultiDeviceThreadEvent";
 static NSString *const ChatOnMultiDeviceRemoveMessagesEvent = @"onMultiDeviceRemoveMessagesEvent";
+static NSString *const ChatOnMultiDevicesConversationEvent = @"onMultiDevicesConversationEvent";
+
 #pragma mark - EMClientDelegate
 static NSString *const ChatOnConnected = @"onConnected";
 static NSString *const ChatOnDisconnected = @"onDisconnected";
@@ -103,6 +104,9 @@ static NSString *const ChatFetchConversationsFromServerWithPage = @"fetchConvers
 static NSString *const ChatRemoveMessagesFromServerWithMsgIds = @"removeMessagesFromServerWithMsgIds";
 static NSString *const ChatRemoveMessagesFromServerWithTs = @"removeMessagesFromServerWithTs";
 
+static NSString *const GetConversationsFromServerWithCursor = @"getConversationsFromServerWithCursor";
+static NSString *const GetPinnedConversationsFromServerWithCursor = @"getPinnedConversationsFromServerWithCursor";
+static NSString *const PinConversation = @"pinConversation";
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
