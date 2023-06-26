@@ -1035,3 +1035,8 @@ enum ReactionOperate {
   /// ~end
   Add,
 }
+
+enum LeaveReason {
+  Kicked,
+  Offline,
+}

@@ -71,7 +71,15 @@ class EMChatRoomManager {
           String roomId = event['roomId'];
           String? roomName = event['roomName'];
           String participant = event['participant'];
-          item.onRemovedFromChatRoom?.call(roomId, roomName, participant);
+          LeaveReason? reason;
+          int iReason = event['reason'] ?? -1;
+          if (iReason == 0) {
+            reason = LeaveReason.Kicked;
+          } else if (iReason == 2) {
+            reason = LeaveReason.Offline;
+          }
+          item.onRemovedFromChatRoom
+              ?.call(roomId, roomName, participant, reason);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];

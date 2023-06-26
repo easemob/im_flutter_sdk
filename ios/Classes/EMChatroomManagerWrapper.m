@@ -788,7 +788,8 @@
             map = @{
                 @"type":type,
                 @"roomId":aChatroom.chatroomId,
-                @"roomName":aChatroom.subject
+                @"roomName":aChatroom.subject,
+                @"reason": @(aReason)
             };
         } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
             type = @"onRoomRemoved";
@@ -796,7 +797,8 @@
                 @"type":type,
                 @"roomId":aChatroom.chatroomId,
                 @"roomName":aChatroom.subject,
-                @"participant":[[EMClient sharedClient] currentUsername]
+                @"participant":[[EMClient sharedClient] currentUsername],
+                @"reason": @(aReason)
             };
         }
 
