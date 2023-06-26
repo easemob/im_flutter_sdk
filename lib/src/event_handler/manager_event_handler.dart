@@ -732,16 +732,17 @@ class EMChatRoomEventHandler {
   )? onOwnerChangedFromChatRoom;
 
   /// ~english
-  /// Occurs when a member is dismissed from a chat room.
+  /// Occurs when a you is dismissed from a chat room.
   /// ~end
   ///
   /// ~chinese
-  /// 聊天室成员被移出聊天室回调。
+  /// 当前用户被移出聊天室回调。
   /// ~end
   final void Function(
     String roomId,
     String? roomName,
     String? participant,
+    LeaveReason? reason,
   )? onRemovedFromChatRoom;
 
   /// ~english
