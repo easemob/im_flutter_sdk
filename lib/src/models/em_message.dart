@@ -967,7 +967,11 @@ abstract class EMMessageBody {
   EMMessageBody.fromJson({
     required Map map,
     required this.type,
-  });
+  }) {
+    _operatorTime = map["operatorTime"];
+    _operatorId = map["operatorId"];
+    _operatorCount = map["operatorCount"];
+  }
 
   /// @nodoc
   Map<String, dynamic> toJson() {
@@ -989,6 +993,33 @@ abstract class EMMessageBody {
   /// 获取消息类型。
   /// ~end
   MessageType type;
+
+  /// ~english
+  /// Get the user ID of the operator that modified the message last time.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取最后一次消息修改的操作者的用户 ID。
+  /// ~end
+  String? _operatorId;
+
+  /// ~english
+  /// Get the UNIX timestamp of the last message modification, in milliseconds.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取最后一次消息修改的时间戳，单位为毫秒。
+  /// ~end
+  int? _operatorTime;
+
+  /// ~english
+  /// Get the number of times a message is modified.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取消息修改次数。
+  /// ~end
+  int? _operatorCount;
 }
 
 /// ~english
@@ -1513,6 +1544,33 @@ class EMTextMessageBody extends EMMessageBody {
   /// 译文。
   /// ~end
   Map<String, String>? translations;
+
+  /// ~english
+  /// Get the user ID of the operator that modified the message last time.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取最后一次消息修改的操作者的用户 ID。
+  /// ~end
+  String? get operatorId => _operatorId;
+
+  /// ~english
+  /// Get the UNIX timestamp of the last message modification, in milliseconds.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取最后一次消息修改的时间戳，单位为毫秒。
+  /// ~end
+  int? get operatorTime => _operatorTime;
+
+  /// ~english
+  /// Get the number of times a message is modified.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取消息修改次数。
+  /// ~end
+  int? get operatorCount => _operatorCount;
 }
 
 /// ~english
@@ -1785,4 +1843,50 @@ class EMCustomMessageBody extends EMMessageBody {
   /// 自定义消息的键值对 Map 列表。
   /// ~end
   Map<String, String>? params;
+}
+
+class EMCombineMessageBody extends EMMessageBody {
+  EMCombineMessageBody({
+    this.title,
+    this.summary,
+    List<String>? messageList,
+    String? compatibleText,
+  })  : _compatibleText = compatibleText,
+        _messageList = messageList,
+        super(type: MessageType.COMBINE);
+
+  final String? title;
+  final String? summary;
+  final List<String>? _messageList;
+  late final String? _compatibleText;
+
+  String? _localPath;
+  String? _remotePath;
+  String? _secret;
+
+  /// @nodoc
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.putIfNotNull("title", title);
+    data.putIfNotNull("summary", summary);
+    data.putIfNotNull("messageList", _messageList);
+    data.putIfNotNull("compatibleText", _compatibleText);
+    data.putIfNotNull("localPath", _localPath);
+    data.putIfNotNull("remotePath", _remotePath);
+    data.putIfNotNull("secret", _secret);
+    return data;
+  }
+
+  /// @nodoc
+  factory EMCombineMessageBody.fromJson({required Map map}) {
+    var body = EMCombineMessageBody(
+      title: map["title"],
+      summary: map["summary"],
+    );
+    body._localPath = map["localPath"];
+    body._remotePath = map["remotePath"];
+    body._secret = map["secret"];
+    return body;
+  }
 }

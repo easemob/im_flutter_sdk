@@ -86,7 +86,8 @@ class EMClient {
       } else if (call.method == ChatMethodKeys.onDisconnected) {
         return _onDisconnected();
       } else if (call.method == ChatMethodKeys.onUserDidLoginFromOtherDevice) {
-        _onUserDidLoginFromOtherDevice();
+        String deviceName = argMap?['deviceName'] ?? "";
+        _onUserDidLoginFromOtherDevice(deviceName);
       } else if (call.method == ChatMethodKeys.onUserDidRemoveFromServer) {
         _onUserDidRemoveFromServer();
       } else if (call.method == ChatMethodKeys.onUserDidForbidByServer) {
@@ -641,6 +642,8 @@ class EMClient {
     }
   }
 
+  @Deprecated('Use [fetchLoggedInDevices] instead')
+
   /// ~english
   /// Gets all the information about the logged in devices under the specified account.
   ///
@@ -648,7 +651,7 @@ class EMClient {
   ///
   /// Param [password] The password.
   ///
-  /// **Return** TThe list of the logged-in devices.
+  /// **Return** The list of the logged-in devices.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -666,8 +669,54 @@ class EMClient {
   /// ~end
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String userId, required String password}) async {
-    EMLog.v('getLoggedInDevicesFromServer: $userId, "******"');
     Map req = {'username': userId, 'password': password};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.getLoggedInDevicesFromServer, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMDeviceInfo> list = [];
+      result[ChatMethodKeys.getLoggedInDevicesFromServer]?.forEach((info) {
+        list.add(EMDeviceInfo.fromJson(info));
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Gets all the information about the logged in devices under the specified account.
+  ///
+  /// Param [userId] The username you want to get the device information.
+  ///
+  /// Param [pwdOrToken] The password or token.
+  ///
+  /// Param [isPwd] Whether it is a password, the default is true.
+  ///
+  /// **Return** The list of the logged-in devices.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取指定账号下登录的在线设备列表。
+  ///
+  /// Param [userId] 用户 ID。
+  ///
+  /// Param [pwdOrToken] 密码 或者 token。
+  ///
+  /// Param [isPwd] 是否是密码，默认为 true。
+  ///
+  /// **Return**  获取到到设备列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<List<EMDeviceInfo>> fetchLoggedInDevices({
+    required String userId,
+    required String pwdOrToken,
+    bool isPwd = true,
+  }) async {
+    Map req = {'username': userId, 'pwdOrToken': pwdOrToken, 'isPwd': isPwd};
     Map result = await ClientChannel.invokeMethod(
         ChatMethodKeys.getLoggedInDevicesFromServer, req);
     try {
@@ -687,7 +736,7 @@ class EMClient {
   ///
   /// Param [userId] The account you want to force logout.
   ///
-  /// Param [password] The account's password.
+  /// Param [pwdOrToken] The account's password or token.
   ///
   /// Param [resource] The device ID. For how to fetch the device ID, See [EMDeviceInfo.resource].
   ///
@@ -695,22 +744,29 @@ class EMClient {
   /// ~end
   ///
   /// ~chinese
-  /// 在指定账号下，根据设备 ID，将指定设备下线，设备 ID：{@link EMDeviceInfo#resource}。
+  /// 在指定账号下，根据设备 ID，将指定设备下线，设备 ID：[EMDeviceInfo.resource]。
   ///
   /// Param [userId] 用户 ID。
   ///
-  /// Param [password] 密码。
+  /// Param [pwdOrToken] 密码 / token。
   ///
-  /// Param [resource] 设备 ID，详见 {@link EMDeviceInfo#resource}。
+  /// Param [resource] 设备 ID，详见 [EMDeviceInfo.resource]。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<bool> kickDevice(
-      {required String userId,
-      required String password,
-      required String resource}) async {
+  Future<bool> kickDevice({
+    required String userId,
+    required String pwdOrToken,
+    required String resource,
+    bool isPwd = true,
+  }) async {
     EMLog.v('kickDevice: $userId, "******"');
-    Map req = {'username': userId, 'password': password, 'resource': resource};
+    Map req = {
+      'username': userId,
+      'pwdOrToken': pwdOrToken,
+      'resource': resource,
+      'isPwd': isPwd,
+    };
     Map result =
         await ClientChannel.invokeMethod(ChatMethodKeys.kickDevice, req);
     try {
@@ -726,7 +782,9 @@ class EMClient {
   ///
   /// Param [userId] The account you want to log out from all the devices.
   ///
-  /// Param [password] The password.
+  /// Param [pwdOrToken] The password or token.
+  ///
+  /// Param [isPwd] Whether it is a password, the default is true.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -736,14 +794,19 @@ class EMClient {
   ///
   /// Param [userId] 用户 ID。
   ///
-  /// Param [password] 密码。
+  /// Param [pwdOrToken] 密码 或 token。
+  ///
+  /// Param [isPwd] 是否是密码，默认为 true。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
   /// ~end
-  Future<void> kickAllDevices(
-      {required String userId, required String password}) async {
-    EMLog.v('kickAllDevices: $userId, "******"');
-    Map req = {'username': userId, 'password': password};
+  Future<void> kickAllDevices({
+    required String userId,
+    required String pwdOrToken,
+    bool isPwd = true,
+  }) async {
+    Map req = {'username': userId, 'password': pwdOrToken, 'isPwd': isPwd};
     Map result =
         await ClientChannel.invokeMethod(ChatMethodKeys.kickAllDevices, req);
     try {
@@ -765,9 +828,9 @@ class EMClient {
     }
   }
 
-  Future<void> _onUserDidLoginFromOtherDevice() async {
+  Future<void> _onUserDidLoginFromOtherDevice(String deviceName) async {
     for (var handler in _connectionEventHandler.values) {
-      handler.onUserDidLoginFromOtherDevice?.call();
+      handler.onUserDidLoginFromOtherDevice?.call(deviceName);
     }
   }
 

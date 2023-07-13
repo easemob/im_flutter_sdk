@@ -317,6 +317,15 @@ enum MessageType {
   /// 自定义消息。
   /// ~end
   CUSTOM,
+
+  /// ~english
+  /// The combine message.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 合并消息。
+  /// ~end
+  COMBINE,
 }
 
 /// ~english
