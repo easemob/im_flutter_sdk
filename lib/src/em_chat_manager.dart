@@ -56,6 +56,8 @@ class EMChatManager {
         return _onConversationHasRead(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessageReactionDidChange) {
         return _messageReactionDidChange(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessageContentChanged) {
+        return _onMessageContentChanged(call.arguments);
       }
       return null;
     });
@@ -1672,6 +1674,79 @@ class EMChatManager {
   }
 
   /// ~english
+  /// Modifies a local message or a message at the server side.
+  ///
+  /// You can call this method to only modify a text message in one-to-one chats or group chats, but not in chat rooms.
+  ///
+  /// Param [messageId] The ID of the message to modify.
+  ///
+  /// Param [msgBody]  The modified message body [EMTextMessageBody].
+  ///
+  /// **Return** The modified message.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 修改本地以及服务端的消息内容。
+  ///
+  /// 只能调用该方法修改单聊和群聊中的文本消息，不能修改聊天室消息。
+  ///
+  /// Param [messageId] 消息实例id。
+  ///
+  /// Param [msgBody] 文本消息体实例 [EMTextMessageBody]。
+  ///
+  /// **Return** 修改后的消息实例。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<EMMessage> modifyMessage({
+    required String messageId,
+    required EMTextMessageBody msgBody,
+  }) async {
+    Map map = {
+      'msgId': messageId,
+      'body': msgBody.toJson(),
+    };
+
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.modifyMessage,
+      map,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMMessage.fromJson(result[ChatMethodKeys.modifyMessage]);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<List<EMMessage>> downloadAndParseCombineMessage({
+    required EMMessage message,
+  }) async {
+    Map map = {
+      'message': message.toJson(),
+    };
+
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.downloadAndParseCombineMessage,
+      map,
+    );
+
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMMessage> messages = [];
+      List list = result[ChatMethodKeys.downloadAndParseCombineMessage];
+      list.forEach((element) {
+        messages.add(EMMessage.fromJson(element));
+      });
+      return messages;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Adds a message status listener.
   ///
   /// Param [identifier] The ID of the message status listener. The ID is required when you delete a message status listener.
@@ -1811,6 +1886,15 @@ class EMChatManager {
 
     for (var item in _eventHandlesMap.values) {
       item.onMessageReactionDidChange?.call(list);
+    }
+  }
+
+  Future<void> _onMessageContentChanged(dynamic obj) async {
+    EMMessage msg = EMMessage.fromJson(obj["message"]);
+    String operator = obj["operator"] ?? "";
+    int operationTime = obj["operationTime"] ?? 0;
+    for (var item in _eventHandlesMap.values) {
+      item.onMessageContentChanged?.call(msg, operator, operationTime);
     }
   }
 }

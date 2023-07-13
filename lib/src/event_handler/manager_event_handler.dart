@@ -65,7 +65,7 @@ class EMConnectionEventHandler {
   /// ~chinese
   /// 其他设备登录回调。
   /// ~end
-  final VoidCallback? onUserDidLoginFromOtherDevice;
+  final void Function(String deviceName)? onUserDidLoginFromOtherDevice;
 
   /// ~english
   /// Occurs when the current chat user is removed from the server.
@@ -498,6 +498,19 @@ class EMChatEventHandler {
       onMessageReactionDidChange;
 
   /// ~english
+  /// Occurs when the message content is modified.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 收到消息内容变化。
+  /// ~end
+  final void Function(
+    EMMessage message,
+    String operatorId,
+    int operationTime,
+  )? onMessageContentChanged;
+
+  /// ~english
   /// The chat event handler.
   ///
   /// Param [onMessagesReceived] Message is received callback.
@@ -519,6 +532,8 @@ class EMChatEventHandler {
   /// Param [onConversationRead] Conversation read receipt is received callback.
   ///
   /// Param [onMessageReactionDidChange] Reaction data changes callback.
+  ///
+  /// Param [onMessageContentChanged] Message content is modified callback.
   /// ~end
   ///
   /// ~chinese
@@ -543,6 +558,8 @@ class EMChatEventHandler {
   /// Param [onConversationRead] 收到会话已读回执的回调。
   ///
   /// Param [onMessageReactionDidChange] 消息表情回复（Reaction）变化监听器。
+  ///
+  /// Param [onMessageContentChanged] 收到消息内容变化。
   /// ~end
   EMChatEventHandler({
     this.onMessagesReceived,
@@ -555,6 +572,7 @@ class EMChatEventHandler {
     this.onConversationsUpdate,
     this.onConversationRead,
     this.onMessageReactionDidChange,
+    this.onMessageContentChanged,
   });
 }
 

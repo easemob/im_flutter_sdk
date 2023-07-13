@@ -285,6 +285,24 @@ class EMOptions {
   /// ~end
   final bool enableEmptyConversation;
 
+  /// ~english
+  ///  Custom device name
+  /// ~end
+  ///
+  /// ~chinese
+  /// 自定义设备名称
+  /// ~end
+  final String? deviceName;
+
+  /// ~english
+  /// Custom system type
+  /// ~end
+  ///
+  /// ~chinese
+  /// 自定义系统类型
+  /// ~end
+  final int? osType;
+
   EMPushConfig _pushConfig = EMPushConfig();
 
   /// ~english
@@ -541,6 +559,8 @@ class EMOptions {
     this.imServer,
     this.chatAreaCode = ChatAreaCode.GLOB,
     this.enableEmptyConversation = false,
+    this.deviceName,
+    this.osType,
   });
 
   /// @nodoc
@@ -575,6 +595,13 @@ class EMOptions {
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();
     data["areaCode"] = this.chatAreaCode;
+    if (deviceName != null) {
+      data["customDeviceName"] = this.deviceName;
+    }
+    if (osType != null) {
+      data["customOSType"] = this.osType;
+    }
+
     return data;
   }
 

@@ -113,6 +113,9 @@ class ChatMethodKeys {
   static const String getPinnedConversationsFromServerWithCursor =
       'getPinnedConversationsFromServerWithCursor';
   static const String pinConversation = 'pinConversation';
+  static const String modifyMessage = 'modifyMessage';
+  static const String downloadAndParseCombineMessage =
+      'downloadAndParseCombineMessage';
 
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
@@ -129,6 +132,7 @@ class ChatMethodKeys {
   static const String onConversationHasRead = "onConversationHasRead";
 
   static const String onMessageReactionDidChange = "messageReactionDidChange";
+  static const String onMessageContentChanged = "onMessageContentChanged";
 
   /// EMMessage listener
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";

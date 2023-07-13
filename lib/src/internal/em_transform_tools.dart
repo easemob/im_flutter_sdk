@@ -95,6 +95,8 @@ String messageTypeToTypeStr(MessageType type) {
       return 'video';
     case MessageType.VOICE:
       return 'voice';
+    case MessageType.COMBINE:
+      return 'combine';
   }
 }
 
