@@ -107,6 +107,8 @@ static NSString *const ChatRemoveMessagesFromServerWithTs = @"removeMessagesFrom
 static NSString *const GetConversationsFromServerWithCursor = @"getConversationsFromServerWithCursor";
 static NSString *const GetPinnedConversationsFromServerWithCursor = @"getPinnedConversationsFromServerWithCursor";
 static NSString *const PinConversation = @"pinConversation";
+static NSString *const modifyMessage = @"modifyMessage";
+static NSString *const downloadAndParseCombineMessage = @"downloadAndParseCombineMessage";
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
@@ -121,6 +123,8 @@ static NSString *const ChatOnConversationUpdate = @"onConversationUpdate";
 static NSString *const ChatOnConversationHasRead = @"onConversationHasRead";
 
 static NSString *const ChatOnMessageReactionDidChange = @"messageReactionDidChange";
+
+static NSString *const onMessageContentChanged = @"onMessageContentChanged";
 
 #pragma mark - EMMessageListener
 static NSString *const ChatOnMessageProgressUpdate = @"onMessageProgressUpdate";

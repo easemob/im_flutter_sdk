@@ -591,16 +591,12 @@ class EMOptions {
     data.putIfNotNull("sortMessageByServerTime", sortMessageByServerTime);
     data.putIfNotNull("usingHttpsOnly", usingHttpsOnly);
     data.putIfNotNull('loadEmptyConversations', enableEmptyConversation);
+    data.putIfNotNull('deviceName', deviceName);
+    data.putIfNotNull('osType', osType);
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();
     data["areaCode"] = this.chatAreaCode;
-    if (deviceName != null) {
-      data["customDeviceName"] = this.deviceName;
-    }
-    if (osType != null) {
-      data["customOSType"] = this.osType;
-    }
 
     return data;
   }

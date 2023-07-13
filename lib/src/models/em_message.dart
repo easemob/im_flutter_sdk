@@ -843,6 +843,9 @@ class EMMessage {
       case 'voice':
         body = EMVoiceMessageBody.fromJson(map: map);
         break;
+      case 'combine':
+        body = EMCombineMessageBody.fromJson(map: map);
+        break;
       default:
     }
 
@@ -1496,10 +1499,7 @@ class EMTextMessageBody extends EMMessageBody {
 
   /// @nodoc
   EMTextMessageBody.fromJson({required Map map})
-      : super.fromJson(
-          map: map,
-          type: MessageType.TXT,
-        ) {
+      : super.fromJson(map: map, type: MessageType.TXT) {
     this.content = map["content"] ?? "";
     this.targetLanguages = map.getList("targetLanguages");
     if (map.containsKey("translations")) {

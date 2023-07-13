@@ -340,34 +340,53 @@
 - (void)kickDevice:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *password = param[@"password"];
+    NSString *pwdOrToken = param[@"password"];
     NSString *resource = param[@"resource"];
-    
-    [EMClient.sharedClient kickDeviceWithUsername:username
-                                         password:password
-                                         resource:resource
-                                       completion:^(EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
+    bool isPwd = [param[@"isPwd"] boolValue];
+    if(isPwd) {
+        [EMClient.sharedClient kickDeviceWithUsername:username
+                                             password:pwdOrToken
+                                             resource:resource
+                                           completion:^(EMError *aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }else {
+        [EMClient.sharedClient kickDeviceWithUserId:username token:pwdOrToken resource:resource completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }
 }
 
 - (void)kickAllDevices:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient kickAllDevicesWithUsername:username
-                                             password:password
-                                           completion:^(EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
+    NSString *pwdOrToken = param[@"password"];
+    bool isPwd = [param[@"isPwd"] boolValue];
+    if(isPwd) {
+        [EMClient.sharedClient kickAllDevicesWithUsername:username
+                                                 password:pwdOrToken
+                                               completion:^(EMError *aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }else {
+        [EMClient.sharedClient kickAllDevicesWithUserId:username token:pwdOrToken completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }
 }
 
 - (void)isLoggedInBefore:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -422,23 +441,43 @@
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
-                                                           password:password
-                                                         completion:^(NSArray *aList, EMError *aError)
-     {
-        
-        NSMutableArray *list = [NSMutableArray array];
-        for (EMDeviceConfig *deviceInfo in aList) {
-            [list addObject:[deviceInfo toJson]];
-        }
-        
-        
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
+    NSString *pwdOrToken = param[@"password"];
+    bool isPwd = [param[@"isPwd"] boolValue];
+    if(isPwd) {
+        [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
+                                                               password:pwdOrToken
+                                                             completion:^(NSArray *aList, EMError *aError)
+         {
+            
+            NSMutableArray *list = [NSMutableArray array];
+            for (EMDeviceConfig *deviceInfo in aList) {
+                [list addObject:[deviceInfo toJson]];
+            }
+            
+            
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }else {
+        [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username
+                                                                token:pwdOrToken
+                                                           completion:^(NSArray<EMDeviceConfig *> * _Nullable aList, EMError * _Nullable aError)
+         {
+            NSMutableArray *list = [NSMutableArray array];
+            for (EMDeviceConfig *deviceInfo in aList) {
+                [list addObject:[deviceInfo toJson]];
+            }
+            
+            
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }
+    
 }
 
 - (void)startCallBack:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
@@ -487,10 +526,10 @@
                      arguments:nil];
 }
 
-- (void)userAccountDidLoginFromOtherDevice {
+- (void)userAccountDidLoginFromOtherDevice:(NSString *)aDeviceName {
     [EMListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
-                     arguments:nil];
+                     arguments:@{@"deviceName": aDeviceName}];
 }
 
 - (void)userAccountDidRemoveFromServer {

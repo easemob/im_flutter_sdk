@@ -188,8 +188,11 @@
         [self getPinnedConversationsFromServerWithCursor:call.arguments channelName:call.method result:result];
     } else if ([PinConversation isEqualToString:call.method]) {
         [self pinConversation:call.arguments channelName:call.method result:result];
+    } else if ([modifyMessage isEqualToString:call.method]) {
+        [self modifyMessage:call.arguments channelName:call.method result:result];
+    } else if ([downloadAndParseCombineMessage isEqualToString:call.method]) {
+        [self downloadAndParseCombineMessage:call.arguments channelName:call.method result:result];
     }
-    
     else {
         [super handleMethodCall:call result:result];
     }
@@ -1047,6 +1050,41 @@
     }];
 }
 
+- (void)modifyMessage:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *msgId = param[@"msgId"];
+    EMTextMessageBody *body = [EMTextMessageBody fromJson:param[@"body"]];
+    [EMClient.sharedClient.chatManager modifyMessage:msgId
+                                                body:body
+                                          completion:^(EMError * _Nullable error, EMChatMessage * _Nullable message)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[message toJson]];
+    }];
+}
+
+- (void)downloadAndParseCombineMessage:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    
+    [EMClient.sharedClient.chatManager downloadAndParseCombineMessage:msg
+                                                           completion:^(NSArray<EMChatMessage *> * _Nullable messages, EMError * _Nullable error)
+     {
+        NSMutableArray *msgJsonAry = [NSMutableArray array];
+        for (EMChatMessage *msg in messages) {
+            [msgJsonAry addObject:[msg toJson]];
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:msgJsonAry];
+    }];
+}
+
+
+
 #pragma mark - EMChatManagerDelegate
 
 
@@ -1148,5 +1186,15 @@
     return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
 }
 
+- (void)onMessageContentChanged:(EMChatMessage *)message operatorId:(NSString *)operatorId operationTime:(NSUInteger)operationTime {
+    NSDictionary *dict = @{
+        @"message": [message toJson],
+        @"operator": operatorId,
+        @"operationTime": @(operationTime)
+    };
+    
+    [self.channel invokeMethod:onMessageContentChanged
+                     arguments:dict];
+}
 
 @end
