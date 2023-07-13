@@ -33,6 +33,8 @@
     data[@"restServer"] = self.restServer;
     data[@"dnsUrl"] = self.dnsURL;
     data[@"areaCode"] = @(self.area);
+    data[@"deviceName"] = self.customDeviceName;
+    data[@"osType"] = @(self.customOSType);
     
     return data;
 }
@@ -59,7 +61,10 @@
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
     options.area = [aJson[@"areaCode"] intValue];
-    
+    options.customDeviceName = aJson[@"deviceName"];
+    if(aJson[@"osType"]) {
+        options.customOSType = [aJson[@"osType"] intValue];
+    }
     return options;
 }
 @end

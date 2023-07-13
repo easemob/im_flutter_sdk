@@ -26,4 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (int)downloadStatusToInt:(EMDownloadStatus)aStatus;
 @end
 
+@interface EMTextMessageBody (Helper)
++ (EMTextMessageBody *)fromJson:(NSDictionary *)aJson;
+- (NSDictionary *)toJson;
+@end
+
 NS_ASSUME_NONNULL_END

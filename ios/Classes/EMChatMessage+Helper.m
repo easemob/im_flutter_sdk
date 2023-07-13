@@ -205,6 +205,8 @@
         ret = [EMCmdMessageBody fromJson:bodyJson];
     } else if ([type isEqualToString:@"custom"]) {
         ret = [EMCustomMessageBody fromJson:bodyJson];
+    } else if ([type isEqualToString:@"combine"]) {
+        ret = [EMCombineMessageBody fromJson:bodyJson];
     }
     return ret;
 }
@@ -237,10 +239,16 @@
         case EMMessageBodyTypeVoice:
             type = @"voice";
             break;
+        case EMMessageBodyTypeCombine:
+            type = @"combine";
+            break;
         default:
             break;
     }
     ret[@"type"] = type;
+    ret[@"operatorId"] = self.operatorId;
+    ret[@"operatorTime"] = @(self.operationTime);
+    ret[@"operatorCount"] = @(self.operatorCount);
     
     return ret;
 }
@@ -434,6 +442,48 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"event"] = self.event;
     ret[@"params"] = self.customExt;
+    return ret;
+}
+
+@end
+
+@interface EMCombineMessageBody (Helper)
++ (EMCombineMessageBody *)fromJson:(NSDictionary *)aJson;
+- (NSDictionary *)toJson;
+@end
+
+@implementation EMCombineMessageBody (Helper)
+
++ (EMCombineMessageBody *)fromJson:(NSDictionary *)aJson {
+
+    NSString *title = aJson[@"title"];
+    NSString *summary = aJson[@"summary"];
+    NSArray *msgList = aJson[@"messageList"];
+    NSString *compatibleText = aJson[@"compatibleText"];
+    NSString *localPath = aJson[@"localPath"];
+    NSString *remotePath = aJson[@"remotePath"];
+    NSString *secret = aJson[@"secret"];
+    
+    EMCombineMessageBody *ret = [[EMCombineMessageBody alloc] initWithTitle:title
+                                                                    summary:summary
+                                                              compatibleText:compatibleText
+                                                               messageIdList:msgList];
+    
+    ret.remotePath = remotePath;
+    ret.secretKey = secret;
+    ret.localPath = localPath;
+    return ret;
+}
+
+- (NSDictionary *)toJson {
+    NSMutableDictionary *ret = [[super toJson] mutableCopy];
+    ret[@"title"] = self.title;
+    ret[@"summary"] = self.summary;
+    ret[@"messageList"] = self.messageIdList;
+    ret[@"compatibleText"] = self.compatibleText;
+    ret[@"localPath"] = self.localPath;
+    ret[@"remotePath"] = self.remotePath;
+    ret[@"secret"] = self.secretKey;
     return ret;
 }
 

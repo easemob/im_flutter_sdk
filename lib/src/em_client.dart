@@ -716,7 +716,7 @@ class EMClient {
     required String pwdOrToken,
     bool isPwd = true,
   }) async {
-    Map req = {'username': userId, 'pwdOrToken': pwdOrToken, 'isPwd': isPwd};
+    Map req = {'username': userId, 'password': pwdOrToken, 'isPwd': isPwd};
     Map result = await ClientChannel.invokeMethod(
         ChatMethodKeys.getLoggedInDevicesFromServer, req);
     try {
@@ -763,7 +763,7 @@ class EMClient {
     EMLog.v('kickDevice: $userId, "******"');
     Map req = {
       'username': userId,
-      'pwdOrToken': pwdOrToken,
+      'password': pwdOrToken,
       'resource': resource,
       'isPwd': isPwd,
     };
