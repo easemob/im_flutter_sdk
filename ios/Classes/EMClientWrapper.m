@@ -185,8 +185,6 @@
 
     [EMClient.sharedClient initializeSDKWithOptions:_options];
 
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
-    [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     [self registerManagers];
     [weakSelf wrapperCallBack:result
                   channelName:ChatInit
@@ -197,6 +195,8 @@
 
 - (void)registerManagers {
     [self clearAllListener];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     _chatManager = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
     _contactManager = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
     _conversationManager = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
