@@ -2,7 +2,6 @@ package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.EMConversationListener;
 import com.hyphenate.EMMessageListener;
-import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.*;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
@@ -10,7 +9,6 @@ import com.hyphenate.chat.EMConversation.EMConversationType;
 
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
-import com.hyphenate.chat.adapter.message.EMAMessage;
 import com.hyphenate.exceptions.HyphenateException;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
+
 
 public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler {
 
@@ -125,7 +123,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 getPinnedConversationsFromServerWithCursor(param, call.method, result);
             } else if (EMSDKMethod.pinConversation.equals(call.method)) {
                 pinConversation(param, call.method, result);
-            } else {
+            } else if (EMSDKMethod.modifyMessage.equals(call.method)) {
+                modifyMessage(param, call.method, result);
+            } else if (EMSDKMethod.downloadAndParseCombineMessage.equals(call.method)) {
+                downloadAndParseCombineMessage(param, call.method, result);
+            }
+            else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException ignored) {
@@ -893,6 +896,25 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().asyncPinConversation(convId, isPinned, new EMWrapperCallBack(result, channelName, null));
     }
 
+    private void modifyMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.optString("msgId");
+        EMTextMessageBody body = EMMessageBodyHelper.textBodyFromJson(param.optJSONObject("body"));
+        EMClient.getInstance().chatManager().asyncModifyMessage(msgId, body, new EMWrapperCallBack(result, channelName, null));
+    }
+    private void downloadAndParseCombineMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        EMMessage msg =  EMMessageHelper.fromJson(param.optJSONObject("message"));
+        EMClient.getInstance().chatManager().downloadAndParseCombineMessage(msg, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName){
+            @Override
+            public void onSuccess(List<EMMessage> msgList) {
+                List<Map> messages = new ArrayList<>();
+                for(EMMessage msg: msgList) {
+                    messages.add(EMMessageHelper.toJson(msg));
+                }
+                updateObject(messages);
+            }
+        });
+    }
+
     @Override
     public void unRegisterEaseListener() {
         EMClient.getInstance().chatManager().removeMessageListener(messageListener);
@@ -978,6 +1000,16 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                     list.add(EMMessageReactionChangeHelper.toJson(change));
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessageReactionDidChange, list));
+            }
+
+            @Override
+            public void onMessageContentChanged(EMMessage messageModified, String operatorId, long operationTime) {
+                 Map msgMap = EMMessageHelper.toJson(messageModified);
+                 Map map = new HashMap<>();
+                 map.put("message", msgMap);
+                 map.put("operator", operatorId);
+                 map.put("operationTime", operationTime);
+                post(() -> channel.invokeMethod(EMSDKMethod.onMessageContentChanged, map));
             }
         };
 

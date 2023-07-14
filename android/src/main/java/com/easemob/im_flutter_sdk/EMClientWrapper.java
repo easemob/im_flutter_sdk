@@ -258,28 +258,51 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         String username = param.getString("username");
         String password = param.getString("password");
         String resource = param.getString("resource");
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().kickDevice(username, password, resource);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+        boolean isPwd = param.optBoolean("isPwd");
+        if (isPwd) {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickDevice(username, password, resource);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }else {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickDeviceWithToken(username, password, resource);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }
     }
 
     private void kickAllDevices(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
-
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().kickAllDevices(username, password);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+        boolean isPwd = param.optBoolean("isPwd");
+        if (isPwd) {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickAllDevices(username, password);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }else {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickAllDevicesWithToken(username, password);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
@@ -308,18 +331,34 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
-        asyncRunnable(()->{
-            try {
-                List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(username, password);
-                List<Map> jsonList = new ArrayList <>();
-                for (EMDeviceInfo info: devices) {
-                    jsonList.add(EMDeviceInfoHelper.toJson(info));
+        boolean isPwd = param.optBoolean("isPwd");
+        if (isPwd) {
+            asyncRunnable(()->{
+                try {
+                    List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(username, password);
+                    List<Map> jsonList = new ArrayList <>();
+                    for (EMDeviceInfo info: devices) {
+                        jsonList.add(EMDeviceInfoHelper.toJson(info));
+                    }
+                    onSuccess(result, channelName, jsonList);
+                } catch (HyphenateException e) {
+                    onError(result, e);
                 }
-                onSuccess(result, channelName, jsonList);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+            });
+        }else {
+            asyncRunnable(()->{
+                try {
+                    List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServerWithToken(username, password);
+                    List<Map> jsonList = new ArrayList <>();
+                    for (EMDeviceInfo info: devices) {
+                        jsonList.add(EMDeviceInfoHelper.toJson(info));
+                    }
+                    onSuccess(result, channelName, jsonList);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }
     }
 
     private void startCallback(JSONObject param, String channelName, Result result) {
@@ -436,8 +475,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onDisconnected(int errorCode) {
                 if (errorCode == 206) {
-                    EMListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
+                    // 这部分实现放到onLogout中。
+//                    EMListenerHandle.getInstance().clearHandle();
+//                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
                 }else if (errorCode == 207) {
                     EMListenerHandle.getInstance().clearHandle();
                     post(() -> channel.invokeMethod(EMSDKMethod.onUserDidRemoveFromServer, null));
@@ -475,6 +515,16 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onTokenWillExpire() {
                 post(()-> channel.invokeMethod(EMSDKMethod.onTokenWillExpire, null));
+            }
+
+            @Override
+            public void onLogout(int errorCode, String info) {
+                if (errorCode == 206) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    Map<String, String> attributes = new HashMap<>();
+                    attributes.put("deviceName", info);
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, attributes));
+                }
             }
         };
 
