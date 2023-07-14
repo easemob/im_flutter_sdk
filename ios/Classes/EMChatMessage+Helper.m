@@ -273,6 +273,8 @@
         ret = EMMessageBodyTypeVideo;
     } else if ([aStrType isEqualToString:@"voice"]) {
         ret = EMMessageBodyTypeVoice;
+    } else if ([aStrType isEqualToString:@"combine"]) {
+        ret = EMMessageBodyTypeCombine;
     }
     return ret;
 }
@@ -479,7 +481,6 @@
     NSMutableDictionary *ret = [[super toJson] mutableCopy];
     ret[@"title"] = self.title;
     ret[@"summary"] = self.summary;
-    ret[@"messageList"] = self.messageIdList;
     ret[@"compatibleText"] = self.compatibleText;
     ret[@"localPath"] = self.localPath;
     ret[@"remotePath"] = self.remotePath;

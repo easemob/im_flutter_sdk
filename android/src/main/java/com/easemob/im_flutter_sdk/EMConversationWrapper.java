@@ -301,6 +301,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             case "img" : type = EMMessage.Type.IMAGE; break;
             case "video" : type = EMMessage.Type.VIDEO; break;
             case "voice" : type = EMMessage.Type.VOICE; break;
+            case "combine" : type = EMMessage.Type.COMBINE; break;
         }
 
         EMMessage.Type finalType = type;

@@ -97,6 +97,8 @@ public class EMSDKMethod {
     static final String getConversationsFromServerWithCursor = "getConversationsFromServerWithCursor";
     static final String getPinnedConversationsFromServerWithCursor = "getPinnedConversationsFromServerWithCursor";
     static final String pinConversation = "pinConversation";
+    static final String modifyMessage = "modifyMessage";
+    static final String downloadAndParseCombineMessage = "downloadAndParseCombineMessage";
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
@@ -110,6 +112,8 @@ public class EMSDKMethod {
     static final String onConversationHasRead = "onConversationHasRead";
 
     static final String onMessageReactionDidChange = "messageReactionDidChange";
+    static final String onMessageContentChanged = "onMessageContentChanged";
+
 
     /// EMMessage listener
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
