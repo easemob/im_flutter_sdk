@@ -285,6 +285,8 @@ class EMMessage {
   ///
   /// Param [body] The message body.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -292,6 +294,8 @@ class EMMessage {
   /// 创建一条接收消息。
   ///
   /// Param [body] 消息体。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息实例。
   /// ~end
@@ -313,6 +317,8 @@ class EMMessage {
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -325,6 +331,8 @@ class EMMessage {
   /// - 用户：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息对象。
   /// ~end
@@ -353,6 +361,8 @@ class EMMessage {
   ///
   /// Param [targetLanguages] Target languages.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -365,6 +375,10 @@ class EMMessage {
   /// - 聊天室：聊天室 ID。
   ///
   /// Param [content] 文本消息内容。
+  ///
+  /// Param [targetLanguages] 目标语言。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息体实例。
   /// ~end
@@ -396,6 +410,8 @@ class EMMessage {
   ///
   /// Param [fileSize] The file size in bytes.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -413,14 +429,16 @@ class EMMessage {
   ///
   /// Param [fileSize] 文件大小，单位为字节。
   ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
+  ///
   /// **Return** 消息体实例。
   /// ~end
   EMMessage.createFileSendMessage({
     required String targetId,
     required String filePath,
     String? displayName,
-    ChatType chatType = ChatType.Chat,
     int? fileSize,
+    ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
             chatType: chatType,
             to: targetId,
@@ -454,6 +472,8 @@ class EMMessage {
   ///
   /// Param [height] The image height in pixels.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -480,6 +500,8 @@ class EMMessage {
   /// Param [width] 图片的宽，单位是像素。
   ///
   /// Param [height] 图片的高，单位是像素。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 图片实例。
   /// ~end
@@ -527,6 +549,8 @@ class EMMessage {
   ///
   /// Param [height] The height of the video thumbnail, in pixels.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -551,6 +575,8 @@ class EMMessage {
   /// Param [width] 缩略图宽度，单位是像素。
   ///
   /// Param [height] 缩略图高度，单位是像素。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息体实例。
   /// ~end
@@ -593,6 +619,8 @@ class EMMessage {
   ///
   /// Param [displayName] The name of the voice file which ends with a suffix that indicates the format of the file. For example "voice.mp3".
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -611,6 +639,8 @@ class EMMessage {
   /// Param [fileSize] 语音文件大小，单位是字节。
   ///
   /// Param [displayName] 文件名。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息体实例。
   /// ~end
@@ -646,6 +676,8 @@ class EMMessage {
   ///
   /// Param [buildingName] The building name.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -664,6 +696,8 @@ class EMMessage {
   /// Param [address] 地址。
   ///
   /// Param [buildingName] 建筑物名称。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息体实例。
   /// ~end
@@ -694,6 +728,10 @@ class EMMessage {
   ///
   /// Param [action] The command action.
   ///
+  /// Param [deliverOnlineOnly] Whether to send only to online users.
+  ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -706,6 +744,10 @@ class EMMessage {
   /// - 聊天室：聊天室 ID。
   ///
   /// Param [action] 命令内容。
+  ///
+  /// Param [deliverOnlineOnly] 是否只发送在线用户。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
   /// **Return** 消息体实例。
   /// ~end
@@ -732,6 +774,8 @@ class EMMessage {
   ///
   /// Param [params] The params map.
   ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
   /// **Return** The message instance.
   /// ~end
   ///
@@ -747,6 +791,8 @@ class EMMessage {
   ///
   /// Param [params] 自定义消息的键值对 Map 列表。
   ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
+  ///
   /// **Return** 消息体实例。
   /// ~end
   EMMessage.createCustomSendMessage({
@@ -758,6 +804,64 @@ class EMMessage {
             chatType: chatType,
             to: targetId,
             body: EMCustomMessageBody(event: event, params: params));
+
+  /// ~english
+  /// Creates a combine message for sending.
+  ///
+  /// Param [targetId] The ID of the message recipient.
+  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a group chat, it is the group ID.
+  /// - For a chat room, it is the chat room ID.
+  ///
+  /// Param [title] The message title.
+  ///
+  /// Param [summary] The message summary.
+  ///
+  /// Param [compatibleText] The compatible text.
+  ///
+  /// Param [msgIds] The list of combined messages.
+  ///
+  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  ///
+  /// **Return** The message instance.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 创建一条待发送的合并消息。
+  ///
+  /// Param [targetId] 消息接收方，可以是：
+  /// - 用户：用户 ID；
+  /// - 群组：群组 ID；
+  /// - 聊天室：聊天室 ID。
+  ///
+  /// Param [title] 消息标题。
+  ///
+  /// Param [summary] 消息概要。
+  ///
+  /// Param [compatibleText] 兼容文本。
+  ///
+  /// Param [msgIds] 合并的消息列表。
+  ///
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
+  ///
+  /// **Return** 消息体实例。
+  /// ~end
+  EMMessage.createCombineSendMessage({
+    required String targetId,
+    String? title,
+    String? summary,
+    String? compatibleText,
+    required List<String> msgIds,
+    ChatType chatType = ChatType.Chat,
+  }) : this.createSendMessage(
+            chatType: chatType,
+            to: targetId,
+            body: EMCombineMessageBody(
+              title: title,
+              summary: summary,
+              compatibleText: compatibleText,
+              messageList: msgIds,
+            ));
 
   /// @nodoc
   Map<String, dynamic> toJson() {

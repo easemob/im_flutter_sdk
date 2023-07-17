@@ -1058,10 +1058,18 @@
                                                 body:body
                                           completion:^(EMError * _Nullable error, EMChatMessage * _Nullable message)
      {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:error
-                           object:[message toJson]];
+        if(error) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:nil];
+        }else {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:[message toJson]];
+        }
+        
     }];
 }
 
