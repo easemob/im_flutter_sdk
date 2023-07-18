@@ -32,7 +32,8 @@ extension MapExtension on Map {
       Map tmpMap = this[key];
       for (var tmpKey in tmpMap.keys) {
         dynamic value = tmpMap[tmpKey];
-        if (value is String) {
+        if (value is String && (value.startsWith("{") && value.endsWith("}")) ||
+            value is String && (value.startsWith("[") && value.endsWith("]"))) {
           do {
             try {
               dynamic data = convert.jsonDecode(value);
