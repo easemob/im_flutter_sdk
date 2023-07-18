@@ -228,7 +228,8 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
         asyncRunnable(()->{
-            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore());
+            EMOptions emOptions = EMClient.getInstance().getOptions();
+            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore() && emOptions.getAutoLogin());
         });
     }
 
