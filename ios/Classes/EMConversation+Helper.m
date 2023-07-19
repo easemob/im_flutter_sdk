@@ -15,6 +15,8 @@
     ret[@"type"] = @([self.class typeToInt:self.type]);
     ret[@"ext"] = self.ext;
     ret[@"isThread"] = @(self.isChatThread);
+    ret[@"isPinned"] = @(self.isPinned);
+    ret[@"pinnedTime"] = @(self.pinnedTime);
     return ret;
 }
 

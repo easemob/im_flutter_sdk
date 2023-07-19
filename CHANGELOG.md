@@ -16,7 +16,7 @@
 
 #### 修复：
 - 修复 ios 中无法收到 `EMConnectionEventHandler#onConnected` 和 `EMConnectionEventHandler#onDisconnected` 的问题；
-- 修复 安卓消息中，发送方ext设置string类型，接收方变为int类型；
+- 修复 安卓消息中，发送方`attributes` 中包含string类型，接收方变为int类型的问题；
 
 #### 优化：
 - 离开聊天室 `EMChatRoomEventHandler#onRemovedFromChatRoom` 回调中增加离开原因;
