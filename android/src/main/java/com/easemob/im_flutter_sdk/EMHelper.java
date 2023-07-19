@@ -25,6 +25,7 @@ import com.hyphenate.chat.EMLanguage;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
+import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.chat.EMMessageReactionChange;
 import com.hyphenate.chat.EMMessageReactionOperation;
@@ -657,6 +658,21 @@ class EMGroupAckHelper {
 
  class EMMessageBodyHelper {
 
+    static Map<String, Object> getParentMap(EMMessageBody body){
+        Map<String, Object> data = new HashMap<>();
+        if (body.operatorId() != null) {
+            data.put("operatorId", body.operatorId());
+        }
+        if (body.operationTime() != 0) {
+            data.put("operatorTime", body.operationTime());
+        }
+
+        if (body.operationCount() != 0) {
+            data.put("operatorCount", body.operationCount());
+        }
+        return data;
+    }
+
      public static EMTextMessageBody textBodyFromJson(JSONObject json) throws JSONException {
         String content = json.getString("content");
         List<String> list = new ArrayList<>();
@@ -672,7 +688,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> textBodyToJson(EMTextMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("content", body.getMessage());
         data.put("type", "txt");
         if (body.getTargetLanguages() != null) {
@@ -710,7 +726,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> localBodyToJson(EMLocationMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("latitude", body.getLatitude());
         data.put("longitude", body.getLongitude());
         data.put("buildingName", body.getBuildingName());
@@ -730,7 +746,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> cmdBodyToJson(EMCmdMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("deliverOnlineOnly", body.isDeliverOnlineOnly());
         data.put("action", body.action());
         data.put("type", "cmd");
@@ -755,7 +771,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> customBodyToJson(EMCustomMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("event", body.event());
         data.put("params", body.getParams());
         data.put("type", "custom");
@@ -785,7 +801,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> fileBodyToJson(EMNormalFileMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("fileSize", body.getFileSize());
         data.put("displayName", body.getFileName());
@@ -839,7 +855,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> imageBodyToJson(EMImageMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
@@ -898,7 +914,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> videoBodyToJson(EMVideoMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("thumbnailLocalPath", body.getLocalThumbUri());
         data.put("duration", body.getDuration());
@@ -939,7 +955,7 @@ class EMGroupAckHelper {
     }
 
     static Map<String, Object> voiceBodyToJson(EMVoiceMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("duration", body.getLength());
         data.put("displayName", body.getFileName());
@@ -978,34 +994,34 @@ class EMGroupAckHelper {
          return ret;
      }
     static Map<String, Object> combineBodyToJson(EMCombineMessageBody body) {
-        Map<String, Object> ret = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         if (body.getTitle() != null) {
-            ret.put("title", body.getTitle());
+            data.put("title", body.getTitle());
         }
 
         if (body.getSummary() != null) {
-            ret.put("summary", body.getSummary());
+            data.put("summary", body.getSummary());
         }
 
         if (body.getCompatibleText() != null) {
-            ret.put("compatibleText", body.getCompatibleText());
+            data.put("compatibleText", body.getCompatibleText());
         }
 
         if (body.getLocalUrl() != null) {
-            ret.put("localPath", body.getLocalUrl());
+            data.put("localPath", body.getLocalUrl());
         }
 
         if (body.getRemoteUrl() != null) {
-            ret.put("remotePath", body.getRemoteUrl());
+            data.put("remotePath", body.getRemoteUrl());
         }
 
         if (body.getSecret() != null) {
-            ret.put("secret", body.getSecret());
+            data.put("secret", body.getSecret());
         }
 
-        ret.put("type", "combine");
+        data.put("type", "combine");
 
-        return ret;
+        return data;
     }
 
     private static EMFileMessageBody.EMDownloadStatus downloadStatusFromInt(int downloadStatus) {
