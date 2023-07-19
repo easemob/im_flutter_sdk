@@ -281,7 +281,7 @@ class EMOptions {
   /// ~end
   ///
   /// ~chinese
-  /// 是否使用自定义 IM 服务的端口。用于私有化部署。
+  /// 从本地数据库加载会话时是否包括空会话。
   /// ~end
   final bool enableEmptyConversation;
 

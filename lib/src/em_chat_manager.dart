@@ -1721,7 +1721,26 @@ class EMChatManager {
     }
   }
 
-  Future<List<EMMessage>> downloadAndParseCombineMessage({
+  /// ~english
+  /// fetch combine message detail.
+  ///
+  /// Param [message] The combine message.
+  ///
+  /// **Return** The combined message list.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取合并消息详情。
+  ///
+  /// Param [message] 合并消息。
+  ///
+  /// **Return** 合并后的消息列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<List<EMMessage>> fetchCombineMessageDetail({
     required EMMessage message,
   }) async {
     Map map = {

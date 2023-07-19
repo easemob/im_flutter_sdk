@@ -1656,7 +1656,7 @@ class EMTextMessageBody extends EMMessageBody {
   /// ~chinese
   /// 获取最后一次消息修改的操作者的用户 ID。
   /// ~end
-  String? get operatorId => _operatorId;
+  String? get lastModifyOperatorId => _operatorId;
 
   /// ~english
   /// Get the UNIX timestamp of the last message modification, in milliseconds.
@@ -1665,7 +1665,7 @@ class EMTextMessageBody extends EMMessageBody {
   /// ~chinese
   /// 获取最后一次消息修改的时间戳，单位为毫秒。
   /// ~end
-  int? get operatorTime => _operatorTime;
+  int? get lastModifyTime => _operatorTime;
 
   /// ~english
   /// Get the number of times a message is modified.
@@ -1674,7 +1674,7 @@ class EMTextMessageBody extends EMMessageBody {
   /// ~chinese
   /// 获取消息修改次数。
   /// ~end
-  int? get operatorCount => _operatorCount;
+  int? get modifyCount => _operatorCount;
 }
 
 /// ~english
