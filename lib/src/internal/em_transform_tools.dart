@@ -65,7 +65,7 @@ EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
       return EMMultiDevicesEvent.CHAT_THREAD_KICK;
     case 45:
       return EMMultiDevicesEvent.CHAT_THREAD_UPDATE;
-    case 46:
+    case 52:
       return EMMultiDevicesEvent.GROUP_MEMBER_ATTRIBUTES_CHANGED;
     case 60:
       return EMMultiDevicesEvent.CONVERSATION_PINNED;
