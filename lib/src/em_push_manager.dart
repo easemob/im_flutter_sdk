@@ -131,15 +131,13 @@ class EMPushManager {
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<void> updateFCMPushToken(String token) async {
-    if (Platform.isAndroid) {
-      Map req = {'token': token};
-      Map result = await PushChannel.invokeMethod(
-          ChatMethodKeys.updateFCMPushToken, req);
-      try {
-        EMError.hasErrorFromResult(result);
-      } on EMError catch (e) {
-        throw e;
-      }
+    Map req = {'token': token};
+    Map result =
+        await PushChannel.invokeMethod(ChatMethodKeys.updateFCMPushToken, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
     }
   }
 

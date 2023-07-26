@@ -72,7 +72,7 @@ class EMConnectionEventHandler {
   /// ~end
   ///
   /// ~chinese
-  /// 被服务器移除回调。
+  /// 当前用户被服务器移除回调。
   /// ~end
   final VoidCallback? onUserDidRemoveFromServer;
 
@@ -306,7 +306,7 @@ class EMMultiDeviceEventHandler {
   /// ~end
   ///
   /// ~chinese
-  /// 开启多设备后对单个会话删除漫游消息后对其他设备的回调。
+  /// 开启多设备后单个会话操作的多设备事件回调。
   /// ~end
   final void Function(
     EMMultiDevicesEvent event,

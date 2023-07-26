@@ -269,6 +269,8 @@ static NSString *const ChatGetNoPushGroups = @"getNoPushGroups";
 static NSString *const ChatUpdateUserPushService = @"updateUserPushService";
 static NSString *const ChatGetNoPushUsers = @"getNoPushUsers";
 static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
+static NSString *const UpdateFCMPushToken = @"updateFCMPushToken";
+
 
 static NSString *const ChatReportPushAction = @"reportPushAction";
 static NSString *const ChatSetConversationSilentMode = @"setConversationSilentMode";
