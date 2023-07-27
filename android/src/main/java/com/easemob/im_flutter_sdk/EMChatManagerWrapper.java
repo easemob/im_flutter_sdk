@@ -899,7 +899,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void modifyMessage(JSONObject param, String channelName, Result result) throws JSONException {
         String msgId = param.optString("msgId");
         EMTextMessageBody body = EMMessageBodyHelper.textBodyFromJson(param.optJSONObject("body"));
-        EMClient.getInstance().chatManager().asyncModifyMessage(msgId, body, new EMWrapperCallBack(result, channelName, null));
+        EMClient.getInstance().chatManager().asyncModifyMessage(msgId, body, new EMValueWrapperCallBack<EMMessage>(result, channelName) {
+            @Override
+            public void onSuccess(EMMessage object) {
+                updateObject(EMMessageHelper.toJson(object));
+            }
+        });
     }
     private void downloadAndParseCombineMessage(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage msg =  EMMessageHelper.fromJson(param.optJSONObject("message"));
