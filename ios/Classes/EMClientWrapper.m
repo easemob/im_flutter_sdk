@@ -458,7 +458,7 @@
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
-                               object:nil];
+                               object:list];
         }];
     }else {
         [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username
@@ -474,7 +474,7 @@
             [weakSelf wrapperCallBack:result
                           channelName:aChannelName
                                 error:aError
-                               object:nil];
+                               object:list];
         }];
     }
     

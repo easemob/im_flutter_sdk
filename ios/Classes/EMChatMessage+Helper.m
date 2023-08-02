@@ -246,9 +246,15 @@
             break;
     }
     ret[@"type"] = type;
-    ret[@"operatorId"] = self.operatorId;
-    ret[@"operatorTime"] = @(self.operationTime);
-    ret[@"operatorCount"] = @(self.operatorCount);
+    if(self.operatorId && self.operatorId.length > 0) {
+        ret[@"operatorId"] = self.operatorId;
+    }
+    if(self.operationTime > 0) {
+        ret[@"operatorTime"] = @(self.operationTime);
+    }
+    if(self.operatorCount > 0) {
+        ret[@"operatorCount"] = @(self.operatorCount);
+    }
     
     return ret;
 }

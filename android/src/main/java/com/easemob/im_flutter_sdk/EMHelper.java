@@ -660,7 +660,7 @@ class EMGroupAckHelper {
 
     static Map<String, Object> getParentMap(EMMessageBody body){
         Map<String, Object> data = new HashMap<>();
-        if (body.operatorId() != null) {
+        if (body.operatorId() != null && body.operatorId().length() > 0) {
             data.put("operatorId", body.operatorId());
         }
         if (body.operationTime() != 0) {

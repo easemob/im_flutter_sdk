@@ -3,7 +3,7 @@
 #### 新增：
 - 增加 `EMOptions#osType`属性和`EMOptions#deviceName`属性，用户设置设备类型和设备名称；
 - 增加 `Combine` 消息类型，用于合并转发消息；
-- 增加 `EMChatManager#downloadAndParseCombineMessage` 方法;
+- 增加 `EMChatManager#fetchCombineMessageDetail` 方法;
 - 增加 `EMChatManager#modifyMessage` 方法用户修改已发送的消息，目前只支持文本消息消息;
 - 增加 `EMChatEventHandler#onMessageContentChanged` 回调，用户监听消息编辑实现；
 - 增加 `EMClient#fetchLoggedInDevices` 方法，可是使用token获取已登录的设备列表；
