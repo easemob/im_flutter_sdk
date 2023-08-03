@@ -754,7 +754,7 @@ class EMClient {
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<bool> kickDevice({
+  Future<void> kickDevice({
     required String userId,
     required String pwdOrToken,
     required String resource,
@@ -771,7 +771,6 @@ class EMClient {
         await ClientChannel.invokeMethod(ChatMethodKeys.kickDevice, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result.boolValue(ChatMethodKeys.kickDevice);
     } on EMError catch (e) {
       throw e;
     }
