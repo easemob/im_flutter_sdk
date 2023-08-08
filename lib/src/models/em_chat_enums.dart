@@ -463,7 +463,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上删除了好友，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上删除好友。
   /// ~end
   CONTACT_REMOVE,
 
@@ -472,7 +472,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上同意了好友请求，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上接受好友请求。
   /// ~end
   CONTACT_ACCEPT,
 
@@ -481,7 +481,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上拒绝了好友请求，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上拒绝好友请求。
   /// ~end
   CONTACT_DECLINE,
 
@@ -490,7 +490,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将其他用户加入了黑名单，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上将好友加入黑名单。
   /// ~end
   CONTACT_BAN,
 
@@ -499,7 +499,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将其他用户移出了黑名单，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上将好友移出黑名单。
   /// ~end
   CONTACT_ALLOW,
 
@@ -508,7 +508,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上创建了群组，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上创建群组。
   /// ~end
   GROUP_CREATE,
 
@@ -517,7 +517,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上销毁了群组，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上解散群组。
   /// ~end
   GROUP_DESTROY,
 
@@ -526,7 +526,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上加入了群组，则设备 A2 会收到该事件。
+  /// 当前用户在其他设备上加入群组。
   /// ~end
   GROUP_JOIN,
 
@@ -535,7 +535,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上退出群组，则设备 A2 会收到该事件。
+  /// 当前用户在其他设备离开群组。
   /// ~end
   GROUP_LEAVE,
 
@@ -544,7 +544,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上申请加入群组，则设备 A2 会收到该事件。
+  /// 当前用户在其他设备上申请加入群组。
   /// ~end
   GROUP_APPLY,
 
@@ -553,7 +553,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上收到了入群申请，则设备 A2 会收到该事件。
+  /// 当前用户在其他设备接受入群申请。
   /// ~end
   GROUP_APPLY_ACCEPT,
 
@@ -562,7 +562,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上拒绝了入群申请，设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上拒绝入群申请。
   /// ~end
   GROUP_APPLY_DECLINE,
 
@@ -571,7 +571,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上邀请了其他用户进入群组，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上邀请用户入群。
   /// ~end
   GROUP_INVITE,
 
@@ -580,7 +580,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上同意了其他用户的群组邀请，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上接受了入群邀请。
   /// ~end
   GROUP_INVITE_ACCEPT,
 
@@ -589,7 +589,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上拒绝了其他用户的群组邀请，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上拒绝了入群邀请。
   /// ~end
   GROUP_INVITE_DECLINE,
 
@@ -598,7 +598,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将其他用户踢出群组，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上将成员踢出群。
   /// ~end
   GROUP_KICK,
 
@@ -607,7 +607,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上被加入黑名单，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上将成员加入群组黑名单。
   /// ~end
   GROUP_BAN,
 
@@ -616,7 +616,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将其他用户移出群组，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上将成员移除群组黑名单。
   /// ~end
   GROUP_ALLOW,
 
@@ -625,7 +625,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上屏蔽了某个群组的消息，设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上屏蔽群组。
   /// ~end
   GROUP_BLOCK,
 
@@ -634,7 +634,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上取消屏蔽了某个群组的消息，设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上取消群组屏蔽。
   /// ~end
   GROUP_UNBLOCK,
 
@@ -643,7 +643,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上更新了群主，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上转移群组所有权。
   /// ~end
   GROUP_ASSIGN_OWNER,
 
@@ -652,7 +652,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上添加了群组管理员，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上添加管理员。
   /// ~end
   GROUP_ADD_ADMIN,
 
@@ -661,7 +661,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上移除了群组管理员，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上移除管理员。
   /// ~end
   GROUP_REMOVE_ADMIN,
 
@@ -670,7 +670,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上禁言了群成员，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上禁言成员。
   /// ~end
   GROUP_ADD_MUTE,
 
@@ -679,7 +679,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上取消禁言了群成员，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上解除禁言。
   /// ~end
   GROUP_REMOVE_MUTE,
 
@@ -688,7 +688,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将其他成员添加到群组白名单中，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备将其他用户加入到群组白名单。
   /// ~end
   GROUP_ADD_USER_ALLOW_LIST,
 
@@ -697,7 +697,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将其他成员移除群组白名单，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备将其他用户移除群组白名单。
   /// ~end
   GROUP_REMOVE_USER_ALLOW_LIST,
 
@@ -706,7 +706,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将所有其他群组成员添加到群组禁言列表，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备将全部群组成员禁言。
   /// ~end
   GROUP_ALL_BAN,
 
@@ -715,7 +715,7 @@ enum EMMultiDevicesEvent {
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上将所有其他群组成员移除群组禁言列表，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备将群组成员解除禁言。
   /// ~end
   GROUP_REMOVE_ALL_BAN,
 
@@ -738,93 +738,91 @@ enum EMMultiDevicesEvent {
   GROUP_ABLE,
 
   /// ~english
-  /// User A creates an event in the sub-area of device A1, and other devices logged in to this account will receive this event
-  /// ~end
+  /// The current user modified custom attributes of a group member on another device.
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 上创建了子区，则设备 A2 上会收到该事件。
-  /// ~end
-  CHAT_THREAD_CREATE,
-
-  /// ~english
-  /// User A destroys the event in the sub-area of device A1, and all other devices logged in to this account will receive this event
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户 A 在设备 A1 上移除了子区，则设备 A2 上会收到该事件。
-  /// ~end
-  CHAT_THREAD_DESTROY,
-
-  /// ~english
-  /// User A joins the event in the sub-area of device A1, and other devices logged in to this account will receive this event
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户 A 在设备 A1 上加入了子区，则设备 A2 上会收到该事件。
-  /// ~end
-  CHAT_THREAD_JOIN,
-
-  /// ~english
-  /// User A leaves the event in the sub-area of device A1, and other devices logged in to this account will receive this event
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户 A 在设备 A1 上离开了子区，则设备 A2 上会收到该事件。
-  /// ~end
-  CHAT_THREAD_LEAVE,
-
-  /// ~english
-  /// User A updates the event in the sub-area of device A1, and other devices logged in to this account will receive this event
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户 A 在设备 A1 上更新了子区信息，则设备 A2 上会收到该事件。
-  /// ~end
-  CHAT_THREAD_UPDATE,
-
-  /// ~english
-  /// User A is kicked in the sub-area of device A1, and all other devices that log in to this account will receive this event
-  /// ~end
-  ///
-  /// ~chinese
-  /// 用户 A 在设备 A1 上将其他用户踢出子区，则设备 A2 上会收到该事件。
-  /// ~end
-  CHAT_THREAD_KICK,
-
-  /// ~english
-  /// If user A modifies a custom member attribute on device A1,
-  /// this event is triggered on another device that the user logs in with the same account.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 若用户 A 在设备 A1 上修改群成员自定义属性，该事件会在登录该账号的其他设备触发。
+  /// 当前用户在其他设备上修改群组成员属性。
   /// ~end
   GROUP_MEMBER_ATTRIBUTES_CHANGED,
 
   /// ~english
-  /// If user A pins a conversation on device A1, this event is triggered on device A2
+  /// The current user created a message thread on another device.
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 置顶会话，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备创建子区。
+  /// ~end
+  CHAT_THREAD_CREATE,
+
+  /// ~english
+  /// The current user destroyed a message thread on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备销毁子区。
+  /// ~end
+  CHAT_THREAD_DESTROY,
+
+  /// ~english
+  /// The current user joined a message thread on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备加入子区。
+  /// ~end
+  CHAT_THREAD_JOIN,
+
+  /// ~english
+  /// The current user left a message thread on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备离开子区。
+  /// ~end
+  CHAT_THREAD_LEAVE,
+
+  /// ~english
+  /// The current user updated message thread information on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备更新子区信息。
+  /// ~end
+  CHAT_THREAD_UPDATE,
+
+  /// ~english
+  /// The current user kicked a member out of a message thread on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备上将成员踢出子区。
+  /// ~end
+  CHAT_THREAD_KICK,
+
+  /// ~english
+  /// The current user pinned a conversation on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备上置顶会话。
   /// ~end
   CONVERSATION_PINNED,
 
   /// ~english
-  /// If user A unpins a conversation on device A1, this event is triggered on device A2.
+  /// The current user unpinned a conversation on another device.
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1取消置顶会话，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上取消会话置顶。
   /// ~end
   CONVERSATION_UNPINNED,
 
   /// ~english
-  /// If user A deletes a conversation on device A1, this event is triggered on device A2.
+  /// The current user removed a conversation from the server.
   /// ~end
   ///
   /// ~chinese
-  /// 用户 A 在设备 A1 删除会话，则设备 A2 上会收到该事件。
+  /// 当前用户在其他设备上删除了服务端的会话。
   /// ~end
   CONVERSATION_DELETE,
 }

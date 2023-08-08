@@ -983,10 +983,32 @@
                                channelName:(NSString *)aChannelName
                                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
+    NSArray *msgIds = param[@"msgIds"];
     NSString *convId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    
+    if(!EMClient.sharedClient.isLoggedIn) {
+        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+    
+    
+    if(convId == nil || convId.length == 0 || msgIds.count == 0 || type == EMConversationTypeChatRoom) {
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+    
+    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:convId type:type createIfNotExist:YES];
-    NSArray *msgIds = param[@"msgIds"];
+    
     [conversation removeMessagesFromServerMessageIds:msgIds completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -1002,6 +1024,25 @@
     NSString *convId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
     long timestamp = [param[@"timestamp"] longValue];
+    
+    if(!EMClient.sharedClient.isLoggedIn) {
+        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+    
+    if(convId == nil || convId.length == 0 || type == EMConversationTypeChatRoom || timestamp <= 0) {
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];	
+        return;
+    }
+    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:convId type:type createIfNotExist:YES];
     [conversation removeMessagesFromServerWithTimeStamp:timestamp completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result

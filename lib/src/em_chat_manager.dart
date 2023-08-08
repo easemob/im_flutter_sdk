@@ -1219,7 +1219,7 @@ class EMChatManager {
   ///
   /// Param [conversationType] The conversation type. See  [EMConversationType].
   ///
-  /// Param [isDeleteMessage] Whether to delete the chat history when deleting the conversation.
+  /// Param [isDeleteRemoteMessage] Whether to delete the server chat history when deleting the conversation.
   /// - `true`: (default) Yes.
   /// - `false`: No.
   ///
@@ -1234,7 +1234,7 @@ class EMChatManager {
   ///
   /// Param [conversationType] 会话类型，详见 [EMConversationType]。
   ///
-  /// Param [isDeleteMessage] 删除会话时是否同时删除历史消息记录。
+  /// Param [isDeleteRemoteMessage] 删除会话时是否同时删除服务器历史消息记录。
   ///
   /// - （默认）`true`：是；
   /// - `false`：否。
@@ -1244,7 +1244,7 @@ class EMChatManager {
   Future<void> deleteRemoteConversation(
     String conversationId, {
     EMConversationType conversationType = EMConversationType.Chat,
-    bool isDeleteMessage = true,
+    bool isDeleteRemoteMessage = true,
   }) async {
     Map req = {};
     req["conversationId"] = conversationId;
@@ -1255,7 +1255,7 @@ class EMChatManager {
     } else {
       req["conversationType"] = 2;
     }
-    req["isDeleteRemoteMessage"] = isDeleteMessage;
+    req["isDeleteRemoteMessage"] = isDeleteRemoteMessage;
 
     Map data = await ChatChannel.invokeMethod(
         ChatMethodKeys.deleteRemoteConversation, req);
