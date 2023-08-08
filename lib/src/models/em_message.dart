@@ -797,7 +797,7 @@ class EMMessage {
   /// ~end
   EMMessage.createCustomSendMessage({
     required String targetId,
-    required event,
+    required String event,
     Map<String, String>? params,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
