@@ -32,6 +32,7 @@
 }
 
 
+
 - (void)wrapperCallBack:(FlutterResult)result
             channelName:(NSString *)aChannelName
                   error:(EMError *)error
@@ -50,7 +51,9 @@
     }
 }
 
-- (void)unRegisterEaseListener {}
+- (void)unRegisterEaseListener {
+   
+}
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     result(FlutterMethodNotImplemented);
@@ -59,6 +62,14 @@
 
 + (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
 
+}
+
+- (void)detachFromEngineForRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+    [self unRegisterEaseListener];
+}
+
+-(void)dealloc{
+    NSLog(@"wrapper dealloc");
 }
 
 @end

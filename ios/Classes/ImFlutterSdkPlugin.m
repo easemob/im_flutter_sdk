@@ -9,18 +9,24 @@
 #import <HyphenateChat/HyphenateChat.h>
 #import <UserNotifications/UserNotifications.h>
 
+
 @implementation ImFlutterSdkPlugin
 
-
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-    [EMClientWrapper channelName:EMChannelName(@"chat_client") registrar:registrar];
-#pragma clang diagnostic pop
+    EMClientWrapper *wrapper = [[EMClientWrapper alloc] initWithChannelName:EMChannelName(@"chat_client") registrar:registrar];
+    [registrar publish:wrapper];
 }
 
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    [[EMClient sharedClient] applicationDidEnterBackground:application];
 }
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    [[EMClient sharedClient] applicationWillEnterForeground:application];
+}
+
 
 @end
 

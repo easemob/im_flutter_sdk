@@ -11,10 +11,12 @@
 @implementation EMConversation (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-    ret[@"con_id"] = self.conversationId;
+    ret[@"convId"] = self.conversationId;
     ret[@"type"] = @([self.class typeToInt:self.type]);
     ret[@"ext"] = self.ext;
     ret[@"isThread"] = @(self.isChatThread);
+    ret[@"isPinned"] = @(self.isPinned);
+    ret[@"pinnedTime"] = @(self.pinnedTime);
     return ret;
 }
 

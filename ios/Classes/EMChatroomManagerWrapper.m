@@ -667,7 +667,7 @@
     }];
 }
 
-- (void)fetchChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)channel result:(FlutterResult)result {
+- (void)fetchChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     NSString *roomId = param[@"roomId"];
     NSArray *keys = param[@"keys"];
     __weak typeof(self) weakSelf = self;
@@ -675,14 +675,14 @@
                                                           keys:keys
                                                     completion:^(EMError * _Nullable aError, NSDictionary<NSString *,NSString *> * _Nullable properties) {
         [weakSelf wrapperCallBack:result
-                      channelName:channel
+                      channelName:aChannelName
                             error:aError
                            object:properties];
     }];
 }
 
 
-- (void)setChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)channel result:(FlutterResult)result {
+- (void)setChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     NSString *roomId = param[@"roomId"];
     NSDictionary *attributes = param[@"attributes"];
     BOOL autoDelete = [param[@"autoDelete"] boolValue];
@@ -695,7 +695,7 @@
             tmp[key] = @(failureKeys[key].code);
         }
         [weakSelf wrapperCallBack:result
-                      channelName:channel
+                      channelName:aChannelName
                             error:tmp.count == 0 ? error : nil 
                            object:tmp];
     };
@@ -711,7 +711,7 @@
     }
 }
 
-- (void)removeChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)channel result:(FlutterResult)result {
+- (void)removeChatRoomAttributes:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     NSString *roomId = param[@"roomId"];
     NSArray *keys = param[@"keys"];
     BOOL forced = [param[@"forced"] boolValue];
@@ -724,7 +724,7 @@
             tmp[key] = @(failureKeys[key].code);
         }
         [weakSelf wrapperCallBack:result
-                      channelName:channel
+                      channelName:aChannelName
                             error:tmp.count == 0 ? error : nil
                            object:tmp];
     };
@@ -753,7 +753,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomMemberJoined",
+            @"type":@"onRoomMemberJoined",
             @"roomId":aChatroom.chatroomId,
             @"participant":aUsername
         };
@@ -767,7 +767,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomMemberExited",
+            @"type":@"onRoomMemberExited",
             @"roomId":aChatroom.chatroomId,
             @"roomName":aChatroom.subject,
             @"participant":aUsername
@@ -784,19 +784,20 @@
         NSString *type;
         NSDictionary *map;
         if (aReason == EMChatroomBeKickedReasonDestroyed) {
-            type = @"chatroomDestroyed";
-            map = @{
-                @"type":type,
-                @"roomId":aChatroom.chatroomId,
-                @"roomName":aChatroom.subject
-            };
-        } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
-            type = @"chatroomRemoved";
+            type = @"onRoomDestroyed";
             map = @{
                 @"type":type,
                 @"roomId":aChatroom.chatroomId,
                 @"roomName":aChatroom.subject,
-                @"participant":[[EMClient sharedClient] currentUsername]
+            };
+        } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
+            type = @"onRoomRemoved";
+            map = @{
+                @"type":type,
+                @"roomId":aChatroom.chatroomId,
+                @"roomName":aChatroom.subject,
+                @"participant":[[EMClient sharedClient] currentUsername],
+                @"reason": @(aReason)
             };
         }
 
@@ -811,7 +812,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomMuteListAdded",
+            @"type":@"onRoomMuteListAdded",
             @"roomId":aChatroom.chatroomId,
             @"mutes":aMutes,
             @"expireTime":[NSString stringWithFormat:@"%ld", (long)aMuteExpire]
@@ -826,7 +827,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomMuteListRemoved",
+            @"type":@"onRoomMuteListRemoved",
             @"roomId":aChatroom.chatroomId,
             @"mutes":aMutes
         };
@@ -840,7 +841,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomAdminAdded",
+            @"type":@"onRoomAdminAdded",
             @"roomId":aChatroom.chatroomId,
             @"admin":aAdmin
         };
@@ -854,7 +855,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomAdminRemoved",
+            @"type":@"onRoomAdminRemoved",
             @"roomId":aChatroom.chatroomId,
             @"admin":aAdmin
         };
@@ -869,7 +870,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomOwnerChanged",
+            @"type":@"onRoomOwnerChanged",
             @"roomId":aChatroom.chatroomId,
             @"newOwner":aNewOwner,
             @"oldOwner":aOldOwner
@@ -883,7 +884,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomAnnouncementChanged",
+            @"type":@"onRoomAnnouncementChanged",
             @"roomId":aChatroom.chatroomId,
             @"announcement":aAnnouncement
         };
@@ -897,7 +898,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomWhiteListAdded",
+            @"type":@"onRoomWhiteListAdded",
             @"roomId":aChatroom.chatroomId,
             @"whitelist":aMembers
         };
@@ -912,7 +913,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomWhiteListRemoved",
+            @"type":@"onRoomWhiteListRemoved",
             @"roomId":aChatroom.chatroomId,
             @"whitelist":aMembers
         };
@@ -927,7 +928,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomAllMemberMuteStateChanged",
+            @"type":@"onRoomAllMemberMuteStateChanged",
             @"roomId":aChatroom.chatroomId,
             @"isMuted":@(aMuted)
         };
@@ -939,7 +940,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomSpecificationChanged",
+            @"type":@"onRoomSpecificationChanged",
             @"room":[aChatroom toJson]
         };
         [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
@@ -952,7 +953,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomAttributesDidUpdated",
+            @"type":@"onRoomAttributesDidUpdated",
             @"roomId":roomId,
             @"attributes":attributeMap,
             @"fromId": fromId
@@ -966,7 +967,7 @@
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
-            @"type":@"chatroomAttributesDidRemoved",
+            @"type":@"onRoomAttributesDidRemoved",
             @"roomId":roomId,
             @"keys":attributes,
             @"fromId": fromId
@@ -986,5 +987,6 @@
                                 };
     return resultDict;
 }
+
 
 @end

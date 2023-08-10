@@ -1,4 +1,4 @@
-class AreaCode {
+class ChatAreaCode {
   static const int CN = 1;
   static const int NA = 2;
   static const int EU = 4;

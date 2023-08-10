@@ -7,13 +7,13 @@
 
 #import <Flutter/Flutter.h>
 #import <HyphenateChat/HyphenateChat.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 #define EMChannelName(name) [NSString stringWithFormat:@"com.chat.im/%@", name]
 
 
 @interface EMWrapper : NSObject <FlutterPlugin>
+
 @property(nonatomic, strong) FlutterMethodChannel *channel;
 @property(nonatomic, strong) NSObject<FlutterPluginRegistrar> *flutterPluginRegister;
 
@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (void)unRegisterEaseListener;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -50,6 +50,7 @@
     msg.isDeliverAcked = [aJson[@"hasDeliverAck"] boolValue];
     msg.isRead = [aJson[@"hasRead"] boolValue];
     msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
+    msg.deliverOnlineOnly = [aJson[@"deliverOnlineOnly"] boolValue];
     // read only
     // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
     // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
@@ -57,6 +58,10 @@
     msg.ext = aJson[@"attributes"];
     if (aJson[@"chatroomMessagePriority"]) {
         msg.priority = [aJson[@"chatroomMessagePriority"] integerValue];
+    }
+    
+    if(aJson[@"receiverList"]) {
+        msg.receiverList = aJson[@"receiverList"];
     }
     
     return msg;
@@ -83,7 +88,8 @@
     ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
     ret[@"onlineState"] = @(self.onlineState);
-    
+    ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);
+    ret[@"receiverList"] = self.receiverList;
     return ret;
 }
 
@@ -199,6 +205,8 @@
         ret = [EMCmdMessageBody fromJson:bodyJson];
     } else if ([type isEqualToString:@"custom"]) {
         ret = [EMCustomMessageBody fromJson:bodyJson];
+    } else if ([type isEqualToString:@"combine"]) {
+        ret = [EMCombineMessageBody fromJson:bodyJson];
     }
     return ret;
 }
@@ -231,10 +239,22 @@
         case EMMessageBodyTypeVoice:
             type = @"voice";
             break;
+        case EMMessageBodyTypeCombine:
+            type = @"combine";
+            break;
         default:
             break;
     }
     ret[@"type"] = type;
+    if(self.operatorId && self.operatorId.length > 0) {
+        ret[@"operatorId"] = self.operatorId;
+    }
+    if(self.operationTime > 0) {
+        ret[@"operatorTime"] = @(self.operationTime);
+    }
+    if(self.operatorCount > 0) {
+        ret[@"operatorCount"] = @(self.operatorCount);
+    }
     
     return ret;
 }
@@ -259,9 +279,56 @@
         ret = EMMessageBodyTypeVideo;
     } else if ([aStrType isEqualToString:@"voice"]) {
         ret = EMMessageBodyTypeVoice;
+    } else if ([aStrType isEqualToString:@"combine"]) {
+        ret = EMMessageBodyTypeCombine;
     }
     return ret;
 }
+
+
++ (EMDownloadStatus)downloadStatusFromInt:(int)aStatus {
+    EMDownloadStatus ret = EMDownloadStatusPending;
+    switch (aStatus) {
+        case 0:
+            ret = EMDownloadStatusDownloading;
+            break;
+        case 1:
+            ret = EMDownloadStatusSucceed;
+            break;
+        case 2:
+            ret = EMDownloadStatusFailed;
+            break;
+        case 3:
+            ret = EMDownloadStatusPending;
+            break;
+        default:
+            break;
+    }
+    
+    return ret;
+}
+
++ (int)downloadStatusToInt:(EMDownloadStatus)aStatus {
+    int ret = 0;
+    switch (aStatus) {
+        case EMDownloadStatusDownloading:
+            ret = 0;
+            break;
+        case EMDownloadStatusSucceed:
+            ret = 1;
+            break;
+        case EMDownloadStatusFailed:
+            ret = 2;
+            break;
+        case EMDownloadStatusPending:
+            ret = 3;
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
 
 @end
 
@@ -388,6 +455,47 @@
 
 @end
 
+@interface EMCombineMessageBody (Helper)
++ (EMCombineMessageBody *)fromJson:(NSDictionary *)aJson;
+- (NSDictionary *)toJson;
+@end
+
+@implementation EMCombineMessageBody (Helper)
+
++ (EMCombineMessageBody *)fromJson:(NSDictionary *)aJson {
+
+    NSString *title = aJson[@"title"];
+    NSString *summary = aJson[@"summary"];
+    NSArray *msgList = aJson[@"messageList"];
+    NSString *compatibleText = aJson[@"compatibleText"];
+    NSString *localPath = aJson[@"localPath"];
+    NSString *remotePath = aJson[@"remotePath"];
+    NSString *secret = aJson[@"secret"];
+    
+    EMCombineMessageBody *ret = [[EMCombineMessageBody alloc] initWithTitle:title
+                                                                    summary:summary
+                                                              compatibleText:compatibleText
+                                                               messageIdList:msgList];
+    
+    ret.remotePath = remotePath;
+    ret.secretKey = secret;
+    ret.localPath = localPath;
+    return ret;
+}
+
+- (NSDictionary *)toJson {
+    NSMutableDictionary *ret = [[super toJson] mutableCopy];
+    ret[@"title"] = self.title;
+    ret[@"summary"] = self.summary;
+    ret[@"compatibleText"] = self.compatibleText;
+    ret[@"localPath"] = self.localPath;
+    ret[@"remotePath"] = self.remotePath;
+    ret[@"secret"] = self.secretKey;
+    return ret;
+}
+
+@end
+
 #pragma mark - file
 
 @interface EMFileMessageBody (Helper)
@@ -405,7 +513,7 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
 }
 
@@ -416,52 +524,10 @@
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
     ret[@"fileSize"] = @(self.fileLength);
-    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
     return ret;
 }
 
-- (EMDownloadStatus)downloadStatusFromInt:(int)aStatus {
-    EMDownloadStatus ret = EMDownloadStatusPending;
-    switch (aStatus) {
-        case 0:
-            ret = EMDownloadStatusDownloading;
-            break;
-        case 1:
-            ret = EMDownloadStatusSucceed;
-            break;
-        case 2:
-            ret = EMDownloadStatusFailed;
-            break;
-        case 3:
-            ret = EMDownloadStatusPending;
-            break;
-        default:
-            break;
-    }
-    
-    return ret;
-}
-
-- (int)downloadStatusToInt:(EMDownloadStatus)aStatus {
-    int ret = 0;
-    switch (aStatus) {
-        case EMDownloadStatusDownloading:
-            ret = 0;
-            break;
-        case EMDownloadStatusSucceed:
-            ret = 1;
-            break;
-        case EMDownloadStatusFailed:
-            ret = 2;
-            break;
-        case EMDownloadStatusPending:
-            ret = 3;
-            break;
-        default:
-            break;
-    }
-    return ret;
-}
 
 @end
 
@@ -483,12 +549,12 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
     ret.size = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
-    ret.thumbnailDownloadStatus = [ret downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
+    ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
     ret.compressionRatio = [aJson[@"sendOriginalImage"] boolValue] ? 1.0 : 0.6;
     return ret;
 }
@@ -498,8 +564,8 @@
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
-    ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
-    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);
+    ret[@"thumbnailStatus"] = @([EMMessageBody downloadStatusToInt:self.thumbnailDownloadStatus]);
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
     ret[@"width"] = @(self.size.width);
     ret[@"height"] = @(self.size.height);
     ret[@"fileSize"] = @(self.fileLength);
@@ -528,10 +594,12 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
+    if (aJson[@"thumbnailLocalPath"]) {
+        ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
+    }
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
-    ret.thumbnailDownloadStatus = [ret downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
+    ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
     ret.thumbnailSize = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
     return ret;
 }
@@ -544,7 +612,7 @@
     ret[@"remotePath"] = self.remotePath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
-    ret[@"thumbnailStatus"] = @([self downloadStatusToInt:self.thumbnailDownloadStatus]);
+    ret[@"thumbnailStatus"] = @([EMMessageBody downloadStatusToInt:self.thumbnailDownloadStatus]);
     ret[@"width"] = @(self.thumbnailSize.width);
     ret[@"height"] = @(self.thumbnailSize.height);
     ret[@"fileSize"] = @(self.fileLength);
@@ -569,7 +637,7 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.duration = [aJson[@"duration"] intValue];
-    ret.downloadStatus = [ret downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
 }
 
@@ -581,7 +649,7 @@
     ret[@"fileSize"] = @(self.fileLength);
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
-    ret[@"fileStatus"] = @([self downloadStatusToInt:self.downloadStatus]);;
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);;
     return ret;
 }
 

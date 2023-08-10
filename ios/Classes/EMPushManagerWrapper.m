@@ -47,7 +47,7 @@
         [self updateGroupPushService:call.arguments
                          channelName:call.method
                               result:result];
-    } else if ([ChatBindDeviceToken isEqualToString:call.method]) {
+    } else if ([ChatBindDeviceToken isEqualToString:call.method] || [UpdateFCMPushToken isEqualToString:call.method]) {
         [self  bindDeviceToken:call.arguments
                    channelName:call.method
                         result:result];

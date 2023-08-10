@@ -33,20 +33,16 @@
     EMUserInfoManagerWrapper *_userInfoManager;
     EMPresenceManagerWrapper *_presenceManager;
     EMChatThreadManagerWrapper *_threadManager;
-    EMProgressManager *_progressManager;
     EMChatMessageWrapper *_msgWrapper;
+    EMProgressManager *_progressManager;
 }
 @end
 
-@implementation EMClientWrapper
-
-
-static EMClientWrapper *wrapper = nil;
-
-
-+ (EMClientWrapper *)sharedWrapper {
-    return wrapper;
+@implementation EMClientWrapper {
+    EMOptions *_options;
 }
+
+
 
 - (void)sendDataToFlutter:(NSDictionary *)aData {
     if (aData == nil) {
@@ -56,21 +52,11 @@ static EMClientWrapper *wrapper = nil;
                      arguments:aData];
 }
 
-+ (EMClientWrapper *)channelName:(NSString *)aChannelName
-                       registrar:(NSObject<FlutterPluginRegistrar>*)registrar
-{
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        wrapper = [[EMClientWrapper alloc] initWithChannelName:aChannelName registrar:registrar];
-    });
-    return wrapper;
-}
 
 - (instancetype)initWithChannelName:(NSString *)aChannelName
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
-        [registrar addApplicationDelegate:self];
     }
     return self;
 }
@@ -186,14 +172,19 @@ static EMClientWrapper *wrapper = nil;
     
     __weak typeof(self) weakSelf = self;
     
-    EMOptions *options = [EMOptions fromJson:param];
-
-    [EMClient.sharedClient initializeSDKWithOptions:options];
-
-    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
-    [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
-    [self registerManagers];
+    if(_options) {
+        [weakSelf wrapperCallBack:result
+                      channelName:ChatInit
+                            error:nil
+                           object:nil];
+        return;
+    }
     
+    _options = [EMOptions fromJson:param];
+
+    [EMClient.sharedClient initializeSDKWithOptions:_options];
+
+    [self registerManagers];
     [weakSelf wrapperCallBack:result
                   channelName:ChatInit
                         error:nil
@@ -202,17 +193,23 @@ static EMClientWrapper *wrapper = nil;
 
 
 - (void)registerManagers {
+    [self clearAllListener];
+    [EMClient.sharedClient addDelegate:self delegateQueue:nil];
+    [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     _chatManager = [[EMChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
     _contactManager = [[EMContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
     _conversationManager = [[EMConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
     _groupManager = [[EMGroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
+    _groupManager.clientWrapper = self;
     _roomManager =[[EMChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
     _pushManager =[[EMPushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
     _userInfoManager = [[EMUserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
     _presenceManager = [[EMPresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
     _threadManager = [[EMChatThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
-    _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager") registrar:self.flutterPluginRegister];
+
     _msgWrapper = [[EMChatMessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
+    
+    _progressManager = [[EMProgressManager alloc] initWithChannelName:EMChannelName(@"file_progress_manager")  registrar:self.flutterPluginRegister];
 }
 
 - (void)clearAllListener {
@@ -224,14 +221,16 @@ static EMClientWrapper *wrapper = nil;
     [_userInfoManager unRegisterEaseListener];
     [_presenceManager unRegisterEaseListener];
     [_threadManager unRegisterEaseListener];
-    [_progressManager unRegisterEaseListener];
     [_msgWrapper unRegisterEaseListener];
+    [super unRegisterEaseListener];
+    [EMClient.sharedClient removeDelegate:self];
+    [EMClient.sharedClient removeMultiDevicesDelegate:self];
 }
 
+// 由父类调用，不需要调用 clearAllListener方法，每个manager中都由父类调用。
 - (void)unRegisterEaseListener {
     [EMClient.sharedClient removeDelegate:self];
     [EMClient.sharedClient removeMultiDevicesDelegate:self];
-    [self clearAllListener];
 }
 
 - (EMProgressManager *)progressManager {
@@ -340,34 +339,53 @@ static EMClientWrapper *wrapper = nil;
 - (void)kickDevice:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *password = param[@"password"];
+    NSString *pwdOrToken = param[@"password"];
     NSString *resource = param[@"resource"];
-    
-    [EMClient.sharedClient kickDeviceWithUsername:username
-                                         password:password
-                                         resource:resource
-                                       completion:^(EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
+    bool isPwd = [param[@"isPwd"] boolValue];
+    if(isPwd) {
+        [EMClient.sharedClient kickDeviceWithUsername:username
+                                             password:pwdOrToken
+                                             resource:resource
+                                           completion:^(EMError *aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }else {
+        [EMClient.sharedClient kickDeviceWithUserId:username token:pwdOrToken resource:resource completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }
 }
 
 - (void)kickAllDevices:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient kickAllDevicesWithUsername:username
-                                             password:password
-                                           completion:^(EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
+    NSString *pwdOrToken = param[@"password"];
+    bool isPwd = [param[@"isPwd"] boolValue];
+    if(isPwd) {
+        [EMClient.sharedClient kickAllDevicesWithUsername:username
+                                                 password:pwdOrToken
+                                               completion:^(EMError *aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }else {
+        [EMClient.sharedClient kickAllDevicesWithUserId:username token:pwdOrToken completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }
 }
 
 - (void)isLoggedInBefore:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -422,23 +440,43 @@ static EMClientWrapper *wrapper = nil;
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *username = param[@"username"];
-    NSString *password = param[@"password"];
-    [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
-                                                           password:password
-                                                         completion:^(NSArray *aList, EMError *aError)
-     {
-        
-        NSMutableArray *list = [NSMutableArray array];
-        for (EMDeviceConfig *deviceInfo in aList) {
-            [list addObject:[deviceInfo toJson]];
-        }
-        
-        
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
+    NSString *pwdOrToken = param[@"password"];
+    bool isPwd = [param[@"isPwd"] boolValue];
+    if(isPwd) {
+        [EMClient.sharedClient getLoggedInDevicesFromServerWithUsername:username
+                                                               password:pwdOrToken
+                                                             completion:^(NSArray *aList, EMError *aError)
+         {
+            
+            NSMutableArray *list = [NSMutableArray array];
+            for (EMDeviceConfig *deviceInfo in aList) {
+                [list addObject:[deviceInfo toJson]];
+            }
+            
+            
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:list];
+        }];
+    }else {
+        [EMClient.sharedClient getLoggedInDevicesFromServerWithUserId:username
+                                                                token:pwdOrToken
+                                                           completion:^(NSArray<EMDeviceConfig *> * _Nullable aList, EMError * _Nullable aError)
+         {
+            NSMutableArray *list = [NSMutableArray array];
+            for (EMDeviceConfig *deviceInfo in aList) {
+                [list addObject:[deviceInfo toJson]];
+            }
+            
+            
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:list];
+        }];
+    }
+    
 }
 
 - (void)startCallBack:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
@@ -464,13 +502,20 @@ static EMClientWrapper *wrapper = nil;
 }
 
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
- 
+    if (aError.code == EMErrorServerServingForbidden) {
+         [self userDidForbidByServer];
+    }else if (aError.code == EMAppActiveNumbersReachLimitation) {
+        [self activeNumbersReachLimitation];
+    }
+}
+
+- (void)activeNumbersReachLimitation {
+    [self.channel invokeMethod:ChatOnAppActiveNumberReachLimit arguments:nil];
 }
 
 // 声网token即将过期
 - (void)tokenWillExpire:(EMErrorCode)aErrorCode {
-    [self.channel invokeMethod:ChatOnTokenWillExpire
-                     arguments:nil];
+    [self.channel invokeMethod:ChatOnTokenWillExpire arguments:nil];
 }
 
 // 声网token过期
@@ -480,10 +525,10 @@ static EMClientWrapper *wrapper = nil;
                      arguments:nil];
 }
 
-- (void)userAccountDidLoginFromOtherDevice {
+- (void)userAccountDidLoginFromOtherDevice:(NSString *)aDeviceName {
     [EMListenerHandle.sharedInstance clearHandle];
     [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
-                     arguments:nil];
+                     arguments:@{@"deviceName": aDeviceName}];
 }
 
 - (void)userAccountDidRemoveFromServer {
@@ -497,6 +542,7 @@ static EMClientWrapper *wrapper = nil;
     [self.channel invokeMethod:ChatOnUserDidForbidByServer
                      arguments:nil];
 }
+
 
 - (void)userAccountDidForcedToLogout:(EMError *)aError {
     [EMListenerHandle.sharedInstance clearHandle];
@@ -547,14 +593,22 @@ static EMClientWrapper *wrapper = nil;
     [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    [[EMClient sharedClient] applicationDidEnterBackground:application];
+- (void)multiDevicesMessageBeRemoved:(NSString *)conversationId deviceId:(NSString *)deviceId {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"convId"] = conversationId;
+    data[@"deviceId"] = deviceId;
+    [self.channel invokeMethod:ChatOnMultiDeviceRemoveMessagesEvent arguments:data];
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    [[EMClient sharedClient] applicationWillEnterForeground:application];
+- (void)multiDevicesConversationEvent:(EMMultiDevicesEvent)event
+                       conversationId:(NSString *)conversationId
+                     conversationType:(EMConversationType)conversationType {
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    data[@"event"] = @(event);
+    data[@"convId"] = conversationId;
+    data[@"convType"] = @(conversationType);
+    [self.channel invokeMethod:ChatOnMultiDevicesConversationEvent arguments:data];
 }
+
 
 @end

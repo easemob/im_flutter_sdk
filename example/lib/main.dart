@@ -3,7 +3,11 @@ import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 var appKey = "easemob-demo#flutter";
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  EMOptions options =
+      EMOptions(appKey: appKey, autoLogin: false, debugModel: true);
+  await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }
 
@@ -43,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _initSDK();
     _addChatListener();
   }
 
@@ -150,18 +153,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  void _initSDK() async {
-    EMOptions options = EMOptions(
-      appKey: appKey,
-      autoLogin: false,
-      debugModel: true,
-    );
-
-    await EMClient.getInstance.init(
-      options,
-    );
-  }
-
   void _addChatListener() {
     EMClient.getInstance.chatManager.addMessageEvent(
         "UNIQUE_HANDLER_ID",
@@ -241,6 +232,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
                 }
                 break;
+              case MessageType.COMBINE:
+                {
+                  _addLogToConsole(
+                    "receive combine message, from: ${msg.from}",
+                  );
+                }
             }
           }
         },
@@ -255,6 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
+      _addLogToConsole("sign in...");
       await EMClient.getInstance.login(_userId, _password);
       _addLogToConsole("sign in succeed, username: $_userId");
     } on EMError catch (e) {
@@ -264,6 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _signOut() async {
     try {
+      _addLogToConsole("sign out...");
       await EMClient.getInstance.logout(true);
       _addLogToConsole("sign out succeed");
     } on EMError catch (e) {
@@ -279,6 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
+      _addLogToConsole("sign up...");
       await EMClient.getInstance.createAccount(_userId, _password);
       _addLogToConsole("sign up succeed, username: $_userId");
     } on EMError catch (e) {

@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandler {
 
     private EMGroupChangeListener groupChangeListener;
+
+    public EMClientWrapper clientWrapper;
 
     EMGroupManagerWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
@@ -129,6 +132,14 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 acceptInvitationFromGroup(param, call.method, result);
             } else if (EMSDKMethod.declineInvitationFromGroup.equals(call.method)) {
                 declineInvitationFromGroup(param, call.method, result);
+            } else if (EMSDKMethod.setMemberAttributesFromGroup.equals(call.method)) {
+                setMemberAttributes(param, call.method, result);
+            } else if (EMSDKMethod.removeMemberAttributesFromGroup.equals(call.method)) {
+                removeMemberAttributes(param, call.method, result);
+            } else if (EMSDKMethod.fetchMemberAttributesFromGroup.equals(call.method)) {
+                fetchMemberAttributes(param, call.method, result);
+            } else if (EMSDKMethod.fetchMembersAttributesFromGroup.equals(call.method)) {
+                fetchMembersAttributes(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }
@@ -139,22 +150,25 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
     private void getGroupWithId(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
-        EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
-        if (group != null) {
-            onSuccess(result, channelName, EMGroupHelper.toJson(group));
-        } else {
-            onSuccess(result, channelName, null);
-        }
+        asyncRunnable(() -> {
+            EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
+            if (group != null) {
+                onSuccess(result, channelName, EMGroupHelper.toJson(group));
+            } else {
+                onSuccess(result, channelName, null);
+            }
+        });
     }
 
     private void getJoinedGroups(JSONObject param, String channelName, Result result) throws JSONException {
-        EMClient.getInstance().groupManager().loadAllGroups();
-        List<EMGroup> groups = EMClient.getInstance().groupManager().getAllGroups();
-        List<Map> groupList = new ArrayList<>();
-        for (EMGroup group : groups) {
-            groupList.add(EMGroupHelper.toJson(group));
-        }
-        onSuccess(result, channelName, groupList);
+        asyncRunnable(() -> {
+            List<EMGroup> groups = EMClient.getInstance().groupManager().getAllGroups();
+            List<Map> groupList = new ArrayList<>();
+            for (EMGroup group : groups) {
+                groupList.add(EMGroupHelper.toJson(group));
+            }
+            onSuccess(result, channelName, groupList);
+        });
     }
 
     private void getJoinedGroupsFromServer(JSONObject param, String channelName, Result result) throws JSONException {
@@ -673,7 +687,23 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         }
 
         EMClient.getInstance().groupManager().asyncDownloadGroupSharedFile(groupId, fileId, savePath,
-                new EMDownloadCallback(fileId, savePath));
+                new EMDownloadCallback(fileId, savePath){
+                    @Override
+                    public void onSuccess() {
+                        clientWrapper.progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
+                    }
+
+                    @Override
+                    public void onProgress(int progress, String status) {
+                        clientWrapper.progressManager.sendDownloadProgressToFlutter(fileId, progress);
+                    }
+
+                    @Override
+                    public void onError(int code, String error) {
+                        HyphenateException e = new HyphenateException(code, error);
+                        clientWrapper.progressManager.sendDownloadErrorToFlutter(fileId, e);
+                    }
+                });
 
         post(()->{
             onSuccess(result, channelName, true);
@@ -802,7 +832,85 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         EMClient.getInstance().groupManager().asyncDeclineInvitation(groupId, username, reason, new EMWrapperCallBack(result, channelName, null));
     }
 
+    private void setMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        String userId = param.optString("userId");
+        if (userId == "") {
+            userId = EMClient.getInstance().getCurrentUser();
+        }
+        Map<String, String> attributes = new HashMap<>();
+
+        JSONObject jsonObject = param.getJSONObject("attributes");
+        Iterator iterator = jsonObject.keys();
+        while (iterator.hasNext()) {
+            String key = iterator.next().toString();
+            attributes.put(key, jsonObject.getString(key));
+        }
+
+        EMClient.getInstance().groupManager().asyncSetGroupMemberAttributes(groupId, userId, attributes, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void removeMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        String userId = param.optString("userId");
+        if (userId == "") {
+            userId = EMClient.getInstance().getCurrentUser();
+        }
+        Map<String, String> attributes = new HashMap<>();
+
+        JSONArray ja = param.getJSONArray("keys");
+        for (int i = 0; i < ja.length(); i++) {
+            attributes.put(ja.optString(i),"" );
+        }
+
+        EMClient.getInstance().groupManager().asyncSetGroupMemberAttributes(groupId, userId, attributes, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void fetchMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        String userId = param.optString("userId");
+        if (userId == "") {
+            userId = EMClient.getInstance().getCurrentUser();
+        }
+        String finalUserId = userId;
+        EMClient.getInstance().groupManager().asyncFetchGroupMemberAllAttributes(groupId, userId, new EMValueWrapperCallBack<Map<String,Map<String,String>>>(result, channelName){
+
+            @Override
+            public void onSuccess(Map<String, Map<String, String>> object) {
+                updateObject(object.get(finalUserId));
+            }
+        });
+    }
+
+    private void fetchMembersAttributes(JSONObject param, String channelName, Result result) throws JSONException {
+        String groupId = param.getString("groupId");
+        JSONArray jUsers = param.getJSONArray("userIds");
+        List<String> userIds = new ArrayList<>();
+        for (int i = 0; i < jUsers.length(); i++) {
+            userIds.add(jUsers.getString(i));
+        }
+        List<String> keys = new ArrayList<>();
+        if (param.has("keys")) {
+            JSONArray jsonArray = param.getJSONArray("keys");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                keys.add(jsonArray.getString(i));
+            }
+        }
+        EMValueWrapperCallBack callback = new EMValueWrapperCallBack<Map<String, Map<String, String>>>(result, channelName) {
+            @Override
+            public void onSuccess(Map<String, Map<String, String>> object) {
+                updateObject(object);
+            }
+        };
+
+        EMClient.getInstance().groupManager().asyncFetchGroupMembersAttributes(groupId, userIds, keys, callback);
+    }
+
     private void registerEaseListener() {
+
+        if (groupChangeListener != null) {
+            EMClient.getInstance().groupManager().removeGroupChangeListener(groupChangeListener);
+        }
         groupChangeListener = new EMGroupChangeListener() {
 
             @Override
@@ -810,7 +918,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupWhiteListAdded");
+                            data.put("type", "onGroupWhiteListAdded");
                             data.put("groupId", groupId);
                             data.put("whitelist", whitelist);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -823,7 +931,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupWhiteListRemoved");
+                            data.put("type", "onGroupWhiteListRemoved");
                             data.put("groupId", groupId);
                             data.put("whitelist", whitelist);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -836,7 +944,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAllMemberMuteStateChanged");
+                            data.put("type", "onGroupAllMemberMuteStateChanged");
                             data.put("groupId", groupId);
                             data.put("isMuted", isMuted);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -849,7 +957,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupInvitationReceived");
+                            data.put("type", "onGroupInvitationReceived");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             data.put("inviter", inviter);
@@ -864,7 +972,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupRequestToJoinReceived");
+                            data.put("type", "onGroupRequestToJoinReceived");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             data.put("applicant", applicant);
@@ -880,7 +988,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupRequestToJoinAccepted");
+                            data.put("type", "onGroupRequestToJoinAccepted");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             data.put("accepter", accepter);
@@ -895,7 +1003,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupRequestToJoinDeclined");
+                            data.put("type", "onGroupRequestToJoinDeclined");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             data.put("decliner", decliner);
@@ -911,7 +1019,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupInvitationAccepted");
+                            data.put("type", "onGroupInvitationAccepted");
                             data.put("groupId", groupId);
                             data.put("invitee", invitee);
                             data.put("reason", reason);
@@ -926,7 +1034,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupInvitationDeclined");
+                            data.put("type", "onGroupInvitationDeclined");
                             data.put("groupId", groupId);
                             data.put("invitee", invitee);
                             data.put("reason", reason);
@@ -941,7 +1049,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupUserRemoved");
+                            data.put("type", "onGroupUserRemoved");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -955,7 +1063,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupDestroyed");
+                            data.put("type", "onGroupDestroyed");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -969,7 +1077,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAutoAcceptInvitation");
+                            data.put("type", "onGroupAutoAcceptInvitation");
                             data.put("groupId", groupId);
                             data.put("inviter", inviter);
                             data.put("inviteMessage", inviteMessage);
@@ -984,7 +1092,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupMuteListAdded");
+                            data.put("type", "onGroupMuteListAdded");
                             data.put("groupId", groupId);
                             data.put("mutes", mutes);
                             data.put("muteExpire", muteExpire);
@@ -999,7 +1107,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupMuteListRemoved");
+                            data.put("type", "onGroupMuteListRemoved");
                             data.put("groupId", groupId);
                             data.put("mutes", mutes);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1012,7 +1120,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAdminAdded");
+                            data.put("type", "onGroupAdminAdded");
                             data.put("groupId", groupId);
                             data.put("administrator", administrator);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1025,7 +1133,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAdminRemoved");
+                            data.put("type", "onGroupAdminRemoved");
                             data.put("groupId", groupId);
                             data.put("administrator", administrator);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1038,7 +1146,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupOwnerChanged");
+                            data.put("type", "onGroupOwnerChanged");
                             data.put("groupId", groupId);
                             data.put("newOwner", newOwner);
                             data.put("oldOwner", oldOwner);
@@ -1052,7 +1160,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupMemberJoined");
+                            data.put("type", "onGroupMemberJoined");
                             data.put("groupId", groupId);
                             data.put("member", member);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1065,7 +1173,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupMemberExited");
+                            data.put("type", "onGroupMemberExited");
                             data.put("groupId", groupId);
                             data.put("member", member);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1078,7 +1186,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupAnnouncementChanged");
+                            data.put("type", "onGroupAnnouncementChanged");
                             data.put("groupId", groupId);
                             data.put("announcement", announcement);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1091,7 +1199,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupSharedFileAdded");
+                            data.put("type", "onGroupSharedFileAdded");
                             data.put("groupId", groupId);
                             data.put("sharedFile", EMMucSharedFileHelper.toJson(sharedFile));
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1104,7 +1212,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupSharedFileDeleted");
+                            data.put("type", "onGroupSharedFileDeleted");
                             data.put("groupId", groupId);
                             data.put("fileId", fileId);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
@@ -1117,7 +1225,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupSpecificationDidUpdate");
+                            data.put("type", "onGroupSpecificationDidUpdate");
                             data.put("group", EMGroupHelper.toJson(group));
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
                         }
@@ -1129,9 +1237,28 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
-                            data.put("type", "groupStateChanged");
+                            data.put("type", "onGroupStateChanged");
                             data.put("groupId", group.getGroupId());
                             data.put("isDisabled", isDisabled);
+                            post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onGroupMemberAttributeChanged(String groupId, String userId, Map<String, String> attribute, String from) {
+                EMListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onGroupAttributesChangedOfMember");
+                            data.put("groupId", groupId);
+                            data.put("userId", userId);
+                            if (from != null) {
+                                data.put("operatorId", from);
+                            }
+                            if (attribute != null) {
+                                data.put("attributes", attribute);
+                            }
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
                         }
                 );
