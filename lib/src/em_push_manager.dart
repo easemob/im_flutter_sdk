@@ -62,7 +62,7 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Updates the push message style. The default value is [DisplayStyle.Simple].
+  /// Updates the push message display style. The default value is [DisplayStyle.Simple].
   ///
   /// Param [displayStyle] The push message display style.
   ///
@@ -170,26 +170,26 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Set offline push notification type for the special conversation.
+  /// Sets the push notifications for a conversation.
   ///
-  /// Param [conversationId] The conversation id.
+  /// Param [conversationId] The conversation ID.
   ///
   /// Param [type] The conversation type.
   ///
-  /// Param [param]  Push DND parameters offline.
+  /// Param [param]  The offline push parameters.
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
   /// ~end
   ///
   /// ~chinese
-  /// 设置特殊对话的离线推送通知类型。
+  /// 设置指定会话的离线推送设置。
   ///
   /// Param [conversationId] 会话 ID.
   ///
   /// Param [type] 会话类型.
   ///
-  /// Param [param]  推送免打扰参数.
+  /// Param [param]  离线推送参数.
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
@@ -213,10 +213,11 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Remove the setting of offline push notification type for the special conversation.
-  /// After clearing, the session follows the Settings of the current logged-in user  [EMPushManager.setSilentModeForAll].
+  /// Removes the offline push notification settings for a conversation.
   ///
-  /// Param [conversationId] The conversation id.
+  /// After the setting is deleted, the conversation follows the setting of [EMPushManager.setSilentModeForAll] of the current logged-in user.
+  ///
+  /// Param [conversationId] The conversation ID.
   ///
   /// Param [type] The conversation type.
   ///
@@ -224,7 +225,8 @@ class EMPushManager {
   /// ~end
   ///
   /// ~chinese
-  /// 删除特殊会话的离线推送通知类型设置。
+  /// 删除指定会话的离线推送通知设置。
+  ///
   /// 清除后，会话遵循当前登录用户的设置 [EMPushManager.setSilentModeForAll]。
   ///
   /// Param [conversationId] 会话 ID。
@@ -250,25 +252,25 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Gets the DND setting of the special conversation.
+  /// Gets the offline push settings of a conversation.
   ///
-  /// Param [conversationId] The conversation id.
+  /// Param [conversationId] The conversation ID.
   ///
   /// Param [type] The conversation type.
   ///
-  /// **Return** The conversation silent mode.
+  /// **Return** The offline push settings of the conversation.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 获取会话的免打扰设置。
+  /// 获取指定会话的离线推送设置。
   ///
   /// Param [conversationId] 会话 ID。
   ///
   /// Param [type] 会话类型。
   ///
-  /// **Return** 会话的免打扰设置。
+  /// **Return** 会话的离线推送设置。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
@@ -291,17 +293,17 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Set the DND normal settings for the current login user.
+  /// Sets the offline push settings at the app level for the current login user.
   ///
-  /// Param [param] Push DND parameters offline.
+  /// Param [param] The offline push parameters.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 设置当前登录用户的免打扰设置。
+  /// 设置当前登录用户的 app 级别的推送设置。
   ///
-  /// Param [param] 推送免打扰设置参数。
+  /// Param [param] 离线推送参数。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
@@ -322,17 +324,17 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Gets the DND normal settings of the current login user.
+  /// Gets the offline push settings at the app level for the current login user.
   ///
-  /// **Return** The normal silent mode.
+  /// **Return** The offline push settings settings.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 获取当前登录用户的免打扰设置。
+  /// 获取当前登录用户的 app 级别的推送通知设置。
   ///
-  /// **Return** 免打扰设置。
+  /// **Return** 推送通知设置。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
@@ -350,21 +352,21 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Obtain the DND Settings of specified conversations in batches.
+  /// Gets the offline push settings of specified conversations.
   ///
   /// Param [conversations]  The conversation list.
   ///
-  /// **Return** key is conversation id and the value is silent mode.
+  /// **Return** The key is the conversation ID and the value is offline push settings.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 批量获取指定会话的免打扰设置。
+  /// 批量获取指定会话的推送通知设置。
   ///
   /// Param [conversations] 会话列表。
   ///
-  /// **Return** 键为会话id，值为免打扰设置。
+  /// **Return** 键为会话 ID，值为离线推送设置。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
@@ -397,9 +399,9 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Set user push translation language.
+  /// Sets the preferred language for push notifications.
   ///
-  /// Param [languageCode] language code.
+  /// Param [languageCode] The language code.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -425,9 +427,9 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Gets the push translation language set by the user.
+  /// Gets the preferred language for push notifications.
   ///
-  /// **Return** has set language code.
+  /// **Return** The language code.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -453,9 +455,9 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Set the push template for offline push.
+  /// Sets the template for offline push notifications.
   ///
-  /// Param [pushTemplateName] push template name.
+  /// Param [pushTemplateName] The push template name.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -463,7 +465,7 @@ class EMPushManager {
   /// ~chinese
   /// 设置离线推送模板。
   ///
-  /// Param [pushTemplateName] 推送模版名称。
+  /// Param [pushTemplateName] 推送模板名称。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
@@ -480,7 +482,7 @@ class EMPushManager {
   }
 
   /// ~english
-  /// Gets the offline push template for Settings.
+  /// Gets the template for offline push notifications.
   ///
   /// **Return** The push template name.
   ///
@@ -488,7 +490,7 @@ class EMPushManager {
   /// ~end
   ///
   /// ~chinese
-  /// 获取推送模版名称。
+  /// 获取推送模板名称。
   ///
   /// **Return** 推送模板名称。
   ///

@@ -1,31 +1,31 @@
 import 'em_chat_enums.dart';
 
 /// ~english
-/// Reaction Operation
+/// Reaction operation.
 /// ~end
 ///
 /// ~chinese
-/// Reaction 操作
+/// Reaction 操作。
 /// ~end
 class ReactionOperation {
   /// ~english
-  /// Reaction Operation
+  /// Reaction operation.
   ///
-  /// Param [userId] Operator userId.
+  /// Param [userId] The user ID of the operator.
   ///
-  /// Param [reaction] Changed reaction.
+  /// Param [reaction] Changed Reaction.
   ///
-  /// Param [operate] Operate type.
+  /// Param [operate] The Reaction operation type.
   /// ~end
   ///
   /// ~chinese
-  /// Reaction 操作
+  /// Reaction 操作。
   ///
-  /// Param [userId] 操作者。
+  /// Param [userId] 操作者的用户 ID。
   ///
-  /// Param [reaction] 发生变化的 reaction。
+  /// Param [reaction] 发生变化的 Reaction。
   ///
-  /// Param [operate] 具体操作类型。
+  /// Param [operate] 具体 Reaction 操作类型。
   /// ~end
   const ReactionOperation._private(
     this.userId,
@@ -34,29 +34,29 @@ class ReactionOperation {
   );
 
   /// ~english
-  /// Operator userId.
+  /// The user ID of the operator.
   /// ~end
   ///
   /// ~chinese
-  /// 操作者。
+  /// 操作者的用户 ID。
   /// ~end
   final String userId;
 
   /// ~english
-  /// Changed reaction.
+  /// Changed Reaction.
   /// ~end
   ///
   /// ~chinese
-  /// 发生变化的 reaction。
+  /// 发生变化的 Reaction。
   /// ~end
   final String reaction;
 
   /// ~english
-  /// Operate type.
+  /// The Reaction operation type.
   /// ~end
   ///
   /// ~chinese
-  /// 具体操作类型。
+  /// Reaction 操作类型。
   /// ~end
   final ReactionOperate operate;
 

@@ -1845,10 +1845,10 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [userId] The user ID of the group member for whom the custom attributes are set, The default is the current user.
+  /// Param [userId] The user ID of the group member for whom the custom attributes are set. The default value is the current user ID.
   ///
-  /// Param [attributes] The map of custom attributes in key-value format. In a key-value pair,
-  /// if the value is set to an empty string, the custom attribute will be deleted.
+  /// Param [attributes] The map of custom attributes in key-value format. 
+  /// In a key-value pair, if the value is set to an empty string, the custom attribute will be deleted.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1890,9 +1890,9 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [keys] The custom attributes corresponding key.
+  /// Param [keys] The keys of custom attributes to remove.
   ///
-  /// Param [userId] The user ID of the group member for whom the custom attributes are remove, The default is the current user.
+  /// Param [userId] The user ID of the group member for whom the custom attributes are removed. The default value is the current user ID.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1902,9 +1902,9 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [keys] 要删除群成员自定义属性对应的key。
+  /// Param [keys] 要删除群成员自定义属性对应的 key。
   ///
-  /// Param [userId] 要设置自定义属性的群成员的用户 ID，默认为当前用户。
+  /// Param [userId] 要设置自定义属性的群成员的用户 ID，默认为当前用户 ID。
   ///
   ///
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
@@ -1935,9 +1935,9 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [userId] The user ID of the group member whose all custom attributes are retrieved. The default is the current user.
+  /// Param [userId] The user ID of the group member whose all custom attributes are retrieved. The default value is the current user ID.
   ///
-  /// **Return** The user attributes.
+  /// **Return** The user attributes of the group member.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1947,7 +1947,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [userId] 要获取的自定义属性的群成员的用户 ID, 默认为当前用户。
+  /// Param [userId] 要获取的自定义属性的群成员的用户 ID, 默认为当前用户 ID。
   ///
   /// **Return** 需要查询的用户属性。
   ///
@@ -1981,7 +1981,7 @@ class EMGroupManager {
   ///
   /// Param [groupId] The group ID.
   ///
-  /// Param [userIds] The array of user IDs of group members whose custom attributes are retrieved.(limitation is ten.More than callback error. )
+  /// Param [userIds] The array of user IDs of group members whose custom attributes are retrieved. You can pass in a maximum of 10 user IDs.
   ///
   /// Param [keys] The array of keys of custom attributes to be retrieved.
   ///
@@ -1992,11 +1992,11 @@ class EMGroupManager {
   /// ~end
   ///
   /// ~chinese
-  /// 根据指定的属性 key 获取多个群成员的自定义属性
+  /// 根据指定的属性 key 获取多个群成员的自定义属性。
   ///
   /// Param [groupId] 群组 ID。
   ///
-  /// Param [userIds] 要获取自定义属性的群成员的用户 ID 数组。（最多10个，多则报错）
+  /// Param [userIds] 要获取自定义属性的群成员的用户 ID 数组。最多可传 10 个用户 ID。
   ///
   /// Param [keys] 要获取自定义属性的 key 的数组。
   ///

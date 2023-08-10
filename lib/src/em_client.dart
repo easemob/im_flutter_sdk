@@ -45,31 +45,31 @@ class EMClient {
   String? _currentUserId;
 
   /// ~english
-  /// Obtain instance.
+  /// Gets the SDK instance.
   /// ~end
   ///
   /// ~chinese
-  /// 获取SDK实例
+  /// 获取 SDK 实例。
   /// ~end
   static EMClient get getInstance => _instance ??= EMClient._internal();
 
   /// ~english
-  /// Set a custom event handle to receive data from iOS or Android devices.
+  /// Sets a custom event handler to receive data from iOS or Android devices.
   ///
   /// Param [customEventHandler] The custom event handler.
   /// ~end
   ///
   /// ~chinese
-  /// 设置一个自定义事件句柄来接收来自iOS或Android设备的数据。
+  /// 设置一个自定义事件句柄来接收来自 iOS 或 Android 设备的数据。
   /// ~end
   void Function(Map map)? customEventHandler;
 
   /// ~english
-  /// Gets the current logged-in userId.
+  /// Gets the current logged-in user ID.
   /// ~end
   ///
   /// ~chinese
-  /// 当前登录用户id
+  /// 当前登录用户 ID.
   /// ~end
   String? get currentUserId => _currentUserId;
 
@@ -125,9 +125,9 @@ class EMClient {
   }
 
   /// ~english
-  /// Adds the connection event handler. After calling this method, you can handle for new room event when they arrive.
+  /// Adds the connection event handler. After calling this method, you can handle new connection events when they arrive.
   ///
-  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
+  /// Param [identifier] The custom handler identifier, which is used to find the corresponding handler.
   ///
   /// Param [handler] The handler for connection event. See [EMConnectionEventHandler].
   /// ~end
@@ -147,7 +147,7 @@ class EMClient {
   }
 
   /// ~english
-  /// Remove the connection event handler.
+  /// Removes the connection event handler.
   ///
   /// Param [identifier] The custom handler identifier.
   /// ~end
@@ -162,7 +162,7 @@ class EMClient {
   }
 
   /// ~english
-  /// Get the connection event handler.
+  /// Gets the connection event handler.
   ///
   /// Param [identifier] The custom handler identifier.
   ///
@@ -181,7 +181,7 @@ class EMClient {
   }
 
   /// ~english
-  /// Clear all connection event handlers.
+  /// Clears all connection event handlers.
   /// ~end
   ///
   /// ~chinese
@@ -192,9 +192,9 @@ class EMClient {
   }
 
   /// ~english
-  /// Adds the multi-device event handler. After calling this method, you can handle for new room event when they arrive.
+  /// Adds the multi-device event handler. After calling this method, you can handle for new multi-device events when they arrive.
   ///
-  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
+  /// Param [identifier] The custom handler identifier, which is used to find the corresponding handler.
   ///
   /// Param [handler] The handler multi-device event. See [EMMultiDeviceEventHandler].
   /// ~end
@@ -214,7 +214,7 @@ class EMClient {
   }
 
   /// ~english
-  /// Remove the multi-device event handler.
+  /// Removes the multi-device event handler.
   ///
   /// Param [identifier] The custom handler identifier.
   /// ~end
@@ -229,7 +229,7 @@ class EMClient {
   }
 
   /// ~english
-  /// Get the multi-device event handler.
+  /// Gets the multi-device event handler.
   ///
   /// Param [identifier] The custom handler identifier.
   ///
@@ -248,7 +248,7 @@ class EMClient {
   }
 
   /// ~english
-  /// Clear all multi-device event handlers.
+  /// Clears all multi-device event handlers.
   /// ~end
   ///
   /// ~chinese
@@ -259,16 +259,14 @@ class EMClient {
   }
 
   /// ~english
-  /// Start contact and group, chatroom callback.
+  /// Starts contact and group, chatroom callback.
   ///
-  /// Reference:
-  /// Call this method when you ui is ready, then will receive [EMChatRoomEventHandler], [EMContactEventHandler], [EMGroupEventHandler] event.
+  /// Call this method when you UI is ready, then will receive [EMChatRoomEventHandler], [EMContactEventHandler], [EMGroupEventHandler] event.
   /// ~end
   ///
   /// ~chinese
   /// /// 开始回调通知。
   ///
-  /// Reference:
   /// 当UI准备好后调用，调用之后才能收到 [EMChatRoomEventHandler], [EMContactEventHandler], [EMGroupEventHandler] 监听。
   /// ~end
   Future<void> startCallback() async {
@@ -283,9 +281,9 @@ class EMClient {
   /// ~english
   /// Checks whether the SDK is connected to the chat server.
   ///
-  /// **Return** the result whether the SDK is connected to the chat server.
-  /// `true`: means that the SDK is connected to the chat server.
-  /// `false`: means not.
+  /// **Return** Whether the SDK is connected to the chat server.
+  /// `true`: The SDK is connected to the chat server.
+  /// `false`: The SDK is not connected to the chat server.
   /// ~end
   ///
   /// ~chinese
@@ -307,12 +305,11 @@ class EMClient {
   /// ~english
   /// Checks whether the user has logged in before and did not log out.
   ///
-  /// Reference:
   /// If you need to check whether the SDK is connected to the server, please use [isConnected].
   ///
-  /// **Return** The result of whether the user has logged in before.
-  /// `true`: means that the user has logged in before,
-  /// `false`: means that the user has not login before or has called [logout] method.
+  /// **Return** Whether the user has logged in before.
+  /// `true`: The user has logged in before,
+  /// `false`: The user has not logged in before or has called the [logout] method.
   /// ~end
   ///
   /// ~chinese
@@ -399,9 +396,9 @@ class EMClient {
   }
 
   /// ~english
-  /// Register a new user.
+  /// Registers a new user.
   ///
-  /// Param [userId] The userId. The maximum length is 64 characters. Ensure that you set this parameter.
+  /// Param [userId] The user Id. The maximum length is 64 characters. Ensure that you set this parameter.
   /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-),
   /// and the English period (.). This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
   /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
@@ -433,15 +430,15 @@ class EMClient {
   }
 
   /// ~english
-  /// An app user logs in to the chat server with a password or token.
+  /// Logs in to the chat server with a password or token.
   ///
-  /// Param [userId] The username.
+  /// Param [userId] The user ID.
   ///
   /// Param [pwdOrToken] The password or token.
   ///
-  /// Param [isPassword] Whether to log in with password or token.
-  /// `true`: (default) Log in with password.
-  /// `false`: Log in with token.
+  /// Param [isPassword] Whether to log in with a password or a token.
+  /// (Default) `true`: A password is used.
+  /// `false`: A token is used.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -477,11 +474,11 @@ class EMClient {
   }
 
   /// ~english
-  /// An app user logs in to the chat server by username and Agora token. This method supports automatic login.
+  /// Logs in to the chat server by user ID and Agora token. This method supports automatic login.
   ///
-  /// See also: Another method to login to chat server is to login with user ID and token, See [login].
+  /// Another method to login to chat server is to login with user ID and token, See [login].
   ///
-  /// Param [userId] The userId.
+  /// Param [userId] The user Id.
   ///
   /// Param [agoraToken] The Agora token.
   ///
@@ -546,9 +543,9 @@ class EMClient {
   }
 
   /// ~english
-  /// An app user logs out.
+  /// Logs out.
   ///
-  /// Param [unbindDeviceToken] Whether to unbind the token when logout.
+  /// Param [unbindDeviceToken] Whether to unbind the token upon logout.
   ///
   /// `true` (default) Yes.
   /// `false` No.
@@ -645,9 +642,9 @@ class EMClient {
   @Deprecated('Use [fetchLoggedInDevices] instead')
 
   /// ~english
-  /// Gets all the information about the logged in devices under the specified account.
+  /// Gets the list of currently logged-in devices of a specified account.
   ///
-  /// Param [userId] The username you want to get the device information.
+  /// Param [userId] The user ID.
   ///
   /// Param [password] The password.
   ///
@@ -685,13 +682,13 @@ class EMClient {
   }
 
   /// ~english
-  /// Gets all the information about the logged in devices under the specified account.
+  /// Gets the list of currently logged-in devices of a specified account.
   ///
-  /// Param [userId] The username you want to get the device information.
+  /// Param [userId] The user ID.
   ///
   /// Param [pwdOrToken] The password or token.
   ///
-  /// Param [isPwd] Whether it is a password, the default is true.
+  /// Param [isPwd] Whether a password or token is used: (Default)`true`: A password is used; `false`: A token is used.
   ///
   /// **Return** The list of the logged-in devices.
   ///
@@ -701,11 +698,11 @@ class EMClient {
   /// ~chinese
   /// 获取指定账号下登录的在线设备列表。
   ///
-  /// Param [userId] 用户 ID。
+  /// Param [userId] 用户 ID。 
   ///
-  /// Param [pwdOrToken] 密码 或者 token。
+  /// Param [pwdOrToken] 密码或者 token。
   ///
-  /// Param [isPwd] 是否是密码，默认为 true。
+  /// Param [isPwd] 是否使用密码或 token：（默认）`true`：使用密码；`false`：使用 token。
   ///
   /// **Return**  获取到到设备列表。
   ///
@@ -734,9 +731,9 @@ class EMClient {
   /// ~english
   /// Forces the specified account to log out from the specified device.
   ///
-  /// Param [userId] The account you want to force logout.
+  /// Param [userId] The account you want to force to log out.
   ///
-  /// Param [pwdOrToken] The account's password or token.
+  /// Param [pwdOrToken] The password or token.
   ///
   /// Param [resource] The device ID. For how to fetch the device ID, See [EMDeviceInfo.resource].
   ///
@@ -744,7 +741,7 @@ class EMClient {
   /// ~end
   ///
   /// ~chinese
-  /// 在指定账号下，根据设备 ID，将指定设备下线，设备 ID：[EMDeviceInfo.resource]。
+  /// 将指定账号登录的指定设备踢下线。
   ///
   /// Param [userId] 用户 ID。
   ///
@@ -777,25 +774,25 @@ class EMClient {
   }
 
   /// ~english
-  /// Kicks out all the devices logged in under the specified account.
+  /// Forces the specified account to log out from all devices.
   ///
-  /// Param [userId] The account you want to log out from all the devices.
+  /// Param [userId] The account you want to force to log out from all the devices.
   ///
   /// Param [pwdOrToken] The password or token.
   ///
-  /// Param [isPwd] Whether it is a password, the default is true.
+  /// Param [isPwd] Whether a password or token is used: (Default)`true`: A password is used; `false`: A token is used.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 将指定用户 ID 下的所有设备都踢下线。
+  /// 将指定账号登录的所有设备都踢下线。
   ///
   /// Param [userId] 用户 ID。
   ///
   /// Param [pwdOrToken] 密码 或 token。
   ///
-  /// Param [isPwd] 是否是密码，默认为 true。
+  /// Param [isPwd] 是否使用密码或 token：（默认）`true`：使用密码；`false`：使用 token。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
