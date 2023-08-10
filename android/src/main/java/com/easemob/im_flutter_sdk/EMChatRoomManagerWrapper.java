@@ -656,6 +656,10 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
     private void registerEaseListener() {
 
+        if (chatRoomChangeListener != null) {
+            EMClient.getInstance().chatroomManager().removeChatRoomListener(chatRoomChangeListener);
+        }
+
         chatRoomChangeListener = new EMChatRoomChangeListener() {
 
             @Override
@@ -665,7 +669,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("whitelist", whitelist);
-                            data.put("type", "chatroomWhiteListAdded");
+                            data.put("type", "onRoomWhiteListAdded");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -679,7 +683,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("whitelist", whitelist);
-                            data.put("type", "chatroomWhiteListRemoved");
+                            data.put("type", "onRoomWhiteListRemoved");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -692,7 +696,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("isMuted", isMuted);
-                            data.put("type", "chatroomAllMemberMuteStateChanged");
+                            data.put("type", "onRoomAllMemberMuteStateChanged");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -706,7 +710,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", roomId);
                             data.put("roomName", roomName);
-                            data.put("type", "chatroomDestroyed");
+                            data.put("type", "onRoomDestroyed");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -720,7 +724,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", roomId);
                             data.put("participant", participant);
-                            data.put("type", "chatroomMemberJoined");
+                            data.put("type", "onRoomMemberJoined");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -734,7 +738,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", roomId);
                             data.put("roomName", roomName);
                             data.put("participant", participant);
-                            data.put("type", "chatroomMemberExited");
+                            data.put("type", "onRoomMemberExited");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -749,7 +753,8 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", roomId);
                             data.put("roomName", roomName);
                             data.put("participant", participant);
-                            data.put("type", "chatroomRemoved");
+                            data.put("type", "onRoomRemoved");
+                            data.put("reason", reason);
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -764,7 +769,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", chatRoomId);
                             data.put("mutes", mutes);
                             data.put("expireTime", String.valueOf(expireTime));
-                            data.put("type", "chatroomMuteListAdded");
+                            data.put("type", "onRoomMuteListAdded");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -777,7 +782,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("mutes", mutes);
-                            data.put("type", "chatroomMuteListRemoved");
+                            data.put("type", "onRoomMuteListRemoved");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -791,7 +796,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("admin", admin);
-                            data.put("type", "chatroomAdminAdded");
+                            data.put("type", "onRoomAdminAdded");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -805,7 +810,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("admin", admin);
-                            data.put("type", "chatroomAdminRemoved");
+                            data.put("type", "onRoomAdminRemoved");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -819,7 +824,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             data.put("roomId", chatRoomId);
                             data.put("newOwner", newOwner);
                             data.put("oldOwner", oldOwner);
-                            data.put("type", "chatroomOwnerChanged");
+                            data.put("type", "onRoomOwnerChanged");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -833,7 +838,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("announcement", announcement);
-                            data.put("type", "chatroomAnnouncementChanged");
+                            data.put("type", "onRoomAnnouncementChanged");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );
@@ -857,7 +862,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
-                            data.put("type", "chatroomAttributesDidUpdated");
+                            data.put("type", "onRoomAttributesDidUpdated");
                             data.put("attributes", attributeMap);
                             data.put("fromId", from);
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
@@ -872,7 +877,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
                             data.put("keys", keyList);
-                            data.put("type", "chatroomAttributesDidRemoved");
+                            data.put("type", "onRoomAttributesDidRemoved");
                             data.put("fromId", from);
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }

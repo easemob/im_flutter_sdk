@@ -69,6 +69,4 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
   public void onMethodCall(MethodCall call, MethodChannel.Result result) {
     result.notImplemented();
   }
-
-
 }

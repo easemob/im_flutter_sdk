@@ -15,6 +15,7 @@
 #import "EMCursorResult+Helper.h"
 #import "EMMessageReaction+Helper.h"
 #import "EMMessageReactionChange+Helper.h"
+#import "EMFetchServerMessagesOption+Helper.h"
 
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
@@ -28,7 +29,6 @@
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
         [EMClient.sharedClient.chatManager addDelegate:self delegateQueue:nil];
-        
         FlutterJSONMethodCodec *codec = [FlutterJSONMethodCodec sharedInstance];
         self.messageChannel = [FlutterMethodChannel methodChannelWithName:@"com.chat.im/chat_message"
                                                           binaryMessenger:[registrar messenger]
@@ -123,6 +123,10 @@
         [self fetchHistoryMessages:call.arguments
                        channelName:call.method
                             result:result];
+    } else if ([ChatFetchHistoryMessagesByOptions isEqualToString:call.method]) {
+        [self fetchHistoryMessagesByOptions:call.arguments
+                                channelName:call.method
+                                     result:result];
     } else if ([ChatSearchChatMsgFromDB isEqualToString:call.method]) {
         [self searchChatMsgFromDB:call.arguments
                       channelName:call.method
@@ -179,6 +183,16 @@
         [self removeMessagesFromServerWithTs:call.arguments
                                  channelName:call.method
                                       result:result];
+    } else if ([GetConversationsFromServerWithCursor isEqualToString:call.method]) {
+        [self getConversationsFromServerWithCursor:call.arguments channelName:call.method result:result];
+    } else if ([GetPinnedConversationsFromServerWithCursor isEqualToString:call.method]) {
+        [self getPinnedConversationsFromServerWithCursor:call.arguments channelName:call.method result:result];
+    } else if ([PinConversation isEqualToString:call.method]) {
+        [self pinConversation:call.arguments channelName:call.method result:result];
+    } else if ([modifyMessage isEqualToString:call.method]) {
+        [self modifyMessage:call.arguments channelName:call.method result:result];
+    } else if ([downloadAndParseCombineMessage isEqualToString:call.method]) {
+        [self downloadAndParseCombineMessage:call.arguments channelName:call.method result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -311,7 +325,7 @@
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *conversationId = param[@"con_id"];
+    NSString *conversationId = param[@"convId"];
     [EMClient.sharedClient.chatManager ackConversationRead:conversationId
                                                 completion:^(EMError *aError)
      {
@@ -362,7 +376,7 @@
             channelName:(NSString *)aChannelName
                  result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *conId = param[@"con_id"];
+    NSString *conId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
     BOOL needCreate = [param[@"createIfNeed"] boolValue];
     EMConversation *con = [EMClient.sharedClient.chatManager getConversation:conId
@@ -379,7 +393,7 @@
                   channelName:(NSString *)aChannelName
                        result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *conId = param[@"con_id"];
+    NSString *conId = param[@"convId"];
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conId
                                                                                  type:EMConversationTypeGroupChat
                                                                      createIfNotExist:YES
@@ -593,22 +607,16 @@
         }
         msg.body = body;
     }
-    return [msg toJson] ;
+    return [msg toJson];
 }
 
 - (void)loadAllConversations:(NSDictionary *)param
                  channelName:(NSString *)aChannelName
                       result:(FlutterResult)result {
-    NSArray *conversations = [EMClient.sharedClient.chatManager getAllConversations];
-    NSArray *sortedList = [conversations sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-        if (((EMConversation *)obj1).latestMessage.timestamp > ((EMConversation *)obj2).latestMessage.timestamp) {
-            return NSOrderedAscending;
-        }else {
-            return NSOrderedDescending;
-        }
-    }];
+    NSArray *conversations = [EMClient.sharedClient.chatManager getAllConversations:YES];
+   
     NSMutableArray *conList = [NSMutableArray array];
-    for (EMConversation *conversation in sortedList) {
+    for (EMConversation *conversation in conversations) {
         [conList addObject:[conversation toJson]];
     }
     
@@ -645,7 +653,7 @@
                channelName:(NSString *)aChannelName
                     result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *conversationId = param[@"con_id"];
+    NSString *conversationId = param[@"convId"];
     BOOL isDeleteMsgs = [param[@"deleteMessages"] boolValue];
     [EMClient.sharedClient.chatManager deleteConversation:conversationId
                                          isDeleteMessages:isDeleteMsgs
@@ -662,16 +670,32 @@
                  channelName:(NSString *)aChannelName
                       result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *conversationId = param[@"con_id"];
+    NSString *conversationId = param[@"convId"];
     EMConversationType type = (EMConversationType)[param[@"type"] intValue];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *startMsgId = param[@"startMsgId"];
-    [EMClient.sharedClient.chatManager asyncFetchHistoryMessagesFromServer:conversationId
-                                                          conversationType:type
-                                                            startMessageId:startMsgId
-                                                                  pageSize:pageSize
-                                                                completion:^(EMCursorResult *aResult, EMError *aError)
-     {
+    EMMessageFetchHistoryDirection direction = [param[@"direction"] intValue] == 0 ? EMMessageFetchHistoryDirectionUp : EMMessageFetchHistoryDirectionDown;
+    [EMClient.sharedClient.chatManager asyncFetchHistoryMessagesFromServer:conversationId conversationType:type startMessageId:startMsgId fetchDirection:direction pageSize:pageSize completion:^(EMCursorResult<EMChatMessage *> * _Nullable aResult, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:[aResult toJson]];
+    }];
+}
+
+- (void)fetchHistoryMessagesByOptions:(NSDictionary *)param
+                          channelName:(NSString *)aChannelName
+                               result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *conversationId = param[@"convId"];
+    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
+    int pageSize = [param[@"pageSize"] intValue];
+    NSString *cursor = param[@"cursor"];
+    EMFetchServerMessagesOption *options;
+    if(param[@"options"]) {
+        options = [EMFetchServerMessagesOption formJson:param[@"options"]];
+    }
+    [EMClient.sharedClient.chatManager fetchMessagesFromServerBy:conversationId conversationType:type cursor:cursor pageSize:pageSize option:options completion:^(EMCursorResult<EMChatMessage *> * _Nullable aResult, EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -960,10 +984,32 @@
                                channelName:(NSString *)aChannelName
                                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
+    NSArray *msgIds = param[@"msgIds"];
     NSString *convId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    
+    if(!EMClient.sharedClient.isLoggedIn) {
+        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+    
+    
+    if(convId == nil || convId.length == 0 || msgIds.count == 0 || type == EMConversationTypeChatRoom) {
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+    
+    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:convId type:type createIfNotExist:YES];
-    NSArray *msgIds = param[@"msgIds"];
+    
     [conversation removeMessagesFromServerMessageIds:msgIds completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -979,6 +1025,25 @@
     NSString *convId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
     long timestamp = [param[@"timestamp"] longValue];
+    
+    if(!EMClient.sharedClient.isLoggedIn) {
+        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+    
+    if(convId == nil || convId.length == 0 || type == EMConversationTypeChatRoom || timestamp <= 0) {
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];	
+        return;
+    }
+    
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:convId type:type createIfNotExist:YES];
     [conversation removeMessagesFromServerWithTimeStamp:timestamp completion:^(EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
@@ -987,6 +1052,89 @@
                            object:@(!aError)];
     }];
 }
+
+- (void)getConversationsFromServerWithCursor:(NSDictionary *)param
+                                 channelName:(NSString *)aChannelName
+                                      result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *cursor = param[@"cursor"];
+    int pageSize = [param[@"pageSize"] intValue];
+    [EMClient.sharedClient.chatManager getConversationsFromServerWithCursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[ret toJson]];
+    }];
+}
+
+- (void)getPinnedConversationsFromServerWithCursor:(NSDictionary *)param
+                                       channelName:(NSString *)aChannelName
+                                            result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *cursor = param[@"cursor"];
+    int pageSize = [param[@"pageSize"] intValue];
+    [EMClient.sharedClient.chatManager getPinnedConversationsFromServerWithCursor:cursor pageSize:pageSize completion:^(EMCursorResult<EMConversation *> * _Nullable ret, EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[ret toJson]];
+    }];
+}
+
+- (void)pinConversation:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *convId = param[@"convId"];
+    BOOL isPinned = [param[@"isPinned"] boolValue];
+    [EMClient.sharedClient.chatManager pinConversation:convId isPinned:isPinned completionBlock:^(EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result channelName:aChannelName error:error object:@(!error)];
+    }];
+}
+
+- (void)modifyMessage:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *msgId = param[@"msgId"];
+    EMTextMessageBody *body = [EMTextMessageBody fromJson:param[@"body"]];
+    [EMClient.sharedClient.chatManager modifyMessage:msgId
+                                                body:body
+                                          completion:^(EMError * _Nullable error, EMChatMessage * _Nullable message)
+     {
+        if(error) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:nil];
+        }else {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:error
+                               object:[message toJson]];
+        }
+        
+    }];
+}
+
+- (void)downloadAndParseCombineMessage:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    
+    [EMClient.sharedClient.chatManager downloadAndParseCombineMessage:msg
+                                                           completion:^(NSArray<EMChatMessage *> * _Nullable messages, EMError * _Nullable error)
+     {
+        NSMutableArray *msgJsonAry = [NSMutableArray array];
+        for (EMChatMessage *msg in messages) {
+            [msgJsonAry addObject:[msg toJson]];
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:msgJsonAry];
+    }];
+}
+
+
+
 #pragma mark - EMChatManagerDelegate
 
 
@@ -1088,5 +1236,15 @@
     return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
 }
 
+- (void)onMessageContentChanged:(EMChatMessage *)message operatorId:(NSString *)operatorId operationTime:(NSUInteger)operationTime {
+    NSDictionary *dict = @{
+        @"message": [message toJson],
+        @"operator": operatorId,
+        @"operationTime": @(operationTime)
+    };
+    
+    [self.channel invokeMethod:onMessageContentChanged
+                     arguments:dict];
+}
 
 @end

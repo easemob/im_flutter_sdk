@@ -81,6 +81,10 @@
         [self clearAllMessages:call.arguments
                    channelName:call.method
                         result:result];
+    } else if ([ChatDeleteMessagesWithTs isEqualToString:call.method]) {
+        [self deleteMessagesWithTs:call.arguments
+                   channelName:call.method
+                        result:result];
     } else if ([ChatInsertMsg isEqualToString:call.method]) {
         [self insertMessage:call.arguments
                 channelName:call.method
@@ -116,7 +120,7 @@
 - (void)getConversationWithParam:(NSDictionary *)param
                       completion:(void(^)(EMConversation *conversation))aCompletion
 {
-    __weak NSString *conversationId = param[@"con_id"];
+    __weak NSString *conversationId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
@@ -323,6 +327,21 @@
                         completion:^(EMConversation *conversation){
         EMError *error = nil;
         [conversation deleteAllMessages:&error];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:@(!error)];
+    }];
+}
+
+- (void)deleteMessagesWithTs:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    long startTs = [param[@"startTs"] longValue];
+    long endTs = [param[@"endTs"] longValue];
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation){
+        EMError *error = [conversation removeMessagesStart:startTs to:endTs];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error

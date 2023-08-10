@@ -2,24 +2,21 @@ import 'dart:io';
 
 import 'internal/inner_headers.dart';
 
-///
+/// ~english
 /// The message push configuration options.
+/// ~end
 ///
+/// ~chinese
+/// 推送设置管理类。
+/// ~end
 class EMPushManager {
-  @deprecated
-  Future<EMPushConfigs?> getPushConfigsFromCache() async {
-    Map result = await PushChannel.invokeMethod(ChatMethodKeys.getImPushConfig);
-    try {
-      EMError.hasErrorFromResult(result);
-      return EMPushConfigs.fromJson(result[ChatMethodKeys.getImPushConfig]);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  ///
+  /// ~english
   /// Gets the push configurations from the server.
+  /// ~end
   ///
+  /// ~chinese
+  /// 从服务器获取推送设置信息。
+  /// ~end
   Future<EMPushConfigs> fetchPushConfigsFromServer() async {
     Map result = await PushChannel.invokeMethod(
         ChatMethodKeys.getImPushConfigFromServer);
@@ -32,50 +29,7 @@ class EMPushManager {
     }
   }
 
-  ///
-  /// Sets whether to turn on or turn off the push notification for the the specified groups.
-  ///
-  /// [groupIds]  The list of groups to be set.
-  ///
-  /// [enablePush] enable push notification.
-  /// `true`: Turns on the notification;
-  /// `false`: Turns off the notification;
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [EMError]
-  ///
-  @deprecated
-  Future<void> updatePushServiceForGroup({
-    required List<String> groupIds,
-    required bool enablePush,
-  }) async {
-    Map req = {'noPush': !enablePush, 'group_ids': groupIds};
-    Map result = await PushChannel.invokeMethod(
-        ChatMethodKeys.updateGroupPushService, req);
-    try {
-      EMError.hasErrorFromResult(result);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  ///
-  /// Gets the list of users which have blocked the push notification.
-  ///
-  /// **return** The list of user that blocked the push notification.
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [EMError]
-  ///
-  @Deprecated('')
-  Future<List<String>> getNoPushUsersFromCache() async {
-    Map result = await PushChannel.invokeMethod(ChatMethodKeys.getNoPushUsers);
-    List<String> list = [];
-    if (result.containsKey(ChatMethodKeys.getNoPushUsers)) {
-      list = result[ChatMethodKeys.getNoPushUsers]?.cast<String>();
-    }
-    return list;
-  }
-
-  ///
+  /// ~english
   /// Updates the push display nickname of the current user.
   ///
   /// This method can be used to set a push display nickname, the push display nickname will be used to show for offline push notification.
@@ -85,7 +39,17 @@ class EMPushManager {
   /// Param [nickname] The push display nickname, which is different from the nickname in the user profile.
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
+  /// ~end
   ///
+  /// ~chinese
+  /// 更新推送通知收到时显示的昵称。
+  ///
+  /// 该昵称与用户信息中的昵称设置不同，我们建议这两种昵称的设置保持一致。更新用户属性昵称详见 [EMUserInfoManager.updateUserInfo]。
+  ///
+  /// Param [nickname] 推送通知收到时显示的昵称。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> updatePushNickname(String nickname) async {
     Map req = {'nickname': nickname};
     Map result =
@@ -97,13 +61,21 @@ class EMPushManager {
     }
   }
 
-  ///
-  /// Updates the push message style. The default value is [DisplayStyle.Simple].
+  /// ~english
+  /// Updates the push message display style. The default value is [DisplayStyle.Simple].
   ///
   /// Param [displayStyle] The push message display style.
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
+  /// ~end
   ///
+  /// ~chinese
+  /// 更新推送通知的展示方式。
+  ///
+  /// Param [displayStyle] 推送通知的展示方式。默认为 [DisplayStyle.Simple]。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> updatePushDisplayStyle(DisplayStyle displayStyle) async {
     Map req = {'pushStyle': displayStyle == DisplayStyle.Simple ? 0 : 1};
     Map result =
@@ -115,13 +87,21 @@ class EMPushManager {
     }
   }
 
-  ///
+  /// ~english
   /// Updates the HMS push token.
   ///
   /// Param [token] The HMS push token.
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
+  /// ~end
   ///
+  /// ~chinese
+  /// 更新华为推送 token。
+  ///
+  /// Param [token] 要更新的华为推送 token。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> updateHMSPushToken(String token) async {
     if (Platform.isAndroid) {
       Map req = {'token': token};
@@ -135,33 +115,47 @@ class EMPushManager {
     }
   }
 
-  ///
+  /// ~english
   /// Updates the FCM push token.
   ///
   /// Param [token] The FCM push token.
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
+  /// ~end
   ///
+  /// ~chinese
+  /// 更新谷歌 FCM 推送 token。
+  ///
+  /// Param [token] 要更新的谷歌 FCM 推送 token。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> updateFCMPushToken(String token) async {
-    if (Platform.isAndroid) {
-      Map req = {'token': token};
-      Map result = await PushChannel.invokeMethod(
-          ChatMethodKeys.updateFCMPushToken, req);
-      try {
-        EMError.hasErrorFromResult(result);
-      } on EMError catch (e) {
-        throw e;
-      }
+    Map req = {'token': token};
+    Map result =
+        await PushChannel.invokeMethod(ChatMethodKeys.updateFCMPushToken, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
     }
   }
 
-  ///
+  /// ~english
   /// Updates the APNs push token.
   ///
   /// Param [token] The APNs push token.
   ///
   /// **Throws** A description of the issue that caused this exception. See [EMError]
+  /// ~end
   ///
+  /// ~chinese
+  /// 更新苹果推送（APNs）token。
+  ///
+  /// Param [token] 要更新的苹果推送（APNs）token。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> updateAPNsDeviceToken(String token) async {
     if (Platform.isIOS) {
       Map req = {'token': token};
@@ -175,26 +169,30 @@ class EMPushManager {
     }
   }
 
-  // Future<void> reportPushAction(
-  //   {String taskId,
-  //   String provider,
-  //   String action,}
-  // ) async {
-  //   Map req = {};
-  // }
-
+  /// ~english
+  /// Sets the push notifications for a conversation.
   ///
-  /// Set offline push notification type for the special conversation.
-  ///
-  /// Param [conversationId] The conversation id.
+  /// Param [conversationId] The conversation ID.
   ///
   /// Param [type] The conversation type.
   ///
-  /// Param [param]  Push DND parameters offline.
+  /// Param [param]  The offline push parameters.
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
+  /// ~end
   ///
+  /// ~chinese
+  /// 设置指定会话的离线推送设置。
+  ///
+  /// Param [conversationId] 会话 ID.
+  ///
+  /// Param [type] 会话类型.
+  ///
+  /// Param [param]  离线推送参数.
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> setConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
@@ -214,16 +212,29 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Removes the offline push notification settings for a conversation.
   ///
-  /// Remove the setting of offline push notification type for the special conversation.
-  /// After clearing, the session follows the Settings of the current logged-in user  [EMPushManager.setSilentModeForAll].
+  /// After the setting is deleted, the conversation follows the setting of [EMPushManager.setSilentModeForAll] of the current logged-in user.
   ///
-  /// Param [conversationId] The conversation id.
+  /// Param [conversationId] The conversation ID.
   ///
   /// Param [type] The conversation type.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 删除指定会话的离线推送通知设置。
+  ///
+  /// 清除后，会话遵循当前登录用户的设置 [EMPushManager.setSilentModeForAll]。
+  ///
+  /// Param [conversationId] 会话 ID。
+  ///
+  /// Param [type] 会话类型。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> removeConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
@@ -240,17 +251,29 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Gets the offline push settings of a conversation.
   ///
-  /// Gets the DND setting of the special conversation.
-  ///
-  /// Param [conversationId] The conversation id.
+  /// Param [conversationId] The conversation ID.
   ///
   /// Param [type] The conversation type.
   ///
-  /// **Return** The conversation silent mode.
+  /// **Return** The offline push settings of the conversation.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取指定会话的离线推送设置。
+  ///
+  /// Param [conversationId] 会话 ID。
+  ///
+  /// Param [type] 会话类型。
+  ///
+  /// **Return** 会话的离线推送设置。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<ChatSilentModeResult> fetchConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
@@ -269,13 +292,21 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Sets the offline push settings at the app level for the current login user.
   ///
-  /// Set the DND normal settings for the current login user.
-  ///
-  /// Param [param] Push DND parameters offline.
+  /// Param [param] The offline push parameters.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 设置当前登录用户的 app 级别的推送设置。
+  ///
+  /// Param [param] 离线推送参数。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> setSilentModeForAll({
     required ChatSilentModeParam param,
   }) async {
@@ -292,13 +323,21 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Gets the offline push settings at the app level for the current login user.
   ///
-  /// Gets the DND normal settings of the current login user.
-  ///
-  /// **Return** The normal silent mode.
+  /// **Return** The offline push settings settings.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取当前登录用户的 app 级别的推送通知设置。
+  ///
+  /// **Return** 推送通知设置。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<ChatSilentModeResult> fetchSilentModeForAll() async {
     Map result =
         await PushChannel.invokeMethod(ChatMethodKeys.fetchSilentModeForAll);
@@ -312,15 +351,25 @@ class EMPushManager {
     }
   }
 
-  ///
-  /// Obtain the DND Settings of specified conversations in batches.
+  /// ~english
+  /// Gets the offline push settings of specified conversations.
   ///
   /// Param [conversations]  The conversation list.
   ///
-  /// **Return** key is conversation id and the value is silent mode.
+  /// **Return** The key is the conversation ID and the value is offline push settings.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 批量获取指定会话的推送通知设置。
+  ///
+  /// Param [conversations] 会话列表。
+  ///
+  /// **Return** 键为会话 ID，值为离线推送设置。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<Map<String, ChatSilentModeResult>> fetchSilentModeForConversations(
     List<EMConversation> conversations,
   ) async {
@@ -349,13 +398,21 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Sets the preferred language for push notifications.
   ///
-  /// Set user push translation language.
-  ///
-  /// Param [languageCode] language code.
+  /// Param [languageCode] The language code.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 设置用户推送翻译语言。
+  ///
+  /// Param [languageCode] 语言代码。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> setPreferredNotificationLanguage(String languageCode) async {
     Map req = {"code": languageCode};
     Map result = await PushChannel.invokeMethod(
@@ -369,13 +426,21 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Gets the preferred language for push notifications.
   ///
-  /// Gets the push translation language set by the user.
-  ///
-  /// **Return** has set language code.
+  /// **Return** The language code.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取用户设置的推送翻译语言。
+  ///
+  /// **Return** 设置的语言代码。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<String?> fetchPreferredNotificationLanguage() async {
     Map result = await PushChannel.invokeMethod(
       ChatMethodKeys.fetchPreferredNotificationLanguage,
@@ -389,13 +454,21 @@ class EMPushManager {
     }
   }
 
+  /// ~english
+  /// Sets the template for offline push notifications.
   ///
-  /// Set the push template for offline push.
-  ///
-  /// Param [pushTemplateName] push template name.
+  /// Param [pushTemplateName] The push template name.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 设置离线推送模板。
+  ///
+  /// Param [pushTemplateName] 推送模板名称。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<void> setPushTemplate(String pushTemplateName) async {
     Map result =
         await PushChannel.invokeMethod(ChatMethodKeys.setPushTemplate, {
@@ -408,105 +481,27 @@ class EMPushManager {
     }
   }
 
-  ///
-  /// Gets the offline push template for Settings.
+  /// ~english
+  /// Gets the template for offline push notifications.
   ///
   /// **Return** The push template name.
   ///
   /// **Throws** A description of the exception. See [EMError].
+  /// ~end
   ///
+  /// ~chinese
+  /// 获取推送模板名称。
+  ///
+  /// **Return** 推送模板名称。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
   Future<String?> getPushTemplate() async {
     Map result = await PushChannel.invokeMethod(ChatMethodKeys.getPushTemplate);
     try {
       EMError.hasErrorFromResult(result);
       String? ret = result[ChatMethodKeys.getPushTemplate];
       return ret;
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-}
-
-extension EMPushManagerDeprecated on EMPushManager {
-  ///
-  /// Turns on the push notification.
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [EMError]
-  ///
-  @Deprecated("Use [setSilentModeForAll] to instead")
-  Future<void> enableOfflinePush() async {
-    Map result =
-        await PushChannel.invokeMethod(ChatMethodKeys.enableOfflinePush);
-    try {
-      EMError.hasErrorFromResult(result);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  ///
-  /// Do not push the offline messages within the specified time period (24-hour clock).
-  ///
-  /// Param [start] The start hour(24-hour clock).
-  ///
-  /// Param [end] The end hour(24-hour clock).
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [EMError]
-  ///
-  @Deprecated("Use [setSilentModeForAll] to instead")
-  Future<void> disableOfflinePush({
-    required int start,
-    required int end,
-  }) async {
-    Map req = {'start': start, 'end': end};
-    Map result =
-        await PushChannel.invokeMethod(ChatMethodKeys.disableOfflinePush, req);
-    try {
-      EMError.hasErrorFromResult(result);
-    } on EMError catch (e) {
-      throw e;
-    }
-  }
-
-  ///
-  /// Gets the list of groups which have blocked the push notification.
-  ///
-  /// **return** The list of groups that blocked the push notification.
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [EMError]
-  ///
-
-  @deprecated
-  Future<List<String>> getNoPushGroupsFromCache() async {
-    Map result = await PushChannel.invokeMethod(ChatMethodKeys.getNoPushGroups);
-    List<String> list = [];
-    if (result.containsKey(ChatMethodKeys.getNoPushGroups)) {
-      list = result[ChatMethodKeys.getNoPushGroups]?.cast<String>();
-    }
-    return list;
-  }
-
-  ///
-  /// Sets whether to turn on or turn off the push notification for the the specified users.
-  ///
-  /// [userIds]  The list of users to be set.
-  ///
-  /// [enablePush] enable push notification.
-  /// `true`: Turns on the notification;
-  /// `false`: Turns off the notification;
-  ///
-  /// **Throws** A description of the issue that caused this exception. See [EMError]
-  ///
-  @Deprecated('Use [EMPushManager.setConversationSilentMode] to instead')
-  Future<void> updatePushServiceFroUsers({
-    required List<String> userIds,
-    required bool enablePush,
-  }) async {
-    Map req = {'noPush': !enablePush, 'user_ids': userIds};
-    Map result = await PushChannel.invokeMethod(
-        ChatMethodKeys.updateUserPushService, req);
-    try {
-      EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
       throw e;
     }

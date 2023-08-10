@@ -1,7 +1,9 @@
 /// @nodoc
 import 'inner_headers.dart';
 
+/// ~english
 /// The push configuration class, which contains the push configuration information, such as the push style.
+/// ~end
 class EMPushConfig {
   String? mzAppId = '';
   String? mzAppKey = '';
@@ -51,21 +53,21 @@ class EMPushConfig {
   /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data.add("mzAppId", mzAppId);
-    data.add("mzAppKey", mzAppKey);
-    data.add("oppoAppKey", oppoAppKey);
-    data.add("oppoAppSecret", oppoAppSecret);
-    data.add("miAppId", miAppId);
-    data.add("miAppKey", miAppKey);
-    data.add("fcmId", fcmId);
-    data.add("apnsCertName", apnsCertName);
-    data.add("enableMeiZuPush", enableMeiZuPush);
-    data.add("enableOppoPush", enableOppoPush);
-    data.add("enableMiPush", enableMiPush);
-    data.add("enableFCM", enableFCM);
-    data.add("enableHWPush", enableHWPush);
-    data.add("enableVivoPush", enableVivoPush);
-    data.add("enableAPNS", enableAPNS);
+    data.putIfNotNull("mzAppId", mzAppId);
+    data.putIfNotNull("mzAppKey", mzAppKey);
+    data.putIfNotNull("oppoAppKey", oppoAppKey);
+    data.putIfNotNull("oppoAppSecret", oppoAppSecret);
+    data.putIfNotNull("miAppId", miAppId);
+    data.putIfNotNull("miAppKey", miAppKey);
+    data.putIfNotNull("fcmId", fcmId);
+    data.putIfNotNull("apnsCertName", apnsCertName);
+    data.putIfNotNull("enableMeiZuPush", enableMeiZuPush);
+    data.putIfNotNull("enableOppoPush", enableOppoPush);
+    data.putIfNotNull("enableMiPush", enableMiPush);
+    data.putIfNotNull("enableFCM", enableFCM);
+    data.putIfNotNull("enableHWPush", enableHWPush);
+    data.putIfNotNull("enableVivoPush", enableVivoPush);
+    data.putIfNotNull("enableAPNS", enableAPNS);
 
     return data;
   }

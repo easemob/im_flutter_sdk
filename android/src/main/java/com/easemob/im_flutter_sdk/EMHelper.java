@@ -8,10 +8,12 @@ import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMChatThread;
 import com.hyphenate.chat.EMChatThreadEvent;
 import com.hyphenate.chat.EMCmdMessageBody;
+import com.hyphenate.chat.EMCombineMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
 import com.hyphenate.chat.EMDeviceInfo;
+import com.hyphenate.chat.EMFetchMessageOption;
 import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
@@ -23,8 +25,10 @@ import com.hyphenate.chat.EMLanguage;
 import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
+import com.hyphenate.chat.EMMessageBody;
 import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.chat.EMMessageReactionChange;
+import com.hyphenate.chat.EMMessageReactionOperation;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMNormalFileMessageBody;
 import com.hyphenate.chat.EMOptions;
@@ -72,6 +76,13 @@ class EMOptionsHelper {
         options.setAreaCode(json.getInt("areaCode"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+        options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
+        if (json.has("deviceName")) {
+            options.setCustomDeviceName(json.optString("deviceName"));
+        }
+        if (json.has("osType")) {
+            options.setCustomOSPlatform(json.optInt("osType"));
+        }
         if (!json.getBoolean("enableDNSConfig")) {
             if (json.has("imPort")) {
                 options.setImPort(json.getInt("imPort"));
@@ -369,6 +380,10 @@ class EMMessageHelper {
                     message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
                 }
                     break;
+                case "combine": {
+                    message = EMMessage.createSendMessage(Type.COMBINE);
+                    message.addBody(EMMessageBodyHelper.combineBodyFromJson(bodyJson));
+                }
             }
             if (message != null) {
                 message.setDirection(EMMessage.Direct.SEND);
@@ -378,43 +393,52 @@ class EMMessageHelper {
                 case "txt": {
                     message = EMMessage.createReceiveMessage(Type.TXT);
                     message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
-                }
                     break;
+                }
                 case "img": {
                     message = EMMessage.createReceiveMessage(Type.IMAGE);
                     message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
-                }
                     break;
+                }
+
                 case "loc": {
                     message = EMMessage.createReceiveMessage(Type.LOCATION);
                     message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
-                }
                     break;
+                }
+
                 case "video": {
                     message = EMMessage.createReceiveMessage(Type.VIDEO);
                     message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
-                }
                     break;
+                }
+
                 case "voice": {
                     message = EMMessage.createReceiveMessage(Type.VOICE);
                     message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
-                }
                     break;
+                }
                 case "file": {
                     message = EMMessage.createReceiveMessage(Type.FILE);
                     message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
-                }
                     break;
+                }
                 case "cmd": {
                     message = EMMessage.createReceiveMessage(Type.CMD);
                     message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
-                }
                     break;
+                }
                 case "custom": {
                     message = EMMessage.createReceiveMessage(Type.CUSTOM);
                     message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
+                    break;
                 }
-                break;
+
+                case "combine": {
+                    message = EMMessage.createReceiveMessage(Type.COMBINE);
+                    message.addBody(EMMessageBodyHelper.combineBodyFromJson(bodyJson));
+                    break;
+                }
             }
             if (message != null) {
                 message.setDirection(EMMessage.Direct.RECEIVE);
@@ -428,7 +452,6 @@ class EMMessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-
         message.setAcked(json.getBoolean("hasReadAck"));
         if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
@@ -440,6 +463,8 @@ class EMMessageHelper {
         }
 
         message.setIsChatThreadMessage(json.getBoolean("isThread"));
+
+        message.deliverOnlineOnly(json.getBoolean("deliverOnlineOnly"));
 
         message.setLocalTime(json.getLong("localTime"));
         if (json.has("serverTime")){
@@ -483,44 +508,58 @@ class EMMessageHelper {
                 }
             }
         }
+
+        if (json.has("receiverList")) {
+            ArrayList<String> receiverList = new ArrayList<>();
+            JSONArray ja = json.getJSONArray("receiverList");
+            for (int i = 0; i < ja.length(); i++) {
+                receiverList.add((String) ja.get(i));
+            }
+            message.setReceiverList(receiverList);
+        }
+
         return message;
     }
 
     static Map<String, Object> toJson(EMMessage message) {
         Map<String, Object> data = new HashMap<>();
         switch (message.getType()) {
-        case TXT: {
-            data.put("body", EMMessageBodyHelper.textBodyToJson((EMTextMessageBody) message.getBody()));
-        }
-            break;
-        case IMAGE: {
-            data.put("body", EMMessageBodyHelper.imageBodyToJson((EMImageMessageBody) message.getBody()));
-        }
-            break;
-        case LOCATION: {
-            data.put("body", EMMessageBodyHelper.localBodyToJson((EMLocationMessageBody) message.getBody()));
-        }
-            break;
-        case CMD: {
-            data.put("body", EMMessageBodyHelper.cmdBodyToJson((EMCmdMessageBody) message.getBody()));
-        }
-            break;
-        case CUSTOM: {
-            data.put("body", EMMessageBodyHelper.customBodyToJson((EMCustomMessageBody) message.getBody()));
-        }
-            break;
-        case FILE: {
-            data.put("body", EMMessageBodyHelper.fileBodyToJson((EMNormalFileMessageBody) message.getBody()));
-        }
-            break;
-        case VIDEO: {
-            data.put("body", EMMessageBodyHelper.videoBodyToJson((EMVideoMessageBody) message.getBody()));
-        }
-            break;
-        case VOICE: {
-            data.put("body", EMMessageBodyHelper.voiceBodyToJson((EMVoiceMessageBody) message.getBody()));
-        }
-            break;
+            case TXT: {
+                data.put("body", EMMessageBodyHelper.textBodyToJson((EMTextMessageBody) message.getBody()));
+            }
+                break;
+            case IMAGE: {
+                data.put("body", EMMessageBodyHelper.imageBodyToJson((EMImageMessageBody) message.getBody()));
+            }
+                break;
+            case LOCATION: {
+                data.put("body", EMMessageBodyHelper.localBodyToJson((EMLocationMessageBody) message.getBody()));
+            }
+                break;
+            case CMD: {
+                data.put("body", EMMessageBodyHelper.cmdBodyToJson((EMCmdMessageBody) message.getBody()));
+            }
+                break;
+            case CUSTOM: {
+                data.put("body", EMMessageBodyHelper.customBodyToJson((EMCustomMessageBody) message.getBody()));
+            }
+                break;
+            case FILE: {
+                data.put("body", EMMessageBodyHelper.fileBodyToJson((EMNormalFileMessageBody) message.getBody()));
+            }
+                break;
+            case VIDEO: {
+                data.put("body", EMMessageBodyHelper.videoBodyToJson((EMVideoMessageBody) message.getBody()));
+            }
+                break;
+            case VOICE: {
+                data.put("body", EMMessageBodyHelper.voiceBodyToJson((EMVoiceMessageBody) message.getBody()));
+            }
+                break;
+            case COMBINE:{
+                data.put("body", EMMessageBodyHelper.combineBodyToJson((EMCombineMessageBody) message.getBody()));
+            }
+                break;
         }
 
         if (message.ext().size() > 0 && null != message.ext()) {
@@ -540,6 +579,7 @@ class EMMessageHelper {
         data.put("hasRead", !message.isUnread());
         data.put("needGroupAck", message.isNeedGroupAck());
         data.put("onlineState", message.isOnlineState());
+
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
@@ -616,9 +656,24 @@ class EMGroupAckHelper {
 }
 
 
-class EMMessageBodyHelper {
+ class EMMessageBodyHelper {
 
-    static EMTextMessageBody textBodyFromJson(JSONObject json) throws JSONException {
+    static Map<String, Object> getParentMap(EMMessageBody body){
+        Map<String, Object> data = new HashMap<>();
+        if (body.operatorId() != null && body.operatorId().length() > 0) {
+            data.put("operatorId", body.operatorId());
+        }
+        if (body.operationTime() != 0) {
+            data.put("operatorTime", body.operationTime());
+        }
+
+        if (body.operationCount() != 0) {
+            data.put("operatorCount", body.operationCount());
+        }
+        return data;
+    }
+
+     public static EMTextMessageBody textBodyFromJson(JSONObject json) throws JSONException {
         String content = json.getString("content");
         List<String> list = new ArrayList<>();
         if (json.has("targetLanguages")) {
@@ -633,7 +688,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> textBodyToJson(EMTextMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("content", body.getMessage());
         data.put("type", "txt");
         if (body.getTargetLanguages() != null) {
@@ -671,7 +726,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> localBodyToJson(EMLocationMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("latitude", body.getLatitude());
         data.put("longitude", body.getLongitude());
         data.put("buildingName", body.getBuildingName());
@@ -691,7 +746,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> cmdBodyToJson(EMCmdMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("deliverOnlineOnly", body.isDeliverOnlineOnly());
         data.put("action", body.action());
         data.put("type", "cmd");
@@ -716,7 +771,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> customBodyToJson(EMCustomMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("event", body.event());
         data.put("params", body.getParams());
         data.put("type", "custom");
@@ -746,7 +801,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> fileBodyToJson(EMNormalFileMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("fileSize", body.getFileSize());
         data.put("displayName", body.getFileName());
@@ -800,7 +855,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> imageBodyToJson(EMImageMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
@@ -859,7 +914,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> videoBodyToJson(EMVideoMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("thumbnailLocalPath", body.getLocalThumbUri());
         data.put("duration", body.getDuration());
@@ -900,7 +955,7 @@ class EMMessageBodyHelper {
     }
 
     static Map<String, Object> voiceBodyToJson(EMVoiceMessageBody body) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
         data.put("duration", body.getLength());
         data.put("displayName", body.getFileName());
@@ -909,6 +964,63 @@ class EMMessageBodyHelper {
         data.put("secret", body.getSecret());
         data.put("type", "voice");
         data.put("fileSize", body.getFileSize());
+        return data;
+    }
+
+     static EMCombineMessageBody combineBodyFromJson(JSONObject json) throws JSONException {
+         String title = json.optString("title");
+         String summary = json.optString("summary");
+         String compatibleText = json.optString("compatibleText");
+         String localPath = json.optString("localPath");
+         String remotePath = json.optString("remotePath");
+         String secret = json.optString("secret");
+         List<String> msgIds = new ArrayList<>();
+         if (json.has("messageList")){
+             JSONArray array = json.getJSONArray("messageList");
+             for (int i = 0; i < array.length(); i++) {
+                 msgIds.add(array.getString(i));
+             }
+         }
+
+         EMCombineMessageBody ret = new EMCombineMessageBody();
+         ret.setTitle(title);
+         ret.setSummary(summary);
+         ret.setCompatibleText(compatibleText);
+         ret.setLocalUrl(localPath);
+         ret.setRemoteUrl(remotePath);
+         ret.setSecret(secret);
+         ret.setMessageList(msgIds);
+
+         return ret;
+     }
+    static Map<String, Object> combineBodyToJson(EMCombineMessageBody body) {
+        Map<String, Object> data = getParentMap(body);
+        if (body.getTitle() != null) {
+            data.put("title", body.getTitle());
+        }
+
+        if (body.getSummary() != null) {
+            data.put("summary", body.getSummary());
+        }
+
+        if (body.getCompatibleText() != null) {
+            data.put("compatibleText", body.getCompatibleText());
+        }
+
+        if (body.getLocalUrl() != null) {
+            data.put("localPath", body.getLocalUrl());
+        }
+
+        if (body.getRemoteUrl() != null) {
+            data.put("remotePath", body.getRemoteUrl());
+        }
+
+        if (body.getSecret() != null) {
+            data.put("secret", body.getSecret());
+        }
+
+        data.put("type", "combine");
+
         return data;
     }
 
@@ -951,9 +1063,11 @@ class EMConversationHelper {
 
     static Map<String, Object> toJson(EMConversation conversation) {
         Map<String, Object> data = new HashMap<>();
-        data.put("con_id", conversation.conversationId());
+        data.put("convId", conversation.conversationId());
         data.put("type", typeToInt(conversation.getType()));
         data.put("isThread", conversation.isChatThread());
+        data.put("isPinned", conversation.isPinned());
+        data.put("pinnedTime", conversation.getPinnedTime());
         try {
             data.put("ext", jsonStringToMap(conversation.getExtField()));
         } catch (JSONException e) {
@@ -1082,6 +1196,10 @@ class EMCursorResultHelper {
 
                 if (obj instanceof EMChatThread) {
                     jsonList.add(EMChatThreadHelper.toJson((EMChatThread) obj));
+                }
+
+                if (obj instanceof EMConversation) {
+                    jsonList.add(EMConversationHelper.toJson((EMConversation) obj));
                 }
             }
         }
@@ -1237,11 +1355,28 @@ class EMMessageReactionChangeHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("conversationId", change.getConversionID());
         data.put("messageId", change.getMessageId());
-        ArrayList<Map<String, Object>> list = new ArrayList<>();
+        ArrayList<Map<String, Object>> reactions = new ArrayList<>();
         for (int i = 0; i < change.getMessageReactionList().size(); i++) {
-            list.add(EMMessageReactionHelper.toJson(change.getMessageReactionList().get(i)));
+            reactions.add(EMMessageReactionHelper.toJson(change.getMessageReactionList().get(i)));
         }
-        data.put("reactions", list);
+        data.put("reactions", reactions);
+
+        ArrayList<Map<String, Object>> operations = new ArrayList<>();
+        for (int i = 0; i < change.getOperations().size(); i++) {
+            operations.add(EMMessageReactionOperationHelper.toJson(change.getOperations().get(i)));
+        }
+        data.put("operations", operations);
+
+        return data;
+    }
+}
+
+class EMMessageReactionOperationHelper {
+    static Map<String, Object> toJson(EMMessageReactionOperation operation) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", operation.getUserId());
+        data.put("reaction", operation.getReaction());
+        data.put("operate", operation.getOperation() == EMMessageReactionOperation.Operation.REMOVE ? 0 : 1);
 
         return data;
     }
@@ -1390,5 +1525,72 @@ class EMSilentModeResultHelper {
         }
 
         return data;
+    }
+}
+
+class FetchHistoryOptionsHelper {
+    static EMFetchMessageOption fromJson(JSONObject json) throws JSONException {
+        EMFetchMessageOption options = new EMFetchMessageOption();
+        if (json.getString("direction") == "up") {
+            options.setDirection(EMConversation.EMSearchDirection.UP);
+        }else {
+            options.setDirection(EMConversation.EMSearchDirection.DOWN);
+        }
+        options.setIsSave(json.getBoolean("needSave"));
+        options.setStartTime(json.getLong("startTs"));
+        options.setEndTime(json.getLong("endTs"));
+        if (json.has("from")){
+            options.setFrom(json.getString("from"));
+        }
+        if (json.has("msgTypes")){
+            List<EMMessage.Type> list = new ArrayList<>();
+            JSONArray array = json.getJSONArray("msgTypes");
+            for (int i = 0; i < array.length(); i++) {
+                String type = array.getString(i);
+                switch (type) {
+                    case "txt": {
+                        list.add(Type.TXT);
+                    }
+                    break;
+                    case "img": {
+                        list.add(Type.IMAGE);
+                    }
+                    break;
+                    case "loc": {
+                        list.add(Type.LOCATION);
+                    }
+                    break;
+                    case "video": {
+                        list.add(Type.VIDEO);
+                    }
+                    break;
+                    case "voice": {
+                        list.add(Type.VOICE);
+                    }
+                    break;
+                    case "file": {
+                        list.add(Type.FILE);
+                    }
+                    break;
+                    case "cmd": {
+                        list.add(Type.CMD);
+                    }
+                    break;
+                    case "custom": {
+                        list.add(Type.CUSTOM);
+                    }
+                    break;
+                    case "combine": {
+                        list.add(Type.COMBINE);
+                    }
+                    break;
+                }
+            }
+            if (list.size() > 0) {
+                options.setMsgTypes(list);
+            }
+        }
+
+        return options;
     }
 }

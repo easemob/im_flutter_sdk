@@ -2,7 +2,6 @@ package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.EMConversationListener;
 import com.hyphenate.EMMessageListener;
-import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.*;
 import com.hyphenate.chat.EMConversation.EMSearchDirection;
@@ -10,7 +9,6 @@ import com.hyphenate.chat.EMConversation.EMConversationType;
 
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMMessage;
-import com.hyphenate.chat.adapter.message.EMAMessage;
 import com.hyphenate.exceptions.HyphenateException;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
+
 
 public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler {
 
@@ -87,6 +85,8 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 deleteConversation(param, call.method, result);
             } else if (EMSDKMethod.fetchHistoryMessages.equals(call.method)) {
                 fetchHistoryMessages(param, call.method, result);
+            } else if (EMSDKMethod.fetchHistoryMessagesByOptions.equals(call.method)) {
+                fetchHistoryMessagesByOptions(param, call.method, result);
             } else if (EMSDKMethod.searchChatMsgFromDB.equals(call.method)) {
                 searchChatMsgFromDB(param, call.method, result);
             } else if (EMSDKMethod.getMessage.equals(call.method)) {
@@ -117,6 +117,16 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 removeMessagesFromServerWithMsgIds(param, call.method, result);
             } else if (EMSDKMethod.removeMessagesFromServerWithTs.equals(call.method)) {
                 removeMessagesFromServerWithTs(param, call.method, result);
+            } else if (EMSDKMethod.getConversationsFromServerWithCursor.equals(call.method)) {
+                getConversationsFromServerWithCursor(param, call.method, result);
+            } else if (EMSDKMethod.getPinnedConversationsFromServerWithCursor.equals(call.method)) {
+                getPinnedConversationsFromServerWithCursor(param, call.method, result);
+            } else if (EMSDKMethod.pinConversation.equals(call.method)) {
+                pinConversation(param, call.method, result);
+            } else if (EMSDKMethod.modifyMessage.equals(call.method)) {
+                modifyMessage(param, call.method, result);
+            } else if (EMSDKMethod.downloadAndParseCombineMessage.equals(call.method)) {
+                downloadAndParseCombineMessage(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -254,7 +264,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void ackConversationRead(JSONObject param, String channelName, Result result) throws JSONException {
-        String conversationId = param.getString("con_id");
+        String conversationId = param.getString("convId");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().chatManager().ackConversationRead(conversationId);
@@ -297,7 +307,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getConversation(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         boolean createIfNeed = true;
         if (param.has("createIfNeed")) {
             createIfNeed = param.getBoolean("createIfNeed");
@@ -313,7 +323,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void getThreadConversation(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         asyncRunnable(() -> {
             EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, EMConversationType.GroupChat, true, true);
             onSuccess(result, channelName, conversation != null ? EMConversationHelper.toJson(conversation) : null);
@@ -435,6 +445,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         });
     }
 
+
     private void downloadAttachment(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage tempMsg = EMMessageHelper.fromJson(param.getJSONObject("message"));
         final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
@@ -537,7 +548,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             {
                 canUpdate = true;
             }
-                break;
+            break;
             default:
                 break;
         }
@@ -564,8 +575,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }else if (msg.getType() == EMMessage.Type.VIDEO) {
                 EMVideoMessageBody tmpBody = (EMVideoMessageBody) body;
                 if (isThumbnail) {
-                    // android not support now.
-                    // tmpBody.setThumbnailDownloadStatus(downloadStatus);
+                    tmpBody.setThumbnailDownloadStatus(downloadStatus);
                 }else {
                     tmpBody.setDownloadStatus(downloadStatus);
                 }
@@ -657,7 +667,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void deleteConversation(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         boolean isDelete = param.getBoolean("deleteMessages");
         asyncRunnable(() -> {
             boolean ret = EMClient.getInstance().chatManager().deleteConversation(conId, isDelete);
@@ -666,20 +676,46 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void fetchHistoryMessages(JSONObject param, String channelName, Result result) throws JSONException {
-        String conId = param.getString("con_id");
+        String conId = param.getString("convId");
         EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
         int pageSize = param.getInt("pageSize");
         String startMsgId = param.getString("startMsgId");
+        EMSearchDirection direction = param.optInt("direction") == 0 ? EMSearchDirection.UP : EMSearchDirection.DOWN;
         asyncRunnable(() -> {
             try {
                 EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
-                        type, pageSize, startMsgId);
+                        type, pageSize, startMsgId, direction);
                 onSuccess(result, channelName, EMCursorResultHelper.toJson(cursorResult));
             } catch (HyphenateException e) {
                 onError(result, e);
             }
         });
     }
+
+    private void fetchHistoryMessagesByOptions(JSONObject param, String channelName, Result result) throws JSONException {
+        String conId = param.getString("convId");
+        EMConversationType type = EMConversationHelper.typeFromInt(param.getInt("type"));
+        int pageSize = param.getInt("pageSize");
+        String cursor = null;
+        if (param.has("cursor")) {
+             cursor = param.getString("cursor");
+        }
+        EMFetchMessageOption option = null;
+        if (param.has("options")) {
+            option = FetchHistoryOptionsHelper.fromJson(param.getJSONObject("options"));
+        }
+
+        EMValueWrapperCallBack<EMCursorResult<EMMessage>> callBack = new EMValueWrapperCallBack<EMCursorResult<EMMessage>>(result,
+                channelName) {
+            @Override
+            public void onSuccess(EMCursorResult<EMMessage> result) {
+                updateObject(EMCursorResultHelper.toJson(result));
+            }
+        };
+
+        EMClient.getInstance().chatManager().asyncFetchHistoryMessages(conId, type, pageSize, cursor, option, callBack);
+    }
+
 
     private void searchChatMsgFromDB(JSONObject param, String channelName, Result result) throws JSONException {
         String keywords = param.getString("keywords");
@@ -834,6 +870,56 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().asyncReportMessage(msgId, tag, reason, new EMWrapperCallBack(result, channelName, true));
     }
 
+    private void getConversationsFromServerWithCursor(JSONObject param, String channelName, Result result) throws JSONException {
+        String cursor = param.optString("cursor");
+        int pageSize = param.optInt("pageSize");
+        EMClient.getInstance().chatManager().asyncFetchConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMConversation> object) {
+                super.updateObject(EMCursorResultHelper.toJson(object));
+            }
+        });
+    }
+    private void getPinnedConversationsFromServerWithCursor(JSONObject param, String channelName, Result result) throws JSONException {
+        String cursor = param.optString("cursor");
+        int pageSize = param.optInt("pageSize");
+        EMClient.getInstance().chatManager().asyncFetchPinnedConversationsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMConversation>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMConversation> object) {
+                super.updateObject(EMCursorResultHelper.toJson(object));
+            }
+        });
+    }
+    private void pinConversation(JSONObject param, String channelName, Result result) throws JSONException {
+        String convId = param.optString("convId");
+        Boolean isPinned = param.optBoolean("isPinned", false);
+        EMClient.getInstance().chatManager().asyncPinConversation(convId, isPinned, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void modifyMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        String msgId = param.optString("msgId");
+        EMTextMessageBody body = EMMessageBodyHelper.textBodyFromJson(param.optJSONObject("body"));
+        EMClient.getInstance().chatManager().asyncModifyMessage(msgId, body, new EMValueWrapperCallBack<EMMessage>(result, channelName) {
+            @Override
+            public void onSuccess(EMMessage object) {
+                updateObject(EMMessageHelper.toJson(object));
+            }
+        });
+    }
+    private void downloadAndParseCombineMessage(JSONObject param, String channelName, Result result) throws JSONException {
+        EMMessage msg =  EMMessageHelper.fromJson(param.optJSONObject("message"));
+        EMClient.getInstance().chatManager().downloadAndParseCombineMessage(msg, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName){
+            @Override
+            public void onSuccess(List<EMMessage> msgList) {
+                List<Map> messages = new ArrayList<>();
+                for(EMMessage msg: msgList) {
+                    messages.add(EMMessageHelper.toJson(msg));
+                }
+                updateObject(messages);
+            }
+        });
+    }
+
     @Override
     public void unRegisterEaseListener() {
         EMClient.getInstance().chatManager().removeMessageListener(messageListener);
@@ -841,6 +927,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void registerEaseListener() {
+
+        if (messageListener != null) {
+            EMClient.getInstance().chatManager().removeMessageListener(messageListener);
+        }
 
         messageListener = new EMMessageListener() {
             @Override
@@ -916,8 +1006,21 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 }
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessageReactionDidChange, list));
             }
+
+            @Override
+            public void onMessageContentChanged(EMMessage messageModified, String operatorId, long operationTime) {
+                 Map msgMap = EMMessageHelper.toJson(messageModified);
+                 Map map = new HashMap<>();
+                 map.put("message", msgMap);
+                 map.put("operator", operatorId);
+                 map.put("operationTime", operationTime);
+                post(() -> channel.invokeMethod(EMSDKMethod.onMessageContentChanged, map));
+            }
         };
 
+        if (conversationListener != null) {
+            EMClient.getInstance().chatManager().removeConversationListener(conversationListener);
+        }
         conversationListener = new EMConversationListener() {
 
             @Override

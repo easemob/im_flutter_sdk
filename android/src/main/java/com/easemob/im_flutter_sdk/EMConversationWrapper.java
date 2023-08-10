@@ -11,6 +11,7 @@ import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessageBody;
+import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +59,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.clearAllMessages.equals(call.method)) {
                 clearAllMessages(param, call.method, result);
             }
+            else if (EMSDKMethod.deleteMessagesWithTs.equals(call.method)) {
+                deleteMessagesWithTs(param, call.method, result);
+            }
             else if (EMSDKMethod.insertMessage.equals((call.method))) {
                 insertMessage(param, call.method, result);
             }
@@ -102,7 +106,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
     private void getUnreadMsgCount(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-
         asyncRunnable(()->{
             onSuccess(result, channelName,  conversation.getUnreadMsgCount());   
         });
@@ -177,6 +180,23 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             onSuccess(result, channelName, true);
         });
     }
+
+    private void deleteMessagesWithTs(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        long startTs = params.getLong("startTs");
+        long endTs = params.getLong("endTs");
+        asyncRunnable(()->{
+            boolean success = conversation.removeMessages(startTs, endTs);
+            if (success) {
+                onSuccess(result, channelName, true);
+            }else {
+                HyphenateException e = new HyphenateException(3, "Database operation error");
+                onError(result, e);
+            }
+        });
+    }
+
+
 
     private void insertMessage(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
@@ -281,6 +301,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             case "img" : type = EMMessage.Type.IMAGE; break;
             case "video" : type = EMMessage.Type.VIDEO; break;
             case "voice" : type = EMMessage.Type.VOICE; break;
+            case "combine" : type = EMMessage.Type.COMBINE; break;
         }
 
         EMMessage.Type finalType = type;
@@ -335,9 +356,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     }
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
-        String con_id = params.getString("con_id");
+        String convId = params.getString("convId");
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
-        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(con_id, type, true);
+        EMConversation conversation = EMClient.getInstance().chatManager().getConversation(convId, type, true);
         return conversation;
     }
 

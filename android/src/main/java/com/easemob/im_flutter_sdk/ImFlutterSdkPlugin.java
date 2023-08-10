@@ -21,34 +21,29 @@ import java.util.Map;
 /**
  * ImFlutterSdkPlugin
  */
-public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
+public class ImFlutterSdkPlugin implements FlutterPlugin {
 
     static final Handler handler = new Handler(Looper.getMainLooper());
 
-    private EMClientWrapper clientWrapper;
+    EMClientWrapper clientWrapper;
 
     public ImFlutterSdkPlugin() {
     }
 
+     public void sendDataToFlutter(final Map data) {
+        if (clientWrapper != null) {
+            clientWrapper.sendDataToFlutter(data);
+        }
+    }
 
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "chat_client");
-        if (clientWrapper != null) {
-            clientWrapper.unRegisterEaseListener();
-        }
         clientWrapper = new EMClientWrapper(flutterPluginBinding, "chat_client");
-        channel.setMethodCallHandler(clientWrapper);
     }
 
     @Override
     public void onDetachedFromEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-
-    }
-
-    @Override
-    public void onMethodCall(MethodCall call, MethodChannel.Result result) {
-
+        clientWrapper.unRegisterEaseListener();
     }
 }
 
@@ -108,18 +103,17 @@ class EMDownloadCallback implements EMCallBack {
 
     @Override
     public void onSuccess() {
-        EMClientWrapper.getInstance().progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
+
     }
 
     @Override
     public void onError(int code, String error) {
-        HyphenateException e = new HyphenateException(code, error);
-        EMClientWrapper.getInstance().progressManager.sendDownloadErrorToFlutter(fileId, e);
+
     }
 
     @Override
     public void onProgress(int progress, String status) {
-        EMClientWrapper.getInstance().progressManager.sendDownloadProgressToFlutter(fileId, progress);
+
     }
 }
 

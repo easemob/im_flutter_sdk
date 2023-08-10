@@ -24,6 +24,7 @@
     data[@"isAutoDownload"] = @(self.autoDownloadThumbnail);
     data[@"isChatRoomOwnerLeaveAllowed"] = @(self.canChatroomOwnerLeave);
     data[@"serverTransfer"] = @(self.isAutoTransferMessageAttachments);
+    data[@"loadEmptyConversations"] = @(self.loadEmptyConversations);
     data[@"usingHttpsOnly"] = @(self.usingHttpsOnly);
     data[@"pushConfig"] = @{@"pushConfig": @{@"apnsCertName": self.apnsCertName}};
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
@@ -32,6 +33,8 @@
     data[@"restServer"] = self.restServer;
     data[@"dnsUrl"] = self.dnsURL;
     data[@"areaCode"] = @(self.area);
+    data[@"deviceName"] = self.customDeviceName;
+    data[@"osType"] = @(self.customOSType);
     
     return data;
 }
@@ -49,6 +52,7 @@
     options.autoDownloadThumbnail = [aJson[@"isAutoDownload"] boolValue];
     options.canChatroomOwnerLeave = [aJson[@"isChatRoomOwnerLeaveAllowed"] boolValue];
     options.isAutoTransferMessageAttachments = [aJson[@"serverTransfer"] boolValue];
+    options.loadEmptyConversations = [aJson[@"loadEmptyConversations"] boolValue];
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
     options.apnsCertName = aJson[@"pushConfig"][@"apnsCertName"];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
@@ -57,7 +61,10 @@
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
     options.area = [aJson[@"areaCode"] intValue];
-    
+    options.customDeviceName = aJson[@"deviceName"];
+    if(aJson[@"osType"]) {
+        options.customOSType = [aJson[@"osType"] intValue];
+    }
     return options;
 }
 @end

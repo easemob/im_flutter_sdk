@@ -30,10 +30,12 @@ public class EMSDKMethod {
     static final String onUserDidLoginTooManyDevice = "onUserDidLoginTooManyDevice";
     static final String onUserKickedByOtherDevice = "onUserKickedByOtherDevice";
     static final String onUserAuthenticationFailed = "onUserAuthenticationFailed";
-
+    static final String onAppActiveNumberReachLimit = "onAppActiveNumberReachLimit";
     static final String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
     static final String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
     static final String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
+    static final String onMultiDeviceRemoveMessagesEvent = "onMultiDeviceRemoveMessagesEvent";
+    static final String onMultiDevicesConversationEvent = "onMultiDevicesConversationEvent";
     static final String onSendDataToFlutter = "onSendDataToFlutter";
     static final String onTokenWillExpire = "onTokenWillExpire";
     static final String onTokenDidExpire = "onTokenDidExpire";
@@ -73,6 +75,7 @@ public class EMSDKMethod {
     static final String getConversationsFromServer = "getConversationsFromServer";
     static final String deleteConversation = "deleteConversation";
     static final String fetchHistoryMessages = "fetchHistoryMessages";
+    static final String fetchHistoryMessagesByOptions = "fetchHistoryMessagesByOptions";
     static final String searchChatMsgFromDB = "searchChatMsgFromDB";
     static final String getMessage = "getMessage";
     static final String asyncFetchGroupAcks = "asyncFetchGroupAcks";
@@ -91,6 +94,11 @@ public class EMSDKMethod {
     static final String removeMessagesFromServerWithMsgIds = "removeMessagesFromServerWithMsgIds";
     static final String removeMessagesFromServerWithTs = "removeMessagesFromServerWithTs";
 
+    static final String getConversationsFromServerWithCursor = "getConversationsFromServerWithCursor";
+    static final String getPinnedConversationsFromServerWithCursor = "getPinnedConversationsFromServerWithCursor";
+    static final String pinConversation = "pinConversation";
+    static final String modifyMessage = "modifyMessage";
+    static final String downloadAndParseCombineMessage = "downloadAndParseCombineMessage";
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
@@ -104,6 +112,8 @@ public class EMSDKMethod {
     static final String onConversationHasRead = "onConversationHasRead";
 
     static final String onMessageReactionDidChange = "messageReactionDidChange";
+    static final String onMessageContentChanged = "onMessageContentChanged";
+
 
     /// EMMessage listener
     static final String onMessageProgressUpdate = "onMessageProgressUpdate";
@@ -121,6 +131,8 @@ public class EMSDKMethod {
     static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";
     static final String clearAllMessages = "clearAllMessages";
+
+    static final String deleteMessagesWithTs = "deleteMessagesWithTs";
     static final String insertMessage = "insertMessage";
     static final String appendMessage = "appendMessage";
     static final String updateConversationMessage = "updateConversationMessage";
@@ -222,6 +234,10 @@ public class EMSDKMethod {
     static final String declineJoinApplication = "declineJoinApplication";
     static final String acceptInvitationFromGroup = "acceptInvitationFromGroup";
     static final String declineInvitationFromGroup = "declineInvitationFromGroup";
+    static final String setMemberAttributesFromGroup = "setMemberAttributesFromGroup";
+    static final String removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup";
+    static final String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
+    static final String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
 
     /// EMGroupManagerListener
     static final String onGroupChanged = "onGroupChanged";

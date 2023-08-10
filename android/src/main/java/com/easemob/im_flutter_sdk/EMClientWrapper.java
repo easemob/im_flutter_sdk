@@ -1,5 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
+import static com.easemob.im_flutter_sdk.EMConversationHelper.typeToInt;
+
 import java.util.ArrayList;
 
 import java.util.Map;
@@ -18,6 +20,7 @@ import io.flutter.plugin.common.PluginRegistry;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
@@ -30,7 +33,6 @@ import org.json.JSONObject;
 
 public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
-    static EMClientWrapper wrapper;
     private EMChatManagerWrapper chatManagerWrapper;
     private EMGroupManagerWrapper groupManagerWrapper;
     private EMChatRoomManagerWrapper chatRoomManagerWrapper;
@@ -45,14 +47,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     private EMMultiDeviceListener multiDeviceListener;
     private EMConnectionListener connectionListener;
 
+    private EMOptions options;
 
     EMClientWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
         super(flutterPluginBinding, channelName);
-        wrapper = this;
-    }
-
-    public static EMClientWrapper getInstance() {
-        return wrapper;
     }
 
     public void sendDataToFlutter(final Map data) {
@@ -61,7 +59,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         }
         post(()-> channel.invokeMethod(EMSDKMethod.onSendDataToFlutter, data));
     }
-
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
@@ -201,7 +198,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
-        onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
+        });
     }
 
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
@@ -222,15 +221,22 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
     private void getToken(JSONObject param, String channelName, Result result) throws JSONException
     {
-        onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
+        });
     }
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
-        onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore());
+        asyncRunnable(()->{
+            EMOptions emOptions = EMClient.getInstance().getOptions();
+            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore() && emOptions.getAutoLogin());
+        });
     }
 
     private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
-        onSuccess(result, channelName, EMClient.getInstance().isConnected());
+        asyncRunnable(()->{
+            onSuccess(result, channelName, EMClient.getInstance().isConnected());
+        });
     }
 
     private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
@@ -253,63 +259,108 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         String username = param.getString("username");
         String password = param.getString("password");
         String resource = param.getString("resource");
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().kickDevice(username, password, resource);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+        boolean isPwd = param.optBoolean("isPwd");
+        if (isPwd) {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickDevice(username, password, resource);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }else {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickDeviceWithToken(username, password, resource);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }
     }
 
     private void kickAllDevices(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
-
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().kickAllDevices(username, password);
-                onSuccess(result, channelName, true);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
-
+        boolean isPwd = param.optBoolean("isPwd");
+        if (isPwd) {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickAllDevices(username, password);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }else {
+            asyncRunnable(()->{
+                try {
+                    EMClient.getInstance().kickAllDevicesWithToken(username, password);
+                    onSuccess(result, channelName, true);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }
     }
 
     private void init(JSONObject param, String channelName, Result result) throws JSONException {
-        EMOptions options = EMOptionsHelper.fromJson(param, this.context);
+        if (options != null) {
+            onSuccess(result, channelName, null);
+            return;
+        }
+        options = EMOptionsHelper.fromJson(param, this.context);
         EMClient.getInstance().init(this.context, options);
         EMClient.getInstance().setDebugMode(param.getBoolean("debugModel"));
 
         bindingManagers();
         registerEaseListener();
+
         onSuccess(result, channelName, null);
 
     }
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {
         String agoraToken = param.getString("agora_token");
-        EMClient.getInstance().renewToken(agoraToken);
-        onSuccess(result, channelName, null);
+        asyncRunnable(()->{
+            EMClient.getInstance().renewToken(agoraToken);
+            onSuccess(result, channelName, null);
+        });
     }
 
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
         String username = param.getString("username");
         String password = param.getString("password");
-        new Thread(() -> {
-            try {
-                List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(username, password);
-                List<Map> jsonList = new ArrayList <>();
-                for (EMDeviceInfo info: devices) {
-                    jsonList.add(EMDeviceInfoHelper.toJson(info));
+        boolean isPwd = param.optBoolean("isPwd");
+        if (isPwd) {
+            asyncRunnable(()->{
+                try {
+                    List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServer(username, password);
+                    List<Map> jsonList = new ArrayList <>();
+                    for (EMDeviceInfo info: devices) {
+                        jsonList.add(EMDeviceInfoHelper.toJson(info));
+                    }
+                    onSuccess(result, channelName, jsonList);
+                } catch (HyphenateException e) {
+                    onError(result, e);
                 }
-                onSuccess(result, channelName, jsonList);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+            });
+        }else {
+            asyncRunnable(()->{
+                try {
+                    List<EMDeviceInfo> devices = EMClient.getInstance().getLoggedInDevicesFromServerWithToken(username, password);
+                    List<Map> jsonList = new ArrayList <>();
+                    for (EMDeviceInfo info: devices) {
+                        jsonList.add(EMDeviceInfoHelper.toJson(info));
+                    }
+                    onSuccess(result, channelName, jsonList);
+                } catch (HyphenateException e) {
+                    onError(result, e);
+                }
+            });
+        }
     }
 
     private void startCallback(JSONObject param, String channelName, Result result) {
@@ -322,6 +373,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         contactManagerWrapper = new EMContactManagerWrapper(binging, "chat_contact_manager");
         chatRoomManagerWrapper = new EMChatRoomManagerWrapper(binging, "chat_room_manager");
         groupManagerWrapper = new EMGroupManagerWrapper(binging, "chat_group_manager");
+        groupManagerWrapper.clientWrapper = this;
         conversationWrapper = new EMConversationWrapper(binging, "chat_conversation");
         pushManagerWrapper = new EMPushManagerWrapper(binging, "chat_push_manager");
         userInfoManagerWrapper = new EMUserInfoManagerWrapper(binging, "chat_userInfo_manager");
@@ -355,6 +407,11 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void registerEaseListener() {
 
+        if (multiDeviceListener != null) {
+            EMClient.getInstance().removeMultiDeviceListener(multiDeviceListener);
+        }
+
+
         multiDeviceListener = new EMMultiDeviceListener() {
             @Override
             public void onContactEvent(int event, String target, String ext) {
@@ -381,7 +438,28 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 data.put("users", usernames);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
             }
+
+            @Override
+            public void onMessageRemoved(String conversationId, String deviceId) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("convId", conversationId);
+                data.put("deviceId", deviceId);
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceRemoveMessagesEvent, data));
+            }
+
+            @Override
+            public void onConversationEvent(int event, String conversationId, EMConversation.EMConversationType type) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("event", Integer.valueOf(event));
+                data.put("convId", conversationId);
+                data.put("convType", typeToInt(type));
+                post(()-> channel.invokeMethod(EMSDKMethod.onMultiDevicesConversationEvent, data));
+            }
         };
+
+        if (connectionListener != null) {
+            EMClient.getInstance().removeConnectionListener(connectionListener);
+        }
 
         connectionListener = new EMConnectionListener() {
             @Override
@@ -399,8 +477,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onDisconnected(int errorCode) {
                 if (errorCode == 206) {
-                    EMListenerHandle.getInstance().clearHandle();
-                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
+                    // 这部分实现放到onLogout中。
+//                    EMListenerHandle.getInstance().clearHandle();
+//                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, null));
                 }else if (errorCode == 207) {
                     EMListenerHandle.getInstance().clearHandle();
                     post(() -> channel.invokeMethod(EMSDKMethod.onUserDidRemoveFromServer, null));
@@ -422,6 +501,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                     EMListenerHandle.getInstance().clearHandle();
                     post(() -> channel.invokeMethod(EMSDKMethod.onUserAuthenticationFailed, null));
                 }
+                else if (errorCode == 8) {
+                    post(() -> channel.invokeMethod(EMSDKMethod.onAppActiveNumberReachLimit, null));
+                }
                 else {
                     post(() -> channel.invokeMethod(EMSDKMethod.onDisconnected, null));
                 }
@@ -435,6 +517,16 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onTokenWillExpire() {
                 post(()-> channel.invokeMethod(EMSDKMethod.onTokenWillExpire, null));
+            }
+
+            @Override
+            public void onLogout(int errorCode, String info) {
+                if (errorCode == 206) {
+                    EMListenerHandle.getInstance().clearHandle();
+                    Map<String, String> attributes = new HashMap<>();
+                    attributes.put("deviceName", info);
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, attributes));
+                }
             }
         };
 

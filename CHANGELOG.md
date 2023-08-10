@@ -1,4 +1,54 @@
-## NEXT
+## 4.1.0
+
+#### 新增：
+- 增加 `EMOptions#osType`属性和`EMOptions#deviceName`属性，用户设置设备类型和设备名称；
+- 增加 `Combine` 消息类型，用于合并转发消息；
+- 增加 `EMChatManager#fetchCombineMessageDetail` 方法;
+- 增加 `EMChatManager#modifyMessage` 方法用户修改已发送的消息，目前只支持文本消息消息;
+- 增加 `EMChatEventHandler#onMessageContentChanged` 回调，用户监听消息编辑实现；
+- 增加 `EMClient#fetchLoggedInDevices` 方法，可是使用token获取已登录的设备列表；
+- 增加 `EMClient#kickDevice` 方法，可以使用 token 踢掉指定设备；
+- 增加 `EMClient#kickAllDevices` 方法，可以使用 token 踢掉所有已登录设备；
+- 增加 `EMChatManager#fetchConversation` 方法，获取服务器会话列表，原方法 `EMChatManager#getConversationsFromServer` 作废；
+- 增加 `EMChatManager#pinConversation` 方法，实现在服务器会话列表中 置顶/取消置顶 会话；
+- 增加 `hatManager#fetchPinnedConversations` 方法，从服务器获取已置顶会话；
+- 增加 `EMMessage#receiverList` 属性，用于在群组/聊天室中发送定向消息；
+
+#### 修复：
+- 修复 ios 中无法收到 `EMConnectionEventHandler#onConnected` 和 `EMConnectionEventHandler#onDisconnected` 的问题；
+- 修复 安卓消息中，发送方`attributes` 中包含string类型，接收方变为int类型的问题；
+
+#### 优化：
+- 离开聊天室 `EMChatRoomEventHandler#onRemovedFromChatRoom` 回调中增加离开原因;
+- 被其他设备踢下线 `EMConnectionEventHandler#onUserDidLoginFromOtherDevice` 回调中增加操作人deviceName;
+
+
+## 4.0.2
+
+#### 新增：
+- 增加 `EMGroupManager#setMemberAttributes` 方法，用于设置群成员属性；
+- 增加 `EMGroupManager#fetchMemberAttributes` 和 `GroupManager#fetchMembersAttributes` 方法用户获取群成员属性；
+- 增加 `EMGroupEventHandler#onAttributesChangedOfGroupMember` 群成员属性变更回调;
+- 增加 `EMChatManager#fetchHistoryMessagesByOption` 方法；
+- 增加 `EMConversation#deleteMessagesWithTs` 方法；
+- 增加 `EMMessage#deliverOnlineOnly` 属性用于设置只向在线用户投递消息；
+
+#### 修复：
+- 修复安卓 hot reload 后回调多次的问题；
+- 修复iOS 获取聊天室属性key传null导致的崩溃问题；
+
+#### 优化：
+- 为`ChatManager#fetchHistoryMessages` 方法增加获取方向；
+
+## 4.0.0+7
+
+#### 修复
+- 修复初始化无返回的问题。
+
+## 4.0.0+6
+
+#### 修复
+- 修复下载附件结束后状态不准确的问题。
 
 ## 4.0.0+7
 - 修复初始化问题。

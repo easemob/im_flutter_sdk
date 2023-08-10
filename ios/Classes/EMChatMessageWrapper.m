@@ -96,4 +96,5 @@
 - (EMChatMessage *)getMessageWithId:(NSString *)aMessageId {
     return [EMClient.sharedClient.chatManager getMessageWithMessageId:aMessageId];
 }
+
 @end
