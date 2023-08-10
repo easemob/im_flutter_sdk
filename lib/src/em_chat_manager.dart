@@ -181,7 +181,7 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Resend a message.
+  /// Resends a message.
   ///
   /// Param [message] The message object to be resent: [EMMessage].
   /// ~end
@@ -478,7 +478,7 @@ class EMChatManager {
   /// ~end
   ///
   /// ~chinese
-  /// 根据threadId 获取 thread 会话。
+  /// 根据thread ID 获取 thread 会话。
   ///
   /// Param [threadId] Thread ID.
   ///
@@ -746,7 +746,7 @@ class EMChatManager {
   @Deprecated('Use [fetchConversation] instead')
 
   /// ~english
-  /// fetch the conversations from the server.
+  /// Gets the list of conversations from the server.
   ///
   /// Param [pageNum] The current page number.
   ///
@@ -758,11 +758,11 @@ class EMChatManager {
   /// ~end
   ///
   /// ~chinese
-  /// 获取服务器会话。
+  /// 获取服务器会话列表。
   ///
-  /// Param [pageNum] 获取的页码。
+  /// Param [pageNum] 当前页码。
   ///
-  /// Param [pageSize] 获取页中返回数量。
+  /// Param [pageSize] 每页期望返回的会话数量。
   ///
   /// **Return** 当前用户的会话列表。
   ///
@@ -799,7 +799,7 @@ class EMChatManager {
   /// The SDK retrieves the list of conversations in the reverse chronological order of their active time (the timestamp of the last message).
   /// If there is no message in the conversation, the SDK retrieves the list of conversations in the reverse chronological order of their creation time.
   ///
-  /// Param [cursor] The position from which to start getting data. the SDK retrieves conversations from the latest active one if no set.
+  /// Param [cursor] The position from which to start getting data. The SDK retrieves conversations from the latest active one if this parameter is not set.
   ///
   /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
   ///
@@ -809,7 +809,7 @@ class EMChatManager {
   /// ~end
   ///
   /// ~chinese
-  /// 分页从服务器获取获取会话列表。
+  /// 从服务器分页获取会话列表。
   ///
   /// SDK 按照会话活跃时间（会话的最后一条消息的时间戳）倒序返回会话列表。
   /// 若会话中没有消息，则 SDK 按照会话创建时间的倒序返回会话列表。
@@ -978,11 +978,11 @@ class EMChatManager {
   ///
   /// Param [pageSize] The number of messages per page.
   ///
-  /// Param [direction] The direction of the search to be fetched. See [EMSearchDirection].
+  /// Param [direction] The message search direction. See [EMSearchDirection].
   ///
-  /// Param [startMsgId] The ID of the message from which you start to get the historical messages. If `null` is passed, the SDK gets messages in reverse chronological order.
+  /// Param [startMsgId] The ID of the message from which you start to get the historical messages. If `null` is passed, the SDK gets messages in the reverse chronological order.
   ///
-  /// **Return** The obtained messages and the cursor for the next fetch action.
+  /// **Return** The obtained messages and the cursor for the next query.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1032,7 +1032,7 @@ class EMChatManager {
   }
 
   /// ~english
-  /// [FetchMessageOptions] paging from the server to retrieve the history message for the specified session.
+  /// Gets historical messages of a conversation from the server according to [FetchMessageOptions].
   ///
   /// Param [conversationId] The conversation ID, which is the user ID of the peer user for one-to-one chat, but the group ID for group chat.
   ///
@@ -1097,7 +1097,7 @@ class EMChatManager {
   ///
   /// Param [maxCount] The maximum number of messages to retrieve each time.
   ///
-  /// Param [from] A username or group ID at which the retrieval is targeted.  Usually, it is the conversation ID.
+  /// Param [from] A user ID or group ID at which the retrieval is targeted. Usually, it is the conversation ID.
   ///
   /// **Return** The list of messages.
   ///
@@ -1152,7 +1152,6 @@ class EMChatManager {
   /// ~english
   /// Gets read receipts for group messages from the server with pagination.
   ///
-  /// See also:
   /// For how to send read receipts for group messages, see [sendConversationReadAck].
   ///
   /// Param [msgId] The message ID.
@@ -1219,7 +1218,7 @@ class EMChatManager {
   ///
   /// Param [conversationType] The conversation type. See  [EMConversationType].
   ///
-  /// Param [isDeleteRemoteMessage] Whether to delete the server chat history when deleting the conversation.
+  /// Param [isDeleteMessage] Whether to delete the chat history when deleting the conversation.
   /// - `true`: (default) Yes.
   /// - `false`: No.
   ///
@@ -1234,7 +1233,7 @@ class EMChatManager {
   ///
   /// Param [conversationType] 会话类型，详见 [EMConversationType]。
   ///
-  /// Param [isDeleteRemoteMessage] 删除会话时是否同时删除服务器历史消息记录。
+  /// Param [isDeleteMessage] 删除会话时是否同时删除历史消息记录。
   ///
   /// - （默认）`true`：是；
   /// - `false`：否。
@@ -1244,7 +1243,7 @@ class EMChatManager {
   Future<void> deleteRemoteConversation(
     String conversationId, {
     EMConversationType conversationType = EMConversationType.Chat,
-    bool isDeleteRemoteMessage = true,
+    bool isDeleteMessage = true,
   }) async {
     Map req = {};
     req["conversationId"] = conversationId;
@@ -1255,7 +1254,7 @@ class EMChatManager {
     } else {
       req["conversationType"] = 2;
     }
-    req["isDeleteRemoteMessage"] = isDeleteRemoteMessage;
+    req["isDeleteRemoteMessage"] = isDeleteMessage;
 
     Map data = await ChatChannel.invokeMethod(
         ChatMethodKeys.deleteRemoteConversation, req);
@@ -1330,11 +1329,11 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Adds a reaction.
+  /// Adds a Reaction.
   ///
   /// Param [messageId] The message ID.
   ///
-  /// Param [reaction] The reaction content.
+  /// Param [reaction] The Reaction content.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1363,11 +1362,11 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Deletes a reaction.
+  /// Deletes a Reaction.
   ///
   /// Param [messageId] The message ID.
   ///
-  /// Param [reaction] The reaction content.
+  /// Param [reaction] The Reaction content.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1402,7 +1401,7 @@ class EMChatManager {
   ///
   /// Param [chatType] The chat type. Only one-to-one chat [ChatType.Chat] and group chat [ChatType.GroupChat] are allowed.
   ///
-  /// Param [groupId] which is valid only when the chat type is group chat.
+  /// Param [groupId] The group ID. This parameter is valid only when the chat type is group chat.
   ///
   /// **Return** The Reaction list under the specified message ID（[EMMessageReaction.userList] is the summary data, which only contains the information of the first three users）.
   ///
@@ -1454,11 +1453,11 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Gets the reaction details.
+  /// Gets the Reaction details.
   ///
   /// Param [messageId] The message ID.
   ///
-  /// Param [reaction] The reaction content.
+  /// Param [reaction] The Reaction content.
   ///
   /// Param [cursor] The cursor position from which to get Reactions.
   ///
@@ -1512,13 +1511,13 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Translate a message.
+  /// Translates a text message.
   ///
-  /// Param [msg] The message object
+  /// Param [msg] The message object for translation.
   ///
-  /// Param [languages] The target languages to translate
+  /// Param [languages] The list of target language codes.
   ///
-  /// **Return** Translated Message
+  /// **Return** The translated message.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1528,7 +1527,7 @@ class EMChatManager {
   ///
   /// Param [msg] 要翻译的文本消息。
   ///
-  /// Param [languages] 目标语言。
+  /// Param [languages] 目标语言代码列表。
   ///
   /// **Return** 译文。
   ///
@@ -1552,9 +1551,9 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Fetch all languages what the translate service support
+  /// Gets all languages supported by the translation service.
   ///
-  /// **Return** Supported languages
+  /// **Return** The supported languages.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1586,7 +1585,7 @@ class EMChatManager {
   ///
   /// The SDK returns the pinned conversations in the reverse chronological order of their pinning.
   ///
-  /// Param [cursor] The position from which to start getting data. the SDK retrieves conversations from the latest pinned one if no set.
+  /// Param [cursor] The position from which to start getting data. If this parameter is not set, the SDK retrieves conversations from the latest pinned one.
   ///
   /// Param [pageSize] The number of conversations that you expect to get on each page. The value range is [1,50].
   ///
@@ -1674,9 +1673,11 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Modifies a local message or a message at the server side.
+  /// Modifies a message.
   ///
-  /// You can call this method to only modify a text message in one-to-one chats or group chats, but not in chat rooms.
+  /// After this method is called to modify a message, both the local message and the message on the server are modified.
+  ///
+  /// This method can only modify a text message in one-to-one chats or group chats, but not in chat rooms.
   ///
   /// Param [messageId] The ID of the message to modify.
   ///
@@ -1688,12 +1689,14 @@ class EMChatManager {
   /// ~end
   ///
   /// ~chinese
-  /// 修改本地以及服务端的消息内容。
+  /// 修改消息内容。
+  ///
+  /// 调用该方法修改消息内容后，本地和服务端的消息均会修改。
   ///
   /// 只能调用该方法修改单聊和群聊中的文本消息，不能修改聊天室消息。
   ///
-  /// Param [messageId] 消息实例id。
-  ///
+  /// Param [messageId] 消息实例 ID。
+  /// 
   /// Param [msgBody] 文本消息体实例 [EMTextMessageBody]。
   ///
   /// **Return** 修改后的消息实例。
@@ -1722,21 +1725,21 @@ class EMChatManager {
   }
 
   /// ~english
-  /// fetch combine message detail.
+  /// Gets the details of a combined message.
   ///
-  /// Param [message] The combine message.
+  /// Param [message] The combined message.
   ///
-  /// **Return** The combined message list.
+  /// **Return** The list of original messages included in the combined message.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 获取合并消息详情。
+  /// 获取合并消息的详情。
   ///
   /// Param [message] 合并消息。
   ///
-  /// **Return** 合并后的消息列表。
+  /// **Return** 合并消息包含的原始消息列表。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end

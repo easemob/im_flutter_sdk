@@ -151,29 +151,29 @@ class EMConnectionEventHandler {
   /// ~english
   /// The chat connection listener callback.
   ///
-  /// Param [onConnected] The SDK connects to the chat server successfully callback.
+  /// Param [onConnected] The SDK connects to the chat server successfully.
   ///
-  /// Param [onDisconnected] The SDK disconnect from the chat server callback.
+  /// Param [onDisconnected] The SDK disconnect from the chat server.
   ///
-  /// Param [onUserDidLoginFromOtherDevice] Current user account is logged in to another device callback.
+  /// Param [onUserDidLoginFromOtherDevice] The current user account is logged in to another device.
   ///
-  /// Param [onUserDidRemoveFromServer] Current chat user is removed from the server callback.
+  /// Param [onUserDidRemoveFromServer] The current chat user is removed from the server.
   ///
-  /// Param [onUserDidForbidByServer] Current chat user is forbid from the server callback.
+  /// Param [onUserDidForbidByServer] The current chat user is banned by the server.
   ///
-  /// Param [onUserDidChangePassword] Current chat user is changed password callback.
+  /// Param [onUserDidChangePassword] The current chat user is changed password.
   ///
-  /// Param [onUserDidLoginTooManyDevice] Current chat user logged to many devices callback.
+  /// Param [onUserDidLoginTooManyDevice] The current chat user logged in to many devices.
   ///
-  /// Param [onUserKickedByOtherDevice] Current chat user kicked by other device callback.
+  /// Param [onUserKickedByOtherDevice] The current chat user is kicked by another device.
   ///
-  /// Param [onUserAuthenticationFailed] Current chat user authentication failed callback.
+  /// Param [onUserAuthenticationFailed] The authentication for the chat user failed.
   ///
-  /// Param [onTokenWillExpire] The token is about to expire callback.
+  /// Param [onTokenWillExpire] The token is about to expire.
   ///
-  /// Param [onTokenDidExpire] The token has expired callback.
+  /// Param [onTokenDidExpire] The token has expired.
   ///
-  /// Param [onAppActiveNumberReachLimit] The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit callback.
+  /// Param [onAppActiveNumberReachLimit] The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit.
   ///
   /// ~end
   ///
@@ -222,14 +222,14 @@ class EMConnectionEventHandler {
 
 /// ~english
 /// The multi-device event handler.
-/// Listens for callback for the current user's actions on other devices, including contact changes and group changes.
+/// Listens for callback for the current user's actions on other devices, including contact changes, group changes, and thread changes.
 ///
-/// Adds multi-device event handler:
+/// Adds a multi-device event handler:
 /// ```dart
 ///   EMClient.getInstance.addMultiDeviceEventHandler((UNIQUE_HANDLER_ID, EMMultiDeviceEventHandler());
 /// ```
 ///
-/// Remove a multi-device event handler:
+/// Removes a multi-device event handler:
 /// ```dart
 ///   EMClient.getInstance.removeMultiDeviceEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -237,7 +237,7 @@ class EMConnectionEventHandler {
 ///
 /// ~chinese
 /// 多设备事件监听
-/// 监听当前用户在其他设备上的操作的回调，包括联系人更改和组，thread等更改。
+/// 监听当前用户在其他设备上的操作的回调，包括联系人更改、群组和 thread 等更改。
 ///
 /// 添加监听:
 /// ```dart
@@ -281,7 +281,7 @@ class EMMultiDeviceEventHandler {
   /// ~end
   ///
   /// ~chinese
-  /// 多设备Thread 事件。
+  /// 多设备 Thread 事件。
   /// ~end
   final void Function(
     EMMultiDevicesEvent event,
@@ -290,7 +290,7 @@ class EMMultiDeviceEventHandler {
   )? onChatThreadEvent;
 
   /// ~english
-  /// Callback to other devices after conversation deleted message from server after enabling multiple devices.
+  /// Callback received by other devices after historical messages in a conversation are removed from the server in a multi-device login scenario.
   /// ~end
   ///
   /// ~chinese
@@ -302,7 +302,7 @@ class EMMultiDeviceEventHandler {
   )? onRemoteMessagesRemoved;
 
   /// ~english
-  /// The multi-device event callback for the operation of a single conversation.
+  /// The multi-device event callback for the operation of a conversation.
   /// ~end
   ///
   /// ~chinese
@@ -323,9 +323,9 @@ class EMMultiDeviceEventHandler {
   ///
   /// Param [onChatThreadEvent] The multi-device event of thread.
   ///
-  /// Param [onRemoteMessagesRemoved] The multi-device event of roam messages removed.
+  /// Param [onRemoteMessagesRemoved] The multi-device event of historical messages removed from the server.
   ///
-  /// Param [onConversationEvent] The multi-device event callback for the operation of a single conversation.
+  /// Param [onConversationEvent] The multi-device event callback for the operation of a conversation.
   ///
   /// ~end
   ///
@@ -356,7 +356,7 @@ class EMMultiDeviceEventHandler {
 /// The chat event handler.
 ///
 /// This handler is used to check whether messages are received. If messages are sent successfully, a delivery receipt will be returned (delivery receipt needs to be enabled: [EMOptions.requireDeliveryAck].
-/// If the peer reads the received message, a read receipt will be returned (read receipt needs to be enabled: [EMOptions.requireAck]).
+/// If the peer user reads the received message, a read receipt will be returned (read receipt needs to be enabled: [EMOptions.requireAck]).
 /// This API should be implemented in the app to listen for message status changes.
 ///
 /// Adds chat event handler:
@@ -364,7 +364,7 @@ class EMMultiDeviceEventHandler {
 ///   EMClient.getInstance.chatManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatEventHandler());
 /// ```
 ///
-/// Remove a chat event handler:
+/// Removes a chat event handler:
 /// ```dart
 ///   EMClient.getInstance.chatManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -387,7 +387,7 @@ class EMMultiDeviceEventHandler {
 /// ~end
 class EMChatEventHandler {
   /// ~english
-  /// Occurs when a message is received callback.
+  /// Occurs when a message is received.
   ///
   /// This callback is triggered to notify the user when a message such as texts or an image, video, voice, location, or file is received.
   /// ~end
@@ -469,7 +469,7 @@ class EMChatEventHandler {
   /// Occurs when a conversation read receipt is received.
   ///
   /// Occurs in the following scenarios:
-  /// (1) The message is read by the receiver (The conversation receipt is sent).
+  /// (1) The message is read by the recipient (The conversation receipt is sent).
   /// Upon receiving this event, the SDK sets the [EMMessage.hasReadAck] property of the message in the conversation to `true` in the local database.
   /// (2) In the multi-device login scenario, when one device sends a Conversation receipt,
   /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
@@ -513,27 +513,27 @@ class EMChatEventHandler {
   /// ~english
   /// The chat event handler.
   ///
-  /// Param [onMessagesReceived] Message is received callback.
+  /// Param [onMessagesReceived] Occurs when a message is received.
   ///
-  /// Param [onCmdMessagesReceived] Command message is received callback.
+  /// Param [onCmdMessagesReceived] Occurs when a command message is received.
   ///
-  /// Param [onMessagesRead] Read receipt is received for a message callback.
+  /// Param [onMessagesRead] Occurs when a read receipt is received for a one-to-one message.
   ///
-  /// Param [onGroupMessageRead] Read receipt is received for a group message callback.
+  /// Param [onGroupMessageRead] Occurs when a read receipt is received for a group message.
   ///
-  /// Param [onReadAckForGroupMessageUpdated] Group message read status is received callback.
+  /// Param [onReadAckForGroupMessageUpdated] Occurs when the group message read status is received.
   ///
-  /// Param [onMessagesDelivered] Delivery receipt is received callback.
+  /// Param [onMessagesDelivered] Occurs when a delivery receipt is received.
   ///
-  /// Param [onMessagesRecalled] Received message is recalled callback.
+  /// Param [onMessagesRecalled] Occurs when a received message is recalled.
   ///
-  /// Param [onConversationsUpdate] Conversation updated callback.
+  /// Param [onConversationsUpdate] Occurs when a conversation is updated.
   ///
-  /// Param [onConversationRead] Conversation read receipt is received callback.
+  /// Param [onConversationRead] Occurs when a conversation read receipt is received.
   ///
-  /// Param [onMessageReactionDidChange] Reaction data changes callback.
+  /// Param [onMessageReactionDidChange] Occurs when the Reaction data changes.
   ///
-  /// Param [onMessageContentChanged] Message content is modified callback.
+  /// Param [onMessageContentChanged] Occurs when the message content is modified.
   /// ~end
   ///
   /// ~chinese
@@ -584,7 +584,7 @@ class EMChatEventHandler {
 ///   EMClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatRoomEventHandler());
 /// ```
 ///
-/// Remove a chat room event handler:
+/// Removes a chat room event handler:
 /// ```dart
 ///   EMClient.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -598,14 +598,14 @@ class EMChatEventHandler {
 ///   EMClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatRoomEventHandler());
 /// ```
 ///
-/// Remove a chat room event handler:
+/// Removes a chat room event handler:
 /// ```dart
 ///   EMClient.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 class EMChatRoomEventHandler {
   /// ~english
-  /// Occurs when a member has been changed to an admin.
+  /// Occurs when a member is changed to be an admin.
   /// ~end
   ///
   /// ~chinese
@@ -617,7 +617,7 @@ class EMChatRoomEventHandler {
   )? onAdminAddedFromChatRoom;
 
   /// ~english
-  /// Occurs when an admin is been removed.
+  /// Occurs when an admin is removed.
   /// ~end
   ///
   /// ~chinese
@@ -641,7 +641,7 @@ class EMChatRoomEventHandler {
   )? onAllChatRoomMemberMuteStateChanged;
 
   /// ~english
-  /// Occurs when the chat room member(s) is added to the allowlist.
+  /// Occurs when the chat room member(s) is/are added to the allowlist.
   /// ~end
   ///
   /// ~chinese
@@ -653,7 +653,7 @@ class EMChatRoomEventHandler {
   )? onAllowListAddedFromChatRoom;
 
   /// ~english
-  /// Occurs when the chat room member(s) is removed from the allowlist.
+  /// Occurs when the chat room member(s) is/are removed from the allowlist.
   /// ~end
   ///
   /// ~chinese
@@ -689,7 +689,7 @@ class EMChatRoomEventHandler {
   )? onChatRoomDestroyed;
 
   /// ~english
-  /// Occurs when a member leaves the chatroom.
+  /// Occurs when a member leaves the chat room.
   /// ~end
   ///
   /// ~chinese
@@ -702,7 +702,7 @@ class EMChatRoomEventHandler {
   )? onMemberExitedFromChatRoom;
 
   /// ~english
-  /// Occurs when a member join the chatroom.
+  /// Occurs when a user joins the chat room.
   /// ~end
   ///
   /// ~chinese
@@ -712,7 +712,7 @@ class EMChatRoomEventHandler {
       onMemberJoinedFromChatRoom;
 
   /// ~english
-  /// Occurs when there are chat room member(s) muted (added to mute list),
+  /// Occurs when a chat room member(s) is/are added to mute list.
   /// ~end
   ///
   /// ~chinese
@@ -725,7 +725,7 @@ class EMChatRoomEventHandler {
   )? onMuteListAddedFromChatRoom;
 
   /// ~english
-  /// Occurs when there are chat room member(s) unmuted (removed from mute list).
+  /// Occurs when the a chat room member(s) is/are removed from mute list.
   /// ~end
   ///
   /// ~chinese
@@ -737,7 +737,7 @@ class EMChatRoomEventHandler {
   )? onMuteListRemovedFromChatRoom;
 
   /// ~english
-  /// Occurs when the chat room ownership has been transferred.
+  /// Occurs when the chat room ownership is transferred.
   /// ~end
   ///
   /// ~chinese
@@ -750,7 +750,7 @@ class EMChatRoomEventHandler {
   )? onOwnerChangedFromChatRoom;
 
   /// ~english
-  /// Occurs when a you is dismissed from a chat room.
+  /// Occurs when a user is removed from a chat room.
   /// ~end
   ///
   /// ~chinese
@@ -801,37 +801,37 @@ class EMChatRoomEventHandler {
   /// ~english
   /// The chat room manager listener callback.
   ///
-  /// Param [onAdminAddedFromChatRoom] A member has been changed to an admin callback.
+  /// Param [onAdminAddedFromChatRoom] A member is changed to be an admin.
   ///
-  /// Param [onAdminRemovedFromChatRoom] An admin is been removed callback callback.
+  /// Param [onAdminRemovedFromChatRoom] An admin is been removed.
   ///
-  /// Param [onAllChatRoomMemberMuteStateChanged] All members in the chat room are muted or unmuted callback.
+  /// Param [onAllChatRoomMemberMuteStateChanged] All members in the chat room are muted or unmuted.
   ///
-  /// Param [onAllowListAddedFromChatRoom] The chat room member(s) is added to the allowlist callback.
+  /// Param [onAllowListAddedFromChatRoom] The chat room member(s) is/are added to the allowlist.
   ///
-  /// Param [onAllowListRemovedFromChatRoom] The chat room member(s) is removed from the allowlist callback.
+  /// Param [onAllowListRemovedFromChatRoom] The chat room member(s) is/are removed from the allowlist.
   ///
-  /// Param [onAnnouncementChangedFromChatRoom] The announcement changed callback.
+  /// Param [onAnnouncementChangedFromChatRoom] The announcement is changed.
   ///
-  /// Param [onChatRoomDestroyed] The chat room is destroyed callback.
+  /// Param [onChatRoomDestroyed] The chat room is destroyed.
   ///
-  /// Param [onMemberExitedFromChatRoom] A member leaves the chatroom callback.
+  /// Param [onMemberExitedFromChatRoom] A member leaves the chat room.
   ///
-  /// Param [onMemberJoinedFromChatRoom] A member join the chatroom callback.
+  /// Param [onMemberJoinedFromChatRoom] A user joins the chat room.
   ///
-  /// Param [onMuteListAddedFromChatRoom] The chat room member(s) muted (added to mute list) callback.
+  /// Param [onMuteListAddedFromChatRoom] The chat room member(s) is/are added to mute list.
   ///
-  /// Param [onMuteListRemovedFromChatRoom] The chat room member(s) unmuted (removed from mute list) callback.
+  /// Param [onMuteListRemovedFromChatRoom] The chat room member(s) is/are removed from mute list.
   ///
-  /// Param [onOwnerChangedFromChatRoom] The chat room ownership has been transferred callback.
+  /// Param [onOwnerChangedFromChatRoom] The chat room ownership is transferred.
   ///
-  /// Param [onRemovedFromChatRoom] The chat room member(s) is removed from the allowlist callback.
+  /// Param [onRemovedFromChatRoom] The chat room member(s) is/are removed from the allowlist.
   ///
-  /// Param [onSpecificationChanged] The chat room specification changed callback.
+  /// Param [onSpecificationChanged] The chat room specification changed.
   ///
-  /// Param [onAttributesUpdated] The chat room attributes updated callback.
+  /// Param [onAttributesUpdated] The chat room attribute(s) is/are updated.
   ///
-  /// Param [onAttributesRemoved] The chat room attributes removed callback.
+  /// Param [onAttributesRemoved] The chat room attribute(s) is/are removed.
   /// ~end
   ///
   /// ~chinese
@@ -890,14 +890,14 @@ class EMChatRoomEventHandler {
 }
 
 /// ~english
-/// The message thread event handler. which handle for message thread events such as creating or leaving a message thread.
+/// The message thread event handler, which handles message thread events such as creating or leaving a message thread.
 ///
 /// Adds a message thread event handler:
 /// ```dart
 ///   EMClient.getInstance.chatThreadManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatThreadEventHandler());
 /// ```
 ///
-/// Remove a chat event handler:
+/// Removes a chat event handler:
 /// ```dart
 /// EMClient.getInstance.chatThreadManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -972,19 +972,19 @@ class EMChatThreadEventHandler {
   )? onUserKickOutOfChatThread;
 
   /// ~english
-  /// The message thread listener callback
+  /// The message thread listener callback.
   ///
-  /// Param [onChatThreadCreate] A message thread is created callback.
+  /// Param [onChatThreadCreate] A message thread is created. All members in the group to which the thread belongs receive this callback.
   ///
-  /// Param [onChatThreadDestroy] A message thread is destroyed callback.
+  /// Param [onChatThreadDestroy] A message thread is destroyed. All members in the group to which the destroyed thread belongs receive this callback.
   ///
-  /// Param [onChatThreadUpdate] A message thread is updated callback.
+  /// Param [onChatThreadUpdate] A message thread is updated. All members in the group to which the updated thread belongs receive this callback.
   ///
-  /// Param [onUserKickOutOfChatThread] Current user is removed from the message thread by the group owner or a group admin to which the message thread belongs callback.
+  /// Param [onUserKickOutOfChatThread]  The current user is removed from the message thread by the group owner or a group admin to which the message thread belongs. The current user removed from the thread receives the callback.
   /// ~end
   ///
   /// ~chinese
-  /// Thread 事件监听
+  /// Thread 事件监听。 
   ///
   /// Param [onChatThreadCreate] 子区创建回调。
   ///
@@ -1005,15 +1005,14 @@ class EMChatThreadEventHandler {
 /// ~english
 /// The contact event handler.
 ///
-/// Occurs when the contact changes, including requests to add friends, notifications to delete friends,
-/// requests to accept friends, and requests to reject friends.
+/// Occurs when the contact changes, including adding or deleting contacts and accept or rejecting friend requests.
 ///
 /// Adds a contact event handler:
 /// ```dart
 ///   EMClient.getInstance.contactManager.addEventHandler(UNIQUE_HANDLER_ID, EMContactEventHandler());
 /// ```
 ///
-/// Remove a contact event handler:
+/// Removes a contact event handler:
 /// ```dart
 ///   EMClient.getInstance.contactManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -1092,15 +1091,15 @@ class EMContactEventHandler {
   /// ~english
   /// The contact updates listener callback.
   ///
-  /// Param [onContactAdded] Current user is added as a contact by another user callback.
+  /// Param [onContactAdded] Current user is added as a contact by another user.
   ///
-  /// Param [onContactDeleted] Current user is removed from the contact list by another user callback.
+  /// Param [onContactDeleted] Current user is removed from the contact list by another user.
   ///
-  /// Param [onContactInvited] Current user receives a friend request callback.
+  /// Param [onContactInvited] Current user receives a friend request.
   ///
-  /// Param [onFriendRequestAccepted] A friend request is approved callback.
+  /// Param [onFriendRequestAccepted] A friend request is approved.
   ///
-  /// Param [onFriendRequestDeclined] A friend request is declined callback.
+  /// Param [onFriendRequestDeclined] A friend request is declined.
   /// ~end
   ///
   /// ~chinese
@@ -1128,14 +1127,14 @@ class EMContactEventHandler {
 /// ~english
 /// The group event handler.
 ///
-/// Occurs when the following group events happens: requesting to join a group, approving or declining a group request, and kicking a user out of a group.
+/// Occurs when the following group events happens: joining a group, approving or declining a group request, and kicking a user out of a group.
 ///
 /// Adds a group event handler:
 /// ```dart
 ///   EMClient.getInstance.groupManager.addEventHandler(UNIQUE_HANDLER_ID, EMGroupEventHandler());
 /// ```
 ///
-/// Remove a group event handler:
+/// Removes a group event handler:
 /// ```dart
 ///   EMClient.getInstance.groupManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -1309,7 +1308,7 @@ class EMGroupEventHandler {
   )? onMemberExitedFromGroup;
 
   /// ~english
-  /// Occurs when a member joins a group.
+  /// Occurs when a user joins a group.
   /// ~end
   ///
   /// ~chinese
@@ -1497,55 +1496,55 @@ class EMGroupEventHandler {
   /// ~english
   /// The group manager listener callback.
   ///
-  /// Param [onAdminAddedFromGroup] A member is set as an admin callback.
+  /// Param [onAdminAddedFromGroup] A member is set as an admin.
   ///
-  /// Param [onAdminRemovedFromGroup] A member's admin privileges are removed callback.
+  /// Param [onAdminRemovedFromGroup] A member's admin privileges are removed.
   ///
-  /// Param [onAllGroupMemberMuteStateChanged] All group members are muted or unmuted callback.
+  /// Param [onAllGroupMemberMuteStateChanged] All group members are muted or unmuted.
   ///
-  /// Param [onAllowListAddedFromGroup] One or more group members are muted callback.
+  /// Param [onAllowListAddedFromGroup] One or more group members are muted.
   ///
-  /// Param [onAllowListRemovedFromGroup] One or more group members are unmuted callback.
+  /// Param [onAllowListRemovedFromGroup] One or more group members are unmuted.
   ///
-  /// Param [onAnnouncementChangedFromGroup] The announcement is updated callback.
+  /// Param [onAnnouncementChangedFromGroup] The announcement is updated.
   ///
-  /// Param [onAutoAcceptInvitationFromGroup] The group invitation is accepted automatically callback.
+  /// Param [onAutoAcceptInvitationFromGroup] The group invitation is accepted automatically.
   ///
-  /// Param [onGroupDestroyed] A group is destroyed callback.
+  /// Param [onGroupDestroyed] A group is destroyed.
   ///
-  /// Param [onInvitationAcceptedFromGroup] A group invitation is accepted callback.
+  /// Param [onInvitationAcceptedFromGroup] A group invitation is accepted.
   ///
-  /// Param [onInvitationDeclinedFromGroup] A group invitation is declined callback.
+  /// Param [onInvitationDeclinedFromGroup] A group invitation is declined.
   ///
-  /// Param [onInvitationReceivedFromGroup] The user receives a group invitation callback.
+  /// Param [onInvitationReceivedFromGroup] The user receives a group invitation.
   ///
-  /// Param [onMemberExitedFromGroup] A member proactively leaves the group callback.
+  /// Param [onMemberExitedFromGroup] A member proactively leaves the group.
   ///
-  /// Param [onMemberJoinedFromGroup] A member joins a group callback.
+  /// Param [onMemberJoinedFromGroup] A user joins a group.
   ///
-  /// Param [onMuteListAddedFromGroup] One or more group members are muted callback.
+  /// Param [onMuteListAddedFromGroup] One or more group members are muted.
   ///
-  /// Param [onMuteListRemovedFromGroup] One or more group members are unmuted callback.
+  /// Param [onMuteListRemovedFromGroup] One or more group members are unmuted.
   ///
-  /// Param [onOwnerChangedFromGroup] The group ownership is transferred callback.
+  /// Param [onOwnerChangedFromGroup] The group ownership is transferred.
   ///
-  /// Param [onRequestToJoinAcceptedFromGroup] A group request is accepted callback.
+  /// Param [onRequestToJoinAcceptedFromGroup] A group request is accepted.
   ///
-  /// Param [onRequestToJoinDeclinedFromGroup] A group request is declined callback.
+  /// Param [onRequestToJoinDeclinedFromGroup] A group request is declined.
   ///
-  /// Param [onRequestToJoinReceivedFromGroup] The group owner or administrator receives a group request from a user callback.
+  /// Param [onRequestToJoinReceivedFromGroup] The group owner or administrator receives a group request from a user.
   ///
-  /// Param [onSharedFileAddedFromGroup] A shared file is added to a group callback.
+  /// Param [onSharedFileAddedFromGroup] A shared file is added to a group.
   ///
-  /// Param [onSharedFileDeletedFromGroup] A shared file is removed from a group callback.
+  /// Param [onSharedFileDeletedFromGroup] A shared file is removed from a group.
   ///
-  /// Param [onUserRemovedFromGroup] Current user is removed from the group by the group admin callback.
+  /// Param [onUserRemovedFromGroup] Current user is removed from the group by the group admin.
   ///
-  /// Param [onSpecificationDidUpdate] Occurs when the group detail information is updated.
+  /// Param [onSpecificationDidUpdate] The group detail information is updated.
   ///
-  /// Param [onDisableChanged] Occurs when the group is enabled or disabled.
+  /// Param [onDisableChanged] Te group is enabled or disabled.
   ///
-  /// Param [onAttributesChangedOfGroupMember] Occurs when a custom attribute(s) of a group member is/are changed.
+  /// Param [onAttributesChangedOfGroupMember] A custom attribute(s) of a group member is/are changed.
   /// ~end
   ///
   /// ~chinese
@@ -1640,7 +1639,7 @@ class EMGroupEventHandler {
 ///   EMClient.getInstance.presenceManager.addEventHandler(UNIQUE_HANDLER_ID, EMPresenceEventHandler());
 /// ```
 ///
-/// Remove a presence event handler:
+/// Removes a presence event handler:
 /// ```dart
 ///   EMClient.getInstance.presenceManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
@@ -1672,7 +1671,7 @@ class EMPresenceEventHandler {
   /// ~english
   /// The presence manager listener callback.
   ///
-  /// Param [onPresenceStatusChanged] The presence state of a subscribed user changes callback.
+  /// Param [onPresenceStatusChanged] The presence state of a subscribed user changes.
   /// ~end
   ///
   /// ~chinese

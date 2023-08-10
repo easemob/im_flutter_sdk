@@ -1,5 +1,5 @@
 /// ~english
-/// The enumeration of group types.
+/// The group types.
 /// ~end
 ///
 /// ~chinese
@@ -80,7 +80,7 @@ enum EMConversationType {
 }
 
 /// ~english
-/// The enumeration of chat types.
+/// The chat types.
 ///
 /// There are three chat types: one-to-one chat, group chat, and chat room.
 /// ~end
@@ -118,7 +118,7 @@ enum ChatType {
 }
 
 /// ~english
-/// The enumeration of the message directions.
+/// The message directions.
 ///
 /// Whether the message is sent or received.
 /// ~end
@@ -149,7 +149,7 @@ enum MessageDirection {
 }
 
 /// ~english
-/// The enumeration of the message sending/reception status.
+/// The message sending/reception status.
 /// ~end
 ///
 /// ~chinese
@@ -239,7 +239,7 @@ enum DownloadStatus {
 }
 
 /// ~english
-/// The enumeration of message types.
+/// The message types.
 /// ~end
 ///
 /// ~chinese
@@ -329,7 +329,7 @@ enum MessageType {
 }
 
 /// ~english
-/// The enumeration of group permission types.
+/// The group roles.
 /// ~end
 ///
 /// ~chinese
@@ -346,7 +346,7 @@ enum EMGroupPermissionType {
   None,
 
   /// ~english
-  /// The group member.
+  /// The regular group member.
   /// ~end
   ///
   /// ~chinese
@@ -374,7 +374,7 @@ enum EMGroupPermissionType {
 }
 
 /// ~english
-/// The enumeration of chat room role types.
+/// The chat room roles.
 /// ~end
 ///
 /// ~chinese
@@ -391,7 +391,7 @@ enum EMChatRoomPermissionType {
   None,
 
   /// ~english
-  /// The chat room member.
+  /// The regular chat room member.
   /// ~end
   ///
   /// ~chinese
@@ -419,7 +419,7 @@ enum EMChatRoomPermissionType {
 }
 
 /// ~english
-/// The enumeration of message search directions.
+/// The message search directions.
 /// ~end
 ///
 /// ~chinese
@@ -828,7 +828,7 @@ enum EMMultiDevicesEvent {
 }
 
 /// ~english
-/// The message thread event types.
+/// The message thread events.
 /// ~end
 ///
 /// ~chinese
@@ -882,7 +882,7 @@ enum EMChatThreadOperation {
 }
 
 /// ~english
-/// The push styles.
+/// The push display styles.
 /// ~end
 ///
 /// ~chinese
@@ -890,7 +890,7 @@ enum EMChatThreadOperation {
 /// ~end
 enum DisplayStyle {
   /// ~english
-  /// The push message presentation style: SimpleBanner represents the presentation of a simple message.
+  /// A simple message is shown in the notification bar, for example, "You've got a new message.".
   /// ~end
   ///
   /// ~chinese
@@ -899,7 +899,7 @@ enum DisplayStyle {
   Simple,
 
   /// ~english
-  /// The push message presentation style: MessageSummary represents the presentation of message content.
+  /// The message content is shown in the notification bar.
   /// ~end
   ///
   /// ~chinese
@@ -909,15 +909,15 @@ enum DisplayStyle {
 }
 
 /// ~english
-/// Offline push DND parameter type Enumeration class.
+/// The offline push settings.
 /// ~end
 ///
 /// ~chinese
-/// 离线推送免打扰参数类型枚举类。
+/// 离线推送参数类型枚举类。
 /// ~end
 enum ChatSilentModeParamType {
   /// ~english
-  /// Offline push notification type.
+  /// The push notification mode.
   /// ~end
   ///
   /// ~chinese
@@ -926,7 +926,7 @@ enum ChatSilentModeParamType {
   REMIND_TYPE,
 
   /// ~english
-  /// Offline push DND duration.
+  /// The DND duration.
   /// ~end
   ///
   /// ~chinese
@@ -935,7 +935,7 @@ enum ChatSilentModeParamType {
   SILENT_MODE_DURATION,
 
   /// ~english
-  /// Offline push DND period.
+  /// The DND time frame.
   /// ~end
   ///
   /// ~chinese
@@ -945,7 +945,7 @@ enum ChatSilentModeParamType {
 }
 
 /// ~english
-/// Offline push notification type enumeration class.
+/// The push notification modes.
 /// ~end
 ///
 /// ~chinese
@@ -953,29 +953,29 @@ enum ChatSilentModeParamType {
 /// ~end
 enum ChatPushRemindType {
   /// ~english
-  /// Collect all offline push.
+  /// Receives push notifications for all offline messages.
   /// ~end
   ///
   /// ~chinese
-  /// 所有离线推送。
+  /// 接收所有离线消息的推送通知。
   /// ~end
   ALL,
 
   /// ~english
-  /// Only receive @me offline push.
+  /// Only receives push notifications for mentioned messages.
   /// ~end
   ///
   /// ~chinese
-  /// 只有@我的离线推送
+  /// 仅接收提及某些用户的消息的推送通知。
   /// ~end
   MENTION_ONLY,
 
   /// ~english
-  /// Offline push is not collected.
+  /// Do not receive push notifications for offline messages.
   /// ~end
   ///
   /// ~chinese
-  /// 不接收离线推送。
+  /// 不接收离线消息的推送通知。
   /// ~end
   NONE,
 }
@@ -1017,11 +1017,11 @@ enum ChatRoomMessagePriority {
 }
 
 /// ~english
-/// Operation type of reaction.
+/// Reaction operations.
 /// ~end
 ///
 /// ~chinese
-/// reaction 操作种类。
+/// Reaction 操作类型。
 /// ~end
 enum ReactionOperate {
   /// ~english

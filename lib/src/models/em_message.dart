@@ -797,7 +797,7 @@ class EMMessage {
   /// ~end
   EMMessage.createCustomSendMessage({
     required String targetId,
-    required String event,
+    required event,
     Map<String, String>? params,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
@@ -806,22 +806,22 @@ class EMMessage {
             body: EMCustomMessageBody(event: event, params: params));
 
   /// ~english
-  /// Creates a combine message for sending.
+  /// Creates a combined message for sending.
   ///
-  /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// Param [targetId] The message recipient. The field setting is determined by the conversation type:
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
-  /// Param [title] The message title.
+  /// Param [title]  The title of the combined message.
   ///
-  /// Param [summary] The message summary.
+  /// Param [summary]  The summary of the combined message.
   ///
-  /// Param [compatibleText] The compatible text.
+  /// Param [compatibleText] The compatible text of the combined message. 
   ///
-  /// Param [msgIds] The list of combined messages.
+  /// Param [msgIds] The list of original messages included in the combined message.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type, which is one-to-one chat by default. For group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -829,20 +829,20 @@ class EMMessage {
   /// ~chinese
   /// 创建一条待发送的合并消息。
   ///
-  /// Param [targetId] 消息接收方，可以是：
-  /// - 用户：用户 ID；
+  /// Param [targetId] 消息接收方。该字段的设置取决于会话类型：
+  /// - 单聊：对方用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   ///
-  /// Param [title] 消息标题。
+  /// Param [title] 合并消息的标题。
   ///
-  /// Param [summary] 消息概要。
+  /// Param [summary] 合并消息的概要。
   ///
-  /// Param [compatibleText] 兼容文本。
+  /// Param [compatibleText] 合并消息的兼容信息。
   ///
-  /// Param [msgIds] 合并的消息列表。
+  /// Param [msgIds] 合并消息的消息 ID 列表。
   ///
-  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
+  /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考 [ChatType]。
   ///
   /// **Return** 消息体实例。
   /// ~end

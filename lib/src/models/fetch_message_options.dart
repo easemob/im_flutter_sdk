@@ -128,13 +128,13 @@ class FetchMessageOptions {
   /// ~english
   /// Whether to save the retrieved messages to the database:
   /// - `true`: save to database;
-  /// - `false`(Default)：no save to database.
+  /// - (Default) `false`：Do not save to database.
   /// ~end
   ///
   /// ~chinese
   /// 获取的消息是否保存到数据库：
   /// - `true`：保存到数据库；
-  /// - `false`（默认）：不保存到数据库。
+  /// - （默认）`false`：不保存到数据库。
   /// ~end
   final bool needSave;
 

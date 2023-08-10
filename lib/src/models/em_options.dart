@@ -286,20 +286,20 @@ class EMOptions {
   final bool enableEmptyConversation;
 
   /// ~english
-  ///  Custom device name
+  ///  Custom device name.
   /// ~end
   ///
   /// ~chinese
-  /// 自定义设备名称
+  /// 自定义设备名称。
   /// ~end
   final String? deviceName;
 
   /// ~english
-  /// Custom system type
+  /// Custom system type.
   /// ~end
   ///
   /// ~chinese
-  /// 自定义系统类型
+  /// 自定义系统类型。
   /// ~end
   final int? osType;
 
@@ -308,7 +308,7 @@ class EMOptions {
   /// ~english
   /// Enable OPPO PUSH on OPPO devices.
   ///
-  /// Param [appKey] The app id for OPPO PUSH.
+  /// Param [appKey] The app ID for OPPO PUSH.
   ///
   /// Param [secret] The app secret for OPPO PUSH.
   /// ~end
@@ -318,7 +318,7 @@ class EMOptions {
   ///
   /// Param [appId] Oppo 推送的 App ID。
   ///
-  /// Param [appKey] Oppo 推送的 app key。
+  /// Param [appKey] Oppo 推送的 App Key。
   /// ~end
   void enableOppoPush(String appKey, String secret) {
     _pushConfig.enableOppoPush = true;
@@ -355,8 +355,8 @@ class EMOptions {
   ///
   /// ~chinese
   /// 开启魅族推送.
-  /// Param [appId] 魅族AppId.
-  /// Param [appKey] 魅族Appkey.
+  /// Param [appId] 魅族 App ID.
+  /// Param [appKey] 魅族 App Key.
   /// ~end
   void enableMeiZuPush(String appId, String appKey) {
     _pushConfig.mzAppId = appId;
