@@ -232,6 +232,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
                 }
                 break;
+              case MessageType.COMBINE:
+                {
+                  _addLogToConsole(
+                    "receive combine message, from: ${msg.from}",
+                  );
+                }
             }
           }
         },
