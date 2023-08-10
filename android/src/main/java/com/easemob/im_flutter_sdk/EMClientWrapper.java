@@ -319,6 +319,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         registerEaseListener();
 
         onSuccess(result, channelName, null);
+
     }
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {

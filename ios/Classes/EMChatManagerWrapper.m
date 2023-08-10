@@ -17,6 +17,7 @@
 #import "EMMessageReactionChange+Helper.h"
 #import "EMFetchServerMessagesOption+Helper.h"
 
+
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
 
@@ -606,7 +607,6 @@
         }
         msg.body = body;
     }
-    
     return [msg toJson];
 }
 
@@ -702,6 +702,7 @@
                            object:[aResult toJson]];
     }];
 }
+
 
 - (void)fetchGroupReadAck:(NSDictionary *)param
               channelName:(NSString *)aChannelName
