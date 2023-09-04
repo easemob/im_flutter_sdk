@@ -153,7 +153,7 @@ class EMGroupManager {
   ///
   /// **Return** 群组列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<List<EMGroup>> getJoinedGroups() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getJoinedGroups);
@@ -193,7 +193,7 @@ class EMGroupManager {
   ///
   /// **Return** 当前用户加入的群组的列表。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<List<EMGroup>> fetchJoinedGroupsFromServer({
     int pageSize = 20,
@@ -242,7 +242,7 @@ class EMGroupManager {
   ///
   /// **Return** 包含用于下次获取数据的 cursor 以及群组列表。返回的结果中，当 `EMCursorResult.getCursor()` 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<EMCursorResult<EMGroupInfo>> fetchPublicGroupsFromServer({
     int pageSize = 200,
@@ -315,7 +315,7 @@ class EMGroupManager {
   ///
   /// **Return** 创建成功的群对象。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<EMGroup> createGroup({
     String? groupName,
@@ -418,7 +418,7 @@ class EMGroupManager {
   ///
   /// **Return** 分页获取结果 [EMCursorResult]，包含用于下次获取数据的 cursor 以及群组成员列表。返回的结果中，当 [EMCursorResult.cursor] 为空字符串 ("") 时，表示没有更多数据。
   ///
-  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 {@link EMError}。
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<EMCursorResult<String>> fetchMemberListFromServer(
     String groupId, {
@@ -1847,7 +1847,7 @@ class EMGroupManager {
   ///
   /// Param [userId] The user ID of the group member for whom the custom attributes are set. The default value is the current user ID.
   ///
-  /// Param [attributes] The map of custom attributes in key-value format. 
+  /// Param [attributes] The map of custom attributes in key-value format.
   /// In a key-value pair, if the value is set to an empty string, the custom attribute will be deleted.
   ///
   /// **Throws** A description of the exception. See [EMError].
