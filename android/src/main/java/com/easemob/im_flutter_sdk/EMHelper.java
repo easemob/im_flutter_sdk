@@ -456,7 +456,7 @@ class EMMessageHelper {
         if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
         }
-        message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
+        // message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
         message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
         if (json.has("groupAckCount")) {
             message.setGroupAckCount(json.getInt("groupAckCount"));
