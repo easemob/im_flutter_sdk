@@ -354,6 +354,7 @@ UPDATE_dict = {
     "EMConnection":"Connection",
     "EMMultiDevice":"ChatMultiDevice",
     "EMChatEventHandler":"ChatEventHandler",
+    "EMCombineMessageBody":"CombineMessageBody",
     
 
     #podspec
