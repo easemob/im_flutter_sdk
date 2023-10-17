@@ -489,7 +489,7 @@ class EMChatManager {
   Future<EMConversation> getThreadConversation(String threadId) async {
     Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.getThreadConversation,
-      {"convId", threadId},
+      {"convId": threadId},
     );
 
     try {
@@ -1696,7 +1696,7 @@ class EMChatManager {
   /// 只能调用该方法修改单聊和群聊中的文本消息，不能修改聊天室消息。
   ///
   /// Param [messageId] 消息实例 ID。
-  /// 
+  ///
   /// Param [msgBody] 文本消息体实例 [EMTextMessageBody]。
   ///
   /// **Return** 修改后的消息实例。

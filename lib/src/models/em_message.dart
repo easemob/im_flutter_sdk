@@ -817,7 +817,7 @@ class EMMessage {
   ///
   /// Param [summary]  The summary of the combined message.
   ///
-  /// Param [compatibleText] The compatible text of the combined message. 
+  /// Param [compatibleText] The compatible text of the combined message.
   ///
   /// Param [msgIds] The list of original messages included in the combined message.
   ///
@@ -1049,7 +1049,7 @@ class EMMessage {
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<EMChatThread?> chatThread() async {
-    Map req = {"msg": msgId};
+    Map req = {"msgId": msgId};
     Map result =
         await _emMessageChannel.invokeMethod(ChatMethodKeys.getChatThread, req);
     try {
