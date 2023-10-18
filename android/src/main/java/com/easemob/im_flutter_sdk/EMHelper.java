@@ -916,7 +916,7 @@ class EMGroupAckHelper {
     static Map<String, Object> videoBodyToJson(EMVideoMessageBody body) {
         Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
-        data.put("thumbnailLocalPath", body.getLocalThumbUri());
+        data.put("thumbnailLocalPath", body.getLocalThumb());
         data.put("duration", body.getDuration());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
         data.put("thumbnailSecret", body.getThumbnailSecret());
