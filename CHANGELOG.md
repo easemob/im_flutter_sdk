@@ -4,7 +4,7 @@
 1. 修复退出再登录后，无法收到聊天室回调的问题；
 2. 支持 android 14;
 3. 修复 调用 `EMChatManager#getThreadConversation` 报错；
-
+4. 修复 `EMMessage#chatThread` 方法报错;
 
 ## 4.1.0
 
