@@ -1405,23 +1405,28 @@ class EMChatThreadHelper {
 class EMChatThreadEventHelper {
     static Map<String, Object> toJson(EMChatThreadEvent event) {
         Map<String, Object> data = new HashMap<>();
-        switch (event.getType()) {
-            case UNKNOWN:
-                data.put("type", 0);
-                break;
-            case CREATE:
-                data.put("type", 1);
-                break;
-            case UPDATE:
-                data.put("type", 2);
-                break;
-            case DELETE:
-                data.put("type", 3);
-                break;
-            case UPDATE_MSG:
-                data.put("type", 4);
-                break;
+        if(event.getType() != null) {
+            switch (event.getType()) {
+                case UNKNOWN:
+                    data.put("type", 0);
+                    break;
+                case CREATE:
+                    data.put("type", 1);
+                    break;
+                case UPDATE:
+                    data.put("type", 2);
+                    break;
+                case DELETE:
+                    data.put("type", 3);
+                    break;
+                case UPDATE_MSG:
+                    data.put("type", 4);
+                    break;
+            }
+        }else {
+            data.put("type", 0);
         }
+
         data.put("from", event.getFrom());
         if (event.getChatThread() != null) {
             data.put("thread", EMChatThreadHelper.toJson(event.getChatThread()));
