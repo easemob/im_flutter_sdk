@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "easemob-demo#flutter";
+var appKey = "";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  assert(appKey.isNotEmpty, "appKey is empty");
   EMOptions options =
       EMOptions(appKey: appKey, autoLogin: false, debugModel: true);
   await EMClient.getInstance.init(options);
@@ -297,7 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
       content: _messageContent,
     );
 
-    EMClient.getInstance.chatManager.sendMessage(msg);
+    await EMClient.getInstance.chatManager.sendMessage(msg);
   }
 
   void _addLogToConsole(String log) {
