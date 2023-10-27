@@ -119,6 +119,9 @@ class EMOptionsHelper {
             if (pushConfig.getBoolean("enableVivoPush")) {
                 builder.enableVivoPush();
             }
+            if(pushConfig.getBoolean("enableHonorPush")) {
+                builder.enableHonorPush();
+            }
             options.setPushConfig(builder.build());
         }
         return options;
@@ -456,7 +459,7 @@ class EMMessageHelper {
         if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
         }
-        message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
+        // message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
         message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
         if (json.has("groupAckCount")) {
             message.setGroupAckCount(json.getInt("groupAckCount"));
@@ -916,7 +919,7 @@ class EMGroupAckHelper {
     static Map<String, Object> videoBodyToJson(EMVideoMessageBody body) {
         Map<String, Object> data = getParentMap(body);
         data.put("localPath", body.getLocalUrl());
-        data.put("thumbnailLocalPath", body.getLocalThumbUri());
+        data.put("thumbnailLocalPath", body.getLocalThumb());
         data.put("duration", body.getDuration());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
         data.put("thumbnailSecret", body.getThumbnailSecret());
@@ -1405,23 +1408,28 @@ class EMChatThreadHelper {
 class EMChatThreadEventHelper {
     static Map<String, Object> toJson(EMChatThreadEvent event) {
         Map<String, Object> data = new HashMap<>();
-        switch (event.getType()) {
-            case UNKNOWN:
-                data.put("type", 0);
-                break;
-            case CREATE:
-                data.put("type", 1);
-                break;
-            case UPDATE:
-                data.put("type", 2);
-                break;
-            case DELETE:
-                data.put("type", 3);
-                break;
-            case UPDATE_MSG:
-                data.put("type", 4);
-                break;
+        if(event.getType() != null) {
+            switch (event.getType()) {
+                case UNKNOWN:
+                    data.put("type", 0);
+                    break;
+                case CREATE:
+                    data.put("type", 1);
+                    break;
+                case UPDATE:
+                    data.put("type", 2);
+                    break;
+                case DELETE:
+                    data.put("type", 3);
+                    break;
+                case UPDATE_MSG:
+                    data.put("type", 4);
+                    break;
+            }
+        }else {
+            data.put("type", 0);
         }
+
         data.put("from", event.getFrom());
         if (event.getChatThread() != null) {
             data.put("thread", EMChatThreadHelper.toJson(event.getChatThread()));

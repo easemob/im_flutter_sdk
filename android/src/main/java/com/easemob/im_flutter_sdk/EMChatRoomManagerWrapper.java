@@ -850,7 +850,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("room", EMChatRoomHelper.toJson(room));
-                            data.put("type", "onSpecificationChanged");
+                            data.put("type", "onRoomSpecificationChanged");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );

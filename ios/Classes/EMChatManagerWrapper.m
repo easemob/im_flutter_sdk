@@ -1247,4 +1247,8 @@
                      arguments:dict];
 }
 
+- (void)messageAttachmentStatusDidChange:(EMChatMessage *)aMessage error:(EMError *)aError {
+    
+}
+
 @end

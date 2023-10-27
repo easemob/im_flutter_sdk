@@ -33,7 +33,7 @@
     } else if([ChatGroupAckCount isEqualToString:call.method]) {
         [self getGroupAckCount:call.arguments channelName:call.method result:result];
     } else if([ChatThread isEqualToString:call.method]) {
-        
+        [self getChatThread:call.arguments channelName:call.method result:result];
     }
     else {
         [super handleMethodCall:call result:result];

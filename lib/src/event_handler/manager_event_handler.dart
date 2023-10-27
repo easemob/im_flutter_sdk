@@ -984,7 +984,7 @@ class EMChatThreadEventHandler {
   /// ~end
   ///
   /// ~chinese
-  /// Thread 事件监听。 
+  /// Thread 事件监听。
   ///
   /// Param [onChatThreadCreate] 子区创建回调。
   ///

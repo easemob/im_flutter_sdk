@@ -418,6 +418,17 @@ class EMOptions {
   }
 
   /// ~english
+  /// Enable Honor Push on vivo devices.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 开启 荣耀 推送。
+  /// ~end
+  void enableHonorPush() {
+    _pushConfig.enableHonorPush = true;
+  }
+
+  /// ~english
   /// Sets the app options.
   ///
   /// Param [appKey] The app key that you get from the console when creating an app.

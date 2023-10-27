@@ -1,3 +1,19 @@
+## 4.1.3
+
+#### 新增
+
+- 支持 安卓 14;
+- 新增 开启 荣耀推送开关 `EMOptions#enableHonorPush` 方法；
+
+#### 修复
+
+- 修复调用 `EMChatManager#getThreadConversation` 报错；
+- 修复 `EMMessage#chatThread` 方法报错;
+- 修复 `EMChatRoomEventHandler#onSpecificationChanged` 回调不执行。
+- 修复 `EMChatThreadManager#fetchChatThreadMembers` 崩溃。
+- 修复特殊场景下，安卓平台退出后再登录会丢失聊天室监听事件问题。
+- 修复修改消息后，离线用户上线后拉取历史消息，消息体中缺乏 from 属性的问题。
+
 ## 4.1.0
 
 #### 新增：
