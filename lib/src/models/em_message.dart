@@ -211,7 +211,7 @@ class EMMessage {
   /// ~chinese
   /// 消息的扩展字段。
   /// ~end
-  Map? attributes;
+  Map<String, dynamic>? attributes;
 
   /// ~english
   /// Whether the message is delivered only when the recipient(s) is/are online:

@@ -26,7 +26,7 @@ class EMPushConfig {
 
   bool? enableVivoPush = false;
   bool? enableHWPush = false;
-
+  bool? enableHonorPush = false;
   bool? enableAPNS = false;
 
   EMPushConfig();
@@ -48,6 +48,7 @@ class EMPushConfig {
     enableVivoPush = json.boolValue('enableVivoPush');
     enableHWPush = json.boolValue('enableHWPush');
     enableAPNS = json.boolValue('enableAPNS');
+    enableHonorPush = json.boolValue('enableHonorPush');
   }
 
   /// @nodoc
@@ -68,6 +69,7 @@ class EMPushConfig {
     data.putIfNotNull("enableHWPush", enableHWPush);
     data.putIfNotNull("enableVivoPush", enableVivoPush);
     data.putIfNotNull("enableAPNS", enableAPNS);
+    data.putIfNotNull("enableHonorPush", enableHonorPush);
 
     return data;
   }

@@ -119,6 +119,9 @@ class EMOptionsHelper {
             if (pushConfig.getBoolean("enableVivoPush")) {
                 builder.enableVivoPush();
             }
+            if(pushConfig.getBoolean("enableHonorPush")) {
+                builder.enableHonorPush();
+            }
             options.setPushConfig(builder.build());
         }
         return options;
