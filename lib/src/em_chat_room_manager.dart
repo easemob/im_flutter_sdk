@@ -910,7 +910,7 @@ class EMChatRoomManager {
   /// ~end
   Future<void> blockChatRoomMembers(
     String roomId,
-    List members,
+    List<String> members,
   ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =
@@ -947,7 +947,7 @@ class EMChatRoomManager {
   /// ~end
   Future<void> unBlockChatRoomMembers(
     String roomId,
-    List members,
+    List<String> members,
   ) async {
     Map req = {"roomId": roomId, "members": members};
     Map result =

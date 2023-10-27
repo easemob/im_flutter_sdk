@@ -698,7 +698,7 @@ class EMClient {
   /// ~chinese
   /// 获取指定账号下登录的在线设备列表。
   ///
-  /// Param [userId] 用户 ID。 
+  /// Param [userId] 用户 ID。
   ///
   /// Param [pwdOrToken] 密码或者 token。
   ///
@@ -906,8 +906,8 @@ class EMClient {
 
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
     EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
-    String target = map['target'];
-    List<String> users = map['users'];
+    String target = map['target'] ?? '';
+    List<String> users = map.getList("users") ?? [];
 
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onChatThreadEvent?.call(event, target, users);

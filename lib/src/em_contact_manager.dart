@@ -141,7 +141,7 @@ class EMContactManager {
   ///
   /// Param [reason] （可选）添加为好友的原因。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> addContact(
     String userId, {
@@ -181,7 +181,7 @@ class EMContactManager {
   /// - `true`：是；
   /// - （默认）`false`：否。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> deleteContact(
     String username, {
@@ -209,7 +209,7 @@ class EMContactManager {
   ///
   /// **Return** 联系人列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactsFromServer() async {
     Map result =
@@ -241,7 +241,7 @@ class EMContactManager {
   ///
   /// **Return** 调用成功会返回好友列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactsFromDB() async {
     Map result =
@@ -276,7 +276,7 @@ class EMContactManager {
   ///
   /// Param [username] 要加入黑名单的用户的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> addUserToBlockList(
     String username,
@@ -306,7 +306,7 @@ class EMContactManager {
   ///
   /// Param [username] 要在黑名单中移除的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> removeUserFromBlockList(String username) async {
     Map req = {'username': username};
@@ -332,7 +332,7 @@ class EMContactManager {
   ///
   /// **Return** 该方法调用成功会返回黑名单列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getBlockListFromServer() async {
     Map result =
@@ -364,7 +364,7 @@ class EMContactManager {
   ///
   /// **Return** 该方法调用成功会返回黑名单列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getBlockListFromDB() async {
     Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
@@ -395,7 +395,7 @@ class EMContactManager {
   ///
   /// Param [username] 发起好友邀请的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> acceptInvitation(String username) async {
     Map req = {'username': username};
@@ -421,7 +421,7 @@ class EMContactManager {
   ///
   /// Param [username] 发起好友邀请的用户 ID。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> declineInvitation(String username) async {
     Map req = {'username': username};
@@ -447,7 +447,7 @@ class EMContactManager {
   ///
   /// **Return** 该方法调用成功会返回 ID 列表。
   ///
-  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 {@link EMError}。
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
     Map result =

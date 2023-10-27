@@ -157,14 +157,7 @@ class EMChatManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<EMMessage> sendMessage(
-    EMMessage message, {
-    void Function(
-      void Function(EMMessage)? onSuccess,
-      void Function(EMMessage)? onError,
-      void Function(int)? onProgress,
-    )? callback,
-  }) async {
+  Future<EMMessage> sendMessage(EMMessage message) async {
     message.status = MessageStatus.PROGRESS;
     Map result = await ChatChannel.invokeMethod(
         ChatMethodKeys.sendMessage, message.toJson());
@@ -486,16 +479,20 @@ class EMChatManager {
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<EMConversation> getThreadConversation(String threadId) async {
+  Future<EMConversation?> getThreadConversation(String threadId) async {
     Map result = await ChatChannel.invokeMethod(
       ChatMethodKeys.getThreadConversation,
-      {"convId", threadId},
+      {"convId": threadId},
     );
 
     try {
+      EMConversation? ret;
       EMError.hasErrorFromResult(result);
-      return EMConversation.fromJson(
-          result[ChatMethodKeys.getThreadConversation]);
+      if (result[ChatMethodKeys.getThreadConversation] != null) {
+        ret = EMConversation.fromJson(
+            result[ChatMethodKeys.getThreadConversation]);
+      }
+      return ret;
     } on EMError catch (e) {
       throw e;
     }
@@ -1696,7 +1693,7 @@ class EMChatManager {
   /// 只能调用该方法修改单聊和群聊中的文本消息，不能修改聊天室消息。
   ///
   /// Param [messageId] 消息实例 ID。
-  /// 
+  ///
   /// Param [msgBody] 文本消息体实例 [EMTextMessageBody]。
   ///
   /// **Return** 修改后的消息实例。

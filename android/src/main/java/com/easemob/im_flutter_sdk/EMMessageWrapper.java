@@ -73,10 +73,11 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         String msgId = params.getString("msgId");
         EMMessage msg = getMessageWithId(msgId);
         asyncRunnable(()->{
-            if (msg == null) {
+            if (msg != null) {
                 onSuccess(result, channelName,  msg.getChatThread() != null ? EMChatThreadHelper.toJson(msg.getChatThread()) : null);
+            }else {
+                onSuccess(result, channelName,  null);
             }
-            onSuccess(result, channelName,  null);
         });
     }
 

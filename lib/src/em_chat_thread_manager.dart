@@ -309,11 +309,11 @@ class EMChatThreadManager {
   ///
   /// Param [limit] 每页期望返回的成员数。取值范围为 [1,50]。
   ///
-  /// **Return** 若调用成功，返回子区成员列表；失败则抛出异常。
+  /// **Return** 若调用成功，返回子区成员 [EMCursorResult]；失败则抛出异常。
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
-  Future<List<String>> fetchChatThreadMembers({
+  Future<EMCursorResult<String>> fetchChatThreadMembers({
     required String chatThreadId,
     String? cursor,
     int limit = 20,
@@ -329,13 +329,9 @@ class EMChatThreadManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      List<String> list = [];
-      result[ChatMethodKeys.fetchChatThreadMember]?.forEach((element) {
-        if (element is String) {
-          list.add(element);
-        }
-      });
-      return list;
+      return EMCursorResult<String>.fromJson(
+          result[ChatMethodKeys.fetchChatThreadMember],
+          dataItemCallback: (obj) => obj);
     } on EMError catch (e) {
       throw e;
     }
@@ -379,7 +375,7 @@ class EMChatThreadManager {
       }
 
       for (var key in map.keys) {
-        Map<String, Object> msgMap = map[key].cast<Map<String, Object>>();
+        Map<String, dynamic> msgMap = map[key];
         ret[key] = EMMessage.fromJson(msgMap);
       }
       return ret;

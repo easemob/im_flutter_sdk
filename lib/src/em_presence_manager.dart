@@ -108,7 +108,7 @@ class EMPresenceManager {
   ///
   /// Param [description] 用户在线状态的扩展信息。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
   Future<void> publishPresence(
     String description,
@@ -144,7 +144,7 @@ class EMPresenceManager {
   ///
   /// **Return** 返回被订阅用户的当前状态。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
   Future<List<EMPresence>> subscribe({
     required List<String> members,
@@ -178,7 +178,7 @@ class EMPresenceManager {
   ///
   /// Param [members] 要取消订阅在线状态的用户 ID 数组。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
   Future<void> unsubscribe({
     required List<String> members,
@@ -214,7 +214,7 @@ class EMPresenceManager {
   ///
   /// **Return** 返回订阅的在线状态所属的用户 ID。若当前未订阅任何用户的在线状态，返回空列表。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
   Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
@@ -255,7 +255,7 @@ class EMPresenceManager {
   ///
   /// **Return** 被订阅用户的当前状态。
   ///
-  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 {@link EMError}。
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
   Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,
