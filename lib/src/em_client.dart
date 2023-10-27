@@ -906,7 +906,7 @@ class EMClient {
 
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
     EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
-    String target = map['target'];
+    String target = map['target'] ?? '';
     List<String> users = map.getList("users") ?? [];
 
     for (var handler in _multiDeviceEventHandler.values) {
