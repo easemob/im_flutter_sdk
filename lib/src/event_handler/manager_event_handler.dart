@@ -1385,7 +1385,7 @@ class EMGroupEventHandler {
   final void Function(
     String groupId,
     String? groupName,
-    String decliner,
+    String? applicant,
     String? reason,
   )? onRequestToJoinDeclinedFromGroup;
 

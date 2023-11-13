@@ -59,6 +59,11 @@ class ChatMethodKeys {
   static const String acceptInvitation = "acceptInvitation";
   static const String declineInvitation = "declineInvitation";
   static const String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
+  static const String getAllContacts = "getAllContacts";
+  static const String setContactRemark = "setContactRemark";
+  static const String getContact = "getContact";
+  static const String fetchAllContacts = "fetchAllContacts";
+  static const String fetchContacts = "fetchContacts";
 
   /// EMContactManager listener
   static const String onContactChanged = "onContactChanged";
@@ -278,21 +283,16 @@ class ChatMethodKeys {
   static const String fetchMembersAttributesFromGroup =
       "fetchMembersAttributesFromGroup";
 
+  static const String fetchJoinedGroupCount = "fetchJoinedGroupCount";
+
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
 
   /// EMPushManager
   static const String getImPushConfig = "getImPushConfig";
   static const String getImPushConfigFromServer = "getImPushConfigFromServer";
-  static const String enableOfflinePush = "enableOfflinePush";
-  static const String disableOfflinePush = "disableOfflinePush";
   static const String updateImPushStyle = "updateImPushStyle";
   static const String updatePushNickname = "updatePushNickname";
-
-  static const String updateGroupPushService = "updateGroupPushService";
-  static const String getNoPushGroups = "getNoPushGroups";
-  static const String updateUserPushService = "updateUserPushService";
-  static const String getNoPushUsers = "getNoPushUsers";
 
   static const String updateHMSPushToken = "updateHMSPushToken";
   static const String updateFCMPushToken = "updateFCMPushToken";

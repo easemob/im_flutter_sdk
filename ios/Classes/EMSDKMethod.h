@@ -61,6 +61,12 @@ static NSString *const ChatGetBlockListFromDB = @"getBlockListFromDB";
 static NSString *const ChatAcceptInvitation = @"acceptInvitation";
 static NSString *const ChatDeclineInvitation = @"declineInvitation";
 static NSString *const ChatGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatform";
+static NSString *const ChatGetAllContacts = @"getAllContacts";
+static NSString *const ChatSetContactRemark = @"setContactRemark";
+static NSString *const ChatGetContact = @"getContact";
+static NSString *const ChatFetchAllContacts = @"fetchAllContacts";
+static NSString *const ChatFetchContacts = @"fetchContacts";
+
 
 #pragma mark - EMContactDelegate
 static NSString *const ChatOnContactChanged = @"onContactChanged";
@@ -253,21 +259,16 @@ static NSString *const ChatSetMemberAttributesFromGroup = @"setMemberAttributesF
 static NSString *const ChatRemoveMemberAttributesFromGroup = @"removeMemberAttributesFromGroup";
 static NSString *const ChatFetchMemberAttributesFromGroup = @"fetchMemberAttributesFromGroup";
 static NSString *const ChatFetchMembersAttributesFromGroup = @"fetchMembersAttributesFromGroup";
+static NSString *const ChatFetchJoinedGroupCount = @"fetchJoinedGroupCount";
 
 static NSString *const ChatOnGroupChanged = @"onGroupChanged";
 
 #pragma mark - EMPushManagerWrapper
 static NSString *const ChatGetImPushConfig = @"getImPushConfig";
 static NSString *const ChatGetImPushConfigFromServer = @"getImPushConfigFromServer";
-static NSString *const ChatEnablePush = @"enableOfflinePush";
-static NSString *const ChatDisablePush = @"disableOfflinePush";
 static NSString *const ChatUpdateImPushStyle = @"updateImPushStyle";
 static NSString *const ChatUpdatePushNickname = @"updatePushNickname";
 
-static NSString *const ChatUpdateGroupPushService = @"updateGroupPushService";
-static NSString *const ChatGetNoPushGroups = @"getNoPushGroups";
-static NSString *const ChatUpdateUserPushService = @"updateUserPushService";
-static NSString *const ChatGetNoPushUsers = @"getNoPushUsers";
 static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
 static NSString *const UpdateFCMPushToken = @"updateFCMPushToken";
 

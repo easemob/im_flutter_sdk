@@ -429,10 +429,15 @@ class EMClient {
     }
   }
 
+  @Deprecated('Use [loginWithToken or loginWithPassword] instead')
+
   /// ~english
   /// Logs in to the chat server with a password or token.
   ///
-  /// Param [userId] The user ID.
+  /// Param [userId] The user ID. The maximum length is 64 characters. Ensure that you set this parameter.
+  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-), and the English period (.).
+  /// This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones.
+  /// If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
   ///
   /// Param [pwdOrToken] The password or token.
   ///
@@ -446,7 +451,9 @@ class EMClient {
   /// ~chinese
   /// 使用密码或 Token 登录服务器。
   ///
-  /// Param [userId] 用户 ID。
+  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。
+  /// 支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。
+  /// 该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
   ///
   /// Param [pwdOrToken] 登录密码或 Token。
   ///
@@ -456,8 +463,11 @@ class EMClient {
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> login(String userId, String pwdOrToken,
-      [bool isPassword = true]) async {
+  Future<void> login(
+    String userId,
+    String pwdOrToken, [
+    bool isPassword = true,
+  ]) async {
     EMLog.v('login: $userId : $pwdOrToken, isPassword: $isPassword');
     Map req = {
       'username': userId,
@@ -472,6 +482,8 @@ class EMClient {
       throw e;
     }
   }
+
+  @Deprecated('Use [loginWithToken] instead')
 
   /// ~english
   /// Logs in to the chat server by user ID and Agora token. This method supports automatic login.
@@ -498,19 +510,73 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> loginWithAgoraToken(String userId, String agoraToken) async {
-    Map req = {
-      "username": userId,
-      "agora_token": agoraToken,
-    };
+    return login(userId, agoraToken, false);
+  }
 
-    Map result = await ClientChannel.invokeMethod(
-        ChatMethodKeys.loginWithAgoraToken, req);
-    try {
-      EMError.hasErrorFromResult(result);
-      _currentUserId = userId;
-    } on EMError catch (e) {
-      throw e;
-    }
+  /// ~english
+  /// Logs in to the chat server with a token.
+  ///
+  /// Param [userId]  The user ID. The maximum length is 64 characters.
+  /// Ensure that you set this parameter.
+  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-), and the English period (.).
+  /// This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones. If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
+  ///
+  /// Param [token] The token for login to the chat server.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户使用 token 登录。
+  ///
+  /// **Note**
+  ///
+  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。
+  /// 支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。
+  /// 该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
+  ///
+  /// Param [token] 登录 Token。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> loginWithToken(
+    String userId,
+    String token,
+  ) async {
+    return login(userId, token, false);
+  }
+
+  /// ~english
+  /// Logs in to the chat server with a password.
+  ///
+  /// Param [userId]  The user ID. The maximum length is 64 characters.
+  /// Ensure that you set this parameter.
+  /// Supported characters include the 26 English letters (a-z), the ten numbers (0-9), the underscore (_), the hyphen (-), and the English period (.).
+  /// This parameter is case insensitive, and upper-case letters are automatically changed to low-case ones. If you want to set this parameter as a regular expression, set it as ^[a-zA-Z0-9_-]+$.
+  ///
+  /// Param [password] The password. The maximum length is 64 characters. Ensure that you set this parameter.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户使用密码登录聊天服务器。
+  ///
+  /// **Note**
+  ///
+  /// Param [userId] 用户 ID，长度不超过 64 个字符。请确保你对该参数设值。
+  /// 支持的字符包括英文字母（a-z），数字（0-9），下划线（_），英文横线（-），英文句号（.）。
+  /// 该参数不区分大小写，大写字母会被自动转为小写字母。如果使用正则表达式设置该参数，则可以将表达式写为：^[a-zA-Z0-9_-]+$。
+  ///
+  /// Param [password] 密码，长度不超过 64 个字符。请确保你对该参数设值。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> loginWithPassword(
+    String userId,
+    String password,
+  ) async {
+    return login(userId, password, true);
   }
 
   /// ~english

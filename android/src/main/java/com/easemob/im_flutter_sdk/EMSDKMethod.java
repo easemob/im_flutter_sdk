@@ -52,7 +52,11 @@ public class EMSDKMethod {
     static final String acceptInvitation = "acceptInvitation";
     static final String declineInvitation = "declineInvitation";
     static final String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
-
+    static final String getAllContacts = "getAllContacts";
+    static final String setContactRemark = "setContactRemark";
+    static final String getContact = "getContact";
+    static final String fetchAllContacts = "fetchAllContacts";
+    static final String fetchContacts = "fetchContacts";
 
     static final String onContactChanged = "onContactChanged";
 
@@ -238,6 +242,7 @@ public class EMSDKMethod {
     static final String removeMemberAttributesFromGroup = "removeMemberAttributesFromGroup";
     static final String fetchMemberAttributesFromGroup = "fetchMemberAttributesFromGroup";
     static final String fetchMembersAttributesFromGroup = "fetchMembersAttributesFromGroup";
+    static final String fetchJoinedGroupCount = "fetchJoinedGroupCount";
 
     /// EMGroupManagerListener
     static final String onGroupChanged = "onGroupChanged";
@@ -245,20 +250,10 @@ public class EMSDKMethod {
     /// EMPushManager
     static final String getImPushConfig = "getImPushConfig";
     static final String getImPushConfigFromServer = "getImPushConfigFromServer";
-    static final String enableOfflinePush = "enableOfflinePush";
-    static final String disableOfflinePush = "disableOfflinePush";
     static final String updateImPushStyle = "updateImPushStyle";
     static final String updatePushNickname = "updatePushNickname";
-
-    static final String updateGroupPushService = "updateGroupPushService";
-    static final String getNoPushGroups = "getNoPushGroups";
-    static final String updateUserPushService = "updateUserPushService";
-    static final String getNoPushUsers = "getNoPushUsers";
-
     static final String updateHMSPushToken = "updateHMSPushToken";
     static final String updateFCMPushToken = "updateFCMPushToken";
-
-
     static final String reportPushAction = "reportPushAction";
     static final String setConversationSilentMode = "setConversationSilentMode";
     static final String removeConversationSilentMode = "removeConversationSilentMode";

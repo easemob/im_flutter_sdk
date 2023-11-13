@@ -2032,6 +2032,34 @@ class EMGroupManager {
     }
   }
 
+  /// ~english
+  /// Gets groups count of the current user joined from the server.
+  ///
+  /// **Return** The count of groups joined by the current user.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取当前用户已加入的群组数量。
+  ///
+  /// **Return** 加入的群组数量。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<int> fetchJoinedGroupCount() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.fetchJoinedGroupCount);
+    try {
+      EMError.hasErrorFromResult(result);
+      int count = result[ChatMethodKeys.fetchJoinedGroupCount];
+      return count;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   Future<void> _onGroupChanged(Map? map) async {
     var type = map!['type'];
     _eventHandlesMap.values.forEach((element) {
@@ -2079,10 +2107,10 @@ class EMGroupManager {
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
           String groupId = map['groupId'];
           String? groupName = map['groupName'];
-          String decliner = map['decliner'];
+          String? applicant = map['applicant'];
           String? reason = map['reason'];
           element.onRequestToJoinDeclinedFromGroup
-              ?.call(groupId, groupName, decliner, reason);
+              ?.call(groupId, groupName, applicant, reason);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
           String groupId = map['groupId'];
