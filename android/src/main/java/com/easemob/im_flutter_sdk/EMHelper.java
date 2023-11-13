@@ -9,6 +9,7 @@ import com.hyphenate.chat.EMChatThread;
 import com.hyphenate.chat.EMChatThreadEvent;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMCombineMessageBody;
+import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
@@ -279,6 +280,28 @@ class EMGroupOptionsHelper {
         }
 
         return 0;
+    }
+}
+
+class EMContactHelper{
+    static Map<String, Object> toJson(EMContact contact) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", contact.getUsername());
+        String remark = contact.getRemark();
+        if (remark != null) {
+            data.put("remark", remark);
+        }
+        return data;
+    }
+
+    static EMContact fromJson(JSONObject json) {
+        String userId = json.optString("userId");
+        String remark = json.optString("remark");
+        EMContact contact = new EMContact(userId);
+        if (remark.length() != 0) {
+            contact.setRemark(remark);
+        }
+        return contact;
     }
 }
 
@@ -582,6 +605,7 @@ class EMMessageHelper {
         data.put("hasRead", !message.isUnread());
         data.put("needGroupAck", message.isNeedGroupAck());
         data.put("onlineState", message.isOnlineState());
+        data.put("broadcast", message.isBroadcast());
 
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
@@ -1203,6 +1227,10 @@ class EMCursorResultHelper {
 
                 if (obj instanceof EMConversation) {
                     jsonList.add(EMConversationHelper.toJson((EMConversation) obj));
+                }
+
+                if (obj instanceof EMContact) {
+                    jsonList.add(EMContactHelper.toJson((EMContact) obj));
                 }
             }
         }

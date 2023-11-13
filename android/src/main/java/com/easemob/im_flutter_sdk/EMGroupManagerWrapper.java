@@ -140,6 +140,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 fetchMemberAttributes(param, call.method, result);
             } else if (EMSDKMethod.fetchMembersAttributesFromGroup.equals(call.method)) {
                 fetchMembersAttributes(param, call.method, result);
+            } else if (EMSDKMethod.fetchJoinedGroupCount.equals(call.method)) {
+                fetchJoinedGroupCount(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }
@@ -906,6 +908,18 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
         EMClient.getInstance().groupManager().asyncFetchGroupMembersAttributes(groupId, userIds, keys, callback);
     }
 
+
+    private void fetchJoinedGroupCount(JSONObject param, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().groupManager().asyncGetJoinedGroupsCountFromServer(new EMValueWrapperCallBack<Integer>( result, channelName) {
+            @Override
+            public void onSuccess(Integer object) {
+                super.onSuccess(object);
+            }
+        });
+    }
+
+
+
     private void registerEaseListener() {
 
         if (groupChangeListener != null) {
@@ -1000,13 +1014,18 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
 
             @Override
             public void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason) {
+
+            }
+
+            @Override
+            public void onRequestToJoinDeclined(String groupId, String groupName, String decliner, String reason, String applicant) {
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onGroupRequestToJoinDeclined");
                             data.put("groupId", groupId);
                             data.put("groupName", groupName);
-                            data.put("decliner", decliner);
+                            data.put("applicant", applicant);
                             data.put("reason", reason);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
                         }

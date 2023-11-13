@@ -43,34 +43,14 @@
         [self updateImPushStyle:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([ChatUpdateGroupPushService isEqualToString:call.method]) {
-        [self updateGroupPushService:call.arguments
-                         channelName:call.method
-                              result:result];
     } else if ([ChatBindDeviceToken isEqualToString:call.method] || [UpdateFCMPushToken isEqualToString:call.method]) {
         [self  bindDeviceToken:call.arguments
                    channelName:call.method
                         result:result];
-    } else if ([ChatEnablePush isEqualToString:call.method]) {
-        [self enablePush:call.arguments
-             channelName:call.method
-                  result:result];
-    } else if ([ChatDisablePush isEqualToString:call.method]) {
-        [self disablePush:call.arguments
-              channelName:call.method
-                   result:result];
-    } else if ([ChatGetNoPushGroups isEqualToString:call.method]) {
-        [self getNoPushGroups:call.arguments
-                  channelName:call.method
-                       result:result];
-    } else if ([ChatUpdateUserPushService isEqualToString:call.method]){
-        [self updateUserPushService:call.arguments
-                        channelName:call.method
-                             result:result];
-    } else if ([ChatGetNoPushUsers isEqualToString:call.method]){
-        [self getNoPushUsers:call.arguments
-                 channelName:call.method
-                      result:result];
+    } else if ([UpdateFCMPushToken isEqualToString:call.method]) {
+        [self  bindFCMToken:call.arguments
+                   channelName:call.method
+                        result:result];
     } else if ([ChatReportPushAction isEqualToString:call.method]){
         [self reportPushAction:call.arguments
                    channelName:call.method
@@ -178,25 +158,6 @@
     });
 }
 
-- (void)updateGroupPushService:(NSDictionary *)param
-                   channelName:(NSString *)aChannelName
-                        result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    NSArray *groupIds = param[@"group_ids"];
-    bool noPush = [param[@"noPush"] boolValue];
-    
-    [EMClient.sharedClient.pushManager updatePushServiceForGroups:groupIds
-                                                      disablePush:noPush
-                                                       completion:^(EMError * _Nonnull aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
-}
-
-
 - (void)bindDeviceToken:(NSDictionary *)param
             channelName:(NSString *)aChannelName
                  result:(FlutterResult)result {
@@ -213,84 +174,21 @@
     });
 }
 
-
-- (void)enablePush:(NSDictionary *)param
-       channelName:(NSString *)aChannelName
-            result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *error = [EMClient.sharedClient.pushManager enableOfflinePush];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:error
-                               object:nil];
-        });
-    });
+- (void)bindFCMToken:(NSDictionary *)param
+         channelName:(NSString *)aChannelName
+              result:(FlutterResult)result {
+ __weak typeof(self) weakSelf = self;
+ NSString *deviceToken = param[@"token"];
+ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+     [EMClient.sharedClient bindFCMToken:deviceToken completion:^(EMError * _Nullable aError) {
+         [weakSelf wrapperCallBack:result
+                       channelName:aChannelName
+                             error:aError
+                            object:nil];
+     }];
+ });
 }
 
-- (void)disablePush:(NSDictionary *)param
-        channelName:(NSString *)aChannelName
-             result:(FlutterResult)result {
-    int startTime = [param[@"start"] intValue];
-    int endTime = [param[@"end"] intValue];
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        EMError *error = [EMClient.sharedClient.pushManager disableOfflinePushStart:startTime end:endTime];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:error
-                               object:nil];
-        });
-    });
-}
-
-- (void)getNoPushGroups:(NSDictionary *)param
-            channelName:(NSString *)aChannelName
-                 result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray<NSString *>* groups = [EMClient.sharedClient.pushManager noPushGroups];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:nil
-                               object:groups];
-        });
-    });
-}
-
-
-- (void)updateUserPushService:(NSDictionary *)param
-                  channelName:(NSString *)aChannelName
-                       result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    NSArray *userIds = param[@"user_ids"];
-    bool noPush = [param[@"noPush"] boolValue];
-    
-    [EMClient.sharedClient.pushManager updatePushServiceForUsers:userIds disablePush:noPush completion:^(EMError * _Nonnull aError) {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:nil];
-    }];
-}
-
-- (void)getNoPushUsers:(NSDictionary *)param
-           channelName:(NSString *)aChannelName
-                result:(FlutterResult)result {
-    __weak typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray<NSString *>* userIds = [EMClient.sharedClient.pushManager noPushUIds];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:nil
-                               object:userIds];
-        });
-    });
-}
 
 - (void)reportPushAction:(NSDictionary *)param
              channelName:(NSString *)aChannelName

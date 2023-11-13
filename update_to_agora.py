@@ -156,6 +156,7 @@ FILE_dict = {
     "em_video_message_body.dart":"chat_video_message_body.dart",
     "em_voice_message_body.dart":"chat_voice_message_body.dart",
     "em_domain_terms.dart":"chat_domain_terms.dart",
+    "em_contact.dart":"chat_contact.dart",
     
     
     # /lib/src/tools/

@@ -17,6 +17,7 @@ export 'src/models/em_group_message_ack.dart';
 export 'src/models/em_chat_room.dart';
 export 'src/models/em_conversation.dart';
 export 'src/models/em_cursor_result.dart';
+export 'src/models/em_contact.dart';
 export 'src/models/em_deviceInfo.dart';
 export 'src/models/em_error.dart';
 export 'src/models/em_group.dart';

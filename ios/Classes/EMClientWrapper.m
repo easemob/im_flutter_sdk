@@ -429,12 +429,14 @@
 }
 
 - (void)renewToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    __weak typeof(self)weakSelf = self;
     NSString *newAgoraToken = param[@"agora_token"];
-    [EMClient.sharedClient renewToken:newAgoraToken];
-    [self wrapperCallBack:result
-                  channelName:aChannelName
-                        error:nil
-                       object:nil];
+    [EMClient.sharedClient renewToken:newAgoraToken completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:nil];
+    }];
 }
 
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
@@ -504,7 +506,7 @@
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
     if (aError.code == EMErrorServerServingForbidden) {
          [self userDidForbidByServer];
-    }else if (aError.code == EMAppActiveNumbersReachLimitation) {
+    }else if (aError.code == EMErrorAppActiveNumbersReachLimitation) {
         [self activeNumbersReachLimitation];
     }
 }

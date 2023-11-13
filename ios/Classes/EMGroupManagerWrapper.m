@@ -314,6 +314,9 @@
     else if ([ChatFetchMembersAttributesFromGroup isEqualToString:call.method]) {
         [self fetchMembersAttributes:call.arguments channelName:call.method result:result];
     }
+    else if ([ChatFetchJoinedGroupCount isEqualToString:call.method]) {
+        [self fetchMembersAttributes:call.arguments channelName:call.method result:result];
+    }
     else
     {
         [super handleMethodCall:call result:result];
@@ -1018,6 +1021,17 @@
 }
 
 
+- (void)fetchJoinedGroupCount:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+
+    [EMClient.sharedClient.groupManager getJoinedGroupsCountFromServerWithCompletion:^(NSInteger groupCount, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(groupCount)];
+    }];
+}
+
 
 #pragma mark - EMGroupManagerDelegate
 
@@ -1138,7 +1152,8 @@
 }
 
 - (void)joinGroupRequestDidDecline:(NSString *)aGroupId
-                            reason:(NSString *)aReason {
+                            reason:(NSString *)aReason
+                         applicant:(NSString * _Nonnull)aApplicant {
 
     
     __weak typeof(self) weakSelf = self;
@@ -1146,7 +1161,8 @@
         NSDictionary *map = @{
             @"type":@"onGroupRequestToJoinDeclined",
             @"groupId":aGroupId,
-            @"reason":aReason
+            @"reason":aReason,
+            @"applicant": aApplicant
         };
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
                          arguments:map];
