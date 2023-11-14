@@ -1024,8 +1024,8 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onGroupRequestToJoinDeclined");
                             data.put("groupId", groupId);
-                            data.put("groupName", groupName);
                             data.put("applicant", applicant);
+                            data.put("decliner", decliner);
                             data.put("reason", reason);
                             post(() -> channel.invokeMethod(EMSDKMethod.onGroupChanged, data));
                         }

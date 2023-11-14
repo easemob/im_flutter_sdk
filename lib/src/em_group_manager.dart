@@ -2109,6 +2109,7 @@ class EMGroupManager {
           String? groupName = map['groupName'];
           String? applicant = map['applicant'];
           String? reason = map['reason'];
+          String? decliner = map['decliner'];
           element.onRequestToJoinDeclinedFromGroup
               ?.call(groupId, groupName, applicant, reason);
           break;
