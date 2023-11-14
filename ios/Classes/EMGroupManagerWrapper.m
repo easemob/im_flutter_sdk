@@ -1151,9 +1151,10 @@
     }];
 }
 
-- (void)joinGroupRequestDidDecline:(NSString *)aGroupId
-                            reason:(NSString *)aReason
-                         applicant:(NSString * _Nonnull)aApplicant {
+- (void)joinGroupRequestDidDecline:(NSString *_Nonnull)aGroupId
+                            reason:(NSString *_Nullable)aReason
+                          decliner:(NSString *_Nullable)aDecliner
+                         applicant:(NSString* _Nonnull )aApplicant {
 
     
     __weak typeof(self) weakSelf = self;
@@ -1162,6 +1163,7 @@
             @"type":@"onGroupRequestToJoinDeclined",
             @"groupId":aGroupId,
             @"reason":aReason,
+            @"decliner": aDecliner,
             @"applicant": aApplicant
         };
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
