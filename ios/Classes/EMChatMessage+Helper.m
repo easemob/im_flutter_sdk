@@ -28,6 +28,7 @@
     NSString *conversationId = aJson[@"conversationId"];
     
 
+    
     EMChatMessage *msg = [[EMChatMessage alloc] initWithConversationID:conversationId
                                                           from:from
                                                             to:to
@@ -90,6 +91,7 @@
     ret[@"onlineState"] = @(self.onlineState);
     ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);
     ret[@"receiverList"] = self.receiverList;
+    ret[@"broadcast"] = @(self.broadcast);
     return ret;
 }
 

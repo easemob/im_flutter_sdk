@@ -61,6 +61,11 @@ static NSString *const ChatGetBlockListFromDB = @"getBlockListFromDB";
 static NSString *const ChatAcceptInvitation = @"acceptInvitation";
 static NSString *const ChatDeclineInvitation = @"declineInvitation";
 static NSString *const ChatGetSelfIdsOnOtherPlatform = @"getSelfIdsOnOtherPlatform";
+static NSString *const ChatGetAllContacts = @"getAllContacts";
+static NSString *const ChatSetContactRemark = @"setContactRemark";
+static NSString *const ChatGetContact = @"getContact";
+static NSString *const ChatFetchAllContacts = @"fetchAllContacts";
+static NSString *const ChatFetchContacts = @"fetchContacts";
 
 #pragma mark - EMContactDelegate
 static NSString *const ChatOnContactChanged = @"onContactChanged";

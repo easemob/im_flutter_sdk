@@ -263,6 +263,8 @@ class EMMessage {
   /// ~end
   late final bool onlineState;
 
+  late final bool isBroadcast;
+
   ChatRoomMessagePriority? _priority;
 
   /// ~english
@@ -917,7 +919,8 @@ class EMMessage {
       ..onlineState = map["onlineState"] ?? true
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
       ..status = messageStatusFromInt(map["status"])
-      ..receiverList = map["receiverList"]?.cast<String>();
+      ..receiverList = map["receiverList"]?.cast<String>()
+      ..isBroadcast = map["broadcast"] ?? false;
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {

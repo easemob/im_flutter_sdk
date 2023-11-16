@@ -1,11 +1,15 @@
 package com.easemob.im_flutter_sdk;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.hyphenate.EMContactListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMContact;
+import com.hyphenate.chat.EMCursorResult;
+import com.hyphenate.chat.EMGroup;
 import com.hyphenate.exceptions.HyphenateException;
 
 import org.json.JSONException;
@@ -53,6 +57,16 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 declineInvitation(param, call.method, result);
             } else if (EMSDKMethod.getSelfIdsOnOtherPlatform.equals(call.method)) {
                 getSelfIdsOnOtherPlatform(param, call.method, result);
+            }else if (EMSDKMethod.getAllContacts.equals(call.method)) {
+                getAllContacts(param, call.method, result);
+            }else if (EMSDKMethod.setContactRemark.equals(call.method)) {
+                setContactRemark(param, call.method, result);
+            }else if (EMSDKMethod.getContact.equals(call.method)) {
+                getContact(param, call.method, result);
+            }else if (EMSDKMethod.fetchAllContacts.equals(call.method)) {
+                fetchAllContacts(param, call.method, result);
+            }else if (EMSDKMethod.fetchContacts.equals(call.method)) {
+                fetchContacts(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -187,6 +201,69 @@ public class EMContactManagerWrapper extends EMWrapper implements MethodCallHand
                 onSuccess(result, channelName, platforms);
             } catch (HyphenateException e) {
                 onError(result, e);
+            }
+        });
+    }
+
+    private void getAllContacts(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().contactManager().asyncFetchAllContactsFromLocal(new EMValueWrapperCallBack<List<EMContact>>(result, channelName) {
+            @Override
+            public void onSuccess(List<EMContact> list){
+                List<Map> contactList = new ArrayList<>();
+                for (EMContact contact : list) {
+                    contactList.add(EMContactHelper.toJson(contact));
+                }
+                updateObject(contactList);
+            }
+        });
+    }
+
+    private void setContactRemark(JSONObject params, String channelName, Result result) throws JSONException {
+        String userId = params.optString("userId");
+        String remark = params.optString("remark");
+        EMClient.getInstance().contactManager().asyncSetContactRemark(userId, remark, new EMWrapperCallBack(result, channelName, null));
+    }
+
+    private void getContact(JSONObject params, String channelName, Result result) throws JSONException {
+        String userId = params.optString("userId");
+        asyncRunnable(() -> {
+            try {
+                EMContact contact = EMClient.getInstance().contactManager().fetchContactFromLocal(userId);
+                if (contact != null) {
+                    onSuccess(result, channelName, EMContactHelper.toJson(contact));
+                }else {
+                    onSuccess(result, channelName, null);
+                }
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
+
+    private void fetchAllContacts(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().contactManager().asyncFetchAllContactsFromServer(new EMValueWrapperCallBack<List<EMContact>>(result, channelName) {
+            @Override
+            public void onSuccess(List<EMContact> list){
+                List<Map> contactList = new ArrayList<>();
+                for (EMContact contact : list) {
+                    contactList.add(EMContactHelper.toJson(contact));
+                }
+                updateObject(contactList);
+            }
+        });
+    }
+
+    private void fetchContacts(JSONObject params, String channelName, Result result) throws JSONException {
+        int pageSize = params.getInt("pageSize");
+        String cursor = null;
+        if (params.has("cursor")) {
+            cursor = params.getString("cursor");
+        }
+
+        EMClient.getInstance().contactManager().asyncFetchAllContactsFromServer(pageSize, cursor, new EMValueWrapperCallBack<EMCursorResult<EMContact>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMContact> object) {
+                super.updateObject(EMCursorResultHelper.toJson(object));
             }
         });
     }
