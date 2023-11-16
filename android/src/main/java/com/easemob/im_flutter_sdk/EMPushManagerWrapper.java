@@ -50,26 +50,11 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if(EMSDKMethod.updateImPushStyle.equals(call.method)){
                 updateImPushStyle(param, call.method, result);
             }
-            else if(EMSDKMethod.updateGroupPushService.equals(call.method)){
-                updateGroupPushService(param, call.method, result);
-            }
             else if(EMSDKMethod.updateHMSPushToken.equals(call.method)){
                 updateHMSPushToken(param, call.method, result);
             }
             else if(EMSDKMethod.updateFCMPushToken.equals(call.method)){
                 updateFCMPushToken(param, call.method, result);
-            }
-            else if (EMSDKMethod.enableOfflinePush.equals(call.method)) {
-                enableOfflinePush(param, call.method, result);
-            }
-            else if (EMSDKMethod.disableOfflinePush.equals(call.method)){
-                disableOfflinePush(param, call.method, result);
-            }
-            else if (EMSDKMethod.getNoPushGroups.equals(call.method)) {
-                getNoPushGroups(param, call.method, result);
-            }
-            else if (EMSDKMethod.updateUserPushService.equals(call.method)) {
-                updateUserPushService(param, call.method, result);
             }
             else if (EMSDKMethod.reportPushAction.equals(call.method)) {
                 reportPushAction(param, call.method, result);
@@ -145,39 +130,6 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
 
-    private void enableOfflinePush(JSONObject params, String channelName, Result result) throws JSONException
-    {
-        asyncRunnable(()-> {
-            try {
-                EMClient.getInstance().pushManager().enableOfflinePush();
-                onSuccess(result, channelName, null);
-            } catch(HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-    private void disableOfflinePush(JSONObject params, String channelName, Result result) throws JSONException
-    {
-        int startTime = params.getInt("start");
-        int endTime = params.getInt("end");
-        asyncRunnable(()-> {
-            try {
-                EMClient.getInstance().pushManager().disableOfflinePush(startTime, endTime);
-                onSuccess(result, channelName, null);
-            } catch(HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-    private void getNoPushGroups(JSONObject params, String channelName, Result result)  throws JSONException {
-        asyncRunnable(()-> {
-            List<String> groups = EMClient.getInstance().pushManager().getNoPushGroups();
-            onSuccess(result, channelName, groups);
-        });
-    }
-
     private void getNoPushUsers(JSONObject params, String channelName, Result result) throws JSONException {
         asyncRunnable(()->{
             List<String> list = EMClient.getInstance().pushManager().getNoPushUsers();
@@ -190,43 +142,6 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().pushManager().asyncUpdatePushDisplayStyle(style, new EMWrapperCallBack(result, channelName, true));
     }
 
-    private void updateGroupPushService(JSONObject params, String channelName,  Result result) throws JSONException {
-        JSONArray groupIds = params.getJSONArray("group_ids");
-        boolean noPush = params.getBoolean("noPush");
-
-        List<String> groupList = new ArrayList<>();
-        for (int i = 0; i < groupIds.length(); i++) {
-            String groupId = groupIds.getString(i);
-            groupList.add(groupId);
-        }
-        asyncRunnable(()-> {
-            try {
-                EMClient.getInstance().pushManager().updatePushServiceForGroup(groupList, noPush);
-                onSuccess(result, channelName, null);
-            } catch(HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
-
-    private void updateUserPushService(JSONObject params, String channelName, Result result) throws JSONException {
-        JSONArray groupIds = params.getJSONArray("user_ids");
-        boolean noPush = params.getBoolean("noPush");
-
-        List<String> userList = new ArrayList<>();
-        for (int i = 0; i < groupIds.length(); i++) {
-            String userId = groupIds.getString(i);
-            userList.add(userId);
-        }
-        asyncRunnable(()-> {
-            try {
-                EMClient.getInstance().pushManager().updatePushServiceForUsers(userList, noPush);
-                onSuccess(result, channelName, null);
-            } catch(HyphenateException e) {
-                onError(result, e);
-            }
-        });
-    }
 
     private void updateHMSPushToken(JSONObject params, String channelName,  Result result) throws JSONException {
         String token = params.getString("token");

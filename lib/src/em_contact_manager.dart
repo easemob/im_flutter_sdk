@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'internal/inner_headers.dart';
 
 /// ~english
@@ -459,6 +460,167 @@ class EMContactManager {
         devices.add(element);
       });
       return devices;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Gets all contacts from the local database.
+  ///
+  /// **Return** The contact list.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取本地存储的所有好友。
+  ///
+  /// **Return** 好友列表。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<EMContact>> getAllContacts() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getAllContacts);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMContact> list = [];
+      result[ChatMethodKeys.getAllContacts]?.forEach((element) {
+        list.add(element);
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Set the contact's remark.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 设置联系人备注。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<void> setContactRemark({
+    required String userId,
+    required String remark,
+  }) async {
+    Map req = {'userId': userId, "remark": remark};
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.setContactRemark, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Gets contact by userId.
+  ///
+  /// Param [userId] user id。
+  ///
+  /// **Return** The contact.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取联系人信息。
+  ///
+  /// Param [userId] 联系人Id。
+  ///
+  /// **Return** 联系下信息。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<EMContact?> getContact({required String userId}) async {
+    Map req = {'userId': userId};
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getContact, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getContact)) {
+        return EMContact.fromJson(result[ChatMethodKeys.getContact]);
+      } else {
+        return null;
+      }
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Gets all contacts from the server.
+  ///
+  /// **Return** The contact list.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取所有的好友。
+  ///
+  /// **Return** 好友列表。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<EMContact>> fetchAllContacts() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchAllContacts);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMContact> list = [];
+      result[ChatMethodKeys.fetchAllContacts]?.forEach((element) {
+        list.add(element);
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Gets the contact list from the server by page.
+  ///
+  /// Param [cursor] The cursor of the page, the first page can be passed in null.
+  ///
+  /// Param [pageSize] The size of the page.
+  ///
+  /// **Return** The contact result.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器分页获取友。
+  ///
+  /// Param [cursor] 分页的游标，第一页可以不传。
+  ///
+  /// Param [pageSize] 分页的大小。
+  ///
+  /// **Return** 好友列表获取结果。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<EMCursorResult<EMContact>> fetchContacts({
+    String? cursor,
+    int pageSize = 20,
+  }) async {
+    Map map = {"pageSize": pageSize};
+    map.putIfNotNull('cursor', cursor);
+    Map result = await ChatChannel.invokeMethod(
+      ChatMethodKeys.fetchContacts,
+      map,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(result[ChatMethodKeys.fetchContacts],
+          dataItemCallback: (map) {
+        return EMContact.fromJson(map);
+      });
     } on EMError catch (e) {
       throw e;
     }

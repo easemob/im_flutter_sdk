@@ -504,7 +504,7 @@
 - (void)autoLoginDidCompleteWithError:(EMError *)aError {
     if (aError.code == EMErrorServerServingForbidden) {
          [self userDidForbidByServer];
-    }else if (aError.code == EMAppActiveNumbersReachLimitation) {
+    }else if (aError.code == EMErrorAppActiveNumbersReachLimitation) {
         [self activeNumbersReachLimitation];
     }
 }
