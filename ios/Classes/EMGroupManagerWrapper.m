@@ -315,7 +315,7 @@
         [self fetchMembersAttributes:call.arguments channelName:call.method result:result];
     }
     else if ([ChatFetchJoinedGroupCount isEqualToString:call.method]) {
-        [self fetchMembersAttributes:call.arguments channelName:call.method result:result];
+        [self fetchJoinedGroupCount:call.arguments channelName:call.method result:result];
     }
     else
     {
