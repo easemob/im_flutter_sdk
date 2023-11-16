@@ -263,6 +263,13 @@ class EMMessage {
   /// ~end
   late final bool onlineState;
 
+  /// ~english
+  ///  Whether it is a global broadcast message
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否是全局广播消息
+  /// ~end
   late final bool isBroadcast;
 
   ChatRoomMessagePriority? _priority;
