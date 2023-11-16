@@ -593,43 +593,12 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             onSuccess(result, channelName, new ArrayList<>());
             return;
         }
-        List<EMConversation> list = new ArrayList<>(EMClient.getInstance().chatManager().getAllConversations().values());
-        asyncRunnable(() -> {
-            boolean retry = false;
-            List<Map> conversations = new ArrayList<>();
-            do{
-                try{
-                    retry = false;
-                    Collections.sort(list, new Comparator<EMConversation>() {
-                        @Override
-                        public int compare(EMConversation o1, EMConversation o2) {
-                            if (o1 == null && o2 == null) {
-                                return 0;
-                            }
-                            if (o1.getLastMessage() == null) {
-                                return 1;
-                            }
-
-                            if (o2.getLastMessage() == null) {
-                                return -1;
-                            }
-
-                            if (o1.getLastMessage().getMsgTime() == o2.getLastMessage().getMsgTime()) {
-                                return 0;
-                            }
-
-                            return o2.getLastMessage().getMsgTime() - o1.getLastMessage().getMsgTime() > 0 ? 1 : -1;
-                        }
-                    });
-                    for (EMConversation conversation : list) {
-                        conversations.add(EMConversationHelper.toJson(conversation));
-                    }
-                }catch(IllegalArgumentException e) {
-                    retry = true;
-                }
-            }while (retry);
-            onSuccess(result, channelName, conversations);
-        });
+        List<EMConversation> list = EMClient.getInstance().chatManager().getAllConversationsBySort();
+        List<Map> conversations = new ArrayList<>();
+        for (EMConversation conversation : list) {
+            conversations.add(EMConversationHelper.toJson(conversation));
+        }
+        onSuccess(result, channelName, conversations);
     }
 
     private void getConversationsFromServer(JSONObject param, String channelName, Result result) throws JSONException {

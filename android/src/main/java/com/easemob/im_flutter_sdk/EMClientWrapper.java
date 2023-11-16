@@ -324,10 +324,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
     private void renewToken(JSONObject param, String channelName, Result result) throws JSONException {
         String agoraToken = param.getString("agora_token");
-        asyncRunnable(()->{
-            EMClient.getInstance().renewToken(agoraToken);
-            onSuccess(result, channelName, null);
-        });
+        EMClient.getInstance().renewToken(agoraToken, new EMWrapperCallBack(result, channelName,null));
     }
 
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
