@@ -1384,9 +1384,10 @@ class EMGroupEventHandler {
   /// ~end
   final void Function(
     String groupId,
-    String? applicant,
+    String? groupName,
     String? decliner,
     String? reason,
+    String? applicant,
   )? onRequestToJoinDeclinedFromGroup;
 
   /// ~english
