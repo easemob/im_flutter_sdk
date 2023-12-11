@@ -612,5 +612,9 @@
     [self.channel invokeMethod:ChatOnMultiDevicesConversationEvent arguments:data];
 }
 
+//- (void)multiDevicesUndisturbEventNotifyFormOtherDeviceData:(NSString *)undisturbData {
+//    
+//}
+
 
 @end
