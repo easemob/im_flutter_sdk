@@ -7,7 +7,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   assert(appKey.isNotEmpty, "appKey is empty");
   EMOptions options =
-      EMOptions(appKey: appKey, autoLogin: false, debugModel: true);
+      EMOptions(appKey: appKey, autoLogin: false, debugMode: true);
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }

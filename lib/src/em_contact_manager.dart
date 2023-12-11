@@ -164,7 +164,7 @@ class EMContactManager {
   /// ~english
   /// Deletes a contact and all the related conversations.
   ///
-  /// Param [username] The contact to be deleted.
+  /// Param [userId] The contact to be deleted.
   ///
   /// Param [keepConversation] Whether to retain conversations of the deleted contact.
   /// - `true`: Yes.
@@ -176,7 +176,7 @@ class EMContactManager {
   /// ~chinese
   /// 删除联系人及其相关的会话。
   ///
-  /// Param [username] 要删除的联系人用户 ID。
+  /// Param [userId] 要删除的联系人用户 ID。
   ///
   /// Param [keepConversation] 是否保留要删除的联系人的会话。
   /// - `true`：是；
@@ -185,10 +185,10 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> deleteContact(
-    String username, {
+    String userId, {
     bool keepConversation = false,
   }) async {
-    Map req = {'username': username, 'keepConversation': keepConversation};
+    Map req = {'username': userId, 'keepConversation': keepConversation};
     Map result = await _channel.invokeMethod(ChatMethodKeys.deleteContact, req);
     try {
       EMError.hasErrorFromResult(result);
@@ -197,10 +197,12 @@ class EMContactManager {
     }
   }
 
+  @Deprecated('Use fetchAllContactIds instead.')
+
   /// ~english
-  /// Gets all the contacts from the server.
+  /// Gets all the contact ids from the server.
   ///
-  /// **Return** The list of contacts.
+  /// **Return** The list of contact ids.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -230,9 +232,43 @@ class EMContactManager {
   }
 
   /// ~english
-  /// Gets the contact list from the local database.
+  /// Gets all the contact ids from the server.
   ///
-  /// **Return** The contact list.
+  /// **Return** The list of contact ids.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取联系人列表。
+  ///
+  /// **Return** 联系人列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<String>> fetchAllContactIds() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  @Deprecated('Use getAllContactIds instead.')
+
+  /// ~english
+  /// Gets the contact ids from the local database.
+  ///
+  /// **Return** The contact list ids.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -263,10 +299,43 @@ class EMContactManager {
   }
 
   /// ~english
+  /// Gets the contact ids from the local database.
+  ///
+  /// **Return** The contact ids.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从数据库获取好友列表。
+  ///
+  /// **Return** 调用成功会返回好友列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<String>> getAllContactIds() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Adds a user to the block list.
   /// You can send messages to the users on the block list, but cannot receive messages from them.
   ///
-  /// Param [username] The user to be added to the block list.
+  /// Param [userId] The user to be added to the block list.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -275,14 +344,14 @@ class EMContactManager {
   /// 将指定用户加入黑名单。
   /// 你可以向黑名单中用户发消息，但是接收不到对方发送的消息。
   ///
-  /// Param [username] 要加入黑名单的用户的用户 ID。
+  /// Param [userId] 要加入黑名单的用户的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<void> addUserToBlockList(
-    String username,
+    String userId,
   ) async {
-    Map req = {'username': username};
+    Map req = {'username': userId};
     Map result = await _channel.invokeMethod(
       ChatMethodKeys.addUserToBlockList,
       req,
@@ -295,9 +364,9 @@ class EMContactManager {
   }
 
   /// ~english
-  /// Removes the contact from the block list.
+  /// Removes the contact from the block ids.
   ///
-  /// Param [username] The contact to be removed from the block list.
+  /// Param [userId] The contact to be removed from the block list.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -305,12 +374,12 @@ class EMContactManager {
   /// ~chinese
   /// 将指定用户移除黑名单。
   ///
-  /// Param [username] 要在黑名单中移除的用户 ID。
+  /// Param [userId] 要在黑名单中移除的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
-  Future<void> removeUserFromBlockList(String username) async {
-    Map req = {'username': username};
+  Future<void> removeUserFromBlockList(String userId) async {
+    Map req = {'username': userId};
     Map result = await _channel.invokeMethod(
         ChatMethodKeys.removeUserFromBlockList, req);
     try {
@@ -319,6 +388,8 @@ class EMContactManager {
       throw e;
     }
   }
+
+  @Deprecated('Use fetchBlockIds instead.')
 
   /// ~english
   /// Gets the block list from the server.
@@ -353,6 +424,40 @@ class EMContactManager {
   }
 
   /// ~english
+  /// Gets the block ids from the server.
+  ///
+  /// **Return** The block ids obtained from the server.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取黑名单列表。
+  ///
+  /// **Return** 该方法调用成功会返回黑名单列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<String>> fetchBlockIds() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  @Deprecated('Use getBlockIds instead.')
+
+  /// ~english
   /// Gets the block list from the local database.
   ///
   /// **Return** The block list obtained from the local database.
@@ -384,9 +489,40 @@ class EMContactManager {
   }
 
   /// ~english
+  /// Gets the block ids from the local database.
+  ///
+  /// **Return** The block list obtained from the local database.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从本地数据库获取黑名单列表。
+  ///
+  /// **Return** 该方法调用成功会返回黑名单列表。
+  ///
+  /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<String>> getBlockIds() async {
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromDB);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getBlockListFromDB]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Accepts a friend invitation。
   ///
-  /// Param [username] The user who sends the friend invitation.
+  /// Param [userId] The user who sends the friend invitation.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -394,12 +530,12 @@ class EMContactManager {
   /// ~chinese
   /// 接受加好友的邀请。
   ///
-  /// Param [username] 发起好友邀请的用户 ID。
+  /// Param [userId] 发起好友邀请的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
-  Future<void> acceptInvitation(String username) async {
-    Map req = {'username': username};
+  Future<void> acceptInvitation(String userId) async {
+    Map req = {'username': userId};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.acceptInvitation, req);
     try {
@@ -412,7 +548,7 @@ class EMContactManager {
   /// ~english
   /// Declines a friend invitation.
   ///
-  /// Param [username] The user who sends the friend invitation.
+  /// Param [userId] The user who sends the friend invitation.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -420,12 +556,12 @@ class EMContactManager {
   /// ~chinese
   /// 拒绝加好友的邀请。
   ///
-  /// Param [username] 发起好友邀请的用户 ID。
+  /// Param [userId] 发起好友邀请的用户 ID。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
-  Future<void> declineInvitation(String username) async {
-    Map req = {'username': username};
+  Future<void> declineInvitation(String userId) async {
+    Map req = {'username': userId};
     Map result =
         await _channel.invokeMethod(ChatMethodKeys.declineInvitation, req);
     try {
@@ -486,7 +622,7 @@ class EMContactManager {
       EMError.hasErrorFromResult(result);
       List<EMContact> list = [];
       result[ChatMethodKeys.getAllContacts]?.forEach((element) {
-        list.add(element);
+        list.add(EMContact.fromJson(element));
       });
       return list;
     } on EMError catch (e) {
@@ -574,7 +710,7 @@ class EMContactManager {
       EMError.hasErrorFromResult(result);
       List<EMContact> list = [];
       result[ChatMethodKeys.fetchAllContacts]?.forEach((element) {
-        list.add(element);
+        list.add(EMContact.fromJson(element));
       });
       return list;
     } on EMError catch (e) {

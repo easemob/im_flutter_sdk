@@ -48,7 +48,7 @@ class EMOptions {
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   /// ~end
-  final bool debugModel;
+  final bool debugMode;
 
   /// ~english
   /// Whether to accept friend invitations from other users automatically.
@@ -435,7 +435,7 @@ class EMOptions {
   ///
   /// Param [autoLogin] Whether to enable automatic login.
   ///
-  /// Param [debugModel] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
+  /// Param [debugMode] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
   ///
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
   ///
@@ -483,7 +483,7 @@ class EMOptions {
   /// - （默认）`true`：是；
   /// - `false`：否。
   ///
-  /// Param [debugModel] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
+  /// Param [debugMode] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   ///
@@ -551,7 +551,7 @@ class EMOptions {
   EMOptions({
     required this.appKey,
     this.autoLogin = true,
-    this.debugModel = false,
+    this.debugMode = false,
     this.acceptInvitationAlways = false,
     this.autoAcceptGroupInvitation = false,
     this.requireAck = true,
@@ -579,7 +579,7 @@ class EMOptions {
     Map data = new Map();
     data.putIfNotNull("appKey", appKey);
     data.putIfNotNull("autoLogin", autoLogin);
-    data.putIfNotNull("debugModel", debugModel);
+    data.putIfNotNull("debugModel", debugMode);
     data.putIfNotNull("acceptInvitationAlways", acceptInvitationAlways);
     data.putIfNotNull(
       "autoAcceptGroupInvitation",
