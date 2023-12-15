@@ -67,6 +67,7 @@ static NSString *const ChatGetContact = @"getContact";
 static NSString *const ChatFetchAllContacts = @"fetchAllContacts";
 static NSString *const ChatFetchContacts = @"fetchContacts";
 
+
 #pragma mark - EMContactDelegate
 static NSString *const ChatOnContactChanged = @"onContactChanged";
 
