@@ -747,7 +747,7 @@ class EMContactManager {
   }) async {
     Map map = {"pageSize": pageSize};
     map.putIfNotNull('cursor', cursor);
-    Map result = await ChatChannel.invokeMethod(
+    Map result = await _channel.invokeMethod(
       ChatMethodKeys.fetchContacts,
       map,
     );
