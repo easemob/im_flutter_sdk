@@ -254,7 +254,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       _addLogToConsole("sign in...");
-      await EMClient.getInstance.login(_userId, _password);
+      await EMClient.getInstance.loginWithPassword(_userId, _password);
       _addLogToConsole("sign in succeed, username: $_userId");
     } on EMError catch (e) {
       _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
