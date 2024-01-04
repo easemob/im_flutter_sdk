@@ -1,3 +1,26 @@
+## 4.2.0
+
+#### 新增
+
+- 增加 设置好友备注功能。
+- 增加 `EMContactManager#fetchContacts` 和 `EMContactManager#fetchAllContacts` 方法分别从服务器一次性和分页获取好友列表，每个好友对象包含好友的用户 ID 和好友备注。
+- 增加 `EMContactManager#getContact` 方法从本地获取单个好友的用户 ID 和好友备注。
+- 增加 `EMContactManager#getAllContacts` 方法从本地分页获取好友列表，每个好友对象包含好友的用户 ID 和好友备注。
+- 增加 `EMMessage#isBroadcast` 属性用于判断通过该消息是否为聊天室全局广播消息。可通过调用 REST API 发送聊天室全局广播消息。
+- 增加 `EMGroupManager#fetchJoinedGroupCount` 方法用于从服务器获取当前用户已加入的群组数量。
+- 增加 错误码 `706` 表示聊天室所有者不允许离开聊天室。若初始化时，`EMOptions#isChatRoomOwnerLeaveAllowed` 参数设置为 false，聊天室所有者调用 `EMChatRoomManager#leaveChatroom` 方法离开聊天室时会提示该错误。
+- 增加 `EMOptions#enableEmptyConversation` 属性用于在初始化时配置获取会话列表时是否允许返回空会话。
+- 增加 申请入群被拒绝的回调 `EMGroupEventHandler#onRequestToJoinDeclinedFromGroup` 中新增 decliner 和 applicant 参数表示申请者和拒绝者的用户 ID。
+
+#### 优化
+
+- 统一 Agora Token 和 EaseMob Token 登录方式，原 `EMClient#login` 方法废弃，使用 `EMClient#loginWithToken` 和 `EMClient#loginWithPassword` 方法代替。此外，新增 EaseMob Token 即将过期及已过期的回调，即 EaseMob Token 已过期或有效期过半时也返回 `EMConnectionEventHandler#onTokenDidExpire` 和 `EMClientDelegate#onTokenWillExpire` 回调。
+
+#### 修复
+
+- 修复网络恢复时重连 2 次的问题。
+- 修复未登录时调用 leaveChatroom 方法返回的错误提示不准确。
+
 ## 4.1.3
 
 #### 新增
