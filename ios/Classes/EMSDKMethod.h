@@ -147,6 +147,7 @@ static NSString *const ChatMarkAllMsgsAsRead = @"markAllMessagesAsRead";
 static NSString *const ChatMarkMsgAsRead = @"markMessageAsRead";
 static NSString *const ChatSyncConversationExt = @"syncConversationExt";
 static NSString *const ChatRemoveMsg = @"removeMessage";
+static NSString *const ChatDeleteMessageByIds = @"deleteMessageByIds";
 static NSString *const ChatGetLatestMsg = @"getLatestMessage";
 static NSString *const ChatGetLatestMsgFromOthers = @"getLatestMessageFromOthers";
 static NSString *const ChatClearAllMsg = @"clearAllMessages";

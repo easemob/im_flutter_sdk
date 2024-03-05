@@ -132,6 +132,7 @@ public class EMSDKMethod {
     static final String markMessageAsRead = "markMessageAsRead";
     static final String syncConversationExt = "syncConversationExt";
     static final String removeMessage = "removeMessage";
+    static final String deleteMessageByIds = "deleteMessageByIds";
     static final String getLatestMessage = "getLatestMessage";
     static final String getLatestMessageFromOthers = "getLatestMessageFromOthers";
     static final String clearAllMessages = "clearAllMessages";

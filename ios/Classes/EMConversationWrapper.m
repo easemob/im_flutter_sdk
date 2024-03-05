@@ -69,7 +69,13 @@
         [self removeMessage:call.arguments
                 channelName:call.method
                      result:result];
-    } else if ([ChatGetLatestMsg isEqualToString:call.method]) {
+    } 
+    else if ([ChatDeleteMessageByIds isEqualToString:call.method]) {
+        [self removeMessage:call.arguments
+                channelName:call.method
+                     result:result];
+    }
+    else if ([ChatGetLatestMsg isEqualToString:call.method]) {
         [self getLatestMessage:call.arguments
                    channelName:call.method
                         result:result];
@@ -319,6 +325,25 @@
                            object:@(!error)];
     }];
 }
+
+- (void)deleteMessageByIds:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
+{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        NSArray *msgIds = param[@"messageIds"];
+        EMError *error = nil;
+        for (NSString *msgId in msgIds) {
+            [conversation deleteMessageWithId:msgId error:nil];
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:@(!error)];
+    }];
+}
+
 
 - (void)clearAllMessages:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
