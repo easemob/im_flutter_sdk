@@ -71,7 +71,7 @@
                      result:result];
     } 
     else if ([ChatDeleteMessageByIds isEqualToString:call.method]) {
-        [self removeMessage:call.arguments
+        [self deleteMessageByIds:call.arguments
                 channelName:call.method
                      result:result];
     }

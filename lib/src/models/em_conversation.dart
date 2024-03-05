@@ -814,7 +814,7 @@ class EMConversation {
     Map req = this._toJson();
     req['messageIds'] = messageIds;
     Map result =
-        await ChatChannel.invokeMethod(ChatMethodKeys.deleteMessageByIds, req);
+        await _emConversationChannel.invokeMethod(ChatMethodKeys.deleteMessageByIds, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
