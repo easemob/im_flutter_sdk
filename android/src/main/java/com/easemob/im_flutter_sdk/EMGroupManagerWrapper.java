@@ -837,7 +837,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void setMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String userId = param.optString("userId");
-        if (userId == "") {
+        if (userId.length() == 0) {
             userId = EMClient.getInstance().getCurrentUser();
         }
         Map<String, String> attributes = new HashMap<>();
@@ -855,7 +855,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void removeMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String userId = param.optString("userId");
-        if (userId == "") {
+        if (userId.length() == 0) {
             userId = EMClient.getInstance().getCurrentUser();
         }
         Map<String, String> attributes = new HashMap<>();
@@ -871,7 +871,7 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     private void fetchMemberAttributes(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String userId = param.optString("userId");
-        if (userId == "") {
+        if (userId.length() == 0) {
             userId = EMClient.getInstance().getCurrentUser();
         }
         String finalUserId = userId;
