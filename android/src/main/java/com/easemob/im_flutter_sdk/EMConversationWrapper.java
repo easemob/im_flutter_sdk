@@ -50,6 +50,10 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             {
                 removeMessage(param, call.method, result);
             }
+            else if (EMSDKMethod.removeMessage.equals(call.method))
+            {
+                deleteMessageByIds(param, call.method, result);
+            }
             else if (EMSDKMethod.getLatestMessage.equals(call.method)) {
                 getLatestMessage(param, call.method, result);
             }
@@ -150,6 +154,23 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
         asyncRunnable(()->{
             conversation.removeMessage(msg_id);
+            onSuccess(result, channelName, true);
+        });
+    }
+
+    private void deleteMessageByIds(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        List<String> messageIds = new ArrayList<>();
+        if (params.has("messageIds")){
+            JSONArray array = params.getJSONArray("messageIds");
+            for (int i = 0; i < array.length(); i++) {
+                messageIds.add(array.getString(i));
+            }
+        }
+        asyncRunnable(()->{
+            for (int i = 0; i < messageIds.size(); i++) {
+                conversation.removeMessage(messageIds.get(i));
+            }
             onSuccess(result, channelName, true);
         });
     }

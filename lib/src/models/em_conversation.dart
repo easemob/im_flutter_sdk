@@ -794,4 +794,31 @@ class EMConversation {
       throw e;
     }
   }
+
+  /// ~english
+  /// Deletes messages with message ids.
+  ///
+  /// Param [messageIds]  The list of message ids.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 根据时间删除本地消息。
+  ///
+  /// Param [messageIds] 指定的消息id列表。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> deleteMessageByIds(List<String> messageIds) async {
+    Map req = this._toJson();
+    req['messageIds'] = messageIds;
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.deleteMessageByIds, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

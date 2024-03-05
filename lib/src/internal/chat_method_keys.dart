@@ -155,6 +155,7 @@ class ChatMethodKeys {
   static const String markMessageAsRead = "markMessageAsRead";
   static const String syncConversationExt = "syncConversationExt";
   static const String removeMessage = "removeMessage";
+  static const String deleteMessageByIds = "deleteMessageByIds";
   static const String getLatestMessage = "getLatestMessage";
   static const String getLatestMessageFromOthers = "getLatestMessageFromOthers";
   static const String clearAllMessages = "clearAllMessages";
