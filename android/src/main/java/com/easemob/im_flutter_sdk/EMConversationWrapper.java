@@ -50,7 +50,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             {
                 removeMessage(param, call.method, result);
             }
-            else if (EMSDKMethod.removeMessage.equals(call.method))
+            else if (EMSDKMethod.deleteMessageByIds.equals(call.method))
             {
                 deleteMessageByIds(param, call.method, result);
             }
