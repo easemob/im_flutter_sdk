@@ -1567,7 +1567,7 @@ class EMSilentModeResultHelper {
 class FetchHistoryOptionsHelper {
     static EMFetchMessageOption fromJson(JSONObject json) throws JSONException {
         EMFetchMessageOption options = new EMFetchMessageOption();
-        if (json.getString("direction") == "up") {
+        if (json.getString("direction").equals("up")) {
             options.setDirection(EMConversation.EMSearchDirection.UP);
         }else {
             options.setDirection(EMConversation.EMSearchDirection.DOWN);
