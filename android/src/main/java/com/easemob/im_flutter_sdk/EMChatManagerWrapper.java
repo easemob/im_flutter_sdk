@@ -450,7 +450,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void downloadAttachment(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage tempMsg = EMMessageHelper.fromJson(param.getJSONObject("message"));
-        final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
+        final EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -494,7 +494,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void downloadThumbnail(JSONObject param, String channelName, Result result) throws JSONException {
         EMMessage tempMsg = EMMessageHelper.fromJson(param.getJSONObject("message"));
-        final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
+        final EMMessage msg = EMMessageHelper.fromJson(param.getJSONObject("message"));
         msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {

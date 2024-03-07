@@ -482,6 +482,7 @@
     ret.remotePath = remotePath;
     ret.secretKey = secret;
     ret.localPath = localPath;
+    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
     return ret;
 }
 
@@ -493,6 +494,7 @@
     ret[@"localPath"] = self.localPath;
     ret[@"remotePath"] = self.remotePath;
     ret[@"secret"] = self.secretKey;
+    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
     return ret;
 }
 

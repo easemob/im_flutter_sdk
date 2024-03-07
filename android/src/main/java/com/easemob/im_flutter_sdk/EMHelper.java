@@ -1017,6 +1017,7 @@ class EMGroupAckHelper {
          ret.setRemoteUrl(remotePath);
          ret.setSecret(secret);
          ret.setMessageList(msgIds);
+         ret.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
 
          return ret;
      }
@@ -1046,6 +1047,7 @@ class EMGroupAckHelper {
             data.put("secret", body.getSecret());
         }
 
+        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
         data.put("type", "combine");
 
         return data;

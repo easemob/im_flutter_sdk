@@ -483,8 +483,7 @@
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    EMChatMessage *needDownMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    [EMClient.sharedClient.chatManager downloadMessageAttachment:needDownMsg
+    [EMClient.sharedClient.chatManager downloadMessageAttachment:msg
                                                         progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
@@ -524,8 +523,7 @@
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    EMChatMessage *needDownMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    [EMClient.sharedClient.chatManager downloadMessageThumbnail:needDownMsg
+    [EMClient.sharedClient.chatManager downloadMessageThumbnail:msg
                                                        progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
