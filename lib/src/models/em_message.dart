@@ -1963,6 +1963,7 @@ class EMCombineMessageBody extends EMMessageBody {
   EMCombineMessageBody({
     this.title,
     this.summary,
+    this.fileStatus = DownloadStatus.PENDING,
     List<String>? messageList,
     String? compatibleText,
   })  : _compatibleText = compatibleText,
@@ -1971,6 +1972,7 @@ class EMCombineMessageBody extends EMMessageBody {
 
   final String? title;
   final String? summary;
+  final DownloadStatus fileStatus;
   final List<String>? _messageList;
   late final String? _compatibleText;
 
@@ -1989,6 +1991,7 @@ class EMCombineMessageBody extends EMMessageBody {
     data.putIfNotNull("localPath", _localPath);
     data.putIfNotNull("remotePath", _remotePath);
     data.putIfNotNull("secret", _secret);
+    data.putIfNotNull("fileStatus", downloadStatusToInt(this.fileStatus));
     return data;
   }
 
@@ -1997,10 +2000,12 @@ class EMCombineMessageBody extends EMMessageBody {
     var body = EMCombineMessageBody(
       title: map["title"],
       summary: map["summary"],
+      fileStatus: EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]),
     );
     body._localPath = map["localPath"];
     body._remotePath = map["remotePath"];
     body._secret = map["secret"];
+
     return body;
   }
 }
