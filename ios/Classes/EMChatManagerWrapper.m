@@ -103,6 +103,14 @@
         [self downloadThumbnail:call.arguments
                     channelName:call.method
                          result:result];
+    } else if ([ChatDownloadMessageAttachmentInCombine isEqualToString:call.method]) {
+        [self downloadMessageThumbnailInCombine:call.arguments
+                     channelName:call.method
+                          result:result];
+    } else if ([ChatDownloadMessageThumbnailInCombine isEqualToString:call.method]) {
+        [self downloadMessageThumbnailInCombine:call.arguments
+                    channelName:call.method
+                         result:result];
     } else if ([ChatImportMessages isEqualToString:call.method]) {
         [self importMessages:call.arguments
                  channelName:call.method
@@ -478,12 +486,92 @@
 }
 
 
-- (void)downloadAttachment:(NSDictionary *)param
+- (void)downloadMessageAttachmentInCombine:(NSDictionary *)param
                channelName:(NSString *)aChannelName
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
     [EMClient.sharedClient.chatManager downloadMessageAttachment:msg
+                                                        progress:^(int progress)
+     {
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
+                                    arguments:@{
+            @"progress":@(progress),
+            @"localId": msg.messageId
+        }];
+    } completion:^(EMChatMessage *message, EMError *error)
+     {
+        if (error) {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusFailed message:message thumbnail:NO];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
+                                        arguments:@{
+                @"error":[error toJson],
+                @"localId":msg.messageId,
+                @"message":msgDict
+            }];
+        }else {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:NO];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
+                                        arguments:@{
+                @"message": msgDict,
+                @"localId": msg.messageId
+            }];
+        }
+    }];
+    
+    NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:NO];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:msgDict];
+}
+
+- (void)downloadMessageThumbnailInCombine:(NSDictionary *)param
+              channelName:(NSString *)aChannelName
+                   result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    [EMClient.sharedClient.chatManager downloadMessageThumbnail:msg
+                                                       progress:^(int progress)
+     {
+        [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
+                                    arguments:@{
+            @"progress":@(progress),
+            @"localId":msg.messageId
+        }];
+    } completion:^(EMChatMessage *message, EMError *error)
+     {
+        if (error) {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusFailed message:message thumbnail:YES];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageError
+                                        arguments:@{
+                @"error":[error toJson],
+                @"localId":msg.messageId,
+                @"message":msgDict
+            }];
+        }else {
+            NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusSucceed message:message thumbnail:YES];
+            [weakSelf.messageChannel invokeMethod:ChatOnMessageSuccess
+                                        arguments:@{
+                @"message":msgDict,
+                @"localId":msg.messageId
+            }];
+        }
+    }];
+    NSDictionary *msgDict = [self updateDownloadStatus:EMDownloadStatusDownloading message:msg thumbnail:YES];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:msgDict];
+}
+
+- (void)downloadAttachment:(NSDictionary *)param
+               channelName:(NSString *)aChannelName
+                    result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
+    EMChatMessage *tmpMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageAttachment:tmpMsg
                                                         progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate
@@ -523,7 +611,8 @@
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    [EMClient.sharedClient.chatManager downloadMessageThumbnail:msg
+    EMChatMessage *tmpMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    [EMClient.sharedClient.chatManager downloadMessageThumbnail:tmpMsg
                                                        progress:^(int progress)
      {
         [weakSelf.messageChannel invokeMethod:ChatOnMessageProgressUpdate

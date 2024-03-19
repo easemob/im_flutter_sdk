@@ -19,7 +19,7 @@
     ret[@"memberCount"] = @(self.membersCount);
     ret[@"messageCount"] = @(self.messageCount);
     ret[@"createAt"] = @(self.createAt);
-    if (self.lastMessage) {
+    if (self.lastMessage && self.lastMessage.messageId.length > 0) {
         ret[@"lastMessage"] = [self.lastMessage toJson];
     }
     return ret;

@@ -547,8 +547,8 @@
 + (EMMessageBody *)fromJson:(NSDictionary *)aJson {
     NSString *path = aJson[@"localPath"];
     NSString *displayName = aJson[@"displayName"];
-    NSData *imageData = [NSData dataWithContentsOfFile:path];
-    EMImageMessageBody *ret = [[EMImageMessageBody alloc] initWithData:imageData
+
+    EMImageMessageBody *ret = [[EMImageMessageBody alloc] initWithLocalPath:path
                                                            displayName:displayName];
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];

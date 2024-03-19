@@ -1428,7 +1428,7 @@ class EMChatThreadHelper {
         data.put("memberCount", thread.getMemberCount());
         data.put("messageCount", thread.getMessageCount());
         data.put("createAt", thread.getCreateAt());
-        if (thread.getLastMessage() != null) {
+        if (thread.getLastMessage() != null && thread.getLastMessage().getMsgId().length() > 0) {
             data.put("lastMessage", EMMessageHelper.toJson(thread.getLastMessage()));
         }
         return data;

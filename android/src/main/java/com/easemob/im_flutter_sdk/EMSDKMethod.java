@@ -74,6 +74,8 @@ public class EMSDKMethod {
     static final String updateChatMessage = "updateChatMessage";
     static final String downloadAttachment = "downloadAttachment";
     static final String downloadThumbnail = "downloadThumbnail";
+    static final String downloadMessageAttachmentInCombine = "downloadMessageAttachmentInCombine";
+    static final String downloadMessageThumbnailInCombine = "downloadMessageThumbnailInCombine";
     static final String importMessages = "importMessages";
     static final String loadAllConversations = "loadAllConversations";
     static final String getConversationsFromServer = "getConversationsFromServer";
