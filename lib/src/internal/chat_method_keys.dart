@@ -82,6 +82,8 @@ class ChatMethodKeys {
   static const String updateChatMessage = "updateChatMessage";
   static const String downloadAttachment = "downloadAttachment";
   static const String downloadThumbnail = "downloadThumbnail";
+  static const String downloadMessageAttachmentInCombine = "downloadMessageAttachmentInCombine";
+  static const String downloadMessageThumbnailInCombine = "downloadMessageThumbnailInCombine";
   static const String importMessages = "importMessages";
   static const String loadAllConversations = "loadAllConversations";
   static const String getConversationsFromServer = "getConversationsFromServer";

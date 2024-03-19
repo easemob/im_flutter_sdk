@@ -65,6 +65,20 @@ class EMMessageReaction {
     required this.userList,
   });
 
+  EMMessageReaction copyWith({
+    String? reaction,
+    int? userCount,
+    bool? isAddedBySelf,
+    List<String>? userList,
+  }) {
+    return EMMessageReaction._private(
+      reaction: reaction ?? this.reaction,
+      userCount: userCount ?? this.userCount,
+      isAddedBySelf: isAddedBySelf ?? this.isAddedBySelf,
+      userList: userList ?? this.userList,
+    );
+  }
+
   /// @nodoc
   factory EMMessageReaction.fromJson(Map map) {
     String reaction = map["reaction"];

@@ -87,6 +87,8 @@
                result:(FlutterResult)result {
     NSString *msgId = param[@"msgId"];
     EMChatMessage *msg = [self getMessageWithId:msgId];
+    NSLog(@"msgId: %@",msg.messageId);
+    NSLog(@"thread: %@", msg.chatThread);
     [self wrapperCallBack:result
               channelName:aChannelName
                     error:nil

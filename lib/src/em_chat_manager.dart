@@ -670,6 +670,62 @@ class EMChatManager {
   }
 
   /// ~english
+  /// Downloads the attachment files from the server.
+  ///
+  /// You can call the method again if the attachment download fails.
+  ///
+  /// Param [message] The message with the attachment that is to be downloaded.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 下载消息的附件。
+  ///
+  /// 若附件自动下载失败，也可以调用此方法下载。
+  ///
+  /// Param [message] 要下载附件的消息。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> downloadMessageAttachmentInCombine(EMMessage message) async {
+    Map result = await ChatChannel.invokeMethod(
+        ChatMethodKeys.downloadMessageAttachmentInCombine,
+        {"message": message.toJson()});
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  /// Downloads the thumbnail if the message has not been downloaded before or if the download fails.
+  ///
+  /// Param [message] The message object.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 下载消息的缩略图。
+  ///
+  /// Param [message] 要下载缩略图的消息，一般图片消息和视频消息有缩略图。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> downloadMessageThumbnailInCombine(EMMessage message) async {
+    Map result = await ChatChannel.invokeMethod(
+        ChatMethodKeys.downloadMessageThumbnailInCombine,
+        {"message": message.toJson()});
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Gets all conversations from the local database.
   ///
   /// Conversations will be first loaded from the cache. If no conversation is found, the SDK loads from the local database.
