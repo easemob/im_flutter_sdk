@@ -501,7 +501,7 @@ class EMClient {
   /// 用声网 Token 登录服务器，该方法支持自动登录。
   ///
   /// **Note**
-  /// 通过 token 登录服务器的方法见 {@link #login(String, String, bool)}。
+  /// 通过 token 登录服务器的方法见[login]。
   ///
   /// Param [userId] 用户 ID。
   ///

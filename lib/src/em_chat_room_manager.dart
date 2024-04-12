@@ -297,7 +297,7 @@ class EMChatRoomManager {
   ///
   /// Param [pageSize] 每页返回的记录数。
   ///
-  /// **Return** 分页获取结果，详见 {@link EMPageResult}。
+  /// **Return** 分页获取结果，详见 [EMPageResult]。
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
@@ -579,7 +579,7 @@ class EMChatRoomManager {
   ///
   /// Param [pageSize] 每页返回的成员数。
   ///
-  /// **Return** 分页获取结果 {@link EMCursorResult}。
+  /// **Return** 分页获取结果 [EMCursorResult]。
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end

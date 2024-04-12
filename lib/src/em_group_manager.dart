@@ -306,7 +306,7 @@ class EMGroupManager {
   ///
   /// Param [inviteReason] 用户入群邀请信息。
   ///
-  /// Param [options] 群组的其他选项。请参见 {@link EMGroupOptions}。
+  /// Param [options] 群组的其他选项。请参见 [EMGroupOptions]。
   /// 群组的其他选项。
   /// - 群最大成员数，默认值为 200；
   /// - 群组类型，详见 [EMGroupStyle]，默认为 [EMGroupStyle.PrivateOnlyOwnerInvite]；

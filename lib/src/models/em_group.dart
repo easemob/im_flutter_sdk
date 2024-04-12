@@ -132,7 +132,7 @@ class EMGroup {
   /// 从内存中获取群组成员列表。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link #fetchMemberListFromServer(String, int?, String?)}.。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchMemberListFromServer]。
   ///
   /// **Return** 群组成员列表。
   /// ~end
@@ -170,7 +170,7 @@ class EMGroup {
   /// 如果没有找到会返回空列表。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager#fetchBlockListFromServer(String, int?, int?)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchBlockListFromServer]。
   ///
   /// 只有群主和管理员可以调用该方法。
   ///
@@ -191,7 +191,7 @@ class EMGroup {
   /// 只有群主和管理员可以调用该方法。
   ///
   /// **Note**
-  /// 如需最新数据，需先从服务器获取：{@link EMGroupManager# fetchMuteListFromServer(String, int?, int?)}。
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchMuteListFromServer]。
   ///
   /// **Return** 群组禁言名单。
   /// ~end

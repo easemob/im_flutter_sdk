@@ -1044,7 +1044,7 @@ class EMChatManager {
   ///
   /// Param [conversationId] 会话 ID。
   ///
-  /// Param [type] 会话类型，详见 {@link EMConversationType}。
+  /// Param [type] 会话类型，详见[EMConversationType]。
   ///
   /// Param [pageSize] 每页获取的消息数量。
   ///

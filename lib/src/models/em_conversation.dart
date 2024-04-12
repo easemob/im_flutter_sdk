@@ -609,8 +609,6 @@ class EMConversation {
   ///
   /// 根据传入的参数从本地数据库加载 startMsgId 之前(存储顺序)指定数量的消息。
   ///
-  /// 加载到的 messages 也会加入到当前会话的缓存中，通过 {@link #getAllMessages()} 将会返回所有加载的消息。
-  ///
   /// Param [startMsgId] 加载这个 ID 之前的 message，如果传入 "" 或者 null，将从最近的消息开始加载。
   ///
   /// Param [loadCount] 加载的条数。

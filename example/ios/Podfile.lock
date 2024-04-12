@@ -1,9 +1,9 @@
 PODS:
   - Flutter (1.0.0)
-  - HyphenateChat (4.2.0)
+  - HyphenateChat (4.5.0)
   - im_flutter_sdk (0.0.1):
     - Flutter
-    - HyphenateChat (= 4.2.0)
+    - HyphenateChat (= 4.5.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -21,8 +21,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  HyphenateChat: e43d1ec9ccf404eeb2ee7d3265cd12a4e83f0d3a
-  im_flutter_sdk: 0012f5bb4bf59284f6b5e55059f96e60eb527328
+  HyphenateChat: bf4cfa65a83ffa210803fdc91263b4891fb510ee
+  im_flutter_sdk: 843b5d02d6a557a8a2facabe283534c7550112be
 
 PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
 
