@@ -128,9 +128,11 @@
 {
     __weak NSString *conversationId = param[@"convId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    BOOL isThread = [param[@"isThread"] boolValue];
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
-                                                                     createIfNotExist:YES];
+                                                                     createIfNotExist:YES
+                                                                             isThread:isThread];
     if (aCompletion) {
         aCompletion(conversation);
     }
@@ -316,6 +318,7 @@
                         completion:^(EMConversation *conversation)
      {
         NSString *msgId = param[@"msg_id"];
+        EMChatMessage *msg = [conversation loadMessageWithId:msgId error:nil];
         EMError *error = nil;
         [conversation deleteMessageWithId:msgId error:&error];
         

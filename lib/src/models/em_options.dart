@@ -44,7 +44,7 @@ class EMOptions {
   /// ~end
   ///
   /// ~chinese
-  /// 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
+  /// 是否输出调试信息，在 EMClient 初始化完成后调用，详见 [EMClient.init]。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   /// ~end
@@ -483,7 +483,7 @@ class EMOptions {
   /// - （默认）`true`：是；
   /// - `false`：否。
   ///
-  /// Param [debugMode] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 {@link #init(Context, EMOptions)}。
+  /// Param [debugMode] 是否输出调试信息，在 EMClient 初始化完成后调用，详见 [EMClient.init]。
   /// - `true`：SDK 会在 log 里输出调试信息；
   /// - （默认）`false`：不会输出调试信息。
   ///
@@ -586,15 +586,13 @@ class EMOptions {
       autoAcceptGroupInvitation,
     );
     data.putIfNotNull("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
-    data.putIfNotNull(
-        "deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
+    data.putIfNotNull("deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
     data.putIfNotNull("dnsUrl", dnsUrl);
     data.putIfNotNull("enableDNSConfig", enableDNSConfig);
     data.putIfNotNull("imPort", imPort);
     data.putIfNotNull("imServer", imServer);
     data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
-    data.putIfNotNull(
-        "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
+    data.putIfNotNull("isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
     data.putIfNotNull("requireAck", requireAck);
     data.putIfNotNull("requireDeliveryAck", requireDeliveryAck);
     data.putIfNotNull("restServer", restServer);

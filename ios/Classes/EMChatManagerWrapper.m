@@ -571,6 +571,7 @@
     __weak typeof(self) weakSelf = self;
     __block EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
     EMChatMessage *tmpMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+    NSLog(@"downloadAttachment msg: %@", tmpMsg);
     [EMClient.sharedClient.chatManager downloadMessageAttachment:tmpMsg
                                                         progress:^(int progress)
      {
@@ -1282,7 +1283,7 @@
         [self.messageChannel invokeMethod:ChatOnMessageDeliveryAck
                                 arguments:@{@"message":json}];
     }
-    
+
     [self.channel invokeMethod:ChatOnMessagesDelivered
                      arguments:list];
 }
@@ -1292,7 +1293,7 @@
     for (EMChatMessage *msg in aMessages) {
         [list addObject:[msg toJson]];
     }
-    
+
     [self.channel invokeMethod:ChatOnMessagesRecalled
                      arguments:list];
 }

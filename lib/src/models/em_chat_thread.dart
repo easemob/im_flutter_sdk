@@ -33,7 +33,7 @@ class EMChatThread {
   /// ~chinese
   /// 子区创建者的用户 ID。
   /// ~end
-  final String owner;
+  final String? owner;
 
   /// ~english
   /// The ID of the parent message of the message thread.
@@ -129,6 +129,30 @@ class EMChatThread {
       createAt: createAt,
       lastMessage: msg,
       threadName: threadName,
+    );
+  }
+
+  EMChatThread copyWith({
+    String? threadId,
+    String? threadName,
+    String? owner,
+    String? messageId,
+    String? parentId,
+    int? membersCount,
+    int? messageCount,
+    int? createAt,
+    EMMessage? lastMessage,
+  }) {
+    return EMChatThread._private(
+      threadId: threadId ?? this.threadId,
+      threadName: threadName ?? this.threadName,
+      owner: owner ?? this.owner,
+      messageId: messageId ?? this.messageId,
+      parentId: parentId ?? this.parentId,
+      membersCount: membersCount ?? this.membersCount,
+      messageCount: messageCount ?? this.messageCount,
+      createAt: createAt ?? this.createAt,
+      lastMessage: lastMessage ?? this.lastMessage,
     );
   }
 }

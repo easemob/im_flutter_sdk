@@ -49,7 +49,7 @@ class EMUserInfoManager {
   /// ~chinese
   /// 修改当前用户的属性信息。
   ///
-  /// Param [nickname] 用户昵称。该昵称与推送设置中的昵称设置不同，我们建议这两种昵称的设置保持一致。设置推送昵称详见 {@link EMPushManager#updatePushNickname()}。
+  /// Param [nickname] 用户昵称。该昵称与推送设置中的昵称设置不同，我们建议这两种昵称的设置保持一致。设置推送昵称详见 [EMPushManager.updatePushNickname]。
   ///
   /// Param [avatarUrl] 用户头像。
   ///
@@ -120,7 +120,7 @@ class EMUserInfoManager {
   ///
   /// Param [expireTime] 获取的用户属性到期时间。如果在到期时间内再次调用该方法，则 SDK 直接返回上次获取到的缓存数据。例如，将该参数设为 120，即 2 分钟，则如果你在 2 分钟内再次调用该方法获取用户属性，SDK 仍将返回上次获取到的属性。否则需从服务器获取。
   ///
-  /// **Return** 用户属性。请参见 {@link EMUserInfo}。
+  /// **Return** 用户属性。请参见 [EMUserInfo]。
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
