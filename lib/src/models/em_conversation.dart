@@ -44,7 +44,15 @@ class EMConversation {
       map["isThread"] ?? false,
       map["isPinned"] ?? false,
       map["pinnedTime"] ?? 0,
-      map['marks'],
+      map.getValue('marks', callback: (obj) {
+        List<ConversationMarkType> marks = [];
+        if (obj is List) {
+          for (var mark in obj) {
+            marks.add(ConversationMarkType.values[mark]);
+          }
+        }
+        return marks;
+      }),
     );
 
     return ret;
