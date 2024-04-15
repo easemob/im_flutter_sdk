@@ -11,6 +11,7 @@ import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMCombineMessageBody;
 import com.hyphenate.chat.EMContact;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMConversationFilter;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMCustomMessageBody;
 import com.hyphenate.chat.EMDeviceInfo;
@@ -27,6 +28,7 @@ import com.hyphenate.chat.EMLocationMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
+import com.hyphenate.chat.EMMessagePinInfo;
 import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.chat.EMMessageReactionChange;
 import com.hyphenate.chat.EMMessageReactionOperation;
@@ -125,6 +127,12 @@ class EMOptionsHelper {
             }
             options.setPushConfig(builder.build());
         }
+
+        // 450
+        options.setEnableTLSConnection(json.optBoolean("enableTLS", false));
+        options.setUseReplacedMessageContents(json.optBoolean("useReplacedMessageContents", false));
+        options.setIncludeSendMessageInMessageListener(json.optBoolean("messagesReceiveCallbackIncludeSend", false));
+        options.setRegardImportedMsgAsRead(json.optBoolean("regardImportMessagesAsRead", false));
         return options;
 
     }
@@ -606,6 +614,7 @@ class EMMessageHelper {
         data.put("needGroupAck", message.isNeedGroupAck());
         data.put("onlineState", message.isOnlineState());
         data.put("broadcast", message.isBroadcast());
+        data.put("isContentReplaced", message.isContentReplaced());
 
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
@@ -1630,5 +1639,54 @@ class FetchHistoryOptionsHelper {
         }
 
         return options;
+    }
+}
+
+// 450
+class EMMessagePinInfoHelper {
+    static Map<String, Object> toJson(EMMessagePinInfo info) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("pinTime", info.pinTime());
+        data.put("operatorId", info.operatorId());
+        return data;
+    }
+}
+
+class EMConversationFilterHelper {
+    static EMConversationFilter fromJson(JSONObject json) throws JSONException {
+        EMConversation.EMMarkType markType = EMConversation.EMMarkType.values()[json.getInt("mark")];
+        int pageSize = json.getInt("pageSize");
+        EMConversationFilter filter = new EMConversationFilter(markType, pageSize);
+        return filter;
+    }
+
+
+    static String cursor(JSONObject json) throws JSONException {
+        if(json.has("cursor")){
+            return  json.getString("cursor");
+        }else {
+            return null;
+        }
+    }
+
+    static Boolean pinned(JSONObject json) throws JSONException {
+        if(json.has("pinned")) {
+            return json.getBoolean("pinned");
+        }
+        else {
+            return false;
+        }
+    }
+
+    static Boolean hasMark(JSONObject json) throws JSONException {
+        return json.has("mark");
+    }
+
+    static int pageSize(JSONObject json) throws  JSONException {
+        if(json.has("pageSize")) {
+            return json.getInt("pageSize");
+        }else {
+            return 0;
+        }
     }
 }

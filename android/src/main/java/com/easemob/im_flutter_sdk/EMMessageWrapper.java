@@ -35,6 +35,10 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
             }else if (EMSDKMethod.getChatThread.equals(call.method)) {
                 getChatThread(param, call.method, result);
             }
+            // 450
+            else if (EMSDKMethod.getPinInfo.equals(call.method)) {
+                getPinInfo(param, call.method, result);
+            }
             else
             {
                 super.onMethodCall(call, result);
@@ -75,6 +79,17 @@ public class EMMessageWrapper extends EMWrapper implements MethodChannel.MethodC
         asyncRunnable(()->{
             if (msg != null) {
                 onSuccess(result, channelName,  msg.getChatThread() != null ? EMChatThreadHelper.toJson(msg.getChatThread()) : null);
+            }else {
+                onSuccess(result, channelName,  null);
+            }
+        });
+    }
+    private void getPinInfo(JSONObject params, String channelName, MethodChannel.Result result) throws JSONException {
+        String msgId = params.getString("msgId");
+        EMMessage msg = getMessageWithId(msgId);
+        asyncRunnable(()->{
+            if (msg != null) {
+                onSuccess(result, channelName,  msg.pinnedInfo() != null ? EMMessagePinInfoHelper.toJson(msg.pinnedInfo()) : null);
             }else {
                 onSuccess(result, channelName,  null);
             }

@@ -99,6 +99,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.removeMsgFromServerWithTimeStamp.equals(call.method)) {
                 removeMsgFromServerWithTimeStamp(param, call.method, result);
             }
+            else if (EMSDKMethod.pinnedMessages.equals(call.method)){
+                pinnedMessages(param, call.method, result);
+            }
             else
             {
                 super.onMethodCall(call, result);
@@ -292,8 +295,14 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         int count = params.getInt("count");
         long timestamp = params.getLong("timestamp");
         EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
+        EMConversation.EMMessageSearchScope scope;
+        if(params.has("searchScope")) {
+            scope = EMConversation.EMMessageSearchScope.values()[params.getInt("searchScope")];
+        }else {
+            scope = EMConversation.EMMessageSearchScope.ALL;
+        }
         asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, name, direction);
+            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, name, direction, scope);
             List<Map> messages = new ArrayList<>();
             for(EMMessage msg: msgList) {
                 messages.add(EMMessageHelper.toJson(msg));
@@ -376,6 +385,17 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         conversation.removeMessagesFromServer(timestamp, new EMWrapperCallBack(result, channelName, null));
     }
 
+    private void pinnedMessages(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        List<EMMessage> msgList = conversation.pinnedMessages();
+        List<Map> messages = new ArrayList<>();
+        for(EMMessage msg: msgList) {
+            messages.add(EMMessageHelper.toJson(msg));
+        }
+        onSuccess(result, channelName, messages);
+    }
+
+
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
         String convId = params.getString("convId");
         EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
@@ -386,4 +406,6 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
     private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
         return TextUtils.equals(direction, "up") ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
     }
+
+
 }

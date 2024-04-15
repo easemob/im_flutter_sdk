@@ -35,7 +35,9 @@
         [self getGroupAckCount:call.arguments channelName:call.method result:result];
     } else if([ChatThread isEqualToString:call.method]) {
         [self getChatThread:call.arguments channelName:call.method result:result];
-    } else if ([ChatMessagePinInfo isEqualToString:call.method]) {
+    }
+    // 450
+    else if ([getPinInfo isEqualToString:call.method]) {
         [self getMessagePinInfo:call.arguments channelName:call.method result:result];
     }
     else {

@@ -308,4 +308,17 @@ public class EMSDKMethod {
 
     /// HandleAction
     static final String startCallback = "startCallback";
+
+
+    /// 450
+    static final String getPinInfo = "getPinInfo";
+    static final String pinnedMessages = "pinnedMessages";
+    static final String onMessagePinChanged = "onMessagePinChanged";
+    static final String addRemoteAndLocalConversationsMark = "addRemoteAndLocalConversationsMark";
+    static final String deleteRemoteAndLocalConversationsMark = "deleteRemoteAndLocalConversationsMark";
+    static final String fetchConversationsByOptions = "fetchConversationsByOptions";
+    static final String deleteAllMessageAndConversation = "deleteAllMessageAndConversation";
+    static final String pinMessage = "pinMessage";
+    static final String unpinMessage = "unpinMessage";
+    static final String fetchPinnedMessages = "fetchPinnedMessages"; 
 }

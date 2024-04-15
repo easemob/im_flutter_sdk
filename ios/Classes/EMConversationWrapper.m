@@ -116,6 +116,12 @@
                                    channelName:call.method
                                         result:result];
     }
+    // 450
+    else if ([pinnedMessages isEqualToString:call.method]) {
+        [self pinnedMessages:call.arguments
+                 channelName:call.method
+                      result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -559,6 +565,23 @@
                                 error:aError
                                object:msgJsonAry];
         }];
+    }];
+}
+
+- (void)pinnedMessages:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        NSArray *pinnedMessages = conversation.pinnedMessages;
+        NSMutableArray *msgJsonAry = [NSMutableArray array];
+        for (EMChatMessage *msg in pinnedMessages) {
+            [msgJsonAry addObject:[msg toJson]];
+        }
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:msgJsonAry];
     }];
 }
 

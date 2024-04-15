@@ -56,6 +56,8 @@ class EMChatManager {
         return _messageReactionDidChange(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessageContentChanged) {
         return _onMessageContentChanged(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessagePinChanged) {
+        return _onMessagePinChanged(call.arguments);
       }
       return null;
     });
@@ -2210,6 +2212,16 @@ class EMChatManager {
     int operationTime = obj["operationTime"] ?? 0;
     for (var item in _eventHandlesMap.values) {
       item.onMessageContentChanged?.call(msg, operator, operationTime);
+    }
+  }
+
+  Future<void> _onMessagePinChanged(dynamic obj) async {
+    String messageId = obj["messageId"] ?? "";
+    String conversationId = obj["conversationId"] ?? "";
+    MessagePinOperation pinOperation = MessagePinOperation.values[obj["pinOperation"]];
+    MessagePinInfo pinInfo = MessagePinInfo.fromJson(obj["pinInfo"]);
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagePinChanged?.call(messageId, conversationId, pinOperation, pinInfo);
     }
   }
 }

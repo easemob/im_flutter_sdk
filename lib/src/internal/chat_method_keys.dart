@@ -157,13 +157,13 @@ class ChatMethodKeys {
   static const String messageCount = "messageCount";
   static const String removeMsgFromServerWithMsgList = "removeMsgFromServerWithMsgList";
   static const String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
-  static const String pinnedMessages = 'pinnedMessages';
+  
 
   /// EMMessage method
   static const String getReactionList = "getReactionList";
   static const String groupAckCount = "groupAckCount";
   static const String getChatThread = "chatThread";
-  static const String getPinInfo = 'pinInfo';
+  
 
   /// EMChatRoomManager methods
   static const String joinChatRoom = "joinChatRoom";
@@ -319,6 +319,9 @@ class ChatMethodKeys {
   static const String startCallback = "startCallback";
 
   /// 450
+  static const String getPinInfo = 'getPinInfo';
+  static const String pinnedMessages = 'pinnedMessages';
+  static const String onMessagePinChanged = 'onMessagePinChanged';
   static const String addRemoteAndLocalConversationsMark = 'addRemoteAndLocalConversationsMark';
   static const String deleteRemoteAndLocalConversationsMark = 'deleteRemoteAndLocalConversationsMark';
   static const String fetchConversationsByOptions = 'fetchConversationsByOptions';
