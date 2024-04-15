@@ -25,7 +25,6 @@ class EMUserInfo {
     this.ext,
   });
 
-  /// @nodoc
   factory EMUserInfo.fromJson(Map map) {
     EMUserInfo info = EMUserInfo._private(
       map["userId"],
@@ -41,7 +40,6 @@ class EMUserInfo {
     return info;
   }
 
-  /// @nodoc
   Map toJson() {
     Map data = Map();
     data['userId'] = userId;

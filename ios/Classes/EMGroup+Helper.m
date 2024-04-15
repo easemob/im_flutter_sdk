@@ -124,7 +124,7 @@
     return ret;
 }
 
-+ (EMGroupOptions *)formJson:(NSDictionary *)dict {
++ (EMGroupOptions *)fromJson:(NSDictionary *)dict {
     EMGroupOptions *options = [[EMGroupOptions alloc] init];
     options.maxUsers = [dict[@"maxCount"] intValue];
     options.ext = dict[@"ext"];

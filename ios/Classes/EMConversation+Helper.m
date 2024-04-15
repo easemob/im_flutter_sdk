@@ -17,6 +17,7 @@
     ret[@"isThread"] = @(self.isChatThread);
     ret[@"isPinned"] = @(self.isPinned);
     ret[@"pinnedTime"] = @(self.pinnedTime);
+    ret[@"marks"] = self.marks;
     return ret;
 }
 

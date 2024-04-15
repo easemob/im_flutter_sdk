@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface EMGroupOptions (Helper) <EaseModeToJson>
-+ (EMGroupOptions *)formJson:(NSDictionary *)dict;
++ (EMGroupOptions *)fromJson:(NSDictionary *)dict;
 - (NSDictionary *)toJson;
 + (EMGroupStyle)styleFromInt:(int)style;
 + (int)styleToInt:(EMGroupStyle)style;

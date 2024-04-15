@@ -202,7 +202,7 @@
     __weak typeof(self) weakSelf = self;
     NSString *conversaionId = param[@"conversationId"];
     EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
-    EMSilentModeParam *silmentParam = [EMSilentModeParam formJson:param[@"param"]];
+    EMSilentModeParam *silmentParam = [EMSilentModeParam fromJson:param[@"param"]];
     [EMClient.sharedClient.pushManager setSilentModeForConversation:conversaionId
                                                    conversationType:type
                                                              params:silmentParam
@@ -251,7 +251,7 @@
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    EMSilentModeParam *silmentParam = [EMSilentModeParam formJson:param[@"param"]];
+    EMSilentModeParam *silmentParam = [EMSilentModeParam fromJson:param[@"param"]];
     [EMClient.sharedClient.pushManager setSilentModeForAll:silmentParam
                                                 completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result

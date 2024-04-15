@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EMSilentModeTime (Helper) <EaseModeToJson>
-+ (EMSilentModeTime *)formJson:(NSDictionary *)dict;
++ (EMSilentModeTime *)fromJson:(NSDictionary *)dict;
 - (NSDictionary *)toJson;
 @end
 

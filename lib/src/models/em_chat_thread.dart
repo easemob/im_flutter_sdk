@@ -89,7 +89,6 @@ class EMChatThread {
   /// ~end
   final EMMessage? lastMessage;
 
-  /// @nodoc
   EMChatThread._private({
     required this.threadId,
     this.threadName,

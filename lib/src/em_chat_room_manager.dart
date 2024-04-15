@@ -30,10 +30,8 @@ import 'internal/inner_headers.dart';
 /// ~end
 class EMChatRoomManager {
   static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _channel = const MethodChannel(
-      '$_channelPrefix/chat_room_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/chat_room_manager', JSONMethodCodec());
 
-  /// @nodoc
   EMChatRoomManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
@@ -78,8 +76,7 @@ class EMChatRoomManager {
           } else if (iReason == 2) {
             reason = LeaveReason.Offline;
           }
-          item.onRemovedFromChatRoom
-              ?.call(roomId, roomName, participant, reason);
+          item.onRemovedFromChatRoom?.call(roomId, roomName, participant, reason);
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
@@ -134,8 +131,7 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_ATTRIBUTES_UPDATED:
           String roomId = event['roomId'];
-          Map<String, String> attributes =
-              event["attributes"].cast<String, String>();
+          Map<String, String> attributes = event["attributes"].cast<String, String>();
           String fromId = event["fromId"];
           item.onAttributesUpdated?.call(
             roomId,
@@ -244,8 +240,7 @@ class EMChatRoomManager {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> joinChatRoom(String roomId) async {
-    Map result = await _channel
-        .invokeMethod(ChatMethodKeys.joinChatRoom, {"roomId": roomId});
+    Map result = await _channel.invokeMethod(ChatMethodKeys.joinChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -269,8 +264,7 @@ class EMChatRoomManager {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> leaveChatRoom(String roomId) async {
-    Map result = await _channel
-        .invokeMethod(ChatMethodKeys.leaveChatRoom, {"roomId": roomId});
+    Map result = await _channel.invokeMethod(ChatMethodKeys.leaveChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -305,13 +299,11 @@ class EMChatRoomManager {
     int pageNum = 1,
     int pageSize = 200,
   }) async {
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchPublicChatRoomsFromServer,
-        {"pageNum": pageNum, "pageSize": pageSize});
+    Map result = await _channel
+        .invokeMethod(ChatMethodKeys.fetchPublicChatRoomsFromServer, {"pageNum": pageNum, "pageSize": pageSize});
     try {
       EMError.hasErrorFromResult(result);
-      return EMPageResult<EMChatRoom>.fromJson(
-          result[ChatMethodKeys.fetchPublicChatRoomsFromServer],
+      return EMPageResult<EMChatRoom>.fromJson(result[ChatMethodKeys.fetchPublicChatRoomsFromServer],
           dataItemCallback: (map) {
         return EMChatRoom.fromJson(map);
       });
@@ -344,13 +336,11 @@ class EMChatRoomManager {
     String roomId, {
     bool fetchMembers = false,
   }) async {
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchChatRoomInfoFromServer,
-        {"roomId": roomId, "fetchMembers": fetchMembers});
+    Map result = await _channel
+        .invokeMethod(ChatMethodKeys.fetchChatRoomInfoFromServer, {"roomId": roomId, "fetchMembers": fetchMembers});
     try {
       EMError.hasErrorFromResult(result);
-      return EMChatRoom.fromJson(
-          result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
+      return EMChatRoom.fromJson(result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
     } on EMError catch (e) {
       throw e;
     }
@@ -376,8 +366,7 @@ class EMChatRoomManager {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<EMChatRoom?> getChatRoomWithId(String roomId) async {
-    Map result = await _channel
-        .invokeMethod(ChatMethodKeys.getChatRoom, {"roomId": roomId});
+    Map result = await _channel.invokeMethod(ChatMethodKeys.getChatRoom, {"roomId": roomId});
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getChatRoom)) {
@@ -438,8 +427,7 @@ class EMChatRoomManager {
     req.putIfNotNull("desc", desc);
     req.putIfNotNull("welcomeMsg", welcomeMsg);
     req.putIfNotNull("members", members);
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.createChatRoom, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.createChatRoom, req);
     try {
       EMError.hasErrorFromResult(result);
       return EMChatRoom.fromJson(result[ChatMethodKeys.createChatRoom]);
@@ -471,8 +459,7 @@ class EMChatRoomManager {
     String roomId,
   ) async {
     Map req = {"roomId": roomId};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.destroyChatRoom, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.destroyChatRoom, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -508,8 +495,7 @@ class EMChatRoomManager {
     String name,
   ) async {
     Map req = {"roomId": roomId, "subject": name};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.changeChatRoomSubject, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -545,8 +531,7 @@ class EMChatRoomManager {
     String description,
   ) async {
     Map req = {"roomId": roomId, "description": description};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.changeChatRoomDescription, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.changeChatRoomDescription, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -590,12 +575,10 @@ class EMChatRoomManager {
   }) async {
     Map req = {"roomId": roomId, "pageSize": pageSize};
     req.putIfNotNull("cursor", cursor);
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<String>.fromJson(
-          result[ChatMethodKeys.fetchChatRoomMembers],
+      return EMCursorResult<String>.fromJson(result[ChatMethodKeys.fetchChatRoomMembers],
           dataItemCallback: (obj) => obj);
     } on EMError catch (e) {
       throw e;
@@ -634,13 +617,8 @@ class EMChatRoomManager {
     List<String> muteMembers, {
     int duration = -1,
   }) async {
-    Map req = {
-      "roomId": roomId,
-      "muteMembers": muteMembers,
-      "duration": duration
-    };
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.muteChatRoomMembers, req);
+    Map req = {"roomId": roomId, "muteMembers": muteMembers, "duration": duration};
+    Map result = await _channel.invokeMethod(ChatMethodKeys.muteChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -676,8 +654,7 @@ class EMChatRoomManager {
     List<String> unMuteMembers,
   ) async {
     Map req = {"roomId": roomId, "unMuteMembers": unMuteMembers};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.unMuteChatRoomMembers, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.unMuteChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -713,8 +690,7 @@ class EMChatRoomManager {
     String newOwner,
   ) async {
     Map req = {"roomId": roomId, "newOwner": newOwner};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.changeChatRoomOwner, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.changeChatRoomOwner, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -750,8 +726,7 @@ class EMChatRoomManager {
     String admin,
   ) async {
     Map req = {"roomId": roomId, "admin": admin};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.addChatRoomAdmin, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.addChatRoomAdmin, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -783,8 +758,7 @@ class EMChatRoomManager {
     String admin,
   ) async {
     Map req = {"roomId": roomId, "admin": admin};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.removeChatRoomAdmin, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.removeChatRoomAdmin, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -829,8 +803,7 @@ class EMChatRoomManager {
     int pageSize = 200,
   }) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMuteList, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomMuteList, req);
     try {
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>() ?? [];
@@ -867,8 +840,7 @@ class EMChatRoomManager {
     List<String> members,
   ) async {
     Map req = {"roomId": roomId, "members": members};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.removeChatRoomMembers, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.removeChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -913,8 +885,7 @@ class EMChatRoomManager {
     List<String> members,
   ) async {
     Map req = {"roomId": roomId, "members": members};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.blockChatRoomMembers, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.blockChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -950,8 +921,7 @@ class EMChatRoomManager {
     List<String> members,
   ) async {
     Map req = {"roomId": roomId, "members": members};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.unBlockChatRoomMembers, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.unBlockChatRoomMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -996,12 +966,10 @@ class EMChatRoomManager {
     int pageSize = 200,
   }) async {
     Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>() ??
-          [];
+      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>() ?? [];
     } on EMError catch (e) {
       throw e;
     }
@@ -1035,8 +1003,7 @@ class EMChatRoomManager {
     String announcement,
   ) async {
     Map req = {"roomId": roomId, "announcement": announcement};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.updateChatRoomAnnouncement, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.updateChatRoomAnnouncement, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1067,8 +1034,7 @@ class EMChatRoomManager {
     String roomId,
   ) async {
     Map req = {"roomId": roomId};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchChatRoomAnnouncement, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomAnnouncement, req);
     try {
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.fetchChatRoomAnnouncement];
@@ -1102,14 +1068,12 @@ class EMChatRoomManager {
   /// ~end
   Future<List<String>> fetchChatRoomAllowListFromServer(String roomId) async {
     Map req = {"roomId": roomId};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
 
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
-      result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]
-          ?.forEach((element) {
+      result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]?.forEach((element) {
         if (element is String) {
           list.add(element);
         }
@@ -1143,13 +1107,11 @@ class EMChatRoomManager {
   /// ~end
   Future<bool> isMemberInChatRoomAllowList(String roomId) async {
     Map req = {"roomId": roomId};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
 
     try {
       EMError.hasErrorFromResult(result);
-      return result
-          .boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
+      return result.boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
     } on EMError catch (e) {
       throw e;
     }
@@ -1349,8 +1311,7 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.fetchChatRoomAttributes]
-          ?.cast<String, String>();
+      return result[ChatMethodKeys.fetchChatRoomAttributes]?.cast<String, String>();
     } on EMError catch (e) {
       throw e;
     }
@@ -1467,8 +1428,7 @@ class EMChatRoomManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.removeChatRoomAttributes]
-          ?.cast<String, int>();
+      return result[ChatMethodKeys.removeChatRoomAttributes]?.cast<String, int>();
     } on EMError catch (e) {
       throw e;
     }

@@ -1,4 +1,3 @@
-/// @nodoc
 import 'inner_headers.dart';
 
 /// ~english
@@ -31,7 +30,6 @@ class EMPushConfig {
 
   EMPushConfig();
 
-  /// @nodoc
   void updateFromJson(Map<String, dynamic> json) {
     miAppId = json["mzAppId"];
     mzAppKey = json["mzAppKey"];
@@ -51,7 +49,6 @@ class EMPushConfig {
     enableHonorPush = json.boolValue('enableHonorPush');
   }
 
-  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data.putIfNotNull("mzAppId", mzAppId);

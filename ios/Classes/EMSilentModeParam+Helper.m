@@ -9,7 +9,7 @@
 #import "EMSilentModeTime+Helper.h"
 
 @implementation EMSilentModeParam (Helper)
-+ (EMSilentModeParam *)formJson:(NSDictionary *)dict {
++ (EMSilentModeParam *)fromJson:(NSDictionary *)dict {
     EMSilentModeParamType paramType = [self paramTypeFromInt:[dict[@"paramType"] intValue]];
     EMSilentModeParam *param = [[EMSilentModeParam alloc] initWithParamType:paramType];
     NSDictionary *dictStartTime = dict[@"startTime"];
@@ -19,8 +19,8 @@
     EMPushRemindType remindType = [self remindTypeFromInt:[dict[@"remindType"] intValue]];
     
     param.remindType = remindType;
-    param.silentModeStartTime = [EMSilentModeTime formJson:dictStartTime];
-    param.silentModeEndTime = [EMSilentModeTime formJson:dictEndTime];
+    param.silentModeStartTime = [EMSilentModeTime fromJson:dictStartTime];
+    param.silentModeEndTime = [EMSilentModeTime fromJson:dictEndTime];
     param.silentModeDuration = duration;
     return param;
 }

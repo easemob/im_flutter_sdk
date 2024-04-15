@@ -109,7 +109,6 @@ class EMGroupOptions {
   /// ~end
   final String? ext;
 
-  /// @nodoc
   Map toJson() {
     Map data = Map();
     data['style'] = groupStyleTypeToInt(style);

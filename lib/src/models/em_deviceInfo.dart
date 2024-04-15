@@ -14,7 +14,6 @@ class EMDeviceInfo {
     this.deviceName,
   );
 
-  /// @nodoc
   Map toJson() {
     Map data = Map();
     data.putIfNotNull("resource", resource);
@@ -24,7 +23,6 @@ class EMDeviceInfo {
     return data;
   }
 
-  /// @nodoc
   factory EMDeviceInfo.fromJson(Map map) {
     return EMDeviceInfo._private(
       map["resource"],

@@ -30,12 +30,9 @@ class EMCursorResult<T> {
     this.data,
   );
 
-  /// @nodoc
-  factory EMCursorResult.fromJson(Map<String, dynamic> map,
-      {dataItemCallback = CursorResultCallback}) {
+  factory EMCursorResult.fromJson(Map<String, dynamic> map, {dataItemCallback = CursorResultCallback}) {
     List<T> list = [];
-    (map['list'] as List)
-        .forEach((element) => list.add(dataItemCallback(element)));
+    (map['list'] as List).forEach((element) => list.add(dataItemCallback(element)));
     EMCursorResult<T> result = EMCursorResult<T>._private(map['cursor'], list);
 
     return result;

@@ -262,6 +262,32 @@ class EMOptions {
   final int? imPort;
 
   /// ~english
+  /// Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否开启 TLS 连接，初始化时生效，默认为 false。
+  /// ~end
+  final bool enableTLS;
+
+  /// ~english
+  /// Whether the sent message is included in [EMChatEventHandler.onMessagesReceived], default is false.
+  /// ~end
+  /// ~chinese
+  /// 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调, 默认为 false。
+  /// ~end
+  final bool messagesReceiveCallbackIncludeSend;
+
+  /// ~english
+  /// Whether to regard import messages as read.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否将导入的消息视为已读。
+  /// ~end
+  final bool regardImportMessagesAsRead;
+
+  /// ~english
   /// The area code.
   /// This attribute is used to restrict the scope of accessible edge nodes. The default value is `AreaCodeGLOB`.
   /// This attribute can be set only when you call [EMClient.init]. The attribute setting cannot be changed during the app runtime.
@@ -302,6 +328,21 @@ class EMOptions {
   /// 自定义系统类型。
   /// ~end
   final int? osType;
+
+  /// ~english
+  /// Whether the server returns the sender the text message with the content replaced during text moderation:
+  ///
+  /// - `true`: Return the adjusted message to the sender.
+  /// - `(Default) false`: Return the original message to the sender.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否在文本审核时，返回给发送者被替换内容的文本消息：
+  ///
+  /// - `true`：返回给发送者被调整的消息。
+  /// - （默认）`false`：返回给发送者原始消息。
+  /// ~end
+  final bool useReplacedMessageContents;
 
   EMPushConfig _pushConfig = EMPushConfig();
 
@@ -473,6 +514,18 @@ class EMOptions {
   ///
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
   ///
+  /// Param [deviceName] Custom device name.
+  ///
+  /// Param [osType] Custom system type.
+  ///
+  /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation, the default is false.
+  ///
+  /// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] Whether the sent message is included in [EMChatEventHandler.onMessagesReceived], default is false.
+  ///
+  /// Param [regardImportMessagesAsRead] Whether to regard import messages as read, default is false.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -547,6 +600,18 @@ class EMOptions {
   ///
   /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
   ///
+  /// Param [deviceName] 自定义设备名称。
+  ///
+  /// Param [osType] 自定义系统类型。
+  ///
+  /// Param [useReplacedMessageContents] 是否在文本审核时，返回给发送者被替换内容的文本消息, 默认为 false。
+  ///
+  /// Param [enableTLS] 是否开启 TLS 连接，初始化时生效，默认为 false。
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调, 默认为 false。
+  ///
+  /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
+  ///
   /// ~end
   EMOptions({
     required this.appKey,
@@ -572,9 +637,12 @@ class EMOptions {
     this.enableEmptyConversation = false,
     this.deviceName,
     this.osType,
+    this.useReplacedMessageContents = false,
+    this.enableTLS = false,
+    this.messagesReceiveCallbackIncludeSend = false,
+    this.regardImportMessagesAsRead = false,
   });
 
-  /// @nodoc
   Map toJson() {
     Map data = new Map();
     data.putIfNotNull("appKey", appKey);
@@ -602,6 +670,10 @@ class EMOptions {
     data.putIfNotNull('loadEmptyConversations', enableEmptyConversation);
     data.putIfNotNull('deviceName', deviceName);
     data.putIfNotNull('osType', osType);
+    data.putIfNotNull('useReplacedMessageContents', useReplacedMessageContents);
+    data.putIfNotNull('enableTLS', enableTLS);
+    data.putIfNotNull('messagesReceiveCallbackIncludeSend', messagesReceiveCallbackIncludeSend);
+    data.putIfNotNull('regardImportMessagesAsRead', regardImportMessagesAsRead);
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;
     data["pushConfig"] = this._pushConfig.toJson();

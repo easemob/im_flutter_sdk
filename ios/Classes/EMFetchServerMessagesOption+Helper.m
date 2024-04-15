@@ -9,7 +9,7 @@
 #import "EMConversation+Helper.h"
 
 @implementation EMFetchServerMessagesOption (Helper)
-+ (EMFetchServerMessagesOption *)formJson:(NSDictionary *)dict {
++ (EMFetchServerMessagesOption *)fromJson:(NSDictionary *)dict {
     EMFetchServerMessagesOption *options = [[EMFetchServerMessagesOption alloc] init];
     options.direction = [dict[@"direction"] isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
     options.startTime = [dict[@"startTs"] longValue];

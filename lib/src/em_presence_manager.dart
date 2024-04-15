@@ -12,12 +12,10 @@ import 'internal/inner_headers.dart';
 /// ~end
 class EMPresenceManager {
   static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _channel = const MethodChannel(
-      '$_channelPrefix/chat_presence_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/chat_presence_manager', JSONMethodCodec());
 
   final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
 
-  /// @nodoc
   EMPresenceManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
       Map? argMap = call.arguments;
@@ -114,8 +112,7 @@ class EMPresenceManager {
     String description,
   ) async {
     Map req = {'desc': description};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.presenceWithDescription, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.presenceWithDescription, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -151,8 +148,7 @@ class EMPresenceManager {
     required int expiry,
   }) async {
     Map req = {'members': members, "expiry": expiry};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.presenceSubscribe, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.presenceSubscribe, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMPresence> list = [];
@@ -184,8 +180,7 @@ class EMPresenceManager {
     required List<String> members,
   }) async {
     Map req = {'members': members};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.presenceUnsubscribe, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.presenceUnsubscribe, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -221,13 +216,11 @@ class EMPresenceManager {
     int pageSize = 20,
   }) async {
     Map req = {'pageNum': pageNum, "pageSize": pageSize};
-    Map result = await _channel.invokeMethod(
-        ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
-      result[ChatMethodKeys.fetchSubscribedMembersWithPageNum]
-          ?.forEach((element) {
+      result[ChatMethodKeys.fetchSubscribedMembersWithPageNum]?.forEach((element) {
         if (element is String) {
           list.add(element);
         }
@@ -261,8 +254,7 @@ class EMPresenceManager {
     required List<String> members,
   }) async {
     Map req = {'members': members};
-    Map result =
-        await _channel.invokeMethod(ChatMethodKeys.fetchPresenceStatus, req);
+    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchPresenceStatus, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMPresence> list = [];

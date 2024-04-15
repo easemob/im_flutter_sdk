@@ -51,7 +51,6 @@ class EMPresence {
   /// ~end
   Map<String, int>? statusDetails;
 
-  /// @nodoc
   EMPresence._private(
     this.publisher,
     this.statusDescription,
@@ -60,15 +59,13 @@ class EMPresence {
     this.expiryTime,
   );
 
-  /// @nodoc
   factory EMPresence.fromJson(Map map) {
     String publisher = map["publisher"] ?? "";
     String statusDescription = map["statusDescription"] ?? "";
     int latestTime = map["lastTime"] ?? 0;
     int expiryTime = map["expiryTime"] ?? 0;
     Map<String, int>? statusDetails = map["statusDetails"]?.cast<String, int>();
-    return EMPresence._private(
-        publisher, statusDescription, statusDetails, latestTime, expiryTime);
+    return EMPresence._private(publisher, statusDescription, statusDetails, latestTime, expiryTime);
   }
 }
 
@@ -98,13 +95,11 @@ class EMPresenceStatusDetail {
   /// ~end
   final int status;
 
-  /// @nodoc
   EMPresenceStatusDetail._private(
     this.device,
     this.status,
   );
 
-  /// @nodoc
   factory EMPresenceStatusDetail.fromJson(Map map) {
     String device = map["device"];
     int status = map["status"] ?? 0;
