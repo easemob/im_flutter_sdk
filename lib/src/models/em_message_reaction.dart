@@ -79,7 +79,6 @@ class EMMessageReaction {
     );
   }
 
-  /// @nodoc
   factory EMMessageReaction.fromJson(Map map) {
     String reaction = map["reaction"];
     int count = map["count"];
@@ -150,7 +149,6 @@ class EMMessageReactionEvent {
     required this.operations,
   });
 
-  /// @nodoc
   factory EMMessageReactionEvent.fromJson(Map map) {
     String conversationId = map["conversationId"];
     String messageId = map["messageId"];

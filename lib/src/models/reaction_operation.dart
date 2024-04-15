@@ -60,14 +60,11 @@ class ReactionOperation {
   /// ~end
   final ReactionOperate operate;
 
-  /// @nodoc
   factory ReactionOperation.fromJson(Map map) {
     String userId = map["userId"];
     String reaction = map["reaction"];
 
-    ReactionOperate operate = (map["operate"] ?? 0) == 0
-        ? ReactionOperate.Remove
-        : ReactionOperate.Add;
+    ReactionOperate operate = (map["operate"] ?? 0) == 0 ? ReactionOperate.Remove : ReactionOperate.Add;
 
     return ReactionOperation._private(userId, reaction, operate);
   }

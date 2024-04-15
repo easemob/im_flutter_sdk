@@ -17,9 +17,7 @@ typedef PageResultCallback = Object Function(dynamic obj);
 class EMPageResult<T> {
   EMPageResult._private();
 
-  /// @nodoc
-  factory EMPageResult.fromJson(Map map,
-      {dataItemCallback = PageResultCallback}) {
+  factory EMPageResult.fromJson(Map map, {dataItemCallback = PageResultCallback}) {
     EMPageResult<T> result = EMPageResult<T>._private();
     result.._pageCount = map['count'];
     result.._data = [];

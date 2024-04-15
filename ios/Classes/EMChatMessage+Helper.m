@@ -7,6 +7,7 @@
 
 #import "EMChatMessage+Helper.h"
 #import "EMChatThread+Helper.h"
+#import "EMMessagePinInfo+Helper.h"
 
 
 @implementation EMChatMessage (Helper)
@@ -55,6 +56,8 @@
     // read only
     // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
     // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
+    // msg.isContentReplaced = [aJson[@"isContentReplaced"] boolValue];
+    // msg.pinnedInfo = [EMMessagaPinInfo forJson:aJson[@"pinnedInfo"]];
     msg.isChatThreadMessage = [aJson[@"isThread"] boolValue];
     msg.ext = aJson[@"attributes"];
     if (aJson[@"chatroomMessagePriority"]) {
@@ -92,6 +95,8 @@
     ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);
     ret[@"receiverList"] = self.receiverList;
     ret[@"broadcast"] = @(self.broadcast);
+    ret[@"isContentReplaced"] = @(self.isContentReplaced);
+    ret[@"pinnedInfo"] = [self.pinnedInfo toJson];
     return ret;
 }
 
@@ -335,11 +340,6 @@
 @end
 
 #pragma mark - txt
-
-@interface EMTextMessageBody (Helper)
-+ (EMMessageBody *)fromJson:(NSDictionary *)aJson;
-- (NSDictionary *)toJson;
-@end
 
 
 @implementation EMTextMessageBody (Helper)

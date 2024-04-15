@@ -26,12 +26,10 @@ class EMError {
   /// ~end
   final String description;
 
-  /// @nodoc
   factory EMError.fromJson(Map map) {
     return EMError._private(map['code'], map['description']);
   }
 
-  /// @nodoc
   static hasErrorFromResult(Map map) {
     if (map['error'] == null) {
       return;

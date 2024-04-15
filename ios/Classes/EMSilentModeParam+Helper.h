@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EMSilentModeParam (Helper)
-+ (EMSilentModeParam *)formJson:(NSDictionary *)dict;
++ (EMSilentModeParam *)fromJson:(NSDictionary *)dict;
 + (int)remindTypeToInt:(EMPushRemindType)type;
 
 @end

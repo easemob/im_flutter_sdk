@@ -8,7 +8,6 @@ class EMContact {
       : userId = map["userId"],
         remark = map["remark"];
 
-  /// @nodoc
   Map toJson() {
     Map data = Map();
     data.putIfNotNull("userId", userId);
@@ -17,7 +16,6 @@ class EMContact {
     return data;
   }
 
-  /// @nodoc
   factory EMContact.fromJson(Map map) {
     return EMContact._private(map);
   }

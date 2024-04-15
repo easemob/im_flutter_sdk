@@ -83,7 +83,6 @@ class EMGroupSharedFile {
   /// ~end
   int? get fileSize => _fileSize;
 
-  /// @nodoc
   factory EMGroupSharedFile.fromJson(Map? map) {
     return EMGroupSharedFile._private()
       .._fileId = map?["fileId"]
@@ -93,7 +92,6 @@ class EMGroupSharedFile {
       .._fileSize = map?["fileSize"];
   }
 
-  /// @nodoc
   Map toJson() {
     Map data = Map();
     data.putIfNotNull("fileId", _fileId);

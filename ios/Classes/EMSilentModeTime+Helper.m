@@ -8,7 +8,7 @@
 #import "EMSilentModeTime+Helper.h"
 
 @implementation EMSilentModeTime (Helper)
-+ (EMSilentModeTime *)formJson:(NSDictionary *)dict {
++ (EMSilentModeTime *)fromJson:(NSDictionary *)dict {
     int hour = [dict[@"hour"] intValue];
     int minute = [dict[@"minute"] intValue];
     return [[EMSilentModeTime alloc] initWithHours:hour minutes:minute];

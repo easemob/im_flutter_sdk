@@ -394,7 +394,7 @@
                                                    description:param[@"desc"]
                                                       invitees:param[@"inviteMembers"]
                                                        message:param[@"inviteReason"]
-                                                       setting:[EMGroupOptions formJson:param[@"options"]]
+                                                       setting:[EMGroupOptions fromJson:param[@"options"]]
                                                     completion:^(EMGroup *aGroup, EMError *aError)
      {
         [weakSelf wrapperCallBack:result

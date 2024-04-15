@@ -825,6 +825,15 @@ enum EMMultiDevicesEvent {
   /// 当前用户在其他设备上删除了服务端的会话。
   /// ~end
   CONVERSATION_DELETE,
+
+  /// ~english
+  /// The current user updated the conversation mark on another device.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户在其他设备上更新了会话标记。
+  /// ~end
+  CONVERSATION_UPDATE_MARK,
 }
 
 /// ~english
@@ -1043,7 +1052,118 @@ enum ReactionOperate {
   Add,
 }
 
+/// ~english
+/// Leave chat room reason
+/// ~end
+/// ~chinese
+/// 离开聊天室原因
+/// ~end
+
 enum LeaveReason {
+  ///
+  /// ~english
+  /// Kicked out
+  /// ~end
+  /// ~chinese
+  /// 被移除
+  /// ~end
   Kicked,
+
+  /// ~english
+  /// offline
+  /// ~end
+  /// ~chinese
+  /// 离线
+  /// ~end
   Offline,
+}
+
+enum MessagePinOperation {
+  /// ~english
+  /// Pin
+  /// ~end
+  ///
+  /// ~chinese
+  /// 置顶
+  /// ~end
+  Pin,
+
+  /// ~english
+  /// Unpin
+  /// ~end
+  ///
+  /// ~chinese
+  /// 取消置顶
+  /// ~end
+  Unpin,
+}
+
+///  ~english
+///  The message search scopes.
+/// ~end
+///
+/// ~chinese
+///  消息搜索范围枚举类型。
+/// ~end
+enum MessageSearchScope {
+  /// ~english
+  /// Search by message content.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 按消息内容搜索。
+  /// ~end
+  Content,
+
+  /// ~english
+  /// Search by message attributes.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 按消息扩展属性搜索。
+  /// ~end
+  Attribute,
+
+  /// ~english
+  /// Search by message content and attributes.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 按消息内容和扩展属性搜索。
+  /// ~end
+  All,
+}
+
+/// ~english
+/// The conversation mark types.
+///
+/// The mapping between each type of conversation mark and their actual meanings is maintained by the developer.
+/// ~end
+///
+/// ~chinese
+/// 会话标记类型枚举。
+///
+/// 各会话标记类型与实际意义之间的映射由开发者维护
+/// ~end
+enum ConversationMarkType {
+  Type0,
+  Type1,
+  Type2,
+  Type3,
+  Type4,
+  Type5,
+  Type6,
+  Type7,
+  Type8,
+  Type9,
+  Type10,
+  Type11,
+  Type12,
+  Type13,
+  Type14,
+  Type15,
+  Type16,
+  Type17,
+  Type18,
+  Type19,
 }

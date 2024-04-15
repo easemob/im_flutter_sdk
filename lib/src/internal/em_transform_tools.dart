@@ -1,4 +1,3 @@
-/// @nodoc
 import 'inner_headers.dart';
 
 EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
@@ -73,6 +72,8 @@ EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
       return EMMultiDevicesEvent.CONVERSATION_UNPINNED;
     case 62:
       return EMMultiDevicesEvent.CONVERSATION_DELETE;
+    case 63:
+      return EMMultiDevicesEvent.CONVERSATION_UPDATE_MARK;
   }
   return null;
 }

@@ -311,6 +311,25 @@
     }];
 }
 
+- (void)getPinnedMessages:(NSDictionary *)param
+             channelName:(NSString *)aChannelName
+                  result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation) {
+        NSArray<EMChatMessage *> *aMessages = conversation.pinnedMessages;
+        NSMutableArray *msgJsonAry = [NSMutableArray array];
+        for (EMChatMessage *msg in aMessages) {
+            [msgJsonAry addObject:[msg toJson]];
+        }
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:msgJsonAry];
+    }];
+}
+
 - (void)removeMessage:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
@@ -318,7 +337,6 @@
                         completion:^(EMConversation *conversation)
      {
         NSString *msgId = param[@"msg_id"];
-        EMChatMessage *msg = [conversation loadMessageWithId:msgId error:nil];
         EMError *error = nil;
         [conversation deleteMessageWithId:msgId error:&error];
         
@@ -492,6 +510,7 @@
     long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *sender = param[@"sender"];
+    EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
@@ -502,6 +521,7 @@
                                         count:count
                                      fromUser:sender
                               searchDirection:direction
+                                        scope:scope
                                    completion:^(NSArray *aMessages, EMError *aError)
          {
             NSMutableArray *msgJsonAry = [NSMutableArray array];

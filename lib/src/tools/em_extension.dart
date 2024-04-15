@@ -26,8 +26,7 @@ extension MapExtension on Map {
     this[key] = value;
   }
 
-  Map<String, dynamic>? getMapValue(String key,
-      {Map<String, dynamic>? defaultValue}) {
+  Map<String, dynamic>? getMapValue(String key, {Map<String, dynamic>? defaultValue}) {
     Map<String, dynamic>? ret = {};
     if (this.containsKey(key)) {
       Map tmpMap = this[key];
@@ -80,7 +79,7 @@ extension MapExtension on Map {
     String key, {
     required MapResultCallback callback,
   }) {
-    if (!this.containsKey(key)) {
+    if (this.containsKey(key)) {
       return null;
     }
     return callback.call(this[key]);

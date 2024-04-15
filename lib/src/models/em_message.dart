@@ -3,6 +3,7 @@
 import 'dart:math';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../internal/inner_headers.dart';
 
@@ -34,8 +35,7 @@ import '../internal/inner_headers.dart';
 class EMMessage {
   /// 消息 ID。
   String? _msgId;
-  String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() +
-      Random().nextInt(99999).toString();
+  String _msgLocalId = DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(99999).toString();
 
   /// ~english
   /// Gets the message ID.
@@ -272,7 +272,37 @@ class EMMessage {
   /// ~end
   late final bool isBroadcast;
 
+  /// ~english
+  /// Whether the message content is replaced. It is valid after [EMOptions.useReplacedMessageContents] is enabled.
+  /// ~end
+  /// ~chinese
+  /// 消息内容是否被替换, 开启[EMOptions.useReplacedMessageContents]后有效
+  /// ~end
+  late final bool isContentReplaced;
+
   ChatRoomMessagePriority? _priority;
+
+  Future<MessagePinInfo?> pinInfo() async {
+    if (_msgId == null) {
+      return null;
+    }
+    Map req = {"msgId": msgId};
+    Map result = await _emMessageChannel.invokeMethod(
+      ChatMethodKeys.getPinInfo,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getPinInfo)) {
+        return result.getValue<MessagePinInfo>(ChatMethodKeys.getPinInfo,
+            callback: (obj) => MessagePinInfo.fromJson(obj));
+      } else {
+        return null;
+      }
+    } on EMError {
+      rethrow;
+    }
+  }
 
   /// ~english
   /// Sets the priority of chat room messages.
@@ -664,10 +694,7 @@ class EMMessage {
             chatType: chatType,
             to: targetId,
             body: EMVoiceMessageBody(
-                localPath: filePath,
-                duration: duration,
-                fileSize: fileSize,
-                displayName: displayName));
+                localPath: filePath, duration: duration, fileSize: fileSize, displayName: displayName));
 
   /// ~english
   /// Creates a location message for sending.
@@ -768,8 +795,7 @@ class EMMessage {
   }) : this.createSendMessage(
             chatType: chatType,
             to: targetId,
-            body: EMCmdMessageBody(
-                action: action, deliverOnlineOnly: deliverOnlineOnly));
+            body: EMCmdMessageBody(action: action, deliverOnlineOnly: deliverOnlineOnly));
 
   /// ~english
   /// Creates a custom message for sending.
@@ -810,9 +836,7 @@ class EMMessage {
     Map<String, String>? params,
     ChatType chatType = ChatType.Chat,
   }) : this.createSendMessage(
-            chatType: chatType,
-            to: targetId,
-            body: EMCustomMessageBody(event: event, params: params));
+            chatType: chatType, to: targetId, body: EMCustomMessageBody(event: event, params: params));
 
   /// ~english
   /// Creates a combined message for sending.
@@ -872,15 +896,13 @@ class EMMessage {
               messageList: msgIds,
             ));
 
-  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data.putIfNotNull("from", from);
     data.putIfNotNull("to", to);
     data.putIfNotNull("body", body.toJson());
     data.putIfNotNull("attributes", attributes);
-    data.putIfNotNull(
-        "direction", this.direction == MessageDirection.SEND ? 'send' : 'rec');
+    data.putIfNotNull("direction", this.direction == MessageDirection.SEND ? 'send' : 'rec');
     data.putIfNotNull("hasRead", hasRead);
     data.putIfNotNull("hasReadAck", hasReadAck);
     data.putIfNotNull("hasDeliverAck", hasDeliverAck);
@@ -892,6 +914,7 @@ class EMMessage {
     data.putIfNotNull("serverTime", serverTime);
     data.putIfNotNull("status", messageStatusToInt(this.status));
     data.putIfNotNull("isThread", isChatThreadMessage);
+    data.putIfNotNull('isContentReplaced', isContentReplaced);
     if (_priority != null) {
       data.putIfNotNull("chatroomMessagePriority", _priority!.index);
     }
@@ -903,16 +926,13 @@ class EMMessage {
     return data;
   }
 
-  /// @nodoc
   factory EMMessage.fromJson(Map<String, dynamic> map) {
     return EMMessage._private()
       ..to = map["to"]
       ..from = map["from"]
       ..body = _bodyFromMap(map["body"])!
       ..attributes = map.getMapValue("attributes")
-      ..direction = map["direction"] == 'send'
-          ? MessageDirection.SEND
-          : MessageDirection.RECEIVE
+      ..direction = map["direction"] == 'send' ? MessageDirection.SEND : MessageDirection.RECEIVE
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')
@@ -927,7 +947,8 @@ class EMMessage {
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
       ..status = messageStatusFromInt(map["status"])
       ..receiverList = map["receiverList"]?.cast<String>()
-      ..isBroadcast = map["broadcast"] ?? false;
+      ..isBroadcast = map["broadcast"] ?? false
+      ..isContentReplaced = map["isContentReplaced"] ?? false;
   }
 
   static EMMessageBody? _bodyFromMap(Map map) {
@@ -971,8 +992,7 @@ class EMMessage {
     return toJson().toString();
   }
 
-  static const MethodChannel _emMessageChannel =
-      const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
+  static const MethodChannel _emMessageChannel = const MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
 
   /// ~english
   /// Gets the Reaction list.
@@ -1026,8 +1046,7 @@ class EMMessage {
   /// ~end
   Future<int> groupAckCount() async {
     Map req = {"msgId": msgId};
-    Map result =
-        await _emMessageChannel.invokeMethod(ChatMethodKeys.groupAckCount, req);
+    Map result = await _emMessageChannel.invokeMethod(ChatMethodKeys.groupAckCount, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.groupAckCount)) {
@@ -1060,8 +1079,7 @@ class EMMessage {
   /// ~end
   Future<EMChatThread?> chatThread() async {
     Map req = {"msgId": msgId};
-    Map result =
-        await _emMessageChannel.invokeMethod(ChatMethodKeys.getChatThread, req);
+    Map result = await _emMessageChannel.invokeMethod(ChatMethodKeys.getChatThread, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getChatThread)) {
@@ -1076,11 +1094,9 @@ class EMMessage {
   }
 }
 
-/// @nodoc
 abstract class EMMessageBody {
   EMMessageBody({required this.type});
 
-  /// @nodoc
   EMMessageBody.fromJson({
     required Map map,
     required this.type,
@@ -1090,7 +1106,6 @@ abstract class EMMessageBody {
     _operatorCount = map["operatorCount"];
   }
 
-  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['type'] = messageTypeToTypeStr(this.type);
@@ -1154,17 +1169,13 @@ class EMCmdMessageBody extends EMMessageBody {
   /// ~chinese
   /// 创建一个命令消息。
   /// ~end
-  EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false})
-      : super(type: MessageType.CMD);
+  EMCmdMessageBody({required this.action, this.deliverOnlineOnly = false}) : super(type: MessageType.CMD);
 
-  /// @nodoc
-  EMCmdMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.CMD) {
+  EMCmdMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.CMD) {
     this.action = map["action"];
     this.deliverOnlineOnly = map["deliverOnlineOnly"] ?? false;
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1240,16 +1251,13 @@ class EMLocationMessageBody extends EMMessageBody {
     _buildingName = buildingName;
   }
 
-  /// @nodoc
-  EMLocationMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.LOCATION) {
+  EMLocationMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.LOCATION) {
     this.latitude = (map["latitude"] ?? 0).toDouble();
     this.longitude = (map["longitude"] ?? 0).toDouble();
     this._address = map["address"];
     this._buildingName = map["buildingName"];
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1338,20 +1346,16 @@ class EMFileMessageBody extends EMMessageBody {
     MessageType type = MessageType.FILE,
   }) : super(type: type);
 
-  /// @nodoc
-  EMFileMessageBody.fromJson(
-      {required Map map, MessageType type = MessageType.FILE})
+  EMFileMessageBody.fromJson({required Map map, MessageType type = MessageType.FILE})
       : super.fromJson(map: map, type: type) {
     this.secret = map["secret"];
     this.remotePath = map["remotePath"];
     this.fileSize = map["fileSize"];
     this.localPath = map["localPath"] ?? "";
     this.displayName = map["displayName"];
-    this.fileStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]);
+    this.fileStatus = EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]);
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1490,20 +1494,16 @@ class EMImageMessageBody extends EMFileMessageBody {
           type: MessageType.IMAGE,
         );
 
-  /// @nodoc
-  EMImageMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.IMAGE) {
+  EMImageMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.IMAGE) {
     this.thumbnailLocalPath = map["thumbnailLocalPath"];
     this.thumbnailRemotePath = map["thumbnailRemotePath"];
     this.thumbnailSecret = map["thumbnailSecret"];
     this.sendOriginalImage = map["sendOriginalImage"] ?? false;
     this.height = (map["height"] ?? 0).toDouble();
     this.width = (map["width"] ?? 0).toDouble();
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1513,8 +1513,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data.putIfNotNull("sendOriginalImage", sendOriginalImage);
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
-    data.putIfNotNull(
-        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    data.putIfNotNull("thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
     return data;
   }
 
@@ -1611,9 +1610,7 @@ class EMTextMessageBody extends EMMessageBody {
     this.targetLanguages,
   }) : super(type: MessageType.TXT);
 
-  /// @nodoc
-  EMTextMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.TXT) {
+  EMTextMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.TXT) {
     this.content = map["content"] ?? "";
     this.targetLanguages = map.getList("targetLanguages");
     if (map.containsKey("translations")) {
@@ -1745,20 +1742,16 @@ class EMVideoMessageBody extends EMFileMessageBody {
           type: MessageType.VIDEO,
         );
 
-  /// @nodoc
-  EMVideoMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.VIDEO) {
+  EMVideoMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.VIDEO) {
     this.duration = map["duration"];
     this.thumbnailLocalPath = map["thumbnailLocalPath"];
     this.thumbnailRemotePath = map["thumbnailRemotePath"];
     this.thumbnailSecret = map["thumbnailSecret"];
     this.height = (map["height"] ?? 0).toDouble();
     this.width = (map["width"] ?? 0).toDouble();
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
+    this.thumbnailStatus = EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1768,8 +1761,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
     data.putIfNotNull("thumbnailSecret", thumbnailSecret);
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
-    data.putIfNotNull(
-        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    data.putIfNotNull("thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
 
     return data;
   }
@@ -1881,13 +1873,10 @@ class EMVoiceMessageBody extends EMFileMessageBody {
           type: MessageType.VOICE,
         );
 
-  /// @nodoc
-  EMVoiceMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.VOICE) {
+  EMVoiceMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.VOICE) {
     this.duration = map["duration"] ?? 0;
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1924,13 +1913,11 @@ class EMCustomMessageBody extends EMMessageBody {
     required this.event,
     this.params,
   }) : super(type: MessageType.CUSTOM);
-  EMCustomMessageBody.fromJson({required Map map})
-      : super.fromJson(map: map, type: MessageType.CUSTOM) {
+  EMCustomMessageBody.fromJson({required Map map}) : super.fromJson(map: map, type: MessageType.CUSTOM) {
     this.event = map["event"];
     this.params = map["params"]?.cast<String, String>();
   }
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1980,7 +1967,6 @@ class EMCombineMessageBody extends EMMessageBody {
   String? _remotePath;
   String? _secret;
 
-  /// @nodoc
   @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = super.toJson();
@@ -1995,7 +1981,6 @@ class EMCombineMessageBody extends EMMessageBody {
     return data;
   }
 
-  /// @nodoc
   factory EMCombineMessageBody.fromJson({required Map map}) {
     var body = EMCombineMessageBody(
       title: map["title"],

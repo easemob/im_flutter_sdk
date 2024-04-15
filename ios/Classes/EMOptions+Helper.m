@@ -35,7 +35,10 @@
     data[@"areaCode"] = @(self.area);
     data[@"deviceName"] = self.customDeviceName;
     data[@"osType"] = @(self.customOSType);
-    
+    data[@"useReplacedMessageContents"] = @(self.useReplacedMessageContents);
+    data[@"enableTLS"] = @(self.enableTLSConnection);
+    data[@"messagesReceiveCallbackIncludeSend"] = @(self.includeSendMessageInMessageListener);
+    data[@"regardImportMessagesAsRead"] = @(self.regardImportMessagesAsRead);
     return data;
 }
 + (EMOptions *)fromJson:(NSDictionary *)aJson {
@@ -62,6 +65,10 @@
     options.dnsURL = aJson[@"dnsURL"];
     options.area = [aJson[@"areaCode"] intValue];
     options.customDeviceName = aJson[@"deviceName"];
+    options.enableTLSConnection = aJson[@"enableTLS"];
+    options.useReplacedMessageContents = [aJson[@"useReplacedMessageContents"] boolValue];
+    options.includeSendMessageInMessageListener = [aJson[@"messagesReceiveCallbackIncludeSend"] boolValue];
+    options.regardImportMessagesAsRead = [aJson[@"regardImportMessagesAsRead"] boolValue];
     if(aJson[@"osType"]) {
         options.customOSType = [aJson[@"osType"] intValue];
     }

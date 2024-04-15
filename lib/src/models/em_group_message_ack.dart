@@ -90,7 +90,6 @@ class EMGroupMessageAck {
   /// ~end
   final int timestamp;
 
-  /// @nodoc
   factory EMGroupMessageAck.fromJson(Map map) {
     EMGroupMessageAck ack = EMGroupMessageAck._private(
       ackId: map["ack_id"],

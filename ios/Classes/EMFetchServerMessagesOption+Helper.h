@@ -10,7 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface EMFetchServerMessagesOption (Helper)
-+ (EMFetchServerMessagesOption *)formJson:(NSDictionary *)dict;
++ (EMFetchServerMessagesOption *)fromJson:(NSDictionary *)dict;
 @end
 
 NS_ASSUME_NONNULL_END

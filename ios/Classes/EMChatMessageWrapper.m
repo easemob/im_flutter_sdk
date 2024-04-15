@@ -12,6 +12,7 @@
 
 #import "EMMessageReaction+Helper.h"
 #import "EMChatThread+Helper.h"
+#import "EMMessagePinInfo+Helper.h"
 
 
 @implementation EMChatMessageWrapper
@@ -34,6 +35,8 @@
         [self getGroupAckCount:call.arguments channelName:call.method result:result];
     } else if([ChatThread isEqualToString:call.method]) {
         [self getChatThread:call.arguments channelName:call.method result:result];
+    } else if ([ChatMessagePinInfo isEqualToString:call.method]) {
+        [self getMessagePinInfo:call.arguments channelName:call.method result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -87,13 +90,23 @@
                result:(FlutterResult)result {
     NSString *msgId = param[@"msgId"];
     EMChatMessage *msg = [self getMessageWithId:msgId];
-    NSLog(@"msgId: %@",msg.messageId);
-    NSLog(@"thread: %@", msg.chatThread);
     [self wrapperCallBack:result
               channelName:aChannelName
                     error:nil
                    object:[msg.chatThread toJson]] ;
 }
+
+- (void)getMessagePinInfo:(NSDictionary *)param
+          channelName:(NSString *)aChannelName
+               result:(FlutterResult)result {
+    NSString *msgId = param[@"msgId"];
+    EMChatMessage *msg = [self getMessageWithId:msgId];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:[msg.pinnedInfo toJson]] ;
+}
+
 
 - (EMChatMessage *)getMessageWithId:(NSString *)aMessageId {
     return [EMClient.sharedClient.chatManager getMessageWithMessageId:aMessageId];

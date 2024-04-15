@@ -235,7 +235,6 @@ class EMGroup {
   /// ~end
   final bool? isAllMemberMuted;
 
-  /// @nodoc
   EMGroupOptions? _options;
 
   /// ~english
@@ -341,11 +340,9 @@ class EMGroup {
   /// ~end
   final bool isDisabled;
 
-  @Deprecated(
-      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead")
+  @Deprecated("Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead")
   EMGroupOptions? get settings => _options;
 
-  /// @nodoc
   factory EMGroup.fromJson(Map map) {
     String groupId = map['groupId'];
     String? name = map["name"];
@@ -359,8 +356,7 @@ class EMGroup {
     List<String>? muteList = map.getList("muteList");
     bool? messageBlocked = map["messageBlocked"];
     bool? isAllMemberMuted = map["isAllMemberMuted"];
-    EMGroupPermissionType? permissionType =
-        permissionTypeFromInt(map['permissionType']);
+    EMGroupPermissionType? permissionType = permissionTypeFromInt(map['permissionType']);
     int? maxUserCount = map["maxUserCount"];
     bool? isMemberOnly = map["isMemberOnly"];
     bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
@@ -389,7 +385,6 @@ class EMGroup {
     );
   }
 
-  /// @nodoc
   Map toJson() {
     Map data = Map();
     data.putIfNotNull("groupId", groupId);

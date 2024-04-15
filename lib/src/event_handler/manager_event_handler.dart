@@ -426,8 +426,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到群组消息的已读回执的回调。
   /// ~end
-  final void Function(List<EMGroupMessageAck> groupMessageAcks)?
-      onGroupMessageRead;
+  final void Function(List<EMGroupMessageAck> groupMessageAcks)? onGroupMessageRead;
 
   /// ~english
   /// Occurs when the update for the group message read status is received.
@@ -494,8 +493,7 @@ class EMChatEventHandler {
   /// ~chinese
   /// 消息表情回复（Reaction）变化监听器。
   /// ~end
-  final void Function(List<EMMessageReactionEvent> events)?
-      onMessageReactionDidChange;
+  final void Function(List<EMMessageReactionEvent> events)? onMessageReactionDidChange;
 
   /// ~english
   /// Occurs when the message content is modified.
@@ -504,11 +502,25 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到消息内容变化。
   /// ~end
+  final void Function(EMMessage message, String operatorId, int operationTime)? onMessageContentChanged;
+
+  /// ~english
+  /// Occurs when the message pin status changes.
+  ///
+  /// This callback is triggered when the message pin status changes.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息置顶状态变化。
+  ///
+  /// 当消息置顶状态发生变化时触发此回调。
+  /// ~end
   final void Function(
-    EMMessage message,
-    String operatorId,
-    int operationTime,
-  )? onMessageContentChanged;
+    String messageId,
+    String conversationId,
+    MessagePinOperation pinOperation,
+    MessagePinInfo pinInfo,
+  )? onMessagePinChanged;
 
   /// ~english
   /// The chat event handler.
@@ -534,6 +546,8 @@ class EMChatEventHandler {
   /// Param [onMessageReactionDidChange] Occurs when the Reaction data changes.
   ///
   /// Param [onMessageContentChanged] Occurs when the message content is modified.
+  ///
+  /// Param [onMessagePinChanged] Occurs when the message pin status changes.
   /// ~end
   ///
   /// ~chinese
@@ -560,6 +574,8 @@ class EMChatEventHandler {
   /// Param [onMessageReactionDidChange] 消息表情回复（Reaction）变化监听器。
   ///
   /// Param [onMessageContentChanged] 收到消息内容变化。
+  ///
+  /// Param [onMessagePinChanged] 消息置顶状态变化。
   /// ~end
   EMChatEventHandler({
     this.onMessagesReceived,
@@ -573,6 +589,7 @@ class EMChatEventHandler {
     this.onConversationRead,
     this.onMessageReactionDidChange,
     this.onMessageContentChanged,
+    this.onMessagePinChanged,
   });
 }
 
@@ -708,8 +725,7 @@ class EMChatRoomEventHandler {
   /// ~chinese
   /// 聊天室加入新成员回调。
   /// ~end
-  final void Function(String roomId, String participant)?
-      onMemberJoinedFromChatRoom;
+  final void Function(String roomId, String participant)? onMemberJoinedFromChatRoom;
 
   /// ~english
   /// Occurs when a chat room member(s) is/are added to mute list.

@@ -32,7 +32,6 @@ class EMChatRoom {
 
   String toString() => toJson().toString();
 
-  /// @nodoc
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private(
         roomId: map["roomId"],
@@ -50,7 +49,6 @@ class EMChatRoom {
         isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
 
-  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['roomId'] = roomId;
