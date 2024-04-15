@@ -858,7 +858,7 @@
     long long timestamp = [param[@"timestamp"] longLongValue];
     int maxCount = [param[@"maxCount"] intValue];
     NSString *from = param[@"from"];
-    EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
+    EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] integerValue];
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
     
     

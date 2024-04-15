@@ -9,11 +9,13 @@
 
 
 @implementation EMConversationFilter (Helper)
-- (NSDictionary *)toJson {
-    NSMutableDictionary *ret = [NSMutableDictionary new];
-    
-    return ret;
-}
+// 不需要提供toJson
+//- (NSDictionary *)toJson {
+//    NSMutableDictionary *ret = [NSMutableDictionary new];
+//    ret[@"mark"] = @(self.mark);
+//    ret[@"pageSize"] = @(self.pageSize);
+//    return ret;
+//}
 
 + (EMConversationFilter *)fromJson:(NSDictionary *)dict {
     EMConversationFilter *filter = [[EMConversationFilter alloc] init];
@@ -35,7 +37,7 @@
 }
 
 + (NSInteger)pageSize:(NSDictionary *)dict {
-    return [dict[@"mark"] intValue];
+    return [dict[@"pageSize"] intValue];
 }
 
 @end

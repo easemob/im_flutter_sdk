@@ -35,6 +35,7 @@
     data[@"areaCode"] = @(self.area);
     data[@"deviceName"] = self.customDeviceName;
     data[@"osType"] = @(self.customOSType);
+    // 450
     data[@"useReplacedMessageContents"] = @(self.useReplacedMessageContents);
     data[@"enableTLS"] = @(self.enableTLSConnection);
     data[@"messagesReceiveCallbackIncludeSend"] = @(self.includeSendMessageInMessageListener);
@@ -65,6 +66,7 @@
     options.dnsURL = aJson[@"dnsURL"];
     options.area = [aJson[@"areaCode"] intValue];
     options.customDeviceName = aJson[@"deviceName"];
+    // 450
     options.enableTLSConnection = aJson[@"enableTLS"];
     options.useReplacedMessageContents = [aJson[@"useReplacedMessageContents"] boolValue];
     options.includeSendMessageInMessageListener = [aJson[@"messagesReceiveCallbackIncludeSend"] boolValue];

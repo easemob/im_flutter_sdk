@@ -6,14 +6,14 @@
 //
 
 #import <HyphenateChat/HyphenateChat.h>
-#import "EaseModeToJson.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface EMConversationFilter (Helper) <EaseModeToJson>
+@interface EMConversationFilter (Helper)
 + (EMConversationFilter *)fromJson:(NSDictionary *)dict;
-- (NSDictionary *)toJson;
+// 不需要提供toJson
+//- (NSDictionary *)toJson;
 + (NSString *)getCursor:(NSDictionary *)dict;
 + (BOOL)getPinned:(NSDictionary *)dict;
 + (BOOL)hasMark:(NSDictionary *)dict;

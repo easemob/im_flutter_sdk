@@ -135,8 +135,7 @@ static NSString *const ChatOnMessageReactionDidChange = @"messageReactionDidChan
 
 static NSString *const onMessageContentChanged = @"onMessageContentChanged";
 
-// 450
-static NSString *const onMessagePinChanged = @"onMessagePinChanged";
+
 
 #pragma mark - EMMessageListener
 static NSString *const ChatOnMessageProgressUpdate = @"onMessageProgressUpdate";
@@ -175,7 +174,7 @@ static NSString *const ChatRemoveMsgFromServerWithTimeStamp = @"removeMsgFromSer
 static NSString *const ChatGetReactionList = @"getReactionList";
 static NSString *const ChatGroupAckCount = @"groupAckCount";
 static NSString *const ChatThread = @"chatThread";
-static NSString *const ChatMessagePinInfo = @"pinInfo";
+
 
 
 #pragma mark - EMChatroomManagerWrapper
@@ -336,6 +335,9 @@ static NSString *const ChatStartCallback = @"startCallback";
 
 
 // 450
+static NSString *const getPinInfo = @"getPinInfo";
+static NSString *const pinnedMessages = @"pinnedMessages";
+static NSString *const onMessagePinChanged = @"onMessagePinChanged";
 static NSString *const addRemoteAndLocalConversationsMark = @"addRemoteAndLocalConversationsMark";
 static NSString *const deleteRemoteAndLocalConversationsMark = @"deleteRemoteAndLocalConversationsMark";
 static NSString *const fetchConversationsByOptions = @"fetchConversationsByOptions";
@@ -343,3 +345,5 @@ static NSString *const deleteAllMessageAndConversation = @"deleteAllMessageAndCo
 static NSString *const pinMessage = @"pinMessage";
 static NSString *const unpinMessage = @"unpinMessage";
 static NSString *const fetchPinnedMessages = @"fetchPinnedMessages";
+
+
