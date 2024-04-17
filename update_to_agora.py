@@ -158,7 +158,6 @@ FILE_dict = {
     "em_domain_terms.dart":"chat_domain_terms.dart",
     "em_contact.dart":"chat_contact.dart",
     
-    
     # /lib/src/tools/
     "em_extension.dart":"chat_extension.dart",
     "em_log.dart":"chat_log.dart",
@@ -280,7 +279,8 @@ UPDATE_dict = {
     "em_chat_thread_event":"chat_thread_event",
     "em_channel_manager":"chat_channel_manager",
     "em_translate_language":"chat_translate_language",
-    
+    "em_contact":"chat_contact",
+
     "em_extension":"chat_extension",
     "/im_flutter_sdk.dart":"/agora_chat_sdk.dart",
     "package:im_flutter_sdk":"package:agora_chat_sdk",
@@ -356,7 +356,9 @@ UPDATE_dict = {
     "EMMultiDevice":"ChatMultiDevice",
     "EMChatEventHandler":"ChatEventHandler",
     "EMCombineMessageBody":"CombineMessageBody",
-    
+    "EMContact":"ChatContact",
+
+    # demo
 
     #podspec
      "= 'im_flutter_sdk'":"= 'agora_chat_sdk'",

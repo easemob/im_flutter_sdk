@@ -96,7 +96,8 @@
     ret[@"receiverList"] = self.receiverList;
     ret[@"broadcast"] = @(self.broadcast);
     ret[@"isContentReplaced"] = @(self.isContentReplaced);
-    ret[@"pinnedInfo"] = [self.pinnedInfo toJson];
+    // flutter 使用 get 方法获取。
+    // ret[@"pinnedInfo"] = [self.pinnedInfo toJson];
     return ret;
 }
 
