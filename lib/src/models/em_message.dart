@@ -278,7 +278,7 @@ class EMMessage {
   /// ~chinese
   /// 消息内容是否被替换, 开启[EMOptions.useReplacedMessageContents]后有效
   /// ~end
-  late final bool isContentReplaced;
+  bool isContentReplaced = false;
 
   ChatRoomMessagePriority? _priority;
 
