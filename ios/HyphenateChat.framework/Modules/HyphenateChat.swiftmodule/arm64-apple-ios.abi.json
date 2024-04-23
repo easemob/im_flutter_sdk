@@ -1,0 +1,972 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "TopLevel",
+    "printedName": "TopLevel",
+    "children": [
+      {
+        "kind": "TypeDecl",
+        "name": "EMMessageBaseBody",
+        "printedName": "EMMessageBaseBody",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "text",
+            "printedName": "text",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(content: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO4textyACSS_tcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO4textyACSS_tcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "image",
+            "printedName": "image",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(localPath: Swift.String, displayName: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO5imageyACSS_SStcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO5imageyACSS_SStcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "video",
+            "printedName": "video",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(localPath: Swift.String, displayName: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO5videoyACSS_SStcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO5videoyACSS_SStcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "location",
+            "printedName": "location",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.Double, Swift.Double, Swift.String?, Swift.String?) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Double, Swift.Double, Swift.String?, Swift.String?) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(latitude: Swift.Double, longitude: Swift.Double, address: Swift.String?, buildingName: Swift.String?)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Double",
+                            "printedName": "Swift.Double",
+                            "usr": "s:Sd"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "usr": "s:Sq"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.String?",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "usr": "s:Sq"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO8locationyACSd_SdSSSgAEtcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO8locationyACSd_SdSSSgAEtcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "voice",
+            "printedName": "voice",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(localPath: Swift.String, displayName: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO5voiceyACSS_SStcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO5voiceyACSS_SStcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "file",
+            "printedName": "file",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String, Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(localPath: Swift.String, displayName: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO4fileyACSS_SStcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO4fileyACSS_SStcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "cmd",
+            "printedName": "cmd",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(action: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO3cmdyACSS_tcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO3cmdyACSS_tcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "custom",
+            "printedName": "custom",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(HyphenateChat.EMMessageBaseBody.Type) -> (Swift.String, [Swift.String : Swift.String]) -> HyphenateChat.EMMessageBaseBody",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String, [Swift.String : Swift.String]) -> HyphenateChat.EMMessageBaseBody",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(event: Swift.String, customExt: [Swift.String : Swift.String])",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Dictionary",
+                            "printedName": "[Swift.String : Swift.String]",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              },
+                              {
+                                "kind": "TypeNominal",
+                                "name": "String",
+                                "printedName": "Swift.String",
+                                "usr": "s:SS"
+                              }
+                            ],
+                            "usr": "s:SD"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "HyphenateChat.EMMessageBaseBody.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "EMMessageBaseBody",
+                        "printedName": "HyphenateChat.EMMessageBaseBody",
+                        "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:13HyphenateChat17EMMessageBaseBodyO6customyACSS_SDyS2SGtcACmF",
+            "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO6customyACSS_SDyS2SGtcACmF",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:13HyphenateChat17EMMessageBaseBodyO",
+        "mangledName": "$s13HyphenateChat17EMMessageBaseBodyO",
+        "moduleName": "HyphenateChat",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "EMClient",
+        "printedName": "EMClient",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "shared",
+            "printedName": "shared",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "EMClient",
+                "printedName": "HyphenateChat.EMClient",
+                "usr": "c:objc(cs)EMClient"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:So8EMClientC13HyphenateChatE6sharedABvpZ",
+            "mangledName": "$sSo8EMClientC13HyphenateChatE6sharedABvpZ",
+            "moduleName": "HyphenateChat",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "EMClient",
+                    "printedName": "HyphenateChat.EMClient",
+                    "usr": "c:objc(cs)EMClient"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:So8EMClientC13HyphenateChatE6sharedABvgZ",
+                "mangledName": "$sSo8EMClientC13HyphenateChatE6sharedABvgZ",
+                "moduleName": "HyphenateChat",
+                "static": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:objc(cs)EMClient",
+        "moduleName": "HyphenateChat",
+        "isOpen": true,
+        "objc_name": "EMClient",
+        "declAttributes": [
+          "ObjC",
+          "Dynamic"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "isExternal": true,
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "EMChatMessage",
+        "printedName": "EMChatMessage",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "swiftBody",
+            "printedName": "swiftBody",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "EMMessageBaseBody",
+                "printedName": "HyphenateChat.EMMessageBaseBody",
+                "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:So13EMChatMessageC13HyphenateChatE9swiftBodyAC013EMMessageBaseF0Ovp",
+            "mangledName": "$sSo13EMChatMessageC13HyphenateChatE9swiftBodyAC013EMMessageBaseF0Ovp",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "EMMessageBaseBody",
+                    "printedName": "HyphenateChat.EMMessageBaseBody",
+                    "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:So13EMChatMessageC13HyphenateChatE9swiftBodyAC013EMMessageBaseF0Ovg",
+                "mangledName": "$sSo13EMChatMessageC13HyphenateChatE9swiftBodyAC013EMMessageBaseF0Ovg",
+                "moduleName": "HyphenateChat",
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(conversationId:from:to:body:ext:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "EMChatMessage",
+                "printedName": "HyphenateChat.EMChatMessage",
+                "usr": "c:objc(cs)EMChatMessage"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ImplicitlyUnwrappedOptional",
+                "printedName": "HyphenateChat.EMMessageBaseBody?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "EMMessageBaseBody",
+                    "printedName": "HyphenateChat.EMMessageBaseBody",
+                    "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ImplicitlyUnwrappedOptional",
+                "printedName": "[Swift.AnyHashable : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.AnyHashable : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AnyHashable",
+                        "printedName": "Swift.AnyHashable",
+                        "usr": "s:s11AnyHashableV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:So13EMChatMessageC13HyphenateChatE14conversationId4from2to4body3extABSS_S2SAC17EMMessageBaseBodyOSgSDys11AnyHashableVypGSgtcfc",
+            "mangledName": "$sSo13EMChatMessageC13HyphenateChatE14conversationId4from2to4body3extABSS_S2SAC17EMMessageBaseBodyOSgSDys11AnyHashableVypGSgtcfc",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "Convenience",
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "init_kind": "Convenience"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(conversationId:body:ext:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "EMChatMessage",
+                "printedName": "HyphenateChat.EMChatMessage",
+                "usr": "c:objc(cs)EMChatMessage"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ImplicitlyUnwrappedOptional",
+                "printedName": "HyphenateChat.EMMessageBaseBody?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "EMMessageBaseBody",
+                    "printedName": "HyphenateChat.EMMessageBaseBody",
+                    "usr": "s:13HyphenateChat17EMMessageBaseBodyO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ImplicitlyUnwrappedOptional",
+                "printedName": "[Swift.AnyHashable : Any]?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Dictionary",
+                    "printedName": "[Swift.AnyHashable : Any]",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "AnyHashable",
+                        "printedName": "Swift.AnyHashable",
+                        "usr": "s:s11AnyHashableV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ProtocolComposition",
+                        "printedName": "Any"
+                      }
+                    ],
+                    "usr": "s:SD"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:So13EMChatMessageC13HyphenateChatE14conversationId4body3extABSS_AC17EMMessageBaseBodyOSgSDys11AnyHashableVypGSgtcfc",
+            "mangledName": "$sSo13EMChatMessageC13HyphenateChatE14conversationId4body3extABSS_AC17EMMessageBaseBodyOSgSDys11AnyHashableVypGSgtcfc",
+            "moduleName": "HyphenateChat",
+            "declAttributes": [
+              "Convenience",
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "init_kind": "Convenience"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "c:objc(cs)EMChatMessage",
+        "moduleName": "HyphenateChat",
+        "isOpen": true,
+        "objc_name": "EMChatMessage",
+        "declAttributes": [
+          "ObjC",
+          "Dynamic"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "isExternal": true,
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": []
+}

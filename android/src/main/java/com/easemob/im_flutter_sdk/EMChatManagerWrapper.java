@@ -776,7 +776,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
         conversationListener = new EMConversationListener() {
             @Override
-            public void onCoversationUpdate() {
+            public void onConversationUpdate() {
                 Map<String, Object> data = new HashMap<>();
                 post(() -> channel.invokeMethod(EMSDKMethod.onConversationUpdate, data));
             }

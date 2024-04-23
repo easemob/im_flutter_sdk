@@ -1,0 +1,30 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.7.1 (swiftlang-5.7.1.135.3 clang-1400.0.29.51)
+// swift-module-flags: -target arm64-apple-ios10.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name HyphenateChat
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+@_exported import HyphenateChat
+import Swift
+import _Concurrency
+import _StringProcessing
+extension HyphenateChat.EMClient {
+  public static var shared: HyphenateChat.EMClient {
+    get
+  }
+}
+public enum EMMessageBaseBody {
+  case text(content: Swift.String)
+  case image(localPath: Swift.String, displayName: Swift.String)
+  case video(localPath: Swift.String, displayName: Swift.String)
+  case location(latitude: Swift.Double, longitude: Swift.Double, address: Swift.String?, buildingName: Swift.String?)
+  case voice(localPath: Swift.String, displayName: Swift.String)
+  case file(localPath: Swift.String, displayName: Swift.String)
+  case cmd(action: Swift.String)
+  case custom(event: Swift.String, customExt: Swift.Dictionary<Swift.String, Swift.String>)
+}
+extension HyphenateChat.EMChatMessage {
+  public var swiftBody: HyphenateChat.EMMessageBaseBody {
+    get
+  }
+  convenience public init(conversationId: Swift.String, from: Swift.String, to: Swift.String, body: HyphenateChat.EMMessageBaseBody!, ext: [Swift.AnyHashable : Any]!)
+  convenience public init(conversationId: Swift.String, body: HyphenateChat.EMMessageBaseBody!, ext: [Swift.AnyHashable : Any]!)
+}
