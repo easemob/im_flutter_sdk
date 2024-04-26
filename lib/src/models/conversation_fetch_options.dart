@@ -132,7 +132,7 @@ class ConversationFetchOptions {
     Map data = Map();
     data.putIfNotNull("mark", mark?.index);
     data.putIfNotNull("pageSize", pageSize);
-    data.putIfNotNull('cursor', cursor);
+    data.putIfNotNull('cursor', cursor ?? "");
     data.putIfNotNull('pinned', pinned);
     return data;
   }
