@@ -20,7 +20,7 @@
 + (EMConversationFilter *)fromJson:(NSDictionary *)dict {
     EMConversationFilter *filter = [[EMConversationFilter alloc] init];
     filter.mark = (EMMarkType)[dict[@"mark"] integerValue];
-    filter.pageSize = [dict[@"mark"] intValue];
+    filter.pageSize = [dict[@"pageSize"] intValue];
     return filter;
 }
 
