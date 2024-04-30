@@ -802,7 +802,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     private void searchChatMsgFromDB(JSONObject params, String channelName, Result result) throws JSONException {
         String keywords = params.getString("keywords");
         long timestamp = params.getLong("timestamp");
-        int count = params.getInt("maxCount");
+        int count = params.getInt("count");
         String from = params.getString("from");
         EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
         EMConversation.EMMessageSearchScope scope;
