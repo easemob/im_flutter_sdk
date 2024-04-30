@@ -224,7 +224,7 @@
         [self unpinMessage:call.arguments channelName:call.method result:result];
     }
     else if([fetchPinnedMessages isEqualToString:call.method]) {
-        [self unpinMessage:call.arguments channelName:call.method result:result];
+        [self fetchPinnedMessages:call.arguments channelName:call.method result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -854,7 +854,7 @@
     __weak typeof(self) weakSelf = self;
     NSString *keywords = param[@"keywords"];
     long long timestamp = [param[@"timestamp"] longLongValue];
-    int maxCount = [param[@"maxCount"] intValue];
+    int maxCount = [param[@"count"] intValue];
     NSString *from = param[@"from"];
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] integerValue];
     EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
