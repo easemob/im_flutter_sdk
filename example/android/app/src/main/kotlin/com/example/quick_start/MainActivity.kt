@@ -18,13 +18,13 @@ class MainActivity: FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        val task: TimerTask = object : TimerTask() {
-            override fun run() {
-                testCode();
-            }
-        }
-        val timer = Timer()
-        timer.schedule(task, 3000)
+        // val task: TimerTask = object : TimerTask() {
+        //     override fun run() {
+        //         testCode();
+        //     }
+        // }
+        // val timer = Timer()
+        // timer.schedule(task, 3000)
     }
 
     fun testCode() {
