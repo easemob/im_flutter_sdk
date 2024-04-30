@@ -1165,7 +1165,7 @@ class EMChatManager {
     req['timestamp'] = timestamp;
     req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
-    req.putIfNotNull("sender", sender);
+    req.putIfNotNull("from", sender);
 
     Map result = await ChatChannel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
     try {
