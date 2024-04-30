@@ -106,7 +106,7 @@
                     channelName:call.method
                          result:result];
     } else if ([ChatDownloadMessageAttachmentInCombine isEqualToString:call.method]) {
-        [self downloadMessageThumbnailInCombine:call.arguments
+        [self downloadMessageAttachmentInCombine:call.arguments
                                     channelName:call.method
                                          result:result];
     } else if ([ChatDownloadMessageThumbnailInCombine isEqualToString:call.method]) {
@@ -254,8 +254,6 @@
             @"localId":msgId
         }];
     } completion:^(EMChatMessage *message, EMError *error) {
-        NSLog(@"msgid: end %@", msg.messageId);
-        NSLog(@"msgId: before %@", msgId);
         if (error) {
             [weakSelf.messageChannel invokeMethod:ChatOnMessageError
                                         arguments:@{

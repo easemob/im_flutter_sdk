@@ -1107,11 +1107,11 @@ class EMConversationHelper {
         data.put("isPinned", conversation.isPinned());
         data.put("pinnedTime", conversation.getPinnedTime());
         if(conversation.marks() != null) {
-            JSONArray ja = new JSONArray();
+            ArrayList<Integer> list = new ArrayList<>();
             for (EMConversation.EMMarkType type: conversation.marks()) {
-                ja.put(type.ordinal());
+                list.add(type.ordinal());
             }
-            data.put("marks", ja);
+            data.put("marks", list);
         }
         try {
             data.put("ext", jsonStringToMap(conversation.getExtField()));
