@@ -33,7 +33,8 @@ class EMPushConfigs {
 
   factory EMPushConfigs.fromJson(Map map) {
     return EMPushConfigs._private(
-      displayStyle: map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary,
+      displayStyle:
+          map['pushStyle'] == 0 ? DisplayStyle.Simple : DisplayStyle.Summary,
       displayName: map["displayName"],
     );
   }

@@ -654,13 +654,15 @@ class EMOptions {
       autoAcceptGroupInvitation,
     );
     data.putIfNotNull("deleteMessagesAsExitGroup", deleteMessagesAsExitGroup);
-    data.putIfNotNull("deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
+    data.putIfNotNull(
+        "deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
     data.putIfNotNull("dnsUrl", dnsUrl);
     data.putIfNotNull("enableDNSConfig", enableDNSConfig);
     data.putIfNotNull("imPort", imPort);
     data.putIfNotNull("imServer", imServer);
     data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
-    data.putIfNotNull("isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
+    data.putIfNotNull(
+        "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
     data.putIfNotNull("requireAck", requireAck);
     data.putIfNotNull("requireDeliveryAck", requireDeliveryAck);
     data.putIfNotNull("restServer", restServer);
@@ -672,7 +674,8 @@ class EMOptions {
     data.putIfNotNull('osType', osType);
     data.putIfNotNull('useReplacedMessageContents', useReplacedMessageContents);
     data.putIfNotNull('enableTLS', enableTLS);
-    data.putIfNotNull('messagesReceiveCallbackIncludeSend', messagesReceiveCallbackIncludeSend);
+    data.putIfNotNull('messagesReceiveCallbackIncludeSend',
+        messagesReceiveCallbackIncludeSend);
     data.putIfNotNull('regardImportMessagesAsRead', regardImportMessagesAsRead);
 
     data["usingHttpsOnly"] = this.usingHttpsOnly;

@@ -26,7 +26,8 @@ extension MapExtension on Map {
     this[key] = value;
   }
 
-  Map<String, dynamic>? getMapValue(String key, {Map<String, dynamic>? defaultValue}) {
+  Map<String, dynamic>? getMapValue(String key,
+      {Map<String, dynamic>? defaultValue}) {
     Map<String, dynamic>? ret = {};
     if (this.containsKey(key)) {
       Map tmpMap = this[key];
