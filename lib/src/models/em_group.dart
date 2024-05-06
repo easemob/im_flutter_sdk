@@ -340,7 +340,8 @@ class EMGroup {
   /// ~end
   final bool isDisabled;
 
-  @Deprecated("Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead")
+  @Deprecated(
+      "Switch to using isMemberOnly | isMemberAllowToInvite | maxUserCount to instead")
   EMGroupOptions? get settings => _options;
 
   factory EMGroup.fromJson(Map map) {
@@ -356,7 +357,8 @@ class EMGroup {
     List<String>? muteList = map.getList("muteList");
     bool? messageBlocked = map["messageBlocked"];
     bool? isAllMemberMuted = map["isAllMemberMuted"];
-    EMGroupPermissionType? permissionType = permissionTypeFromInt(map['permissionType']);
+    EMGroupPermissionType? permissionType =
+        permissionTypeFromInt(map['permissionType']);
     int? maxUserCount = map["maxUserCount"];
     bool? isMemberOnly = map["isMemberOnly"];
     bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];

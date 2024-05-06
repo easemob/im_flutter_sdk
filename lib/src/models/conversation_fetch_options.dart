@@ -137,7 +137,8 @@ class ConversationFetchOptions {
     return data;
   }
 
-  ConversationFetchOptions copyWith({String? cursor}) => ConversationFetchOptions._(
+  ConversationFetchOptions copyWith({String? cursor}) =>
+      ConversationFetchOptions._(
         pageSize: pageSize,
         cursor: cursor,
         mark: mark,

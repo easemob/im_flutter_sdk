@@ -15,7 +15,8 @@ import 'internal/inner_headers.dart';
 /// ~end
 class EMContactManager {
   static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/chat_contact_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel(
+      '$_channelPrefix/chat_contact_manager', JSONMethodCodec());
 
   EMContactManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
@@ -213,7 +214,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactsFromServer() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
@@ -244,7 +246,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> fetchAllContactIds() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
@@ -277,7 +280,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactsFromDB() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
@@ -309,7 +313,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactIds() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getAllContactsFromDB);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
@@ -374,7 +379,8 @@ class EMContactManager {
   /// ~end
   Future<void> removeUserFromBlockList(String userId) async {
     Map req = {'username': userId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.removeUserFromBlockList, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.removeUserFromBlockList, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -400,7 +406,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getBlockListFromServer() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
@@ -431,7 +438,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> fetchBlockIds() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getBlockListFromServer);
     try {
       EMError.hasErrorFromResult(result);
       List<String> list = [];
@@ -527,7 +535,8 @@ class EMContactManager {
   /// ~end
   Future<void> acceptInvitation(String userId) async {
     Map req = {'username': userId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.acceptInvitation, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.acceptInvitation, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -552,7 +561,8 @@ class EMContactManager {
   /// ~end
   Future<void> declineInvitation(String userId) async {
     Map req = {'username': userId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.declineInvitation, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.declineInvitation, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -576,7 +586,8 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getSelfIdsOnOtherPlatform);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getSelfIdsOnOtherPlatform);
     try {
       EMError.hasErrorFromResult(result);
       List<String> devices = [];
@@ -634,7 +645,8 @@ class EMContactManager {
     required String remark,
   }) async {
     Map req = {'userId': userId, "remark": remark};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.setContactRemark, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.setContactRemark, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -740,7 +752,8 @@ class EMContactManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult.fromJson(result[ChatMethodKeys.fetchContacts], dataItemCallback: (map) {
+      return EMCursorResult.fromJson(result[ChatMethodKeys.fetchContacts],
+          dataItemCallback: (map) {
         return EMContact.fromJson(map);
       });
     } on EMError catch (e) {

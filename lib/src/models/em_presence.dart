@@ -65,7 +65,8 @@ class EMPresence {
     int latestTime = map["lastTime"] ?? 0;
     int expiryTime = map["expiryTime"] ?? 0;
     Map<String, int>? statusDetails = map["statusDetails"]?.cast<String, int>();
-    return EMPresence._private(publisher, statusDescription, statusDetails, latestTime, expiryTime);
+    return EMPresence._private(
+        publisher, statusDescription, statusDetails, latestTime, expiryTime);
   }
 }
 

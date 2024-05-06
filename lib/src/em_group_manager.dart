@@ -13,7 +13,8 @@ import 'internal/inner_headers.dart';
 /// ~end
 class EMGroupManager {
   static const _channelPrefix = 'com.chat.im';
-  static const MethodChannel _channel = const MethodChannel('$_channelPrefix/chat_group_manager', JSONMethodCodec());
+  static const MethodChannel _channel = const MethodChannel(
+      '$_channelPrefix/chat_group_manager', JSONMethodCodec());
 
   final Map<String, EMGroupEventHandler> _eventHandlesMap = {};
 
@@ -124,7 +125,8 @@ class EMGroupManager {
   /// ~end
   Future<EMGroup?> getGroupWithId(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupWithId, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.getGroupWithId, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getGroupWithId)) {
@@ -157,7 +159,8 @@ class EMGroupManager {
     try {
       EMError.hasErrorFromResult(result);
       List<EMGroup> list = [];
-      result[ChatMethodKeys.getJoinedGroups]?.forEach((element) => list.add(EMGroup.fromJson(element)));
+      result[ChatMethodKeys.getJoinedGroups]
+          ?.forEach((element) => list.add(EMGroup.fromJson(element)));
       return list;
     } on EMError catch (e) {
       throw e;
@@ -203,11 +206,13 @@ class EMGroupManager {
       "needMemberCount": needMemberCount,
       "needRole": needRole,
     };
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getJoinedGroupsFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getJoinedGroupsFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMGroup> list = [];
-      result[ChatMethodKeys.getJoinedGroupsFromServer]?.forEach((element) => list.add(EMGroup.fromJson(element)));
+      result[ChatMethodKeys.getJoinedGroupsFromServer]
+          ?.forEach((element) => list.add(EMGroup.fromJson(element)));
       return list;
     } on EMError catch (e) {
       throw e;
@@ -244,10 +249,12 @@ class EMGroupManager {
   }) async {
     Map req = {'pageSize': pageSize};
     req.putIfNotNull("cursor", cursor);
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getPublicGroupsFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getPublicGroupsFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<EMGroupInfo>.fromJson(result[ChatMethodKeys.getPublicGroupsFromServer],
+      return EMCursorResult<EMGroupInfo>.fromJson(
+          result[ChatMethodKeys.getPublicGroupsFromServer],
           dataItemCallback: (value) {
         return EMGroupInfo.fromJson(value);
       });
@@ -361,10 +368,12 @@ class EMGroupManager {
     bool fetchMembers = false,
   }) async {
     Map req = {"groupId": groupId, "fetchMembers": fetchMembers};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupSpecificationFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getGroupSpecificationFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return EMGroup.fromJson(result[ChatMethodKeys.getGroupSpecificationFromServer]);
+      return EMGroup.fromJson(
+          result[ChatMethodKeys.getGroupSpecificationFromServer]);
     } on EMError catch (e) {
       throw e;
     }
@@ -426,7 +435,8 @@ class EMGroupManager {
     );
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<String>.fromJson(result[ChatMethodKeys.getGroupMemberListFromServer],
+      return EMCursorResult<String>.fromJson(
+          result[ChatMethodKeys.getGroupMemberListFromServer],
           dataItemCallback: (value) => value);
     } on EMError catch (e) {
       throw e;
@@ -470,10 +480,13 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupBlockListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getGroupBlockListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
-      return result[ChatMethodKeys.getGroupBlockListFromServer]?.cast<String>() ?? [];
+      return result[ChatMethodKeys.getGroupBlockListFromServer]
+              ?.cast<String>() ??
+          [];
     } on EMError catch (e) {
       throw e;
     }
@@ -516,7 +529,8 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupMuteListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getGroupMuteListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
       Map? tmpMap = result[ChatMethodKeys.getGroupMuteListFromServer];
@@ -559,7 +573,8 @@ class EMGroupManager {
   /// ~end
   Future<List<String>> fetchAllowListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupWhiteListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getGroupWhiteListFromServer, req);
     try {
       List<String> list = [];
       EMError.hasErrorFromResult(result);
@@ -597,7 +612,8 @@ class EMGroupManager {
   /// ~end
   Future<bool> isMemberInAllowListFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.isMemberInWhiteListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.isMemberInWhiteListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
       return result.boolValue(ChatMethodKeys.isMemberInWhiteListFromServer);
@@ -639,7 +655,8 @@ class EMGroupManager {
     int pageNum = 1,
   }) async {
     Map req = {'groupId': groupId, 'pageNum': pageNum, 'pageSize': pageSize};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupFileListFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getGroupFileListFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMGroupSharedFile> list = [];
@@ -677,7 +694,8 @@ class EMGroupManager {
   /// ~end
   Future<String?> fetchAnnouncementFromServer(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.getGroupAnnouncementFromServer, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.getGroupAnnouncementFromServer, req);
     try {
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.getGroupAnnouncementFromServer];
@@ -888,7 +906,8 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.unblockMembers, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.unblockMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -924,7 +943,8 @@ class EMGroupManager {
     String name,
   ) async {
     Map req = {'name': name, 'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.updateGroupSubject, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupSubject, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -960,7 +980,8 @@ class EMGroupManager {
     String desc,
   ) async {
     Map req = {'desc': desc, 'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.updateDescription, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateDescription, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1106,7 +1127,8 @@ class EMGroupManager {
     String newOwner,
   ) async {
     Map req = {'groupId': groupId, 'owner': newOwner};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.updateGroupOwner, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupOwner, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1290,7 +1312,8 @@ class EMGroupManager {
   /// ~end
   Future<void> muteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.muteAllMembers, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.muteAllMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1319,7 +1342,8 @@ class EMGroupManager {
   /// ~end
   Future<void> unMuteAllMembers(String groupId) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.unMuteAllMembers, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.unMuteAllMembers, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1391,7 +1415,8 @@ class EMGroupManager {
     List<String> members,
   ) async {
     Map req = {'groupId': groupId, 'members': members};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.removeWhiteList, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.removeWhiteList, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1425,7 +1450,8 @@ class EMGroupManager {
     String filePath,
   ) async {
     Map req = {'groupId': groupId, 'filePath': filePath};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.uploadGroupSharedFile, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.uploadGroupSharedFile, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1464,7 +1490,8 @@ class EMGroupManager {
     required String savePath,
   }) async {
     Map req = {'groupId': groupId, 'fileId': fileId, 'savePath': savePath};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.downloadGroupSharedFile, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.downloadGroupSharedFile, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1500,7 +1527,8 @@ class EMGroupManager {
     String fileId,
   ) async {
     Map req = {'groupId': groupId, 'fileId': fileId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.removeGroupSharedFile, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.removeGroupSharedFile, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1536,7 +1564,8 @@ class EMGroupManager {
     String announcement,
   ) async {
     Map req = {'groupId': groupId, 'announcement': announcement};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.updateGroupAnnouncement, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.updateGroupAnnouncement, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1572,7 +1601,8 @@ class EMGroupManager {
     String extension,
   ) async {
     Map req = {'groupId': groupId, 'ext': extension};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.updateGroupExt, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.updateGroupExt, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1604,7 +1634,8 @@ class EMGroupManager {
     String groupId,
   ) async {
     Map req = {'groupId': groupId};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.joinPublicGroup, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.joinPublicGroup, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1641,7 +1672,8 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId};
     req.putIfNotNull('reason', reason);
-    Map result = await _channel.invokeMethod(ChatMethodKeys.requestToJoinPublicGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.requestToJoinPublicGroup, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1677,7 +1709,8 @@ class EMGroupManager {
     String username,
   ) async {
     Map req = {'groupId': groupId, 'username': username};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.acceptJoinApplication, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.acceptJoinApplication, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1720,7 +1753,8 @@ class EMGroupManager {
     Map req = {'groupId': groupId, 'username': username};
     req.putIfNotNull('reason', reason);
 
-    Map result = await _channel.invokeMethod(ChatMethodKeys.declineJoinApplication, req);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.declineJoinApplication, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1756,7 +1790,8 @@ class EMGroupManager {
     String inviter,
   ) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
-    Map result = await _channel.invokeMethod(ChatMethodKeys.acceptInvitationFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.acceptInvitationFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
       return EMGroup.fromJson(result[ChatMethodKeys.acceptInvitationFromGroup]);
@@ -1795,7 +1830,8 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId, 'inviter': inviter};
     req.putIfNotNull('reason', reason);
-    Map result = await _channel.invokeMethod(ChatMethodKeys.declineInvitationFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.declineInvitationFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1839,7 +1875,8 @@ class EMGroupManager {
       req.putIfNotNull('userId', userId);
     }
     req.putIfNotNull('attributes', attributes);
-    Map result = await _channel.invokeMethod(ChatMethodKeys.setMemberAttributesFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.setMemberAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1883,7 +1920,8 @@ class EMGroupManager {
       req.putIfNotNull('userId', userId);
     }
     req.putIfNotNull('keys', keys);
-    Map result = await _channel.invokeMethod(ChatMethodKeys.removeMemberAttributesFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.removeMemberAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -1922,11 +1960,13 @@ class EMGroupManager {
     if (userId != null) {
       req.putIfNotNull('userId', userId);
     }
-    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchMemberAttributesFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchMemberAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
       Map<String, String> ret = {};
-      result[ChatMethodKeys.fetchMemberAttributesFromGroup].forEach((key, value) {
+      result[ChatMethodKeys.fetchMemberAttributesFromGroup]
+          .forEach((key, value) {
         ret[key] = value;
       });
       return ret;
@@ -1970,7 +2010,8 @@ class EMGroupManager {
   }) async {
     Map req = {'groupId': groupId, 'userIds': userIds};
     req.putIfNotNull("keys", keys);
-    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchMembersAttributesFromGroup, req);
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.fetchMembersAttributesFromGroup, req);
     try {
       EMError.hasErrorFromResult(result);
       var map = result[ChatMethodKeys.fetchMembersAttributesFromGroup];
@@ -1978,7 +2019,8 @@ class EMGroupManager {
       if (map is Map) {
         map.keys.forEach((element) {
           if (map[element] is Map) {
-            Map<String, String> value = Map<String, String>.from(map[element] ?? {});
+            Map<String, String> value =
+                Map<String, String>.from(map[element] ?? {});
             ret[element] = value;
           }
         });
@@ -2006,7 +2048,8 @@ class EMGroupManager {
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<int> fetchJoinedGroupCount() async {
-    Map result = await _channel.invokeMethod(ChatMethodKeys.fetchJoinedGroupCount);
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.fetchJoinedGroupCount);
     try {
       EMError.hasErrorFromResult(result);
       int count = result[ChatMethodKeys.fetchJoinedGroupCount];
@@ -2025,7 +2068,8 @@ class EMGroupManager {
           String? groupName = map['groupName'];
           String inviter = map['inviter'];
           String? reason = map['reason'];
-          element.onInvitationReceivedFromGroup?.call(groupId, groupName, inviter, reason);
+          element.onInvitationReceivedFromGroup
+              ?.call(groupId, groupName, inviter, reason);
           break;
         case EMGroupChangeEvent.ON_INVITATION_ACCEPTED:
           String groupId = map['groupId'];
@@ -2043,7 +2087,8 @@ class EMGroupManager {
           String groupId = map['groupId'];
           String inviter = map['inviter'];
           String? inviteMessage = map['inviteMessage'];
-          element.onAutoAcceptInvitationFromGroup?.call(groupId, inviter, inviteMessage);
+          element.onAutoAcceptInvitationFromGroup
+              ?.call(groupId, inviter, inviteMessage);
           break;
         case EMGroupChangeEvent.ON_USER_REMOVED:
           String groupId = map['groupId'];
@@ -2055,7 +2100,8 @@ class EMGroupManager {
           String? groupName = map['groupName'];
           String applicant = map['applicant'];
           String? reason = map['reason'];
-          element.onRequestToJoinReceivedFromGroup?.call(groupId, groupName, applicant, reason);
+          element.onRequestToJoinReceivedFromGroup
+              ?.call(groupId, groupName, applicant, reason);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_DECLINED:
           String groupId = map['groupId'];
@@ -2063,13 +2109,15 @@ class EMGroupManager {
           String? applicant = map['applicant'];
           String? reason = map['reason'];
           String? decliner = map['decliner'];
-          element.onRequestToJoinDeclinedFromGroup?.call(groupId, groupName, decliner, reason, applicant);
+          element.onRequestToJoinDeclinedFromGroup
+              ?.call(groupId, groupName, decliner, reason, applicant);
           break;
         case EMGroupChangeEvent.ON_REQUEST_TO_JOIN_ACCEPTED:
           String groupId = map['groupId'];
           String? groupName = map['groupName'];
           String accepter = map['accepter'];
-          element.onRequestToJoinAcceptedFromGroup?.call(groupId, groupName, accepter);
+          element.onRequestToJoinAcceptedFromGroup
+              ?.call(groupId, groupName, accepter);
           break;
         case EMGroupChangeEvent.ON_GROUP_DESTROYED:
           String groupId = map['groupId'];
@@ -2120,7 +2168,8 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:
           String groupId = map['groupId'];
-          EMGroupSharedFile sharedFile = EMGroupSharedFile.fromJson(map['sharedFile']);
+          EMGroupSharedFile sharedFile =
+              EMGroupSharedFile.fromJson(map['sharedFile']);
           element.onSharedFileAddedFromGroup?.call(groupId, sharedFile);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE__DELETED:
@@ -2155,7 +2204,8 @@ class EMGroupManager {
         case EMGroupChangeEvent.ON_ATTRIBUTES_CHANGED_OF_MEMBER:
           String groupId = map["groupId"];
           String userId = map["userId"];
-          Map<String, String>? attributes = map["attributes"].cast<String, String>();
+          Map<String, String>? attributes =
+              map["attributes"].cast<String, String>();
           String? operatorId = map["operatorId"];
           element.onAttributesChangedOfGroupMember?.call(
             groupId,

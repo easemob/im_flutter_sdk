@@ -172,7 +172,8 @@ class EMConversation {
   Future<void> setExt(Map<String, String>? ext) async {
     Map req = this._toJson();
     req.putIfNotNull("ext", ext);
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.syncConversationExt, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.syncConversationExt, req);
     try {
       EMError.hasErrorFromResult(result);
       _ext = ext;
@@ -202,7 +203,8 @@ class EMConversation {
   /// ~end
   Future<EMMessage?> latestMessage() async {
     Map req = this._toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.getLatestMessage, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.getLatestMessage, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getLatestMessage)) {
@@ -228,11 +230,13 @@ class EMConversation {
   /// ~end
   Future<EMMessage?> lastReceivedMessage() async {
     Map req = this._toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.getLatestMessageFromOthers, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.getLatestMessageFromOthers, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getLatestMessageFromOthers)) {
-        return EMMessage.fromJson(result[ChatMethodKeys.getLatestMessageFromOthers]);
+        return EMMessage.fromJson(
+            result[ChatMethodKeys.getLatestMessageFromOthers]);
       } else {
         return null;
       }
@@ -258,7 +262,8 @@ class EMConversation {
   /// ~end
   Future<int> unreadCount() async {
     Map req = this._toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.getUnreadMsgCount, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.getUnreadMsgCount, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getUnreadMsgCount)) {
@@ -289,7 +294,8 @@ class EMConversation {
   Future<void> markMessageAsRead(String messageId) async {
     Map req = this._toJson();
     req['msg_id'] = messageId;
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.markMessageAsRead, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.markMessageAsRead, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -305,7 +311,8 @@ class EMConversation {
   /// 将所有消息标为已读。
   /// ~end
   Future<void> markAllMessagesAsRead() async {
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.markAllMessagesAsRead, this._toJson());
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.markAllMessagesAsRead, this._toJson());
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -333,7 +340,8 @@ class EMConversation {
   Future<void> insertMessage(EMMessage message) async {
     Map req = this._toJson();
     req['msg'] = message.toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.insertMessage, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.insertMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -363,7 +371,8 @@ class EMConversation {
   Future<void> appendMessage(EMMessage message) async {
     Map req = this._toJson();
     req['msg'] = message.toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.appendMessage, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.appendMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -393,7 +402,8 @@ class EMConversation {
   Future<void> updateMessage(EMMessage message) async {
     Map req = this._toJson();
     req['msg'] = message.toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.updateConversationMessage, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.updateConversationMessage, req);
     EMError.hasErrorFromResult(result);
     try {
       EMError.hasErrorFromResult(result);
@@ -423,7 +433,8 @@ class EMConversation {
   Future<void> deleteMessage(String messageId) async {
     Map req = this._toJson();
     req['msg_id'] = messageId;
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.removeMessage, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.removeMessage, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -443,7 +454,8 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> deleteAllMessages() async {
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.clearAllMessages, this._toJson());
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.clearAllMessages, this._toJson());
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -475,7 +487,8 @@ class EMConversation {
     Map req = this._toJson();
     req['startTs'] = startTs;
     req['endTs'] = endTs;
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.deleteMessagesWithTs, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.deleteMessagesWithTs, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -509,7 +522,8 @@ class EMConversation {
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = this._toJson();
     req['msg_id'] = messageId;
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.loadMsgWithId, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.loadMsgWithId, req);
     try {
       EMError.hasErrorFromResult(result);
       if (result[ChatMethodKeys.loadMsgWithId] != null) {
@@ -577,7 +591,8 @@ class EMConversation {
     req['count'] = count;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
     req.putIfNotNull("sender", sender);
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.loadMsgWithMsgType, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.loadMsgWithMsgType, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMMessage> list = [];
@@ -635,7 +650,8 @@ class EMConversation {
     req['count'] = loadCount;
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
 
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(ChatMethodKeys.loadMsgWithStartId, req);
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.loadMsgWithStartId, req);
 
     try {
       EMError.hasErrorFromResult(result);
@@ -710,7 +726,8 @@ class EMConversation {
     req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
     req.putIfNotNull("sender", sender);
 
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(ChatMethodKeys.loadMsgWithKeywords, req);
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.loadMsgWithKeywords, req);
 
     try {
       EMError.hasErrorFromResult(result);
@@ -765,7 +782,8 @@ class EMConversation {
     req['endTime'] = endTime;
     req['count'] = count;
 
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(ChatMethodKeys.loadMsgWithTime, req);
+    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.loadMsgWithTime, req);
 
     try {
       EMError.hasErrorFromResult(result);
@@ -820,7 +838,8 @@ class EMConversation {
   Future<void> deleteMessageByIds(List<String> messageIds) async {
     Map req = this._toJson();
     req['messageIds'] = messageIds;
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.deleteMessageByIds, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.deleteMessageByIds, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
@@ -841,7 +860,8 @@ class EMConversation {
   /// ~end
   Future<List<EMMessage>> loadPinnedMessages() async {
     Map req = this._toJson();
-    Map result = await _emConversationChannel.invokeMethod(ChatMethodKeys.pinnedMessages, req);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.pinnedMessages, req);
     try {
       EMError.hasErrorFromResult(result);
       List<EMMessage> msgList = [];

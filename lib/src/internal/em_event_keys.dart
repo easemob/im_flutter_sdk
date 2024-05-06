@@ -19,7 +19,8 @@ class EMChatRoomEvent {
   static const String ON_ANNOUNCEMENT_CHANGED = "onRoomAnnouncementChanged";
   static const String ON_WHITE_LIST_REMOVED = "onRoomWhiteListRemoved";
   static const String ON_WHITE_LIST_ADDED = "onRoomWhiteListAdded";
-  static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED = "onRoomAllMemberMuteStateChanged";
+  static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED =
+      "onRoomAllMemberMuteStateChanged";
   static const String ON_SPECIFICATION_CHANGED = "onRoomSpecificationChanged";
   static const String ON_ATTRIBUTES_UPDATED = "onRoomAttributesDidUpdated";
   static const String ON_ATTRIBUTES_REMOVED = "onRoomAttributesDidRemoved";
@@ -31,9 +32,12 @@ class EMGroupChangeEvent {
   static const String ON_INVITATION_DECLINED = "onGroupInvitationDeclined";
   static const String ON_AUTO_ACCEPT_INVITATION = "onGroupAutoAcceptInvitation";
   static const String ON_USER_REMOVED = "onGroupUserRemoved";
-  static const String ON_REQUEST_TO_JOIN_RECEIVED = "onGroupRequestToJoinReceived";
-  static const String ON_REQUEST_TO_JOIN_DECLINED = "onGroupRequestToJoinDeclined";
-  static const String ON_REQUEST_TO_JOIN_ACCEPTED = "onGroupRequestToJoinAccepted";
+  static const String ON_REQUEST_TO_JOIN_RECEIVED =
+      "onGroupRequestToJoinReceived";
+  static const String ON_REQUEST_TO_JOIN_DECLINED =
+      "onGroupRequestToJoinDeclined";
+  static const String ON_REQUEST_TO_JOIN_ACCEPTED =
+      "onGroupRequestToJoinAccepted";
   static const String ON_GROUP_DESTROYED = "onGroupDestroyed";
   static const String ON_MUTE_LIST_ADDED = "onGroupMuteListAdded";
   static const String ON_MUTE_LIST_REMOVED = "onGroupMuteListRemoved";
@@ -47,8 +51,11 @@ class EMGroupChangeEvent {
   static const String ON_SHARED_FILE__DELETED = "onGroupSharedFileDeleted";
   static const String ON_WHITE_LIST_REMOVED = "onGroupWhiteListRemoved";
   static const String ON_WHITE_LIST_ADDED = "onGroupWhiteListAdded";
-  static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED = "onGroupAllMemberMuteStateChanged";
-  static const String ON_SPECIFICATION_DID_UPDATE = "onGroupSpecificationDidUpdate";
+  static const String ON_ALL_MEMBER_MUTE_STATE_CHANGED =
+      "onGroupAllMemberMuteStateChanged";
+  static const String ON_SPECIFICATION_DID_UPDATE =
+      "onGroupSpecificationDidUpdate";
   static const String ON_STATE_CHANGED = "onGroupStateChanged";
-  static const String ON_ATTRIBUTES_CHANGED_OF_MEMBER = "onGroupAttributesChangedOfMember";
+  static const String ON_ATTRIBUTES_CHANGED_OF_MEMBER =
+      "onGroupAttributesChangedOfMember";
 }
