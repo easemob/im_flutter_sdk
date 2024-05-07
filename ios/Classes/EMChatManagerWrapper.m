@@ -18,7 +18,7 @@
 #import "EMFetchServerMessagesOption+Helper.h"
 #import "EMMessagePinInfo+Helper.h"
 #import "EMConversationFilter+Helper.h"
-
+#import "EMRecallMessageInfo+Helper.h"
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
@@ -371,6 +371,7 @@
                result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msg_id"];
+    NSString *ext = param[@"ext"];
     EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     if (!msg) {
         EMError *error = [EMError errorWithDescription:@"The message was not found" code:EMErrorMessageInvalid];
@@ -381,6 +382,7 @@
         return;
     }
     [EMClient.sharedClient.chatManager recallMessageWithMessageId:msgId
+                                                              ext:ext
                                                        completion:^(EMError *aError)
      {
         [weakSelf wrapperCallBack:result
@@ -1418,6 +1420,8 @@
                      arguments:list];
 }
 
+
+
 - (void)messagesDidRecall:(NSArray *)aMessages {
     NSMutableArray *list = [NSMutableArray array];
     for (EMChatMessage *msg in aMessages) {
@@ -1597,4 +1601,15 @@
     [self mergeMessageBody:msg.body withDBMessageBody:dbMsg.body];
 }
 
+
+#pragma mark 460
+- (void)messagesInfoDidRecall:(NSArray<EMRecallMessageInfo *> *)aRecallMessagesInfo {
+    NSMutableArray *list = [NSMutableArray array];
+    for (EMRecallMessageInfo *info in aRecallMessagesInfo) {
+        [list addObject:[info toJson]];
+    }
+
+    [self.channel invokeMethod:onMessagesRecalledInfo
+                     arguments:list];
+}
 @end

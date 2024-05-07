@@ -39,6 +39,7 @@ import com.hyphenate.chat.EMPageResult;
 import com.hyphenate.chat.EMPresence;
 import com.hyphenate.chat.EMPushConfigs;
 import com.hyphenate.chat.EMPushManager;
+import com.hyphenate.chat.EMRecallMessageInfo;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
 import com.hyphenate.chat.EMSilentModeTime;
@@ -1697,3 +1698,18 @@ class EMConversationFilterHelper {
         }
     }
 }
+
+ class RecallMessageInfoHelper {
+    static Map<String, Object> toJson(EMRecallMessageInfo info) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("recallMsgId", info.getRecallMessageId());
+        data.put("recallBy", info.getRecallBy());
+        if(info.getExt() != null) {
+            data.put("ext", info.getExt());
+        }
+        if(info.getRecallMessage() != null) {
+            data.put("msg", EMMessageHelper.toJson(info.getRecallMessage()));
+        }
+        return data;
+    }
+ }

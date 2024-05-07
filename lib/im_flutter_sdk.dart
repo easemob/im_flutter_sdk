@@ -43,3 +43,4 @@ export 'src/models/chat_silent_mode.dart';
 export 'src/event_handler/manager_event_handler.dart';
 export 'src/tools/chat_area_code.dart';
 export 'src/models/conversation_fetch_options.dart';
+export 'src/models/recall_message_info.dart';
