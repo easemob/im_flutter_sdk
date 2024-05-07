@@ -320,5 +320,9 @@ public class EMSDKMethod {
     static final String deleteAllMessageAndConversation = "deleteAllMessageAndConversation";
     static final String pinMessage = "pinMessage";
     static final String unpinMessage = "unpinMessage";
-    static final String fetchPinnedMessages = "fetchPinnedMessages"; 
+    static final String fetchPinnedMessages = "fetchPinnedMessages";
+
+    // 460
+    static final String onMessagesRecalledInfo = "onMessagesRecalledInfo";
+
 }

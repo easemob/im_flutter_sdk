@@ -347,3 +347,5 @@ static NSString *const unpinMessage = @"unpinMessage";
 static NSString *const fetchPinnedMessages = @"fetchPinnedMessages";
 
 
+// 460
+static NSString *const onMessagesRecalledInfo = @"onMessagesRecalledInfo";

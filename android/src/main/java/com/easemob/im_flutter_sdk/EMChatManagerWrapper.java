@@ -1117,7 +1117,6 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
             @Override
             public void onCmdMessageReceived(List<EMMessage> messages) {
-
                 ArrayList<Map<String, Object>> msgList = new ArrayList<>();
                 for (EMMessage message : messages) {
                     msgList.add(EMMessageHelper.toJson(message));
@@ -1135,6 +1134,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
                 }
 
                 post(() -> channel.invokeMethod(EMSDKMethod.onMessagesRead, msgList));
+            }
+
+            @Override
+            public void onMessageRecalledWithExt(List<EMRecallMessageInfo> recallMessageInfo) {
+                ArrayList<Map<String, Object>> infoList = new ArrayList<>();
+                for (EMRecallMessageInfo info : recallMessageInfo) {
+                    infoList.add(RecallMessageInfoHelper.toJson(info));
+                }
+                post(() -> channel.invokeMethod(EMSDKMethod.onMessagesRecalledInfo, infoList));
             }
 
             @Override
