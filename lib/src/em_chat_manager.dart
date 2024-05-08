@@ -4,7 +4,6 @@ import "dart:async";
 
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/models/recall_message_info.dart';
 import 'internal/inner_headers.dart';
 
 /// ~english
