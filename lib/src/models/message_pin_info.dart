@@ -7,7 +7,7 @@
 /// ~end
 class MessagePinInfo {
   /// ~english
-  /// The pin time.
+  /// The time when the message is pinned.
   /// ~end
   /// ~chinese
   /// 置顶时间。
@@ -15,25 +15,25 @@ class MessagePinInfo {
   final int pinTime;
 
   /// ~english
-  /// The operator id.
+  /// The user ID of the operator that pins the message.
   /// ~end
   /// ~chinese
-  /// 操作者id。
+  /// 置顶的操作者的用户 ID。
   /// ~end
   final String operatorId;
 
   /// ~english
   /// Constructor of MessagePinInfo.
   ///
-  /// param [pinTime] The pin time.
-  /// param [operatorId] The operator id.
+  /// param [pinTime] The time when the message is pinned.
+  /// param [operatorId] The user ID of the operator that pins the message.
   /// ~end
   ///
   /// ~chinese
   /// MessagePinInfo 的构造函数。
   ///
-  /// 参数 [pinTime] 置顶时间。
-  /// 参数 [operatorId] 操作者id。
+  /// 参数 [pinTime] 消息置顶时间。
+  /// 参数 [operatorId] 置顶的操作者的用户 ID。
   /// ~end
   MessagePinInfo({
     required this.pinTime,

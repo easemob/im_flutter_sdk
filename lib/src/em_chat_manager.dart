@@ -250,7 +250,6 @@ class EMChatManager {
   /// ~english
   /// Sends the group message receipt to the server.
   ///
-  /// You can call the method only after setting the following method: [EMOptions.requireAck] and [EMMessage.needGroupAck].
   ///
   /// **Note**
   /// - This method takes effect only after you set [EMOptions.requireAck] and [EMMessage.needGroupAck] as `true`.
@@ -269,11 +268,10 @@ class EMChatManager {
   /// ~chinese
   /// 发送群消息已读回执。
   ///
-  /// 前提条件：设置了[EMOptions.requireAck] 和 [EMMessage.needGroupAck] 都为 `true`。
-  ///
   /// **Note**
-  /// 发送单聊消息已读回执，详见 [sendMessageReadAck];
-  /// 会话已读回执，详见 [sendConversationReadAck];
+  /// 1. 使用该方法前，需将 [EMOptions.requireAck] 和 [EMMessage.needGroupAck] 设置为 `true`。
+  /// 2. 发送单聊消息已读回执，详见 [sendMessageReadAck]。
+  /// 3. 会话已读回执，详见 [sendConversationReadAck]。
   ///
   /// Param [msgId] 消息 ID。
   ///
@@ -407,11 +405,11 @@ class EMChatManager {
   ///
   /// Param [type] The conversation type: [EMConversationType].
   ///
-  /// Param [createIfNeed] Whether to create a conversation is the specified conversation is not found:
-  /// - `true`: Yes.
+  /// Param [createIfNeed] Whether to create the conversation if the conversation is not found:
+  /// - （Default) `true`: Yes.
   /// - `false`: No.
   ///
-  /// **Return** The conversation object found according to the ID and type. Returns null if the conversation is not found.
+  /// **Return** The conversation object found according to the conversation ID and type. The SDK returns null if the conversation is not found.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -426,8 +424,8 @@ class EMChatManager {
   /// Param [type] 会话类型，详见 [EMConversationType]。
   ///
   /// Param [createIfNeed] 没找到相应会话时是否自动创建。
-  ///   - （Default)`true` 表示没有找到相应会话时会自动创建会话；
-  ///   - `false` 表示没有找到相应会话时不创建会话。
+  ///   - （默认）`true` 表示自动创建会话。
+  ///   - `false` 表示不创建会话。
   ///
   ///
   /// **Return**  根据指定 ID 以及会话类型找到的会话对象，如果没有找到会返回空值。
@@ -464,7 +462,7 @@ class EMChatManager {
   /// ~end
   ///
   /// ~chinese
-  /// 根据thread ID 获取 thread 会话。
+  /// 根据 thread ID 获取 thread 会话。
   ///
   /// Param [threadId] Thread ID.
   ///
@@ -491,7 +489,7 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Marks all messages as read.
+  /// Marks all conversations as read.
   ///
   /// This method is for the local conversations only.
   ///
@@ -571,9 +569,9 @@ class EMChatManager {
   /// ~english
   /// Imports messages to the local database.
   ///
-  /// Before importing, ensure that the sender or receiver of the message is the current user.
+  /// Before importing, ensure that the sender or recipient of the message is the current user.
   ///
-  /// For each method call, we recommends to import less than 1,000 messages.
+  /// It is recommended that you import at most 1,000 messages each time.
   ///
   /// Param [messages] The message list.
   ///
@@ -748,8 +746,6 @@ class EMChatManager {
   /// ~english
   /// Gets the conversation list from the server.
   ///
-  /// To use this function, you need to contact our business manager to activate it. After this function is activated, users can pull 10 conversations within 7 days by default (each conversation contains the latest historical message). If you want to adjust the number of conversations or time limit, please contact our business manager.
-  ///
   /// **Return** The conversation list of the current user.
   ///
   /// **Throws** A description of the exception. See [EMError].
@@ -757,8 +753,6 @@ class EMChatManager {
   ///
   /// ~chinese
   /// 从服务器获取会话列表。
-  ///
-  /// 该功能需联系商务开通，开通后，用户默认可拉取 7 天内的 10 个会话（每个会话包含最新一条历史消息），如需调整会话数量或时间限制请联系商务经理。
   ///
   /// **Return** 返回获取的会话列表。
   ///
@@ -1113,17 +1107,17 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Loads messages from the local database by the following parameters: keywords, timestamp, max count, sender, search direction.
+  /// Loads messages from the local database by the following parameters: keywords, timestamp, the number of messages to retrieve, message sender, search scope, and search direction.
   ///
-  /// **Note** Pay attention to the memory usage when the maxCount is large.
+  /// **Note** Pay attention to the memory usage when you retrieve a great number of messages.
   ///
   /// Param [keywords] The keywords in message.
   ///
-  /// Param [sender] The message sender. The param can also be used to search in group chat.
+  /// Param [sender] The user ID of the message sender. If you do not set this parameter, the SDK ignores this parameter when retrieving messages.
   ///
-  /// Param [timestamp] The timestamp for search.
+  /// Param [timestamp] The starting message timestamp for search.
   ///
-  /// Param [count] The maximum number of messages to search.
+  /// Param [count] The number of messages to retrieve.
   ///
   /// Param [searchScope] The message search scope. See [MessageSearchScope].
   ///
@@ -1137,17 +1131,17 @@ class EMChatManager {
   /// ~end
   ///
   /// ~chinese
-  /// 根据消息中的关键词、搜索消息的时间点、搜索结果的最大条数、搜索来源和搜索方向从 SDK 本地数据库中搜索指定数量的消息。
+  /// 根据消息中的关键词、消息时间戳、要搜索的消息条数、搜索范围和搜索方向从 SDK 本地数据库中搜索指定数量的消息。
   ///
-  /// 注意：当 maxCount 非常大时，需要考虑内存消耗。
+  /// 注意：若搜索的消息条数非常大，需要考虑内存消耗。
   ///
   /// Param [keywords] 搜索消息中的关键词。
   ///
-  /// Param [sender] 消息发送方（用户、群组或聊天室）。
+  /// Param [sender] 消息发送方的用户 ID。若不设置该参数，SDK 搜索消息时会忽略该参数。
   ///
-  /// Param [timestamp] 搜索消息的时间点。
+  /// Param [timestamp] 搜索的起始消息时间戳。
   ///
-  /// Param [count] 搜索结果的最大条数。
+  /// Param [count] 搜索的消息条数。
   ///
   /// Param [searchScope] 消息搜索范围，详见 [MessageSearchScope]。
   ///
@@ -1260,9 +1254,9 @@ class EMChatManager {
   ///
   /// Param [startAckId] The starting read receipt ID for query. If you set it as null, the SDK retrieves the read receipts in the in reverse chronological order.
   ///
-  /// Param [pageSize] The number of read receipts per page.
+  /// Param [pageSize] The number of read receipts to retrieve per page.
   ///
-  /// **Return** The list of obtained read receipts and the cursor for next query.
+  /// **Return** The list of obtained read receipts and the cursor for the next query.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
@@ -1320,7 +1314,7 @@ class EMChatManager {
   /// Param [conversationType] The conversation type. See  [EMConversationType].
   ///
   /// Param [isDeleteMessage] Whether to delete the chat history when deleting the conversation.
-  /// - `true`: (default) Yes.
+  /// - (default) `true`: Yes.
   /// - `false`: No.
   ///
   ///
@@ -1366,7 +1360,7 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Deletes messages with timestamp that is before the specified one.
+  /// Deletes messages with the timestamp that is before the specified one.
   ///
   /// Param [timestamp]  The specified Unix timestamp(milliseconds).
   ///
@@ -1862,22 +1856,26 @@ class EMChatManager {
 
   ///
   /// ~english
+  /// Marks conversations.
+  ///
   /// This method marks conversations both locally and on the server.
   ///
   /// Param [conversationIds] The list of conversation IDs to mark.
   ///
-  /// Param [mark] The mark type. See [ConversationMarkType].
+  /// Param [mark] The mark to add for the conversations. See [ConversationMarkType].
   ///
   /// **Throws** A description of the exception. See [EMError].
   ///
   /// ~end
   ///
   /// ~chinese
-  /// 本地和服务端标记会话。
+  /// 标记会话。
+  ///
+  /// 调用该方法会同时为本地和服务器端的会话添加标记。
   ///
   /// Param [conversationIds] 要标记的会话 ID 列表。
   ///
-  /// Param [mark] 标记类型，详见 [ConversationMarkType]。
+  /// Param [mark] 要添加的会话标记，详见 [ConversationMarkType]。
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
@@ -1903,15 +1901,21 @@ class EMChatManager {
   }
 
   /// ~english
+  /// Unmarks conversations.
+  ///
   /// This method unmarks conversations both locally and on the server.
+  ///
   /// Param [conversationIds] The list of conversation IDs to unmark.
-  /// Param [mark] The mark type. See [ConversationMarkType].
+  /// Param [mark] The conversation mark to remove. See [ConversationMarkType].
   /// ~end
   ///
   /// ~chinese
+  /// 取消标记会话。
+  ///
   /// 本地和服务端取消标记会话。
+  ///
   /// Param [conversationIds] 要取消标记的会话 ID 列表。
-  /// Param [mark] 标记类型，详见 [ConversationMarkType]。
+  /// Param [mark] 要移除的会话标记，详见 [ConversationMarkType]。
   /// ~end
   Future<void> deleteRemoteAndLocalConversationsMark({
     required List<String> conversationIds,
@@ -1934,14 +1938,15 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Fetches conversations by options.
-  /// Param [options] The options for fetching conversations, see [ConversationFetchOptions].
-  /// Returns The list of conversations.
+  /// Gets conversations from the server by conversation filter options.
+  ///
+  /// Param [options] The conversation filter options. See [ConversationFetchOptions].
+  /// Returns The list of retrieved conversations.
   /// Throws A description of the exception. See [EMError].
   /// ~end
   /// ~chinese
-  /// 根据选项获取会话。
-  /// Param [options] 获取会话的选项, 详见 [ConversationFetchOptions]。
+  /// 根据会话过滤选项获取服务端的会话。
+  /// Param [options] 会话过滤选项, 详见 [ConversationFetchOptions]。
   /// Returns 会话列表。
   /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
@@ -1963,16 +1968,17 @@ class EMChatManager {
 
   /// ~english
   /// Clears all conversations and all messages in them.
-  /// Param [clearServerData] Whether to clear the server data.
-  /// - true: Clear the server data.
-  /// - false: (default) Do not clear the server data.
+  /// Param [clearServerData] Whether to clear all conversations and all messages in them on the server. 
+  /// - true: Yes. All conversations and all messages in them will be cleared on the server side. 
+  ///   The current user cannot retrieve messages and conversations from the server, while this has no impact on other users.
+  /// - (Default) false：No. All local conversations and all messages in them will be cleared, while those on the server remain.
   /// ~end
   ///
   /// ~chinese
   /// 清空所有会话和会话中的所有消息。
-  /// Param [clearServerData] 是否清空服务端数据。
-  /// - true: 清空服务端数据。
-  /// - false: (默认) 不清空服务端数据。
+  /// Param [clearServerData] 是否删除服务端所有会话及其消息： 
+  /// - true: 是。服务端的所有会话及其消息会被清除，当前用户无法再从服务端拉取消息和会话，其他用户不受影响。
+  /// - （默认）false: 否。只清除本地所有会话及其消息，服务端的会话及其消息仍保留。
   /// ~end
   Future<void> deleteAllMessageAndConversation({bool clearServerData = false}) async {
     Map result = await ChatChannel.invokeMethod(ChatMethodKeys.deleteAllMessageAndConversation, {
@@ -2014,12 +2020,14 @@ class EMChatManager {
 
   /// ~english
   /// Unpins a message.
+  /// 
   /// Param [messageId] The message ID.
   ///
   /// Throws A description of the exception. See [EMError].
   /// ~end
   /// ~chinese
   /// 取消置顶消息。
+  /// 
   /// Param [messageId] 消息 ID。
   ///
   /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
@@ -2039,13 +2047,15 @@ class EMChatManager {
   }
 
   /// ~english
-  /// Fetches pinned messages.
+  /// Gets the list of pinned messages from the server.
+  /// 
   /// Param [conversationId] The conversation ID.
   /// Returns The list of pinned messages.
   /// Throws A description of the exception. See [EMError].
   /// ~end
   /// ~chinese
-  /// 获取置顶消息。
+  /// 从服务端获取置顶消息。
+  /// 
   /// Param [conversationId] 会话 ID。
   /// Returns 置顶消息列表。
   /// Throws 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。

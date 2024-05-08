@@ -59,30 +59,24 @@ class EMMessage {
   String? conversationId;
 
   /// ~english
-  /// The ID of the message sender.
-  /// - For a one-to-one chat, it is the username of the peer user.
-  /// - For a group chat, it is the group ID.
-  /// - For a chat room, it is the chat room ID.
+  /// The user ID of the message sender.
   /// ~end
   ///
   /// ~chinese
-  /// 消息发送方，可以是：
-  /// - 用户：用户 ID；
-  /// - 群组：群组 ID；
-  /// - 聊天室：聊天室 ID。
+  /// 消息发送方的用户 ID。
   /// ~end
   String? from = '';
 
   /// ~english
-  /// The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// The message recipient.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   /// ~end
   ///
   /// ~chinese
   /// 消息接收方，可以是：
-  /// - 用户：用户 ID；
+  /// - 单聊：用户 ID；
   /// - 群组：群组 ID；
   /// - 聊天室：聊天室 ID。
   /// ~end
@@ -107,8 +101,6 @@ class EMMessage {
   int serverTime = DateTime.now().millisecondsSinceEpoch;
 
   /// ~english
-  /// The delivery receipt, which is to check whether the other party has received the message.
-  ///
   ///  Whether the recipient has received the message.
   /// - `true`: Yes.
   /// - `false`: No.
@@ -116,7 +108,6 @@ class EMMessage {
   ///
   /// ~chinese
   /// 设置送达回执，即接收方是否已收到消息。
-  ///
   /// - `true`：是；
   /// - `false`：否。
   /// ~end
@@ -137,7 +128,6 @@ class EMMessage {
 
   /// ~english
   /// Whether read receipts are required for group messages.
-  ///
   /// - `true`: Yes.
   /// - `false`: No.
   ///
@@ -145,18 +135,21 @@ class EMMessage {
   ///
   /// ~chinese
   /// 设置是否需要群组已读回执。
-  ///
   /// - `true`：是；
   /// - `false`：否。
   /// ~end
   bool needGroupAck = false;
 
   /// ~english
-  /// Is it a message sent within a thread
+  /// Whether the message is sent within a chat thread.
+  /// - `true`: Yes.
+  /// - `false`: No.
   /// ~end
   ///
   /// ~chinese
   /// 是否为子区中的消息。
+  /// - `true`：是；
+  /// - `false`：否。
   /// ~end
   bool isChatThreadMessage = false;
 
@@ -175,7 +168,7 @@ class EMMessage {
   bool hasRead = false;
 
   /// ~english
-  /// The enumeration of the chat type.
+  /// The enumeration of chat types.
   ///
   /// There are three chat types: one-to-one chat, group chat, and chat room.
   /// ~end
@@ -188,7 +181,7 @@ class EMMessage {
   ChatType chatType = ChatType.Chat;
 
   /// ~english
-  /// The message direction. see [MessageDirection].
+  /// The message direction. See [MessageDirection].
   /// ~end
   ///
   /// ~chinese
@@ -197,7 +190,7 @@ class EMMessage {
   MessageDirection direction = MessageDirection.SEND;
 
   /// ~english
-  /// Gets the message sending/reception status. see [MessageStatus].
+  /// The message sending/reception status. See [MessageStatus].
   /// ~end
   ///
   /// ~chinese
@@ -218,14 +211,14 @@ class EMMessage {
   /// Whether the message is delivered only when the recipient(s) is/are online:
   ///
   /// - `true`：The message is delivered only when the recipient(s) is/are online. If the recipient is offline, the message is discarded.
-  /// - `false` (Default) ：The message is delivered when the recipient(s) is/are online. If the recipient(s) is/are offline, the message will not be delivered to them until they get online.
+  /// - (Default) `false` ：The message is delivered when the recipient(s) is/are online. If the recipient(s) is/are offline, the message will not be delivered to them until they get online.
   /// ~end
   ///
   /// ~chinese
   /// 消息是否只投递给在线用户：
   ///
   /// - `true`：只有消息接收方在线时才能投递成功。若接收方离线，则消息会被丢弃。
-  /// - `false`（默认）：如果用户在线，则直接投递；如果用户离线，消息会在用户上线时投递。
+  /// - （默认）`false`：如果用户在线，则直接投递；如果用户离线，消息会在用户上线时投递。
   /// ~end
   bool deliverOnlineOnly = false;
 
@@ -238,12 +231,12 @@ class EMMessage {
   /// ~chinese
   /// 定向消息的接收方。
   ///
-  /// 该属性仅对群组和聊天室中的消息有效，则消息发送给群组或聊天室的所有成员。
+  /// 该属性仅对群组聊天和聊天室中的消息有效。
   /// ~end
   List<String>? receiverList;
 
   /// ~english
-  /// Message body. We recommend you use [EMMessageBody].
+  /// Message body. See [EMMessageBody].
   /// ~end
   ///
   /// ~chinese
@@ -252,24 +245,26 @@ class EMMessage {
   late EMMessageBody body;
 
   /// ~english
-  /// Message Online Status
+  /// Whether the message gets delivered to an online user.
   ///
-  /// Local database does not store. The default value for reading or pulling roaming messages from the database is YES
+  /// This field is issued by the server to indicate whether the recipient is online when the message is delivered.
+  ///
+  /// This field is not stored in the local database. The value of this field is `true` by default for messages read from the database or pulled from the server.
   /// ~end
   ///
   /// ~chinese
-  /// 消息在线状态
+  /// 该字段标记服务器下发消息时判断用户是在线还是离线的状态。
   ///
-  /// 本地数据库不存储。从数据库读取或提取漫游消息的默认值是true。
+  /// 该字段为服务器下发字段，不在本地数据库中存储。对于从数据库读取的消息或拉取的漫游消息，该字段的值默认为 `true`。
   /// ~end
   late final bool onlineState;
 
   /// ~english
-  ///  Whether it is a global broadcast message
+  ///  Whether it is a global broadcast message for all chat rooms in an app.
   /// ~end
   ///
   /// ~chinese
-  /// 是否是全局广播消息
+  /// 是否是聊天室全局广播消息。
   /// ~end
   late final bool isBroadcast;
 
@@ -325,7 +320,7 @@ class EMMessage {
   ///
   /// Param [body] The message body.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -353,11 +348,11 @@ class EMMessage {
   /// Param [body] The message body.
   ///
   /// Param [to] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -393,7 +388,7 @@ class EMMessage {
   /// Creates a text message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -401,11 +396,11 @@ class EMMessage {
   ///
   /// Param [targetLanguages] Target languages.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
-  ///
+  /// 
   /// ~chinese
   /// 创建一条文本消息。
   ///
@@ -440,7 +435,7 @@ class EMMessage {
   /// Creates a file message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -450,7 +445,7 @@ class EMMessage {
   ///
   /// Param [fileSize] The file size in bytes.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -492,7 +487,7 @@ class EMMessage {
   /// Creates an image message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -504,7 +499,7 @@ class EMMessage {
   ///
   /// Param [sendOriginalImage] Whether to send the original image.
   /// - `true`: Yes.
-  /// - `false`: (default) No. For an image greater than 100 KB, the SDK will compress it and send the thumbnail.
+  /// - (Default) `false`: No. For an image greater than 100 KB, the SDK will compress it and send the thumbnail.
   ///
   /// Param [fileSize] The image file size in bytes.
   ///
@@ -512,7 +507,7 @@ class EMMessage {
   ///
   /// Param [height] The image height in pixels.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -533,7 +528,7 @@ class EMMessage {
   ///
   /// Param [sendOriginalImage] 是否发送原图。
   /// - `true`: 是。
-  /// - `false`: (default) 否。默认大于 100 kb 的图片会自动压缩发送缩略图。
+  /// - （默认）`false`: 否。默认大于 100 KB 的图片会自动压缩发送缩略图。
   ///
   /// Param [fileSize] 图片文件大小，单位是字节。
   ///
@@ -543,7 +538,7 @@ class EMMessage {
   ///
   /// Param [chatType] 聊天类型, 默认为单聊，如果是群聊或者聊天室，可以参考[ChatType]。
   ///
-  /// **Return** 图片实例。
+  /// **Return** 消息体实例。
   /// ~end
   EMMessage.createImageSendMessage({
     required String targetId,
@@ -571,7 +566,7 @@ class EMMessage {
   /// Creates a video message instance for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -589,7 +584,7 @@ class EMMessage {
   ///
   /// Param [height] The height of the video thumbnail, in pixels.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -647,7 +642,7 @@ class EMMessage {
   /// Creates a voice message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -659,7 +654,7 @@ class EMMessage {
   ///
   /// Param [displayName] The name of the voice file which ends with a suffix that indicates the format of the file. For example "voice.mp3".
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -695,16 +690,13 @@ class EMMessage {
             chatType: chatType,
             to: targetId,
             body: EMVoiceMessageBody(
-                localPath: filePath,
-                duration: duration,
-                fileSize: fileSize,
-                displayName: displayName));
+                localPath: filePath, duration: duration, fileSize: fileSize, displayName: displayName));
 
   /// ~english
   /// Creates a location message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -716,7 +708,7 @@ class EMMessage {
   ///
   /// Param [buildingName] The building name.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -762,7 +754,7 @@ class EMMessage {
   /// Creates a command message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -770,7 +762,7 @@ class EMMessage {
   ///
   /// Param [deliverOnlineOnly] Whether to send only to online users.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -799,14 +791,13 @@ class EMMessage {
   }) : this.createSendMessage(
             chatType: chatType,
             to: targetId,
-            body: EMCmdMessageBody(
-                action: action, deliverOnlineOnly: deliverOnlineOnly));
+            body: EMCmdMessageBody(action: action, deliverOnlineOnly: deliverOnlineOnly));
 
   /// ~english
   /// Creates a custom message for sending.
   ///
   /// Param [targetId] The ID of the message recipient.
-  /// - For a one-to-one chat, it is the username of the peer user.
+  /// - For a one-to-one chat, it is the user ID of the peer user.
   /// - For a group chat, it is the group ID.
   /// - For a chat room, it is the chat room ID.
   ///
@@ -814,7 +805,7 @@ class EMMessage {
   ///
   /// Param [params] The params map.
   ///
-  /// Param [chatType] The chat type, default is single chat, if it is group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -861,7 +852,7 @@ class EMMessage {
   ///
   /// Param [msgIds] The list of original messages included in the combined message.
   ///
-  /// Param [chatType] The chat type, which is one-to-one chat by default. For group chat or chat room, see [ChatType].
+  /// Param [chatType] The chat type. The default chat type is one-to-one chat. For the group chat or chat room, see [ChatType].
   ///
   /// **Return** The message instance.
   /// ~end
@@ -1541,8 +1532,8 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// ~english
   /// Whether to send the original image.
   ///
-  /// - `false`: (default) No. The original image will be compressed if it exceeds 100 KB and the thumbnail will be sent.
-  /// - `true`: Yes.
+  /// - (default) `false`: No. The original image will be compressed if it exceeds 100 KB and the thumbnail will be sent.
+  /// - `true`: Yes. 
   /// ~end
   ///
   /// ~chinese
@@ -1661,7 +1652,7 @@ class EMTextMessageBody extends EMMessageBody {
   late final String content;
 
   /// ~english
-  /// The target languages to translate
+  /// The target languages for translation.
   /// ~end
   ///
   /// ~chinese
@@ -1670,7 +1661,7 @@ class EMTextMessageBody extends EMMessageBody {
   List<String>? targetLanguages;
 
   /// ~english
-  /// It is Map, key is target language, value is translated content
+  /// It is Map, where the key is target language and the value is translated content.
   /// ~end
   ///
   /// ~chinese
@@ -1679,7 +1670,7 @@ class EMTextMessageBody extends EMMessageBody {
   Map<String, String>? translations;
 
   /// ~english
-  /// Get the user ID of the operator that modified the message last time.
+  /// Gets the user ID of the operator that modified the message last time.
   /// ~end
   ///
   /// ~chinese
@@ -1688,7 +1679,7 @@ class EMTextMessageBody extends EMMessageBody {
   String? get lastModifyOperatorId => _operatorId;
 
   /// ~english
-  /// Get the UNIX timestamp of the last message modification, in milliseconds.
+  /// Gets the UNIX timestamp of the last message modification, in milliseconds.
   /// ~end
   ///
   /// ~chinese
@@ -1697,7 +1688,7 @@ class EMTextMessageBody extends EMMessageBody {
   int? get lastModifyTime => _operatorTime;
 
   /// ~english
-  /// Get the number of times a message is modified.
+  /// Gets the number of times a message is modified.
   /// ~end
   ///
   /// ~chinese

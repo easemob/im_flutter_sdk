@@ -48,7 +48,7 @@ class EMConnectionEventHandler {
   final VoidCallback? onConnected;
 
   /// ~english
-  /// Occurs when the SDK disconnect from the chat server.
+  /// Occurs when the SDK disconnects from the chat server.
   ///
   /// Note that the logout may not be performed at the bottom level when the SDK is disconnected.
   /// ~end
@@ -77,7 +77,7 @@ class EMConnectionEventHandler {
   final VoidCallback? onUserDidRemoveFromServer;
 
   /// ~english
-  /// Occurs when the current chat user is forbid from the server.
+  /// Occurs when the current chat user is banned from accessing the server.
   /// ~end
   ///
   /// ~chinese
@@ -86,7 +86,7 @@ class EMConnectionEventHandler {
   final VoidCallback? onUserDidForbidByServer;
 
   /// ~english
-  /// Occurs when the current chat user is changed password.
+  /// Occurs when the current chat user changed the password.
   /// ~end
   ///
   /// ~chinese
@@ -104,7 +104,7 @@ class EMConnectionEventHandler {
   final VoidCallback? onUserDidLoginTooManyDevice;
 
   /// ~english
-  /// Occurs when the current chat user kicked by other device.
+  /// Occurs when the current chat user is kicked out of the app by another device.
   /// ~end
   ///
   /// ~chinese
@@ -140,7 +140,7 @@ class EMConnectionEventHandler {
   final VoidCallback? onTokenDidExpire;
 
   /// ~english
-  ///  The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit .
+  ///  The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit.
   /// ~end
   ///
   /// ~chinese
@@ -153,7 +153,7 @@ class EMConnectionEventHandler {
   ///
   /// Param [onConnected] The SDK connects to the chat server successfully.
   ///
-  /// Param [onDisconnected] The SDK disconnect from the chat server.
+  /// Param [onDisconnected] The SDK disconnects from the chat server.
   ///
   /// Param [onUserDidLoginFromOtherDevice] The current user account is logged in to another device.
   ///
@@ -222,7 +222,7 @@ class EMConnectionEventHandler {
 
 /// ~english
 /// The multi-device event handler.
-/// Listens for callback for the current user's actions on other devices, including contact changes, group changes, and thread changes.
+/// Listens for the callback for the current user's actions on other devices, including contact changes, group changes, and thread changes.
 ///
 /// Adds a multi-device event handler:
 /// ```dart
@@ -478,12 +478,12 @@ class EMChatEventHandler {
   /// ~english
   /// Occurs when a conversation read receipt is received.
   ///
-  /// Occurs in the following scenarios:
-  /// (1) The message is read by the recipient (The conversation receipt is sent).
+  /// This event is triggered in the following scenarios:
+  /// (1) The message is read by the recipient (The conversation read receipt is sent).
   /// Upon receiving this event, the SDK sets the [EMMessage.hasReadAck] property of the message in the conversation to `true` in the local database.
-  /// (2) In the multi-device login scenario, when one device sends a Conversation receipt,
+  /// (2) In the multi-device login scenario, when one device sends a conversation read receipt,
   /// the server will set the number of unread messages to 0, and the callback occurs on the other devices.
-  /// and sets the [EMMessage.hasReadAck] property of the message in the conversation to `true` in the local database.
+  /// and the [EMMessage.hasReadAck] property of the message in the conversation is set to `true` in the local database.
   /// ~end
   ///
   /// ~chinese
@@ -491,9 +491,9 @@ class EMChatEventHandler {
   ///
   /// 回调此方法的场景：
   /// （1）消息被接收方阅读，即接收方发送了会话已读回执。
-  /// SDK 在接收到此事件时，会将本地数据库中该会话中消息的 `isAcked` 属性置为 `true`。
+  /// SDK 在接收到此事件时，会将本地数据库中该会话中消息的 `[EMMessage.hasReadAck]` 属性置为 `true`。
   /// （2）多端多设备登录场景下，一端发送会话已读回执，服务器端会将会话的未读消息数置为 0，
-  /// 同时其他端会回调此方法，并将本地数据库中该会话中消息的 `isRead` 属性置为 `true`。
+  /// 同时其他端会回调此方法，并将本地数据库中该会话中消息的 `[EMMessage.hasReadAck]` 属性置为 `true`。
   /// ~end
   final void Function(String from, String to)? onConversationRead;
 
@@ -516,9 +516,9 @@ class EMChatEventHandler {
   final void Function(EMMessage message, String operatorId, int operationTime)? onMessageContentChanged;
 
   /// ~english
-  /// Occurs when the message pin status changes.
+  /// Occurs when the message pinning status changes.
   ///
-  /// This callback is triggered when the message pin status changes.
+  /// This callback is triggered when the message pinning status changes.
   /// ~end
   ///
   /// ~chinese
@@ -558,7 +558,7 @@ class EMChatEventHandler {
   ///
   /// Param [onMessageContentChanged] Occurs when the message content is modified.
   ///
-  /// Param [onMessagePinChanged] Occurs when the message pin status changes.
+  /// Param [onMessagePinChanged] Occurs when the message pinning status changes.
   ///
   /// Param [onMessagesRecalledInfo] Occurs when a received message is recalled.
   /// ~end
@@ -611,7 +611,7 @@ class EMChatEventHandler {
 /// ~english
 /// The chat room event handler.
 ///
-/// Adds chat event handler:
+/// Adds a chat event handler:
 /// ```dart
 ///   EMClient.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, EMChatRoomEventHandler());
 /// ```
