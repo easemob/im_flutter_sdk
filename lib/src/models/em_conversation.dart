@@ -83,7 +83,7 @@ class EMConversation {
   /// 获取会话 ID。
   ///
   /// 对于单聊类型，会话 ID 同时也是对方用户的名称。
-  /// 对于群聊类型，会话 ID 同时也是对方群组的 ID，并不同于群组的名称。
+  /// 对于群聊类型，会话 ID 同时也是群组的 ID，并不同于群组的名称。
   /// 对于聊天室类型，会话 ID 同时也是聊天室的 ID，并不同于聊天室的名称。
   /// 对于 HelpDesk 类型，会话 ID 与单聊类型相同，是对方用户的名称。
   ///
@@ -101,7 +101,9 @@ class EMConversation {
   final EMConversationType type;
 
   /// ~english
-  /// Is chat thread conversation.
+  /// Whether the conversation is a chat thread conversation.
+  /// - `true`: Yes;
+  /// - `false`: No. 
   /// ~end
   ///
   /// ~chinese
@@ -134,7 +136,7 @@ class EMConversation {
   final int pinnedTime;
 
   /// ~english
-  /// The conversation remarks.
+  /// The conversation marks.
   /// ~end
   ///
   /// ~chinese
@@ -160,7 +162,7 @@ class EMConversation {
   Map<String, String>? get ext => _ext;
 
   /// ~english
-  /// Set the conversation extension attribute.
+  /// Sets the conversation extension attribute.
   ///
   /// This attribute is not available for thread conversations.
   /// ~end
@@ -185,7 +187,7 @@ class EMConversation {
   /// ~english
   /// Gets the last message from the conversation.
   ///
-  /// The operation does not change the unread message count.
+  /// The operation does not affect the unread message count.
   ///
   /// The SDK gets the latest message from the local memory first. If no message is found, the SDK loads the message from the local database and then puts it in the memory.
   ///
@@ -416,7 +418,7 @@ class EMConversation {
   /// Deletes a message in the local database.
   ///
   /// **Note**
-  /// After this method is called, the message is only deleted both from the memory and the local database.
+  /// After this method is called, the message is deleted both from the memory and the local database.
   ///
   /// Param [messageId] The ID of message to be deleted.
   ///
@@ -666,17 +668,17 @@ class EMConversation {
   }
 
   /// ~english
-  /// Loads messages from the local database by the following parameters: keywords, timestamp, max count, sender, search direction.
+  /// Loads messages from the local database by the following parameters: keywords, timestamp, the number of messages to retrieve, sender, search scope, and search direction.
   ///
-  /// **Note** Pay attention to the memory usage when the maxCount is large.
+  /// **Note** Pay attention to the memory usage when you retrieve a great number of messages.
   ///
   /// Param [keywords] The keywords in message.
   ///
-  /// Param [sender] The message sender. The param can also be used to search in group chat.
+  /// Param [sender] The message sender. If you do not set this parameter, the SDK ignores this parameter when retrieving messages.
   ///
-  /// Param [timestamp] The timestamp for search.
+  /// Param [timestamp] The starting message timestamp for search.
   ///
-  /// Param [count] The maximum number of messages to search.
+  /// Param [count] The number of messages to retrieve.
   ///
   /// Param [searchScope] The message search scope. See [MessageSearchScope].
   ///
@@ -690,17 +692,17 @@ class EMConversation {
   /// ~end
   ///
   /// ~chinese
-  /// 根据消息中的关键词、搜索消息的时间点、搜索结果的最大条数、搜索来源和搜索方向从 SDK 本地数据库中搜索指定数量的消息。
+  /// 根据消息中的关键词、消息时间戳、要搜索的消息条数、搜索范围和搜索方向从 SDK 本地数据库中搜索指定数量的消息。
   ///
-  /// 注意：当 maxCount 非常大时，需要考虑内存消耗。
+  /// 注意：若搜索的消息条数非常大，需要考虑内存消耗。
   ///
   /// Param [keywords] 搜索消息中的关键词。
   ///
-  /// Param [sender] 消息发送方（用户、群组或聊天室）。
+  /// Param [sender] 消息发送方。若不设置该参数，SDK 搜索消息时会忽略该参数。
   ///
-  /// Param [timestamp] 搜索消息的时间点。
+  /// Param [timestamp] 搜索的起始消息时间戳。
   ///
-  /// Param [count] 搜索结果的最大条数。
+  /// Param [count] 搜索的消息条数。
   ///
   /// Param [searchScope] 消息搜索范围，详见 [MessageSearchScope]。
   ///
@@ -848,13 +850,13 @@ class EMConversation {
   }
 
   /// ~english
-  /// Get the pinned messages in the conversation
+  /// Gets the pinned messages in a local conversation.
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
   /// ~chinese
-  /// 获取会话内的置顶消息列表
+  /// 获取会话内的置顶消息列表。
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end

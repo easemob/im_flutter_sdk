@@ -24,7 +24,7 @@ class EMOptions {
   /// ~english
   /// Whether to enable automatic login.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -40,7 +40,7 @@ class EMOptions {
   /// Whether to output the debug information. Make sure to call the method after initializing the EMClient using [EMClient.init].
   ///
   /// - `true`: Yes.
-  /// - `false`: (Default)No.
+  /// - (Default) `false`: No.
   /// ~end
   ///
   /// ~chinese
@@ -53,7 +53,7 @@ class EMOptions {
   /// ~english
   /// Whether to accept friend invitations from other users automatically.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -67,7 +67,7 @@ class EMOptions {
   /// ~english
   /// Whether to accept group invitations automatically.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -81,7 +81,7 @@ class EMOptions {
   /// ~english
   /// Whether to require read receipt after sending a message.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -96,7 +96,7 @@ class EMOptions {
   /// Whether to require the delivery receipt after sending a message.
   ///
   /// - `true`: Yes;
-  /// - `false`: (Default) No.
+  /// - (Default) `false`: No.
   /// ~end
   ///
   /// ~chinese
@@ -109,7 +109,7 @@ class EMOptions {
   /// ~english
   /// Whether to delete the group messages when leaving a group.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -123,7 +123,7 @@ class EMOptions {
   /// ~english
   /// Whether to delete the chat room messages when leaving the chat room.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -138,7 +138,7 @@ class EMOptions {
   /// ~english
   /// Whether to allow the chat room owner to leave the chat room.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -153,7 +153,7 @@ class EMOptions {
   /// ~english
   /// Whether to sort the messages by the time when the messages are received by the server.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -168,7 +168,7 @@ class EMOptions {
   /// ~english
   /// Whether only HTTPS is used for REST operations.
   ///
-  /// - `true`: (Default) Only HTTPS is used.
+  /// - (Default) `true`: Only HTTPS is used.
   /// - `false`: Both HTTP and HTTPS are allowed.
   /// ~end
   ///
@@ -183,7 +183,7 @@ class EMOptions {
   /// ~english
   /// Whether to upload the message attachments automatically to the chat server.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`:  Yes;
   /// - `false`: No. Message attachments are uploaded to a custom path.
   /// ~end
   ///
@@ -198,7 +198,7 @@ class EMOptions {
   /// ~english
   /// Whether to automatically download the thumbnail.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -213,7 +213,7 @@ class EMOptions {
   /// ~english
   /// Whether to enable DNS.
   ///
-  /// - `true`: (Default) Yes;
+  /// - (Default) `true`: Yes;
   /// - `false`: No.
   /// ~end
   ///
@@ -271,19 +271,28 @@ class EMOptions {
   final bool enableTLS;
 
   /// ~english
-  /// Whether the sent message is included in [EMChatEventHandler.onMessagesReceived], default is false.
+  /// Whether the sent message is included in [EMChatEventHandler.onMessagesReceived]:
+  /// - `true`: Yes. Besides the received message, the sent message is also included in [EMChatEventHandler.onMessagesReceived].
+	/// - (Default) `false`: No. Only the received message is included in [EMChatEventHandler.onMessagesReceived].
+
   /// ~end
   /// ~chinese
-  /// 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调, 默认为 false。
+  /// 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调。
+  /// - `true`：是。接收消息回调中包含发送成功的消息。
+	/// - （默认）`false`：否。接收消息回调中只包含接收的消息。
   /// ~end
   final bool messagesReceiveCallbackIncludeSend;
 
   /// ~english
   /// Whether to regard import messages as read.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
   /// ~end
   ///
   /// ~chinese
   /// 是否将导入的消息视为已读。
+  /// - `true`：已读。
+	/// - （默认）`false`：未读。
   /// ~end
   final bool regardImportMessagesAsRead;
 
@@ -303,11 +312,13 @@ class EMOptions {
   /// ~english
   /// Whether to include empty conversations when the SDK loads conversations from the local database:
   /// - `true`: Yes;
-  /// - `false`: (Default) No.
+  /// - (Default) `false`: No.
   /// ~end
   ///
   /// ~chinese
   /// 从本地数据库加载会话时是否包括空会话。
+  /// - `true`：包含空会话；
+  /// - （默认）`false`：不包含空会话。
   /// ~end
   final bool enableEmptyConversation;
 
@@ -331,14 +342,12 @@ class EMOptions {
 
   /// ~english
   /// Whether the server returns the sender the text message with the content replaced during text moderation:
-  ///
   /// - `true`: Return the adjusted message to the sender.
-  /// - `(Default) false`: Return the original message to the sender.
+  /// - (Default) `false`: Return the original message to the sender.
   /// ~end
   ///
   /// ~chinese
   /// 是否在文本审核时，返回给发送者被替换内容的文本消息：
-  ///
   /// - `true`：返回给发送者被调整的消息。
   /// - （默认）`false`：返回给发送者原始消息。
   /// ~end
@@ -347,7 +356,7 @@ class EMOptions {
   EMPushConfig _pushConfig = EMPushConfig();
 
   /// ~english
-  /// Enable OPPO PUSH on OPPO devices.
+  /// Enables OPPO PUSH on OPPO devices.
   ///
   /// Param [appKey] The app ID for OPPO PUSH.
   ///
@@ -368,7 +377,7 @@ class EMOptions {
   }
 
   /// ~english
-  /// Enable Mi Push on Mi devices.
+  /// Enables Mi Push on Mi devices.
   ///
   /// Param [appId] The app ID for Mi Push.
   ///
@@ -389,7 +398,7 @@ class EMOptions {
   }
 
   /// ~english
-  /// Enable MeiZu Push on MeiZu devices.
+  /// Enables MeiZu Push on MeiZu devices.
   /// Param [appId] The app ID for MeiZu Push.
   /// Param [appKey] The app key for MeiZu Push.
   /// ~end
@@ -405,7 +414,7 @@ class EMOptions {
   }
 
   /// ~english
-  /// Enable Firebase Cloud Messaging (FCM) push on devices that support Google Play.
+  /// Enables Firebase Cloud Messaging (FCM) push on devices that support Google Play.
   ///
   /// Param [appId] The app ID for FCM push.
   /// ~end
@@ -421,7 +430,7 @@ class EMOptions {
   }
 
   /// ~english
-  /// Enable vivo Push on vivo devices.
+  /// Enables vivo Push on vivo devices.
   /// ~end
   ///
   /// ~chinese
@@ -432,7 +441,7 @@ class EMOptions {
   }
 
   /// ~english
-  /// Enable Huawei Push on Huawei devices.
+  /// Enables Huawei Push on Huawei devices.
   /// ~end
   ///
   /// ~chinese
@@ -459,11 +468,11 @@ class EMOptions {
   }
 
   /// ~english
-  /// Enable Honor Push on vivo devices.
+  /// Enables Honor Push on Honor devices.
   /// ~end
   ///
   /// ~chinese
-  /// 开启 荣耀 推送。
+  /// 开启荣耀推送。
   /// ~end
   void enableHonorPush() {
     _pushConfig.enableHonorPush = true;
@@ -475,32 +484,59 @@ class EMOptions {
   /// Param [appKey] The app key that you get from the console when creating an app.
   ///
   /// Param [autoLogin] Whether to enable automatic login.
+  /// - (Default) `true`: Enables automatic login.
+  /// - `false`: Disables automatic login.
   ///
-  /// Param [debugMode] Whether to output the debug information. Make sure to call the method after the EMClient is initialized. See [EMClient.init].
-  ///
+  /// Param [debugMode] Whether to output the debug information. Make sure to call the method after the EMClient is initialized.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
   /// Param [acceptInvitationAlways] Whether to accept friend invitations from other users automatically.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
   ///
   /// Param [autoAcceptGroupInvitation] Whether to accept group invitations automatically.
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
   ///
-  /// Param [requireAck] Whether the read receipt is required.
+  /// Param [requireAck] Whether to require the message read receipt from the recipient.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [requireDeliveryAck] Whether the delivery receipt is required.
+  /// `true`: Yes.
+  /// (Default) `false`: No.
   ///
   /// Param [deleteMessagesAsExitGroup] Whether to delete the related group messages when leaving a group.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [deleteMessagesAsExitChatRoom] Whether to delete the related chat room messages when leaving the chat room.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [isChatRoomOwnerLeaveAllowed] Whether to allow the chat room owner to leave the chat room.
+  /// - (Default) `true`: Yes. Even if the chat room owner leaves the chat room, the owner still has all privileges, except for receiving messages in the chat room.
+  /// - `false`: No.
   ///
-  /// Param [sortMessageByServerTime] Whether to sort the messages by the time the server receives messages.
-  ///
+  /// Param [sortMessageByServerTime] Whether to sort the messages in the reverse chronological order of the time when they are received by the server.
+  /// - (Default) `true`: Yes;
+  /// - `false`: No. Messages are sorted in the reverse chronological order of the time when they are created.
+
   /// Param [usingHttpsOnly] Whether only HTTPS is used for REST operations.
+  /// - (Default) `true`: Only HTTPS is supported.
+  /// - `false`: Both HTTP and HTTPS are allowed.
   ///
   /// Param [serverTransfer] Whether to upload the message attachments automatically to the chat server.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. A custom path is used.
   ///
   /// Param [isAutoDownloadThumbnail] Whether to automatically download the thumbnail.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No.
   ///
   /// Param [enableDNSConfig] Whether to enable DNS.
+  /// - (Default) `true`: Yes.
+  /// - `false`: No. DNS needs to be disabled for private deployment.
   ///
   /// Param [dnsUrl] The DNS url.
   ///
@@ -513,18 +549,26 @@ class EMOptions {
   /// Param [chatAreaCode] The area code.
   ///
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
+  /// - `true`: Yes. Empty conversations are included.
+  /// - (Default) `false`: No. Empty conversations are excluded.
   ///
   /// Param [deviceName] Custom device name.
   ///
   /// Param [osType] Custom system type.
   ///
-  /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation, the default is false.
+  /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation.
+  /// - `true`: Yes.
+	/// - (Default) `false`: No. The server returns the original message to the sender.
+	///
+	/// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
+	///
+	/// Param [messagesReceiveCallbackIncludeSend] Whether to include the sent message in [EMChatEventHandler.onMessagesReceived].
+	/// - `true`: Yes. Besides the received message, the sent message is also included in [EMChatEventHandler.onMessagesReceived].
+	/// - (Default)`false`: No. Only the received message is included in [EMChatEventHandler.onMessagesReceived].
   ///
-  /// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
-  ///
-  /// Param [messagesReceiveCallbackIncludeSend] Whether the sent message is included in [EMChatEventHandler.onMessagesReceived], default is false.
-  ///
-  /// Param [regardImportMessagesAsRead] Whether to regard import messages as read, default is false.
+  /// Param [regardImportMessagesAsRead] Whether to regard import messages as read:
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
   ///
   /// ~end
   ///
@@ -599,16 +643,22 @@ class EMOptions {
   /// Param [chatAreaCode] server 区域码.
   ///
   /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
+  /// - `true`：包含空会话；
+  /// - （默认）`false`：不包含空会话。
   ///
   /// Param [deviceName] 自定义设备名称。
   ///
   /// Param [osType] 自定义系统类型。
   ///
-  /// Param [useReplacedMessageContents] 是否在文本审核时，返回给发送者被替换内容的文本消息, 默认为 false。
+  /// Param [useReplacedMessageContents] 是否在文本审核时，返回给发送者被替换内容的文本消息。
+  ///  - `true`：将内容替换后的消息返回给发送方。
+  ///  - （默认）`false`：将原消息返回给发送方。
   ///
   /// Param [enableTLS] 是否开启 TLS 连接，初始化时生效，默认为 false。
   ///
-  /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调, 默认为 false。
+  /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调。
+  /// - `true`：是。接收消息通知中包含发送成功的消息。
+	/// - （默认）`false`：否。接收消息通知中只包含接收的消息。
   ///
   /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
   ///
