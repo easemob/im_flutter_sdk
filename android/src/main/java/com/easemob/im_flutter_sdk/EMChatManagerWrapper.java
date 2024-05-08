@@ -303,12 +303,17 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void recallMessage(JSONObject params, String channelName, Result result) throws JSONException {
         String msgId = params.getString("msg_id");
-
+        String ext;
+        if (params.has("ext")) {
+            ext = params.getString("ext");
+        } else {
+            ext = null;
+        }
         asyncRunnable(() -> {
             try {
                 EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
                 if (msg != null) {
-                    EMClient.getInstance().chatManager().recallMessage(msg);
+                    EMClient.getInstance().chatManager().recallMessage(msg, ext);
                     onSuccess(result, channelName, true);
                 }else {
                     onError(result, new HyphenateException(500, "The message was not found"));
