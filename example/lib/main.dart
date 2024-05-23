@@ -6,8 +6,7 @@ var appKey = "";
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   assert(appKey.isNotEmpty, "appKey is empty");
-  EMOptions options =
-      EMOptions(appKey: appKey, autoLogin: false, debugMode: true);
+  EMOptions options = EMOptions(appKey: appKey, autoLogin: false, debugMode: true);
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }
@@ -82,8 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: const Text("SIGN IN"),
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor:
-                          MaterialStateProperty.all(Colors.lightBlue),
+                      backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -94,8 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: const Text("SIGN OUT"),
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor:
-                          MaterialStateProperty.all(Colors.lightBlue),
+                      backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -106,8 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: const Text("SIGN UP"),
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor:
-                          MaterialStateProperty.all(Colors.lightBlue),
+                      backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -115,8 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 10),
             TextField(
-              decoration: const InputDecoration(
-                  hintText: "Enter the username you want to send"),
+              decoration: const InputDecoration(hintText: "Enter the username you want to send"),
               onChanged: (chatId) => _chatId = chatId,
             ),
             TextField(
@@ -267,8 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
       await EMClient.getInstance.logout(true);
       _addLogToConsole("sign out succeed");
     } on EMError catch (e) {
-      _addLogToConsole(
-          "sign out failed, code: ${e.code}, desc: ${e.description}");
+      _addLogToConsole("sign out failed, code: ${e.code}, desc: ${e.description}");
     }
   }
 
