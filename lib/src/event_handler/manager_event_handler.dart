@@ -426,7 +426,8 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到群组消息的已读回执的回调。
   /// ~end
-  final void Function(List<EMGroupMessageAck> groupMessageAcks)? onGroupMessageRead;
+  final void Function(List<EMGroupMessageAck> groupMessageAcks)?
+      onGroupMessageRead;
 
   /// ~english
   /// Occurs when the update for the group message read status is received.
@@ -504,7 +505,8 @@ class EMChatEventHandler {
   /// ~chinese
   /// 消息表情回复（Reaction）变化监听器。
   /// ~end
-  final void Function(List<EMMessageReactionEvent> events)? onMessageReactionDidChange;
+  final void Function(List<EMMessageReactionEvent> events)?
+      onMessageReactionDidChange;
 
   /// ~english
   /// Occurs when the message content is modified.
@@ -513,7 +515,8 @@ class EMChatEventHandler {
   /// ~chinese
   /// 收到消息内容变化。
   /// ~end
-  final void Function(EMMessage message, String operatorId, int operationTime)? onMessageContentChanged;
+  final void Function(EMMessage message, String operatorId, int operationTime)?
+      onMessageContentChanged;
 
   /// ~english
   /// Occurs when the message pinning status changes.
@@ -740,7 +743,8 @@ class EMChatRoomEventHandler {
   /// ~chinese
   /// 聊天室加入新成员回调。
   /// ~end
-  final void Function(String roomId, String participant)? onMemberJoinedFromChatRoom;
+  final void Function(String roomId, String participant)?
+      onMemberJoinedFromChatRoom;
 
   /// ~english
   /// Occurs when a chat room member(s) is/are added to mute list.

@@ -103,7 +103,7 @@ class EMConversation {
   /// ~english
   /// Whether the conversation is a chat thread conversation.
   /// - `true`: Yes;
-  /// - `false`: No. 
+  /// - `false`: No.
   /// ~end
   ///
   /// ~chinese
