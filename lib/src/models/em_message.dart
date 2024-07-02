@@ -400,7 +400,7 @@ class EMMessage {
   ///
   /// **Return** The message instance.
   /// ~end
-  /// 
+  ///
   /// ~chinese
   /// 创建一条文本消息。
   ///
@@ -690,7 +690,10 @@ class EMMessage {
             chatType: chatType,
             to: targetId,
             body: EMVoiceMessageBody(
-                localPath: filePath, duration: duration, fileSize: fileSize, displayName: displayName));
+                localPath: filePath,
+                duration: duration,
+                fileSize: fileSize,
+                displayName: displayName));
 
   /// ~english
   /// Creates a location message for sending.
@@ -791,7 +794,8 @@ class EMMessage {
   }) : this.createSendMessage(
             chatType: chatType,
             to: targetId,
-            body: EMCmdMessageBody(action: action, deliverOnlineOnly: deliverOnlineOnly));
+            body: EMCmdMessageBody(
+                action: action, deliverOnlineOnly: deliverOnlineOnly));
 
   /// ~english
   /// Creates a custom message for sending.
@@ -1533,7 +1537,7 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// Whether to send the original image.
   ///
   /// - (default) `false`: No. The original image will be compressed if it exceeds 100 KB and the thumbnail will be sent.
-  /// - `true`: Yes. 
+  /// - `true`: Yes.
   /// ~end
   ///
   /// ~chinese

@@ -273,13 +273,13 @@ class EMOptions {
   /// ~english
   /// Whether the sent message is included in [EMChatEventHandler.onMessagesReceived]:
   /// - `true`: Yes. Besides the received message, the sent message is also included in [EMChatEventHandler.onMessagesReceived].
-	/// - (Default) `false`: No. Only the received message is included in [EMChatEventHandler.onMessagesReceived].
+  /// - (Default) `false`: No. Only the received message is included in [EMChatEventHandler.onMessagesReceived].
 
   /// ~end
   /// ~chinese
   /// 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调。
   /// - `true`：是。接收消息回调中包含发送成功的消息。
-	/// - （默认）`false`：否。接收消息回调中只包含接收的消息。
+  /// - （默认）`false`：否。接收消息回调中只包含接收的消息。
   /// ~end
   final bool messagesReceiveCallbackIncludeSend;
 
@@ -292,7 +292,7 @@ class EMOptions {
   /// ~chinese
   /// 是否将导入的消息视为已读。
   /// - `true`：已读。
-	/// - （默认）`false`：未读。
+  /// - （默认）`false`：未读。
   /// ~end
   final bool regardImportMessagesAsRead;
 
@@ -558,13 +558,13 @@ class EMOptions {
   ///
   /// Param [useReplacedMessageContents] Whether the server returns the sender the text message with the content replaced during text moderation.
   /// - `true`: Yes.
-	/// - (Default) `false`: No. The server returns the original message to the sender.
-	///
-	/// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
-	///
-	/// Param [messagesReceiveCallbackIncludeSend] Whether to include the sent message in [EMChatEventHandler.onMessagesReceived].
-	/// - `true`: Yes. Besides the received message, the sent message is also included in [EMChatEventHandler.onMessagesReceived].
-	/// - (Default)`false`: No. Only the received message is included in [EMChatEventHandler.onMessagesReceived].
+  /// - (Default) `false`: No. The server returns the original message to the sender.
+  ///
+  /// Param [enableTLS] Whether to enable TLS connection, which takes effect during initialization and is false by default.
+  ///
+  /// Param [messagesReceiveCallbackIncludeSend] Whether to include the sent message in [EMChatEventHandler.onMessagesReceived].
+  /// - `true`: Yes. Besides the received message, the sent message is also included in [EMChatEventHandler.onMessagesReceived].
+  /// - (Default)`false`: No. Only the received message is included in [EMChatEventHandler.onMessagesReceived].
   ///
   /// Param [regardImportMessagesAsRead] Whether to regard import messages as read:
   /// - `true`: Yes.
@@ -658,7 +658,7 @@ class EMOptions {
   ///
   /// Param [messagesReceiveCallbackIncludeSend] 发送的消息是会执行 [EMChatEventHandler.onMessagesReceived] 回调。
   /// - `true`：是。接收消息通知中包含发送成功的消息。
-	/// - （默认）`false`：否。接收消息通知中只包含接收的消息。
+  /// - （默认）`false`：否。接收消息通知中只包含接收的消息。
   ///
   /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
   ///
