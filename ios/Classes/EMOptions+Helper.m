@@ -45,7 +45,7 @@
 + (EMOptions *)fromJson:(NSDictionary *)aJson {
     EMOptions *options = [EMOptions optionsWithAppkey:aJson[@"appKey"]];
     options.isAutoLogin = [aJson[@"autoLogin"] boolValue];
-    options.enableConsoleLog = [aJson[@"debugModel"] boolValue];
+    options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];
     options.enableRequireReadAck = [aJson[@"requireAck"] boolValue];
     options.enableDeliveryAck = [aJson[@"requireDeliveryAck"] boolValue];
     options.sortMessageByServerTime = [aJson[@"sortMessageByServerTime"] boolValue];
@@ -67,10 +67,11 @@
     options.area = [aJson[@"areaCode"] intValue];
     options.customDeviceName = aJson[@"deviceName"];
     // 450
-    options.enableTLSConnection = aJson[@"enableTLS"];
+    options.enableTLSConnection = [aJson[@"enableTLS"] boolValue];
     options.useReplacedMessageContents = [aJson[@"useReplacedMessageContents"] boolValue];
     options.includeSendMessageInMessageListener = [aJson[@"messagesReceiveCallbackIncludeSend"] boolValue];
     options.regardImportMessagesAsRead = [aJson[@"regardImportMessagesAsRead"] boolValue];
+    
     if(aJson[@"osType"]) {
         options.customOSType = [aJson[@"osType"] intValue];
     }
