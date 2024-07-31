@@ -4,29 +4,30 @@ import 'inner_headers.dart';
 /// The push configuration class, which contains the push configuration information, such as the push style.
 /// ~end
 class EMPushConfig {
-  String? mzAppId = '';
-  String? mzAppKey = '';
+  String mzAppId = '';
+  String mzAppKey = '';
 
-  String? oppoAppKey = '';
-  String? oppoAppSecret = '';
+  String oppoAppKey = '';
+  String oppoAppSecret = '';
 
-  String? miAppId = '';
-  String? miAppKey = '';
+  String miAppId = '';
+  String miAppKey = '';
 
-  String? fcmId = '';
+  String fcmId = '';
 
-  String? apnsCertName = '';
+  String apnsCertName = '';
 
-  bool? enableMeiZuPush = false;
-  bool? enableOppoPush = false;
-  bool? enableMiPush = false;
+  bool enableMeiZuPush = false;
+  bool enableOppoPush = false;
+  bool enableMiPush = false;
 
-  bool? enableFCM = false;
+  bool enableFCM = false;
 
-  bool? enableVivoPush = false;
-  bool? enableHWPush = false;
-  bool? enableHonorPush = false;
-  bool? enableAPNS = false;
+  bool enableVivoPush = false;
+  bool agreePrivacyStatement = false;
+  bool enableHWPush = false;
+  bool enableHonorPush = false;
+  bool enableAPNS = false;
 
   EMPushConfig();
 
@@ -44,6 +45,7 @@ class EMPushConfig {
     enableMiPush = json.boolValue('enableMiPush');
     enableFCM = json.boolValue('enableFCM');
     enableVivoPush = json.boolValue('enableVivoPush');
+    agreePrivacyStatement = json.boolValue('agreePrivacyStatement');
     enableHWPush = json.boolValue('enableHWPush');
     enableAPNS = json.boolValue('enableAPNS');
     enableHonorPush = json.boolValue('enableHonorPush');
@@ -65,6 +67,7 @@ class EMPushConfig {
     data.putIfNotNull("enableFCM", enableFCM);
     data.putIfNotNull("enableHWPush", enableHWPush);
     data.putIfNotNull("enableVivoPush", enableVivoPush);
+    data.putIfNotNull('agreePrivacyStatement', agreePrivacyStatement);
     data.putIfNotNull("enableAPNS", enableAPNS);
     data.putIfNotNull("enableHonorPush", enableHonorPush);
 
