@@ -121,7 +121,8 @@ class EMOptionsHelper {
                 builder.enableMeiZuPush(pushConfig.getString("mzAppId"), pushConfig.getString("mzAppKey"));
             }
             if (pushConfig.getBoolean("enableVivoPush")) {
-                builder.enableVivoPush();
+                boolean agreePrivacyStatement = pushConfig.getBoolean("agreePrivacyStatement");
+                builder.enableVivoPush(agreePrivacyStatement);
             }
             if(pushConfig.getBoolean("enableHonorPush")) {
                 builder.enableHonorPush();

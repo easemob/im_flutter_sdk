@@ -436,8 +436,9 @@ class EMOptions {
   /// ~chinese
   /// 开启 vivo 推送。
   /// ~end
-  void enableVivoPush() {
+  void enableVivoPush(bool agreePrivacyStatement) {
     _pushConfig.enableVivoPush = true;
+    _pushConfig.agreePrivacyStatement = agreePrivacyStatement;
   }
 
   /// ~english

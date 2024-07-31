@@ -1,3 +1,13 @@
+## 4.6.1+2
+
+#### 优化
+
+- 安卓平台下 OPPO 推送更新至 oppo_push_3.5.2.aar。 OPPO 推送支持 REALME 类型设备。
+- 安卓平台下 vivo 推送更新至 vivo_push_v4.0.4.0_504.aar。
+- 安卓平台下 小米推送更新至 MiPush_SDK_Client_6_0_1-C_3rd.aar。
+- 安卓平台下 魅族推送更新至 com.meizu.flyme.internet:push-internal:4.3.0。
+
+
 ## 4.6.1+1
 
 #### 优化
