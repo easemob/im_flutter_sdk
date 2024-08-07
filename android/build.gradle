@@ -1,14 +1,16 @@
 group 'com.easemob.im_flutter_sdk'
 version '1.0-SNAPSHOT'
 
+
 buildscript {
+    ext.kotlin_version = "1.7.10"
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0'
+        classpath("com.android.tools.build:gradle:7.3.0")
     }
 }
 
@@ -22,24 +24,30 @@ allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion = '28.0.3'
+
+    if (project.android.hasProperty("namespace")) {
+        namespace = "com.easemob.im_flutter_sdk"
+    }
+
+    compileSdk = 34
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    // kotlinOptions {
+    //     jvmTarget = JavaVersion.VERSION_1_8
+    // }
+
+    // sourceSets {
+    //     main.java.srcDirs += "src/main/kotlin"
+    //     test.java.srcDirs += "src/test/kotlin"
+    // }
 
     defaultConfig {
-        minSdkVersion 21
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = 21
     }
-
-    //自3.6.0开始需要java8的支持
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    lintOptions {
-        disable 'InvalidPackage'
-    }
-
 }
 
 tasks.withType(JavaCompile){
