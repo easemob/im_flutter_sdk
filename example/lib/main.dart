@@ -80,8 +80,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: _signIn,
                     child: const Text("SIGN IN"),
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -91,8 +91,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: _signOut,
                     child: const Text("SIGN OUT"),
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -102,8 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: _signUp,
                     child: const Text("SIGN UP"),
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                      backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -123,8 +123,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _sendMessage,
               child: const Text("SEND TEXT"),
               style: ButtonStyle(
-                foregroundColor: MaterialStateProperty.all(Colors.white),
-                backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+                backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
               ),
             ),
             Flexible(
