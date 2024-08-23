@@ -384,6 +384,13 @@ class ChatMethodKeys {
   static const String conversationRemindType = 'conversationRemindType';
   static const String conversationSearchMsgsByOptions =
       'conversationSearchMsgsByOptions';
+  static const String conversationGetLocalMessageCount =
+      'conversationGetLocalMessageCount';
+  static const String conversationDeleteServerMessageWithIds =
+      'conversationDeleteServerMessageWithIds';
+  static const String conversationDeleteServerMessageWithTime =
+      'conversationDeleteServerMessageWithTime';
+
   static const String searchMsgsByOptions = 'searchMsgsByOptions';
   static const String syncSilentModels = 'syncSilentModels';
   static const String clearAllGroupsFromDB = 'clearAllGroupsFromDB';

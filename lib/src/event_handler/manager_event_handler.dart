@@ -743,7 +743,7 @@ class EMChatRoomEventHandler {
   /// ~chinese
   /// 聊天室加入新成员回调。
   /// ~end
-  final void Function(String roomId, String participant)?
+  final void Function(String roomId, String participant, String? ext)?
       onMemberJoinedFromChatRoom;
 
   /// ~english

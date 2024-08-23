@@ -326,8 +326,11 @@ public class EMSDKMethod {
     static final String onMessagesRecalledInfo = "onMessagesRecalledInfo";
     // 481
     static final String conversationRemindType = "conversationRemindType";
-    static final String conversationSearchMsgsByOptions =
-            "conversationSearchMsgsByOptions";
+    static final String conversationSearchMsgsByOptions = "conversationSearchMsgsByOptions";
+    static final String conversationGetLocalMessageCount = "conversationGetLocalMessageCount";
+
+    static final String conversationDeleteServerMessageWithIds = "conversationDeleteServerMessageWithIds";
+    static final String conversationDeleteServerMessageWithTime = "conversationDeleteServerMessageWithTime";
     static final String searchMsgsByOptions = "searchMsgsByOptions";
     static final String syncSilentModels = "syncSilentModels";
     static final String clearAllGroupsFromDB = "clearAllGroupsFromDB";

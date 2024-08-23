@@ -74,6 +74,8 @@ EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
       return EMMultiDevicesEvent.CONVERSATION_DELETE;
     case 63:
       return EMMultiDevicesEvent.CONVERSATION_UPDATE_MARK;
+    case 64:
+      return EMMultiDevicesEvent.CONVERSATION_MUTE_INFO_CHANGED;
   }
   return null;
 }

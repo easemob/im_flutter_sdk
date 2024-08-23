@@ -134,6 +134,21 @@
                          channelName:call.method
                               result:result];
     }
+    else if ([ChatConversationGetLocalMessageCount isEqualToString:call.method]) {
+        [self getLocalMessageCount:call.arguments
+                         channelName:call.method
+                              result:result];
+    }
+    else if ([ChatConversationDeleteServerMessageWithIds isEqualToString:call.method]) {
+        [self deleteServerMessages:call.arguments
+                         channelName:call.method
+                              result:result];
+    }
+    else if ([ChatConversationDeleteServerMessageWithTime isEqualToString:call.method]) {
+        [self deleteServerMessagesByTime:call.arguments
+                         channelName:call.method
+                              result:result];
+    }
     
     
     
@@ -653,5 +668,59 @@
         }];
     }];
 }
+
+- (void)getLocalMessageCount:(NSDictionary *)param
+                   channelName:(NSString *)aChannelName
+                        result:(FlutterResult)result{
+    NSInteger startMs = [param[@"startMs"] integerValue];
+    NSInteger endMs = [param[@"endMs"] longLongValue];
+    
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        NSInteger count = [conversation getMessageCountStart:startMs to:endMs];
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:@(count)];
+    }];
+}
+
+- (void)deleteServerMessages:(NSDictionary *)param
+                   channelName:(NSString *)aChannelName
+                      result:(FlutterResult)result{
+    NSArray *msgIds = param[@"msgIds"];
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        [conversation removeMessagesFromServerMessageIds:msgIds completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }];
+}
+
+- (void)deleteServerMessagesByTime:(NSDictionary *)param
+                   channelName:(NSString *)aChannelName
+                      result:(FlutterResult)result{
+    long long ts = [param[@"beforeMs"] longLongValue];
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        [conversation removeMessagesFromServerWithTimeStamp:ts completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    }];
+}
+
 
 @end
