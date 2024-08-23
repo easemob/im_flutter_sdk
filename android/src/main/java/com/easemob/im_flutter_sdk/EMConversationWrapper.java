@@ -108,8 +108,17 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.conversationRemindType.equals(call.method)) {
                 remindType(param, call.method, result);
             }
-            else if (EMSDKMethod.searchMsgsByOptions.equals(call.method)) {
+            else if (EMSDKMethod.conversationSearchMsgsByOptions.equals(call.method)) {
                 searchMsgByOptions(param, call.method, result);
+            }
+            else if (EMSDKMethod.conversationGetLocalMessageCount.equals(call.method)) {
+                getLocalMessageCount(param, call.method, result);
+            }
+            else if (EMSDKMethod.conversationDeleteServerMessageWithIds.equals(call.method)) {
+                deleteLocalAndServerMessages(param, call.method, result);
+            }
+            else if (EMSDKMethod.conversationDeleteServerMessageWithTime.equals(call.method)) {
+                deleteLocalAndServerMessagesByTime(param, call.method, result);
             }
             else
             {
@@ -441,6 +450,34 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             messages.add(EMMessageHelper.toJson(msg));
         }
         onSuccess(result, channelName, messages);
+    }
+
+    private void getLocalMessageCount(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        long startMs = params.optLong("startMs");
+        long endMs = params.optLong("endMs");
+        int count = conversation.getAllMsgCount(startMs, endMs);
+        asyncRunnable(()->{
+            onSuccess(result, channelName, count);
+        });
+    }
+
+    private void deleteLocalAndServerMessages(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        List<String> messageIds = new ArrayList<>();
+        if (params.has("msgIds")){
+            JSONArray array = params.getJSONArray("msgIds");
+            for (int i = 0; i < array.length(); i++) {
+                messageIds.add(array.getString(i));
+            }
+        }
+        conversation.removeMessagesFromServer(messageIds, new EMWrapperCallBack(result, channelName,null));
+    }
+
+    private void deleteLocalAndServerMessagesByTime(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        long beforeMs = params.optLong("beforeMs");
+        conversation.removeMessagesFromServer(beforeMs, new EMWrapperCallBack(result, channelName,null));
     }
 
 }

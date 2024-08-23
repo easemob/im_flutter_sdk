@@ -1,3 +1,28 @@
+## 4.8.1
+
+#### 新增特性
+
+- 新增 `EMChatRoomManager.joinChatRoom(String roomId, {bool leaveOther = true,String? ext,})` 方法，支持设置加入聊天室时携带的扩展信息，并指定是否退出所有其他聊天室。
+- 新增 `EMChatRoomEventHandler.onMemberJoinedFromChatRoom(String roomId, String participant, String? ext)` 回调，当用户加入聊天室携带了扩展信息时，聊天室内其他人可以在用户加入聊天室的回调中，获取到扩展信息。
+- 新增 `EMPushManager.syncConversationsSilentMode()` 方法，支持从服务器获取所有会话的推送通知方式的设置。
+- 新增 `EMConversation.remindType()` 方法，用于本地存储会话的推送通知方式。
+- 新增 `EMConversation.getLocalMessageCount()` 方法，获取指定时间范围内本地数据库中的消息数量。
+- 新增 `LoginExtensionInfo` 用户设备扩展信息。
+- 新增 `EMOptions.loginExtension` 设置登录时携带的扩展信息。
+- 新增 `EMChatManager.searchMsgsByOptions` 根据单个或多个消息类型，搜索本地数据库中所有会话的消息。
+- 新增 `EMConversation.searchMsgsByOptions` 根据单个或多个消息类型，搜索本地数据库中所有会话的消息。
+
+#### 优化
+
+- 支持 AUT 协议， 优化弱网环境下的服务连接成功率;
+- 修改 `EMConnectionEventHandler.onUserDidLoginFromOtherDevice(String deviceName)` 方法为 `EMConnectionEventHandler.onUserDidLoginFromOtherDevice(LoginExtensionInfo info)`
+
+#### 修复
+
+- 修复 `fetchConversationsByOptions` 偶尔引起的崩溃；
+- 修复拉黑联系人时缓存未及时更新的问题。
+- 修复退出登录再登录后推送可能不工作的问题。
+
 ## 4.6.1+2
 
 #### 优化

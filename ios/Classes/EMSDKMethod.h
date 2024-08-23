@@ -353,6 +353,9 @@ static NSString *const onMessagesRecalledInfo = @"onMessagesRecalledInfo";
 #pragma mark 481
 static NSString *const ChatConversationRemindType = @"conversationRemindType";
 static NSString *const ChatConversationSearchMsgsByOptions = @"conversationSearchMsgsByOptions";
+static NSString *const ChatConversationGetLocalMessageCount = @"conversationGetLocalMessageCount";
+static NSString *const ChatConversationDeleteServerMessageWithIds = @"conversationDeleteServerMessageWithIds";
+static NSString *const ChatConversationDeleteServerMessageWithTime = @"conversationDeleteServerMessageWithTime";
 static NSString *const ChatSearchMsgsByOptions = @"searchMsgsByOptions";
 static NSString *const ChatSyncSilentModels = @"syncSilentModels";
 static NSString *const ChatClearAllGroupsFromDB = @"clearAllGroupsFromDB";

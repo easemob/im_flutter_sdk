@@ -943,4 +943,116 @@ class EMConversation {
       return list;
     });
   }
+
+  /// ~english
+  /// Gets the local message count.
+  /// The count of messages in the local database within the specified time range.
+  ///
+  /// Param [startMs] The start time of the time range.
+  ///
+  /// Param [endMs] The end time of the time range.
+  ///
+  /// **Returns** The count of messages in the local database within the specified time range.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  ///
+  /// ~end
+  ///
+  /// ~chinese
+  ///
+  /// 获取本地消息数量。
+  ///
+  /// 获取指定时间范围内本地数据库中的消息数量。
+  ///
+  /// Param [startMs] 时间范围的开始时间。
+  ///
+  /// Param [endMs] 时间范围的结束时间。
+  ///
+  /// **Return** 指定时间范围内本地数据库中的消息数量。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
+  /// ~end
+  Future<int> getLocalMessageCount({
+    required int startMs,
+    required int endMs,
+  }) async {
+    Map req = this._toJson();
+    req.putIfNotNull("startMs", startMs);
+    req.putIfNotNull("endMs", endMs);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.conversationGetLocalMessageCount, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.conversationGetLocalMessageCount];
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  ///
+  /// Removes local and server messages from the conversation by message ID.
+  ///
+  /// Param [msgIds] The message ids.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  ///
+  /// ~chinese
+  ///
+  /// 通过消息 ID 从本地和服务器删除消息。
+  ///
+  /// Param [msgIds] 消息 ID。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
+  /// ~end
+  Future<void> deleteLocalAndServerMessages(
+      {required List<String> msgIds}) async {
+    Map req = this._toJson();
+    req.putIfNotNull("msgIds", msgIds);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.conversationDeleteServerMessageWithIds, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.conversationGetLocalMessageCount];
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  ///
+  /// Removes local and server messages from the conversation by timestamp.
+  ///
+  /// Param [beforeMs] The message ids.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  ///
+  /// ~chinese
+  ///
+  /// 通过消息时间戳从本地和服务器删除消息。
+  ///
+  /// Param [beforeMs] UNIX 时间戳，单位为毫秒。若消息的 UNIX 时间戳小于设置的值，则会被删除。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
+  /// ~end
+  Future<void> deleteLocalAndServerMessagesByTime(
+      {required int beforeMs}) async {
+    Map req = this._toJson();
+    req.putIfNotNull("beforeMs", beforeMs);
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.conversationGetLocalMessageCount];
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

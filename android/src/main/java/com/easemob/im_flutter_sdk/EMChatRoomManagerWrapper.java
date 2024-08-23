@@ -115,6 +115,8 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
     private void joinChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
+        String ext = param.optString("ext");
+        Boolean leaveOther = param.optBoolean("leaveOtherRooms");
         EMValueWrapperCallBack<EMChatRoom> callBack = new EMValueWrapperCallBack<EMChatRoom>(result, channelName) {
             @Override
             public void onSuccess(EMChatRoom object) {
@@ -122,7 +124,7 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             }
         };
 
-        EMClient.getInstance().chatroomManager().joinChatRoom(roomId, callBack);
+        EMClient.getInstance().chatroomManager().joinChatRoom(roomId, leaveOther, ext, callBack);
     }
 
     private void leaveChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
@@ -717,14 +719,17 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
 
             }
 
-            @Override
-            public void onMemberJoined(String roomId, String participant) {
+
+            public void onMemberJoined(String roomId, String participant, String ext) {
                 EMListenerHandle.getInstance().addHandle(
-                        ()-> {
+                        () -> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", roomId);
                             data.put("participant", participant);
                             data.put("type", "onRoomMemberJoined");
+                            if(ext != null) {
+                                data.put("ext", ext);
+                            }
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }
                 );

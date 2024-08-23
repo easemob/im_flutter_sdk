@@ -834,6 +834,15 @@ enum EMMultiDevicesEvent {
   /// 用户 A 在设备 A1 更新会话标记，则设备 A2 上会收到该事件。
   /// ~end
   CONVERSATION_UPDATE_MARK,
+
+  /// ~english
+  /// If user A sets the Do Not Disturb mode for a conversation on device A1, this event is triggered on device A2.
+  /// ~end
+  ///
+  /// ~chinese
+  ///  用户 A 在设备 A1 设置会话免打扰，则设备 A2 上会收到该事件。
+  /// ~end
+  CONVERSATION_MUTE_INFO_CHANGED,
 }
 
 /// ~english

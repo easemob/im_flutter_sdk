@@ -58,7 +58,8 @@ class EMChatRoomManager {
         case EMChatRoomEvent.ON_MEMBER_JOINED:
           String roomId = event['roomId'];
           String participant = event['participant'];
-          item.onMemberJoinedFromChatRoom?.call(roomId, participant);
+          String? ext = event['ext'];
+          item.onMemberJoinedFromChatRoom?.call(roomId, participant, ext);
           break;
         case EMChatRoomEvent.ON_MEMBER_EXITED:
           String roomId = event['roomId'];
@@ -230,6 +231,10 @@ class EMChatRoomManager {
   ///
   /// Param [roomId] The ID of the chat room to join.
   ///
+  /// Param [leaveOther] Whether to leave all the currently joined chat rooms when joining a chat room.
+  ///
+  /// Param [ext] The extension information.
+  ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
   ///
@@ -240,11 +245,24 @@ class EMChatRoomManager {
   ///
   /// Param [roomId] 要加入的聊天室ID。
   ///
+  /// Parm [leaveOther] 加入聊天室时候，是否退出已加入的聊天室。
+  ///
+  /// Param [ext] 扩展信息。
+  ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> joinChatRoom(String roomId) async {
-    Map result = await _channel
-        .invokeMethod(ChatMethodKeys.joinChatRoom, {"roomId": roomId});
+  Future<void> joinChatRoom(
+    String roomId, {
+    bool leaveOther = true,
+    String? ext,
+  }) async {
+    Map req = {
+      "roomId": roomId,
+      "leaveOtherRooms": leaveOther,
+    };
+    req.putIfNotNull("ext", ext);
+
+    Map result = await _channel.invokeMethod(ChatMethodKeys.joinChatRoom, req);
     try {
       EMError.hasErrorFromResult(result);
     } on EMError catch (e) {
