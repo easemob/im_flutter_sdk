@@ -142,7 +142,12 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
                 fetchMembersAttributes(param, call.method, result);
             } else if (EMSDKMethod.fetchJoinedGroupCount.equals(call.method)) {
                 fetchJoinedGroupCount(param, call.method, result);
-            } else {
+            }
+            // 481
+            else if (EMSDKMethod.clearAllGroupsFromDB.equals(call.method)) {
+                clearAllGroupsFromDB(param, call.method, result);
+            }
+            else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException e) {
@@ -1289,5 +1294,13 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
     @Override
     public void unRegisterEaseListener() {
         EMClient.getInstance().groupManager().removeGroupChangeListener(groupChangeListener);
+    }
+
+    // 481
+    private void clearAllGroupsFromDB(JSONObject param, String channelName, Result result){
+        EMClient.getInstance().groupManager().cleanAllGroupsFromLocal();
+        asyncRunnable(() -> {
+            onSuccess(result, channelName,null);
+        });
     }
 }

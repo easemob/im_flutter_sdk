@@ -14,6 +14,7 @@
 #import "EMChatroomManagerWrapper.h"
 #import "EMPushManagerWrapper.h"
 #import "EMDeviceConfig+Helper.h"
+#import "EMLoginExtensionInfo+Helper.h"
 #import "EMOptions+Helper.h"
 #import "EMUserInfoManagerWrapper.h"
 #import "EMPresenceManagerWrapper.h"
@@ -161,6 +162,73 @@
                 channelName:call.method
                      result:result];
     }
+    // 481
+    else if ([ChatUpdateUsingHttpsOnlySetting isEqualToString:call.method]){
+        [self updateUsingHttpsOnlySetting:call.arguments
+                              channelName:call.method
+                                   result:result];
+    }
+    else if ([ChatUpdateLoginExtensionInfo isEqualToString:call.method]){
+        [self updateLoginExtensionInfo:call.arguments
+                           channelName:call.method
+                                result:result];
+    }
+    else if ([ChatUpdateDeleteMessagesWhenLeaveGroupSetting isEqualToString:call.method]){
+        [self updateDeleteMessagesWhenLeaveGroupSetting:call.arguments
+                                            channelName:call.method
+                                                 result:result];
+    }
+    else if ([ChatUpdateDeleteMessageWhenLeaveRoomSetting isEqualToString:call.method]){
+        [self updateDeleteMessageWhenLeaveRoomSetting:call.arguments
+                                          channelName:call.method
+                                               result:result];
+    }
+    else if ([ChatUpdateRoomOwnerCanLeaveSetting isEqualToString:call.method]){
+        [self updateRoomOwnerCanLeaveSetting:call.arguments
+                                 channelName:call.method
+                                      result:result];
+    }
+    else if ([ChatUpdateAutoAcceptGroupInvitationSetting isEqualToString:call.method]){
+        [self updateAutoAcceptGroupInvitationSetting:call.arguments
+                                         channelName:call.method
+                                              result:result];
+    }
+    else if ([ChatUpdateAcceptInvitationAlways isEqualToString:call.method]){
+        [self updateAcceptInvitationAlways:call.arguments
+                               channelName:call.method
+                                    result:result];
+    }
+    else if ([ChatUpdateAutoDownloadAttachmentThumbnailSetting isEqualToString:call.method]){
+        [self updateAutoDownloadAttachmentThumbnailSetting:call.arguments
+                                               channelName:call.method
+                                                    result:result];
+    }
+    else if ([ChatUpdateRequireAckSetting isEqualToString:call.method]){
+        [self updateRequireAckSetting:call.arguments
+                          channelName:call.method
+                               result:result];
+    }
+    else if ([ChatUpdateDeliveryAckSetting isEqualToString:call.method]){
+        [self updateDeliveryAckSetting:call.arguments
+                           channelName:call.method
+                                result:result];
+    }
+    else if ([ChatUpdateSortMessageByServerTimeSetting isEqualToString:call.method]){
+        [self updateSortMessageByServerTimeSetting:call.arguments
+                                       channelName:call.method
+                                            result:result];
+    }
+    else if ([ChatUpdateMessagesReceiveCallbackIncludeSendSetting isEqualToString:call.method]){
+        [self updateMessagesReceiveCallbackIncludeSendSetting:call.arguments
+                                                  channelName:call.method
+                                                       result:result];
+    }
+    else if ([ChatUpdateRegradeMessagesSetting isEqualToString:call.method]){
+        [self updateRegradeMessagesSetting:call.arguments
+                               channelName:call.method
+                                    result:result];
+    }
+    
     else {
         [super handleMethodCall:call result:result];
     }
@@ -259,6 +327,7 @@
     BOOL isPwd = [param[@"isPassword"] boolValue];
     
     if (isPwd) {
+
         [EMClient.sharedClient loginWithUsername:username
                                         password:pwdOrToken
                                       completion:^(NSString *aUsername, EMError *aError){
@@ -527,11 +596,12 @@
                      arguments:nil];
 }
 
-- (void)userAccountDidLoginFromOtherDevice:(NSString *)aDeviceName {
-    [EMListenerHandle.sharedInstance clearHandle];
-    [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
-                     arguments:@{@"deviceName": aDeviceName}];
-}
+//- (void)userAccountDidLoginFromOtherDevice:(NSString *)aDeviceName {
+//    [EMListenerHandle.sharedInstance clearHandle];
+//    [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
+//                     arguments:@{@"deviceName": aDeviceName}];
+//}
+
 
 - (void)userAccountDidRemoveFromServer {
     [EMListenerHandle.sharedInstance clearHandle];
@@ -616,5 +686,182 @@
 //    
 //}
 
+
+# pragma mark - 481
+- (void)userAccountDidLoginFromOtherDeviceWithInfo:(EMLoginExtensionInfo *)info {
+    [EMListenerHandle.sharedInstance clearHandle];
+    [self.channel invokeMethod:ChatOnUserDidLoginFromOtherDevice
+                     arguments:[info toJson]];
+}
+
+
+- (void)updateUsingHttpsOnlySetting:(NSDictionary *)param
+                        channelName:(NSString *)aChannelName
+                             result:(FlutterResult)result 
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL usingHttpsOnly = [param[@"usingHttpsOnly"] boolValue];
+    EMClient.sharedClient.options.usingHttpsOnly = usingHttpsOnly;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateLoginExtensionInfo:(NSDictionary *)param
+                     channelName:(NSString *)aChannelName
+                          result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    NSString *ext = param[@"extension"];
+    EMClient.sharedClient.options.loginExtensionInfo = ext;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateDeleteMessagesWhenLeaveGroupSetting:(NSDictionary *)param
+                                      channelName:(NSString *)aChannelName
+                                           result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL deleteMessagesWhenLeaveGroup = [param[@"deleteMessagesWhenLeaveGroup"] boolValue];
+    EMClient.sharedClient.options.deleteMessagesOnLeaveGroup = deleteMessagesWhenLeaveGroup;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateDeleteMessageWhenLeaveRoomSetting:(NSDictionary *)param
+                                    channelName:(NSString *)aChannelName
+                                         result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL deleteMessageWhenLeaveRoom = [param[@"deleteMessageWhenLeaveRoom"] boolValue];
+    EMClient.sharedClient.options.deleteMessagesOnLeaveChatroom = deleteMessageWhenLeaveRoom;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateRoomOwnerCanLeaveSetting:(NSDictionary *)param
+                           channelName:(NSString *)aChannelName
+                                result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL roomOwnerCanLeave = [param[@"roomOwnerCanLeave"] boolValue];
+    EMClient.sharedClient.options.canChatroomOwnerLeave = roomOwnerCanLeave;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateAutoAcceptGroupInvitationSetting:(NSDictionary *)param
+                                   channelName:(NSString *)aChannelName
+                                        result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL autoAcceptGroupInvitation = [param[@"autoAcceptGroupInvitation"] boolValue];
+    EMClient.sharedClient.options.autoAcceptGroupInvitation = autoAcceptGroupInvitation;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateAcceptInvitationAlways:(NSDictionary *)param
+                         channelName:(NSString *)aChannelName
+                              result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL acceptInvitationAlways = [param[@"acceptInvitationAlways"] boolValue];
+    EMClient.sharedClient.options.autoAcceptFriendInvitation = acceptInvitationAlways;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateAutoDownloadAttachmentThumbnailSetting:(NSDictionary *)param
+                                         channelName:(NSString *)aChannelName
+                                              result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL autoDownloadThumbnail = [param[@"autoDownloadThumbnail"] boolValue];
+    EMClient.sharedClient.options.autoDownloadThumbnail = autoDownloadThumbnail;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateRequireAckSetting:(NSDictionary *)param
+                    channelName:(NSString *)aChannelName
+                         result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL requireAck = [param[@"requireAck"] boolValue];
+    EMClient.sharedClient.options.enableRequireReadAck = requireAck;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateDeliveryAckSetting:(NSDictionary *)param
+                     channelName:(NSString *)aChannelName
+                          result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL requireDeliveryAck = [param[@"requireDeliveryAck"] boolValue];
+    EMClient.sharedClient.options.enableDeliveryAck = requireDeliveryAck;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateSortMessageByServerTimeSetting:(NSDictionary *)param
+                                 channelName:(NSString *)aChannelName
+                                      result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL sortMessageByServerTime = [param[@"sortMessageByServerTime"] boolValue];
+    EMClient.sharedClient.options.sortMessageByServerTime = sortMessageByServerTime;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateMessagesReceiveCallbackIncludeSendSetting:(NSDictionary *)param
+                                            channelName:(NSString *)aChannelName
+                                                 result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL includeSend = [param[@"includeSend"] boolValue];
+    EMClient.sharedClient.options.includeSendMessageInMessageListener = includeSend;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
+
+- (void)updateRegradeMessagesSetting:(NSDictionary *)param
+                         channelName:(NSString *)aChannelName
+                              result:(FlutterResult)result
+{
+    __weak typeof(self)weakSelf = self;
+    BOOL isRead = [param[@"isRead"] boolValue];
+    EMClient.sharedClient.options.regardImportMessagesAsRead = isRead;
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+}
 
 @end

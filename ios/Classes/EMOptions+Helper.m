@@ -40,6 +40,8 @@
     data[@"enableTLS"] = @(self.enableTLSConnection);
     data[@"messagesReceiveCallbackIncludeSend"] = @(self.includeSendMessageInMessageListener);
     data[@"regardImportMessagesAsRead"] = @(self.regardImportMessagesAsRead);
+    // 481
+    data[@"loginExtensionInfo"] = self.loginExtensionInfo;
     return data;
 }
 + (EMOptions *)fromJson:(NSDictionary *)aJson {
@@ -75,6 +77,9 @@
     if(aJson[@"osType"]) {
         options.customOSType = [aJson[@"osType"] intValue];
     }
+    
+    // 481
+    options.loginExtensionInfo = aJson[@"loginExtensionInfo"];
     return options;
 }
 @end

@@ -65,7 +65,7 @@ class EMConnectionEventHandler {
   /// ~chinese
   /// 其他设备登录回调。
   /// ~end
-  final void Function(String deviceName)? onUserDidLoginFromOtherDevice;
+  final void Function(LoginExtensionInfo info)? onUserDidLoginFromOtherDevice;
 
   /// ~english
   /// Occurs when the current chat user is removed from the server.

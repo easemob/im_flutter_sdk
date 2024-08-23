@@ -379,4 +379,34 @@ class ChatMethodKeys {
 
   // 460
   static const String onMessagesRecalledInfo = 'onMessagesRecalledInfo';
+
+  // 481
+  static const String conversationRemindType = 'conversationRemindType';
+  static const String conversationSearchMsgsByOptions =
+      'conversationSearchMsgsByOptions';
+  static const String searchMsgsByOptions = 'searchMsgsByOptions';
+  static const String syncSilentModels = 'syncSilentModels';
+  static const String clearAllGroupsFromDB = 'clearAllGroupsFromDB';
+  static const String updateUsingHttpsOnlySetting =
+      'updateUsingHttpsOnlySetting';
+  static const String updateLoginExtensionInfo = 'updateLoginExtensionInfo';
+  static const String updateDeleteMessagesWhenLeaveGroupSetting =
+      'updateDeleteMessagesWhenLeaveGroupSetting';
+  static const String updateDeleteMessageWhenLeaveRoomSetting =
+      'updateDeleteMessageWhenLeaveRoomSetting';
+  static const String updateRoomOwnerCanLeaveSetting =
+      'updateRoomOwnerCanLeaveSetting';
+  static const String updateAutoAcceptGroupInvitationSetting =
+      'updateAutoAcceptGroupInvitationSetting';
+  static const String updateAcceptInvitationAlways = 'acceptInvitationAlways';
+  static const String updateAutoDownloadAttachmentThumbnailSetting =
+      'updateAutoDownloadAttachmentThumbnailSetting';
+  static const String updateRequireAckSetting = 'updateRequireAckSetting';
+  static const String updateDeliveryAckSetting = 'updateDeliveryAckSetting';
+  static const String updateSortMessageByServerTimeSetting =
+      'updateSortMessageByServerTimeSetting';
+  static const String updateMessagesReceiveCallbackIncludeSendSetting =
+      'updateMessagesReceiveCallbackIncludeSendSetting';
+  static const String updateRegradeMessagesSetting =
+      'updateRegradeMessagesSetting';
 }

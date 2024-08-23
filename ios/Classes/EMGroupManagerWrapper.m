@@ -317,6 +317,10 @@
     else if ([ChatFetchJoinedGroupCount isEqualToString:call.method]) {
         [self fetchJoinedGroupCount:call.arguments channelName:call.method result:result];
     }
+    // 481
+    else if ([ChatClearAllGroupsFromDB isEqualToString:call.method]) {
+        [self clearAllGroupFromDB:call.arguments channelName:call.method result:result];
+    }
     else
     {
         [super handleMethodCall:call result:result];
@@ -1436,6 +1440,18 @@
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
                          arguments:map];
     }];
+}
+
+
+#pragma mark - 481
+- (void)clearAllGroupFromDB:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.groupManager cleanAllGroupsFromDB];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:nil
+                       object:nil];
+    
 }
 
 @end

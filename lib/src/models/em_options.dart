@@ -692,6 +692,7 @@ class EMOptions {
     this.enableTLS = false,
     this.messagesReceiveCallbackIncludeSend = false,
     this.regardImportMessagesAsRead = false,
+    this.loginExtension,
   });
 
   Map toJson() {
@@ -733,11 +734,80 @@ class EMOptions {
     data["pushConfig"] = this._pushConfig.toJson();
     data["areaCode"] = this.chatAreaCode;
 
+    // 481
+    data.putIfNotNull('loginExtensionInfo', loginExtension);
     return data;
   }
 
   @override
   String toString() {
     return toJson().toString();
+  }
+
+  // 481
+
+  /// ~english
+  /// The extended information carried during login can be a JSON string. The current string length is limited to 1024 characters.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 登录时携带的扩展信息，可以是JSON 字符串，目前字符串长度 底层限制长度1024
+  /// ~end
+  final String? loginExtension;
+
+  EMOptions copyWith({
+    bool? usingHttpsOnly,
+    String? loginExtension,
+    bool? deleteMessageWhenLeaveRoom,
+    bool? deleteMessagesWhenLeaveGroup,
+    bool? roomOwnerCanLeave,
+    bool? autoAcceptGroupInvitation,
+    bool? acceptInvitationAlways,
+    bool? autoDownloadThumbnail,
+    bool? requireDeliveryAck,
+    bool? requireAck,
+    bool? sortMessageByServerTime,
+    bool? messagesReceiveCallbackIncludeSend,
+    bool? regardImportMessagesAsRead,
+  }) {
+    return EMOptions(
+      appKey: appKey,
+      autoLogin: autoLogin,
+      debugMode: debugMode,
+      acceptInvitationAlways:
+          acceptInvitationAlways ?? this.acceptInvitationAlways,
+      autoAcceptGroupInvitation:
+          autoAcceptGroupInvitation ?? this.autoAcceptGroupInvitation,
+      requireAck: requireAck ?? this.requireAck,
+      requireDeliveryAck: requireDeliveryAck ?? this.requireDeliveryAck,
+      deleteMessagesAsExitGroup:
+          deleteMessagesWhenLeaveGroup ?? this.deleteMessagesAsExitGroup,
+      deleteMessagesAsExitChatRoom:
+          deleteMessageWhenLeaveRoom ?? this.deleteMessagesAsExitChatRoom,
+      isChatRoomOwnerLeaveAllowed:
+          roomOwnerCanLeave ?? this.isChatRoomOwnerLeaveAllowed,
+      sortMessageByServerTime:
+          sortMessageByServerTime ?? this.sortMessageByServerTime,
+      usingHttpsOnly: usingHttpsOnly ?? this.usingHttpsOnly,
+      serverTransfer: serverTransfer,
+      isAutoDownloadThumbnail:
+          autoDownloadThumbnail ?? this.isAutoDownloadThumbnail,
+      enableDNSConfig: enableDNSConfig,
+      dnsUrl: dnsUrl,
+      restServer: restServer,
+      imPort: imPort,
+      imServer: imServer,
+      chatAreaCode: chatAreaCode,
+      enableEmptyConversation: enableEmptyConversation,
+      deviceName: deviceName,
+      osType: osType,
+      useReplacedMessageContents: useReplacedMessageContents,
+      enableTLS: enableTLS,
+      messagesReceiveCallbackIncludeSend: messagesReceiveCallbackIncludeSend ??
+          this.messagesReceiveCallbackIncludeSend,
+      regardImportMessagesAsRead:
+          regardImportMessagesAsRead ?? this.regardImportMessagesAsRead,
+      loginExtension: loginExtension,
+    );
   }
 }

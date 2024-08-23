@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'internal/inner_headers.dart';
 
 /// ~english
@@ -80,14 +81,14 @@ class EMClient {
 
   void _addNativeMethodCallHandler() {
     ClientChannel.setMethodCallHandler((MethodCall call) async {
-      Map? argMap = call.arguments;
+      Map<String, dynamic>? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onConnected) {
         return _onConnected();
       } else if (call.method == ChatMethodKeys.onDisconnected) {
         return _onDisconnected();
       } else if (call.method == ChatMethodKeys.onUserDidLoginFromOtherDevice) {
-        String deviceName = argMap?['deviceName'] ?? "";
-        _onUserDidLoginFromOtherDevice(deviceName);
+        LoginExtensionInfo info = LoginExtensionInfo.fromJson(argMap!);
+        _onUserDidLoginFromOtherDevice(info);
       } else if (call.method == ChatMethodKeys.onUserDidRemoveFromServer) {
         _onUserDidRemoveFromServer();
       } else if (call.method == ChatMethodKeys.onUserDidForbidByServer) {
@@ -890,9 +891,9 @@ class EMClient {
     }
   }
 
-  Future<void> _onUserDidLoginFromOtherDevice(String deviceName) async {
+  Future<void> _onUserDidLoginFromOtherDevice(LoginExtensionInfo info) async {
     for (var handler in _connectionEventHandler.values) {
-      handler.onUserDidLoginFromOtherDevice?.call(deviceName);
+      handler.onUserDidLoginFromOtherDevice?.call(info);
     }
   }
 
@@ -1124,5 +1125,190 @@ class EMClient {
   void _clearAllInfo() {
     _currentUserId = null;
     _userInfoManager.clearUserInfoCache();
+  }
+
+  // 481
+
+  /// ~english
+  /// Whether only HTTPS is used for REST operations.
+  ///
+  /// Param [usingHttpsOnly] Whether only HTTPS is used.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否只用 HTTPS。
+  ///
+  /// Param [usingHttpsOnly] 是否只用 HTTPS。
+  /// ~end
+  Future<void> updateUsingHttpsOnlySetting(bool usingHttpsOnly) async {
+    Map req = {'usingHttpsOnly': usingHttpsOnly};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateUsingHttpsOnlySetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(usingHttpsOnly: usingHttpsOnly);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
+  ///
+  Future<void> updateLoginExtensionInfoSetting(String extension) async {
+    Map req = {'extension': extension};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateLoginExtensionInfo, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(loginExtension: extension);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateDeleteMessagesWhenLeaveGroupSetting(
+      bool deleteMessagesWhenLeaveGroup) async {
+    Map req = {'deleteMessagesWhenLeaveGroup': deleteMessagesWhenLeaveGroup};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateDeleteMessagesWhenLeaveGroupSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(
+          deleteMessagesWhenLeaveGroup: deleteMessagesWhenLeaveGroup);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateDeleteMessageWhenLeaveRoomSetting(
+      bool deleteMessageWhenLeaveRoom) async {
+    Map req = {'deleteMessageWhenLeaveRoom': deleteMessageWhenLeaveRoom};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateDeleteMessageWhenLeaveRoomSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(
+          deleteMessageWhenLeaveRoom: deleteMessageWhenLeaveRoom);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateRoomOwnerCanLeaveSetting(bool roomOwnerCanLeave) async {
+    Map req = {'roomOwnerCanLeave': roomOwnerCanLeave};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateRoomOwnerCanLeaveSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(roomOwnerCanLeave: roomOwnerCanLeave);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateAutoAcceptGroupInvitationSetting(
+      bool autoAcceptGroupInvitation) async {
+    Map req = {'autoAcceptGroupInvitation': autoAcceptGroupInvitation};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateAutoAcceptGroupInvitationSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(
+          autoAcceptGroupInvitation: autoAcceptGroupInvitation);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateAutoAcceptFriendInvitationSetting(
+      bool acceptInvitationAlways) async {
+    Map req = {'acceptInvitationAlways': acceptInvitationAlways};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateAcceptInvitationAlways, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(acceptInvitationAlways: acceptInvitationAlways);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateAutoDownloadAttachmentThumbnailSetting(
+      bool autoDownloadThumbnail) async {
+    Map req = {'autoDownloadThumbnail': autoDownloadThumbnail};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateAutoDownloadAttachmentThumbnailSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(autoDownloadThumbnail: autoDownloadThumbnail);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateRequireAckSetting(bool requireAck) async {
+    Map req = {'requireAck': requireAck};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateRequireAckSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(requireAck: requireAck);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateDeliveryAckSetting(bool requireDeliveryAck) async {
+    Map req = {'requireDeliveryAck': requireDeliveryAck};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateDeliveryAckSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(requireDeliveryAck: requireDeliveryAck);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateSortMessageByServerTimeSetting(
+      bool sortMessageByServerTime) async {
+    Map req = {'sortMessageByServerTime': sortMessageByServerTime};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateSortMessageByServerTimeSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(sortMessageByServerTime: sortMessageByServerTime);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateMessagesReceiveCallbackIncludeSendSetting(
+      bool includeSend) async {
+    Map req = {'includeSend': includeSend};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateMessagesReceiveCallbackIncludeSendSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(messagesReceiveCallbackIncludeSend: includeSend);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateRegradeMessagesAsReadSetting(bool isRead) async {
+    Map req = {'isRead': isRead};
+    Map result = await ClientChannel.invokeMethod(
+        ChatMethodKeys.updateRegradeMessagesSetting, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(regardImportMessagesAsRead: isRead);
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 }

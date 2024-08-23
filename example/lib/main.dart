@@ -155,6 +155,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addChatListener() {
+    EMClient.getInstance.addConnectionEventHandler(
+        'identifier',
+        EMConnectionEventHandler(
+          onUserDidLoginFromOtherDevice: (info) {},
+        ));
+
     EMClient.getInstance.chatManager.addMessageEvent(
         "UNIQUE_HANDLER_ID",
         ChatMessageEvent(
