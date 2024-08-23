@@ -277,7 +277,7 @@ static NSString *const ChatUpdateImPushStyle = @"updateImPushStyle";
 static NSString *const ChatUpdatePushNickname = @"updatePushNickname";
 
 static NSString *const ChatBindDeviceToken = @"updateAPNsPushToken";
-static NSString *const UpdateFCMPushToken = @"updateFCMPushToken";
+static NSString *const ChatUpdateFCMPushToken = @"updateFCMPushToken";
 
 
 static NSString *const ChatReportPushAction = @"reportPushAction";
@@ -349,3 +349,32 @@ static NSString *const fetchPinnedMessages = @"fetchPinnedMessages";
 
 // 460
 static NSString *const onMessagesRecalledInfo = @"onMessagesRecalledInfo";
+
+#pragma mark 481
+static NSString *const ChatConversationRemindType = @"conversationRemindType";
+static NSString *const ChatConversationSearchMsgsByOptions = @"conversationSearchMsgsByOptions";
+static NSString *const ChatSearchMsgsByOptions = @"searchMsgsByOptions";
+static NSString *const ChatSyncSilentModels = @"syncSilentModels";
+static NSString *const ChatClearAllGroupsFromDB = @"clearAllGroupsFromDB";
+static NSString *const ChatUpdateUsingHttpsOnlySetting =
+    @"updateUsingHttpsOnlySetting";
+static NSString *const ChatUpdateLoginExtensionInfo = @"updateLoginExtensionInfo";
+static NSString *const ChatUpdateDeleteMessagesWhenLeaveGroupSetting =
+    @"updateDeleteMessagesWhenLeaveGroupSetting";
+static NSString *const ChatUpdateDeleteMessageWhenLeaveRoomSetting =
+    @"updateDeleteMessageWhenLeaveRoomSetting";
+static NSString *const ChatUpdateRoomOwnerCanLeaveSetting =
+    @"updateRoomOwnerCanLeaveSetting";
+static NSString *const ChatUpdateAutoAcceptGroupInvitationSetting =
+    @"updateAutoAcceptGroupInvitationSetting";
+static NSString *const ChatUpdateAcceptInvitationAlways = @"acceptInvitationAlways";
+static NSString *const ChatUpdateAutoDownloadAttachmentThumbnailSetting =
+    @"updateAutoDownloadAttachmentThumbnailSetting";
+static NSString *const ChatUpdateRequireAckSetting = @"updateRequireAckSetting";
+static NSString *const ChatUpdateDeliveryAckSetting = @"updateDeliveryAckSetting";
+static NSString *const ChatUpdateSortMessageByServerTimeSetting =
+    @"updateSortMessageByServerTimeSetting";
+static NSString *const ChatUpdateMessagesReceiveCallbackIncludeSendSetting =
+    @"updateMessagesReceiveCallbackIncludeSendSetting";
+static NSString *const ChatUpdateRegradeMessagesSetting =
+    @"updateRegradeMessagesSetting";

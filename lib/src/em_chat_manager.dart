@@ -2307,6 +2307,47 @@ class EMChatManager {
           ?.call(messageId, conversationId, pinOperation, pinInfo);
     }
   }
+
+  // 481
+
+  /// ~english
+  /// Loads messages with the specified keyword from the local database.
+  ///
+  /// Param [options]  search options, see [MessageSearchOptions].
+  ///
+  /// **Returns** The list of retrieved messages.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 通过类型从数据库获取消息。
+  ///
+  /// Param [options] 搜索配置项, 详情查看 [MessageSearchOptions].
+  ///
+  /// **Return** 消息列表。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<List<EMMessage>> searchMsgsByOptions(MessageSearchOptions options) {
+    Map req = {};
+    req['ts'] = options.ts;
+    req['count'] = options.count;
+    req['direction'] =
+        options.direction == EMSearchDirection.Up ? "up" : "down";
+    req.putIfNotNull("from", options.from);
+    req['types'] = options.types.map((e) => e.index).toList();
+    return ChatChannel.invokeMethod(ChatMethodKeys.searchMsgsByOptions, req)
+        .then((value) {
+      List<EMMessage> list = [];
+      if (value != null) {
+        for (var item in value) {
+          list.add(EMMessage.fromJson(item));
+        }
+      }
+      return list;
+    });
+  }
 }
 
 /// ~english

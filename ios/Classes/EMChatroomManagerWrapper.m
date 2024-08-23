@@ -248,8 +248,10 @@
     
     __weak typeof(self) weakSelf = self;
     NSString *chatroomId = param[@"roomId"];
+    NSString *ext = param[@"ext"];
+    BOOL leaveOtherRooms = [param[@"leaveOtherRooms"] boolValue];
     [EMClient.sharedClient.roomManager joinChatroom:chatroomId
-                                         completion:^(EMChatroom *aChatroom, EMError *aError)
+     ext:ext leaveOtherRooms:leaveOtherRooms completion:^(EMChatroom *aChatroom, EMError *aError)
      {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
@@ -748,14 +750,16 @@
 #pragma mark - EMChatroomManagerWrapper
 
 - (void)userDidJoinChatroom:(EMChatroom *)aChatroom
-                       user:(NSString *)aUsername {
+                       user:(NSString *)aUsername
+                        ext:(NSString * _Nullable)ext {
 
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onRoomMemberJoined",
             @"roomId":aChatroom.chatroomId,
-            @"participant":aUsername
+            @"participant":aUsername,
+            @"ext": ext
         };
         [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
     }];
@@ -987,6 +991,11 @@
                                 };
     return resultDict;
 }
+
+
+
+
+#pragma mark - 481
 
 
 @end

@@ -506,4 +506,29 @@ class EMPushManager {
       throw e;
     }
   }
+
+  // 481
+
+  /// ~english
+  /// Get all conversations mute info from server.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器获取所有会话免打扰。
+  ///
+  /// 该方法完成调用的回调。如果该方法调用失败，会包含调用失败的原因。回调`EMError`为空则可以调用 [EMChatManager.loadAllConversations] 方法重新获取会话列表刷新UI
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<void> syncConversationsSilentMode() async {
+    Map result =
+        await PushChannel.invokeMethod(ChatMethodKeys.syncSilentModels);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

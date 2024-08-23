@@ -2216,4 +2216,27 @@ class EMGroupManager {
       }
     });
   }
+
+  // 481
+
+  /// ~english
+  /// Clears the information of all groups in the local database.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 清理数据库中当前用户的所有群组。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<void> clearAllGroupsFromLocal() async {
+    Map result =
+        await _channel.invokeMethod(ChatMethodKeys.clearAllGroupsFromDB);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }

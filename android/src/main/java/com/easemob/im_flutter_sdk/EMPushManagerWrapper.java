@@ -89,6 +89,10 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if (EMSDKMethod.setPushTemplate.equals(call.method)) {
                 setPushTemplate(param, call.method, result);
             }
+            // 481
+            else if (EMSDKMethod.syncSilentModels.equals(call.method)) {
+                syncSilentModels(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -256,5 +260,10 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
                 super.onSuccess(object);
             }
         });
+    }
+
+    // 481
+    private void syncSilentModels(JSONObject params, String channelName, Result result) {
+        EMClient.getInstance().pushManager().syncSilentModeConversationsFromServer(new EMWrapperCallBack(result, channelName, null));
     }
 }

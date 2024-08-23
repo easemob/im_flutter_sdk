@@ -15,13 +15,12 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
 
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
-import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
@@ -128,6 +127,46 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             } else if (EMSDKMethod.startCallback.equals(call.method)) {
                 startCallback(param, call.method, result);
             }
+            // 481
+            else if (EMSDKMethod.updateUsingHttpsOnlySetting.equals(call.method)) {
+                updateUsingHttpsOnlySetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateLoginExtensionInfo.equals(call.method)) {
+                updateLoginExtensionInfo(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateDeleteMessagesWhenLeaveGroupSetting.equals(call.method)) {
+                updateDeleteMessagesWhenLeaveGroupSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateDeleteMessageWhenLeaveRoomSetting.equals(call.method)) {
+                updateDeleteMessageWhenLeaveRoomSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateRoomOwnerCanLeaveSetting.equals(call.method)) {
+                updateRoomOwnerCanLeaveSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateAutoAcceptGroupInvitationSetting.equals(call.method)) {
+                updateAutoAcceptGroupInvitationSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.acceptInvitationAlways.equals(call.method)) {
+                acceptInvitationAlways(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateAutoDownloadAttachmentThumbnailSetting.equals(call.method)) {
+                updateAutoDownloadAttachmentThumbnailSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateRequireAckSetting.equals(call.method)) {
+                updateRequireAckSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateDeliveryAckSetting.equals(call.method)) {
+                updateDeliveryAckSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateSortMessageByServerTimeSetting.equals(call.method)) {
+                updateSortMessageByServerTimeSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateMessagesReceiveCallbackIncludeSendSetting.equals(call.method)) {
+                updateMessagesReceiveCallbackIncludeSendSetting(param, call.method, result);
+            }
+            else if (EMSDKMethod.updateRegradeMessagesSetting.equals(call.method)) {
+                updateRegradeMessagesSetting(param, call.method, result);
+            }
             else  {
                 super.onMethodCall(call, result);
             }
@@ -198,9 +237,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
-            onSuccess(result, channelName, EMClient.getInstance().getCurrentUser());
-        });
+        asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().getCurrentUser()));
     }
 
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
@@ -221,9 +258,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
     private void getToken(JSONObject param, String channelName, Result result) throws JSONException
     {
-        asyncRunnable(()->{
-            onSuccess(result, channelName, EMClient.getInstance().getAccessToken());
-        });
+        asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().getAccessToken()));
     }
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
@@ -234,9 +269,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
     }
 
     private void isConnected(JSONObject param, String channelName, Result result) throws JSONException{
-        asyncRunnable(()->{
-            onSuccess(result, channelName, EMClient.getInstance().isConnected());
-        });
+        asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().isConnected()));
     }
 
     private void uploadLog(JSONObject param, String channelName, Result result) throws JSONException {
@@ -413,7 +446,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onContactEvent(int event, String target, String ext) {
                 Map<String, Object> data = new HashMap<>();
-                data.put("event", Integer.valueOf(event));
+                data.put("event", event);
                 data.put("target", target);
                 data.put("ext", ext);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceContactEvent, data));
@@ -422,7 +455,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onGroupEvent(int event, String target, List<String> userNames) {
                 Map<String, Object> data = new HashMap<>();
-                data.put("event", Integer.valueOf(event));
+                data.put("event", event);
                 data.put("target", target);
                 data.put("users", userNames);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceGroupEvent, data));
@@ -430,7 +463,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
 
             public void onChatThreadEvent(int event, String target, List<String> usernames) {
                 Map<String, Object> data = new HashMap<>();
-                data.put("event", Integer.valueOf(event));
+                data.put("event", event);
                 data.put("target", target);
                 data.put("users", usernames);
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDeviceThreadEvent, data));
@@ -447,7 +480,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             @Override
             public void onConversationEvent(int event, String conversationId, EMConversation.EMConversationType type) {
                 Map<String, Object> data = new HashMap<>();
-                data.put("event", Integer.valueOf(event));
+                data.put("event", event);
                 data.put("convId", conversationId);
                 data.put("convType", typeToInt(type));
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDevicesConversationEvent, data));
@@ -464,11 +497,6 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("connected", Boolean.TRUE);
                 post(()-> channel.invokeMethod(EMSDKMethod.onConnected, data));
-            }
-
-            @Override
-            public void onLogout(int errorCode) {
-
             }
 
             @Override
@@ -517,12 +545,10 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             }
 
             @Override
-            public void onLogout(int errorCode, String info) {
+            public void onLogout(int errorCode, EMLoginExtensionInfo info) {
                 if (errorCode == 206) {
                     EMListenerHandle.getInstance().clearHandle();
-                    Map<String, String> attributes = new HashMap<>();
-                    attributes.put("deviceName", info);
-                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, attributes));
+                    post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, EMLoginExtensionInfoHelper.toJson(info)));
                 }
             }
         };
@@ -530,5 +556,75 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         EMClient.getInstance().addConnectionListener(connectionListener);
         EMClient.getInstance().addMultiDeviceListener(multiDeviceListener);
     }
+
+    // 481
+    private void updateUsingHttpsOnlySetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean usingHttpsOnly = param.getBoolean("usingHttpsOnly");
+        EMClient.getInstance().getOptions().setUsingHttpsOnly(usingHttpsOnly);
+        asyncRunnable(()->onSuccess(result, channelName, null));
+    }
+    private void updateLoginExtensionInfo(JSONObject param, String channelName, Result result) throws JSONException {
+        String extension = param.optString("extension");
+        EMClient.getInstance().getOptions().setLoginCustomExt(extension);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateDeleteMessagesWhenLeaveGroupSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean deleteMessagesWhenLeaveGroup = param.getBoolean("deleteMessagesWhenLeaveGroup");
+        EMClient.getInstance().getOptions().setDeleteMessagesAsExitGroup(deleteMessagesWhenLeaveGroup);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateDeleteMessageWhenLeaveRoomSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean deleteMessageWhenLeaveRoom = param.getBoolean("deleteMessageWhenLeaveRoom");
+        EMClient.getInstance().getOptions().setDeleteMessagesAsExitChatRoom(deleteMessageWhenLeaveRoom);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateRoomOwnerCanLeaveSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean roomOwnerCanLeave = param.getBoolean("roomOwnerCanLeave");
+        EMClient.getInstance().getOptions().allowChatroomOwnerLeave(roomOwnerCanLeave);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateAutoAcceptGroupInvitationSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean autoAcceptGroupInvitation = param.getBoolean("autoAcceptGroupInvitation");
+        EMClient.getInstance().getOptions().setAutoAcceptGroupInvitation(autoAcceptGroupInvitation);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void acceptInvitationAlways(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean acceptInvitationAlways = param.getBoolean("acceptInvitationAlways");
+        EMClient.getInstance().getOptions().setAutoAcceptGroupInvitation(acceptInvitationAlways);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+
+    private void updateAutoDownloadAttachmentThumbnailSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean autoDownloadThumbnail = param.getBoolean("autoDownloadThumbnail");
+        EMClient.getInstance().getOptions().setAutoDownloadThumbnail(autoDownloadThumbnail);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateRequireAckSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean requireAck = param.getBoolean("requireAck");
+        EMClient.getInstance().getOptions().setRequireAck(requireAck);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateDeliveryAckSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean requireDeliveryAck = param.getBoolean("requireDeliveryAck");
+        EMClient.getInstance().getOptions().setRequireDeliveryAck(requireDeliveryAck);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateSortMessageByServerTimeSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean sortMessageByServerTime = param.getBoolean("sortMessageByServerTime");
+        EMClient.getInstance().getOptions().setSortMessageByServerTime(sortMessageByServerTime);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+    private void updateMessagesReceiveCallbackIncludeSendSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean includeSend = param.getBoolean("includeSend");
+        EMClient.getInstance().getOptions().setIncludeSendMessageInMessageListener(includeSend);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+
+    private void updateRegradeMessagesSetting(JSONObject param, String channelName, Result result) throws JSONException {
+        boolean isRead = param.getBoolean("isRead");
+        EMClient.getInstance().getOptions().setRegardImportedMsgAsRead(isRead);
+        asyncRunnable(()-> onSuccess(result, channelName, null));
+    }
+
 }
 

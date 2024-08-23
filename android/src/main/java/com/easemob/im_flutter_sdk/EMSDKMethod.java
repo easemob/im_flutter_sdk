@@ -324,5 +324,33 @@ public class EMSDKMethod {
 
     // 460
     static final String onMessagesRecalledInfo = "onMessagesRecalledInfo";
-
+    // 481
+    static final String conversationRemindType = "conversationRemindType";
+    static final String conversationSearchMsgsByOptions =
+            "conversationSearchMsgsByOptions";
+    static final String searchMsgsByOptions = "searchMsgsByOptions";
+    static final String syncSilentModels = "syncSilentModels";
+    static final String clearAllGroupsFromDB = "clearAllGroupsFromDB";
+    static final String updateUsingHttpsOnlySetting =
+            "updateUsingHttpsOnlySetting";
+    static final String updateLoginExtensionInfo = "updateLoginExtensionInfo";
+    static final String updateDeleteMessagesWhenLeaveGroupSetting =
+            "updateDeleteMessagesWhenLeaveGroupSetting";
+    static final String updateDeleteMessageWhenLeaveRoomSetting =
+            "updateDeleteMessageWhenLeaveRoomSetting";
+    static final String updateRoomOwnerCanLeaveSetting =
+            "updateRoomOwnerCanLeaveSetting";
+    static final String updateAutoAcceptGroupInvitationSetting =
+            "updateAutoAcceptGroupInvitationSetting";
+    static final String acceptInvitationAlways = "acceptInvitationAlways";
+    static final String updateAutoDownloadAttachmentThumbnailSetting =
+            "updateAutoDownloadAttachmentThumbnailSetting";
+    static final String updateRequireAckSetting = "updateRequireAckSetting";
+    static final String updateDeliveryAckSetting = "updateDeliveryAckSetting";
+    static final String updateSortMessageByServerTimeSetting =
+            "updateSortMessageByServerTimeSetting";
+    static final String updateMessagesReceiveCallbackIncludeSendSetting =
+            "updateMessagesReceiveCallbackIncludeSendSetting";
+    static final String updateRegradeMessagesSetting =
+            "updateRegradeMessagesSetting";
 }

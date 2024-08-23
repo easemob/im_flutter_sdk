@@ -9,6 +9,7 @@
 #import "EMSDKMethod.h"
 
 #import "EMChatMessage+Helper.h"
+#import "EMSilentModeParam+Helper.h"
 #import "EMConversation+Helper.h"
 
 @interface EMConversationWrapper ()
@@ -122,6 +123,20 @@
                  channelName:call.method
                       result:result];
     }
+    // 481
+    else if ([ChatConversationRemindType isEqualToString:call.method]) {
+        [self remindType:call.arguments
+                 channelName:call.method
+                      result:result];
+    }
+    else if ([ChatConversationSearchMsgsByOptions isEqualToString:call.method]) {
+        [self searchMessageByOptions:call.arguments
+                         channelName:call.method
+                              result:result];
+    }
+    
+    
+    
     else {
         [super handleMethodCall:call result:result];
     }
@@ -585,9 +600,58 @@
     }];
 }
 
+
+
 - (EMMessageSearchDirection)searchDirectionFromString:(NSString *)aDirection {
     return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
 }
 
+#pragma mark 481
+- (void)remindType:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+      
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:nil
+                           object:@([EMSilentModeParam remindTypeToInt:conversation.disturbType])];
+    }];
+}
+
+- (void)searchMessageByOptions:(NSDictionary *)param
+                   channelName:(NSString *)aChannelName
+                        result:(FlutterResult)result
+{
+    NSArray *types = param[@"types"];
+    long long ts = [param[@"ts"] longLongValue];
+    int count = [param[@"count"] intValue];
+    NSString *from = param[@"from"];
+    EMMessageSearchDirection direction = [param[@"direction"] integerValue];
+    __weak typeof(self) weakSelf = self;
+    [self getConversationWithParam:param
+                        completion:^(EMConversation *conversation)
+     {
+        [conversation searchMessagesWithTypes:types
+                                    timestamp:ts
+                                        count:count
+                                     fromUser:from
+                              searchDirection:direction
+                                   completion:^(NSArray<EMChatMessage *> * _Nullable aMessages, EMError * _Nullable aError)
+         {
+            
+            NSMutableArray *msgJsonAry = [NSMutableArray array];
+            for (EMChatMessage *msg in aMessages) {
+                [msgJsonAry addObject:[msg toJson]];
+            }
+            
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:msgJsonAry];
+        }];
+    }];
+}
 
 @end

@@ -25,6 +25,7 @@ import com.hyphenate.chat.EMGroupReadAck;
 import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMLanguage;
 import com.hyphenate.chat.EMLocationMessageBody;
+import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Type;
 import com.hyphenate.chat.EMMessageBody;
@@ -368,6 +369,30 @@ class EMChatRoomHelper {
 }
 
 class EMMessageHelper {
+
+    static Type getTypeFromInt(int iType) {
+        switch (iType) {
+            case 1:
+            case 2:
+                return Type.IMAGE;
+            case 3:
+                return Type.VIDEO;
+            case 4:
+                return Type.LOCATION;
+            case 5:
+                return Type.VOICE;
+            case 6:
+                return Type.FILE;
+            case 7:
+                return Type.CMD;
+            case 8:
+                return Type.CUSTOM;
+            case 9:
+                return Type.COMBINE;
+            default:
+                return Type.TXT;
+        }
+    }
 
     static EMMessage fromJson(JSONObject json) throws JSONException {
         EMMessage message = null;
@@ -1095,6 +1120,14 @@ class EMGroupAckHelper {
 
 class EMConversationHelper {
 
+    static EMConversation.EMSearchDirection searchDirectionFromInt(int iDirection) {
+        if (iDirection == 0 ){
+            return  EMConversation.EMSearchDirection.UP;
+        }else{
+            return  EMConversation.EMSearchDirection.DOWN;
+        }
+    }
+
     // EMConversation 都是native -> flutter, 不需要fromJson
     // static EMConversation fromJson(JSONObject json) throws JSONException {
     // EMConversation conv = new EMConversation();
@@ -1713,4 +1746,16 @@ class EMConversationFilterHelper {
         }
         return data;
     }
+ }
+
+
+ // 481
+class EMLoginExtensionInfoHelper {
+     static Map<String, Object> toJson(EMLoginExtensionInfo info) {
+         Map<String, Object> data = new HashMap<>();
+         data.put("deviceName", info.getDeviceInfo());
+         data.put("ext", info.getDeviceExt());
+
+         return data;
+     }
  }

@@ -107,8 +107,8 @@
                          result:result];
     } else if ([ChatDownloadMessageAttachmentInCombine isEqualToString:call.method]) {
         [self downloadMessageAttachmentInCombine:call.arguments
-                                    channelName:call.method
-                                         result:result];
+                                     channelName:call.method
+                                          result:result];
     } else if ([ChatDownloadMessageThumbnailInCombine isEqualToString:call.method]) {
         [self downloadMessageThumbnailInCombine:call.arguments
                                     channelName:call.method
@@ -225,6 +225,10 @@
     }
     else if([fetchPinnedMessages isEqualToString:call.method]) {
         [self fetchPinnedMessages:call.arguments channelName:call.method result:result];
+    }
+    // 481
+    else if ([ChatSearchMsgsByOptions isEqualToString:call.method]) {
+        [self searchMsgsByOptions:call.arguments channelName:call.method result:result];
     }
     else {
         [super handleMethodCall:call result:result];
@@ -1333,7 +1337,7 @@
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msgId"];
     [EMClient.sharedClient.chatManager unpinMessage:msgId
-                                       completion:^(EMChatMessage * _Nullable message, EMError * _Nullable aError) {
+                                         completion:^(EMChatMessage * _Nullable message, EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:aError
@@ -1415,7 +1419,7 @@
         [self.messageChannel invokeMethod:ChatOnMessageDeliveryAck
                                 arguments:@{@"message":json}];
     }
-
+    
     [self.channel invokeMethod:ChatOnMessagesDelivered
                      arguments:list];
 }
@@ -1427,7 +1431,7 @@
     for (EMChatMessage *msg in aMessages) {
         [list addObject:[msg toJson]];
     }
-
+    
     [self.channel invokeMethod:ChatOnMessagesRecalled
                      arguments:list];
 }
@@ -1608,8 +1612,38 @@
     for (EMRecallMessageInfo *info in aRecallMessagesInfo) {
         [list addObject:[info toJson]];
     }
-
+    
     [self.channel invokeMethod:onMessagesRecalledInfo
                      arguments:list];
 }
+
+#pragma mark 481
+- (void)searchMsgsByOptions:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    NSArray *types = param[@"types"];
+    long long ts = [param[@"ts"] longLongValue];
+    int count = [param[@"count"] intValue];
+    NSString *from = param[@"from"];
+    EMMessageSearchDirection direction = [param[@"direction"] integerValue];
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager searchMessagesWithTypes:types
+                                                     timestamp:ts
+                                                         count:count
+                                                      fromUser:from
+                                               searchDirection:direction
+                                                    completion:^(NSArray<EMChatMessage *> * _Nullable aMessages, EMError * _Nullable aError)
+     {
+        NSMutableArray *msgJsonAry = [NSMutableArray array];
+        for (EMChatMessage *msg in aMessages) {
+            [msgJsonAry addObject:[msg toJson]];
+        }
+        
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:msgJsonAry];
+    }];
+}
+
 @end

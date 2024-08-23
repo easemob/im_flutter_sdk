@@ -18,8 +18,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class EMConversationWrapper extends EMWrapper implements MethodCallHandler{
@@ -101,6 +103,13 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             }
             else if (EMSDKMethod.pinnedMessages.equals(call.method)){
                 pinnedMessages(param, call.method, result);
+            }
+            // 481
+            else if (EMSDKMethod.conversationRemindType.equals(call.method)) {
+                remindType(param, call.method, result);
+            }
+            else if (EMSDKMethod.searchMsgsByOptions.equals(call.method)) {
+                searchMsgByOptions(param, call.method, result);
             }
             else
             {
@@ -407,5 +416,31 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         return TextUtils.equals(direction, "up") ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
     }
 
+
+    // 481
+    private void remindType(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        onSuccess(result, channelName, EMSilentModeParamHelper.pushRemindTypeToInt(conversation.pushRemindType()));
+    }
+
+    private void searchMsgByOptions(JSONObject params, String channelName, Result result) throws JSONException {
+        EMConversation conversation = conversationWithParam(params);
+        JSONArray ja = params.getJSONArray("types");
+        Set<EMMessage.Type> types = new HashSet<>();
+        for (int i = 0; i < ja.length(); i++) {
+            int iType = ja.getInt(i);
+            types.add(EMMessageHelper.getTypeFromInt(iType));
+        }
+        long ts = params.getLong("ts");
+        int count = params.getInt("count");
+        String from = params.optString("from");
+        EMConversation.EMSearchDirection direction = EMConversationHelper.searchDirectionFromInt(params.getInt("direction"));
+        List<EMMessage> msgList = conversation.searchMsgFromDB(types, ts, count, from, direction);
+        List<Map> messages = new ArrayList<>();
+        for(EMMessage msg: msgList) {
+            messages.add(EMMessageHelper.toJson(msg));
+        }
+        onSuccess(result, channelName, messages);
+    }
 
 }

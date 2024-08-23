@@ -43,11 +43,11 @@
         [self updateImPushStyle:call.arguments
                     channelName:call.method
                          result:result];
-    } else if ([ChatBindDeviceToken isEqualToString:call.method] || [UpdateFCMPushToken isEqualToString:call.method]) {
+    } else if ([ChatBindDeviceToken isEqualToString:call.method] || [ChatUpdateFCMPushToken isEqualToString:call.method]) {
         [self  bindDeviceToken:call.arguments
                    channelName:call.method
                         result:result];
-    } else if ([UpdateFCMPushToken isEqualToString:call.method]) {
+    } else if ([ChatUpdateFCMPushToken isEqualToString:call.method]) {
         [self  bindFCMToken:call.arguments
                    channelName:call.method
                         result:result];
@@ -87,12 +87,17 @@
         [self fetchPreferredNotificationLanguage:call.arguments
                                      channelName:call.method
                                           result:result];
-    } else if ([ChatSetPushTemplate isEqualToString:call.method]) {
+    } 
+    else if ([ChatSetPushTemplate isEqualToString:call.method]) {
         [self setPushTemplate:call.arguments channelName:call.method result:result];
-    } else if ([ChatGetPushTemplate isEqualToString:call.method]) {
+    } 
+    else if ([ChatGetPushTemplate isEqualToString:call.method]) {
         [self getPushTemplate:call.arguments channelName:call.method result:result];
     }
-    
+    // 481
+    else if([ChatSyncSilentModels isEqualToString:call.method]) {
+        [self syncConversationsSilentMode:call.arguments channelName:call.method result:result];
+    }
     else{
         [super handleMethodCall:call result:result];
     }
@@ -348,6 +353,20 @@
                       channelName:aChannelName
                             error:aError
                            object:aPushTemplateName];
+    }];
+}
+
+
+#pragma mark - 481
+- (void)syncConversationsSilentMode:(NSDictionary *)param
+                        channelName:(NSString *)aChannelName
+                             result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.pushManager syncSilentModeConversationsFromServerCompletion:^(EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:nil];
     }];
 }
 

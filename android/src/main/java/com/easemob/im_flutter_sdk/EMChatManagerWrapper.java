@@ -20,8 +20,10 @@ import org.json.JSONObject;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.JSONMethodCodec;
@@ -153,6 +155,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             }
             else if (EMSDKMethod.fetchPinnedMessages.equals(call.method)) {
                 fetchPinnedMessages(params, call.method, result);
+            }
+            // 481
+            else if (EMSDKMethod.searchMsgsByOptions.equals(call.method)) {
+                searchMsgByOptions(params, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -1359,5 +1365,26 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         }
 
         this.mergeMessageBody(msg.getBody(), dbMsg);
+    }
+
+    // 481
+    private void searchMsgByOptions(JSONObject params, String channelName, Result result) throws JSONException {
+
+        JSONArray ja = params.getJSONArray("types");
+        Set<EMMessage.Type> types = new HashSet<>();
+        for (int i = 0; i < ja.length(); i++) {
+            int iType = ja.getInt(i);
+            types.add(EMMessageHelper.getTypeFromInt(iType));
+        }
+        long ts = params.getLong("ts");
+        int count = params.getInt("count");
+        String from = params.optString("from");
+        EMConversation.EMSearchDirection direction = EMConversationHelper.searchDirectionFromInt(params.getInt("direction"));
+        List<EMMessage> msgList = EMClient.getInstance().chatManager().searchMsgFromDB(types, ts, count, from, direction);
+        List<Map> messages = new ArrayList<>();
+        for(EMMessage msg: msgList) {
+            messages.add(EMMessageHelper.toJson(msg));
+        }
+        onSuccess(result, channelName, messages);
     }
 }

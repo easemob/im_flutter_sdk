@@ -23,6 +23,8 @@ export 'src/models/em_error.dart';
 export 'src/models/em_group.dart';
 export 'src/models/em_translate_language.dart';
 export 'src/models/em_presence.dart';
+export 'src/models/login_extension_info.dart';
+export 'src/models/message_search_options.dart';
 
 export 'src/models/em_options.dart';
 export 'src/models/em_push_configs.dart';
