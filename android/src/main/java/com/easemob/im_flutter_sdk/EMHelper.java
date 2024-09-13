@@ -188,7 +188,7 @@ class EMGroupHelper {
         EMCommonUtil.putObjectToMap(data, "isDisabled", group.isDisabled());
         EMCommonUtil.putObjectToMap(data, "isAllMemberMuted", group.isAllMemberMuted());
         EMCommonUtil.putObjectToMap(data, "permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
-        EMCommonUtil.putObjectToMap(data, "maxUserCount", group.getMemberCount());
+        EMCommonUtil.putObjectToMap(data, "maxUserCount", group.getMaxUserCount());
         EMCommonUtil.putObjectToMap(data, "isMemberOnly", group.isMemberOnly());
         EMCommonUtil.putObjectToMap(data, "isMemberAllowToInvite", group.isMemberAllowToInvite());
         EMCommonUtil.putObjectToMap(data, "ext", group.getExtension());
