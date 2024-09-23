@@ -355,6 +355,8 @@ class EMOptions {
 
   EMPushConfig _pushConfig = EMPushConfig();
 
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
+
   /// ~english
   /// Enables OPPO PUSH on OPPO devices.
   ///
@@ -375,6 +377,8 @@ class EMOptions {
     _pushConfig.oppoAppKey = appKey;
     _pushConfig.oppoAppSecret = secret;
   }
+
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
 
   /// ~english
   /// Enables Mi Push on Mi devices.
@@ -397,6 +401,8 @@ class EMOptions {
     _pushConfig.miAppKey = appKey;
   }
 
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
+
   /// ~english
   /// Enables MeiZu Push on MeiZu devices.
   /// Param [appId] The app ID for MeiZu Push.
@@ -412,6 +418,8 @@ class EMOptions {
     _pushConfig.mzAppId = appId;
     _pushConfig.mzAppKey = appKey;
   }
+
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
 
   /// ~english
   /// Enables Firebase Cloud Messaging (FCM) push on devices that support Google Play.
@@ -429,6 +437,8 @@ class EMOptions {
     _pushConfig.fcmId = appId;
   }
 
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
+
   /// ~english
   /// Enables vivo Push on vivo devices.
   /// ~end
@@ -441,6 +451,8 @@ class EMOptions {
     _pushConfig.agreePrivacyStatement = agreePrivacyStatement;
   }
 
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
+
   /// ~english
   /// Enables Huawei Push on Huawei devices.
   /// ~end
@@ -451,6 +463,8 @@ class EMOptions {
   void enableHWPush() {
     _pushConfig.enableHWPush = true;
   }
+
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
 
   /// ~english
   /// Enables Apple Push Notification service (APNs) on iOS devices.
@@ -467,6 +481,8 @@ class EMOptions {
     _pushConfig.enableAPNS = true;
     _pushConfig.apnsCertName = certName;
   }
+
+  @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
 
   /// ~english
   /// Enables Honor Push on Honor devices.
