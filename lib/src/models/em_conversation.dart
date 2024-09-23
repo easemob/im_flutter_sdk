@@ -923,25 +923,27 @@ class EMConversation {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<List<EMMessage>> searchMsgsByOptions(MessageSearchOptions options) {
+  Future<List<EMMessage>> searchMsgsByOptions(
+      MessageSearchOptions options) async {
     Map req = this._toJson();
     req['ts'] = options.ts;
     req['count'] = options.count;
-    req['direction'] =
-        options.direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = options.direction.index;
     req.putIfNotNull("from", options.from);
     req['types'] = options.types.map((e) => e.index).toList();
-    return _emConversationChannel
-        .invokeMethod(ChatMethodKeys.conversationSearchMsgsByOptions, req)
-        .then((value) {
-      List<EMMessage> list = [];
-      if (value != null) {
-        for (var item in value) {
-          list.add(EMMessage.fromJson(item));
-        }
-      }
-      return list;
-    });
+    Map result = await _emConversationChannel.invokeMethod(
+        ChatMethodKeys.conversationSearchMsgsByOptions, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMMessage> messages = [];
+      List list = result[ChatMethodKeys.conversationSearchMsgsByOptions];
+      list.forEach((element) {
+        messages.add(EMMessage.fromJson(element));
+      });
+      return messages;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 
   /// ~english
