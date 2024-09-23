@@ -416,4 +416,6 @@ class ChatMethodKeys {
       'updateMessagesReceiveCallbackIncludeSendSetting';
   static const String updateRegradeMessagesSetting =
       'updateRegradeMessagesSetting';
+
+  static const String bindDeviceToken = 'bindDeviceToken';
 }

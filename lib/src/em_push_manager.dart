@@ -87,6 +87,8 @@ class EMPushManager {
     }
   }
 
+  @Deprecated("Use [bindDeviceToken] instead")
+
   /// ~english
   /// Updates the HMS push token.
   ///
@@ -115,8 +117,10 @@ class EMPushManager {
     }
   }
 
+  @Deprecated("Use [bindDeviceToken] instead")
+
   /// ~english
-  /// Updates the FCM push token.
+  /// Updates the FCM push token,
   ///
   /// Param [token] The FCM push token.
   ///
@@ -140,6 +144,8 @@ class EMPushManager {
       throw e;
     }
   }
+
+  @Deprecated("Use [bindDeviceToken] instead")
 
   /// ~english
   /// Updates the APNs push token.
@@ -166,6 +172,33 @@ class EMPushManager {
       } on EMError catch (e) {
         throw e;
       }
+    }
+  }
+
+  /// ~english
+  /// bind the push token.
+  ///
+  /// Param [token] The push token.
+  ///
+  /// **Throws** A description of the issue that caused this exception. See [EMError]
+  /// ~end
+  ///
+  /// ~chinese
+  /// 更新推送 token。
+  ///
+  /// Param [token] 要更新的推送 token。
+  ///
+  /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<void> bindDeviceToken(
+      {required String notifierName, required String deviceToken}) async {
+    Map req = {'notifierName': notifierName, 'deviceToken': deviceToken};
+    Map result =
+        await PushChannel.invokeMethod(ChatMethodKeys.bindDeviceToken, req);
+    try {
+      EMError.hasErrorFromResult(result);
+    } on EMError catch (e) {
+      throw e;
     }
   }
 

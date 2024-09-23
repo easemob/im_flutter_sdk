@@ -356,4 +356,6 @@ public class EMSDKMethod {
             "updateMessagesReceiveCallbackIncludeSendSetting";
     static final String updateRegradeMessagesSetting =
             "updateRegradeMessagesSetting";
+
+    static final String bindDeviceToken = "bindDeviceToken";
 }

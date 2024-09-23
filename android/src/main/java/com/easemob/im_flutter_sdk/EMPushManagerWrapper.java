@@ -93,6 +93,9 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
             else if (EMSDKMethod.syncSilentModels.equals(call.method)) {
                 syncSilentModels(param, call.method, result);
             }
+            else if (EMSDKMethod.bindDeviceToken.equals(call.method)) {
+                bindDeviceToken(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -266,4 +269,11 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     private void syncSilentModels(JSONObject params, String channelName, Result result) {
         EMClient.getInstance().pushManager().syncSilentModeConversationsFromServer(new EMWrapperCallBack(result, channelName, null));
     }
+
+    private void bindDeviceToken(JSONObject params, String channelName, Result result)  throws JSONException {
+        String notifierName = params.getString("notifierName");
+        String deviceToken = params.getString("deviceToken");
+        EMClient.getInstance().pushManager().bindDeviceToken(notifierName, deviceToken, new EMWrapperCallBack(result, channelName, null));
+    }
+
 }
