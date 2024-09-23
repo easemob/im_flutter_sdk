@@ -2329,24 +2329,27 @@ class EMChatManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<List<EMMessage>> searchMsgsByOptions(MessageSearchOptions options) {
+  Future<List<EMMessage>> searchMsgsByOptions(
+      MessageSearchOptions options) async {
     Map req = {};
     req['ts'] = options.ts;
     req['count'] = options.count;
-    req['direction'] =
-        options.direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = options.direction.index;
     req.putIfNotNull("from", options.from);
     req['types'] = options.types.map((e) => e.index).toList();
-    return ChatChannel.invokeMethod(ChatMethodKeys.searchMsgsByOptions, req)
-        .then((value) {
-      List<EMMessage> list = [];
-      if (value != null) {
-        for (var item in value) {
-          list.add(EMMessage.fromJson(item));
-        }
-      }
-      return list;
-    });
+    Map result =
+        await ChatChannel.invokeMethod(ChatMethodKeys.searchMsgsByOptions, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMMessage> messages = [];
+      List list = result[ChatMethodKeys.searchMsgsByOptions];
+      list.forEach((element) {
+        messages.add(EMMessage.fromJson(element));
+      });
+      return messages;
+    } on EMError catch (e) {
+      throw e;
+    }
   }
 }
 
@@ -2458,47 +2461,5 @@ class MessageCallBackManager {
 
   void clearAllMessageEvents() {
     cacheHandleMap.clear();
-  }
-
-  // 481
-
-  /// ~english
-  /// Loads messages with the specified keyword from the local database.
-  ///
-  /// Param [options]  search options, see [MessageSearchOptions].
-  ///
-  /// **Returns** The list of retrieved messages.
-  ///
-  /// **Throws** A description of the exception. See [EMError].
-  /// ~end
-  ///
-  /// ~chinese
-  /// 通过类型从数据库获取消息。
-  ///
-  /// Param [options] 搜索配置项, 详情查看 [MessageSearchOptions].
-  ///
-  /// **Return** 消息列表。
-  ///
-  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
-  /// ~end
-  Future<List<EMMessage>> searchMsgsByOptions(MessageSearchOptions options) {
-    Map req = {};
-    req['ts'] = options.ts;
-    req['count'] = options.count;
-    req['direction'] =
-        options.direction == EMSearchDirection.Up ? "up" : "down";
-    req.putIfNotNull("from", options.from);
-    req['types'] = options.types.map((e) => e.index).toList();
-    return ChatChannel.invokeMethod(
-            ChatMethodKeys.conversationSearchMsgsByOptions, req)
-        .then((value) {
-      List<EMMessage> list = [];
-      if (value != null) {
-        for (var item in value) {
-          list.add(EMMessage.fromJson(item));
-        }
-      }
-      return list;
-    });
   }
 }

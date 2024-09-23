@@ -373,21 +373,20 @@ class EMMessageHelper {
     static Type getTypeFromInt(int iType) {
         switch (iType) {
             case 1:
-            case 2:
                 return Type.IMAGE;
-            case 3:
+            case 2:
                 return Type.VIDEO;
-            case 4:
+            case 3:
                 return Type.LOCATION;
-            case 5:
+            case 4:
                 return Type.VOICE;
-            case 6:
+            case 5:
                 return Type.FILE;
-            case 7:
+            case 6:
                 return Type.CMD;
-            case 8:
+            case 7:
                 return Type.CUSTOM;
-            case 9:
+            case 8:
                 return Type.COMBINE;
             default:
                 return Type.TXT;
