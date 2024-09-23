@@ -381,3 +381,4 @@ static NSString *const ChatUpdateMessagesReceiveCallbackIncludeSendSetting =
     @"updateMessagesReceiveCallbackIncludeSendSetting";
 static NSString *const ChatUpdateRegradeMessagesSetting =
     @"updateRegradeMessagesSetting";
+static NSString *const bindDeviceToken = @"bindDeviceToken";

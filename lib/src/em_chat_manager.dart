@@ -1216,7 +1216,7 @@ class EMChatManager {
     }
   }
 
-  @Deprecated('Use EMChatManager.loadMessagesWithKeyword instead.')
+  @Deprecated('Use [EMChatManager.loadMessagesWithKeyword] instead.')
 
   /// ~english
   /// Retrieves messages from the database according to the parameters.

@@ -44,9 +44,9 @@
                     channelName:call.method
                          result:result];
     } else if ([ChatBindDeviceToken isEqualToString:call.method] || [ChatUpdateFCMPushToken isEqualToString:call.method]) {
-        [self  bindDeviceToken:call.arguments
-                   channelName:call.method
-                        result:result];
+        [self  bindAPNsDeviceToken:call.arguments
+                       channelName:call.method
+                            result:result];
     } else if ([ChatUpdateFCMPushToken isEqualToString:call.method]) {
         [self  bindFCMToken:call.arguments
                    channelName:call.method
@@ -97,6 +97,9 @@
     // 481
     else if([ChatSyncSilentModels isEqualToString:call.method]) {
         [self syncConversationsSilentMode:call.arguments channelName:call.method result:result];
+    }
+    else if([bindDeviceToken isEqualToString:call.method]) {
+        [self bindDeviceToken:call.arguments channelName:call.method result:result];
     }
     else{
         [super handleMethodCall:call result:result];
@@ -163,7 +166,7 @@
     });
 }
 
-- (void)bindDeviceToken:(NSDictionary *)param
+- (void)bindAPNsDeviceToken:(NSDictionary *)param
             channelName:(NSString *)aChannelName
                  result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
@@ -368,6 +371,23 @@
                             error:error
                            object:nil];
     }];
+}
+
+- (void)bindDeviceToken:(NSDictionary *)param
+            channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *notifierName = param[@"notifierName"];
+    EMClient.sharedClient.options.apnsCertName = notifierName;
+    NSString *deviceToken = param[@"deviceToken"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [EMClient.sharedClient bindFCMToken:deviceToken completion:^(EMError * _Nullable aError) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:nil];
+        }];
+    });
 }
 
 @end
