@@ -22,7 +22,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   HyphenateChat: 88ff1478183f1349498bd592c89ea9c394c12f76
-  im_flutter_sdk: dad885c62f3ef51ded7fbad5fbf756d3f7e822a7
+  im_flutter_sdk: e144b155d47b2050850b36510d96160ee3206c91
 
 PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
 
