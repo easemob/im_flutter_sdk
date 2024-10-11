@@ -136,6 +136,10 @@ class EMOptionsHelper {
         options.setUseReplacedMessageContents(json.optBoolean("useReplacedMessageContents", false));
         options.setIncludeSendMessageInMessageListener(json.optBoolean("messagesReceiveCallbackIncludeSend", false));
         options.setRegardImportedMsgAsRead(json.optBoolean("regardImportMessagesAsRead", false));
+        // 481
+        if(json.getString("loginExtensionInfo") != null) {
+            options.setLoginCustomExt(json.getString("loginExtensionInfo"));
+        }
         return options;
 
     }
