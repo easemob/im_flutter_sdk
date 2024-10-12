@@ -1,7 +1,7 @@
 class LoginExtensionInfo {
   factory LoginExtensionInfo.fromJson(Map<String, dynamic> json) {
     String? ext;
-    if (json['ext'] == null) {
+    if (json['ext'] != null) {
       ext = json['ext'] as String;
     }
     return LoginExtensionInfo(json['deviceName'] as String, ext: ext);
