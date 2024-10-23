@@ -19,6 +19,7 @@
 #import "EMMessagePinInfo+Helper.h"
 #import "EMConversationFilter+Helper.h"
 #import "EMRecallMessageInfo+Helper.h"
+#import "EnumTools.h"
 
 @interface EMChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
@@ -413,7 +414,7 @@
                  result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *conId = param[@"convId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     BOOL needCreate = [param[@"createIfNeed"] boolValue];
     EMConversation *con = [EMClient.sharedClient.chatManager getConversation:conId
                                                                         type:type
@@ -782,7 +783,7 @@
                       result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *conversationId = param[@"convId"];
-    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *startMsgId = param[@"startMsgId"];
     EMMessageFetchHistoryDirection direction = [param[@"direction"] intValue] == 0 ? EMMessageFetchHistoryDirectionUp : EMMessageFetchHistoryDirectionDown;
@@ -799,7 +800,7 @@
                                result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *conversationId = param[@"convId"];
-    EMConversationType type = (EMConversationType)[param[@"type"] intValue];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *cursor = param[@"cursor"];
     EMFetchServerMessagesOption *options;
@@ -863,7 +864,7 @@
     int maxCount = [param[@"count"] intValue];
     NSString *from = param[@"from"];
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] integerValue];
-    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     
     
     [EMClient.sharedClient.chatManager loadMessagesWithKeyword:keywords timestamp:timestamp count:maxCount fromUser:from searchDirection:direction scope:scope completion:^(NSArray<EMChatMessage *> *aMessages, EMError *aError) {
@@ -886,16 +887,8 @@
 {
     __weak typeof(self) weakSelf = self;
     NSString *conversationId = param[@"conversationId"];
-    EMConversationType type = EMConversationTypeChat;
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
     BOOL isDeleteRemoteMessage = [param[@"isDeleteRemoteMessage"] boolValue];
-    int intType = [param[@"conversationType"] intValue];
-    if (intType == 0) {
-        type = EMConversationTypeChat;
-    }else if (intType == 1) {
-        type = EMConversationTypeGroupChat;
-    }else {
-        type = EMConversationTypeChatRoom;
-    }
     
     [EMClient.sharedClient.chatManager deleteServerConversation:conversationId
                                                conversationType:type
@@ -991,7 +984,7 @@
                    result:(FlutterResult)result {
     NSArray *msgIds = param[@"msgIds"];
     NSString *groupId = param[@"groupId"];
-    EMChatType type = [EMChatMessage chatTypeFromInt:[param[@"chatType"] intValue]];
+    EMChatType type = [EnumTools chatTypeFromInt:[param[@"chatType"] integerValue]];
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.chatManager getReactionList:msgIds
                                                groupId:groupId
@@ -1097,7 +1090,7 @@
     __weak typeof(self) weakSelf = self;
     NSArray *msgIds = param[@"msgIds"];
     NSString *convId = param[@"convId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     
     if(!EMClient.sharedClient.isLoggedIn) {
         EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
@@ -1134,7 +1127,7 @@
                                 result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *convId = param[@"convId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     long timestamp = [param[@"timestamp"] longValue];
     
     if(!EMClient.sharedClient.isLoggedIn) {
@@ -1464,9 +1457,6 @@
                      arguments:list];
 }
 
-- (EMMessageSearchDirection)searchDirectionFromString:(NSString *)aDirection {
-    return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
-}
 
 - (void)onMessageContentChanged:(EMChatMessage *)message operatorId:(NSString *)operatorId operationTime:(NSUInteger)operationTime {
     NSDictionary *dict = @{
@@ -1622,12 +1612,18 @@
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result {
     NSArray *types = param[@"types"];
+    NSMutableArray *searchTypes = [NSMutableArray array];
+    for (int i = 0; i < types.count; i++) {
+        EMMessageBodyType type = [EnumTools messageBodyTypeFromInt:[types[i] integerValue]];
+        [searchTypes addObject:@(type)];
+    }
+    
     long long ts = [param[@"ts"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *from = param[@"from"];
-    EMMessageSearchDirection direction = [param[@"direction"] integerValue];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     __weak typeof(self) weakSelf = self;
-    [EMClient.sharedClient.chatManager searchMessagesWithTypes:types
+    [EMClient.sharedClient.chatManager searchMessagesWithTypes:searchTypes
                                                      timestamp:ts
                                                          count:count
                                                       fromUser:from

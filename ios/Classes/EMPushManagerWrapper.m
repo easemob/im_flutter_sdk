@@ -12,6 +12,7 @@
 #import "EMGroup+Helper.h"
 #import "EMSilentModeParam+Helper.h"
 #import "EMSilentModeResult+Helper.h"
+#import "EnumTools.h"
 
 @implementation EMPushManagerWrapper
 
@@ -209,7 +210,7 @@
                            result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *conversaionId = param[@"conversationId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
     EMSilentModeParam *silmentParam = [EMSilentModeParam fromJson:param[@"param"]];
     [EMClient.sharedClient.pushManager setSilentModeForConversation:conversaionId
                                                    conversationType:type
@@ -228,7 +229,7 @@
                               result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *conversaionId = param[@"conversationId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
     [EMClient.sharedClient.pushManager clearRemindTypeForConversation:conversaionId
                                                      conversationType:type
                                                            completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError)
@@ -244,7 +245,7 @@
                              result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *conversaionId = param[@"conversationId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"conversationType"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
     [EMClient.sharedClient.pushManager getSilentModeForConversation:conversaionId
                                                    conversationType:type
                                                          completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError) {
@@ -287,7 +288,7 @@
                                  result:(FlutterResult)result {
     NSMutableArray *conversations = [NSMutableArray array];
     for (NSString *conversaitonId in param.allKeys) {
-        EMConversationType type = [EMConversation typeFromInt:[param[conversaitonId] intValue]];
+        EMConversationType type = [EnumTools conversationTypeFromInt:[param[conversaitonId] intValue]];
         EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversaitonId type:type createIfNotExist:YES];
         [conversations addObject:conversation];
     }

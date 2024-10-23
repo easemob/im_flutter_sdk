@@ -40,7 +40,7 @@ class EMConversation {
     Map<String, String>? ext = map["ext"]?.cast<String, String>();
     EMConversation ret = EMConversation._private(
       map["convId"],
-      conversationTypeFromInt(map["type"]),
+      EMConversationType.values[map["type"]],
       ext,
       map["isThread"] ?? false,
       map["isPinned"] ?? false,
@@ -61,7 +61,7 @@ class EMConversation {
 
   Map<String, dynamic> _toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data["type"] = conversationTypeToInt(this.type);
+    data["type"] = this.type.index;
     data["convId"] = this.id;
     data["isThread"] = this.isChatThread;
     if (marks?.isNotEmpty == true) {
@@ -589,10 +589,10 @@ class EMConversation {
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
     Map req = this._toJson();
-    req['msgType'] = messageTypeToTypeStr(type);
+    req['msgType'] = type.index;
     req['timestamp'] = timestamp;
     req['count'] = count;
-    req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction.index;
     req.putIfNotNull("sender", sender);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithMsgType, req);
@@ -651,7 +651,7 @@ class EMConversation {
     Map req = this._toJson();
     req["startId"] = startMsgId;
     req['count'] = loadCount;
-    req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction.index;
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithStartId, req);
@@ -726,7 +726,7 @@ class EMConversation {
     req['count'] = count;
     req['timestamp'] = timestamp;
     req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
-    req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction.index;
     req.putIfNotNull("sender", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
@@ -897,8 +897,8 @@ class EMConversation {
         ChatMethodKeys.conversationRemindType, req);
     try {
       EMError.hasErrorFromResult(result);
-      return chatPushRemindTypeFromInt(
-          result[ChatMethodKeys.conversationRemindType]);
+      return ChatPushRemindType
+          .values[result[ChatMethodKeys.conversationRemindType]];
     } on EMError catch (e) {
       throw e;
     }

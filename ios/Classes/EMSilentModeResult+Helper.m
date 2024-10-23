@@ -9,6 +9,7 @@
 #import "EMSilentModeTime+Helper.h"
 #import "EMSilentModeParam+Helper.h"
 #import "EMConversation+Helper.h"
+#import "EnumTools.h"
 
 @implementation EMSilentModeResult (Helper)
 - (NSDictionary *)toJson {
@@ -18,7 +19,7 @@
     ret[@"endTime"] = [self.silentModeEndTime toJson];
     ret[@"remindType"] = @([EMSilentModeParam remindTypeToInt:self.remindType]);
     ret[@"conversationId"] = self.conversationID;
-    ret[@"conversationType"] = @([EMConversation typeToInt:self.conversationType]);
+    ret[@"conversationType"] = [NSNumber numberWithInteger:[EnumTools conversationTypeToInt:self.conversationType]];
     return ret;
 }
 @end

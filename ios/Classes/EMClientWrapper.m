@@ -22,6 +22,7 @@
 #import "EMChatMessageWrapper.h"
 #import "EMProgressManager.h"
 #import "EMListenerHandle.h"
+#import "EnumTools.h"
 
 @interface EMClientWrapper () <EMClientDelegate, EMMultiDevicesDelegate, FlutterPlugin>
 {
@@ -678,7 +679,7 @@
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"event"] = @(event);
     data[@"convId"] = conversationId;
-    data[@"convType"] = @(conversationType);
+    data[@"convType"] = [NSNumber numberWithInteger:[EnumTools conversationTypeToInt:conversationType]];
     [self.channel invokeMethod:ChatOnMultiDevicesConversationEvent arguments:data];
 }
 

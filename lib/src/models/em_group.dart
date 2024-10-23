@@ -358,7 +358,7 @@ class EMGroup {
     bool? messageBlocked = map["messageBlocked"];
     bool? isAllMemberMuted = map["isAllMemberMuted"];
     EMGroupPermissionType? permissionType =
-        permissionTypeFromInt(map['permissionType']);
+        EMGroupPermissionType.values[map['permissionType']];
     int? maxUserCount = map["maxUserCount"];
     bool? isMemberOnly = map["isMemberOnly"];
     bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
@@ -403,7 +403,7 @@ class EMGroup {
     data.putIfNotNull("isDisabled", isDisabled);
     data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
     data.putIfNotNull("options", _options?.toJson());
-    data.putIfNotNull("permissionType", permissionTypeToInt(permissionType));
+    data.putIfNotNull("permissionType", permissionType?.index);
     return data;
   }
 

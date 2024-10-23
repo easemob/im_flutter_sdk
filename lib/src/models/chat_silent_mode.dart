@@ -104,8 +104,8 @@ class ChatSilentModeParam {
 
   Map toJson() {
     Map data = Map();
-    data.putIfNotNull("paramType", chatSilentModeParamTypeToInt(_paramType));
-    data.putIfNotNull("remindType", chatPushRemindTypeToInt(remindType));
+    data.putIfNotNull("paramType", _paramType.index);
+    data.putIfNotNull("remindType", remindType?.index);
     data.putIfNotNull("startTime", startTime?.toJson());
     data.putIfNotNull("endTime", endTime?.toJson());
     data.putIfNotNull("duration", silentDuration);
@@ -258,10 +258,10 @@ class ChatSilentModeResult {
         ChatSilentModeTime.fromJson(map["startTime"]);
     ChatSilentModeTime endTime = ChatSilentModeTime.fromJson(map["endTime"]);
     ChatPushRemindType remindType =
-        chatPushRemindTypeFromInt(map["remindType"]);
+        ChatPushRemindType.values[map["remindType"]];
     String conversationId = map["conversationId"];
     EMConversationType conversationType =
-        conversationTypeFromInt(map["conversationType"]);
+        EMConversationType.values[map["conversationType"]];
     return ChatSilentModeResult(
       expireTimestamp,
       conversationType,

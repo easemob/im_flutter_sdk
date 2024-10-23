@@ -8,6 +8,7 @@
 #import "EMChatMessage+Helper.h"
 #import "EMChatThread+Helper.h"
 #import "EMMessagePinInfo+Helper.h"
+#import "EnumTools.h"
 
 
 @implementation EMChatMessage (Helper)
@@ -44,8 +45,8 @@
     });
     
     
-    msg.chatType = [EMChatMessage chatTypeFromInt:[aJson[@"chatType"] intValue]];
-    msg.status = [msg statusFromInt:[aJson[@"status"] intValue]];
+    msg.chatType = [EnumTools chatTypeFromInt:[aJson[@"chatType"] integerValue]];
+    msg.status = [EnumTools messageStatusFromInt:[aJson[@"status"] integerValue]];
     msg.localTime = [aJson[@"localTime"] longLongValue];
     msg.timestamp = [aJson[@"serverTime"] longLongValue];
     msg.isReadAcked = [aJson[@"hasReadAck"] boolValue];
@@ -86,8 +87,8 @@
     ret[@"groupAckCount"] = @(self.groupAckCount);
     ret[@"attributes"] = self.ext;
     ret[@"localTime"] = @(self.localTime);
-    ret[@"status"] = @([self statusToInt:self.status]);
-    ret[@"chatType"] = @([EMChatMessage chatTypeToInt:self.chatType]);
+    ret[@"status"] = [NSNumber numberWithInteger:[EnumTools messageStatusToInt:self.status]];
+    ret[@"chatType"] = [NSNumber numberWithInteger:[EnumTools chatTypeToInt:self.chatType]];
     ret[@"isThread"] = @(self.isChatThreadMessage);
     ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
@@ -101,159 +102,51 @@
     return ret;
 }
 
-- (EMMessageStatus)statusFromInt:(int)aStatus {
-    EMMessageStatus status = EMMessageStatusPending;
-    switch (aStatus) {
-        case 0:
-        {
-            status = EMMessageStatusPending;
-        }
-            break;
-        case 1:
-        {
-            status = EMMessageStatusDelivering;
-        }
-            break;
-        case 2:
-        {
-            status = EMMessageStatusSucceed;
-        }
-            break;
-        case 3:
-        {
-            status = EMMessageStatusFailed;
-        }
-            break;
-    }
-    
-    return status;
-}
-
-- (int)statusToInt:(EMMessageStatus)aStatus {
-    int status = 0;
-    switch (aStatus) {
-        case EMMessageStatusPending:
-        {
-            status = 0;
-        }
-            break;
-        case EMMessageStatusDelivering:
-        {
-            status = 1;
-        }
-            break;
-        case EMMessageStatusSucceed:
-        {
-            status = 2;
-        }
-            break;
-        case EMMessageStatusFailed:
-        {
-            status = 3;
-        }
-            break;
-    }
-    
-    return status;
-}
-
-+ (EMChatType)chatTypeFromInt:(int)aType {
-    EMChatType type = EMChatTypeChat;
-    switch (aType) {
-        case 0:
-            type = EMChatTypeChat;
-            break;
-        case 1:
-            type = EMChatTypeGroupChat;
-            break;
-        case 2:
-            type = EMChatTypeChatRoom;
-            break;
-    }
-    
-    return type;
-}
-
-+ (int)chatTypeToInt:(EMChatType)aType {
-    int type;
-    switch (aType) {
-        case EMChatTypeChat:
-            type = 0;
-            break;
-        case EMChatTypeGroupChat:
-            type = 1;
-            break;
-        case EMChatTypeChatRoom:
-            type = 2;
-            break;
-    }
-    return type;
-}
-
 @end
 
 @implementation EMMessageBody (Helper)
 
 + (EMMessageBody *)fromJson:(NSDictionary *)bodyJson {
     EMMessageBody *ret = nil;
-    NSString *type = bodyJson[@"type"];
-    if ([type isEqualToString:@"txt"]) {
-        ret = [EMTextMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"img"]) {
-        ret = [EMImageMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"loc"]) {
-        ret = [EMLocationMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"video"]) {
-        ret = [EMVideoMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"voice"]) {
-        ret = [EMVoiceMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"file"]) {
-        ret = [EMFileMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"cmd"]) {
-        ret = [EMCmdMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"custom"]) {
-        ret = [EMCustomMessageBody fromJson:bodyJson];
-    } else if ([type isEqualToString:@"combine"]) {
-        ret = [EMCombineMessageBody fromJson:bodyJson];
+    EMMessageBodyType type = [EnumTools messageBodyTypeFromInt:[bodyJson[@"type"] integerValue]];
+    switch (type) {
+        case EMMessageBodyTypeText:
+            ret = [EMTextMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeImage:
+            ret = [EMImageMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeVideo:
+            ret = [EMVideoMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeLocation:
+            ret = [EMLocationMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeVoice:
+            ret = [EMVoiceMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeFile:
+            ret = [EMFileMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeCmd:
+            ret = [EMCmdMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeCustom:
+            ret = [EMCustomMessageBody fromJson:bodyJson];
+            break;
+        case EMMessageBodyTypeCombine:
+            ret = [EMCombineMessageBody fromJson:bodyJson];
+            break;
+        default:
+            break;
     }
+
     return ret;
 }
 
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-    NSString *type = @"";
-    switch (self.type) {
-        case EMMessageBodyTypeText:
-            type = @"txt";
-            break;
-        case EMMessageBodyTypeLocation:
-            type = @"loc";
-            break;
-        case EMMessageBodyTypeCmd:
-            type = @"cmd";
-            break;
-        case EMMessageBodyTypeCustom:
-            type = @"custom";
-            break;
-        case EMMessageBodyTypeFile:
-            type = @"file";
-            break;
-        case EMMessageBodyTypeImage:
-            type = @"img";
-            break;
-        case EMMessageBodyTypeVideo:
-            type = @"video";
-            break;
-        case EMMessageBodyTypeVoice:
-            type = @"voice";
-            break;
-        case EMMessageBodyTypeCombine:
-            type = @"combine";
-            break;
-        default:
-            break;
-    }
-    ret[@"type"] = type;
+    ret[@"type"] = [NSNumber numberWithInteger:[EnumTools messageBodyTypeToInt:self.type]];
     if(self.operatorId && self.operatorId.length > 0) {
         ret[@"operatorId"] = self.operatorId;
     }
@@ -264,76 +157,6 @@
         ret[@"operatorCount"] = @(self.operatorCount);
     }
     
-    return ret;
-}
-
-+ (EMMessageBodyType)typeFromString:(NSString *)aStrType {
-   
-    EMMessageBodyType ret = EMMessageBodyTypeText;
-    
-    if([aStrType isEqualToString:@"txt"]){
-        ret = EMMessageBodyTypeText;
-    } else if ([aStrType isEqualToString:@"loc"]) {
-        ret = EMMessageBodyTypeLocation;
-    } else if ([aStrType isEqualToString:@"cmd"]) {
-        ret = EMMessageBodyTypeCmd;
-    } else if ([aStrType isEqualToString:@"custom"]) {
-        ret = EMMessageBodyTypeCustom;
-    } else if ([aStrType isEqualToString:@"file"]) {
-        ret = EMMessageBodyTypeFile;
-    } else if ([aStrType isEqualToString:@"img"]) {
-        ret = EMMessageBodyTypeImage;
-    } else if ([aStrType isEqualToString:@"video"]) {
-        ret = EMMessageBodyTypeVideo;
-    } else if ([aStrType isEqualToString:@"voice"]) {
-        ret = EMMessageBodyTypeVoice;
-    } else if ([aStrType isEqualToString:@"combine"]) {
-        ret = EMMessageBodyTypeCombine;
-    }
-    return ret;
-}
-
-
-+ (EMDownloadStatus)downloadStatusFromInt:(int)aStatus {
-    EMDownloadStatus ret = EMDownloadStatusPending;
-    switch (aStatus) {
-        case 0:
-            ret = EMDownloadStatusDownloading;
-            break;
-        case 1:
-            ret = EMDownloadStatusSucceed;
-            break;
-        case 2:
-            ret = EMDownloadStatusFailed;
-            break;
-        case 3:
-            ret = EMDownloadStatusPending;
-            break;
-        default:
-            break;
-    }
-    
-    return ret;
-}
-
-+ (int)downloadStatusToInt:(EMDownloadStatus)aStatus {
-    int ret = 0;
-    switch (aStatus) {
-        case EMDownloadStatusDownloading:
-            ret = 0;
-            break;
-        case EMDownloadStatusSucceed:
-            ret = 1;
-            break;
-        case EMDownloadStatusFailed:
-            ret = 2;
-            break;
-        case EMDownloadStatusPending:
-            ret = 3;
-            break;
-        default:
-            break;
-    }
     return ret;
 }
 
@@ -483,7 +306,7 @@
     ret.remotePath = remotePath;
     ret.secretKey = secret;
     ret.localPath = localPath;
-    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"fileStatus"] integerValue]];
     return ret;
 }
 
@@ -495,7 +318,7 @@
     ret[@"localPath"] = self.localPath;
     ret[@"remotePath"] = self.remotePath;
     ret[@"secret"] = self.secretKey;
-    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
+    ret[@"fileStatus"] = @([EnumTools downloadStatusToInt:self.downloadStatus]);
     return ret;
 }
 
@@ -518,7 +341,7 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"fileStatus"] integerValue]];
     return ret;
 }
 
@@ -529,7 +352,7 @@
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
     ret[@"fileSize"] = @(self.fileLength);
-    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
+    ret[@"fileStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.downloadStatus]];
     return ret;
 }
 
@@ -554,12 +377,12 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.fileLength = [aJson[@"fileSize"] longLongValue];
-    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"fileStatus"] integerValue]];
     ret.thumbnailLocalPath = aJson[@"thumbnailLocalPath"];
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
     ret.size = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
-    ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
+    ret.thumbnailDownloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"thumbnailStatus"] integerValue]];
     ret.compressionRatio = [aJson[@"sendOriginalImage"] boolValue] ? 1.0 : 0.6;
     return ret;
 }
@@ -569,8 +392,8 @@
     ret[@"thumbnailLocalPath"] = self.thumbnailLocalPath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecret"] = self.thumbnailSecretKey;
-    ret[@"thumbnailStatus"] = @([EMMessageBody downloadStatusToInt:self.thumbnailDownloadStatus]);
-    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);
+    ret[@"thumbnailStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.thumbnailDownloadStatus]];
+    ret[@"fileStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.downloadStatus]];
     ret[@"width"] = @(self.size.width);
     ret[@"height"] = @(self.size.height);
     ret[@"fileSize"] = @(self.fileLength);
@@ -604,7 +427,7 @@
     }
     ret.thumbnailRemotePath = aJson[@"thumbnailRemotePath"];
     ret.thumbnailSecretKey = aJson[@"thumbnailSecret"];
-    ret.thumbnailDownloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"thumbnailStatus"] intValue]];
+    ret.thumbnailDownloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"thumbnailStatus"] integerValue]];
     ret.thumbnailSize = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
     return ret;
 }
@@ -617,7 +440,7 @@
     ret[@"remotePath"] = self.remotePath;
     ret[@"thumbnailRemotePath"] = self.thumbnailRemotePath;
     ret[@"thumbnailSecretKey"] = self.thumbnailSecretKey;
-    ret[@"thumbnailStatus"] = @([EMMessageBody downloadStatusToInt:self.thumbnailDownloadStatus]);
+    ret[@"thumbnailStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.thumbnailDownloadStatus]];
     ret[@"width"] = @(self.thumbnailSize.width);
     ret[@"height"] = @(self.thumbnailSize.height);
     ret[@"fileSize"] = @(self.fileLength);
@@ -642,7 +465,7 @@
     ret.secretKey = aJson[@"secret"];
     ret.remotePath = aJson[@"remotePath"];
     ret.duration = [aJson[@"duration"] intValue];
-    ret.downloadStatus = [EMMessageBody downloadStatusFromInt:[aJson[@"fileStatus"] intValue]];
+    ret.downloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"fileStatus"] integerValue]];
     return ret;
 }
 
@@ -654,7 +477,7 @@
     ret[@"fileSize"] = @(self.fileLength);
     ret[@"secret"] = self.secretKey;
     ret[@"remotePath"] = self.remotePath;
-    ret[@"fileStatus"] = @([EMMessageBody downloadStatusToInt:self.downloadStatus]);;
+    ret[@"fileStatus"] = [NSNumber numberWithInteger:[EnumTools downloadStatusToInt:self.downloadStatus]];
     return ret;
 }
 

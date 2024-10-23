@@ -6,6 +6,7 @@
 //
 
 #import "EMChatroom+Helper.h"
+#import "EnumTools.h"
 
 @implementation EMChatroom (Helper)
 - (NSDictionary *)toJson {
@@ -22,37 +23,9 @@
     ret[@"muteList"] = self.muteList;
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"announcement"] = self.announcement;
-    ret[@"permissionType"] = @([self premissionTypeToInt:self.permissionType]);
+    ret[@"permissionType"] = [NSNumber numberWithInteger:[EnumTools chatRoomPermissionTypeToInt:self.permissionType]];
     
     return ret;
 }
 
-- (int)premissionTypeToInt:(EMChatroomPermissionType)type {
-    int ret = -1;
-    switch (type) {
-        case EMChatroomPermissionTypeNone:
-        {
-            ret = -1;
-        }
-            break;
-        case EMChatroomPermissionTypeMember:
-        {
-            ret = 0;
-        }
-            break;
-        case EMChatroomPermissionTypeAdmin:
-        {
-            ret = 1;
-        }
-            break;
-        case EMChatroomPermissionTypeOwner:
-        {
-            ret = 2;
-        }
-            break;
-        default:
-            break;
-    }
-    return ret;
-}
 @end

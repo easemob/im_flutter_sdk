@@ -12,8 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface EMConversation (Helper) <EaseModeToJson>
 - (NSDictionary *)toJson;
-+ (int)typeToInt:(EMConversationType)aType;
-+ (EMConversationType)typeFromInt:(int)aType;
 @end
 
 NS_ASSUME_NONNULL_END

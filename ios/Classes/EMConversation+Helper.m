@@ -7,54 +7,18 @@
 
 #import "EMConversation+Helper.h"
 #import "EMChatMessage+Helper.h"
+#import "EnumTools.h"
 
 @implementation EMConversation (Helper)
 - (NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
     ret[@"convId"] = self.conversationId;
-    ret[@"type"] = @([self.class typeToInt:self.type]);
+    ret[@"type"] = [NSNumber numberWithInteger:[EnumTools conversationTypeFromInt:self.type]];
     ret[@"ext"] = self.ext;
     ret[@"isThread"] = @(self.isChatThread);
     ret[@"isPinned"] = @(self.isPinned);
     ret[@"pinnedTime"] = @(self.pinnedTime);
     ret[@"marks"] = self.marks;
-    return ret;
-}
-
-
-+ (int)typeToInt:(EMConversationType)aType {
-    int ret = 0;
-    switch (aType) {
-        case EMConversationTypeChat:
-            ret = 0;
-            break;
-        case EMConversationTypeGroupChat:
-            ret = 1;
-            break;
-        case EMConversationTypeChatRoom:
-            ret = 2;
-            break;
-        default:
-            break;
-    }
-    return ret;
-}
-
-+ (EMConversationType)typeFromInt:(int)aType {
-    EMConversationType ret = EMConversationTypeChat;
-    switch (aType) {
-        case 0:
-            ret = EMConversationTypeChat;
-            break;
-        case 1:
-            ret = EMConversationTypeGroupChat;
-            break;
-        case 2:
-            ret = EMConversationTypeChatRoom;
-            break;
-        default:
-            break;
-    }
     return ret;
 }
 

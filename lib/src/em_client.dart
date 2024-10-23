@@ -992,7 +992,7 @@ class EMClient {
   Future<void> _onMultiDevicesConversationEvent(Map map) async {
     EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
     String convId = map['convId'];
-    EMConversationType type = conversationTypeFromInt(map['convType']);
+    EMConversationType type = EMConversationType.values[map['convType']];
     for (var handler in _multiDeviceEventHandler.values) {
       handler.onConversationEvent?.call(event, convId, type);
     }

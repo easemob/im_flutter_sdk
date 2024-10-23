@@ -350,7 +350,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             createIfNeed = params.getBoolean("createIfNeed");
         }
 
-        EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
+        EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
 
         boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
@@ -435,7 +435,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void removeMessagesFromServerWithMsgIds(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("convId");
-        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
         EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conversationId, type, true);
 
         JSONArray jsonArray = params.getJSONArray("msgIds");
@@ -450,7 +450,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void removeMessagesFromServerWithTs(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("convId");
-        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
         EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conversationId, type, true);
         long timestamp = 0;
         if(params.has("timestamp")) {
@@ -770,10 +770,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void fetchHistoryMessages(JSONObject params, String channelName, Result result) throws JSONException {
         String conId = params.getString("convId");
-        EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
+        EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
         int pageSize = params.getInt("pageSize");
         String startMsgId = params.getString("startMsgId");
-        EMSearchDirection direction = params.optInt("direction") == 0 ? EMSearchDirection.UP : EMSearchDirection.DOWN;
+        EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.optInt("direction"));
         asyncRunnable(() -> {
             try {
                 EMCursorResult<EMMessage> cursorResult = EMClient.getInstance().chatManager().fetchHistoryMessages(conId,
@@ -787,7 +787,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void fetchHistoryMessagesByOptions(JSONObject params, String channelName, Result result) throws JSONException {
         String conId = params.getString("convId");
-        EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
+        EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
         int pageSize = params.getInt("pageSize");
         String cursor = null;
         if (params.has("cursor")) {
@@ -815,7 +815,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         long timestamp = params.getLong("timestamp");
         int count = params.getInt("count");
         String from = params.getString("from");
-        EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
+        EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
         EMConversation.EMMessageSearchScope scope;
         if(params.has("searchScope")) {
             scope = EMConversation.EMMessageSearchScope.values()[params.getInt("searchScope")];
@@ -856,7 +856,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void deleteRemoteConversation(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("conversationId");
-        EMConversationType type = typeFromInt(params.getInt("conversationType"));
+        EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         boolean isDeleteRemoteMessage = params.getBoolean("isDeleteRemoteMessage");
         EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
     }
@@ -1244,19 +1244,6 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         EMClient.getInstance().chatManager().addConversationListener(conversationListener);
     }
 
-    private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
-        return direction.equals("up") ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
-    }
-
-    private EMConversation.EMConversationType typeFromInt(int intType) {
-        if (intType == 0){
-            return EMConversationType.Chat;
-        }else if(intType == 1){
-            return EMConversationType.GroupChat;
-        }else {
-            return EMConversationType.ChatRoom;
-        }
-    }
 
     protected void mergeMessageBody(EMMessageBody msgBody, EMMessage dbMsg) throws JSONException {
         if (dbMsg.getType() == EMMessage.Type.TXT) {
@@ -1379,7 +1366,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         long ts = params.getLong("ts");
         int count = params.getInt("count");
         String from = params.optString("from");
-        EMConversation.EMSearchDirection direction = EMConversationHelper.searchDirectionFromInt(params.getInt("direction"));
+        EMConversation.EMSearchDirection direction = null;
+        if(params.has("direction")) {
+            direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        }
         List<EMMessage> msgList = EMClient.getInstance().chatManager().searchMsgFromDB(types, ts, count, from, direction);
         List<Map> messages = new ArrayList<>();
         for(EMMessage msg: msgList) {
