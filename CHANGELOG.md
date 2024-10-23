@@ -1,3 +1,9 @@
+## 4.8.2
+
+#### 修复
+
+- 修复 ios `EMChatManager.searchMsgsByOptions`, `EMConversation.searchMsgsByOptions` 方法类型不准的问题；
+
 ## 4.8.1+1
 
 #### 新增特性
