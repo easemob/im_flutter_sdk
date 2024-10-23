@@ -45,7 +45,7 @@ class EMChatRoom {
         blockList: map.getList("blockList"),
         muteList: map.getList("muteList"),
         announcement: map["announcement"],
-        permissionType: chatRoomPermissionTypeFromInt(map["permissionType"]),
+        permissionType: EMChatRoomPermissionType.values[map["permissionType"]],
         isAllMemberMuted: map.boolValue("isAllMemberMuted"));
   }
 
@@ -63,7 +63,7 @@ class EMChatRoom {
     data.putIfNotNull("muteList", muteList);
     data.putIfNotNull("announcement", announcement);
     data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
-    data['permissionType'] = chatRoomPermissionTypeToInt(permissionType);
+    data['permissionType'] = permissionType.index;
 
     return data;
   }

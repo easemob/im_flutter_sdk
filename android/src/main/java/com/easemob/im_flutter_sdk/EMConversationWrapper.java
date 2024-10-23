@@ -5,7 +5,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
 
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
@@ -291,7 +290,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMConversation conversation = conversationWithParam(params);
         String startId = params.getString("startId");
         int pageSize = params.getInt("count");
-        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
         asyncRunnable(()->{
             List<EMMessage> msgList = conversation.loadMoreMsgFromDB(startId, pageSize, direction);
             List<Map> messages = new ArrayList<>();
@@ -312,7 +311,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         final String name = sender;
         int count = params.getInt("count");
         long timestamp = params.getLong("timestamp");
-        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
         EMConversation.EMMessageSearchScope scope;
         if(params.has("searchScope")) {
             scope = EMConversation.EMMessageSearchScope.values()[params.getInt("searchScope")];
@@ -337,21 +336,9 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
             sender = params.getString("sender");
         }
         int count = params.getInt("count");
-        EMConversation.EMSearchDirection direction = searchDirectionFromString(params.getString("direction"));
-        String typeStr = params.getString("msgType");
-        EMMessage.Type type = EMMessage.Type.TXT;
-        switch (typeStr) {
-            case "txt" : type = EMMessage.Type.TXT; break;
-            case "loc" : type = EMMessage.Type.LOCATION; break;
-            case "cmd" : type = EMMessage.Type.CMD; break;
-            case "custom" : type = EMMessage.Type.CUSTOM; break;
-            case "file" : type = EMMessage.Type.FILE; break;
-            case "img" : type = EMMessage.Type.IMAGE; break;
-            case "video" : type = EMMessage.Type.VIDEO; break;
-            case "voice" : type = EMMessage.Type.VOICE; break;
-            case "combine" : type = EMMessage.Type.COMBINE; break;
-        }
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
 
+        EMMessage.Type type = EnumTools.messageBodyTypeFromInt(params.getInt("msgType"));
         EMMessage.Type finalType = type;
         String finalSender = sender;
         asyncRunnable(()->{
@@ -416,20 +403,15 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
 
     private EMConversation conversationWithParam(JSONObject params ) throws JSONException {
         String convId = params.getString("convId");
-        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("type"));
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("type"));
         EMConversation conversation = EMClient.getInstance().chatManager().getConversation(convId, type, true);
         return conversation;
     }
 
-    private EMConversation.EMSearchDirection searchDirectionFromString(String direction) {
-        return TextUtils.equals(direction, "up") ? EMConversation.EMSearchDirection.UP : EMConversation.EMSearchDirection.DOWN;
-    }
-
-
     // 481
     private void remindType(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-        onSuccess(result, channelName, EMSilentModeParamHelper.pushRemindTypeToInt(conversation.pushRemindType()));
+        onSuccess(result, channelName, EnumTools.remindTypeToInt(conversation.pushRemindType()));
     }
 
     private void searchMsgByOptions(JSONObject params, String channelName, Result result) throws JSONException {
@@ -443,7 +425,7 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         long ts = params.getLong("ts");
         int count = params.getInt("count");
         String from = params.optString("from");
-        EMConversation.EMSearchDirection direction = EMConversationHelper.searchDirectionFromInt(params.getInt("direction"));
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
         List<EMMessage> msgList = conversation.searchMsgFromDB(types, ts, count, from, direction);
         List<Map> messages = new ArrayList<>();
         for(EMMessage msg: msgList) {

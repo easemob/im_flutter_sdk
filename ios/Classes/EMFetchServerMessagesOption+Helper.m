@@ -7,11 +7,12 @@
 
 #import "EMFetchServerMessagesOption+Helper.h"
 #import "EMConversation+Helper.h"
+#import "EnumTools.h"
 
 @implementation EMFetchServerMessagesOption (Helper)
 + (EMFetchServerMessagesOption *)fromJson:(NSDictionary *)dict {
     EMFetchServerMessagesOption *options = [[EMFetchServerMessagesOption alloc] init];
-    options.direction = [dict[@"direction"] isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
+    options.direction = [EnumTools searchDirectionFromInt:[dict[@"direction"] integerValue]];
     options.startTime = [dict[@"startTs"] longValue];
     options.endTime = [dict[@"endTs"] longValue];
     options.from = dict[@"from"];
@@ -20,26 +21,8 @@
     NSMutableArray<NSNumber*> *list = [NSMutableArray new];
     if(types) {
         for (int i = 0; i < types.count; i++) {
-            NSString *type = types[i];
-            if ([type isEqualToString:@"txt"]) {
-                [list addObject:@(EMMessageBodyTypeText)];
-            } else if ([type isEqualToString:@"img"]) {
-                [list addObject:@(EMMessageBodyTypeImage)];
-            } else if ([type isEqualToString:@"loc"]) {
-                [list addObject:@(EMMessageBodyTypeLocation)];
-            } else if ([type isEqualToString:@"video"]) {
-                [list addObject:@(EMMessageBodyTypeVideo)];
-            } else if ([type isEqualToString:@"voice"]) {
-                [list addObject:@(EMMessageBodyTypeVoice)];
-            } else if ([type isEqualToString:@"file"]) {
-                [list addObject:@(EMMessageBodyTypeFile)];
-            } else if ([type isEqualToString:@"cmd"]) {
-                [list addObject:@(EMMessageBodyTypeCmd)];
-            } else if ([type isEqualToString:@"custom"]) {
-                [list addObject:@(EMMessageBodyTypeCustom)];
-            } else if ([type isEqualToString:@"combine"]) {
-                [list addObject:@(EMMessageBodyTypeCombine)];
-            }
+           EMMessageBodyType type = [EnumTools messageBodyTypeFromInt:[types[i] integerValue]];
+            [list addObject: [NSNumber numberWithInteger:type]];
         }
     }
     

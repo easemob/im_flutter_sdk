@@ -12,8 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface EMGroup (Helper) <EaseModeToJson>
 - (NSDictionary *)toJson;
-+ (EMGroupPermissionType)premissionTypeFromInt:(int)type;
-+ (int)premissionTypeToInt:(EMGroupPermissionType)type;
 @end
 
 @interface EMGroupOptions (Helper) <EaseModeToJson>

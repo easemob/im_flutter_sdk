@@ -6,6 +6,7 @@
 //
 
 #import "EMGroup+Helper.h"
+#import "EnumTools.h"
 
 @implementation EMGroup (Helper)
 
@@ -26,7 +27,7 @@
     ret[@"messageBlocked"] = @(self.isBlocked);
     ret[@"isAllMemberMuted"] = @(self.isMuteAllMembers);
     ret[@"isDisabled"] = @(self.isDisabled);
-    ret[@"permissionType"] = @([EMGroup premissionTypeToInt:self.permissionType]);
+    ret[@"permissionType"] = [NSNumber numberWithInteger:[EnumTools groupPermissionTypeToInt:self.permissionType]];
     
     if (self.settings != nil) {
         ret[@"maxUserCount"] = @(self.settings.maxUsers);
@@ -54,63 +55,6 @@
     return self.settings.style == EMGroupStylePrivateMemberCanInvite;
 }
 
-+ (int)premissionTypeToInt:(EMGroupPermissionType)type {
-    int ret = -1;
-    switch (type) {
-        case EMGroupPermissionTypeNone:
-        {
-            ret = -1;
-        }
-            break;
-        case EMGroupPermissionTypeMember:
-        {
-            ret = 0;
-        }
-            break;
-        case EMGroupPermissionTypeAdmin:
-        {
-            ret = 1;
-        }
-            break;
-        case EMGroupPermissionTypeOwner:
-        {
-            ret = 2;
-        }
-            break;
-        default:
-            break;
-    }
-    return ret;
-}
-
-+ (EMGroupPermissionType)premissionTypeFromInt:(int)type {
-    EMGroupPermissionType ret = EMGroupPermissionTypeMember;
-    switch (type) {
-        case -1:
-        {
-            ret = EMGroupPermissionTypeNone;
-        }
-            break;
-        case 0:
-        {
-            ret = EMGroupPermissionTypeMember;
-        }
-            break;
-        case 1:
-        {
-            ret = EMGroupPermissionTypeAdmin;
-        }
-            break;
-        case 2:
-        {
-            ret = EMGroupPermissionTypeOwner;
-        }
-            break;
-        default:
-            break;
-    }
-    return ret;
-}
 
 @end
 

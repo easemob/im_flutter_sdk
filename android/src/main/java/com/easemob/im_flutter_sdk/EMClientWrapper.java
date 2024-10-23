@@ -1,7 +1,5 @@
 package com.easemob.im_flutter_sdk;
 
-import static com.easemob.im_flutter_sdk.EMConversationHelper.typeToInt;
-
 import java.util.ArrayList;
 
 import java.util.Map;
@@ -482,7 +480,7 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", event);
                 data.put("convId", conversationId);
-                data.put("convType", typeToInt(type));
+                data.put("convType", EnumTools.conversationTypeToInt(type));
                 post(()-> channel.invokeMethod(EMSDKMethod.onMultiDevicesConversationEvent, data));
             }
         };

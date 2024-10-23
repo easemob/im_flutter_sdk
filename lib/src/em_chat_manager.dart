@@ -446,7 +446,7 @@ class EMChatManager {
   }) async {
     Map req = {
       "convId": conversationId,
-      "type": conversationTypeToInt(type),
+      "type": type.index,
       "createIfNeed": createIfNeed
     };
     Map result =
@@ -1069,7 +1069,7 @@ class EMChatManager {
   }) async {
     Map req = Map();
     req['convId'] = conversationId;
-    req['type'] = conversationTypeToInt(type);
+    req['type'] = type.index;
     req['pageSize'] = pageSize;
     req['startMsgId'] = startMsgId;
     req['direction'] = direction.index;
@@ -1123,7 +1123,7 @@ class EMChatManager {
   }) async {
     Map req = Map();
     req.putIfNotNull('convId', conversationId);
-    req.putIfNotNull('type', conversationTypeToInt(type));
+    req.putIfNotNull('type', type.index);
     req.putIfNotNull('pageSize', pageSize);
     req.putIfNotNull('cursor', cursor);
     req.putIfNotNull('options', options?.toJson());
@@ -1199,7 +1199,7 @@ class EMChatManager {
     req['count'] = count;
     req['timestamp'] = timestamp;
     req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
-    req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction.index;
     req.putIfNotNull("from", sender);
 
     Map result =
@@ -1266,7 +1266,7 @@ class EMChatManager {
     req['timestamp'] = timestamp;
     req['maxCount'] = maxCount;
     req['from'] = from;
-    req['direction'] = direction == EMSearchDirection.Up ? "up" : "down";
+    req['direction'] = direction.index;
 
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.searchChatMsgFromDB, req);
@@ -1561,7 +1561,7 @@ class EMChatManager {
   }) async {
     Map req = {
       "msgIds": messageIds,
-      "chatType": chatTypeToInt(chatType),
+      "chatType": chatType.index,
     };
     req.putIfNotNull("groupId", groupId);
     Map result = await ChatChannel.invokeMethod(

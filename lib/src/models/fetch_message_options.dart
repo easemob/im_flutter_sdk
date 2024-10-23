@@ -140,14 +140,13 @@ class FetchMessageOptions {
 
   Map toJson() {
     Map data = {};
-    data.putIfNotNull(
-        'direction', direction == EMSearchDirection.Up ? "up" : "down");
+    data.putIfNotNull('direction', direction.index);
     data.putIfNotNull('startTs', startTs);
     data.putIfNotNull('endTs', endTs);
     data.putIfNotNull('from', from);
     data.putIfNotNull('needSave', needSave);
-    data.putIfNotNull('msgTypes',
-        msgTypes?.toSet().map<String>((e) => messageTypeToTypeStr(e)).toList());
+    data.putIfNotNull(
+        'msgTypes', msgTypes?.toSet().map<int>((e) => e.index).toList());
 
     return data;
   }

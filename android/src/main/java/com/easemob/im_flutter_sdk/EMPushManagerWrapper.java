@@ -170,7 +170,7 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
 
     private void setConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("conversationId");
-        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("conversationType"));
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         EMSilentModeParam param = EMSilentModeParamHelper.fromJson(params.getJSONObject("param"));
         EMClient.getInstance().pushManager().setSilentModeForConversation(conversationId, type, param, new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
             @Override
@@ -181,13 +181,13 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     }
     private void removeConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("conversationId");
-        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("conversationType"));
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         EMClient.getInstance().pushManager().clearRemindTypeForConversation(conversationId, type, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void fetchConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
         String conversationId = params.getString("conversationId");
-        EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt("conversationType"));
+        EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         EMClient.getInstance().pushManager().getSilentModeForConversation(conversationId, type, new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
             @Override
             public void onSuccess(EMSilentModeResult object) {
@@ -219,7 +219,7 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
         ArrayList<EMConversation> list = new ArrayList<>();
         while (iterator.hasNext()) {
             String conversationId = (String)iterator.next();
-            EMConversation.EMConversationType type = EMConversationHelper.typeFromInt(params.getInt(conversationId));
+            EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt(conversationId));
             EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conversationId, type, true);
             list.add(conversation);
         }

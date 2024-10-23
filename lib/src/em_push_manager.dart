@@ -233,7 +233,7 @@ class EMPushManager {
   }) async {
     Map req = {};
     req["conversationId"] = conversationId;
-    req["conversationType"] = conversationTypeToInt(type);
+    req["conversationType"] = type.index;
     req["param"] = param.toJson();
 
     Map result = await PushChannel.invokeMethod(
@@ -274,7 +274,7 @@ class EMPushManager {
   }) async {
     Map req = {};
     req["conversationId"] = conversationId;
-    req["conversationType"] = conversationTypeToInt(type);
+    req["conversationType"] = type.index;
     Map result = await PushChannel.invokeMethod(
         ChatMethodKeys.removeConversationSilentMode, req);
     try {
@@ -313,7 +313,7 @@ class EMPushManager {
   }) async {
     Map req = {};
     req["conversationId"] = conversationId;
-    req["conversationType"] = conversationTypeToInt(type);
+    req["conversationType"] = type.index;
     Map result = await PushChannel.invokeMethod(
         ChatMethodKeys.fetchConversationSilentMode, req);
     try {
@@ -408,7 +408,7 @@ class EMPushManager {
   ) async {
     Map<String, int> req = {};
     for (var item in conversations) {
-      req[item.id] = conversationTypeToInt(item.type);
+      req[item.id] = item.type.index;
     }
     Map result = await PushChannel.invokeMethod(
       ChatMethodKeys.fetchSilentModeForConversations,

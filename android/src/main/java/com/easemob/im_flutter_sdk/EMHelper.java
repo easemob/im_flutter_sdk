@@ -1,9 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
-import static com.hyphenate.chat.EMOptions.AreaCode.AREA_CODE_GLOB;
-
 import android.content.Context;
-
 import com.hyphenate.chat.EMChatRoom;
 import com.hyphenate.chat.EMChatThread;
 import com.hyphenate.chat.EMChatThreadEvent;
@@ -191,35 +188,12 @@ class EMGroupHelper {
         EMCommonUtil.putObjectToMap(data, "messageBlocked", group.isMsgBlocked());
         EMCommonUtil.putObjectToMap(data, "isDisabled", group.isDisabled());
         EMCommonUtil.putObjectToMap(data, "isAllMemberMuted", group.isAllMemberMuted());
-        EMCommonUtil.putObjectToMap(data, "permissionType", intTypeFromGroupPermissionType(group.getGroupPermissionType()));
+        EMCommonUtil.putObjectToMap(data, "permissionType", EnumTools.groupPermissionTypeToInt(group.getGroupPermissionType()));
         EMCommonUtil.putObjectToMap(data, "maxUserCount", group.getMaxUserCount());
         EMCommonUtil.putObjectToMap(data, "isMemberOnly", group.isMemberOnly());
         EMCommonUtil.putObjectToMap(data, "isMemberAllowToInvite", group.isMemberAllowToInvite());
         EMCommonUtil.putObjectToMap(data, "ext", group.getExtension());
         return data;
-    }
-
-    static int intTypeFromGroupPermissionType(EMGroup.EMGroupPermissionType type) {
-        int ret = -1;
-        switch (type) {
-        case none: {
-            ret = -1;
-        }
-            break;
-        case member: {
-            ret = 0;
-        }
-            break;
-        case admin: {
-            ret = 1;
-        }
-            break;
-        case owner: {
-            ret = 2;
-        }
-            break;
-        }
-        return ret;
     }
 }
 
@@ -313,7 +287,7 @@ class EMContactHelper{
         String userId = json.optString("userId");
         String remark = json.optString("remark");
         EMContact contact = new EMContact(userId);
-        if (remark.length() != 0) {
+        if (!remark.isEmpty()) {
             contact.setRemark(remark);
         }
         return contact;
@@ -341,35 +315,11 @@ class EMChatRoomHelper {
         data.put("muteList", chatRoom.getMuteList().keySet().toArray());
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
-        data.put("permissionType", intTypeFromPermissionType(chatRoom.getChatRoomPermissionType()));
+        data.put("permissionType", EnumTools.chatRoomPermissionTypeToInt(chatRoom.getChatRoomPermissionType()));
 
         return data;
     }
 
-    static int intTypeFromPermissionType(EMChatRoom.EMChatRoomPermissionType type) {
-        int ret = -1;
-        switch (type) {
-        case none: {
-            ret = -1;
-        }
-            break;
-        case member: {
-            ret = 0;
-        }
-            break;
-        case admin: {
-            ret = 1;
-        }
-            break;
-        case owner: {
-            ret = 2;
-        }
-            break;
-        default:
-            break;
-        }
-        return ret;
-    }
 }
 
 class EMMessageHelper {
@@ -401,50 +351,50 @@ class EMMessageHelper {
         EMMessage message = null;
 
         JSONObject bodyJson = json.getJSONObject("body");
-        String type = bodyJson.getString("type");
+        EMMessage.Type type = EnumTools.messageBodyTypeFromInt(bodyJson.getInt("type"));
         if (json.getString("direction").equals("send")) {
             switch (type) {
-                case "txt": {
+                case TXT: {
                     message = EMMessage.createSendMessage(Type.TXT);
                     message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
                 }
                     break;
-                case "img": {
+                case IMAGE: {
                     message = EMMessage.createSendMessage(Type.IMAGE);
                     message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
                 }
                     break;
-                case "loc": {
+                case LOCATION: {
                     message = EMMessage.createSendMessage(Type.LOCATION);
                     message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
                 }
                     break;
-                case "video": {
+                case VIDEO: {
                     message = EMMessage.createSendMessage(Type.VIDEO);
                     message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
                 }
                     break;
-                case "voice": {
+                case VOICE: {
                     message = EMMessage.createSendMessage(Type.VOICE);
                     message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
                 }
                     break;
-                case "file": {
+                case FILE: {
                     message = EMMessage.createSendMessage(Type.FILE);
                     message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
                 }
                     break;
-                case "cmd": {
+                case CMD: {
                     message = EMMessage.createSendMessage(Type.CMD);
                     message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
                 }
                     break;
-                case "custom": {
+                case CUSTOM: {
                     message = EMMessage.createSendMessage(Type.CUSTOM);
                     message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
                 }
                     break;
-                case "combine": {
+                case COMBINE: {
                     message = EMMessage.createSendMessage(Type.COMBINE);
                     message.addBody(EMMessageBodyHelper.combineBodyFromJson(bodyJson));
                 }
@@ -454,51 +404,51 @@ class EMMessageHelper {
             }
         } else {
             switch (type) {
-                case "txt": {
+                case TXT: {
                     message = EMMessage.createReceiveMessage(Type.TXT);
                     message.addBody(EMMessageBodyHelper.textBodyFromJson(bodyJson));
                     break;
                 }
-                case "img": {
+                case IMAGE: {
                     message = EMMessage.createReceiveMessage(Type.IMAGE);
                     message.addBody(EMMessageBodyHelper.imageBodyFromJson(bodyJson));
                     break;
                 }
 
-                case "loc": {
+                case LOCATION: {
                     message = EMMessage.createReceiveMessage(Type.LOCATION);
                     message.addBody(EMMessageBodyHelper.localBodyFromJson(bodyJson));
                     break;
                 }
 
-                case "video": {
+                case VIDEO: {
                     message = EMMessage.createReceiveMessage(Type.VIDEO);
                     message.addBody(EMMessageBodyHelper.videoBodyFromJson(bodyJson));
                     break;
                 }
 
-                case "voice": {
+                case VOICE: {
                     message = EMMessage.createReceiveMessage(Type.VOICE);
                     message.addBody(EMMessageBodyHelper.voiceBodyFromJson(bodyJson));
                     break;
                 }
-                case "file": {
+                case FILE: {
                     message = EMMessage.createReceiveMessage(Type.FILE);
                     message.addBody(EMMessageBodyHelper.fileBodyFromJson(bodyJson));
                     break;
                 }
-                case "cmd": {
+                case CMD: {
                     message = EMMessage.createReceiveMessage(Type.CMD);
                     message.addBody(EMMessageBodyHelper.cmdBodyFromJson(bodyJson));
                     break;
                 }
-                case "custom": {
+                case CUSTOM: {
                     message = EMMessage.createReceiveMessage(Type.CUSTOM);
                     message.addBody(EMMessageBodyHelper.customBodyFromJson(bodyJson));
                     break;
                 }
 
-                case "combine": {
+                case COMBINE: {
                     message = EMMessage.createReceiveMessage(Type.COMBINE);
                     message.addBody(EMMessageBodyHelper.combineBodyFromJson(bodyJson));
                     break;
@@ -517,7 +467,7 @@ class EMMessageHelper {
             message.setFrom(json.getString("from"));
         }
         message.setAcked(json.getBoolean("hasReadAck"));
-        if (statusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
+        if (EnumTools.messageStatusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
             message.setUnread(!json.getBoolean("hasRead"));
         }
         // message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
@@ -535,7 +485,7 @@ class EMMessageHelper {
             message.setMsgTime(json.getLong("serverTime"));
         }
 
-        message.setStatus(statusFromInt(json.getInt("status")));
+        message.setStatus(EnumTools.messageStatusFromInt(json.getInt("status")));
         if (json.has("chatroomMessagePriority")) {
             int intPriority = json.getInt("chatroomMessagePriority");
             if (intPriority == 0) {
@@ -546,7 +496,7 @@ class EMMessageHelper {
                 message.setPriority(EMMessage.EMChatRoomMessagePriority.PriorityLow);
             }
         }
-        message.setChatType(chatTypeFromInt(json.getInt("chatType")));
+        message.setChatType(EnumTools.chatTypeFromInt(json.getInt("chatType")));
         if (json.has("msgId")){
             message.setMsgId(json.getString("msgId"));
         }
@@ -635,8 +585,8 @@ class EMMessageHelper {
         data.put("hasDeliverAck", message.isDelivered());
         data.put("localTime", message.localTime());
         data.put("serverTime", message.getMsgTime());
-        data.put("status", statusToInt(message.status()));
-        data.put("chatType", chatTypeToInt(message.getChatType()));
+        data.put("status", EnumTools.messageStatusToInt(message.status()));
+        data.put("chatType", EnumTools.chatTypeToInt(message.getChatType()));
         data.put("direction", message.direct() == EMMessage.Direct.SEND ? "send" : "rec");
         data.put("conversationId", message.conversationId());
         data.put("msgId", message.getMsgId());
@@ -651,59 +601,6 @@ class EMMessageHelper {
         data.put("isThread", message.isChatThreadMessage());
         return data;
     }
-
-    private static EMMessage.ChatType chatTypeFromInt(int type) {
-        switch (type) {
-        case 0:
-            return EMMessage.ChatType.Chat;
-        case 1:
-            return EMMessage.ChatType.GroupChat;
-        case 2:
-            return EMMessage.ChatType.ChatRoom;
-        }
-        return EMMessage.ChatType.Chat;
-    }
-
-    private static int chatTypeToInt(EMMessage.ChatType type) {
-        switch (type) {
-        case Chat:
-            return 0;
-        case GroupChat:
-            return 1;
-        case ChatRoom:
-            return 2;
-        }
-        return 0;
-    }
-
-    private static EMMessage.Status statusFromInt(int status) {
-        switch (status) {
-        case 0:
-            return EMMessage.Status.CREATE;
-        case 1:
-            return EMMessage.Status.INPROGRESS;
-        case 2:
-            return EMMessage.Status.SUCCESS;
-        case 3:
-            return EMMessage.Status.FAIL;
-        }
-        return EMMessage.Status.CREATE;
-    }
-
-    private static int statusToInt(EMMessage.Status status) {
-        switch (status) {
-        case CREATE:
-            return 0;
-        case INPROGRESS:
-            return 1;
-        case SUCCESS:
-            return 2;
-        case FAIL:
-            return 3;
-        }
-        return 0;
-    }
-
 }
 
 class EMGroupAckHelper {
@@ -756,7 +653,7 @@ class EMGroupAckHelper {
     static Map<String, Object> textBodyToJson(EMTextMessageBody body) {
         Map<String, Object> data = getParentMap(body);
         data.put("content", body.getMessage());
-        data.put("type", "txt");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.TXT));
         if (body.getTargetLanguages() != null) {
             data.put("targetLanguages", body.getTargetLanguages());
         }
@@ -797,7 +694,7 @@ class EMGroupAckHelper {
         data.put("longitude", body.getLongitude());
         data.put("buildingName", body.getBuildingName());
         data.put("address", body.getAddress());
-        data.put("type", "loc");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.LOCATION));
         return data;
     }
 
@@ -815,7 +712,7 @@ class EMGroupAckHelper {
         Map<String, Object> data = getParentMap(body);
         data.put("deliverOnlineOnly", body.isDeliverOnlineOnly());
         data.put("action", body.action());
-        data.put("type", "cmd");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.CMD));
         return data;
     }
 
@@ -840,7 +737,7 @@ class EMGroupAckHelper {
         Map<String, Object> data = getParentMap(body);
         data.put("event", body.event());
         data.put("params", body.getParams());
-        data.put("type", "custom");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.CUSTOM));
         return data;
     }
 
@@ -858,7 +755,7 @@ class EMGroupAckHelper {
         if (json.has("secret")){
             body.setSecret(json.getString("secret"));
         }
-        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        body.setDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("fileStatus")));
         if (json.has("fileSize")){
             body.setFileLength(json.getInt("fileSize"));
         }
@@ -873,8 +770,8 @@ class EMGroupAckHelper {
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
-        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
-        data.put("type", "file");
+        data.put("fileStatus", EnumTools.downloadStatusToInt(body.downloadStatus()));
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.FILE));
         return data;
     }
 
@@ -914,7 +811,7 @@ class EMGroupAckHelper {
         }
 
         if (json.has("fileStatus")){
-            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+            body.setDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("fileStatus")));
         }
 
         return body;
@@ -926,15 +823,16 @@ class EMGroupAckHelper {
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
         data.put("secret", body.getSecret());
-        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("fileStatus", EnumTools.downloadStatusToInt(body.downloadStatus()));
         data.put("thumbnailLocalPath", body.thumbnailLocalPath());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
         data.put("thumbnailSecret", body.getThumbnailSecret());
+        data.put("thumbnailStatus", EnumTools.downloadStatusToInt(body.thumbnailDownloadStatus()));
         data.put("height", body.getHeight());
         data.put("width", body.getWidth());
         data.put("sendOriginalImage", body.isSendOriginalImage());
         data.put("fileSize", body.getFileSize());
-        data.put("type", "img");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.IMAGE));
         return data;
     }
 
@@ -966,7 +864,7 @@ class EMGroupAckHelper {
         }
 
         if(json.has("fileStatus")){
-            body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+            body.setDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("fileStatus")));
         }
 
         if (json.has("width") && json.has("height")){
@@ -986,14 +884,15 @@ class EMGroupAckHelper {
         data.put("duration", body.getDuration());
         data.put("thumbnailRemotePath", body.getThumbnailUrl());
         data.put("thumbnailSecret", body.getThumbnailSecret());
+        data.put("thumbnailStatus", EnumTools.downloadStatusToInt(body.thumbnailDownloadStatus()));
         data.put("displayName", body.getFileName());
         data.put("height", body.getThumbnailHeight());
         data.put("width", body.getThumbnailWidth());
         data.put("remotePath", body.getRemoteUrl());
-        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("fileStatus", EnumTools.downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
         data.put("fileSize", body.getVideoFileLength());
-        data.put("type", "video");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.VIDEO));
 
         return data;
     }
@@ -1003,7 +902,7 @@ class EMGroupAckHelper {
         File file = new File(localPath);
         int duration = json.getInt("duration");
         EMVoiceMessageBody body = new EMVoiceMessageBody(file, duration);
-        body.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+        body.setDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("fileStatus")));
         if (json.has("displayName")){
             body.setFileName(json.getString("displayName"));
         }
@@ -1026,9 +925,9 @@ class EMGroupAckHelper {
         data.put("duration", body.getLength());
         data.put("displayName", body.getFileName());
         data.put("remotePath", body.getRemoteUrl());
-        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
+        data.put("fileStatus", EnumTools.downloadStatusToInt(body.downloadStatus()));
         data.put("secret", body.getSecret());
-        data.put("type", "voice");
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.VOICE));
         data.put("fileSize", body.getFileSize());
         return data;
     }
@@ -1056,7 +955,7 @@ class EMGroupAckHelper {
          ret.setRemoteUrl(remotePath);
          ret.setSecret(secret);
          ret.setMessageList(msgIds);
-         ret.setDownloadStatus(downloadStatusFromInt(json.getInt("fileStatus")));
+         ret.setDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("fileStatus")));
 
          return ret;
      }
@@ -1086,61 +985,19 @@ class EMGroupAckHelper {
             data.put("secret", body.getSecret());
         }
 
-        data.put("fileStatus", downloadStatusToInt(body.downloadStatus()));
-        data.put("type", "combine");
+        data.put("fileStatus", EnumTools.downloadStatusToInt(body.downloadStatus()));
+        data.put("type", EnumTools.messageBodyTypeToInt(Type.COMBINE));
 
         return data;
-    }
-
-    private static EMFileMessageBody.EMDownloadStatus downloadStatusFromInt(int downloadStatus) {
-        switch (downloadStatus) {
-        case 0:
-            return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
-        case 1:
-            return EMFileMessageBody.EMDownloadStatus.SUCCESSED;
-        case 2:
-            return EMFileMessageBody.EMDownloadStatus.FAILED;
-        case 3:
-            return EMFileMessageBody.EMDownloadStatus.PENDING;
-        }
-        return EMFileMessageBody.EMDownloadStatus.DOWNLOADING;
-    }
-
-    private static int downloadStatusToInt(EMFileMessageBody.EMDownloadStatus downloadStatus) {
-        switch (downloadStatus) {
-        case DOWNLOADING:
-            return 0;
-        case SUCCESSED:
-            return 1;
-        case FAILED:
-            return 2;
-        case PENDING:
-            return 3;
-        }
-        return 0;
     }
 }
 
 class EMConversationHelper {
 
-    static EMConversation.EMSearchDirection searchDirectionFromInt(int iDirection) {
-        if (iDirection == 0 ){
-            return  EMConversation.EMSearchDirection.UP;
-        }else{
-            return  EMConversation.EMSearchDirection.DOWN;
-        }
-    }
-
-    // EMConversation 都是native -> flutter, 不需要fromJson
-    // static EMConversation fromJson(JSONObject json) throws JSONException {
-    // EMConversation conv = new EMConversation();
-    // return conv;
-    // }
-
     static Map<String, Object> toJson(EMConversation conversation) {
         Map<String, Object> data = new HashMap<>();
         data.put("convId", conversation.conversationId());
-        data.put("type", typeToInt(conversation.getType()));
+        data.put("type", EnumTools.conversationTypeToInt(conversation.getType()));
         data.put("isThread", conversation.isChatThread());
         data.put("isPinned", conversation.isPinned());
         data.put("pinnedTime", conversation.getPinnedTime());
@@ -1162,32 +1019,6 @@ class EMConversationHelper {
 //            data.put("lastReceivedMessage", EMMessageHelper.toJson(conversation.getLatestMessageFromOthers()));
             return data;
         }
-    }
-
-    static EMConversation.EMConversationType typeFromInt(int type) {
-        switch (type) {
-        case 0:
-            return EMConversation.EMConversationType.Chat;
-        case 1:
-            return EMConversation.EMConversationType.GroupChat;
-        case 2:
-            return EMConversation.EMConversationType.ChatRoom;
-        }
-
-        return EMConversation.EMConversationType.Chat;
-    }
-
-    static int typeToInt(EMConversation.EMConversationType type) {
-        switch (type) {
-        case Chat:
-            return 0;
-        case GroupChat:
-            return 1;
-        case ChatRoom:
-            return 2;
-        }
-
-        return 0;
     }
 
     private static Map<String, Object> jsonStringToMap(String content) throws JSONException {
@@ -1408,8 +1239,7 @@ class EMPresenceHelper {
         data.put("statusDescription", presence.getExt());
         data.put("lastTime", presence.getLatestTime());
         data.put("expiryTime", presence.getExpiryTime());
-        Map<String, Integer> statusList = new HashMap<String, Integer>();
-        statusList.putAll(presence.getStatusList());
+        Map<String, Integer> statusList = new HashMap<String, Integer>(presence.getStatusList());
         data.put("statusDetails", statusList);
         return data;
     }
@@ -1525,8 +1355,8 @@ class EMChatThreadEventHelper {
 
 class EMSilentModeParamHelper {
     static EMSilentModeParam fromJson(JSONObject obj) throws JSONException {
-        EMSilentModeParam.EMSilentModeParamType type = paramTypeFromInt(obj.getInt("paramType"));
-        EMSilentModeParam param = new EMSilentModeParam(type);;
+        EMSilentModeParam.EMSilentModeParamType type = EnumTools.silentModeParamTypeFromInt(obj.getInt("paramType"));
+        EMSilentModeParam param = new EMSilentModeParam(type);
         if (obj.has("startTime") && obj.has("endTime")) {
             EMSilentModeTime startTime = EMSilentModeTimeHelper.fromJson(obj.getJSONObject("startTime"));
             EMSilentModeTime endTime = EMSilentModeTimeHelper.fromJson(obj.getJSONObject("endTime"));
@@ -1534,7 +1364,7 @@ class EMSilentModeParamHelper {
         }
 
         if (obj.has("remindType")) {
-            param.setRemindType(pushRemindFromInt(obj.getInt("remindType")));
+            param.setRemindType(EnumTools.remindTypeFromInt(obj.getInt("remindType")));
         }
 
         if (obj.has("duration")) {
@@ -1542,42 +1372,6 @@ class EMSilentModeParamHelper {
             param.setSilentModeDuration(duration);
         }
         return param;
-    }
-
-    static EMSilentModeParam.EMSilentModeParamType paramTypeFromInt(int iParamType) {
-        EMSilentModeParam.EMSilentModeParamType ret = EMSilentModeParam.EMSilentModeParamType.REMIND_TYPE;
-        if (iParamType == 0) {
-            ret = EMSilentModeParam.EMSilentModeParamType.REMIND_TYPE;
-        }else if (iParamType == 1) {
-            ret = EMSilentModeParam.EMSilentModeParamType.SILENT_MODE_DURATION;
-        }else if (iParamType == 2) {
-            ret = EMSilentModeParam.EMSilentModeParamType.SILENT_MODE_INTERVAL;
-        }
-        return ret;
-    }
-
-    static int pushRemindTypeToInt(EMPushManager.EMPushRemindType type) {
-        int ret = 0;
-        if (type == EMPushManager.EMPushRemindType.ALL) {
-            ret = 0;
-        }else if (type == EMPushManager.EMPushRemindType.MENTION_ONLY) {
-            ret = 1;
-        }else if (type == EMPushManager.EMPushRemindType.NONE) {
-            ret = 2;
-        }
-        return ret;
-    }
-
-    static EMPushManager.EMPushRemindType pushRemindFromInt(int iType) {
-        EMPushManager.EMPushRemindType type = EMPushManager.EMPushRemindType.ALL;
-        if (iType == 0) {
-            type = EMPushManager.EMPushRemindType.ALL;
-        }else if (iType == 1) {
-            type = EMPushManager.EMPushRemindType.MENTION_ONLY;
-        }else if (iType == 2) {
-            type = EMPushManager.EMPushRemindType.NONE;
-        }
-        return type;
     }
 }
 
@@ -1605,7 +1399,7 @@ class EMSilentModeResultHelper {
             data.put("conversationId", modeResult.getConversationId());
         }
         if (modeResult.getConversationType() != null) {
-            data.put("conversationType", EMConversationHelper.typeToInt(modeResult.getConversationType()));
+            data.put("conversationType", EnumTools.conversationTypeToInt(modeResult.getConversationType()));
         }
         if (modeResult.getSilentModeStartTime() != null) {
             data.put("startTime", EMSilentModeTimeHelper.toJson(modeResult.getSilentModeStartTime()));
@@ -1613,7 +1407,7 @@ class EMSilentModeResultHelper {
         if (modeResult.getSilentModeEndTime() != null) {
             data.put("endTime", EMSilentModeTimeHelper.toJson(modeResult.getSilentModeEndTime()));
         }if (modeResult.getRemindType() != null) {
-            data.put("remindType", EMSilentModeParamHelper.pushRemindTypeToInt(modeResult.getRemindType()));
+            data.put("remindType", EnumTools.remindTypeToInt(modeResult.getRemindType()));
         }
 
         return data;
@@ -1638,45 +1432,8 @@ class FetchHistoryOptionsHelper {
             List<EMMessage.Type> list = new ArrayList<>();
             JSONArray array = json.getJSONArray("msgTypes");
             for (int i = 0; i < array.length(); i++) {
-                String type = array.getString(i);
-                switch (type) {
-                    case "txt": {
-                        list.add(Type.TXT);
-                    }
-                    break;
-                    case "img": {
-                        list.add(Type.IMAGE);
-                    }
-                    break;
-                    case "loc": {
-                        list.add(Type.LOCATION);
-                    }
-                    break;
-                    case "video": {
-                        list.add(Type.VIDEO);
-                    }
-                    break;
-                    case "voice": {
-                        list.add(Type.VOICE);
-                    }
-                    break;
-                    case "file": {
-                        list.add(Type.FILE);
-                    }
-                    break;
-                    case "cmd": {
-                        list.add(Type.CMD);
-                    }
-                    break;
-                    case "custom": {
-                        list.add(Type.CUSTOM);
-                    }
-                    break;
-                    case "combine": {
-                        list.add(Type.COMBINE);
-                    }
-                    break;
-                }
+                Type type = EnumTools.messageBodyTypeFromInt(array.getInt(i));
+                list.add(type);
             }
             if (list.size() > 0) {
                 options.setMsgTypes(list);
@@ -1704,7 +1461,6 @@ class EMConversationFilterHelper {
         EMConversationFilter filter = new EMConversationFilter(markType, pageSize);
         return filter;
     }
-
 
     static String cursor(JSONObject json) throws JSONException {
         if(json.has("cursor")){

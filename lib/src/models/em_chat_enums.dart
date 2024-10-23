@@ -202,15 +202,6 @@ enum MessageStatus {
 /// ~end
 enum DownloadStatus {
   /// ~english
-  /// The file message download is pending.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 等待下载。
-  /// ~end
-  PENDING,
-
-  /// ~english
   /// The file message is being downloaded.
   /// ~end
   ///
@@ -236,6 +227,15 @@ enum DownloadStatus {
   /// 下载失败。
   /// ~end
   FAILED,
+
+  /// ~english
+  /// The file message download is pending.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 等待下载。
+  /// ~end
+  PENDING,
 }
 
 /// ~english
@@ -337,15 +337,6 @@ enum MessageType {
 /// ~end
 enum EMGroupPermissionType {
   /// ~english
-  /// Unknown.
-  /// ~end
-  ///
-  /// ~chinese
-  /// 未知类型。
-  /// ~end
-  None,
-
-  /// ~english
   /// The regular group member.
   /// ~end
   ///
@@ -371,6 +362,15 @@ enum EMGroupPermissionType {
   /// 群主。
   /// ~end
   Owner,
+
+  /// ~english
+  /// Unknown.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 未知类型。
+  /// ~end
+  None,
 }
 
 /// ~english

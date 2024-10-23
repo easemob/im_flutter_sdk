@@ -912,10 +912,10 @@ class EMMessage {
     data.putIfNotNull("needGroupAck", needGroupAck);
     data.putIfNotNull("msgId", msgId);
     data.putIfNotNull("conversationId", this.conversationId ?? this.to);
-    data.putIfNotNull("chatType", chatTypeToInt(chatType));
+    data.putIfNotNull("chatType", chatType.index);
     data.putIfNotNull("localTime", localTime);
     data.putIfNotNull("serverTime", serverTime);
-    data.putIfNotNull("status", messageStatusToInt(this.status));
+    data.putIfNotNull("status", this.status.index);
     data.putIfNotNull("isThread", isChatThreadMessage);
     data.putIfNotNull('isContentReplaced', isContentReplaced);
     if (_priority != null) {
@@ -944,13 +944,13 @@ class EMMessage {
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map["msgId"]
       ..conversationId = map["conversationId"]
-      ..chatType = chatTypeFromInt(map["chatType"])
+      ..chatType = ChatType.values[map["chatType"]]
       ..localTime = map["localTime"] ?? 0
       ..serverTime = map["serverTime"] ?? 0
       ..isChatThreadMessage = map["isThread"] ?? false
       ..onlineState = map["onlineState"] ?? true
       ..deliverOnlineOnly = map['deliverOnlineOnly'] ?? false
-      ..status = messageStatusFromInt(map["status"])
+      ..status = MessageStatus.values[map["status"]]
       ..receiverList = map["receiverList"]?.cast<String>()
       ..isBroadcast = map["broadcast"] ?? false
       ..isContentReplaced = map["isContentReplaced"] ?? false;
@@ -958,32 +958,33 @@ class EMMessage {
 
   static EMMessageBody? _bodyFromMap(Map map) {
     EMMessageBody? body;
-    switch (map['type']) {
-      case 'txt':
+    MessageType type = MessageType.values[map['type']];
+    switch (type) {
+      case MessageType.TXT:
         body = EMTextMessageBody.fromJson(map: map);
         break;
-      case 'loc':
+      case MessageType.LOCATION:
         body = EMLocationMessageBody.fromJson(map: map);
         break;
-      case 'cmd':
+      case MessageType.CMD:
         body = EMCmdMessageBody.fromJson(map: map);
         break;
-      case 'custom':
+      case MessageType.CUSTOM:
         body = EMCustomMessageBody.fromJson(map: map);
         break;
-      case 'file':
+      case MessageType.FILE:
         body = EMFileMessageBody.fromJson(map: map);
         break;
-      case 'img':
+      case MessageType.IMAGE:
         body = EMImageMessageBody.fromJson(map: map);
         break;
-      case 'video':
+      case MessageType.VIDEO:
         body = EMVideoMessageBody.fromJson(map: map);
         break;
-      case 'voice':
+      case MessageType.VOICE:
         body = EMVoiceMessageBody.fromJson(map: map);
         break;
-      case 'combine':
+      case MessageType.COMBINE:
         body = EMCombineMessageBody.fromJson(map: map);
         break;
       default:
@@ -1116,7 +1117,7 @@ abstract class EMMessageBody {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = messageTypeToTypeStr(this.type);
+    data['type'] = this.type.index;
     return data;
   }
 
@@ -1365,8 +1366,7 @@ class EMFileMessageBody extends EMMessageBody {
     this.fileSize = map["fileSize"];
     this.localPath = map["localPath"] ?? "";
     this.displayName = map["displayName"];
-    this.fileStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]);
+    this.fileStatus = DownloadStatus.values[map["fileStatus"]];
   }
 
   @override
@@ -1377,7 +1377,7 @@ class EMFileMessageBody extends EMMessageBody {
     data.putIfNotNull("fileSize", this.fileSize);
     data.putIfNotNull("localPath", this.localPath);
     data.putIfNotNull("displayName", this.displayName);
-    data.putIfNotNull("fileStatus", downloadStatusToInt(this.fileStatus));
+    data.putIfNotNull("fileStatus", this.fileStatus.index);
 
     return data;
   }
@@ -1435,18 +1435,6 @@ class EMFileMessageBody extends EMMessageBody {
   /// 附件的名称。
   /// ~end
   String? displayName;
-
-  static DownloadStatus downloadStatusFromInt(int? status) {
-    if (status == 0) {
-      return DownloadStatus.DOWNLOADING;
-    } else if (status == 1) {
-      return DownloadStatus.SUCCESS;
-    } else if (status == 2) {
-      return DownloadStatus.FAILED;
-    } else {
-      return DownloadStatus.PENDING;
-    }
-  }
 }
 
 /// ~english
@@ -1515,8 +1503,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     this.sendOriginalImage = map["sendOriginalImage"] ?? false;
     this.height = (map["height"] ?? 0).toDouble();
     this.width = (map["width"] ?? 0).toDouble();
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
+    this.thumbnailStatus = DownloadStatus.values[map["thumbnailStatus"]];
   }
 
   @override
@@ -1528,8 +1515,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data.putIfNotNull("sendOriginalImage", sendOriginalImage);
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
-    data.putIfNotNull(
-        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    data.putIfNotNull("thumbnailStatus", this.thumbnailStatus.index);
     return data;
   }
 
@@ -1767,8 +1753,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
     this.thumbnailSecret = map["thumbnailSecret"];
     this.height = (map["height"] ?? 0).toDouble();
     this.width = (map["width"] ?? 0).toDouble();
-    this.thumbnailStatus =
-        EMFileMessageBody.downloadStatusFromInt(map["thumbnailStatus"]);
+    this.thumbnailStatus = DownloadStatus.values[map["thumbnailStatus"]];
   }
 
   @override
@@ -1780,8 +1765,7 @@ class EMVideoMessageBody extends EMFileMessageBody {
     data.putIfNotNull("thumbnailSecret", thumbnailSecret);
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
-    data.putIfNotNull(
-        "thumbnailStatus", downloadStatusToInt(this.thumbnailStatus));
+    data.putIfNotNull("thumbnailStatus", this.thumbnailStatus.index);
 
     return data;
   }
@@ -1999,7 +1983,7 @@ class EMCombineMessageBody extends EMMessageBody {
     data.putIfNotNull("localPath", _localPath);
     data.putIfNotNull("remotePath", _remotePath);
     data.putIfNotNull("secret", _secret);
-    data.putIfNotNull("fileStatus", downloadStatusToInt(this.fileStatus));
+    data.putIfNotNull("fileStatus", this.fileStatus.index);
     return data;
   }
 
@@ -2007,7 +1991,7 @@ class EMCombineMessageBody extends EMMessageBody {
     var body = EMCombineMessageBody(
       title: map["title"],
       summary: map["summary"],
-      fileStatus: EMFileMessageBody.downloadStatusFromInt(map["fileStatus"]),
+      fileStatus: DownloadStatus.values[map["fileStatus"]],
     );
     body._localPath = map["localPath"];
     body._remotePath = map["remotePath"];

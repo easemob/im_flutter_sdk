@@ -11,6 +11,7 @@
 #import "EMChatMessage+Helper.h"
 #import "EMSilentModeParam+Helper.h"
 #import "EMConversation+Helper.h"
+#import "EnumTools.h"
 
 @interface EMConversationWrapper ()
 
@@ -163,7 +164,7 @@
                       completion:(void(^)(EMConversation *conversation))aCompletion
 {
     __weak NSString *conversationId = param[@"convId"];
-    EMConversationType type = [EMConversation typeFromInt:[param[@"type"] intValue]];
+    EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"type"] intValue]];
     BOOL isThread = [param[@"isThread"] boolValue];
     EMConversation *conversation = [EMClient.sharedClient.chatManager getConversation:conversationId
                                                                                  type:type
@@ -483,11 +484,11 @@
 - (void)loadMsgWithMsgType:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     __weak typeof(self) weakSelf = self;
     
-    EMMessageBodyType type = [EMMessageBody typeFromString:param[@"msgType"]];
+    EMMessageBodyType type = [EnumTools messageBodyTypeFromInt:[param[@"msgType"] integerValue]];
     long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *sender = param[@"sender"];
-    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
@@ -517,7 +518,7 @@
     __weak typeof(self) weakSelf = self;
     NSString *startId = param[@"startId"];
     int count = [param[@"count"] intValue];
-    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation) {
@@ -547,7 +548,7 @@
     int count = [param[@"count"] intValue];
     NSString *sender = param[@"sender"];
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
-    EMMessageSearchDirection direction = [self searchDirectionFromString:param[@"direction"]];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
@@ -616,11 +617,6 @@
 }
 
 
-
-- (EMMessageSearchDirection)searchDirectionFromString:(NSString *)aDirection {
-    return [aDirection isEqualToString:@"up"] ? EMMessageSearchDirectionUp : EMMessageSearchDirectionDown;
-}
-
 #pragma mark 481
 - (void)remindType:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
       
@@ -640,15 +636,22 @@
                         result:(FlutterResult)result
 {
     NSArray *types = param[@"types"];
+    NSMutableArray *searchTypes = [NSMutableArray array];
+    for (int i = 0; i < types.count; i++) {
+        EMMessageBodyType type = [EnumTools messageBodyTypeFromInt:[types[i] integerValue]];
+        [searchTypes addObject:@(type)];
+    }
+    
     long long ts = [param[@"ts"] longLongValue];
     int count = [param[@"count"] intValue];
     NSString *from = param[@"from"];
-    EMMessageSearchDirection direction = [param[@"direction"] integerValue];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
+    
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
-        [conversation searchMessagesWithTypes:types
+        [conversation searchMessagesWithTypes:searchTypes
                                     timestamp:ts
                                         count:count
                                      fromUser:from

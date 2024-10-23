@@ -279,6 +279,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signUp() async {
+    EMClient.getInstance.chatManager
+        .searchMsgsByOptions(
+          const MessageSearchOptions(types: [MessageType.VIDEO]),
+        )
+        .then((value) => print("aaaccdd $value"));
+
     if (_userId.isEmpty || _password.isEmpty) {
       _addLogToConsole("username or password is null");
       return;
