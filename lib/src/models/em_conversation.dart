@@ -727,7 +727,7 @@ class EMConversation {
     req['timestamp'] = timestamp;
     req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
     req['direction'] = direction.index;
-    req.putIfNotNull("sender", sender);
+    req.putIfNotNull("from", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);

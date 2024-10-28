@@ -305,8 +305,8 @@ public class EMConversationWrapper extends EMWrapper implements MethodCallHandle
         EMConversation conversation = conversationWithParam(params);
         String keywords = params.getString("keywords");
         String sender = null;
-        if (params.has("sender")) {
-            sender = params.getString("sender");
+        if (params.has("from")) {
+            sender = params.getString("from");
         }
         final String name = sender;
         int count = params.getInt("count");

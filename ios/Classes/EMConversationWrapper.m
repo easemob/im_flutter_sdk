@@ -546,7 +546,7 @@
     NSString * keywords = param[@"keywords"];
     long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
-    NSString *sender = param[@"sender"];
+    NSString *sender = param[@"from"];
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
     EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     [self getConversationWithParam:param
