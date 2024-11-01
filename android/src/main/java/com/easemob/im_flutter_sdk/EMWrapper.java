@@ -23,7 +23,8 @@ public class EMWrapper implements MethodChannel.MethodCallHandler {
 
   private static final String CHANNEL_PREFIX = "com.chat.im/";
 
-  private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+  private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
+  private final ExecutorService cachedThreadPool = Executors.newFixedThreadPool(CPU_COUNT + 1);
 
   public EMWrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
     this.context = flutterPluginBinding.getApplicationContext();
