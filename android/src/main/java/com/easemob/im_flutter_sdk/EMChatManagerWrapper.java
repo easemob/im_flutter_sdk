@@ -362,17 +362,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void markAllChatMsgAsRead(JSONObject params, String channelName, Result result) throws JSONException {
-       boolean ret = EMClient.getInstance().chatManager().markAllConversationsAsRead();
-
         asyncRunnable(() -> {
+            boolean ret = EMClient.getInstance().chatManager().markAllConversationsAsRead();
             onSuccess(result, channelName, ret);
         });
     }
 
     private void getUnreadMessageCount(JSONObject params, String channelName, Result result) throws JSONException {
-        int count = EMClient.getInstance().chatManager().getUnreadMessageCount();
-
         asyncRunnable(() -> {
+            int count = EMClient.getInstance().chatManager().getUnreadMessageCount();
             onSuccess(result, channelName, count);
         });
     }
@@ -707,16 +705,18 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
     private void loadAllConversations(JSONObject params, String channelName, Result result) throws JSONException {
-        if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().length() == 0) {
-            onSuccess(result, channelName, new ArrayList<>());
-            return;
-        }
-        List<EMConversation> list = EMClient.getInstance().chatManager().getAllConversationsBySort();
-        List<Map> conversations = new ArrayList<>();
-        for (EMConversation conversation : list) {
-            conversations.add(EMConversationHelper.toJson(conversation));
-        }
-        onSuccess(result, channelName, conversations);
+        asyncRunnable(()->{
+            if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().length() == 0) {
+                onSuccess(result, channelName, new ArrayList<>());
+                return;
+            }
+            List<EMConversation> list = EMClient.getInstance().chatManager().getAllConversationsBySort();
+            List<Map> conversations = new ArrayList<>();
+            for (EMConversation conversation : list) {
+                conversations.add(EMConversationHelper.toJson(conversation));
+            }
+            onSuccess(result, channelName, conversations);
+        });
     }
 
     private void getConversationsFromServer(JSONObject params, String channelName, Result result) throws JSONException {
