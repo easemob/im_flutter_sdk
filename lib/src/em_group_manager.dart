@@ -1624,7 +1624,7 @@ class EMGroupManager {
   /// ~chinese
   /// 当前登录用户加入公开群。
   ///
-  /// 若是自由加入的公开群，直接进入群组；若公开群需验证，群主同意后才能入群。详见 [EMError]。
+  /// 若是自由加入的公开群[EMGroupStyle.PublicOpenJoin] ，直接进入群组；若公开群需验证，群主同意后才能入群，使用 [requestToJoinPublicGroup] 方法。
   ///
   /// Param [groupId] 群组 ID。
   ///
