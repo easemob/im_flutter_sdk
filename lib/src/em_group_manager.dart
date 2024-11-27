@@ -2059,6 +2059,18 @@ class EMGroupManager {
     }
   }
 
+  Future<bool> isMemberInGroupMuteList(String groupId) async {
+    Map req = {'groupId': groupId};
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.isMemberInGroupMuteList, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isMemberInGroupMuteList);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
   Future<void> _onGroupChanged(Map? map) async {
     var type = map!['type'];
     _eventHandlesMap.values.forEach((element) {

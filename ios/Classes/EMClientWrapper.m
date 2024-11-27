@@ -603,6 +603,15 @@
 //                     arguments:@{@"deviceName": aDeviceName}];
 //}
 
+- (void)onOfflineMessageSyncStart {
+    [self.channel invokeMethod:onOfflineMessageSyncStart
+                     arguments:nil];
+}
+
+- (void)onOfflineMessageSyncFinish {
+    [self.channel invokeMethod:onOfflineMessageSyncFinish
+                     arguments:nil];
+}
 
 - (void)userAccountDidRemoveFromServer {
     [EMListenerHandle.sharedInstance clearHandle];

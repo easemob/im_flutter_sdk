@@ -149,6 +149,24 @@ class EMConnectionEventHandler {
   final VoidCallback? onAppActiveNumberReachLimit;
 
   /// ~english
+  /// Occurs when the SDK starts pulling offline messages from the server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 开始从服务器拉取离线消息时触发。
+  /// ~end
+  final VoidCallback? onOfflineMessageSyncStart;
+
+  /// ~english
+  /// Occurs when the SDK finishes pulling offline messages from the server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从服务器拉取离线消息结束时触发。
+  /// ~end
+  final VoidCallback? onOfflineMessageSyncFinish;
+
+  /// ~english
   /// The chat connection listener callback.
   ///
   /// Param [onConnected] The SDK connects to the chat server successfully.
@@ -174,6 +192,10 @@ class EMConnectionEventHandler {
   /// Param [onTokenDidExpire] The token has expired.
   ///
   /// Param [onAppActiveNumberReachLimit] The number of daily active users (DAU) or monthly active users (MAU) for the app has reached the upper limit.
+  ///
+  /// Param [onOfflineMessageSyncStart] Occurs when the SDK starts pulling offline messages from the server.
+  ///
+  /// Param [onOfflineMessageSyncFinish] Occurs when the SDK finishes pulling offline messages from the server.
   ///
   /// ~end
   ///
@@ -203,6 +225,11 @@ class EMConnectionEventHandler {
   /// Param [onTokenDidExpire] Agora token 已过期时回调。
   ///
   /// Param [onAppActiveNumberReachLimit] 应用程序的日活跃用户数量（DAU）或月活跃用户数量（MAU）达到上限时回调。
+  ///
+  /// Param [onOfflineMessageSyncStart] 开始从服务器拉取离线消息时触发。
+  ///
+  /// Param [onOfflineMessageSyncFinish] 从服务器拉取离线消息结束时触发。
+  ///
   /// ~end
   EMConnectionEventHandler({
     this.onConnected,
@@ -217,6 +244,8 @@ class EMConnectionEventHandler {
     this.onTokenWillExpire,
     this.onTokenDidExpire,
     this.onAppActiveNumberReachLimit,
+    this.onOfflineMessageSyncStart,
+    this.onOfflineMessageSyncFinish,
   });
 }
 

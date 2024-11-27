@@ -418,4 +418,10 @@ class ChatMethodKeys {
       'updateRegradeMessagesSetting';
 
   static const String bindDeviceToken = 'bindDeviceToken';
+
+  // 4.10
+  static const String onOfflineMessageSyncStart = 'onOfflineMessageSyncStart';
+  static const String onOfflineMessageSyncFinish = 'onOfflineMessageSyncFinish';
+  static const String getMessageCount = 'getMessageCount';
+  static const String isMemberInGroupMuteList = 'isMemberInGroupMuteList';
 }

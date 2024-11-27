@@ -358,4 +358,10 @@ public class EMSDKMethod {
             "updateRegradeMessagesSetting";
 
     static final String bindDeviceToken = "bindDeviceToken";
+
+    // 4.10
+    static final String onOfflineMessageSyncStart = "onOfflineMessageSyncStart";
+    static final String onOfflineMessageSyncFinish = "onOfflineMessageSyncFinish";
+    static final String getMessageCount = "getMessageCount";
+    static final String isMemberInGroupMuteList = "isMemberInGroupMuteList";
 }

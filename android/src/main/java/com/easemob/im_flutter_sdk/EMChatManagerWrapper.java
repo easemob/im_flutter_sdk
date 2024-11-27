@@ -159,6 +159,10 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             else if (EMSDKMethod.searchMsgsByOptions.equals(call.method)) {
                 searchMsgByOptions(params, call.method, result);
             }
+            // 4.10
+            else if (EMSDKMethod.getMessageCount.equals(call.method)) {
+                getMessageCount(params, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -1372,4 +1376,15 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
         }
         onSuccess(result, channelName, messages);
     }
+
+    // 4.10
+    private void getMessageCount(JSONObject params, String channelName, Result result) throws JSONException {
+        EMClient.getInstance().chatManager().asyncGetMessageCount(new EMValueWrapperCallBack<Integer>(result, channelName){
+            @Override
+            public void onSuccess(Integer object) {
+                updateObject(object);
+            }
+        } );
+    }
+
 }

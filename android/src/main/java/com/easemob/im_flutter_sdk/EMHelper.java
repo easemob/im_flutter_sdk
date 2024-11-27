@@ -1497,12 +1497,16 @@ class EMConversationFilterHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("recallMsgId", info.getRecallMessageId());
         data.put("recallBy", info.getRecallBy());
+
         if(info.getExt() != null) {
             data.put("ext", info.getExt());
         }
         if(info.getRecallMessage() != null) {
             data.put("msg", EMMessageHelper.toJson(info.getRecallMessage()));
         }
+
+        // 4.10
+        data.put("conversationId", info.getConversationId());
         return data;
     }
  }

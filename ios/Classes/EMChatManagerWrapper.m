@@ -231,6 +231,10 @@
     else if ([ChatSearchMsgsByOptions isEqualToString:call.method]) {
         [self searchMsgsByOptions:call.arguments channelName:call.method result:result];
     }
+    // 4.10
+    else if ([getMessageCount isEqualToString:call.method]) {
+        [self getMessageCount:call.arguments channelName:call.method result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -1641,5 +1645,20 @@
                            object:msgJsonAry];
     }];
 }
+
+#pragma mark 4.10
+
+- (void)getMessageCount:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                 result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.chatManager getMessageCountWithCompletion:^(NSInteger count, EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(count)];
+    }];
+}
+
 
 @end

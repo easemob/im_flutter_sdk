@@ -353,6 +353,17 @@ class EMOptions {
   /// ~end
   final bool useReplacedMessageContents;
 
+  /// ~english
+  /// Whether the SDK work path is copiable, only valid for iOS, default is false.
+  /// ~end
+  ///
+  /// ~chinese
+  ///
+  /// SDK 的工作路径是否可备份, 只有ios生效，默认为 false。
+  /// ~end
+  ///
+  final bool workPathCopiable;
+
   EMPushConfig _pushConfig = EMPushConfig();
 
   @Deprecated('Use [EMPushManager.bindDeviceToken] instead.')
@@ -587,6 +598,8 @@ class EMOptions {
   /// - `true`: Yes.
   /// - (Default) `false`: No.
   ///
+  /// Param [workPathCopiable] Whether the SDK work path is copiable, only valid for iOS, default is false.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -679,6 +692,9 @@ class EMOptions {
   ///
   /// Param [regardImportMessagesAsRead] 是否将导入的消息视为已读, 默认为 false。
   ///
+  ///
+  /// Param [workPathCopiable] 是否允许复制工作路径到其他地方，只有ios生效，默认为 false。
+  ///
   /// ~end
   EMOptions({
     required this.appKey,
@@ -708,6 +724,7 @@ class EMOptions {
     this.enableTLS = false,
     this.messagesReceiveCallbackIncludeSend = false,
     this.regardImportMessagesAsRead = false,
+    this.workPathCopiable = false,
     this.loginExtension,
   });
 
@@ -752,6 +769,10 @@ class EMOptions {
 
     // 481
     data.putIfNotNull('loginExtensionInfo', loginExtension);
+
+    // 4.10
+    data.putIfNotNull('workPathCopiable', workPathCopiable);
+
     return data;
   }
 

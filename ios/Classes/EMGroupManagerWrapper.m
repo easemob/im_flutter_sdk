@@ -321,6 +321,10 @@
     else if ([ChatClearAllGroupsFromDB isEqualToString:call.method]) {
         [self clearAllGroupFromDB:call.arguments channelName:call.method result:result];
     }
+    // 4.10
+    else if ([isMemberInGroupMuteList isEqualToString:call.method]) {
+        [self isMemberInGroupMuteList:call.arguments channelName:call.method result:result];
+    }
     else
     {
         [super handleMethodCall:call result:result];
@@ -1453,5 +1457,20 @@
                        object:nil];
     
 }
+
+- (void)isMemberInGroupMuteList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    [EMClient.sharedClient.groupManager isMemberInMuteListFromServerWithGroupId:param[@"groupId"]
+                                                                     completion:^(BOOL inMuteList, EMError * _Nullable aError) {
+     
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:@(inMuteList)];
+    }];
+}
+
+
+
 
 @end
