@@ -147,6 +147,10 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             else if (EMSDKMethod.clearAllGroupsFromDB.equals(call.method)) {
                 clearAllGroupsFromDB(param, call.method, result);
             }
+            // 4.10
+            else if (EMSDKMethod.isMemberInGroupMuteList.equals(call.method)) {
+                isMemberInGroupMuteList(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -1303,4 +1307,15 @@ public class EMGroupManagerWrapper extends EMWrapper implements MethodCallHandle
             onSuccess(result, channelName,null);
         });
     }
+    // 4.10
+    private void isMemberInGroupMuteList(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        EMClient.getInstance().groupManager().asyncCheckIfInMuteList(groupId, new EMValueWrapperCallBack<Boolean>(result, channelName) {
+            @Override
+            public void onSuccess(Boolean object) {
+                updateObject(object);
+            }
+        });
+    }
+
 }

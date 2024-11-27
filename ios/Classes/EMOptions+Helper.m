@@ -80,6 +80,9 @@
     
     // 481
     options.loginExtensionInfo = aJson[@"loginExtensionInfo"];
+    
+    // 4.10
+    options.workPathCopiable = [aJson[@"workPathCopiable"] boolValue];
     return options;
 }
 @end

@@ -382,3 +382,10 @@ static NSString *const ChatUpdateMessagesReceiveCallbackIncludeSendSetting =
 static NSString *const ChatUpdateRegradeMessagesSetting =
     @"updateRegradeMessagesSetting";
 static NSString *const bindDeviceToken = @"bindDeviceToken";
+
+
+// 4.10
+static NSString *const onOfflineMessageSyncStart = @"onOfflineMessageSyncStart";
+static NSString *const onOfflineMessageSyncFinish = @"onOfflineMessageSyncFinish";
+static NSString *const getMessageCount = @"getMessageCount";
+static NSString *const isMemberInGroupMuteList = @"isMemberInGroupMuteList";

@@ -2351,6 +2351,20 @@ class EMChatManager {
       throw e;
     }
   }
+
+  Future<int> getAllMessageCount() async {
+    Map result = await ChatChannel.invokeMethod(ChatMethodKeys.getMessageCount);
+    try {
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getMessageCount)) {
+        return result[ChatMethodKeys.getMessageCount];
+      } else {
+        return 0;
+      }
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
 }
 
 /// ~english

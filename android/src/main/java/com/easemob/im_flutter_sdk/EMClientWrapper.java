@@ -549,6 +549,15 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
                     post(() -> channel.invokeMethod(EMSDKMethod.onUserDidLoginFromOtherDevice, EMLoginExtensionInfoHelper.toJson(info)));
                 }
             }
+            @Override
+            public void onOfflineMessageSyncStart() {
+                post(()-> channel.invokeMethod(EMSDKMethod.onOfflineMessageSyncStart, null));
+            }
+            @Override
+            public void onOfflineMessageSyncFinish() {
+                post(()-> channel.invokeMethod(EMSDKMethod.onOfflineMessageSyncFinish, null));
+            }
+
         };
 
         EMClient.getInstance().addConnectionListener(connectionListener);
