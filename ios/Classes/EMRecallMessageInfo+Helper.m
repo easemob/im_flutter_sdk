@@ -16,7 +16,7 @@
     ret[@"ext"] = self.ext;
     ret[@"msg"] = [self.recallMessage toJson];
     // 4.10
-    ret[@"conversaitonId"] = self.conversationId;
+    ret[@"conversationId"] = self.conversationId;
     return ret;
 }
 @end
