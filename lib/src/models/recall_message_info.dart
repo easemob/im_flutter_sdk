@@ -5,6 +5,7 @@ class RecallMessageInfo {
     return RecallMessageInfo._(
       recallMessageId: map['recallMsgId'],
       recallBy: map['recallBy'],
+      conversationId: map['conversationId'],
       recallMessage: map.getValue<EMMessage>(
         "msg",
         callback: (map) {
@@ -22,6 +23,7 @@ class RecallMessageInfo {
     required this.recallBy,
     required this.recallMessageId,
     this.recallMessage,
+    this.conversationId,
     this.ext,
   });
 
@@ -58,4 +60,13 @@ class RecallMessageInfo {
   /// 撤回消息的用户。
   /// ~end
   final String recallBy;
+
+  /// ~english
+  /// The conversation ID of the recalled message.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 撤回消息的会话ID。
+  /// ~end
+  final String? conversationId;
 }
