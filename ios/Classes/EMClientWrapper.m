@@ -59,6 +59,7 @@
                           registrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     if(self = [super initWithChannelName:aChannelName
                                registrar:registrar]) {
+        [self registerApplicationNotification];
     }
     return self;
 }
@@ -874,4 +875,23 @@
                        object:nil];
 }
 
+- (void)registerApplicationNotification {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationDidEnterBackground:)
+                                                 name:UIApplicationDidEnterBackgroundNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationWillEnterForeground:)
+                                                 name:UIApplicationWillEnterForegroundNotification object:nil];
+}
+
+- (void)applicationDidEnterBackground:(NSNotification *)notification
+{
+    [[EMClient sharedClient] applicationDidEnterBackground:notification.object];
+}
+
+- (void)applicationWillEnterForeground:(NSNotification *)notification
+{
+    [[EMClient sharedClient] applicationWillEnterForeground:notification.object];
+}
 @end

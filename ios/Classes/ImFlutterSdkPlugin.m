@@ -17,16 +17,7 @@
     [registrar publish:wrapper];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    [[EMClient sharedClient] applicationDidEnterBackground:application];
-}
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    [[EMClient sharedClient] applicationWillEnterForeground:application];
-}
 
 
 @end
-
