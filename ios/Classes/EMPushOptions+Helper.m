@@ -10,10 +10,7 @@
 @implementation EMPushOptions (Helper)
 - (NSDictionary *)toJson{
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
-    data[@"noDisturb"] = @(self.isNoDisturbEnable);
     data[@"pushStyle"] = @(self.displayStyle != EMPushDisplayStyleSimpleBanner);
-    data[@"noDisturbStartHour"] = @(self.noDisturbingStartH);
-    data[@"noDisturbEndHour"] = @(self.noDisturbingEndH);
     data[@"displayName"] = self.displayName;
     return data;
 }
