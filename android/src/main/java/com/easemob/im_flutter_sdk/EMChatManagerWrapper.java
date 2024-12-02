@@ -1272,7 +1272,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             dbMsg.setBody(dbImage);
         } else if (dbMsg.getType() == EMMessage.Type.VOICE) {
             EMVoiceMessageBody voice = (EMVoiceMessageBody)msgBody;
-            EMImageMessageBody dbVoice = (EMImageMessageBody)dbMsg.getBody();
+            EMVoiceMessageBody dbVoice = (EMVoiceMessageBody)dbMsg.getBody();
             dbVoice.setFileName(voice.getFileName());
             dbVoice.setLocalUrl(voice.getLocalUrl());
             dbVoice.setRemoteUrl(voice.getRemoteUrl());
