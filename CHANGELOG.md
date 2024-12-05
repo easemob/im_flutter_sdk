@@ -2,6 +2,7 @@
 ## 4.10.0
 
 - 修复 `fetchSilentModeForConversations` 方法获取会话的免打扰状态失败的问题。
+- 修复 ios `applicationDidEnterBackground` 和 `applicationWillEnterForeground` 不执行的问题。
 
 ## 4.8.2+1
 

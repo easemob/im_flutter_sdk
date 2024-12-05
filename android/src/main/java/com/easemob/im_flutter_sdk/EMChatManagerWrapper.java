@@ -1294,7 +1294,7 @@ public class EMChatManagerWrapper extends EMWrapper implements MethodCallHandler
             dbVideo.setLocalThumb(video.getLocalThumb());
             dbVideo.setThumbnailSecret(video.getThumbnailSecret());
             dbVideo.setThumbnailDownloadStatus(video.thumbnailDownloadStatus());
-            dbMsg.setBody(video);
+            dbMsg.setBody(dbVideo);
         } else if (dbMsg.getType() == EMMessage.Type.LOCATION) {
             EMLocationMessageBody location = (EMLocationMessageBody)msgBody;
             dbMsg.setBody(location);
