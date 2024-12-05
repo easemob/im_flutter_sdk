@@ -1092,7 +1092,7 @@ class EMChatManager {
   ///
   /// Param [conversationId] The conversation ID, which is the user ID of the peer user for one-to-one chat, but the group ID for group chat.
   ///
-  /// Param [type] The conversation type. You can set this parameter only to [EMConversationType.Chat] or [EMConversationType.GroupChat].
+  /// Param [type] The conversation type. See [EMConversationType].
   ///
   /// Param [options] The parameter configuration class for pulling historical messages from the server. See [FetchMessageOptions].
   ///
@@ -1106,7 +1106,7 @@ class EMChatManager {
   ///
   /// Param [conversationId] 会话 ID。
   ///
-  /// Param [type] 会话类型，只支持 [EMConversationType.Chat] 和群组 [EMConversationType.GroupChat] 。
+  /// Param [type] 会话类型，详见 [EMConversationType]
   ///
   /// Param [options] 查询历史消息的参数配置接口，详见 [FetchMessageOptions]。
   ///
