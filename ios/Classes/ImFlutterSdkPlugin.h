@@ -2,3 +2,7 @@
 
 @interface ImFlutterSdkPlugin : NSObject<FlutterPlugin>
 @end
+
+@interface FlutterAppDelegate (Category)
+
+@end
