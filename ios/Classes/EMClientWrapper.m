@@ -230,6 +230,11 @@
                                channelName:call.method
                                     result:result];
     }
+    else if ([changeAppId isEqual:call.method]) {
+        [self changeAppId:call.arguments
+              channelName:call.method
+                   result:result];
+    }
     
     else {
         [super handleMethodCall:call result:result];
@@ -874,5 +879,17 @@
                         error:nil
                        object:nil];
 }
+
+// shenwang
+- (void)changeAppId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self)weakSelf = self;
+    NSString *appId = param[@"appId"];
+    EMError *aError = [EMClient.sharedClient changeAppId:appId];
+    [weakSelf wrapperCallBack:result
+                  channelName:aChannelName
+                        error:aError
+                       object:@(!aError)];
+}
+
 
 @end

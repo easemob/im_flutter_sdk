@@ -45,7 +45,13 @@
     return data;
 }
 + (EMOptions *)fromJson:(NSDictionary *)aJson {
-    EMOptions *options = [EMOptions optionsWithAppkey:aJson[@"appKey"]];
+    EMOptions *options = nil;
+    if(aJson[@"appKey"] != nil) {
+        options = [EMOptions optionsWithAppkey:aJson[@"appKey"]];
+    }else {
+        // shengwang
+        options = [EMOptions optionsWithAppId:@"appId"];
+    }
     options.isAutoLogin = [aJson[@"autoLogin"] boolValue];
     options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];
     options.enableRequireReadAck = [aJson[@"requireAck"] boolValue];
