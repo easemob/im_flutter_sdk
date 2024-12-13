@@ -767,13 +767,31 @@ public class EMChatRoomManagerWrapper extends EMWrapper implements MethodChannel
             }
 
             @Override
-            public void onMuteListAdded(String chatRoomId, List<String> mutes, long expireTime) {
+            public void onMuteListAdded(String s, List<String> list, long l) {
+
+            }
+
+//            @Override
+//            public void onMuteListAdded(String chatRoomId, List<String> mutes, long expireTime) {
+//                EMListenerHandle.getInstance().addHandle(
+//                        ()-> {
+//                            Map<String, Object> data = new HashMap<>();
+//                            data.put("roomId", chatRoomId);
+//                            data.put("mutes", mutes);
+//                            data.put("expireTime", String.valueOf(expireTime));
+//                            data.put("type", "onRoomMuteListAdded");
+//                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
+//                        }
+//                );
+//            }
+
+            @Override
+            public void onMuteListAdded(String chatRoomId, Map<String,Long> muteInfo) {
                 EMListenerHandle.getInstance().addHandle(
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
-                            data.put("mutes", mutes);
-                            data.put("expireTime", String.valueOf(expireTime));
+                            data.put("mutes", muteInfo);
                             data.put("type", "onRoomMuteListAdded");
                             post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
                         }

@@ -83,9 +83,10 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
-          List<String> mutes = List.from(event['mutes'] ?? []);
-          String? expireTime = event['expireTime'];
-          item.onMuteListAddedFromChatRoom?.call(roomId, mutes, expireTime);
+          if (event["mutes"] is Map<String, int>) {
+            Map<String, int> mutes = event["mutes"].cast<String, int>();
+            item.onMuteListAddedFromChatRoom?.call(roomId, mutes);
+          }
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
           String roomId = event['roomId'];

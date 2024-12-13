@@ -1,3 +1,16 @@
+## 4.11.0
+
+- 修改 `EMChatRoomEventHandler#onMuteListAddedFromChatRoom` 参数；
+
+## 4.10.1
+
+- 修复 安卓安装环境下 `fetchHistoryMessagesByOption` 方向不准确的问题；
+
+
+## 4.10.0
+
+- 修复 `fetchSilentModeForConversations` 方法获取会话的免打扰状态失败的问题。
+- 修复 ios `applicationDidEnterBackground` 和 `applicationWillEnterForeground` 不执行的问题。
 
 ## 4.8.2+1
 
