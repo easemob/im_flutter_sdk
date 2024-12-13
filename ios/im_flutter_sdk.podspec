@@ -18,7 +18,7 @@ A new flutter plugin project.
 
   s.dependency 'Flutter'
   # s.dependency 'HyphenateChat','4.11.0'
-  s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework'
+  s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
   s.ios.deployment_target = '11.0'
 
 end

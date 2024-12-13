@@ -364,4 +364,7 @@ public class EMSDKMethod {
     static final String onOfflineMessageSyncFinish = "onOfflineMessageSyncFinish";
     static final String getMessageCount = "getMessageCount";
     static final String isMemberInGroupMuteList = "isMemberInGroupMuteList";
+
+    // shengwang
+    static final String changeAppId = "changeAppId";
 }

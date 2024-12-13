@@ -137,13 +137,6 @@ public class EMPushManagerWrapper extends EMWrapper implements MethodCallHandler
     }
 
 
-    private void getNoPushUsers(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
-            List<String> list = EMClient.getInstance().pushManager().getNoPushUsers();
-            onSuccess(result, channelName, list);
-        });
-    }
-
     private void updateImPushStyle(JSONObject params, String channelName,  Result result) throws JSONException {
         DisplayStyle style = params.getInt("pushStyle") == 0 ? DisplayStyle.SimpleBanner : DisplayStyle.MessageSummary;
         EMClient.getInstance().pushManager().asyncUpdatePushDisplayStyle(style, new EMWrapperCallBack(result, channelName, true));

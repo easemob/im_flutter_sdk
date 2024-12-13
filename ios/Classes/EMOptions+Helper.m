@@ -50,7 +50,7 @@
         options = [EMOptions optionsWithAppkey:aJson[@"appKey"]];
     }else {
         // shengwang
-        options = [EMOptions optionsWithAppId:@"appId"];
+        options = [EMOptions optionsWithAppId:aJson[@"appId"]];
     }
     options.isAutoLogin = [aJson[@"autoLogin"] boolValue];
     options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];

@@ -6,8 +6,12 @@ var appKey = "easemob#easeim";
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   assert(appKey.isNotEmpty, "appKey is empty");
-  EMOptions options =
-      EMOptions(appKey: appKey, autoLogin: false, debugMode: true);
+  EMOptions options = EMOptions.withAppId(
+    'ba85504621304fb894790708d304794f',
+    autoLogin: false,
+    debugMode: true,
+    usingHttpsOnly: false,
+  );
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }
