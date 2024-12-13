@@ -1,3 +1,7 @@
+## 4.10.1
+
+- 修复 安卓安装环境下 `fetchHistoryMessagesByOption` 方向不准确的问题；
+
 
 ## 4.10.0
 
