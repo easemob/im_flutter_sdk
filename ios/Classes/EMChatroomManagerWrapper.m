@@ -810,20 +810,34 @@
 }
 
 - (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
-                addedMutedMembers:(NSArray *)aMutes
-                       muteExpire:(NSInteger)aMuteExpire {
-    
+                addedMutedMembers:(NSDictionary<NSString *,NSNumber*> *)aMutes{
     __weak typeof(self) weakSelf = self;
     [EMListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onRoomMuteListAdded",
             @"roomId":aChatroom.chatroomId,
             @"mutes":aMutes,
-            @"expireTime":[NSString stringWithFormat:@"%ld", (long)aMuteExpire]
         };
         [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
     }];
 }
+    
+
+//- (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
+//                addedMutedMembers:(NSArray *)aMutes
+//                       muteExpire:(NSInteger)aMuteExpire {
+//    
+//    __weak typeof(self) weakSelf = self;
+//    [EMListenerHandle.sharedInstance addHandle:^{
+//        NSDictionary *map = @{
+//            @"type":@"onRoomMuteListAdded",
+//            @"roomId":aChatroom.chatroomId,
+//            @"mutes":aMutes,
+//            @"expireTime":[NSString stringWithFormat:@"%ld", (long)aMuteExpire]
+//        };
+//        [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
+//    }];
+//}
 
 - (void)chatroomMuteListDidUpdate:(EMChatroom *)aChatroom
               removedMutedMembers:(NSArray *)aMutes {

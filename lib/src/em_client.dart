@@ -510,7 +510,7 @@ class EMClient {
   ///
   /// Param [userId] 用户 ID。
   ///
-  /// Param [agoraToken] 声网 Token。
+  /// Param [agoraToken] Token。
   ///
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end

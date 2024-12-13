@@ -784,8 +784,7 @@ class EMChatRoomEventHandler {
   /// ~end
   final void Function(
     String roomId,
-    List<String> mutes,
-    String? expireTime,
+    Map<String, int> mutes,
   )? onMuteListAddedFromChatRoom;
 
   /// ~english
