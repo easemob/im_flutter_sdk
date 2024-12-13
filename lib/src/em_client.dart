@@ -683,6 +683,41 @@ class EMClient {
   }
 
   /// ~english
+  /// Updates the App Id, which is the unique identifier to access Agora Chat.
+  ///
+  /// You can retrieve the new App Key from Agora Console.
+  ///
+  /// As this key controls all access to Agora Chat for your app, you can only update the key when the current user is logged out.
+  ///
+  /// Param [newAppId] The App Id. Ensure that you set this parameter.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 修改 App Id
+  ///
+  /// @note
+  /// 只有在未登录状态才能修改 App Id
+  ///
+  /// Param [newAppId] App Id
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<bool> changeAppId({required String newAppId}) async {
+    EMLog.v('newAppId: $newAppId');
+    Map req = {'appId': newAppId};
+    Map result =
+        await ClientChannel.invokeMethod(ChatMethodKeys.changeAppId, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.changeAppKey);
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  /// ~english
   /// Compresses the debug log into a gzip archive.
   ///
   /// Best practice is to delete this debug archive as soon as it is no longer used.

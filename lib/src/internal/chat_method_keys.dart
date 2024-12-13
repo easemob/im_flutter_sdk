@@ -424,4 +424,7 @@ class ChatMethodKeys {
   static const String onOfflineMessageSyncFinish = 'onOfflineMessageSyncFinish';
   static const String getMessageCount = 'getMessageCount';
   static const String isMemberInGroupMuteList = 'isMemberInGroupMuteList';
+
+  // shenwang
+  static const String changeAppId = 'changeAppId';
 }
