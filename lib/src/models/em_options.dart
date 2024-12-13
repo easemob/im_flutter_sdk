@@ -1312,6 +1312,7 @@ class EMOptions {
   Map toJson() {
     Map data = new Map();
     data.putIfNotNull("appKey", appKey);
+    data.putIfNotNull("appId", appId);
     data.putIfNotNull("autoLogin", autoLogin);
     data.putIfNotNull("debugModel", debugMode);
     data.putIfNotNull("acceptInvitationAlways", acceptInvitationAlways);

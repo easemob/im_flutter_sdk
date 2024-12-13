@@ -63,7 +63,11 @@ class EMOptionsHelper {
 
     static EMOptions fromJson(JSONObject json, Context context) throws JSONException {
         EMOptions options = new EMOptions();
-        options.setAppKey(json.getString("appKey"));
+        if(json.has("appKey")) {
+            options.setAppKey(json.getString("appKey"));
+        }else {
+            options.setAppId(json.optString("appId"));
+        }
         options.setAutoLogin(json.getBoolean("autoLogin"));
         options.setRequireAck(json.getBoolean("requireAck"));
         options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
@@ -1166,9 +1170,6 @@ class EMErrorHelper {
 class EMPushConfigsHelper {
     static Map<String, Object> toJson(EMPushConfigs pushConfigs) {
         Map<String, Object> data = new HashMap<>();
-        data.put("noDisturb", pushConfigs.isNoDisturbOn());
-        data.put("noDisturbEndHour", pushConfigs.getNoDisturbEndHour());
-        data.put("noDisturbStartHour", pushConfigs.getNoDisturbStartHour());
         data.put("pushStyle", pushConfigs.getDisplayStyle() != EMPushManager.DisplayStyle.SimpleBanner);
         data.put("displayName", pushConfigs.getDisplayNickname());
         return data;

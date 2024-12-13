@@ -165,6 +165,9 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
             else if (EMSDKMethod.updateRegradeMessagesSetting.equals(call.method)) {
                 updateRegradeMessagesSetting(param, call.method, result);
             }
+            else if (EMSDKMethod.changeAppId.equals(call.method)) {
+                changeAppId(param, call.method, result);
+            }
             else  {
                 super.onMethodCall(call, result);
             }
@@ -633,5 +636,16 @@ public class EMClientWrapper extends EMWrapper implements MethodCallHandler {
         asyncRunnable(()-> onSuccess(result, channelName, null));
     }
 
+    private void changeAppId(JSONObject param, String channelName, Result result) throws JSONException {
+        String appId = param.getString("appId");
+        asyncRunnable(()-> {
+            try {
+                EMClient.getInstance().changeAppId(appId);
+                onSuccess(result, channelName, true);
+            } catch (HyphenateException e) {
+                onError(result, e);
+            }
+        });
+    }
 }
 
