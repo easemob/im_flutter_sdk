@@ -5,13 +5,10 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
-import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.EMLog;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.util.HashMap;
@@ -25,7 +22,7 @@ public class ImFlutterSdkPlugin implements FlutterPlugin {
 
     static final Handler handler = new Handler(Looper.getMainLooper());
 
-    EMClientWrapper clientWrapper;
+    ClientWrapper clientWrapper;
 
     public ImFlutterSdkPlugin() {
     }
@@ -38,7 +35,7 @@ public class ImFlutterSdkPlugin implements FlutterPlugin {
 
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-        clientWrapper = new EMClientWrapper(flutterPluginBinding, "chat_client");
+        clientWrapper = new ClientWrapper(flutterPluginBinding, "chat_client");
     }
 
     @Override
@@ -79,7 +76,7 @@ class EMWrapperCallBack implements EMCallBack {
     public void onError(int code, String desc) {
         post(() -> {
             Map<String, Object> data = new HashMap<>();
-            data.put("error", EMErrorHelper.toJson(code, desc));
+            data.put("error", ErrorHelper.toJson(code, desc));
             EMLog.e("callback", desc);
             result.success(data);
         });
@@ -142,7 +139,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
     public void onError(int code, String desc) {
         post(() -> {
             Map<String, Object> data = new HashMap<>();
-            data.put("error", EMErrorHelper.toJson(code, desc));
+            data.put("error", ErrorHelper.toJson(code, desc));
             EMLog.e("callback", "onError");
             result.success(data);
         });

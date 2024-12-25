@@ -6,12 +6,12 @@
 //
 
 #import "NSArray+Helper.h"
-#import "EaseModeToJson.h"
+#import "ModeToJson.h"
 
 @implementation NSArray (Helper)
 - (NSArray *)toJsonArray {
     NSMutableArray *ary = nil;
-    for (id<EaseModeToJson> item in self) {
+    for (id<ModeToJson> item in self) {
         if (ary == nil) {
             ary = [NSMutableArray array];
         }
