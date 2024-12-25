@@ -83,8 +83,14 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
           String roomId = event['roomId'];
-          if (event["mutes"] is Map<String, int>) {
-            Map<String, int> mutes = event["mutes"].cast<String, int>();
+          if (event["mutes"] is Map<String, dynamic>) {
+            Map<String, dynamic> mutesDynamic = event["mutes"];
+            Map<String, int> mutes = {};
+            mutesDynamic.forEach((key, value) {
+              if (value is int) {
+                mutes[key] = value; // 只添加 int 类型的值
+              }
+            });
             item.onMuteListAddedFromChatRoom?.call(roomId, mutes);
           }
           break;
