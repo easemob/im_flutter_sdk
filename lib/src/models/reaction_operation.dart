@@ -64,10 +64,7 @@ class ReactionOperation {
     String userId = map["userId"];
     String reaction = map["reaction"];
 
-    ReactionOperate operate = (map["operate"] ?? 0) == 0
-        ? ReactionOperate.Remove
-        : ReactionOperate.Add;
-
+    ReactionOperate operate = ReactionOperate.values[map["operate"]];
     return ReactionOperation._private(userId, reaction, operate);
   }
 }

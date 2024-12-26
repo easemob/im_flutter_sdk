@@ -213,4 +213,28 @@
 +(EMMessageStatus)messageStatusFromInt:(NSInteger)value{
     return value;
 }
+
++(NSInteger)messageDirectToInt:(EMMessageDirection)value {
+    return value;
+}
+
++(EMMessageDirection)messageDirectFromInt:(NSInteger)value {
+    return value;
+}
+
++(NSInteger)threadOperationToInt:(EMThreadOperation)value {
+    return value;
+}
+
++(EMThreadOperation)threadOperationFromInt:(NSInteger)value {
+    return value;
+}
+
++(NSInteger)reactionOperationToInt:(EMMessageReactionOperate)value {
+    return value;
+}
+
++(EMMessageReactionOperate)recationOperationFromInt:(NSInteger)value {
+    return value;
+}
 @end

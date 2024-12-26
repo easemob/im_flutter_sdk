@@ -904,8 +904,7 @@ class EMMessage {
     data.putIfNotNull("to", to);
     data.putIfNotNull("body", body.toJson());
     data.putIfNotNull("attributes", attributes);
-    data.putIfNotNull(
-        "direction", this.direction == MessageDirection.SEND ? 'send' : 'rec');
+    data.putIfNotNull("direction", this.direction.index);
     data.putIfNotNull("hasRead", hasRead);
     data.putIfNotNull("hasReadAck", hasReadAck);
     data.putIfNotNull("hasDeliverAck", hasDeliverAck);
@@ -935,9 +934,7 @@ class EMMessage {
       ..from = map["from"]
       ..body = _bodyFromMap(map["body"])!
       ..attributes = map.getMapValue("attributes")
-      ..direction = map["direction"] == 'send'
-          ? MessageDirection.SEND
-          : MessageDirection.RECEIVE
+      ..direction = MessageDirection.values[map["direction"]]
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
       ..needGroupAck = map.boolValue('needGroupAck')

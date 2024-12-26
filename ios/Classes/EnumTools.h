@@ -31,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 +(EMPushRemindType)remindTypeFromInt:(NSInteger)value;
 +(NSInteger)messageStatusToInt:(EMMessageStatus)value;
 +(EMMessageStatus)messageStatusFromInt:(NSInteger)value;
++(NSInteger)messageDirectToInt:(EMMessageDirection)value;
++(EMMessageDirection)messageDirectFromInt:(NSInteger)value;
++(NSInteger)threadOperationToInt:(EMThreadOperation)value;
++(EMThreadOperation)threadOperationFromInt:(NSInteger)value;
++(NSInteger)reactionOperationToInt:(EMMessageReactionOperate)value;
++(EMMessageReactionOperate)recationOperationFromInt:(NSInteger)value;
 @end
 
 NS_ASSUME_NONNULL_END

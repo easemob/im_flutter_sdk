@@ -356,7 +356,8 @@ class MessageHelper {
 
         JSONObject bodyJson = json.getJSONObject("body");
         EMMessage.Type type = EnumTools.messageBodyTypeFromInt(bodyJson.getInt("type"));
-        if (json.getString("direction").equals("send")) {
+        EMMessage.Direct direct = EnumTools.messageDirectFromInt(json.getInt("direction"));
+        if (direct == EMMessage.Direct.SEND) {
             switch (type) {
                 case TXT: {
                     message = EMMessage.createSendMessage(Type.TXT);
@@ -591,7 +592,7 @@ class MessageHelper {
         data.put("serverTime", message.getMsgTime());
         data.put("status", EnumTools.messageStatusToInt(message.status()));
         data.put("chatType", EnumTools.chatTypeToInt(message.getChatType()));
-        data.put("direction", message.direct() == EMMessage.Direct.SEND ? "send" : "rec");
+        data.put("direction", EnumTools.messageDirectToInt(message.direct()));
         data.put("conversationId", message.conversationId());
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
@@ -1294,8 +1295,7 @@ class MessageReactionOperationHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("userId", operation.getUserId());
         data.put("reaction", operation.getReaction());
-        data.put("operate", operation.getOperation() == EMMessageReactionOperation.Operation.REMOVE ? 0 : 1);
-
+        data.put("operate", EnumTools.reactionOperationToInt(operation.getOperation()));
         return data;
     }
 }
@@ -1323,28 +1323,7 @@ class ChatThreadHelper {
 class ChatThreadEventHelper {
     static Map<String, Object> toJson(EMChatThreadEvent event) {
         Map<String, Object> data = new HashMap<>();
-        if(event.getType() != null) {
-            switch (event.getType()) {
-                case UNKNOWN:
-                    data.put("type", 0);
-                    break;
-                case CREATE:
-                    data.put("type", 1);
-                    break;
-                case UPDATE:
-                    data.put("type", 2);
-                    break;
-                case DELETE:
-                    data.put("type", 3);
-                    break;
-                case UPDATE_MSG:
-                    data.put("type", 4);
-                    break;
-            }
-        }else {
-            data.put("type", 0);
-        }
-
+        data.put("type", EnumTools.threadOperationToInt(event.getType()));
         data.put("from", event.getFrom());
         if (event.getChatThread() != null) {
             data.put("thread", ChatThreadHelper.toJson(event.getChatThread()));

@@ -40,11 +40,7 @@
         msg.messageId = aJson[@"msgId"];
     }
     
-    msg.direction = ({
-        [aJson[@"direction"] isEqualToString:@"send"] ? EMMessageDirectionSend : EMMessageDirectionReceive;
-    });
-    
-    
+    msg.direction = [EnumTools messageDirectFromInt: [aJson[@"direction"] integerValue]];
     msg.chatType = [EnumTools chatTypeFromInt:[aJson[@"chatType"] integerValue]];
     msg.status = [EnumTools messageStatusFromInt:[aJson[@"status"] integerValue]];
     msg.localTime = [aJson[@"localTime"] longLongValue];
@@ -89,8 +85,8 @@
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = [NSNumber numberWithInteger:[EnumTools messageStatusToInt:self.status]];
     ret[@"chatType"] = [NSNumber numberWithInteger:[EnumTools chatTypeToInt:self.chatType]];
+    ret[@"direction"] = [NSNumber numberWithInteger:[EnumTools messageDirectToInt:self.direction]];
     ret[@"isThread"] = @(self.isChatThreadMessage);
-    ret[@"direction"] = self.direction == EMMessageDirectionSend ? @"send" : @"rec";
     ret[@"body"] = [self.body toJson];
     ret[@"onlineState"] = @(self.onlineState);
     ret[@"deliverOnlineOnly"] = @(self.deliverOnlineOnly);

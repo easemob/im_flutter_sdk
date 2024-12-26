@@ -199,26 +199,7 @@ class EMChatThreadEvent {
 
   factory EMChatThreadEvent.fromJson(Map map) {
     String from = map["from"];
-    int iType = map["type"];
-    EMChatThreadOperation type = EMChatThreadOperation.UnKnown;
-    switch (iType) {
-      case 0:
-        type = EMChatThreadOperation.UnKnown;
-        break;
-      case 1:
-        type = EMChatThreadOperation.Create;
-        break;
-      case 2:
-        type = EMChatThreadOperation.Update;
-        break;
-      case 3:
-        type = EMChatThreadOperation.Delete;
-        break;
-      case 4:
-        type = EMChatThreadOperation.Update_Msg;
-        break;
-    }
-
+    EMChatThreadOperation type = EMChatThreadOperation.values[map["type"]];
     EMChatThread? chatThread = map.getValue<EMChatThread>(
       "thread",
       callback: (map) {
