@@ -7,6 +7,7 @@
 
 #import "ThreadEventHelper.h"
 #import "ThreadHelper.h"
+#import "EnumTools.h"
 
 @implementation EMChatThreadEvent (Helper)
 - (nonnull NSDictionary *)toJson {
@@ -18,27 +19,8 @@
 }
 
 
-- (int)getIntOperation {
-    int ret = 0;
-    switch (self.type) {
-        case EMThreadOperationUnknown:
-            ret = 0;
-            break;
-        case EMThreadOperationCreate:
-            ret = 1;
-            break;
-        case EMThreadOperationUpdate:
-            ret = 2;
-            break;
-        case EMThreadOperationDelete:
-            ret = 3;
-            break;
-        case EMThreadOperationUpdate_msg:
-            ret = 4;
-            break;
-    }
-    
-    return ret;
+- (NSInteger)getIntOperation {
+    return [EnumTools threadOperationToInt:self.type];
 }
 
 @end

@@ -3,17 +3,44 @@ package com.easemob.im_flutter_sdk;
 import androidx.annotation.NonNull;
 
 import com.hyphenate.chat.EMChatRoom.EMChatRoomPermissionType;
+import com.hyphenate.chat.EMChatThreadEvent;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMFileMessageBody.EMDownloadStatus;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessageReactionOperation;
 import com.hyphenate.chat.EMPushManager;
 import com.hyphenate.chat.EMSilentModeParam;
 
 
 public class EnumTools {
+
+    static int reactionOperationToInt(EMMessageReactionOperation.Operation operation) {
+        return operation.ordinal();
+    }
+
+    static EMMessageReactionOperation.Operation reactionOperationFromInt(int iType) {
+        return EMMessageReactionOperation.Operation.values()[iType];
+    }
+
+    static int threadOperationToInt(EMChatThreadEvent.TYPE type) {
+        return type.ordinal();
+    }
+
+    static EMChatThreadEvent.TYPE threadOperationFromInt(int iType) {
+        return EMChatThreadEvent.TYPE.values()[iType];
+    }
+
     static int messageBodyTypeToInt(@NonNull EMMessage.Type type) {
         return type.ordinal();
+    }
+
+    static EMMessage.Direct messageDirectFromInt(int iType) {
+        return EMMessage.Direct.values()[iType];
+    }
+
+    static int messageDirectToInt(@NonNull EMMessage.Direct direct) {
+        return  direct.ordinal();
     }
 
     static EMMessage.Type messageBodyTypeFromInt(int iType) {
