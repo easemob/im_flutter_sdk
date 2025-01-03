@@ -358,6 +358,23 @@ UPDATE_dict = {
     "EMCombineMessageBody":"CombineMessageBody",
     "EMContact":"ChatContact",
 
+    "EMConnectionEventHandler":"ConnectionEventHandler",
+    "EMMarkType":"ChatMarkType",
+    "ChatGroupEventHandler":"ChatGroupEventHandler",
+    "ChatGroupInfo":"ChatGroupInfo",
+    "MultiDeviceEventHandler":"MultiDeviceEventHandler",
+    "RecallMessageInfo":"RecallMessageInfo",
+    "MessageListener":"MessageListener",
+    "ChatPresenceManager":"ChatPresenceManager",
+    "ChatPresenceEventHandler":"ChatPresenceEventHandler",
+    "ChatContactEventHandler":"ChatContactEventHandler",
+    "ChatThreadManager":"ChatThreadManager",
+    "ChatThreadEventHandler":"ChatThreadEventHandler",
+    "ChatThreadEvent":"ChatThreadEvent",
+    "ChatRoomEventHandler":"ChatRoomEventHandler",
+    "ChatMessageReaction":"ChatMessageReaction",
+    "ChatUserInfoManager":"ChatUserInfoManager",
+    "ChatPushConfigs":"ChatPushConfigs",
     # demo
 
     #podspec
