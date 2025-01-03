@@ -6,7 +6,7 @@
 //
 
 #import "OptionsHelper.h"
-#import <HyphenateChat/EMOptions+PrivateDeploy.h>
+#import "ChatHeaders.h"
 
 @implementation EMOptions (Helper)
 - (NSDictionary *)toJson {
