@@ -6,9 +6,9 @@
 //
 
 
-#define AgoraChat
+#define AgoraChat 0
 
-#if defined(AgoraChat)
+#if AgoraChat
 
 #import <AgoraChat/AgoraChat.h>
 #import <AgoraChat/AgoraChatOptions+PrivateDeploy.h>

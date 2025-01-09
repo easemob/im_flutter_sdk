@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import '../../chat_sdk.dart';
 
 class MessageSearchOptions {
   const MessageSearchOptions({
@@ -6,7 +6,7 @@ class MessageSearchOptions {
     this.from,
     this.ts = -1,
     this.count = 10,
-    this.direction = EMSearchDirection.Up,
+    this.direction = SearchDirection.Up,
   });
 
   /// ~english
@@ -47,5 +47,5 @@ class MessageSearchOptions {
   /// ~chinese
   /// 消息搜索方向。
   /// ~end
-  final EMSearchDirection direction;
+  final SearchDirection direction;
 }

@@ -1,5 +1,5 @@
 class ChatMethodKeys {
-  /// EMClient methods
+  /// Client methods
   static const String init = "init";
   static const String createAccount = "createAccount";
   static const String login = "login";
@@ -20,7 +20,7 @@ class ChatMethodKeys {
   static const String isLoggedInBefore = "isLoggedInBefore";
   static const String isConnected = "isConnected";
 
-  /// EMClient listener
+  /// Client listener
   static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
   static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
   static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
@@ -46,7 +46,7 @@ class ChatMethodKeys {
   static const String onAppActiveNumberReachLimit =
       'onAppActiveNumberReachLimit';
 
-  /// EMContactManager methods
+  /// ContactManager methods
   static const String addContact = "addContact";
   static const String deleteContact = "deleteContact";
   static const String getAllContactsFromServer = "getAllContactsFromServer";
@@ -64,10 +64,10 @@ class ChatMethodKeys {
   static const String fetchAllContacts = "fetchAllContacts";
   static const String fetchContacts = "fetchContacts";
 
-  /// EMContactManager listener
+  /// ContactManager listener
   static const String onContactChanged = "onContactChanged";
 
-  /// EMChatManager methods
+  /// ChatManager methods
   static const String sendMessage = "sendMessage";
   static const String resendMessage = "resendMessage";
   static const String ackMessageRead = "ackMessageRead";
@@ -125,7 +125,7 @@ class ChatMethodKeys {
   static const String downloadAndParseCombineMessage =
       'downloadAndParseCombineMessage';
 
-  /// EMChatManager listener
+  /// ChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessagesRead = "onMessagesRead";
@@ -142,17 +142,17 @@ class ChatMethodKeys {
   static const String onMessageReactionDidChange = "messageReactionDidChange";
   static const String onMessageContentChanged = "onMessageContentChanged";
 
-  /// EMMessage listener
+  /// Message listener
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";
   static const String onMessageError = "onMessageError";
   static const String onMessageSuccess = "onMessageSuccess";
   static const String onMessageReadAck = "onMessageReadAck";
   static const String onMessageDeliveryAck = "onMessageDeliveryAck";
 
-  /// EMPresenceManagerDelegate
+  /// PresenceManagerDelegate
   static const String onPresenceStatusChanged = "onPresenceStatusChanged";
 
-  /// EMConversation method
+  /// Conversation method
   static const String getUnreadMsgCount = "getUnreadMsgCount";
   static const String markAllMessagesAsRead = "markAllMessagesAsRead";
   static const String markMessageAsRead = "markMessageAsRead";
@@ -177,12 +177,12 @@ class ChatMethodKeys {
   static const String removeMsgFromServerWithTimeStamp =
       "removeMsgFromServerWithTimeStamp";
 
-  /// EMMessage method
+  /// Message method
   static const String getReactionList = "getReactionList";
   static const String groupAckCount = "groupAckCount";
   static const String getChatThread = "chatThread";
 
-  /// EMChatRoomManager methods
+  /// ChatRoomManager methods
   static const String joinChatRoom = "joinChatRoom";
   static const String leaveChatRoom = "leaveChatRoom";
   static const String fetchPublicChatRoomsFromServer =
@@ -224,10 +224,10 @@ class ChatMethodKeys {
   static const String setChatRoomAttributes = "setChatRoomAttributes";
   static const String removeChatRoomAttributes = "removeChatRoomAttributes";
 
-  /// EMChatRoomManagerListener
+  /// ChatRoomManagerListener
   static const String chatRoomChange = "onChatRoomChanged";
 
-  /// EMGroupManager
+  /// GroupManager
   static const String getGroupWithId = "getGroupWithId";
   static const String getJoinedGroups = "getJoinedGroups";
   static const String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
@@ -289,10 +289,10 @@ class ChatMethodKeys {
 
   static const String fetchJoinedGroupCount = "fetchJoinedGroupCount";
 
-  /// EMGroupManagerListener
+  /// GroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
 
-  /// EMPushManager
+  /// PushManager
   static const String getImPushConfig = "getImPushConfig";
   static const String getImPushConfigFromServer = "getImPushConfigFromServer";
   static const String updateImPushStyle = "updateImPushStyle";
@@ -320,13 +320,13 @@ class ChatMethodKeys {
   static const String setPushTemplate = "setPushTemplate";
   static const String getPushTemplate = "getPushTemplate";
 
-  /// EMUserInfoManager methods
+  /// UserInfoManager methods
   static const String updateOwnUserInfo = "updateOwnUserInfo";
   static const String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
   static const String fetchUserInfoById = "fetchUserInfoById";
   static const String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
 
-  /// EMPresenceManager methods
+  /// PresenceManager methods
   static const String presenceWithDescription =
       "publishPresenceWithDescription";
   static const String presenceSubscribe = "presenceSubscribe";
@@ -335,7 +335,7 @@ class ChatMethodKeys {
       "fetchSubscribedMembersWithPageNum";
   static const String fetchPresenceStatus = "fetchPresenceStatus";
 
-  /// EMChatThreadManager methods
+  /// ThreadManager methods
   static const String fetchChatThreadDetail = "fetchChatThreadDetail";
   static const String fetchJoinedChatThreads = "fetchJoinedChatThreads";
   static const String fetchChatThreadsWithParentId =
@@ -352,7 +352,7 @@ class ChatMethodKeys {
   static const String leaveChatThread = "leaveChatThread";
   static const String destroyChatThread = "destroyChatThread";
 
-  // EMChatThreadManagerListener
+  // ThreadManagerListener
   static const String onChatThreadCreate = "onChatThreadCreate";
   static const String onChatThreadUpdate = "onChatThreadUpdate";
   static const String onChatThreadDestroy = "onChatThreadDestroy";

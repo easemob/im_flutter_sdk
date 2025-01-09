@@ -272,15 +272,15 @@
     [EMClient.sharedClient addDelegate:self delegateQueue:nil];
     [EMClient.sharedClient addMultiDevicesDelegate:self delegateQueue:nil];
     _chatManager = [[ChatManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_manager")registrar:self.flutterPluginRegister];
-    _contactManager = [[ContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_contact_manager") registrar:self.flutterPluginRegister];
+    _contactManager = [[ContactManagerWrapper alloc] initWithChannelName:EMChannelName(@"contact_manager") registrar:self.flutterPluginRegister];
     _conversationManager = [[ConversationWrapper alloc] initWithChannelName:EMChannelName(@"chat_conversation") registrar:self.flutterPluginRegister];
-    _groupManager = [[GroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_group_manager") registrar:self.flutterPluginRegister];
+    _groupManager = [[GroupManagerWrapper alloc] initWithChannelName:EMChannelName(@"group_manager") registrar:self.flutterPluginRegister];
     _groupManager.clientWrapper = self;
-    _roomManager =[[ChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_room_manager") registrar:self.flutterPluginRegister];
-    _pushManager =[[PushManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_push_manager") registrar:self.flutterPluginRegister];
-    _userInfoManager = [[UserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_userInfo_manager") registrar:self.flutterPluginRegister];
-    _presenceManager = [[PresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_presence_manager") registrar:self.flutterPluginRegister];
-    _threadManager = [[ThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"chat_thread_manager") registrar:self.flutterPluginRegister];
+    _roomManager =[[ChatroomManagerWrapper alloc] initWithChannelName:EMChannelName(@"room_manager") registrar:self.flutterPluginRegister];
+    _pushManager =[[PushManagerWrapper alloc] initWithChannelName:EMChannelName(@"push_manager") registrar:self.flutterPluginRegister];
+    _userInfoManager = [[UserInfoManagerWrapper alloc] initWithChannelName:EMChannelName(@"userInfo_manager") registrar:self.flutterPluginRegister];
+    _presenceManager = [[PresenceManagerWrapper alloc] initWithChannelName:EMChannelName(@"presence_manager") registrar:self.flutterPluginRegister];
+    _threadManager = [[ThreadManagerWrapper alloc] initWithChannelName:EMChannelName(@"thread_manager") registrar:self.flutterPluginRegister];
 
     _msgWrapper = [[MessageWrapper alloc] initWithChannelName:EMChannelName(@"chat_message") registrar:self.flutterPluginRegister];
     

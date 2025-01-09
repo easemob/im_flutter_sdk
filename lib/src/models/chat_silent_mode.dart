@@ -17,7 +17,7 @@ class ChatSilentModeParam {
   /// ~chinese
   /// 离线推送通知类型。
   /// ~end
-  final ChatPushRemindType? remindType;
+  final PushRemindType? remindType;
 
   /// ~english
   /// The start time of offline push DND.
@@ -198,7 +198,7 @@ class ChatSilentModeResult {
   /// ~chinese
   /// 会话类型
   /// ~end
-  final EMConversationType conversationType;
+  final ConversationType conversationType;
 
   /// ~english
   /// The Conversation ID.
@@ -216,7 +216,7 @@ class ChatSilentModeResult {
   /// ~chinese
   /// 离线推送通知类型。
   /// ~end
-  final ChatPushRemindType? remindType;
+  final PushRemindType? remindType;
 
   /// ~english
   /// The start time of offline push DND.
@@ -257,11 +257,10 @@ class ChatSilentModeResult {
     ChatSilentModeTime startTime =
         ChatSilentModeTime.fromJson(map["startTime"]);
     ChatSilentModeTime endTime = ChatSilentModeTime.fromJson(map["endTime"]);
-    ChatPushRemindType remindType =
-        ChatPushRemindType.values[map["remindType"]];
+    PushRemindType remindType = PushRemindType.values[map["remindType"]];
     String conversationId = map["conversationId"];
-    EMConversationType conversationType =
-        EMConversationType.values[map["conversationType"]];
+    ConversationType conversationType =
+        ConversationType.values[map["conversationType"]];
     return ChatSilentModeResult(
       expireTimestamp,
       conversationType,

@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/src/internal/inner_headers.dart';
+import '../../src/internal/inner_headers.dart';
 
 class RecallMessageInfo {
   factory RecallMessageInfo.fromJson(Map map) {
@@ -6,13 +6,13 @@ class RecallMessageInfo {
       recallMessageId: map['recallMsgId'],
       recallBy: map['recallBy'],
       conversationId: map['conversationId'],
-      recallMessage: map.getValue<EMMessage>(
+      recallMessage: map.getValue<Message>(
         "msg",
         callback: (map) {
           if (map == null) {
             return null;
           }
-          return EMMessage.fromJson(map);
+          return Message.fromJson(map);
         },
       ),
       ext: map.getValue('ext', callback: (ext) => ext as String?),
@@ -43,7 +43,7 @@ class RecallMessageInfo {
   /// ~chinese
   /// 撤回的消息，离线撤回会为空。
   /// ~end
-  final EMMessage? recallMessage;
+  final Message? recallMessage;
 
   /// ~english
   /// The extension field of the recalled message.

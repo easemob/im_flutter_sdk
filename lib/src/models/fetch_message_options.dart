@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/src/internal/inner_headers.dart';
+import '../../src/internal/inner_headers.dart';
 
 /// ~english
 /// The parameter configuration class for pulling historical messages from the server.
@@ -11,7 +11,7 @@ class FetchMessageOptions {
   /// ~english
   /// The parameter configuration class for pulling historical messages from the server.
   ///
-  /// Param [direction] The message search direction. The default value is [EMSearchDirection.Up]. See [EMSearchDirection].
+  /// Param [direction] The message search direction. The default value is [SearchDirection.Up]. See [SearchDirection].
   ///
   /// Param [from] The user ID of the message sender in the group conversation.
   ///
@@ -39,7 +39,7 @@ class FetchMessageOptions {
   /// ~chinese
   /// 从服务端查询历史消息的参数配置类。
   ///
-  /// Param [direction] 消息搜索方向。默认为 [EMSearchDirection.Up] , 详见 [EMSearchDirection]。
+  /// Param [direction] 消息搜索方向。默认为 [SearchDirection.Up] , 详见 [SearchDirection]。
   ///
   /// Param [from] 群组会话中的消息发送方的用户 ID。
   ///
@@ -63,7 +63,7 @@ class FetchMessageOptions {
     this.startTs = -1,
     this.endTs = -1,
     this.needSave = false,
-    this.direction = EMSearchDirection.Up,
+    this.direction = SearchDirection.Up,
   });
 
   /// ~english
@@ -117,13 +117,13 @@ class FetchMessageOptions {
   final int endTs;
 
   /// ~english
-  /// The message search direction. The default value is [EMSearchDirection.Up]. See [EMSearchDirection].
+  /// The message search direction. The default value is [SearchDirection.Up]. See [SearchDirection].
   /// ~end
   ///
   /// ~chinese
-  /// 消息搜索方向，默认为[EMSearchDirection.Up]。详见 [EMSearchDirection]。
+  /// 消息搜索方向，默认为[SearchDirection.Up]。详见 [SearchDirection]。
   /// ~end
-  final EMSearchDirection direction;
+  final SearchDirection direction;
 
   /// ~english
   /// Whether to save the retrieved messages to the database:

@@ -401,16 +401,16 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void bindingManagers() {
         chatManagerWrapper = new ChatManagerWrapper(binging, "chat_manager");
-        contactManagerWrapper = new ContactManagerWrapper(binging, "chat_contact_manager");
-        chatRoomManagerWrapper = new ChatRoomManagerWrapper(binging, "chat_room_manager");
-        groupManagerWrapper = new GroupManagerWrapper(binging, "chat_group_manager");
+        contactManagerWrapper = new ContactManagerWrapper(binging, "contact_manager");
+        chatRoomManagerWrapper = new ChatRoomManagerWrapper(binging, "room_manager");
+        groupManagerWrapper = new GroupManagerWrapper(binging, "group_manager");
         groupManagerWrapper.clientWrapper = this;
         conversationWrapper = new ConversationWrapper(binging, "chat_conversation");
-        pushManagerWrapper = new PushManagerWrapper(binging, "chat_push_manager");
-        userInfoManagerWrapper = new UserInfoManagerWrapper(binging, "chat_userInfo_manager");
-        presenceManagerWrapper = new PresenceManagerWrapper(binging, "chat_presence_manager");
+        pushManagerWrapper = new PushManagerWrapper(binging, "push_manager");
+        userInfoManagerWrapper = new UserInfoManagerWrapper(binging, "userInfo_manager");
+        presenceManagerWrapper = new PresenceManagerWrapper(binging, "presence_manager");
         messageWrapper = new MessageWrapper(binging, "chat_message");
-        chatThreadManagerWrapper = new ChatThreadManagerWrapper(binging, "chat_thread_manager");
+        chatThreadManagerWrapper = new ChatThreadManagerWrapper(binging, "thread_manager");
         progressManager = new ProgressManager(binging, "file_progress_manager");
     }
 

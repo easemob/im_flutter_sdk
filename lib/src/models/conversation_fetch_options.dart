@@ -1,5 +1,5 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
-import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import '../../chat_sdk.dart';
+import '../../src/tools/extension.dart';
 
 /// ~english
 /// The conversation filter class.
