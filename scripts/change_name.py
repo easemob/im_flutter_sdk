@@ -170,6 +170,9 @@ def copy_file_to_target_path(source_path, type):
     if type == "shengwang":
         target_path = os.path.join(os.getcwd(), SHENGWANG_CHAT_PACKAGE)
 
+    if type == "easemob":
+        target_path = os.path.join(os.getcwd(), CHAT_PACKAGE)
+
     os.makedirs(target_path, exist_ok=True)
     # 复制文件
     if os.path.isfile(source_path):
@@ -188,6 +191,9 @@ def copy_file_to_target_path(source_path, type):
     if type == "shengwang":
         change_shengwang_name(target_path)
 
+    if type == "easemob":
+        create_easemob_path(target_path)
+
 
 def change_agorachat_name(path):
     change_sdk_pubspec_file(path, AGORA_CHAT_PACKAGE)
@@ -195,6 +201,12 @@ def change_agorachat_name(path):
     change_example_pubspec_file(path, AGORA_CHAT_PACKAGE)
     change_ios_podspec_file(path, AGORA_CHAT_PACKAGE)
     choice_api_reference_language(path, "english")
+    lib_dir = os.path.join(path, 'lib')
+    if os.path.exists(lib_dir):
+        for file_name in ['im_flutter_sdk.dart', 'shengwang_chat_sdk.dart']:
+            file_path = os.path.join(lib_dir, file_name)
+            if os.path.isfile(file_path):
+                os.remove(file_path)  # 删除文件
 
 def change_shengwang_name(path):
     change_sdk_pubspec_file(path, SHENGWANG_CHAT_PACKAGE)
@@ -204,6 +216,21 @@ def change_shengwang_name(path):
     switch_ios_import_header(path)
     chang_android_import_header(path, SHENGWANG_ANDROID_MAP)
     choice_api_reference_language(path, "chinese")
+    lib_dir = os.path.join(path, 'lib')
+    if os.path.exists(lib_dir):
+        for file_name in ['agora_chat_sdk.dart', 'im_flutter_sdk.dart']:
+            file_path = os.path.join(lib_dir, file_name)
+            if os.path.isfile(file_path):
+                os.remove(file_path)  # 删除文件
+
+def create_easemob_path(path):
+    choice_api_reference_language(path, "chinese")
+    lib_dir = os.path.join(path, 'lib')
+    if os.path.exists(lib_dir):
+        for file_name in ['agora_chat_sdk.dart', 'shengwang_chat_sdk.dart']:
+            file_path = os.path.join(lib_dir, file_name)
+            if os.path.isfile(file_path):
+                os.remove(file_path)  # 删除文件
 
 
 # 修改 pubspec.yaml 文件中的 package 名称
@@ -362,8 +389,8 @@ if __name__ == "__main__":
     # directory 作为位置参数，默认就是必传的
     parser.add_argument('path', help='需要修改的目录路径')
     # type 通过 required=True 设置为必传参数
-    parser.add_argument('--type', choices=['agorachat', 'shengwang'],
-                       required=True, help='固定参数选项：agorachat 或 shengwang')
+    parser.add_argument('--type', choices=['agorachat', 'shengwang', 'easemob'],
+                       required=True, help='固定参数选项：agorachat 或 shengwang 或 easemob')
 
     # 解析命令行参数
     args = parser.parse_args()
