@@ -17,8 +17,7 @@ A new flutter plugin project.
   s.public_header_files = 'Classes/**/*.h'
 
   s.dependency 'Flutter'
-  # s.dependency 'HyphenateChat','4.11.0'
-  s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
+  s.dependency 'HyphenateChat','4.12.0'
   s.ios.deployment_target = '11.0'
 
 end
