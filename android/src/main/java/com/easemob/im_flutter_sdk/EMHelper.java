@@ -300,11 +300,6 @@ class ContactHelper {
 
 class ChatRoomHelper {
 
-    // chatroom 都是native -> flutter, 不需要fromJson
-    // static EMChatRoom fromJson(JSONObject json) throws JSONException {
-    // EMChatRoom chatRoom = new EMChatRoom();
-    // }
-
     static Map<String, Object> toJson(EMChatRoom chatRoom) {
         Map<String, Object> data = new HashMap<>();
         data.put("roomId", chatRoom.getId());
@@ -320,7 +315,9 @@ class ChatRoomHelper {
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
         data.put("permissionType", EnumTools.chatRoomPermissionTypeToInt(chatRoom.getChatRoomPermissionType()));
-
+        data.put("createTimestamp", chatRoom.getCreateTimestamp());
+        data.put("muteExpireTimestamp", chatRoom.getMuteExpireTimestamp());
+        data.put("isInWhitelist", chatRoom.isInWhitelist());
         return data;
     }
 
