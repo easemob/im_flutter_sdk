@@ -645,12 +645,12 @@ class ChatEventHandler {
 ///
 /// Adds a chat event handler:
 /// ```dart
-///   Client.getInstance.chatChatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, ChatRoomEventHandler());
+///   Client.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, ChatRoomEventHandler());
 /// ```
 ///
 /// Removes a chat room event handler:
 /// ```dart
-///   Client.getInstance.chatChatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   Client.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 ///
@@ -659,12 +659,12 @@ class ChatEventHandler {
 ///
 /// 添加监听:
 /// ```dart
-///   Client.getInstance.chatChatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, ChatRoomEventHandler());
+///   Client.getInstance.chatRoomManager.addEventHandler(UNIQUE_HANDLER_ID, ChatRoomEventHandler());
 /// ```
 ///
 /// Removes a chat room event handler:
 /// ```dart
-///   Client.getInstance.chatChatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
+///   Client.getInstance.chatRoomManager.removeEventHandler(UNIQUE_HANDLER_ID);
 /// ```
 /// ~end
 class ChatRoomEventHandler {

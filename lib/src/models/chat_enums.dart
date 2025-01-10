@@ -1087,6 +1087,12 @@ enum LeaveReason {
   Offline,
 }
 
+/// ~english
+/// The message pin operations.
+/// ~end
+/// ~chinese
+/// 消息置顶操作类型。
+/// ~end
 enum MessagePinOperation {
   /// ~english
   /// Pin
@@ -1114,6 +1120,7 @@ enum MessagePinOperation {
 /// ~chinese
 ///  消息搜索范围枚举类型。
 /// ~end
+
 enum MessageSearchScope {
   /// ~english
   /// Search by message content.

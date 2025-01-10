@@ -46,5 +46,7 @@ app.*.map.json
 # FVM Version Cache
 .fvm/
 .fvmrc
+
 scripts/shengwang_chat_sdk/
 scripts/agora_chat_sdk/
+scripts/im_flutter_sdk/

@@ -10,7 +10,7 @@ import 'internal/inner_headers.dart';
 /// The sample code for joining a chat room:
 /// ```dart
 ///   try {
-///       await Client.getInstance.chatChatRoomManager.joinChatRoom(chatRoomId);
+///       await Client.getInstance.chatRoomManager.joinChatRoom(chatRoomId);
 ///   } on Error catch (e) {
 ///       debugPrint(e.toString());
 ///   }
@@ -22,7 +22,7 @@ import 'internal/inner_headers.dart';
 ///  比如，加入聊天室：
 ///   ```dart
 ///     try {
-///         await Client.getInstance.chatChatRoomManager.joinChatRoom(chatRoomId);
+///         await Client.getInstance.chatRoomManager.joinChatRoom(chatRoomId);
 ///     } on Error catch (e) {
 ///         debugPrint(e.toString());
 ///     }

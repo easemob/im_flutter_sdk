@@ -18,7 +18,7 @@ class Client {
   static Client? _instance;
   final ChatManager _chatManager = ChatManager();
   final ContactManager _contactManager = ContactManager();
-  final ChatRoomManager _chatChatRoomManager = ChatRoomManager();
+  final ChatRoomManager _chatRoomManager = ChatRoomManager();
   final GroupManager _groupManager = GroupManager();
   final PushManager _pushManager = PushManager();
   final UserInfoManager _userInfoManager = UserInfoManager();
@@ -1133,8 +1133,8 @@ class Client {
   ///
   /// **Return** `ChatRoomManager` 类。
   /// ~end
-  ChatRoomManager get chatChatRoomManager {
-    return _chatChatRoomManager;
+  ChatRoomManager get chatRoomManager {
+    return _chatRoomManager;
   }
 
   /// ~english
