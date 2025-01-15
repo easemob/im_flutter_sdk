@@ -1,3 +1,5 @@
+## 4.12.0
+
 ## 4.11.0
 
 - 修改 `EMChatRoomEventHandler#onMuteListAddedFromChatRoom` 参数；
