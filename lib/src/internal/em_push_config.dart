@@ -1,70 +1,75 @@
 import 'inner_headers.dart';
 
+/// ~english
 /// The push configuration class, which contains the push configuration information, such as the push style.
+/// ~end
 class EMPushConfig {
-  String? mzAppId = '';
-  String? mzAppKey = '';
+  String mzAppId = '';
+  String mzAppKey = '';
 
-  String? oppoAppKey = '';
-  String? oppoAppSecret = '';
+  String oppoAppKey = '';
+  String oppoAppSecret = '';
 
-  String? miAppId = '';
-  String? miAppKey = '';
+  String miAppId = '';
+  String miAppKey = '';
 
-  String? fcmId = '';
+  String fcmId = '';
 
-  String? apnsCertName = '';
+  String apnsCertName = '';
 
-  bool? enableMeiZuPush = false;
-  bool? enableOppoPush = false;
-  bool? enableMiPush = false;
+  bool enableMeiZuPush = false;
+  bool enableOppoPush = false;
+  bool enableMiPush = false;
 
-  bool? enableFCM = false;
+  bool enableFCM = false;
 
-  bool? enableVivoPush = false;
-  bool? enableHWPush = false;
-
-  bool? enableAPNS = false;
+  bool enableVivoPush = false;
+  bool agreePrivacyStatement = false;
+  bool enableHWPush = false;
+  bool enableHonorPush = false;
+  bool enableAPNS = false;
 
   EMPushConfig();
 
-  /// @nodoc
   void updateFromJson(Map<String, dynamic> json) {
-    miAppId = json.stringValue("mzAppId");
-    mzAppKey = json.stringValue("mzAppKey");
-    oppoAppKey = json.stringValue("oppoAppKey");
-    oppoAppSecret = json.stringValue("oppoAppSecret");
-    miAppId = json.stringValue("miAppId");
-    miAppKey = json.stringValue("miAppKey");
-    fcmId = json.stringValue("fcmId");
-    apnsCertName = json.stringValue("apnsCertName");
+    miAppId = json["mzAppId"];
+    mzAppKey = json["mzAppKey"];
+    oppoAppKey = json["oppoAppKey"];
+    oppoAppSecret = json["oppoAppSecret"];
+    miAppId = json["miAppId"];
+    miAppKey = json["miAppKey"];
+    fcmId = json["fcmId"];
+    apnsCertName = json["apnsCertName"];
     enableMeiZuPush = json.boolValue('enableMeiZuPush');
     enableOppoPush = json.boolValue('enableOppoPush');
     enableMiPush = json.boolValue('enableMiPush');
     enableFCM = json.boolValue('enableFCM');
     enableVivoPush = json.boolValue('enableVivoPush');
+    agreePrivacyStatement = json.boolValue('agreePrivacyStatement');
     enableHWPush = json.boolValue('enableHWPush');
     enableAPNS = json.boolValue('enableAPNS');
+    enableHonorPush = json.boolValue('enableHonorPush');
   }
 
-  /// @nodoc
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data.setValueWithOutNull("mzAppId", mzAppId);
-    data.setValueWithOutNull("mzAppKey", mzAppKey);
-    data.setValueWithOutNull("oppoAppKey", oppoAppKey);
-    data.setValueWithOutNull("oppoAppSecret", oppoAppSecret);
-    data.setValueWithOutNull("miAppId", miAppId);
-    data.setValueWithOutNull("miAppKey", miAppKey);
-    data.setValueWithOutNull("fcmId", fcmId);
-    data.setValueWithOutNull("apnsCertName", apnsCertName);
-    data.setValueWithOutNull("enableMeiZuPush", enableMeiZuPush);
-    data.setValueWithOutNull("enableOppoPush", enableOppoPush);
-    data.setValueWithOutNull("enableMiPush", enableMiPush);
-    data.setValueWithOutNull("enableFCM", enableFCM);
-    data.setValueWithOutNull("enableHWPush", enableHWPush);
-    data.setValueWithOutNull("enableVivoPush", enableVivoPush);
-    data.setValueWithOutNull("enableAPNS", enableAPNS);
+    data.putIfNotNull("mzAppId", mzAppId);
+    data.putIfNotNull("mzAppKey", mzAppKey);
+    data.putIfNotNull("oppoAppKey", oppoAppKey);
+    data.putIfNotNull("oppoAppSecret", oppoAppSecret);
+    data.putIfNotNull("miAppId", miAppId);
+    data.putIfNotNull("miAppKey", miAppKey);
+    data.putIfNotNull("fcmId", fcmId);
+    data.putIfNotNull("apnsCertName", apnsCertName);
+    data.putIfNotNull("enableMeiZuPush", enableMeiZuPush);
+    data.putIfNotNull("enableOppoPush", enableOppoPush);
+    data.putIfNotNull("enableMiPush", enableMiPush);
+    data.putIfNotNull("enableFCM", enableFCM);
+    data.putIfNotNull("enableHWPush", enableHWPush);
+    data.putIfNotNull("enableVivoPush", enableVivoPush);
+    data.putIfNotNull('agreePrivacyStatement', agreePrivacyStatement);
+    data.putIfNotNull("enableAPNS", enableAPNS);
+    data.putIfNotNull("enableHonorPush", enableHonorPush);
 
     return data;
   }

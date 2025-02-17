@@ -1,37 +1,94 @@
 import '../internal/inner_headers.dart';
 
-///
+/// ~english
 /// The message thread class.
+/// ~end
 ///
+/// ~chinese
+/// 子区详情类。
+/// ~end
 class EMChatThread {
+  /// ~english
   /// The message thread ID.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区 ID。
+  /// ~end
   final String threadId;
 
+  /// ~english
   /// The name of the message thread.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区名称。
+  /// ~end
   final String? threadName;
 
+  /// ~english
   /// The creator of the message thread.
-  final String owner;
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区创建者的用户 ID。
+  /// ~end
+  final String? owner;
 
+  /// ~english
   /// The ID of the parent message of the message thread.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区父消息 ID。
+  /// ~end
   final String messageId;
 
+  /// ~english
   /// The group ID where the message thread belongs.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区所属的群组 ID。
+  /// ~end
   final String parentId;
 
+  /// ~english
   /// The count of members in the message thread.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区成员数量。
+  /// ~end
   final int membersCount;
 
+  /// ~english
   /// The count of messages in the message thread.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区消息数量。
+  /// ~end
   final int messageCount;
 
+  /// ~english
   /// The Unix timestamp when the message thread is created. The unit is millisecond.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区创建的 Unix 时间戳。单位为毫秒。
+  /// ~end
   final int createAt;
 
+  /// ~english
   /// The last reply in the message thread. If it is empty, the last message is withdrawn.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区最新一条消息。如果为空，表明最新一条消息被撤回。
+  /// ~end
   final EMMessage? lastMessage;
 
-  /// @nodoc
   EMChatThread._private({
     required this.threadId,
     this.threadName,
@@ -73,19 +130,65 @@ class EMChatThread {
       threadName: threadName,
     );
   }
+
+  EMChatThread copyWith({
+    String? threadId,
+    String? threadName,
+    String? owner,
+    String? messageId,
+    String? parentId,
+    int? membersCount,
+    int? messageCount,
+    int? createAt,
+    EMMessage? lastMessage,
+  }) {
+    return EMChatThread._private(
+      threadId: threadId ?? this.threadId,
+      threadName: threadName ?? this.threadName,
+      owner: owner ?? this.owner,
+      messageId: messageId ?? this.messageId,
+      parentId: parentId ?? this.parentId,
+      membersCount: membersCount ?? this.membersCount,
+      messageCount: messageCount ?? this.messageCount,
+      createAt: createAt ?? this.createAt,
+      lastMessage: lastMessage ?? this.lastMessage,
+    );
+  }
 }
 
-///
+/// ~english
 /// The message thread event class.
+/// ~end
 ///
+/// ~chinese
+/// 子区通知类。
+/// ~end
 class EMChatThreadEvent {
+  /// ~english
   /// Received the operation type of the sub-area from others
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区事件类型。
+  /// ~end
   final EMChatThreadOperation type;
 
+  /// ~english
   /// User id of the operation sub-area
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区操作者。
+  /// ~end
   final String from;
 
+  /// ~english
   /// sub-area
+  /// ~end
+  ///
+  /// ~chinese
+  /// 子区实例。
+  /// ~end
   final EMChatThread? chatThread;
 
   EMChatThreadEvent._private({
@@ -96,27 +199,8 @@ class EMChatThreadEvent {
 
   factory EMChatThreadEvent.fromJson(Map map) {
     String from = map["from"];
-    int iType = map["type"];
-    EMChatThreadOperation type = EMChatThreadOperation.UnKnown;
-    switch (iType) {
-      case 0:
-        type = EMChatThreadOperation.UnKnown;
-        break;
-      case 1:
-        type = EMChatThreadOperation.Create;
-        break;
-      case 2:
-        type = EMChatThreadOperation.Update;
-        break;
-      case 3:
-        type = EMChatThreadOperation.Delete;
-        break;
-      case 4:
-        type = EMChatThreadOperation.Update_Msg;
-        break;
-    }
-
-    EMChatThread? chatThread = map.getValueWithKey<EMChatThread>(
+    EMChatThreadOperation type = EMChatThreadOperation.values[map["type"]];
+    EMChatThread? chatThread = map.getValue<EMChatThread>(
       "thread",
       callback: (map) {
         if (map == null) {

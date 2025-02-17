@@ -1,5 +1,3 @@
-export '../em_listeners.dart';
-
 export 'chat_method_keys.dart';
 export 'em_channel_manager.dart';
 export 'em_event_keys.dart';
@@ -19,6 +17,7 @@ export '../models/em_group_options.dart';
 export '../models/em_group_shared_file.dart';
 export '../models/em_group.dart';
 export '../models/em_message_reaction.dart';
+export '../models/reaction_operation.dart';
 export '../models/em_message.dart';
 export '../models/em_options.dart';
 export '../models/em_page_result.dart';
@@ -27,7 +26,10 @@ export '../models/em_push_configs.dart';
 export '../models/em_translate_language.dart';
 export '../models/em_userInfo.dart';
 export '../models/chat_silent_mode.dart';
-
+export '../models/recall_message_info.dart';
+export '../models/message_pin_info.dart';
+export '../models/login_extension_info.dart';
+export '../models/message_search_options.dart';
 export '../tools/em_extension.dart';
 export '../tools/em_progress_manager.dart';
 export '../tools/em_log.dart';
@@ -38,10 +40,10 @@ export '../em_chat_thread_manager.dart';
 export '../em_client.dart';
 export '../em_contact_manager.dart';
 export '../em_group_manager.dart';
-export '../em_listeners.dart';
-export '../em_message_status_callback.dart';
+
 export '../em_presence_manager.dart';
 export '../em_push_manager.dart';
 export '../em_userInfo_manager.dart';
-export '../em_push_manager.dart';
 export '../event_handler/manager_event_handler.dart';
+export '../tools/chat_area_code.dart';
+export '../tools/em_tools.dart';

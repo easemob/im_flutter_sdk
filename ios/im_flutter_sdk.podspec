@@ -13,16 +13,14 @@ A new flutter plugin project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
 
-
-  s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
-  s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
-  
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
 
   s.dependency 'Flutter'
-  s.dependency 'HyphenateChat','3.9.5'
-  s.ios.deployment_target = '10.0'
+  s.dependency 'HyphenateChat','4.12.0'
+  # s.dependency 'ShengwangChat_iOS','1.3.2'
+  s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
+  s.ios.deployment_target = '11.0'
 
 end
 

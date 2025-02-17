@@ -1,41 +1,30 @@
 #import "ImFlutterSdkPlugin.h"
 
-#import "EMChatManagerWrapper.h"
-#import "EMClientWrapper.h"
-#import "EMContactManagerWrapper.h"
-#import "EMConversationWrapper.h"
-#import "EMGroupManagerWrapper.h"
-#import "EMChatroomManagerWrapper.h"
-#import <HyphenateChat/HyphenateChat.h>
+#import "ChatManagerWrapper.h"
+#import "ClientWrapper.h"
+#import "ContactManagerWrapper.h"
+#import "ConversationWrapper.h"
+#import "GroupManagerWrapper.h"
+#import "ChatroomManagerWrapper.h"
+#import "ChatHeaders.h"
 #import <UserNotifications/UserNotifications.h>
+
 
 @implementation ImFlutterSdkPlugin
 
-
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-//    EMClientWrapper *wrapper =  [[EMClientWrapper alloc] initWithChannelName:EMChannelName(@"em_client") registrar:registrar];
-    [EMClientWrapper channelName:EMChannelName(@"chat_client") registrar:registrar];
-#pragma clang diagnostic pop
-}
-
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    ClientWrapper *wrapper = [[ClientWrapper alloc] initWithChannelName:EMChannelName(@"chat_client") registrar:registrar];
+    [registrar publish:wrapper];
 }
 
 @end
 
-
-@implementation FlutterAppDelegate(EaseMob)
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    [[EMClient sharedClient] applicationDidEnterBackground:application];
+@implementation FlutterAppDelegate (Category)
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    [EMClient.sharedClient applicationDidEnterBackground:application];
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    [[EMClient sharedClient] applicationWillEnterForeground:application];
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    [EMClient.sharedClient applicationWillEnterForeground:application];
 }
-
 @end
-

@@ -1,9 +1,22 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "<#Your AppKey#>";
+var appKey = "easemob#easeim";
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  assert(appKey.isNotEmpty, "appKey is empty");
+
+  EMOptions options = EMOptions.withAppKey(
+    appKey,
+    autoLogin: false,
+    debugMode: true,
+    usingHttpsOnly: false,
+  );
+
+  await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }
 
@@ -43,7 +56,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _initSDK();
     _addChatListener();
   }
 
@@ -77,9 +89,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: _signIn,
                     child: const Text("SIGN IN"),
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
                       backgroundColor:
-                          MaterialStateProperty.all(Colors.lightBlue),
+                          WidgetStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -89,9 +101,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: _signOut,
                     child: const Text("SIGN OUT"),
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
                       backgroundColor:
-                          MaterialStateProperty.all(Colors.lightBlue),
+                          WidgetStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -101,9 +113,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: _signUp,
                     child: const Text("SIGN UP"),
                     style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
                       backgroundColor:
-                          MaterialStateProperty.all(Colors.lightBlue),
+                          WidgetStateProperty.all(Colors.lightBlue),
                     ),
                   ),
                 ),
@@ -124,8 +136,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _sendMessage,
               child: const Text("SEND TEXT"),
               style: ButtonStyle(
-                foregroundColor: MaterialStateProperty.all(Colors.white),
-                backgroundColor: MaterialStateProperty.all(Colors.lightBlue),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+                backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
               ),
             ),
             Flexible(
@@ -145,19 +157,38 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
+    Platform.isAndroid
+        ? EMClient.getInstance.chatManager
+            .removeMessageEvent("UNIQUE_HANDLER_ID")
+        : EMClient.getInstance.chatManager
+            .removeMessageEvent("UNIQUE_HANDLER_ID");
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
 
-  void _initSDK() async {
-    EMOptions options = EMOptions(
-      appKey: appKey,
-      autoLogin: false,
-    );
-    await EMClient.getInstance.init(options);
-  }
-
   void _addChatListener() {
+    EMClient.getInstance.addConnectionEventHandler(
+        'identifier',
+        EMConnectionEventHandler(
+          onUserDidLoginFromOtherDevice: (info) {},
+        ));
+
+    EMClient.getInstance.chatManager.addMessageEvent(
+        "UNIQUE_HANDLER_ID",
+        ChatMessageEvent(
+          onSuccess: (msgId, msg) {
+            _addLogToConsole("on message succeed");
+          },
+          onProgress: (msgId, progress) {
+            _addLogToConsole("on message progress");
+          },
+          onError: (msgId, msg, error) {
+            _addLogToConsole(
+              "on message failed, code: ${error.code}, desc: ${error.description}",
+            );
+          },
+        ));
+
     EMClient.getInstance.chatManager.addEventHandler(
       "UNIQUE_HANDLER_ID",
       EMChatEventHandler(
@@ -202,8 +233,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case MessageType.FILE:
                 {
+                  EMClient.getInstance.chatManager.downloadAttachment(msg);
                   _addLogToConsole(
-                    "receive image message, from: ${msg.from}",
+                    "receive file message, from: ${msg.from}",
                   );
                 }
                 break;
@@ -216,9 +248,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case MessageType.CMD:
                 {
-                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 `EMChatManagerEventHandle#onCmdMessagesReceived` 回调接收
+                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
                 }
                 break;
+              case MessageType.COMBINE:
+                {
+                  _addLogToConsole(
+                    "receive combine message, from: ${msg.from}",
+                  );
+                }
             }
           }
         },
@@ -233,7 +271,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
-      await EMClient.getInstance.login(_userId, _password);
+      _addLogToConsole("sign in...");
+      await EMClient.getInstance.loginWithPassword(_userId, _password);
       _addLogToConsole("sign in succeed, username: $_userId");
     } on EMError catch (e) {
       _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
@@ -242,6 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _signOut() async {
     try {
+      _addLogToConsole("sign out...");
       await EMClient.getInstance.logout(true);
       _addLogToConsole("sign out succeed");
     } on EMError catch (e) {
@@ -251,17 +291,21 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signUp() async {
-    if (_userId.isEmpty || _password.isEmpty) {
-      _addLogToConsole("username or password is null");
-      return;
-    }
+    await EMClient.getInstance
+        .changeAppId(newAppId: '2e597744c44e4eed9b7c7c64e2ba2874');
 
-    try {
-      await EMClient.getInstance.createAccount(_userId, _password);
-      _addLogToConsole("sign up succeed, username: $_userId");
-    } on EMError catch (e) {
-      _addLogToConsole("sign up failed, e: ${e.code} , ${e.description}");
-    }
+    // if (_userId.isEmpty || _password.isEmpty) {
+    //   _addLogToConsole("username or password is null");
+    //   return;
+    // }
+
+    // try {
+    //   _addLogToConsole("sign up...");
+    //   await EMClient.getInstance.createAccount(_userId, _password);
+    //   _addLogToConsole("sign up succeed, username: $_userId");
+    // } on EMError catch (e) {
+    //   _addLogToConsole("sign up failed, e: ${e.code} , ${e.description}");
+    // }
   }
 
   void _sendMessage() async {
@@ -274,17 +318,8 @@ class _MyHomePageState extends State<MyHomePage> {
       targetId: _chatId,
       content: _messageContent,
     );
-    msg.setMessageStatusCallBack(MessageStatusCallBack(
-      onSuccess: () {
-        _addLogToConsole("send message succeed");
-      },
-      onError: (e) {
-        _addLogToConsole(
-          "send message failed, code: ${e.code}, desc: ${e.description}",
-        );
-      },
-    ));
-    EMClient.getInstance.chatManager.sendMessage(msg);
+
+    await EMClient.getInstance.chatManager.sendMessage(msg);
   }
 
   void _addLogToConsole(String log) {

@@ -24,6 +24,10 @@ class ChatMethodKeys {
   static const String onMultiDeviceGroupEvent = "onMultiDeviceGroupEvent";
   static const String onMultiDeviceContactEvent = "onMultiDeviceContactEvent";
   static const String onMultiDeviceThreadEvent = "onMultiDeviceThreadEvent";
+  static const String onMultiDeviceRemoveMessagesEvent =
+      "onMultiDeviceRemoveMessagesEvent";
+  static const String onMultiDevicesConversationEvent =
+      "onMultiDevicesConversationEvent";
   static const String onConnected = "onConnected";
   static const String onDisconnected = "onDisconnected";
   static const String onUserDidLoginFromOtherDevice =
@@ -39,6 +43,8 @@ class ChatMethodKeys {
   static const String onSendDataToFlutter = "onSendDataToFlutter";
   static const String onTokenWillExpire = "onTokenWillExpire";
   static const String onTokenDidExpire = "onTokenDidExpire";
+  static const String onAppActiveNumberReachLimit =
+      'onAppActiveNumberReachLimit';
 
   /// EMContactManager methods
   static const String addContact = "addContact";
@@ -52,6 +58,11 @@ class ChatMethodKeys {
   static const String acceptInvitation = "acceptInvitation";
   static const String declineInvitation = "declineInvitation";
   static const String getSelfIdsOnOtherPlatform = "getSelfIdsOnOtherPlatform";
+  static const String getAllContacts = "getAllContacts";
+  static const String setContactRemark = "setContactRemark";
+  static const String getContact = "getContact";
+  static const String fetchAllContacts = "fetchAllContacts";
+  static const String fetchContacts = "fetchContacts";
 
   /// EMContactManager listener
   static const String onContactChanged = "onContactChanged";
@@ -70,12 +81,18 @@ class ChatMethodKeys {
   static const String updateChatMessage = "updateChatMessage";
   static const String downloadAttachment = "downloadAttachment";
   static const String downloadThumbnail = "downloadThumbnail";
+  static const String downloadMessageAttachmentInCombine =
+      "downloadMessageAttachmentInCombine";
+  static const String downloadMessageThumbnailInCombine =
+      "downloadMessageThumbnailInCombine";
   static const String importMessages = "importMessages";
   static const String loadAllConversations = "loadAllConversations";
   static const String getConversationsFromServer = "getConversationsFromServer";
   static const String deleteConversation = "deleteConversation";
 
   static const String fetchHistoryMessages = "fetchHistoryMessages";
+  static const String fetchHistoryMessagesByOptions =
+      "fetchHistoryMessagesByOptions";
   static const String searchChatMsgFromDB = "searchChatMsgFromDB";
   static const String getMessage = "getMessage";
   static const String asyncFetchGroupAcks = "asyncFetchGroupAcks";
@@ -92,6 +109,22 @@ class ChatMethodKeys {
   static const String fetchReactionDetail = "fetchReactionDetail";
   static const String reportMessage = "reportMessage";
 
+  static const String fetchConversationsFromServerWithPage =
+      "fetchConversationsFromServerWithPage";
+  static const String removeMessagesFromServerWithMsgIds =
+      "removeMessagesFromServerWithMsgIds";
+  static const String removeMessagesFromServerWithTs =
+      "removeMessagesFromServerWithTs";
+
+  static const String getConversationsFromServerWithCursor =
+      'getConversationsFromServerWithCursor';
+  static const String getPinnedConversationsFromServerWithCursor =
+      'getPinnedConversationsFromServerWithCursor';
+  static const String pinConversation = 'pinConversation';
+  static const String modifyMessage = 'modifyMessage';
+  static const String downloadAndParseCombineMessage =
+      'downloadAndParseCombineMessage';
+
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
@@ -107,6 +140,7 @@ class ChatMethodKeys {
   static const String onConversationHasRead = "onConversationHasRead";
 
   static const String onMessageReactionDidChange = "messageReactionDidChange";
+  static const String onMessageContentChanged = "onMessageContentChanged";
 
   /// EMMessage listener
   static const String onMessageProgressUpdate = "onMessageProgressUpdate";
@@ -124,9 +158,11 @@ class ChatMethodKeys {
   static const String markMessageAsRead = "markMessageAsRead";
   static const String syncConversationExt = "syncConversationExt";
   static const String removeMessage = "removeMessage";
+  static const String deleteMessageByIds = "deleteMessageByIds";
   static const String getLatestMessage = "getLatestMessage";
   static const String getLatestMessageFromOthers = "getLatestMessageFromOthers";
   static const String clearAllMessages = "clearAllMessages";
+  static const String deleteMessagesWithTs = "deleteMessagesWithTs";
   static const String insertMessage = "insertMessage";
   static const String appendMessage = "appendMessage";
   static const String updateConversationMessage = "updateConversationMessage";
@@ -136,6 +172,10 @@ class ChatMethodKeys {
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
   static const String loadMsgWithTime = "loadMsgWithTime";
   static const String messageCount = "messageCount";
+  static const String removeMsgFromServerWithMsgList =
+      "removeMsgFromServerWithMsgList";
+  static const String removeMsgFromServerWithTimeStamp =
+      "removeMsgFromServerWithTimeStamp";
 
   /// EMMessage method
   static const String getReactionList = "getReactionList";
@@ -180,14 +220,16 @@ class ChatMethodKeys {
   static const String muteAllChatRoomMembers = "muteAllChatRoomMembers";
   static const String unMuteAllChatRoomMembers = "unMuteAllChatRoomMembers";
 
+  static const String fetchChatRoomAttributes = "fetchChatRoomAttributes";
+  static const String setChatRoomAttributes = "setChatRoomAttributes";
+  static const String removeChatRoomAttributes = "removeChatRoomAttributes";
+
   /// EMChatRoomManagerListener
   static const String chatRoomChange = "onChatRoomChanged";
 
   /// EMGroupManager
   static const String getGroupWithId = "getGroupWithId";
   static const String getJoinedGroups = "getJoinedGroups";
-  static const String getGroupsWithoutPushNotification =
-      "getGroupsWithoutPushNotification";
   static const String getJoinedGroupsFromServer = "getJoinedGroupsFromServer";
   static const String getPublicGroupsFromServer = "getPublicGroupsFromServer";
   static const String createGroup = "createGroup";
@@ -236,6 +278,16 @@ class ChatMethodKeys {
   static const String declineJoinApplication = "declineJoinApplication";
   static const String acceptInvitationFromGroup = "acceptInvitationFromGroup";
   static const String declineInvitationFromGroup = "declineInvitationFromGroup";
+  static const String setMemberAttributesFromGroup =
+      "setMemberAttributesFromGroup";
+  static const String removeMemberAttributesFromGroup =
+      "removeMemberAttributesFromGroup";
+  static const String fetchMemberAttributesFromGroup =
+      "fetchMemberAttributesFromGroup";
+  static const String fetchMembersAttributesFromGroup =
+      "fetchMembersAttributesFromGroup";
+
+  static const String fetchJoinedGroupCount = "fetchJoinedGroupCount";
 
   /// EMGroupManagerListener
   static const String onGroupChanged = "onGroupChanged";
@@ -243,15 +295,8 @@ class ChatMethodKeys {
   /// EMPushManager
   static const String getImPushConfig = "getImPushConfig";
   static const String getImPushConfigFromServer = "getImPushConfigFromServer";
-  static const String enableOfflinePush = "enableOfflinePush";
-  static const String disableOfflinePush = "disableOfflinePush";
   static const String updateImPushStyle = "updateImPushStyle";
   static const String updatePushNickname = "updatePushNickname";
-
-  static const String updateGroupPushService = "updateGroupPushService";
-  static const String getNoPushGroups = "getNoPushGroups";
-  static const String updateUserPushService = "updateUserPushService";
-  static const String getNoPushUsers = "getNoPushUsers";
 
   static const String updateHMSPushToken = "updateHMSPushToken";
   static const String updateFCMPushToken = "updateFCMPushToken";
@@ -315,4 +360,71 @@ class ChatMethodKeys {
 
   /// HandleAction
   static const String startCallback = "startCallback";
+
+  /// 450
+  static const String getPinInfo = 'getPinInfo';
+  static const String pinnedMessages = 'pinnedMessages';
+  static const String onMessagePinChanged = 'onMessagePinChanged';
+  static const String addRemoteAndLocalConversationsMark =
+      'addRemoteAndLocalConversationsMark';
+  static const String deleteRemoteAndLocalConversationsMark =
+      'deleteRemoteAndLocalConversationsMark';
+  static const String fetchConversationsByOptions =
+      'fetchConversationsByOptions';
+  static const String deleteAllMessageAndConversation =
+      'deleteAllMessageAndConversation';
+  static const String pinMessage = 'pinMessage';
+  static const String unpinMessage = 'unpinMessage';
+  static const String fetchPinnedMessages = 'fetchPinnedMessages';
+
+  // 460
+  static const String onMessagesRecalledInfo = 'onMessagesRecalledInfo';
+
+  // 481
+  static const String conversationRemindType = 'conversationRemindType';
+  static const String conversationSearchMsgsByOptions =
+      'conversationSearchMsgsByOptions';
+  static const String conversationGetLocalMessageCount =
+      'conversationGetLocalMessageCount';
+  static const String conversationDeleteServerMessageWithIds =
+      'conversationDeleteServerMessageWithIds';
+  static const String conversationDeleteServerMessageWithTime =
+      'conversationDeleteServerMessageWithTime';
+
+  static const String searchMsgsByOptions = 'searchMsgsByOptions';
+  static const String syncSilentModels = 'syncSilentModels';
+  static const String clearAllGroupsFromDB = 'clearAllGroupsFromDB';
+  static const String updateUsingHttpsOnlySetting =
+      'updateUsingHttpsOnlySetting';
+  static const String updateLoginExtensionInfo = 'updateLoginExtensionInfo';
+  static const String updateDeleteMessagesWhenLeaveGroupSetting =
+      'updateDeleteMessagesWhenLeaveGroupSetting';
+  static const String updateDeleteMessageWhenLeaveRoomSetting =
+      'updateDeleteMessageWhenLeaveRoomSetting';
+  static const String updateRoomOwnerCanLeaveSetting =
+      'updateRoomOwnerCanLeaveSetting';
+  static const String updateAutoAcceptGroupInvitationSetting =
+      'updateAutoAcceptGroupInvitationSetting';
+  static const String updateAcceptInvitationAlways = 'acceptInvitationAlways';
+  static const String updateAutoDownloadAttachmentThumbnailSetting =
+      'updateAutoDownloadAttachmentThumbnailSetting';
+  static const String updateRequireAckSetting = 'updateRequireAckSetting';
+  static const String updateDeliveryAckSetting = 'updateDeliveryAckSetting';
+  static const String updateSortMessageByServerTimeSetting =
+      'updateSortMessageByServerTimeSetting';
+  static const String updateMessagesReceiveCallbackIncludeSendSetting =
+      'updateMessagesReceiveCallbackIncludeSendSetting';
+  static const String updateRegradeMessagesSetting =
+      'updateRegradeMessagesSetting';
+
+  static const String bindDeviceToken = 'bindDeviceToken';
+
+  // 4.10
+  static const String onOfflineMessageSyncStart = 'onOfflineMessageSyncStart';
+  static const String onOfflineMessageSyncFinish = 'onOfflineMessageSyncFinish';
+  static const String getMessageCount = 'getMessageCount';
+  static const String isMemberInGroupMuteList = 'isMemberInGroupMuteList';
+
+  // shenwang
+  static const String changeAppId = 'changeAppId';
 }
