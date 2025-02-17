@@ -12,6 +12,7 @@
 #import "SilentModeParamHelper.h"
 #import "ConversationHelper.h"
 #import "EnumTools.h"
+#import "Helper.h"
 
 @interface ConversationWrapper ()
 
@@ -326,7 +327,9 @@
         EMChatMessage *msg = [EMChatMessage fromJson:msgDict];
         
         EMError *error = nil;
-        [conversation updateMessageChange:msg error:&error];
+        EMChatMessage *dbMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+       [Helper mergeMessage:msg withDBMessage:dbMsg];
+       [conversation updateMessageChange:dbMsg error:&error];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:error
