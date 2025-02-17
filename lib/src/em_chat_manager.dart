@@ -3,8 +3,9 @@
 import "dart:async";
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'internal/inner_headers.dart';
+import 'models/conversation_fetch_options.dart';
+import 'models/fetch_message_options.dart';
 
 /// ~english
 /// The chat manager class, responsible for sending and receiving messages, loading and deleting conversations, and downloading attachments.

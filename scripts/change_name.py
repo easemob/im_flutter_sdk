@@ -251,6 +251,10 @@ SHENGWANG_CHAT_MAP = {
     "EMMessage":"ChatMessage",
 }
 
+SDK_CHAT_MAP = {
+    "import 'package:im_flutter_sdk/im_flutter_sdk.dart'":"import 'package:shengwang_chat_sdk/shengwang_chat_sdk.dart'",
+    "import 'package:im_flutter_sdk/src/tools/em_extension.dart'": "import 'package:shengwang_chat_sdk/src/tools/em_extension.dart'"
+}
 
 
 def copy_file_to_target_path(source_path, type):
@@ -293,19 +297,27 @@ def copy_file_to_target_path(source_path, type):
 def change_agorachat_name(path):
     change_sdk_pubspec_file(path, AGORA_CHAT_PACKAGE)
     change_example_main_file(path, AGORA_CHAT_PACKAGE, AGORA_CHAT_MAP)
+    change_import_header_file(path, AGORA_CHAT_PACKAGE, SDK_CHAT_MAP)
     change_example_pubspec_file(path, AGORA_CHAT_PACKAGE)
     change_ios_podspec_file(path, AGORA_CHAT_PACKAGE)
+    # 因为在dart层 shengwang 和 agora 都是一套代码，所以这里需要修改一次
+    chang_dart_file(path, SHENGWANG_DART_MAP)
     choice_api_reference_language(path, "english")
     lib_dir = os.path.join(path, 'lib')
     if os.path.exists(lib_dir):
-        for file_name in ['im_flutter_sdk.dart', 'shengwang_chat_sdk.dart']:
+        for file_name in ['im_flutter_sdk.dart']:
             file_path = os.path.join(lib_dir, file_name)
             if os.path.isfile(file_path):
-                os.remove(file_path)  # 删除文件
+                # 新文件名
+                new_file_name = 'agora_chat_sdk.dart'
+                new_file_path = os.path.join(lib_dir, new_file_name)
+                # 重命名文件
+                os.rename(file_path, new_file_path)  # 重命名文件
 
 def change_shengwang_name(path):
     change_sdk_pubspec_file(path, SHENGWANG_CHAT_PACKAGE)
     change_example_main_file(path, SHENGWANG_CHAT_PACKAGE, SHENGWANG_CHAT_MAP)
+    change_import_header_file(path, SHENGWANG_CHAT_PACKAGE, SDK_CHAT_MAP)
     change_example_pubspec_file(path, SHENGWANG_CHAT_PACKAGE)
     change_ios_podspec_file(path, SHENGWANG_CHAT_PACKAGE)
     switch_ios_import_header(path)
@@ -314,10 +326,14 @@ def change_shengwang_name(path):
     choice_api_reference_language(path, "chinese")
     lib_dir = os.path.join(path, 'lib')
     if os.path.exists(lib_dir):
-        for file_name in ['agora_chat_sdk.dart', 'im_flutter_sdk.dart']:
+        for file_name in ['im_flutter_sdk.dart']:
             file_path = os.path.join(lib_dir, file_name)
             if os.path.isfile(file_path):
-                os.remove(file_path)  # 删除文件
+                # 新文件名
+                new_file_name = 'shengwang_chat_sdk.dart'
+                new_file_path = os.path.join(lib_dir, new_file_name)
+                # 重命名文件
+                os.rename(file_path, new_file_path)  # 重命名文件
 
 def create_easemob_path(path):
     choice_api_reference_language(path, "chinese")
@@ -349,6 +365,21 @@ def change_sdk_pubspec_file(path, package_name: str):
     # 写回文件
     with open(yaml_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(new_lines))
+
+# 处理项目中引入头文件的部分
+def change_import_header_file(path, package_name: str, chat_map: dict[str:str]):
+    directory = os.path.join(path, 'lib')
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.dart'):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read()  # 读取文件内容
+                    for old_keyword, new_keyword in chat_map.items():
+                        content = content.replace(old_keyword, new_keyword)  # 替换关键字
+
+                    with open(file_path, 'w', encoding='utf-8') as file:
+                        file.write(content)  # 写回替换后的内容
 
 # 处理 example 目录下的 EM前缀为Map中的前缀
 def change_example_main_file(path, package_name: str, chat_map: dict[str:str]):

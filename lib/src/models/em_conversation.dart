@@ -1,8 +1,8 @@
 import 'dart:core';
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../internal/inner_headers.dart';
+
 
 /// ~english
 /// The conversation class, indicating a one-to-one chat, a group chat, or a conversation chat. It contains the messages that are sent and received within the conversation.

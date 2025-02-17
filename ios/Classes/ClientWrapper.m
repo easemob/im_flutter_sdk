@@ -882,6 +882,7 @@
 
 // shenwang
 - (void)changeAppId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+#if defined(AgoraChat)
     __weak typeof(self)weakSelf = self;
     NSString *appId = param[@"appId"];
     EMError *aError = [EMClient.sharedClient changeAppId:appId];
@@ -889,6 +890,7 @@
                   channelName:aChannelName
                         error:aError
                        object:@(!aError)];
+#endif
 }
 
 

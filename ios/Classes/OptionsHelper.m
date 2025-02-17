@@ -49,8 +49,10 @@
     if(aJson[@"appKey"] != nil) {
         options = [EMOptions optionsWithAppkey:aJson[@"appKey"]];
     }else {
+#if defined(AgoraChat)
         // shengwang
         options = [EMOptions optionsWithAppId:aJson[@"appId"]];
+#endif
     }
     options.isAutoLogin = [aJson[@"autoLogin"] boolValue];
     options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];

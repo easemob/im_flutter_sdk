@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/src/internal/inner_headers.dart';
+import '../internal/inner_headers.dart';
 
 class EMContact {
   final String userId;

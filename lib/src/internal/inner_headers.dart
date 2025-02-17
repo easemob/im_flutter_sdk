@@ -26,7 +26,10 @@ export '../models/em_push_configs.dart';
 export '../models/em_translate_language.dart';
 export '../models/em_userInfo.dart';
 export '../models/chat_silent_mode.dart';
-
+export '../models/recall_message_info.dart';
+export '../models/message_pin_info.dart';
+export '../models/login_extension_info.dart';
+export '../models/message_search_options.dart';
 export '../tools/em_extension.dart';
 export '../tools/em_progress_manager.dart';
 export '../tools/em_log.dart';
