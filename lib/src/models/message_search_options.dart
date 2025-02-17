@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import '../internal/inner_headers.dart';
 
 class MessageSearchOptions {
   const MessageSearchOptions({

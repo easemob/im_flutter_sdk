@@ -3,8 +3,9 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
 import 'internal/inner_headers.dart';
+import 'models/em_contact.dart';
 
 /// ~english
 /// The contact manager class, which manages chat contacts such as adding, deleting, retrieving, and modifying contacts.

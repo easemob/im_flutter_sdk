@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk/src/internal/inner_headers.dart';
+import '../internal/inner_headers.dart';
 
 /// ~english
 /// The parameter configuration class for pulling historical messages from the server.
