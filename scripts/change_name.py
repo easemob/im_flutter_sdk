@@ -338,12 +338,7 @@ def change_shengwang_name(path):
 
 def create_easemob_path(path):
     choice_api_reference_language(path, "chinese")
-    lib_dir = os.path.join(path, 'lib')
-    if os.path.exists(lib_dir):
-        for file_name in ['agora_chat_sdk.dart', 'shengwang_chat_sdk.dart']:
-            file_path = os.path.join(lib_dir, file_name)
-            if os.path.isfile(file_path):
-                os.remove(file_path)  # 删除文件
+
 
 
 # 修改 pubspec.yaml 文件中的 package 名称
