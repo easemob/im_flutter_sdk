@@ -5,13 +5,10 @@ import android.os.Looper;
 
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
-import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.util.EMLog;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.util.HashMap;
@@ -21,34 +18,29 @@ import java.util.Map;
 /**
  * ImFlutterSdkPlugin
  */
-public class ImFlutterSdkPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler {
+public class ImFlutterSdkPlugin implements FlutterPlugin {
 
     static final Handler handler = new Handler(Looper.getMainLooper());
 
-    private EMClientWrapper clientWrapper;
+    ClientWrapper clientWrapper;
 
     public ImFlutterSdkPlugin() {
     }
 
+     public void sendDataToFlutter(final Map data) {
+        if (clientWrapper != null) {
+            clientWrapper.sendDataToFlutter(data);
+        }
+    }
 
     @Override
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-        final MethodChannel channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "chat_client");
-        if (clientWrapper != null) {
-            clientWrapper.unRegisterEaseListener();
-        }
-        clientWrapper = new EMClientWrapper(flutterPluginBinding, "chat_client");
-        channel.setMethodCallHandler(clientWrapper);
+        clientWrapper = new ClientWrapper(flutterPluginBinding, "chat_client");
     }
 
     @Override
     public void onDetachedFromEngine(FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
-
-    }
-
-    @Override
-    public void onMethodCall(MethodCall call, MethodChannel.Result result) {
-
+        clientWrapper.unRegisterEaseListener();
     }
 }
 
@@ -84,7 +76,7 @@ class EMWrapperCallBack implements EMCallBack {
     public void onError(int code, String desc) {
         post(() -> {
             Map<String, Object> data = new HashMap<>();
-            data.put("error", EMErrorHelper.toJson(code, desc));
+            data.put("error", ErrorHelper.toJson(code, desc));
             EMLog.e("callback", desc);
             result.success(data);
         });
@@ -108,18 +100,17 @@ class EMDownloadCallback implements EMCallBack {
 
     @Override
     public void onSuccess() {
-        EMClientWrapper.getInstance().progressManager.sendDownloadSuccessToFlutter(fileId, savePath);
+
     }
 
     @Override
     public void onError(int code, String error) {
-        HyphenateException e = new HyphenateException(code, error);
-        EMClientWrapper.getInstance().progressManager.sendDownloadErrorToFlutter(fileId, e);
+
     }
 
     @Override
     public void onProgress(int progress, String status) {
-        EMClientWrapper.getInstance().progressManager.sendDownloadProgressToFlutter(fileId, progress);
+
     }
 }
 
@@ -148,7 +139,7 @@ class EMValueWrapperCallBack<T> implements EMValueCallBack<T> {
     public void onError(int code, String desc) {
         post(() -> {
             Map<String, Object> data = new HashMap<>();
-            data.put("error", EMErrorHelper.toJson(code, desc));
+            data.put("error", ErrorHelper.toJson(code, desc));
             EMLog.e("callback", "onError");
             result.success(data);
         });
