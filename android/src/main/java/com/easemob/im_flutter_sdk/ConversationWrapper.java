@@ -263,11 +263,11 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void updateConversationMessage(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-        JSONObject msg = params.getJSONObject("msg");
-        EMMessage message = MessageHelper.fromJson(msg);
-
+        EMMessage msg = MessageHelper.fromJson(params.getJSONObject("msg"));
+        EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
+        HelpTool.mergeMessage(msg, dbMsg);
         asyncRunnable(()->{
-            conversation.updateMessage(message);
+            conversation.updateMessage(dbMsg);
             onSuccess(result, channelName, true);
         });
     }

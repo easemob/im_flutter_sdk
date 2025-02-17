@@ -20,6 +20,7 @@
 #import "ConversationFilterHelper.h"
 #import "RecallInfoHelper.h"
 #import "EnumTools.h"
+#import "Helper.h"
 
 @interface ChatManagerWrapper () <EMChatManagerDelegate>
 @property (nonatomic, strong) FlutterMethodChannel *messageChannel;
@@ -480,7 +481,7 @@
     EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
     
     EMChatMessage *dbMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
-    [self mergeMessage:msg withDBMessage:dbMsg];
+    [Helper mergeMessage:msg withDBMessage:dbMsg];
     [EMClient.sharedClient.chatManager updateMessage:dbMsg
                                           completion:^(EMChatMessage *aMessage, EMError *aError)
      {
@@ -1490,113 +1491,6 @@
 
 - (void)messageAttachmentStatusDidChange:(EMChatMessage *)aMessage error:(EMError *)aError {
     
-}
-
-- (void)mergeMessageBody:(EMMessageBody *)msgBody
-       withDBMessageBody:(EMMessageBody *)dbMsgBody {
-    if (msgBody.type == EMMessageBodyTypeText) {
-        EMTextMessageBody *body = (EMTextMessageBody *)msgBody;
-        EMTextMessageBody *dbBody = (EMTextMessageBody *)dbMsgBody;
-        dbBody.targetLanguages = body.targetLanguages;
-    } else if (msgBody.type == EMMessageBodyTypeImage) {
-        EMImageMessageBody *body = (EMImageMessageBody *)msgBody;
-        EMImageMessageBody *dbBody = (EMImageMessageBody *)dbMsgBody;
-        dbBody.displayName = body.displayName;
-        dbBody.localPath = body.localPath;
-        dbBody.remotePath = body.remotePath;
-        dbBody.secretKey = body.secretKey;
-        dbBody.fileLength = body.fileLength;
-        dbBody.downloadStatus = body.downloadStatus;
-        dbBody.size = body.size;
-        dbBody.compressionRatio = body.compressionRatio;
-        dbBody.thumbnailDisplayName = body.thumbnailDisplayName;
-        dbBody.thumbnailLocalPath = body.thumbnailLocalPath;
-        dbBody.thumbnailRemotePath = body.thumbnailRemotePath;
-        dbBody.thumbnailSecretKey = body.thumbnailSecretKey;
-        dbBody.thumbnailSize = body.thumbnailSize;
-        dbBody.thumbnailFileLength = body.thumbnailFileLength;
-        dbBody.thumbnailDownloadStatus = body.thumbnailDownloadStatus;
-    } else if (msgBody.type == EMMessageBodyTypeVideo) {
-        EMVideoMessageBody *body = (EMVideoMessageBody *)msgBody;
-        EMVideoMessageBody *dbBody = (EMVideoMessageBody *)dbMsgBody;
-        dbBody.displayName = body.displayName;
-        dbBody.localPath = body.localPath;
-        dbBody.remotePath = body.remotePath;
-        dbBody.secretKey = body.secretKey;
-        dbBody.fileLength = body.fileLength;
-        dbBody.downloadStatus = body.downloadStatus;
-        dbBody.duration = body.duration;
-        dbBody.thumbnailLocalPath = body.thumbnailLocalPath;
-        dbBody.thumbnailRemotePath = body.thumbnailRemotePath;
-        dbBody.thumbnailSecretKey = body.thumbnailSecretKey;
-        dbBody.thumbnailSize = body.thumbnailSize;
-        dbBody.thumbnailDownloadStatus = body.thumbnailDownloadStatus;
-    } else if (msgBody.type == EMMessageBodyTypeLocation) {
-        EMLocationMessageBody *body = (EMLocationMessageBody *)msgBody;
-        EMLocationMessageBody *dbBody = (EMLocationMessageBody *)dbMsgBody;
-        dbBody.latitude = body.latitude;
-        dbBody.longitude = body.longitude;
-        dbBody.address = body.address;
-        dbBody.buildingName = body.buildingName;
-    } else if (msgBody.type == EMMessageBodyTypeVoice) {
-        EMVoiceMessageBody *body = (EMVoiceMessageBody *)msgBody;
-        EMVoiceMessageBody *dbBody = (EMVoiceMessageBody *)dbMsgBody;
-        dbBody.displayName = body.displayName;
-        dbBody.localPath = body.localPath;
-        dbBody.remotePath = body.remotePath;
-        dbBody.secretKey = body.secretKey;
-        dbBody.fileLength = body.fileLength;
-        dbBody.downloadStatus = body.downloadStatus;
-        dbBody.duration = body.duration;
-    } else if (msgBody.type == EMMessageBodyTypeFile) {
-        EMFileMessageBody *body = (EMFileMessageBody *)msgBody;
-        EMFileMessageBody *dbBody = (EMFileMessageBody *)dbMsgBody;
-        dbBody.displayName = body.displayName;
-        dbBody.localPath = body.localPath;
-        dbBody.remotePath = body.remotePath;
-        dbBody.secretKey = body.secretKey;
-        dbBody.fileLength = body.fileLength;
-        dbBody.downloadStatus = body.downloadStatus;
-    } else if (msgBody.type == EMMessageBodyTypeCmd) {
-        EMCmdMessageBody *body = (EMCmdMessageBody *)msgBody;
-        EMCmdMessageBody *dbBody = (EMCmdMessageBody *)dbMsgBody;
-        dbBody.action = body.action;
-        dbBody.isDeliverOnlineOnly = body.isDeliverOnlineOnly;
-    } else if (msgBody.type == EMMessageBodyTypeCustom) {
-        EMCustomMessageBody *body = (EMCustomMessageBody *)msgBody;
-        EMCustomMessageBody *dbBody = (EMCustomMessageBody *)dbMsgBody;
-        dbBody.event = body.event;
-        dbBody.customExt = body.customExt;
-    } else if (msgBody.type == EMMessageBodyTypeCombine) {
-        EMCombineMessageBody *body = (EMCombineMessageBody *)msgBody;
-        EMCombineMessageBody *dbBody = (EMCombineMessageBody *)dbMsgBody;
-        dbBody.title = body.title;
-        dbBody.summary = body.summary;
-        dbBody.compatibleText = body.compatibleText;
-    }
-}
-
-- (void)mergeMessage:(EMChatMessage *)msg withDBMessage:(EMChatMessage *)dbMsg {
-    //    dbMsg.messageId = msg.messageId;
-    //    dbMsg.conversationId = msg.conversationId;
-    //    dbMsg.direction = msg.direction;
-    //    dbMsg.from = msg.from;
-    //    dbMsg.to = msg.to;
-    //    dbMsg.timestamp = msg.timestamp;
-    dbMsg.localTime = msg.localTime;
-    //    dbMsg.chatType = msg.chatType;
-    dbMsg.status = msg.status;
-    //    dbMsg.isReadAcked = msg.isReadAcked;
-    dbMsg.isChatThreadMessage = msg.isChatThreadMessage;
-    dbMsg.isNeedGroupAck = msg.isNeedGroupAck;
-    //    dbMsg.isDeliverAcked = msg.isDeliverAcked;
-    dbMsg.isRead = msg.isRead;
-    dbMsg.isListened = msg.isListened;
-    dbMsg.ext = msg.ext;
-    //    dbMsg.priority = msg.priority;
-    dbMsg.deliverOnlineOnly = msg.deliverOnlineOnly;
-    dbMsg.receiverList = msg.receiverList;
-    [self mergeMessageBody:msg.body withDBMessageBody:dbMsg.body];
 }
 
 

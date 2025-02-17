@@ -6,7 +6,7 @@
 //
 
 
-#define AgoraChat
+//#define AgoraChat
 
 #if defined(AgoraChat)
 

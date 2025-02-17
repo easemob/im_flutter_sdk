@@ -457,15 +457,13 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
     private void updateChatMessage(JSONObject params, String channelName, Result result) throws JSONException {
         EMMessage msg = MessageHelper.fromJson(params.getJSONObject("message"));
-        EMMessage dbMsg =
-                EMClient.getInstance().chatManager().getMessage(params.getJSONObject("message").getString("msgId"));
-        this.mergeMessage(msg, dbMsg);
+        EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
+        HelpTool.mergeMessage(msg, dbMsg);
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().updateMessage(dbMsg);
             onSuccess(result, channelName, MessageHelper.toJson(dbMsg));
         });
     }
-
     private void importMessages(JSONObject params, String channelName, Result result) throws JSONException {
         JSONArray ary = params.getJSONArray("messages");
         List<EMMessage> messages = new ArrayList<>();
@@ -1241,116 +1239,6 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
         EMClient.getInstance().chatManager().addMessageListener(messageListener);
         EMClient.getInstance().chatManager().addConversationListener(conversationListener);
-    }
-
-
-    protected void mergeMessageBody(EMMessageBody msgBody, EMMessage dbMsg) throws JSONException {
-        if (dbMsg.getType() == EMMessage.Type.TXT) {
-            EMTextMessageBody text = (EMTextMessageBody)msgBody;
-            EMTextMessageBody dbText = (EMTextMessageBody)dbMsg.getBody();
-            dbText.setMessage(text.getMessage());
-            dbText.setTargetLanguages(text.getTargetLanguages());
-            dbMsg.setBody(dbText);
-        } else if (dbMsg.getType() == EMMessage.Type.CMD) {
-            EMCmdMessageBody cmd = (EMCmdMessageBody)msgBody;
-            EMCmdMessageBody dbCmd = (EMCmdMessageBody)dbMsg.getBody();
-            dbCmd.deliverOnlineOnly(cmd.isDeliverOnlineOnly());
-            dbMsg.setBody(dbCmd);
-        } else if (dbMsg.getType() == EMMessage.Type.IMAGE) {
-            EMImageMessageBody image = (EMImageMessageBody)msgBody;
-            EMImageMessageBody dbImage = (EMImageMessageBody)dbMsg.getBody();
-            dbImage.setFileName(image.getFileName());
-            dbImage.setLocalUrl(image.getLocalUrl());
-            dbImage.setRemoteUrl(image.getRemoteUrl());
-            dbImage.setSecret(image.getSecret());
-            dbImage.setFileLength(image.getFileSize());
-            dbImage.setDownloadStatus(image.downloadStatus());
-            dbImage.setSendOriginalImage(image.isSendOriginalImage());
-            dbImage.setThumbnailLocalPath(image.thumbnailLocalPath());
-            dbImage.setThumbnailDownloadStatus(image.thumbnailDownloadStatus());
-            dbImage.setThumbnailUrl(image.getThumbnailUrl());
-            dbMsg.setBody(dbImage);
-        } else if (dbMsg.getType() == EMMessage.Type.VOICE) {
-            EMVoiceMessageBody voice = (EMVoiceMessageBody)msgBody;
-            EMVoiceMessageBody dbVoice = (EMVoiceMessageBody)dbMsg.getBody();
-            dbVoice.setFileName(voice.getFileName());
-            dbVoice.setLocalUrl(voice.getLocalUrl());
-            dbVoice.setRemoteUrl(voice.getRemoteUrl());
-            dbVoice.setSecret(voice.getSecret());
-            dbVoice.setFileLength(voice.getFileSize());
-            dbVoice.setDownloadStatus(voice.downloadStatus());
-            dbMsg.setBody(dbVoice);
-        } else if (dbMsg.getType() == EMMessage.Type.VIDEO) {
-            EMVideoMessageBody video = (EMVideoMessageBody)msgBody;
-            EMVideoMessageBody dbVideo = (EMVideoMessageBody)dbMsg.getBody();
-            dbVideo.setFileName(video.getFileName());
-            dbVideo.setLocalUrl(video.getLocalUrl());
-            dbVideo.setRemoteUrl(video.getRemoteUrl());
-            dbVideo.setSecret(video.getSecret());
-            dbVideo.setDownloadStatus(video.downloadStatus());
-            dbVideo.setVideoFileLength(video.getVideoFileLength());
-            dbVideo.setThumbnailUrl(video.getThumbnailUrl());
-            dbVideo.setThumbnailSize(video.getThumbnailWidth(), video.getThumbnailHeight());
-            dbVideo.setLocalThumb(video.getLocalThumb());
-            dbVideo.setThumbnailSecret(video.getThumbnailSecret());
-            dbVideo.setThumbnailDownloadStatus(video.thumbnailDownloadStatus());
-            dbMsg.setBody(dbVideo);
-        } else if (dbMsg.getType() == EMMessage.Type.LOCATION) {
-            EMLocationMessageBody location = (EMLocationMessageBody)msgBody;
-            dbMsg.setBody(location);
-        } else if (dbMsg.getType() == EMMessage.Type.FILE) {
-            EMNormalFileMessageBody file = (EMNormalFileMessageBody)msgBody;
-            EMFileMessageBody dbFile = (EMFileMessageBody)dbMsg.getBody();
-            dbFile.setFileName(file.getFileName());
-            dbFile.setLocalUrl(file.getLocalUrl());
-            dbFile.setRemoteUrl(file.getRemoteUrl());
-            dbFile.setSecret(file.getSecret());
-            dbFile.setDownloadStatus(file.downloadStatus());
-            dbFile.setFileLength(file.getFileSize());
-            dbMsg.setBody(dbFile);
-        } else if (dbMsg.getType() == EMMessage.Type.CUSTOM) {
-            EMCustomMessageBody custom = (EMCustomMessageBody)msgBody;
-            dbMsg.setBody(custom);
-        } else if (dbMsg.getType() == EMMessage.Type.COMBINE) {
-            EMCombineMessageBody combine = (EMCombineMessageBody)msgBody;
-            dbMsg.setBody(combine);
-        }
-    }
-
-    protected void mergeMessage(EMMessage msg, EMMessage dbMsg) throws JSONException {
-        dbMsg.setStatus(msg.status());
-        dbMsg.setLocalTime(msg.localTime());
-        dbMsg.setIsNeedGroupAck(msg.isNeedGroupAck());
-        dbMsg.setIsChatThreadMessage(msg.isChatThreadMessage());
-        dbMsg.setUnread(msg.isUnread());
-        dbMsg.setListened(msg.isListened());
-        dbMsg.setReceiverList(msg.receiverList());
-        Map<String, Object> list = msg.getAttributes();
-        if (!list.isEmpty()) {
-            JSONObject jsonParams = new JSONObject(list);
-            for (Map.Entry<String, Object> entry : list.entrySet()) {
-                String key = entry.getKey();
-                Object result = entry.getValue();
-                if (result.getClass().getSimpleName().equals("Integer")) {
-                    dbMsg.setAttribute(key, (Integer)result);
-                } else if (result.getClass().getSimpleName().equals("Boolean")) {
-                    dbMsg.setAttribute(key, (Boolean)result);
-                } else if (result.getClass().getSimpleName().equals("Long")) {
-                    dbMsg.setAttribute(key, (Long)result);
-                } else if (result.getClass().getSimpleName().equals("Double") ||
-                        result.getClass().getSimpleName().equals("Float")) {
-                    dbMsg.setAttribute(key, (Double)result);
-                } else if (result.getClass().getSimpleName().equals("JSONObject")) {
-                    dbMsg.setAttribute(key, (JSONObject)result);
-                } else if (result.getClass().getSimpleName().equals("JSONArray")) {
-                    dbMsg.setAttribute(key, (JSONArray)result);
-                } else {
-                    dbMsg.setAttribute(key, jsonParams.getString(key));
-                }
-            }
-        }
-
-        this.mergeMessageBody(msg.getBody(), dbMsg);
     }
 
     // 481

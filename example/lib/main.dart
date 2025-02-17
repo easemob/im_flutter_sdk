@@ -9,19 +9,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   assert(appKey.isNotEmpty, "appKey is empty");
 
-  // EMOptions options = EMOptions.withAppKey(
-  //   appKey,
-  //   autoLogin: false,
-  //   debugMode: true,
-  //   usingHttpsOnly: false,
-  // );
-
-  EMOptions options = EMOptions.withAppId(
-    'ba85504621304fb894790708d304794f',
+  EMOptions options = EMOptions.withAppKey(
+    appKey,
     autoLogin: false,
     debugMode: true,
     usingHttpsOnly: false,
   );
+
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }
@@ -164,9 +158,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     Platform.isAndroid
-        ? EMClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID")
-        :
-    EMClient.getInstance.chatManager.removeMessageEvent("UNIQUE_HANDLER_ID");
+        ? EMClient.getInstance.chatManager
+            .removeMessageEvent("UNIQUE_HANDLER_ID")
+        : EMClient.getInstance.chatManager
+            .removeMessageEvent("UNIQUE_HANDLER_ID");
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }

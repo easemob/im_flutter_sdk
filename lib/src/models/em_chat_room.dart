@@ -28,25 +28,32 @@ class EMChatRoom {
     this.muteList,
     this.isAllMemberMuted,
     this.permissionType = EMChatRoomPermissionType.None,
+    this.isInWhitelist = false,
+    this.createTimestamp = 0,
+    this.muteExpireTimestamp = 0,
   });
 
   String toString() => toJson().toString();
 
   factory EMChatRoom.fromJson(Map<String, dynamic> map) {
     return EMChatRoom._private(
-        roomId: map["roomId"],
-        name: map["name"],
-        description: map["desc"],
-        owner: map["owner"],
-        memberCount: map["memberCount"],
-        maxUsers: map["maxUsers"],
-        adminList: map.getList("adminList"),
-        memberList: map.getList("memberList"),
-        blockList: map.getList("blockList"),
-        muteList: map.getList("muteList"),
-        announcement: map["announcement"],
-        permissionType: EMChatRoomPermissionType.values[map["permissionType"]],
-        isAllMemberMuted: map.boolValue("isAllMemberMuted"));
+      roomId: map["roomId"],
+      name: map["name"],
+      description: map["desc"],
+      owner: map["owner"],
+      memberCount: map["memberCount"],
+      maxUsers: map["maxUsers"],
+      adminList: map.getList("adminList"),
+      memberList: map.getList("memberList"),
+      blockList: map.getList("blockList"),
+      muteList: map.getList("muteList"),
+      announcement: map["announcement"],
+      permissionType: EMChatRoomPermissionType.values[map["permissionType"]],
+      isAllMemberMuted: map.boolValue("isAllMemberMuted"),
+      createTimestamp: map["createTimestamp"],
+      isInWhitelist: map.boolValue("isInWhitelist"),
+      muteExpireTimestamp: map["muteExpireTimestamp"],
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -64,6 +71,9 @@ class EMChatRoom {
     data.putIfNotNull("announcement", announcement);
     data.putIfNotNull("isAllMemberMuted", isAllMemberMuted);
     data['permissionType'] = permissionType.index;
+    data.putIfNotNull("isInWhitelist", isInWhitelist);
+    data['createTimestamp'] = createTimestamp;
+    data['muteExpireTimestamp'] = muteExpireTimestamp;
 
     return data;
   }
@@ -144,17 +154,16 @@ class EMChatRoom {
   final String? announcement;
 
   /// ~english
-  /// Gets the number of online members from the memory.
-  ///
-  /// **Note**
-  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
+  /// This includes the chat room owner, administrators, and regular members.
+  /// You can get this information after joining the chat room.
+  /// This property is updated when members join or leave the chat room.
   /// ~end
   ///
   /// ~chinese
-  /// 从内存中获取聊天室在线用户数量。
-  ///
-  /// **Note**
-  /// 如需最新数据，需从服务器获取：[EMChatRoomManager.fetchChatRoomInfoFromServer]。
+  /// 聊天室的当前人数
+  /// 包括聊天室所有者、管理员与普通成员
+  /// 加入聊天室即可获取
+  /// 当聊天室有成员进出时，此属性会更新。
   /// ~end
   final int? memberCount;
 
@@ -234,19 +243,14 @@ class EMChatRoom {
   final List<String>? muteList;
 
   /// ~english
-  /// Checks whether all members are muted in the chat room from the memory.
-  ///
-  /// **Note**
-  /// To get the correct value, ensure that you call [EMChatRoomManager.fetchChatRoomInfoFromServer] before calling this method.
+  /// Checks whether all members are muted,This property is available once join the chat room.
+  /// After joining the chat room, when you receive a callback for muting or unmuting all members, this property will be updated.
   /// ~end
   ///
   /// ~chinese
-  /// 从内存中查看是否在全员禁言状态。
-  /// - `true`：开启全员禁言。
-  /// - `false`：关闭全员禁言。
-  ///
-  /// **Note**
-  /// 如果需要获取最新值，请调用 [EMChatRoomManager.fetchChatRoomInfoFromServer]。
+  /// 聊天室成员是否全部被禁言。
+  /// 聊天室成员是否全部被禁言,加入聊天室即可获取。
+  /// 加入聊天室后，收到一键禁言/取消禁言的回调时，该状态会更新。
   /// ~end
   final bool? isAllMemberMuted;
 
@@ -264,4 +268,53 @@ class EMChatRoom {
   /// 如果需要获取最新值，请调用 [EMChatRoomManager.fetchChatRoomInfoFromServer]。
   /// ~end
   final EMChatRoomPermissionType permissionType;
+
+  /// ~english
+  /// Gets the timestamp(ms) when the chat room was created.
+  /// This property is available once join the chat room.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取聊天室创建时间戳（毫秒）。
+  /// 只有加入聊天室后可获取。
+  /// ~end
+  final int createTimestamp;
+
+  /// ~english
+  /// Current user is in allow list or not.
+  /// This property is available once join the chat room.
+  /// This property will be updated when current user is added or removed from the white list.
+  /// - `true`: In white list.
+  /// - `false`: Not in white list.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前登录用户是否在白名单中。
+  /// 加入聊天室后可获取。
+  /// 当前用户被加入或者被移除白名单时，此属性会发生变化。
+  /// - `true`: 在白名单中。
+  /// - `false`: 不在白名单中。
+  /// ~end
+  final bool isInWhitelist;
+
+  ///
+  /// ~english
+  /// Gets the timestamp(ms) when Current user will be unmuted.
+  ///
+  /// This property is available once join the chat room.
+  /// This property will be updated when current use is muted or unmuted.
+  ///
+  /// - Current use is not muted if it is zero.
+  /// - Means cannot get MuteUntilTimeStamp correctly if it is be set with -1;
+  /// ~end
+  /// ~chinese
+  /// 获取当前被禁言截止时间戳（毫秒）。
+  ///
+  /// 加入聊天室后可获取。
+  /// 当前用户被禁言或者被解除禁言时，此属性会被更新。
+  ///
+  /// - 当取值为0，表示当前用户未被禁言。
+  /// - 当取值为-1，表示未能获取到用户被禁言时间戳。
+  /// ~end
+  final int muteExpireTimestamp;
 }

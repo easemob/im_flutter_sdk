@@ -320,6 +320,9 @@ class ChatRoomHelper {
         data.put("isAllMemberMuted", chatRoom.isAllMemberMuted());
         data.put("announcement", chatRoom.getAnnouncement());
         data.put("permissionType", EnumTools.chatRoomPermissionTypeToInt(chatRoom.getChatRoomPermissionType()));
+        data.put("createTimestamp", chatRoom.getCreateTimestamp());
+        data.put("muteExpireTimestamp", chatRoom.getMuteExpireTimestamp());
+        data.put("isInWhitelist", chatRoom.isInWhitelist());
 
         return data;
     }
