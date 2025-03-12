@@ -738,7 +738,7 @@ class EMChatRoomEventHandler {
   /// ~end
   final void Function(
     String roomId,
-    String announcement,
+    String? announcement,
   )? onAnnouncementChangedFromChatRoom;
 
   /// ~english
@@ -1287,7 +1287,7 @@ class EMGroupEventHandler {
   /// ~end
   final void Function(
     String groupId,
-    String announcement,
+    String? announcement,
   )? onAnnouncementChangedFromGroup;
 
   /// ~english

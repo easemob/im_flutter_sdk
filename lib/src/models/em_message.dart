@@ -983,7 +983,6 @@ class EMMessage {
       case MessageType.COMBINE:
         body = EMCombineMessageBody.fromJson(map: map);
         break;
-      default:
     }
 
     return body;

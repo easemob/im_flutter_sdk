@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -103,6 +104,8 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
                 setChatRoomAttributes(param, call.method, result);
             } else if (MethodKey.removeChatRoomAttributes.equals(call.method)){
                 removeChatRoomAttributes(param, call.method, result);
+            } else if (MethodKey.isMemberInChatRoomMuteList.equals(call.method)){
+                isMemberInChatRoomMuteList(param, call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }
@@ -763,25 +766,10 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
                 );
 
             }
-
             @Override
-            public void onMuteListAdded(String s, List<String> list, long l) {
+            public void onMuteListAdded(final String chatRoomId, final List<String> mutes, final long expireTime) {
 
             }
-
-//            @Override
-//            public void onMuteListAdded(String chatRoomId, List<String> mutes, long expireTime) {
-//                EMListenerHandle.getInstance().addHandle(
-//                        ()-> {
-//                            Map<String, Object> data = new HashMap<>();
-//                            data.put("roomId", chatRoomId);
-//                            data.put("mutes", mutes);
-//                            data.put("expireTime", String.valueOf(expireTime));
-//                            data.put("type", "onRoomMuteListAdded");
-//                            post(() -> channel.invokeMethod(EMSDKMethod.chatRoomChange, data));
-//                        }
-//                );
-//            }
 
             @Override
             public void onMuteListAdded(String chatRoomId, Map<String,Long> muteInfo) {
@@ -912,5 +900,16 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
     @Override
     public void unRegisterEaseListener() {
         EMClient.getInstance().chatroomManager().removeChatRoomListener(chatRoomChangeListener);
+    }
+
+    // 4.12.1
+    private void isMemberInChatRoomMuteList(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException{
+        String groupId = param.getString("roomId");
+        EMClient.getInstance().chatroomManager().asyncCheckIfInMuteList(groupId, new EMValueWrapperCallBack<Boolean>(result, channelName) {
+            @Override
+            public void onSuccess(Boolean object) {
+                updateObject(object);
+            }
+        });
     }
 }

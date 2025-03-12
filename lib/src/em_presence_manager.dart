@@ -19,6 +19,7 @@ class EMPresenceManager {
 
   EMPresenceManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onPresenceStatusChanged) {
         return _presenceChange(argMap!);

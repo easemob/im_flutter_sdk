@@ -458,6 +458,10 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     private void updateChatMessage(JSONObject params, String channelName, Result result) throws JSONException {
         EMMessage msg = MessageHelper.fromJson(params.getJSONObject("message"));
         EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
+        if(dbMsg == null) {
+            onError(result, new HyphenateException(500, "The message is invalid."));
+            return;
+        }
         HelpTool.mergeMessage(msg, dbMsg);
         asyncRunnable(() -> {
             EMClient.getInstance().chatManager().updateMessage(dbMsg);

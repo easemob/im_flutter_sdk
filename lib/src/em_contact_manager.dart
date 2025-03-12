@@ -21,6 +21,7 @@ class EMContactManager {
 
   EMContactManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onContactChanged) {
         return _onContactChanged(argMap!);

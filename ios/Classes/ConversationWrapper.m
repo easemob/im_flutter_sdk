@@ -328,6 +328,13 @@
         
         EMError *error = nil;
         EMChatMessage *dbMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
+        if(dbMsg == nil) {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:[EMError errorWithDescription:@"The message is invalid." code:EMErrorMessageInvalid]
+                               object:nil];
+            return;
+        }
        [Helper mergeMessage:msg withDBMessage:dbMsg];
        [conversation updateMessageChange:dbMsg error:&error];
         [weakSelf wrapperCallBack:result

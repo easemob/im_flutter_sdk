@@ -427,4 +427,7 @@ class ChatMethodKeys {
 
   // shenwang
   static const String changeAppId = 'changeAppId';
+
+  // 4.12.1
+  static const String isMemberInChatRoomMuteList = "isMemberInChatRoomMuteList";
 }

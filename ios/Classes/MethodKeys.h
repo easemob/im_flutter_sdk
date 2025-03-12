@@ -390,6 +390,8 @@ static NSString *const onOfflineMessageSyncFinish = @"onOfflineMessageSyncFinish
 static NSString *const getMessageCount = @"getMessageCount";
 static NSString *const isMemberInGroupMuteList = @"isMemberInGroupMuteList";
 
-
 // shengwang
 static NSString *const changeAppId = @"changeAppId";
+
+// 4.12.1
+static NSString *const isMemberInChatRoomMuteList = @"isMemberInChatRoomMuteList";
