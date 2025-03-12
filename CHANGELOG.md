@@ -1,3 +1,12 @@
+## 4.12.1
+
+- 修复 安卓 `EMConversation.marks` 获取不到的问题；
+- 修复 安卓 `EMGroupManager.fetchMemberAttributes` 获取不准的问题；
+- 修复 聊天室/群组 收到的 announcement 回调为空时的崩溃问题；
+- 修复 图片/视频 消息的缩略图状态；
+- 添加 更新消息 `updateMessage` 时如消息不存在的异常抛出；
+- 添加 获取自己是否在聊天室禁言列表中的api `EMChatRoomManager.isMemberInChatRoomMuteList`;
+
 ## 4.12.0
 
 #### 新增特性
