@@ -29,6 +29,7 @@ class EMGroupManager {
 
   EMGroupManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.onGroupChanged) {
         return _onGroupChanged(argMap);
@@ -2175,7 +2176,7 @@ class EMGroupManager {
           break;
         case EMGroupChangeEvent.ON_ANNOUNCEMENT_CHANGED:
           String groupId = map['groupId'];
-          String announcement = map['announcement'];
+          String? announcement = map['announcement'];
           element.onAnnouncementChangedFromGroup?.call(groupId, announcement);
           break;
         case EMGroupChangeEvent.ON_SHARED_FILE_ADDED:

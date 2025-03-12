@@ -35,6 +35,7 @@ class EMChatRoomManager {
 
   EMChatRoomManager() {
     _channel.setMethodCallHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
       Map? argMap = call.arguments;
       if (call.method == ChatMethodKeys.chatRoomChange) {
         return _chatRoomChange(argMap!);
@@ -117,7 +118,7 @@ class EMChatRoomManager {
           break;
         case EMChatRoomEvent.ON_ANNOUNCEMENT_CHANGED:
           String roomId = event['roomId'];
-          String announcement = event['announcement'];
+          String? announcement = event['announcement'];
           item.onAnnouncementChangedFromChatRoom?.call(roomId, announcement);
           break;
         case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
@@ -1493,6 +1494,18 @@ class EMChatRoomManager {
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.removeChatRoomAttributes]
           ?.cast<String, int>();
+    } on EMError catch (e) {
+      throw e;
+    }
+  }
+
+  Future<bool> isMemberInChatRoomMuteList(String roomId) async {
+    Map req = {"roomId": roomId};
+    Map result = await _channel.invokeMethod(
+        ChatMethodKeys.isMemberInChatRoomMuteList, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isMemberInChatRoomMuteList);
     } on EMError catch (e) {
       throw e;
     }

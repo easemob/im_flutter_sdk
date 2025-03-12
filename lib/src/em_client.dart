@@ -82,6 +82,7 @@ class EMClient {
   void _addNativeMethodCallHandler() {
     ClientChannel.setMethodCallHandler((MethodCall call) async {
       Map<String, dynamic>? argMap = call.arguments;
+      EMLog.d("${call.method}: arguments: $argMap");
       if (call.method == ChatMethodKeys.onConnected) {
         return _onConnected();
       } else if (call.method == ChatMethodKeys.onDisconnected) {

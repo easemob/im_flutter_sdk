@@ -35,6 +35,7 @@ class EMChatManager {
 
   EMChatManager() {
     ChatChannel.setMethodCallHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
       } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {

@@ -806,6 +806,9 @@ class GroupAckHelper {
         if (json.has("thumbnailSecret")){
             body.setThumbnailSecret(json.getString("thumbnailSecret"));
         }
+        if(json.has("thumbnailStatus")) {
+            body.setThumbnailDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("thumbnailStatus")));
+        }
         if (json.has("fileSize")){
             body.setFileLength(json.getInt("fileSize"));
         }
@@ -857,6 +860,9 @@ class GroupAckHelper {
         }
         if (json.has("thumbnailSecret")){
             body.setThumbnailSecret(json.getString("thumbnailSecret"));
+        }
+        if(json.has("thumbnailStatus")) {
+            body.setThumbnailDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("thumbnailStatus")));
         }
         if (json.has("displayName")){
             body.setFileName(json.getString("displayName"));
@@ -1010,11 +1016,11 @@ class ConversationHelper {
         data.put("isPinned", conversation.isPinned());
         data.put("pinnedTime", conversation.getPinnedTime());
         if(conversation.marks() != null) {
-            ArrayList<Integer> list = new ArrayList<>();
+            JSONArray ja = new JSONArray();
             for (EMConversation.EMMarkType type: conversation.marks()) {
-                list.add(type.ordinal());
+                ja.put(type.ordinal());
             }
-            data.put("marks", list);
+            data.put("marks", ja);
         }
         try {
             data.put("ext", jsonStringToMap(conversation.getExtField()));

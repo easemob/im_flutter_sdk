@@ -5,6 +5,7 @@ class EMLog {
   static String TAG = 'Chat';
 
   static bool debugAble = kReleaseMode ? false : true;
+  static bool enableCallBackLog = false;
 
   /// Error级别的log
   static void e(Object object, {String? tag}) {
@@ -15,6 +16,12 @@ class EMLog {
   static void v(Object object, {String? tag}) {
     if (debugAble) {
       _printLog(tag, ' | V | ', object);
+    }
+  }
+
+  static void d(Object object, {String? tag}) {
+    if (enableCallBackLog) {
+      _printLog(tag, ' | CallBack | ', object);
     }
   }
 
