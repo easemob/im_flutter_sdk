@@ -191,6 +191,9 @@
     else if ([ChatRemoveChatRoomAttributes isEqual: call.method]) {
         [self removeChatRoomAttributes:call.arguments channelName:call.method result:result];
     }
+    else if ([isMemberInChatRoomMuteList isEqual: call.method]) {
+        [self isMemberInChatRoomMuteList:call.arguments channelName:call.method result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
