@@ -48,7 +48,7 @@ class EMChatRoom {
       blockList: map.getList("blockList"),
       muteList: map.getList("muteList"),
       announcement: map["announcement"],
-      permissionType: EMChatRoomPermissionType.values[map["permissionType"]],
+      permissionType: _ChatRoomPermissionType.values(map["permissionType"]),
       isAllMemberMuted: map.boolValue("isAllMemberMuted"),
       createTimestamp: map["createTimestamp"],
       isInWhitelist: map.boolValue("isInWhitelist"),
@@ -317,4 +317,10 @@ class EMChatRoom {
   /// - 当取值为-1，表示未能获取到用户被禁言时间戳。
   /// ~end
   final int muteExpireTimestamp;
+}
+
+extension _ChatRoomPermissionType on EMChatRoomPermissionType {
+  static EMChatRoomPermissionType values(int iValue) {
+    return EMChatRoomPermissionType.values[iValue + 1];
+  }
 }

@@ -468,6 +468,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             onSuccess(result, channelName, MessageHelper.toJson(dbMsg));
         });
     }
+    
     private void importMessages(JSONObject params, String channelName, Result result) throws JSONException {
         JSONArray ary = params.getJSONArray("messages");
         List<EMMessage> messages = new ArrayList<>();

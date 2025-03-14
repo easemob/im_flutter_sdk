@@ -479,7 +479,6 @@
                    result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     EMChatMessage *msg = [EMChatMessage fromJson:param[@"message"]];
-    
     EMChatMessage *dbMsg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msg.messageId];
     if(dbMsg == nil) {
         [weakSelf wrapperCallBack:result
