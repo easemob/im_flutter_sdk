@@ -1,0 +1,25 @@
+name: im_flutter_sdk_ios
+description: Integrate the Chat SDK to enjoy the global IM services with high reliability, ultra-low latency, and high concurrency.
+version: 4.13.0
+homepage: https://www.easemob.com
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  im_flutter_sdk_interface: ^4.13.0
+
+dev_dependencies:
+  flutter_lints: ^3.0.0
+
+flutter:
+  plugin:
+    implements: im_flutter_sdk
+    platforms:
+      ios:
+        dartPluginClass: ClientIOS
+        pluginClass: ImFlutterSdkPlugin
