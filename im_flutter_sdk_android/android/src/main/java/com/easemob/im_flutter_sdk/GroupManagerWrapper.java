@@ -1217,9 +1217,10 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                             data.put("type", "onGroupAnnouncementChanged");
                             data.put("groupId", groupId);
                             if(announcement == null) {
-                                announcement = "";
+                                data.put("announcement", "");
+                            }else {
+                                data.put("announcement", announcement);
                             }
-                            data.put("announcement", announcement);
                             post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
                         }
                 );
