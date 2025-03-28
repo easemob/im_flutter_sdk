@@ -1,11 +1,11 @@
 name: im_flutter_sdk_interface
-description: "A new Flutter plugin project."
-version: 0.0.1
-homepage:
+description: Integrate the Chat SDK to enjoy the global IM services with high reliability, ultra-low latency, and high concurrency.
+version: 4.13.0
+homepage: https://www.easemob.com
 
 environment:
-  sdk: ^3.4.0
-  flutter: ">=3.22.0"
+  sdk: '>=3.3.0'
+  flutter: '>=3.3.0'
 
 dependencies:
   flutter:

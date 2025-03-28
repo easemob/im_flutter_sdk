@@ -1,3 +1,3 @@
-## 0.0.1
+## 4.13.0
 
-* TODO: Describe initial release.
+* 首次修改为联合插件模式
