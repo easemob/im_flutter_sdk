@@ -846,6 +846,9 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("roomId", chatRoomId);
+                            if(announcement == nill) {
+                                announcement = "";
+                            }
                             data.put("announcement", announcement);
                             data.put("type", "onRoomAnnouncementChanged");
                             post(() -> channel.invokeMethod(MethodKey.chatRoomChange, data));

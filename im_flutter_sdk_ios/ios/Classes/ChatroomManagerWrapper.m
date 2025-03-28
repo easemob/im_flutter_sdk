@@ -904,11 +904,13 @@
                          announcement:(NSString *)aAnnouncement {
     __weak typeof(self) weakSelf = self;
     [ListenerHandle.sharedInstance addHandle:^{
-        NSDictionary *map = @{
+        NSMutableDictionary *map = @{
             @"type":@"onRoomAnnouncementChanged",
-            @"roomId":aChatroom.chatroomId,
-            @"announcement":aAnnouncement
-        };
+            @"groupId":aChatroom.chatroomId,
+        }.mutableCopy;
+        if(aAnnouncement != nil) {
+            map[@"announcement"] = aAnnouncement;
+        }
         [weakSelf.channel invokeMethod:ChatChatroomChanged arguments:map];
     }];
 }
