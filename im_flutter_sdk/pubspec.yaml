@@ -11,11 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  im_flutter_sdk_interface: ^4.13.0
+  im_flutter_sdk_interface: ^4.13.0+1
 
-  im_flutter_sdk_ios: ^4.13.0
+  im_flutter_sdk_ios: ^4.13.0+1
 
-  im_flutter_sdk_android: ^4.13.0
+  im_flutter_sdk_android: ^4.13.0+1
 
 
 dev_dependencies:
