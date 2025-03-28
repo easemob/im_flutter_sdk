@@ -1,0 +1,26 @@
+name: im_flutter_sdk_ohos
+description: Integrate the Chat SDK to enjoy the global IM services with high reliability, ultra-low latency, and high concurrency.
+version: 1.5.3
+homepage: https://www.easemob.com/product/im
+
+environment:
+  sdk: '>=3.3.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  im_flutter_sdk_interface:
+    path: ../im_flutter_sdk_interface
+
+flutter:
+
+
+  plugin:
+    implements: im_flutter_sdk
+    platforms:
+      ohos:
+        dartPluginClass: ClientOhos
+        package: com.example.im_flutter_sdk_ohos
+        pluginClass: ImFlutterSdkOhPlugin
+

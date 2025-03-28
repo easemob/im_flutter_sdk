@@ -1,0 +1,38 @@
+name: im_flutter_sdk
+description: "A new Flutter plugin project."
+version: 4.13.0
+homepage:
+
+environment:
+  sdk: '>=3.3.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  im_flutter_sdk_interface:
+    path: ../im_flutter_sdk_interface
+
+  im_flutter_sdk_ios:
+    path: ../im_flutter_sdk_ios
+
+  im_flutter_sdk_android:
+    path: ../im_flutter_sdk_android
+
+  # im_flutter_sdk_ohos:
+  #   path: ../im_flutter_sdk_ohos
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+
+flutter:
+  plugin:
+    platforms:
+      ios:
+        default_package: im_flutter_sdk_ios
+      android:
+        default_package: im_flutter_sdk_android
+      ohos:
+        default_package: im_flutter_sdk_ohos
