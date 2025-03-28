@@ -2,6 +2,7 @@
 
 - 修复收到 `onAnnouncementChangedFromChatRoom` 回调时，`announcement` 为空导致的崩溃问题。
 - 修复收到 `onAnnouncementChangedFromGroup` 回调时，`announcement` 为空导致的崩溃问题。
+- 增加 `EMMultiDevicesEvent.UnKnow` 类型，防止新增多设备事件时无法解析；
 
 ## 4.13.0
 

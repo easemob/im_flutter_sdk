@@ -133,11 +133,11 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 10),
             TextButton(
               onPressed: _sendMessage,
-              child: const Text("SEND TEXT"),
               style: ButtonStyle(
                 foregroundColor: WidgetStateProperty.all(Colors.white),
                 backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
               ),
+              child: const Text("SEND TEXT"),
             ),
             Flexible(
               child: ListView.builder(
@@ -254,39 +254,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     EMClient.getInstance.groupManager.removeEventHandler('identifier');
-    EMClient.getInstance.chatRoomManager
-        .addEventHandler('identifier', EMChatRoomEventHandler(onAnnouncementChangedFromChatRoom: (roomId, announcement) {
-          
-        },));
-    EMClient.getInstance.groupManager.addEventHandler(
-        'identifier',
-        EMGroupEventHandler(
-          onAnnouncementChangedFromGroup: (groupId, announcement) {
-            _addLogToConsole(
-              "onAnnouncementChangedFromGroup, groupId: $groupId, announcement: $announcement",
-            );
-          },
-          onAdminAddedFromGroup: (groupId, admin) {
-            _addLogToConsole(
-              "onAdminAddedFromGroup, groupId: $groupId, admin: $admin",
-            );
-          },
-          onUserRemovedFromGroup: (groupId, groupName) {
-            _addLogToConsole(
-              "onUserRemovedFromGroup, groupId: $groupId, groupName: $groupName",
-            );
-          },
-          onMemberJoinedFromGroup: (groupId, member) {
-            _addLogToConsole(
-              "onMemberJoinedFromGroup, groupId: $groupId, member: $member",
-            );
-          },
-          onMemberExitedFromGroup: (groupId, member) {
-            _addLogToConsole(
-              "onMemberExitedFromGroup, groupId: $groupId, member: $member",
-            );
-          },
-        ));
   }
 
   void _signIn() async {
