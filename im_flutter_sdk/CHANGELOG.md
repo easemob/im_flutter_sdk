@@ -1,3 +1,25 @@
+## 4.13.0
+
+### 新增特性
+
+- 发送后修改消息接口 `EMChatManager#modifyMessage` 支持修改各类消息:
+  - 文本/自定义消息：支持修改消息内容（body）和扩展 `attributes`;
+  - 文件/视频/音频/图片/位置/合并转发消息：只支持修改消息扩展 `attributes`。
+  - 命令消息：不支持修改。
+- 新增 `ExtSettings.kDisableIosEnterBackground` 控制项，可控制 iOS 后台的行为和使用方式，详见[初始化文档]([initialization.html](https://doc.easemob.com/document/flutter/initialization.html))。
+
+#### 优化
+
+- 优化重连逻辑，默认切换重连的地址。
+- 使用联合插件的形式重写 SDK；
+- 升级 iOS 依赖库为 4.13.0 版本;
+- 升级 Android 依赖库为 4.13.0 版本;
+
+### 问题修复
+
+- 修复 `EMChatManager#fetchConversation` 方法拉取到的会话最新一条消息不包含表情回复（Reaction）和翻译信息的问题。
+
+
 ## 4.12.1
 
 - 修复 安卓 `EMConversation.marks` 获取不到的问题；

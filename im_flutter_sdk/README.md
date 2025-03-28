@@ -18,13 +18,10 @@
 ## 前提条件
 
 如果你的目标平台是iOS，你需要满足一下要求：
-- Xcode 12.4 或以上版本，包括命令行工具;
-- iOS 10 或以上版本;
+- iOS 12 或以上版本;
 - Android SDK API 等级 21 或以上版本；
-- Android Studio 4.0 或以上版本，包括 JDK 1.8 或以上版本;
-- CocoaPods 包管理工具;
-- Flutter 2.10 或以上版本;
-- Dart 2.16 或以上版本;
+- Flutter 3.3.0 或以上版本;
+- Dart 3.3.0 或以上版本;
 
 [配置开发或者运行环境如果遇到问题，请参考这里](https://docs.flutter.dev/get-started/install)
 - 有效的环信即时通讯 IM 开发者账号和 App Key，详见 [环信即时通讯云控制台](https://console.easemob.com/user/login)。
@@ -62,7 +59,7 @@ android {
 
 打开文件 `quick_start/ios/Runner.xcodeproj`，然后：
 
-1. 找到 `TARGETS > Runner ` 在 `General` 的 `Deployment Info` 中修改最低版本为 `iOS 10.0`
+1. 找到 `TARGETS > Runner ` 在 `General` 的 `Deployment Info` 中修改最低版本为 `iOS 12.0`
 
 ### 集成 SDK
 
