@@ -1359,19 +1359,20 @@
 
 - (void)groupAnnouncementDidUpdate:(EMGroup *)aGroup
                       announcement:(NSString *)aAnnouncement {
-
-    
     __weak typeof(self) weakSelf = self;
     [ListenerHandle.sharedInstance addHandle:^{
-        NSDictionary *map = @{
+        NSMutableDictionary *map = @{
             @"type":@"onGroupAnnouncementChanged",
             @"groupId":aGroup.groupId,
-            @"announcement":aAnnouncement
-        };
+        }.mutableCopy;
+        if(aAnnouncement != nil) {
+            map[@"announcement"] = aAnnouncement;
+        }
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
                          arguments:map];
     }];
 }
+
 
 - (void)groupFileListDidUpdate:(EMGroup *)aGroup
                addedSharedFile:(EMGroupSharedFile *)aSharedFile {

@@ -17,6 +17,7 @@ im_flutter_sdk_ohos:
   git:
     url: "https://github.com/easemob/im_flutter_sdk_oh.git"
     ref: 1.5.3
-
 ```
-3. 执行 `flutter pub get`;
+其中具体的 `ref` 可以去 `https://github.com/easemob/im_flutter_sdk_oh/releases` 查看最新版本号;
+
+1. 执行 `flutter pub get`;
