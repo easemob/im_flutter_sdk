@@ -1,0 +1,3 @@
+mixin ManagerMixin {
+  void initHandler();
+}

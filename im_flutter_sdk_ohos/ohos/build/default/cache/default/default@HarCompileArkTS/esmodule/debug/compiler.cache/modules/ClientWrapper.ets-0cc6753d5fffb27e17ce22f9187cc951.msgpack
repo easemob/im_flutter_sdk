@@ -1,0 +1,1049 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚO»import { ChatClient } from '@easemob/chatsdk';
+import ChatManagerWrapper from './ChatManagerWrapper';
+import ChatRoomManagerWrapper from './ChatRoomManagerWrapper';
+import ChatThreadManagerWrapper from './ChatThreadManagerWrapper';
+import ContactManagerWrapper from './ContactManagerWrapper';
+import ConversationWrapper from './ConversationWrapper';
+import GroupManagerWrapper from './GroupManagerWrapper';
+import MessageWrapper from './MessageWrapper';
+import MethodKey from './MethodKeys';
+import ChatOptionsHelper from './models/ChatOptionsHelper';
+import PresenceManagerWrapper from './PresenceManagerWrapper';
+import ProgressManager from './ProgressManager';
+import PushManagerWrapper from './PushManagerWrapper';
+import UserInfoManagerWrapper from './UserInfoManagerWrapper';
+import Wrapper from './Wrapper';
+import LoginExtensionInfoHelper from './models/LoginExtensionInfoHelper';
+export default class ClientWrapper extends Wrapper {
+    constructor(binding, channelName) {
+        super(binding, channelName);
+    }
+    sendDataToFlutter(data) {
+        if (data != null) {
+            this.channel?.invokeMethod(MethodKey.onSendDataToFlutter, data);
+        }
+    }
+    bindingManagers() {
+        this.chatManager = new ChatManagerWrapper(this.binding, "chat_manager");
+        this.contactManager = new ContactManagerWrapper(this.binding, "chat_contact_manager");
+        this.roomManager = new ChatRoomManagerWrapper(this.binding, "chat_room_manager");
+        this.groupManager = new GroupManagerWrapper(this.binding, "chat_group_manager");
+        this.groupManager.clientWrapper = this;
+        this.conversationManager = new ConversationWrapper(this.binding, "chat_conversation");
+        this.pushManager = new PushManagerWrapper(this.binding, "chat_push_manager");
+        this.userInfoManager = new UserInfoManagerWrapper(this.binding, "chat_userInfo_manager");
+        this.presenceManager = new PresenceManagerWrapper(this.binding, "chat_presence_manager");
+        this.messageWrapper = new MessageWrapper(this.binding, "chat_message");
+        this.threadManager = new ChatThreadManagerWrapper(this.binding, "chat_thread_manager");
+        this.progressManager = new ProgressManager(this.binding, "file_progress_manager");
+    }
+    unRegisterEaseListener() {
+        this.chatManager?.unRegisterEaseListener();
+        this.contactManager?.unRegisterEaseListener();
+        this.roomManager?.unRegisterEaseListener();
+        this.groupManager?.unRegisterEaseListener();
+        if (this.groupManager != null) {
+            this.groupManager.clientWrapper = null;
+        }
+        this.conversationManager?.unRegisterEaseListener();
+        this.pushManager?.unRegisterEaseListener();
+        this.userInfoManager?.unRegisterEaseListener();
+        this.presenceManager?.unRegisterEaseListener();
+        this.messageWrapper?.unRegisterEaseListener();
+        this.threadManager?.unRegisterEaseListener();
+        this.progressManager?.unRegisterEaseListener();
+        ChatClient.getInstance().removeMultiDevicesListener(this.multiDeviceListener);
+        ChatClient.getInstance().removeConnectionListener(this.connectionListener);
+    }
+    registerEaseListener() {
+        let weakRef = new WeakRef(this);
+        if (this.multiDeviceListener != null) {
+            ChatClient.getInstance().removeMultiDevicesListener(this.multiDeviceListener);
+        }
+        this.multiDeviceListener = {
+            onContactEvent(event, target, ext) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("event", event);
+                data.set("target", target);
+                data.set("ext", ext);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDeviceContactEvent, data);
+            },
+            onGroupEvent(event, target, userIds) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("event", event);
+                data.set("target", target);
+                data.set("users", userIds);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDeviceGroupEvent, data);
+            },
+            onMessageRemoved(conversationId, deviceId) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("convId", conversationId);
+                data.set("deviceId", deviceId);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDeviceRemoveMessagesEvent, data);
+            },
+            onConversationEvent(event, conversationId, type) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("event", event);
+                data.set("convId", conversationId);
+                data.set("type", type);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDevicesConversationEvent, data);
+            }
+        };
+        ChatClient.getInstance().addMultiDevicesListener(this.multiDeviceListener);
+        if (this.connectionListener != null) {
+            ChatClient.getInstance().removeConnectionListener(this.connectionListener);
+        }
+        this.connectionListener = {
+            onConnected() {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("connected", true);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onConnected, data);
+            },
+            onDisconnected(errCode) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                if (errCode == 206) {
+                    // è¿™éƒ¨åˆ†å®ç°æ”¾åˆ°onLogoutä¸­ã€‚
+                }
+                else if (errCode == 207) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onConnected, data);
+                }
+                else if (errCode == 305) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onUserDidForbidByServer, data);
+                }
+                else if (errCode == 216) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onUserDidChangePassword, data);
+                }
+                else if (errCode == 214) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onUserDidLoginTooManyDevice, data);
+                }
+                else if (errCode == 217) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onUserKickedByOtherDevice, data);
+                }
+                else if (errCode == 202) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onUserAuthenticationFailed, data);
+                }
+                else if (errCode == 8) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onAppActiveNumberReachLimit, data);
+                }
+                else {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onDisconnected, data);
+                }
+            },
+            onTokenExpired() {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.channel?.invokeMethod(MethodKey.onTokenDidExpire, null);
+            },
+            onTokenWillExpire() {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.channel?.invokeMethod(MethodKey.onTokenWillExpire, null);
+            },
+            onLogout(errorCode, loginInfo) {
+                let retrievedObject = weakRef.deref();
+                if (errorCode == 206) {
+                    retrievedObject?.channel?.invokeMethod(MethodKey.onTokenWillExpire, LoginExtensionInfoHelper.toJson(loginInfo));
+                }
+            },
+            onOfflineMessageSyncStart() {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.channel?.invokeMethod(MethodKey.onOfflineMessageSyncStart, null);
+            },
+            onOfflineMessageSyncFinish() {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.channel?.invokeMethod(MethodKey.onOfflineMessageSyncFinish, null);
+            }
+        };
+        ChatClient.getInstance().addConnectionListener(this.connectionListener);
+    }
+    onMethodCall(call, result) {
+        if (MethodKey.init == call.method) {
+            this.init(call, result);
+        }
+        else if (MethodKey.createAccount == call.method) {
+            this.createAccount(call, result);
+        }
+        else if (MethodKey.login == call.method) {
+            this.login(call, result);
+        }
+        else if (MethodKey.logout == call.method) {
+            this.logout(call, result);
+        }
+        else if (MethodKey.changeAppKey == call.method) {
+            this.changeAppKey(call, result);
+        }
+        else if (MethodKey.uploadLog == call.method) {
+            this.uploadLog(call, result);
+        }
+        else if (MethodKey.compressLogs == call.method) {
+            this.compressLogs(call, result);
+        }
+        else if (MethodKey.getLoggedInDevicesFromServer == call.method) {
+            this.getLoggedInDevicesFromServer(call, result);
+        }
+        else if (MethodKey.kickDevice == call.method) {
+            this.kickDevice(call, result);
+        }
+        else if (MethodKey.kickAllDevices == call.method) {
+            this.kickAllDevices(call, result);
+        }
+        else if (MethodKey.isLoggedInBefore == call.method) {
+            this.isLoggedInBefore(call, result);
+        }
+        else if (MethodKey.getCurrentUser == call.method) {
+            this.getCurrentUser(call, result);
+        }
+        else if (MethodKey.loginWithAgoraToken == call.method) {
+            this.loginWithAgoraToken(call, result);
+        }
+        else if (MethodKey.getToken == call.method) {
+            this.getToken(call, result);
+        }
+        else if (MethodKey.isConnected == call.method) {
+            this.isConnected(call, result);
+        }
+        else if (MethodKey.renewToken == call.method) {
+            this.renewToken(call, result);
+        }
+        else if (MethodKey.startCallback == call.method) {
+            this.startCallback(call, result);
+        }
+        else if (MethodKey.updateUsingHttpsOnlySetting == call.method) {
+            this.updateUsingHttpsOnlySetting(call, result);
+        }
+        else if (MethodKey.updateLoginExtensionInfo == call.method) {
+            this.updateLoginExtensionInfo(call, result);
+        }
+        else if (MethodKey.updateDeleteMessagesWhenLeaveGroupSetting == call.method) {
+            this.updateDeleteMessagesWhenLeaveGroupSetting(call, result);
+        }
+        else if (MethodKey.updateDeleteMessageWhenLeaveRoomSetting == call.method) {
+            this.updateDeleteMessageWhenLeaveRoomSetting(call, result);
+        }
+        else if (MethodKey.updateRoomOwnerCanLeaveSetting == call.method) {
+            this.updateRoomOwnerCanLeaveSetting(call, result);
+        }
+        else if (MethodKey.updateAutoAcceptGroupInvitationSetting == call.method) {
+            this.updateAutoAcceptGroupInvitationSetting(call, result);
+        }
+        else if (MethodKey.acceptInvitationAlways == call.method) {
+            this.acceptInvitationAlways(call, result);
+        }
+        else if (MethodKey.updateAutoDownloadAttachmentThumbnailSetting == call.method) {
+            this.updateAutoDownloadAttachmentThumbnailSetting(call, result);
+        }
+        else if (MethodKey.updateRequireAckSetting == call.method) {
+            this.updateRequireAckSetting(call, result);
+        }
+        else if (MethodKey.updateDeliveryAckSetting == call.method) {
+            this.updateDeliveryAckSetting(call, result);
+        }
+        else if (MethodKey.updateSortMessageByServerTimeSetting == call.method) {
+            this.updateSortMessageByServerTimeSetting(call, result);
+        }
+        else if (MethodKey.updateMessagesReceiveCallbackIncludeSendSetting == call.method) {
+            this.updateMessagesReceiveCallbackIncludeSendSetting(call, result);
+        }
+        else if (MethodKey.updateRegradeMessagesSetting == call.method) {
+            this.updateRegradeMessagesSetting(call, result);
+        }
+        else if (MethodKey.changeAppId == call.method) {
+            this.changeAppId(call, result);
+        }
+        else {
+            super.onMethodCall(call, result);
+        }
+    }
+    init(call, result) {
+        let options = ChatOptionsHelper.fromJson(call.args);
+        ChatClient.getInstance().init(this.context, options);
+        this.bindingManagers();
+        this.registerEaseListener();
+        this.onSuccess(result, call.method);
+    }
+    createAccount(call, result) {
+        let userId = call.argument("username");
+        let password = call.argument("password");
+        ChatClient.getInstance().createAccount(userId, password)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    login(call, result) {
+        let isPwd = call.argument("isPassword");
+        let userId = call.argument("username");
+        let pwdOrToken = call.argument("pwdOrToken");
+        if (isPwd) {
+            ChatClient.getInstance().login(userId, pwdOrToken)
+                .then(() => this.onSuccess(result, call.method))
+                .catch((e) => this.onError(result, e));
+        }
+        else {
+            ChatClient.getInstance().loginWithToken(userId, pwdOrToken)
+                .then(() => this.onSuccess(result, call.method))
+                .catch((e) => this.onError(result, e));
+        }
+    }
+    logout(call, result) {
+        let unbindToken = call.argument("unbindToken");
+        ChatClient.getInstance().logout(unbindToken)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    changeAppKey(call, result) {
+        let appKey = call.argument("appKey");
+        let chatError = ChatClient.getInstance().changeAppkey(appKey);
+        if (chatError == null) {
+            this.onSuccess(result, call.method);
+        }
+        else {
+            this.onError(result, chatError);
+        }
+    }
+    uploadLog(call, result) {
+        ChatClient.getInstance().uploadLog()
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    compressLogs(_, result) {
+        this.noSupport(result);
+    }
+    getLoggedInDevicesFromServer(_, result) {
+        this.noSupport(result);
+    }
+    kickDevice(_, result) {
+        this.noSupport(result);
+    }
+    kickAllDevices(_, result) {
+        this.noSupport(result);
+    }
+    isLoggedInBefore(call, result) {
+        let options = ChatClient.getInstance().getOptions();
+        this.onSuccess(result, call.method, ChatClient.getInstance().isLoggedIn() && options?.isAutoLogin());
+    }
+    getCurrentUser(call, result) {
+        this.onSuccess(result, call.method, ChatClient.getInstance().getCurrentUser());
+    }
+    loginWithAgoraToken(call, result) {
+        let username = call.argument("username");
+        let agoraToken = call.argument("agora_token");
+        ChatClient.getInstance().loginWithToken(username, agoraToken)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    getToken(call, result) {
+        let token = ChatClient.getInstance().getAccessToken();
+        this.onSuccess(result, call.method, token);
+    }
+    isConnected(call, result) {
+        this.onSuccess(result, call.method, ChatClient.getInstance().isConnected());
+    }
+    renewToken(call, result) {
+        let token = call.argument("agora_token");
+        ChatClient.getInstance().renewToken(token)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    startCallback(call, result) {
+        this.onSuccess(result, call.method);
+    }
+    updateUsingHttpsOnlySetting(call, result) {
+        let usingHttpsOnly = call.argument("usingHttpsOnly");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setUsingHttpsOnly(usingHttpsOnly);
+        this.onSuccess(result, call.method);
+    }
+    updateLoginExtensionInfo(call, result) {
+        let extension = call.argument("extension");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setLoginCustomExt(extension);
+        this.onSuccess(result, call.method);
+    }
+    updateDeleteMessagesWhenLeaveGroupSetting(call, result) {
+        let deleteMessagesWhenLeaveGroup = call.argument("deleteMessagesWhenLeaveGroup");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setDeleteMessagesOnLeaveGroup(deleteMessagesWhenLeaveGroup);
+        this.onSuccess(result, call.method);
+    }
+    updateDeleteMessageWhenLeaveRoomSetting(call, result) {
+        let deleteMessageWhenLeaveRoom = call.argument("deleteMessageWhenLeaveRoom");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setDeleteMessagesOnLeaveChatroom(deleteMessageWhenLeaveRoom);
+        this.onSuccess(result, call.method);
+    }
+    updateRoomOwnerCanLeaveSetting(call, result) {
+        let roomOwnerCanLeave = call.argument("roomOwnerCanLeave");
+        let options = ChatClient.getInstance().getOptions();
+        options?.allowChatroomOwnerLeave(roomOwnerCanLeave);
+        this.onSuccess(result, call.method);
+    }
+    updateAutoAcceptGroupInvitationSetting(call, result) {
+        let autoAcceptGroupInvitation = call.argument("autoAcceptGroupInvitation");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setAutoAcceptGroupInvitations(autoAcceptGroupInvitation);
+        this.onSuccess(result, call.method);
+    }
+    acceptInvitationAlways(call, result) {
+        let acceptInvitationAlways = call.argument("acceptInvitationAlways");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setAcceptInvitationAlways(acceptInvitationAlways);
+        this.onSuccess(result, call.method);
+    }
+    updateAutoDownloadAttachmentThumbnailSetting(call, result) {
+        let autoDownloadThumbnail = call.argument("autoDownloadThumbnail");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setAutoDownloadThumbnail(autoDownloadThumbnail);
+        this.onSuccess(result, call.method);
+    }
+    updateRequireAckSetting(call, result) {
+        let requireAck = call.argument("requireAck");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setRequireReadAck(requireAck);
+        this.onSuccess(result, call.method);
+    }
+    updateDeliveryAckSetting(call, result) {
+        let requireDeliveryAck = call.argument("requireDeliveryAck");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setRequireDeliveryAck(requireDeliveryAck);
+        this.onSuccess(result, call.method);
+    }
+    updateSortMessageByServerTimeSetting(call, result) {
+        let sortMessageByServerTime = call.argument("sortMessageByServerTime");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setSortMessageByServerTime(sortMessageByServerTime);
+        this.onSuccess(result, call.method);
+    }
+    updateMessagesReceiveCallbackIncludeSendSetting(call, result) {
+        let includeSend = call.argument("includeSend");
+        let options = ChatClient.getInstance().getOptions();
+        options?.setIncludeSendMessageInMessageListener(includeSend);
+        this.onSuccess(result, call.method);
+    }
+    updateRegradeMessagesSetting(_, result) {
+        this.noSupport(result);
+    }
+    changeAppId(call, result) {
+        let appId = call.argument("appId");
+        let err = ChatClient.getInstance().changeAppId(appId);
+        if (err == null) {
+            this.onSuccess(result, call.method);
+        }
+        else {
+            this.onError(result, err);
+        }
+    }
+}
+//# sourceMappingURL=ClientWrapper.js.mapÂÜ °@easemob/chatsdkÙ‹/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ChatManagerWrapper.etsÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ChatRoomManagerWrapper.etsÙ‘/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ChatThreadManagerWrapper.etsÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ContactManagerWrapper.etsÙŒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ConversationWrapper.etsÙŒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/GroupManagerWrapper.etsÙ‡/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/MessageWrapper.etsÙƒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/MethodKeys.etsÙ‘/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/ChatOptionsHelper.etsÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/PresenceManagerWrapper.etsÙˆ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ProgressManager.etsÙ‹/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/PushManagerWrapper.etsÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/UserInfoManagerWrapper.etsÙ€/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/Wrapper.etsÙ˜/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/LoginExtensionInfoHelper.etsÙ†/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ClientWrapper.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¯hostModulesInfo³im_flutter_sdk_ohosÃÂÙU/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohosÙP/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos³im_flutter_sdk_ohos¥1.0.0Ô  ÙU/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohosÃ‘ÔrC’²hostDependencyName®hostModuleName¯./ClientWrapper³im_flutter_sdk_ohosÃÚQïimport { ChatClient, ChatError, ConnectionListener, MultiDevicesListener } from '@easemob/chatsdk';
+import { FlutterPluginBinding, MethodCall, MethodResult } from '@ohos/flutter_ohos';
+import ChatManagerWrapper from './ChatManagerWrapper';
+import ChatRoomManagerWrapper from './ChatRoomManagerWrapper';
+import ChatThreadManagerWrapper from './ChatThreadManagerWrapper';
+import ContactManagerWrapper from './ContactManagerWrapper';
+import ConversationWrapper from './ConversationWrapper';
+import GroupManagerWrapper from './GroupManagerWrapper';
+import MessageWrapper from './MessageWrapper';
+import MethodKey from './MethodKeys';
+import ChatOptionsHelper from './models/ChatOptionsHelper';
+import PresenceManagerWrapper from './PresenceManagerWrapper';
+import ProgressManager from './ProgressManager';
+import PushManagerWrapper from './PushManagerWrapper';
+import UserInfoManagerWrapper from './UserInfoManagerWrapper';
+import Wrapper from './Wrapper';
+import LoginExtensionInfoHelper from './models/LoginExtensionInfoHelper';
+
+export default class ClientWrapper extends Wrapper {
+
+  private chatManager: ChatManagerWrapper | undefined;
+  private groupManager: GroupManagerWrapper | undefined;
+  private roomManager: ChatRoomManagerWrapper | undefined;
+  private pushManager: PushManagerWrapper | undefined;
+  private presenceManager: PresenceManagerWrapper | undefined;
+  private threadManager: ChatThreadManagerWrapper | undefined;
+  private contactManager: ContactManagerWrapper | undefined;
+  private userInfoManager: UserInfoManagerWrapper | undefined;
+  private conversationManager: ConversationWrapper | undefined;
+  private messageWrapper: MessageWrapper | undefined;
+  public  progressManager: ProgressManager | undefined;
+  private multiDeviceListener: MultiDevicesListener | undefined;
+  private connectionListener: ConnectionListener | undefined;
+
+
+  constructor(binding: FlutterPluginBinding, channelName: string) {
+    super(binding, channelName);
+  }
+
+  public sendDataToFlutter(data: Map<string, Object>) {
+    if(data != null) {
+      this.channel?.invokeMethod(MethodKey.onSendDataToFlutter, data);
+    }
+  }
+
+  bindingManagers() {
+    this.chatManager = new ChatManagerWrapper(this.binding!, "chat_manager");
+    this.contactManager = new ContactManagerWrapper(this.binding!, "chat_contact_manager");
+    this.roomManager = new ChatRoomManagerWrapper(this.binding!, "chat_room_manager");
+    this.groupManager = new GroupManagerWrapper(this.binding!, "chat_group_manager");
+    this.groupManager.clientWrapper = this;
+    this.conversationManager = new ConversationWrapper(this.binding!, "chat_conversation");
+    this.pushManager = new PushManagerWrapper(this.binding!, "chat_push_manager");
+    this.userInfoManager = new UserInfoManagerWrapper(this.binding!, "chat_userInfo_manager");
+    this.presenceManager = new PresenceManagerWrapper(this.binding!, "chat_presence_manager");
+    this.messageWrapper = new MessageWrapper(this.binding!, "chat_message");
+    this.threadManager = new ChatThreadManagerWrapper(this.binding!, "chat_thread_manager");
+    this.progressManager = new ProgressManager(this.binding!, "file_progress_manager");
+  }
+
+  public unRegisterEaseListener() {
+    this.chatManager?.unRegisterEaseListener();
+    this.contactManager?.unRegisterEaseListener();
+    this.roomManager?.unRegisterEaseListener();
+    this.groupManager?.unRegisterEaseListener();
+    if(this.groupManager != null) {
+      this.groupManager!.clientWrapper = null;
+    }
+    this.conversationManager?.unRegisterEaseListener();
+    this.pushManager?.unRegisterEaseListener();
+    this.userInfoManager?.unRegisterEaseListener();
+    this.presenceManager?.unRegisterEaseListener();
+    this.messageWrapper?.unRegisterEaseListener();
+    this.threadManager?.unRegisterEaseListener();
+    this.progressManager?.unRegisterEaseListener();
+
+    ChatClient.getInstance().removeMultiDevicesListener(this.multiDeviceListener);
+    ChatClient.getInstance().removeConnectionListener(this.connectionListener);
+  }
+
+  registerEaseListener() {
+    let weakRef = new WeakRef(this);
+    if(this.multiDeviceListener != null) {
+      ChatClient.getInstance().removeMultiDevicesListener(this.multiDeviceListener);
+    }
+
+    this.multiDeviceListener = {
+      onContactEvent(event, target, ext): void {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("event", event);
+        data.set("target", target);
+        data.set("ext", ext);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDeviceContactEvent, data);
+      },
+      onGroupEvent(event,  target, userIds) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("event", event);
+        data.set("target", target);
+        data.set("users", userIds);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDeviceGroupEvent, data);
+      },
+      onMessageRemoved(conversationId, deviceId) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("convId", conversationId);
+        data.set("deviceId", deviceId);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDeviceRemoveMessagesEvent, data);
+      },
+      onConversationEvent(event, conversationId, type) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("event", event);
+        data.set("convId", conversationId);
+        data.set("type", type);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onMultiDevicesConversationEvent, data);
+      }
+    };
+
+    ChatClient.getInstance().addMultiDevicesListener(this.multiDeviceListener);
+
+    if (this.connectionListener != null) {
+      ChatClient.getInstance().removeConnectionListener(this.connectionListener);
+    }
+
+    this.connectionListener = {
+      onConnected() {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("connected", true);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onConnected, data);
+      },
+      onDisconnected(errCode) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        if(errCode == 206) {
+          // è¿™éƒ¨åˆ†å®ç°æ”¾åˆ°onLogoutä¸­ã€‚
+        }else if (errCode == 207) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onConnected, data);
+        }else if (errCode == 305) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onUserDidForbidByServer, data);
+        }else if (errCode == 216) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onUserDidChangePassword, data);
+        }else if (errCode == 214) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onUserDidLoginTooManyDevice, data);
+        }else if (errCode == 217) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onUserKickedByOtherDevice, data);
+        }else if (errCode == 202) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onUserAuthenticationFailed, data);
+        }else if (errCode == 8) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onAppActiveNumberReachLimit, data);
+        }else {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onDisconnected, data);
+        }
+      },
+      onTokenExpired(){
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.channel?.invokeMethod(MethodKey.onTokenDidExpire, null);
+      },
+      onTokenWillExpire() {
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.channel?.invokeMethod(MethodKey.onTokenWillExpire, null);
+      },
+      onLogout(errorCode, loginInfo) {
+        let retrievedObject = weakRef.deref();
+        if (errorCode == 206) {
+          retrievedObject?.channel?.invokeMethod(MethodKey.onTokenWillExpire, LoginExtensionInfoHelper.toJson(loginInfo));
+        }
+      },
+      onOfflineMessageSyncStart() {
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.channel?.invokeMethod(MethodKey.onOfflineMessageSyncStart, null);
+      },
+      onOfflineMessageSyncFinish() {
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.channel?.invokeMethod(MethodKey.onOfflineMessageSyncFinish, null);
+      }
+    }
+
+    ChatClient.getInstance().addConnectionListener(this.connectionListener);
+  }
+
+  onMethodCall(call: MethodCall, result: MethodResult): void {
+    if (MethodKey.init == call.method) {
+      this.init(call, result);
+    }
+    else if (MethodKey.createAccount == call.method)
+    {
+      this.createAccount(call, result);
+    }
+    else if (MethodKey.login == call.method)
+    {
+      this.login(call, result);
+    }
+    else if (MethodKey.logout == call.method)
+    {
+      this.logout(call, result);
+    }
+    else if (MethodKey.changeAppKey == call.method)
+    {
+      this.changeAppKey(call, result);
+    }
+    else if (MethodKey.uploadLog == call.method)
+    {
+      this.uploadLog(call, result);
+    }
+    else if (MethodKey.compressLogs == call.method)
+    {
+      this.compressLogs(call, result);
+    }
+    else if (MethodKey.getLoggedInDevicesFromServer == call.method)
+    {
+      this.getLoggedInDevicesFromServer(call, result);
+    }
+    else if (MethodKey.kickDevice == call.method)
+    {
+      this.kickDevice(call, result);
+    }
+    else if (MethodKey.kickAllDevices == call.method)
+    {
+     this.kickAllDevices(call, result);
+    }
+    else if (MethodKey.isLoggedInBefore == call.method)
+    {
+      this.isLoggedInBefore(call, result);
+    }
+    else if (MethodKey.getCurrentUser == call.method)
+    {
+      this.getCurrentUser(call, result);
+    }
+    else if (MethodKey.loginWithAgoraToken == call.method)
+    {
+      this.loginWithAgoraToken(call, result);
+    }
+    else if (MethodKey.getToken == call.method)
+    {
+      this.getToken(call, result);
+    }
+    else if (MethodKey.isConnected == call.method) {
+      this.isConnected(call, result);
+    }
+    else if (MethodKey.renewToken == call.method){
+      this.renewToken(call, result);
+    }
+    else if (MethodKey.startCallback == call.method) {
+      this.startCallback(call, result);
+    }
+    else if (MethodKey.updateUsingHttpsOnlySetting == call.method) {
+      this.updateUsingHttpsOnlySetting(call, result);
+    }
+    else if (MethodKey.updateLoginExtensionInfo == call.method) {
+      this.updateLoginExtensionInfo(call, result);
+    }
+    else if (MethodKey.updateDeleteMessagesWhenLeaveGroupSetting == call.method) {
+      this.updateDeleteMessagesWhenLeaveGroupSetting(call, result);
+    }
+    else if (MethodKey.updateDeleteMessageWhenLeaveRoomSetting == call.method) {
+      this.updateDeleteMessageWhenLeaveRoomSetting(call, result);
+    }
+    else if (MethodKey.updateRoomOwnerCanLeaveSetting == call.method) {
+      this.updateRoomOwnerCanLeaveSetting(call, result);
+    }
+    else if (MethodKey.updateAutoAcceptGroupInvitationSetting == call.method) {
+      this.updateAutoAcceptGroupInvitationSetting(call, result);
+    }
+    else if (MethodKey.acceptInvitationAlways == call.method) {
+      this.acceptInvitationAlways(call, result);
+    }
+    else if (MethodKey.updateAutoDownloadAttachmentThumbnailSetting == call.method) {
+      this.updateAutoDownloadAttachmentThumbnailSetting(call, result);
+    }
+    else if (MethodKey.updateRequireAckSetting == call.method) {
+      this.updateRequireAckSetting(call, result);
+    }
+    else if (MethodKey.updateDeliveryAckSetting == call.method) {
+      this.updateDeliveryAckSetting(call, result);
+    }
+    else if (MethodKey.updateSortMessageByServerTimeSetting == call.method) {
+      this.updateSortMessageByServerTimeSetting(call, result);
+    }
+    else if (MethodKey.updateMessagesReceiveCallbackIncludeSendSetting == call.method) {
+      this.updateMessagesReceiveCallbackIncludeSendSetting(call, result);
+    }
+    else if (MethodKey.updateRegradeMessagesSetting == call.method) {
+      this.updateRegradeMessagesSetting(call, result);
+    }
+    else if (MethodKey.changeAppId == call.method) {
+      this.changeAppId(call, result);
+    }
+    else  {
+      super.onMethodCall(call, result);
+    }
+  }
+
+  private init(call: MethodCall, result: MethodResult) {
+      let options = ChatOptionsHelper.fromJson(call.args as Map<string, Object>);
+      ChatClient.getInstance().init(this.context, options);
+
+      this.bindingManagers();
+      this.registerEaseListener();
+      this.onSuccess(result, call.method);
+  }
+
+  private createAccount(call: MethodCall, result: MethodResult) {
+    let userId = call.argument("username") as string;
+    let password = call.argument("password") as string;
+    ChatClient.getInstance().createAccount(userId, password)
+      .then(() => this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private login(call: MethodCall, result: MethodResult) {
+    let isPwd = call.argument("isPassword") as boolean;
+    let userId = call.argument("username") as string;
+    let pwdOrToken = call.argument("pwdOrToken") as string;
+    if(isPwd) {
+      ChatClient.getInstance().login(userId, pwdOrToken)
+        .then(() => this.onSuccess(result, call.method))
+        .catch((e: ChatError) => this.onError(result, e));
+    }else {
+      ChatClient.getInstance().loginWithToken(userId, pwdOrToken)
+        .then(() => this.onSuccess(result, call.method))
+        .catch((e: ChatError) => this.onError(result, e));
+    }
+  }
+
+  private logout(call: MethodCall, result: MethodResult) {
+    let unbindToken = call.argument("unbindToken") as boolean;
+    ChatClient.getInstance().logout(unbindToken)
+      .then(() => this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private changeAppKey(call: MethodCall, result: MethodResult) {
+    let appKey = call.argument("appKey") as string;
+    let chatError = ChatClient.getInstance().changeAppkey(appKey)
+    if(chatError == null) {
+      this.onSuccess(result, call.method);
+    }else {
+      this.onError(result, chatError);
+    }
+  }
+
+  private uploadLog(call: MethodCall, result: MethodResult) {
+    ChatClient.getInstance().uploadLog()
+      .then(() => this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private compressLogs(_: MethodCall, result: MethodResult) {
+    this.noSupport(result);
+  }
+
+  private getLoggedInDevicesFromServer(_: MethodCall, result: MethodResult) {
+    this.noSupport(result);
+  }
+
+  private kickDevice(_: MethodCall, result: MethodResult) {
+    this.noSupport(result);
+  }
+
+  private kickAllDevices(_: MethodCall, result: MethodResult) {
+    this.noSupport(result);
+  }
+
+  private isLoggedInBefore(call: MethodCall, result: MethodResult) {
+    let options = ChatClient.getInstance().getOptions();
+    this.onSuccess(result,call.method, ChatClient.getInstance().isLoggedIn() && options?.isAutoLogin());
+  }
+
+  private getCurrentUser(call: MethodCall, result: MethodResult) {
+    this.onSuccess(result,call.method, ChatClient.getInstance().getCurrentUser());
+  }
+
+  private loginWithAgoraToken(call: MethodCall, result: MethodResult) {
+    let username = call.argument("username") as string;
+    let agoraToken = call.argument("agora_token") as string;
+    ChatClient.getInstance().loginWithToken(username, agoraToken)
+      .then(() => this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private getToken(call: MethodCall, result: MethodResult) {
+    let token = ChatClient.getInstance().getAccessToken();
+    this.onSuccess(result, call.method, token);
+  }
+
+  private isConnected(call: MethodCall, result: MethodResult) {
+    this.onSuccess(result, call.method, ChatClient.getInstance().isConnected());
+  }
+
+  private renewToken(call: MethodCall, result: MethodResult) {
+    let token = call.argument("agora_token") as string;
+    ChatClient.getInstance().renewToken(token)
+      .then(() => this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private startCallback(call: MethodCall, result: MethodResult) {
+    this.onSuccess(result, call.method);
+  }
+
+  private updateUsingHttpsOnlySetting(call: MethodCall, result: MethodResult) {
+    let usingHttpsOnly = call.argument("usingHttpsOnly") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setUsingHttpsOnly(usingHttpsOnly)
+    this.onSuccess(result, call.method);
+  }
+
+  private updateLoginExtensionInfo(call: MethodCall, result: MethodResult) {
+    let extension = call.argument("extension") as string;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setLoginCustomExt(extension);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateDeleteMessagesWhenLeaveGroupSetting(call: MethodCall, result: MethodResult) {
+    let deleteMessagesWhenLeaveGroup = call.argument("deleteMessagesWhenLeaveGroup") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setDeleteMessagesOnLeaveGroup(deleteMessagesWhenLeaveGroup);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateDeleteMessageWhenLeaveRoomSetting(call: MethodCall, result: MethodResult) {
+    let deleteMessageWhenLeaveRoom = call.argument("deleteMessageWhenLeaveRoom") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setDeleteMessagesOnLeaveChatroom(deleteMessageWhenLeaveRoom);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateRoomOwnerCanLeaveSetting(call: MethodCall, result: MethodResult) {
+    let roomOwnerCanLeave = call.argument("roomOwnerCanLeave") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.allowChatroomOwnerLeave(roomOwnerCanLeave);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateAutoAcceptGroupInvitationSetting(call: MethodCall, result: MethodResult) {
+    let autoAcceptGroupInvitation = call.argument("autoAcceptGroupInvitation") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setAutoAcceptGroupInvitations(autoAcceptGroupInvitation);
+    this.onSuccess(result, call.method);
+  }
+
+  private acceptInvitationAlways(call: MethodCall, result: MethodResult) {
+    let acceptInvitationAlways = call.argument("acceptInvitationAlways") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setAcceptInvitationAlways(acceptInvitationAlways);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateAutoDownloadAttachmentThumbnailSetting(call: MethodCall, result: MethodResult) {
+    let autoDownloadThumbnail = call.argument("autoDownloadThumbnail") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setAutoDownloadThumbnail(autoDownloadThumbnail);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateRequireAckSetting(call: MethodCall, result: MethodResult) {
+    let requireAck = call.argument("requireAck") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setRequireReadAck(requireAck);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateDeliveryAckSetting(call: MethodCall, result: MethodResult) {
+    let requireDeliveryAck = call.argument("requireDeliveryAck") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setRequireDeliveryAck(requireDeliveryAck);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateSortMessageByServerTimeSetting(call: MethodCall, result: MethodResult) {
+    let sortMessageByServerTime = call.argument("sortMessageByServerTime") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setSortMessageByServerTime(sortMessageByServerTime);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateMessagesReceiveCallbackIncludeSendSetting(call: MethodCall, result: MethodResult) {
+    let includeSend = call.argument("includeSend") as boolean;
+    let options = ChatClient.getInstance().getOptions();
+    options?.setIncludeSendMessageInMessageListener(includeSend);
+    this.onSuccess(result, call.method);
+  }
+
+  private updateRegradeMessagesSetting(_: MethodCall, result: MethodResult) {
+    this.noSupport(result);
+  }
+
+  private changeAppId(call: MethodCall, result: MethodResult) {
+    let appId = call.argument("appId") as string;
+    let err = ChatClient.getInstance().changeAppId(appId);
+    if(err == null) {
+      this.onSuccess(result, call.method);
+    }else {
+      this.onError(result, err);
+    }
+  }
+}ÀÔrDÜ °@easemob/chatsdk¸./ChatRoomManagerWrapperº./ChatThreadManagerWrapperµ./ConversationWrapper°./MessageWrapper¬./MethodKeys´./ChatManagerWrapperµ./GroupManagerWrapper·./ContactManagerWrapper±./ProgressManager´./PushManagerWrapper¸./UserInfoManagerWrapper©./WrapperÙ!./models/LoginExtensionInfoHelperº./models/ChatOptionsHelper¸./PresenceManagerWrapperÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃ°@easemob/chatsdkAÃªoh-resolveÂEAÂÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ChatRoomManagerWrapper.etsAÃªoh-resolveÂEAÂÙ‘/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ChatThreadManagerWrapper.etsAÃªoh-resolveÂEAÂÙŒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ConversationWrapper.etsAÃªoh-resolveÂEAÂÙ‡/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/MessageWrapper.etsAÃªoh-resolveÂEAÂÙƒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/MethodKeys.etsAÃªoh-resolveÂEAÂÙ‹/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ChatManagerWrapper.etsAÃªoh-resolveÂEAÂÙŒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/GroupManagerWrapper.etsAÃªoh-resolveÂEAÂÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ContactManagerWrapper.etsAÃªoh-resolveÂEAÂÙˆ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/ProgressManager.etsAÃªoh-resolveÂEAÂÙ‹/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/PushManagerWrapper.etsAÃªoh-resolveÂEAÂÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/UserInfoManagerWrapper.etsAÃªoh-resolveÂEAÂÙ€/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/Wrapper.etsAÃªoh-resolveÂEAÂÙ˜/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/LoginExtensionInfoHelper.etsAÃªoh-resolveÂEAÂÙ‘/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/ChatOptionsHelper.etsAÃªoh-resolveÂEAÂÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/PresenceManagerWrapper.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings°ClientWrapper.js ‘±ClientWrapper.etsÜ¶˜”    ”  ”	  	”  ”  ÌJ”  ÌP”-  Ìb”.  Ìc–”   ” ” ” ”5 5”6 6–”   ” ” ”# #”= =”> >–”   ” ” ”% %”ÌA ÌA”ÌB ÌB–”   ” ” ”" "”; ;”< <–”   ” ” ”   ”7 7”8 8–”   ” ” ”   ”7 7”8 8–”   ” ” ” ”- -”. .–”  	 ” 	” 	” 	”$ 	$”% 	%–”  
+ ” 
+” 
+” 
+”: 
+:”; 
+;–”   ” ” ”# #”= =”> >–”   ” ” ” ”/ /”0 0–”   ” ” ” ”5 5”6 6–”   ” ” ”# #”= =”> >–”   ” ” ” ” ”   –”   ” ” ”% %”ÌH ÌH”ÌI ÌI˜”   ” ” ” ” ”" #”+ +”2 2•” #” #” #+” #-”$ #Ì@˜” $” $	” $
+” $” $”" $”# $”$ $ ’” %” %”” '	” '” '” '4–” (” (” (” (” (” (” )” )
+” )” )” )”& ) ”' )!”0 )*”1 )+”ÌD )>”ÌF )Ì@”ÌJ )ÌD”ÌK )ÌE”ÌL )ÌF‘”	 *’” +” +’” -” -Ÿ” .” .” .	” .” .” .”1 .-”2 ..”6 .2”7 .3”> .;”Ì@ .=”ÌN .ÌK”ÌO .ÌL”ÌP .ÌMŸ” /” /” /	” /” /”" /”7 /3”8 /4”< /8”= /9”ÌD /ÌA”ÌF /ÌC”Ì\ /ÌY”Ì] /ÌZ”Ì^ /Ì[Ÿ” 0” 0” 0	” 0” 0” 0”5 01”6 02”: 06”; 07”ÌB 0?”ÌD 0ÌA”ÌW 0ÌT”ÌX 0ÌU”ÌY 0ÌVŸ” 1” 1” 1	” 1” 1”  1”3 1/”4 10”8 14”9 15”Ì@ 1=”ÌB 1?”ÌV 1ÌS”ÌW 1ÌT”ÌX 1ÌU™” 2” 2” 2	” 2” 2”' 2#”* 2&”. 2*”/ 2+Ÿ” 3” 3” 3	”  3”# 3”' 3#”: 36”; 37”? 3;”Ì@ 3<”ÌG 3ÌD”ÌI 3ÌF”Ì\ 3ÌY”Ì] 3ÌZ”Ì^ 3Ì[Ÿ” 4” 4” 4	” 4” 4” 4”1 4-”2 4.”6 42”7 43”> 4;”Ì@ 4=”ÌS 4ÌP”ÌT 4ÌQ”ÌU 4ÌRŸ” 5” 5” 5	” 5” 5”# 5”9 55”: 56”> 5:”? 5;”ÌF 5ÌC”ÌH 5ÌE”Ì_ 5Ì\”Ì` 5Ì]”Ìa 5Ì^Ÿ” 6” 6” 6	” 6” 6”# 6”9 65”: 66”> 6:”? 6;”ÌF 6ÌC”ÌH 6ÌE”Ì_ 6Ì\”Ì` 6Ì]”Ìa 6Ì^Ÿ” 7” 7” 7	” 7” 7”" 7”0 7,”1 7-”5 71”6 72”= 7:”? 7<”ÌM 7ÌJ”ÌN 7ÌK”ÌO 7ÌLŸ” 8” 8” 8	” 8” 8”! 8”9 85”: 86”> 8:”? 8;”ÌF 8ÌC”ÌH 8ÌE”Ì] 8ÌZ”Ì^ 8Ì[”Ì_ 8Ì\Ÿ” 9” 9” 9	” 9” 9”# 9”2 9.”3 9/”7 93”8 94”? 9<”ÌA 9>”ÌX 9ÌU”ÌY 9ÌV”ÌZ 9ÌW’” :” :’” <	” <˜” =” =” =	” =” =”0 =,”2 =.”3 =/˜” >” >” >	” >” >”3 >/”5 >1”6 >2˜” ?” ?” ?	” ?” ?”0 ?,”2 ?.”3 ?/˜” Ì@” Ì@” Ì@	” Ì@” Ì@”1 Ì@-”3 Ì@/”4 Ì@0˜” ÌA” ÌA” ÌA” ÌA” ÌA”! ÌA”% ÌA ”' ÌA"™” ÌB” ÌB
+” ÌB” ÌB” ÌB”+ ÌB&”. ÌB)”2 ÌB-”3 ÌB.‘”	 ÌC˜” ÌD” ÌD” ÌD	”  ÌD”" ÌD”8 ÌD4”: ÌD6”; ÌD7˜” ÌE” ÌE” ÌE	” ÌE” ÌE”0 ÌE,”2 ÌE.”3 ÌE/˜” ÌF” ÌF” ÌF	” ÌF” ÌF”4 ÌF0”6 ÌF2”7 ÌF3˜” ÌG” ÌG” ÌG	” ÌG” ÌG”4 ÌG0”6 ÌG2”7 ÌG3˜” ÌH” ÌH” ÌH	” ÌH” ÌH”3 ÌH/”5 ÌH1”6 ÌH2˜” ÌI” ÌI” ÌI	” ÌI” ÌI”2 ÌI.”4 ÌI0”5 ÌI1˜” ÌJ” ÌJ” ÌJ	” ÌJ” ÌJ”4 ÌJ0”6 ÌJ2”7 ÌJ3” ÌL” ÌL” ÌL” ÌL”  ÌL”! ÌL”; ÌL7”< ÌL8”Ì@ ÌL<”ÌA ÌL=”ÌT ÌLÌP”ÌU ÌLÌQ”ÌV ÌLÌR” ÌM” ÌM” ÌM” ÌM”  ÌM”! ÌM”9 ÌM5”: ÌM6”> ÌM:”? ÌM;”ÌQ ÌMÌM”ÌR ÌMÌN”ÌS ÌMÌO’” ÌN” ÌN’” ÌP” ÌPš” ÌQ” ÌQ” ÌQ” ÌQ” ÌQ”! ÌQ”" ÌQ”& ÌQ"”' ÌQ#”( ÌQ$˜” ÌR” ÌR” ÌR” ÌR”$ ÌR”( ÌR#”, ÌR'”. ÌR)” ÌS” ÌS” ÌS”" ÌS”$ ÌS”% ÌS”? ÌS9”Ì@ ÌS:”ÌD ÌS>”ÌE ÌS?”ÌX ÌSÌR”ÌY ÌSÌS”ÌZ ÌSÌT‘”	 ÌT•” ÌV” ÌV” ÌV	”  ÌV”# ÌV˜” ÌW” ÌW” ÌW”  ÌW”" ÌW”( ÌW"”* ÌW$”- ÌW'™” ÌX” ÌX”# ÌX”& ÌX”- ÌX%”. ÌX&”3 ÌX+”5 ÌX-”6 ÌX.˜” ÌY” ÌY” ÌY” ÌY” ÌY”" ÌY”$ ÌY,”% ÌY-š” ÌZ” ÌZ” ÌZ” ÌZ” ÌZ”  ÌZ”" ÌZ”' ÌZ”( ÌZ ”) ÌZ!š” Ì[” Ì[” Ì[” Ì[” Ì[”! Ì[”# Ì[”) Ì[!”* Ì["”+ Ì[#š” Ì\” Ì\” Ì\” Ì\” Ì\” Ì\”  Ì\”# Ì\”$ Ì\”% Ì\” Ì]” Ì]”! Ì]”( Ì] ”* Ì]"”6 Ì].”7 Ì]/”Ì@ Ì]8”ÌA Ì]9”ÌZ Ì]ÌR”Ì\ Ì]ÌT”Ì` Ì]ÌX”Ìa Ì]ÌY”Ìb Ì]ÌZ’” Ì^” Ì^˜” Ì_” Ì_” Ì_” Ì_”  Ì_”& Ì_!”( Ì_#”/ Ì_*™” Ì`” Ì`”# Ì`”& Ì`”- Ì`%”. Ì`&”3 Ì`+”5 Ì`-”6 Ì`.˜” Ìa” Ìa” Ìa” Ìa” Ìa”" Ìa”$ Ìa,”% Ìa-š” Ìb” Ìb” Ìb” Ìb” Ìb”  Ìb”" Ìb”' Ìb”( Ìb ”) Ìb!š” Ìc” Ìc” Ìc” Ìc” Ìc”! Ìc”# Ìc”) Ìc!”* Ìc"”+ Ìc#š” Ìd” Ìd” Ìd” Ìd” Ìd”  Ìd”" Ìd”) Ìd!”* Ìd"”+ Ìd#” Ìe” Ìe”! Ìe”( Ìe ”* Ìe"”6 Ìe.”7 Ìe/”Ì@ Ìe8”ÌA Ìe9”ÌX ÌeÌP”ÌZ ÌeÌR”Ì^ ÌeÌV”Ì_ ÌeÌW”Ì` ÌeÌX’” Ìf” Ìf–” Ìg” Ìg” Ìg”+ Ìg%”- Ìg'”5 Ìg/™” Ìh” Ìh”# Ìh”& Ìh”- Ìh%”. Ìh&”3 Ìh+”5 Ìh-”6 Ìh.˜” Ìi” Ìi” Ìi” Ìi” Ìi”" Ìi”$ Ìi,”% Ìi-š” Ìj” Ìj” Ìj” Ìj” Ìj”! Ìj”# Ìj”1 Ìj)”2 Ìj*”3 Ìj+š” Ìk” Ìk” Ìk” Ìk” Ìk”# Ìk”% Ìk”- Ìk%”. Ìk&”/ Ìk'” Ìl” Ìl”! Ìl”( Ìl ”* Ìl"”6 Ìl.”7 Ìl/”Ì@ Ìl8”ÌA Ìl9”Ìa ÌlÌY”Ìc ÌlÌ[”Ìg ÌlÌ_”Ìh ÌlÌ`”Ìi ÌlÌa’” Ìm” Ìm˜” Ìn” Ìn”  Ìn”% Ìn”' Ìn!”5 Ìn/”7 Ìn1”; Ìn5™” Ìo” Ìo”# Ìo”& Ìo”- Ìo%”. Ìo&”3 Ìo+”5 Ìo-”6 Ìo.˜” Ìp” Ìp” Ìp” Ìp” Ìp”" Ìp”$ Ìp,”% Ìp-š” Ìq” Ìq” Ìq” Ìq” Ìq”  Ìq”" Ìq”' Ìq”( Ìq ”) Ìq!š” Ìr” Ìr” Ìr” Ìr” Ìr”! Ìr”# Ìr”1 Ìr)”2 Ìr*”3 Ìr+š” Ìs” Ìs” Ìs” Ìs” Ìs” Ìs”! Ìs”% Ìs”& Ìs”' Ìs” Ìt” Ìt”! Ìt”( Ìt ”* Ìt"”6 Ìt.”7 Ìt/”Ì@ Ìt8”ÌA Ìt9”Ì` ÌtÌX”Ìb ÌtÌZ”Ìf ÌtÌ^”Ìg ÌtÌ_”Ìh ÌtÌ`’” Ìu” Ìu’”	 Ìv”
+ Ìv” Ìx” Ìx” Ìx” Ìx”  Ìx”! Ìx”8 Ìx4”9 Ìx5”= Ìx9”> Ìx:”ÌQ ÌxÌM”ÌR ÌxÌN”ÌS ÌxÌO˜” Ìz” Ìz” Ìz” Ìz”# Ìz”' Ìz#”+ Ìz'”- Ìz)” Ì{” Ì{” Ì{”" Ì{”$ Ì{”% Ì{”= Ì{7”> Ì{8”ÌB Ì{<”ÌC Ì{=”ÌU Ì{ÌO”ÌV Ì{ÌP”ÌW Ì{ÌQ‘”	 Ì|•” Ì~” Ì~” Ì~	” Ì~”" Ì~’” Ì” Ì™” Ì€” Ì€”# Ì€”& Ì€”- Ì€%”. Ì€&”3 Ì€+”5 Ì€-”6 Ì€.˜” Ì” Ì” Ì” Ì” Ì”" Ì”$ Ì,”% Ì-š” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚”$ Ì‚”& Ì‚”* Ì‚"”+ Ì‚#”, Ì‚$” Ìƒ” Ìƒ”! Ìƒ”( Ìƒ ”* Ìƒ"”6 Ìƒ.”7 Ìƒ/”Ì@ Ìƒ8”ÌA Ìƒ9”ÌL ÌƒÌD”ÌN ÌƒÌF”ÌR ÌƒÌJ”ÌS ÌƒÌK”ÌT ÌƒÌL’” Ì„” Ì„”” Ì…” Ì…” Ì…”" Ì…™” Ì†” Ì†”# Ì†”& Ì†”- Ì†%”. Ì†&”3 Ì†+”5 Ì†-”6 Ì†.˜” Ì‡” Ì‡” Ì‡” Ì‡” Ì‡”" Ì‡”$ Ì‡,”% Ì‡-–” Ìˆ” Ìˆ” Ìˆ” Ìˆ”" Ìˆ”$ Ìˆ’” Ì‰
+”( Ì‰‘” ÌŠ	–” ÌŠ” ÌŠ”  ÌŠ”$ ÌŠ”' ÌŠ ”) ÌŠ"” Ì‹
+”# Ì‹”% Ì‹”, Ì‹"”. Ì‹$”: Ì‹0”; Ì‹1”ÌD Ì‹:”ÌE Ì‹;”ÌP Ì‹ÌF”ÌR Ì‹ÌH”ÌV Ì‹ÌL”ÌW Ì‹ÌM”ÌX Ì‹ÌN‘” ÌŒ	–” ÌŒ” ÌŒ”  ÌŒ”$ ÌŒ”' ÌŒ ”) ÌŒ"” Ì
+”# Ì”% Ì”, Ì"”. Ì$”: Ì0”; Ì1”ÌD Ì:”ÌE Ì;”Ì\ ÌÌR”Ì^ ÌÌT”Ìb ÌÌX”Ìc ÌÌY”Ìd ÌÌZ‘” Ì	–” Ì” Ì”  Ì”$ Ì”' Ì ”) Ì"” Ì
+”# Ì”% Ì”, Ì"”. Ì$”: Ì0”; Ì1”ÌD Ì:”ÌE Ì;”Ì\ ÌÌR”Ì^ ÌÌT”Ìb ÌÌX”Ìc ÌÌY”Ìd ÌÌZ‘” Ì	–” Ì” Ì”  Ì”$ Ì”' Ì ”) Ì"” Ì‘
+”# Ì‘”% Ì‘”, Ì‘"”. Ì‘$”: Ì‘0”; Ì‘1”ÌD Ì‘:”ÌE Ì‘;”Ì` Ì‘ÌV”Ìb Ì‘ÌX”Ìf Ì‘Ì\”Ìg Ì‘Ì]”Ìh Ì‘Ì^‘” Ì’	–” Ì’” Ì’”  Ì’”$ Ì’”' Ì’ ”) Ì’"” Ì“
+”# Ì“”% Ì“”, Ì“"”. Ì“$”: Ì“0”; Ì“1”ÌD Ì“:”ÌE Ì“;”Ì^ Ì“ÌT”Ì` Ì“ÌV”Ìd Ì“ÌZ”Ìe Ì“Ì[”Ìf Ì“Ì\‘” Ì”	–” Ì”” Ì””  Ì””$ Ì””' Ì” ”) Ì”"” Ì•
+”# Ì•”% Ì•”, Ì•"”. Ì•$”: Ì•0”; Ì•1”ÌD Ì•:”ÌE Ì•;”Ì_ Ì•ÌU”Ìa Ì•ÌW”Ìe Ì•Ì[”Ìf Ì•Ì\”Ìg Ì•Ì]‘” Ì–	–” Ì–” Ì–”  Ì–”$ Ì–”% Ì–”' Ì– ” Ì—
+”# Ì—”% Ì—”, Ì—"”. Ì—$”: Ì—0”; Ì—1”ÌD Ì—:”ÌE Ì—;”Ì` Ì—ÌV”Ìb Ì—ÌX”Ìf Ì—Ì\”Ìg Ì—Ì]”Ìh Ì—Ì^‘” Ì˜	‘” Ì˜” Ì™
+”# Ì™”% Ì™”, Ì™"”. Ì™$”: Ì™0”; Ì™1”ÌD Ì™:”ÌE Ì™;”ÌS Ì™ÌI”ÌU Ì™ÌK”ÌY Ì™ÌO”ÌZ Ì™ÌP”Ì[ Ì™ÌQ‘” Ìš	’” Ì›” Ì›’” Ìœ” Ìœ™” Ì” Ì”# Ì”& Ì”- Ì%”. Ì&”3 Ì+”5 Ì-”6 Ì.” Ì” Ì”! Ì”( Ì ”* Ì"”6 Ì.”7 Ì/”Ì@ Ì8”ÌA Ì9”ÌQ ÌÌI”ÌS ÌÌK”ÌW ÌÌO”ÌX ÌÌP”ÌY ÌÌQ’” ÌŸ” ÌŸ’” Ì ” Ì ™” Ì¡” Ì¡”# Ì¡”& Ì¡”- Ì¡%”. Ì¡&”3 Ì¡+”5 Ì¡-”6 Ì¡.” Ì¢” Ì¢”! Ì¢”( Ì¢ ”* Ì¢"”6 Ì¢.”7 Ì¢/”Ì@ Ì¢8”ÌA Ì¢9”ÌR Ì¢ÌJ”ÌT Ì¢ÌL”ÌX Ì¢ÌP”ÌY Ì¢ÌQ”ÌZ Ì¢ÌR’” Ì£” Ì£–” Ì¤” Ì¤” Ì¤” Ì¤”  Ì¤”) Ì¤#™” Ì¥” Ì¥”# Ì¥”& Ì¥”- Ì¥%”. Ì¥&”3 Ì¥+”5 Ì¥-”6 Ì¥.–” Ì¦” Ì¦” Ì¦”! Ì¦”$ Ì¦”& Ì¦Ü ” Ì§
+”# Ì§”% Ì§”, Ì§"”. Ì§$”: Ì§0”; Ì§1”ÌD Ì§:”ÌE Ì§;”ÌV Ì§ÌL”ÌX Ì§ÌN”Ìp Ì§Ìf”Ìq Ì§Ìg”Ìw Ì§Ìm”Ìx Ì§Ìn”Ì Ì§Ìw”Ì‚ Ì§Ìx”Ìƒ Ì§Ìy”Ì„ Ì§Ìz‘” Ì¨	’” Ì©” Ì©’” Ìª”% Ìª™” Ì«” Ì«”# Ì«”& Ì«”- Ì«%”. Ì«&”3 Ì«+”5 Ì«-”6 Ì«.” Ì¬” Ì¬”! Ì¬”( Ì¬ ”* Ì¬"”6 Ì¬.”7 Ì¬/”Ì@ Ì¬8”ÌA Ì¬9”ÌZ Ì¬ÌR”Ì\ Ì¬ÌT”Ì` Ì¬ÌX”Ìa Ì¬ÌY”Ìb Ì¬ÌZ’” Ì­” Ì­’” Ì®”& Ì® ™” Ì¯” Ì¯”# Ì¯”& Ì¯”- Ì¯%”. Ì¯&”3 Ì¯+”5 Ì¯-”6 Ì¯.” Ì°” Ì°”! Ì°”( Ì° ”* Ì°"”6 Ì°.”7 Ì°/”Ì@ Ì°8”ÌA Ì°9”Ì[ Ì°ÌS”Ì] Ì°ÌU”Ìa Ì°ÌY”Ìb Ì°ÌZ”Ìc Ì°Ì[’” Ì±” Ì±’”	 Ì²”
+ Ì²” Ì´” Ì´” Ì´” Ì´”  Ì´”! Ì´”6 Ì´2”7 Ì´3”; Ì´7”< Ì´8”ÌN Ì´ÌJ”ÌO Ì´ÌK”ÌP Ì´ÌL’” Ìµ” Ìµ–” Ì·” Ì·” Ì·” Ì·” Ì·!” Ì·5š” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸” Ì¸”" Ì¸”# Ì¸”) Ì¸%”+ Ì¸'š” Ì¹” Ì¹
+” Ì¹” Ì¹” Ì¹” Ì¹” Ì¹”" Ì¹”# Ì¹”$ Ì¹‘”	 Ìºš” Ì»	” Ì»” Ì»” Ì»”( Ì»$”, Ì»(”0 Ì»,”1 Ì»-”7 Ì»3”9 Ì¼š” Ì½” Ì½
+” Ì½” Ì½” Ì½”# Ì½”% Ì½”+ Ì½%”, Ì½&”- Ì½'‘”	 Ì¾š” Ì¿	” Ì¿” Ì¿” Ì¿”  Ì¿”$ Ì¿ ”( Ì¿$”) Ì¿%”/ Ì¿+”1 ÌÀš” ÌÁ” ÌÁ
+” ÌÁ” ÌÁ” ÌÁ” ÌÁ” ÌÁ”# ÌÁ”$ ÌÁ”% ÌÁ‘”	 ÌÂš” ÌÃ	” ÌÃ” ÌÃ” ÌÃ”! ÌÃ”% ÌÃ!”) ÌÃ%”* ÌÃ&”0 ÌÃ,”2 ÌÄš” ÌÅ” ÌÅ
+” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ”$ ÌÅ”% ÌÅ”& ÌÅ ‘”	 ÌÆš” ÌÇ	” ÌÇ” ÌÇ” ÌÇ”' ÌÇ#”+ ÌÇ'”/ ÌÇ+”0 ÌÇ,”6 ÌÇ2”8 ÌÈš” ÌÉ” ÌÉ
+” ÌÉ” ÌÉ” ÌÉ”" ÌÉ”$ ÌÉ”* ÌÉ$”+ ÌÉ%”, ÌÉ&‘”	 ÌÊš” ÌË	” ÌË” ÌË” ÌË”$ ÌË ”( ÌË$”, ÌË(”- ÌË)”3 ÌË/”5 ÌÌš” ÌÍ” ÌÍ
+” ÌÍ” ÌÍ” ÌÍ” ÌÍ”! ÌÍ”' ÌÍ!”( ÌÍ"”) ÌÍ#‘”	 ÌÎš” ÌÏ	” ÌÏ” ÌÏ” ÌÏ”' ÌÏ#”+ ÌÏ'”/ ÌÏ+”0 ÌÏ,”6 ÌÏ2”8 ÌĞš” ÌÑ” ÌÑ
+” ÌÑ” ÌÑ” ÌÑ”" ÌÑ”$ ÌÑ”* ÌÑ$”+ ÌÑ%”, ÌÑ&‘”	 ÌÒš” ÌÓ	” ÌÓ” ÌÓ” ÌÓ”7 ÌÓ3”; ÌÓ7”? ÌÓ;”Ì@ ÌÓ<”ÌF ÌÓÌB”ÌH ÌÔš” ÌÕ” ÌÕ
+” ÌÕ”- ÌÕ'”. ÌÕ(”2 ÌÕ,”4 ÌÕ.”: ÌÕ4”; ÌÕ5”< ÌÕ6‘”	 ÌÖš” Ì×	” Ì×” Ì×” Ì×”% Ì×!”) Ì×%”- Ì×)”. Ì×*”4 Ì×0”6 ÌØš” ÌÙ” ÌÙ
+” ÌÙ” ÌÙ” ÌÙ”  ÌÙ”" ÌÙ”( ÌÙ"”) ÌÙ#”* ÌÙ$‘”	 ÌÚš” ÌÛ	” ÌÛ” ÌÛ” ÌÛ”) ÌÛ%”- ÌÛ)”1 ÌÛ-”2 ÌÛ.”8 ÌÛ4”: ÌÜš” Ìİ” Ìİ	” Ìİ
+” Ìİ”  Ìİ”$ Ìİ”& Ìİ”, Ìİ%”- Ìİ&”. Ìİ'‘”	 ÌŞš” Ìß	” Ìß” Ìß” Ìß”+ Ìß'”/ Ìß+”3 Ìß/”4 Ìß0”: Ìß6”< Ìàš” Ìá” Ìá
+” Ìá”! Ìá”" Ìá”& Ìá ”( Ìá"”. Ìá(”/ Ìá)”0 Ìá*‘”	 Ìâš” Ìã	” Ìã” Ìã” Ìã”) Ìã%”- Ìã)”1 Ìã-”2 Ìã.”8 Ìã4”: Ìäš” Ìå” Ìå
+” Ìå” Ìå”  Ìå”$ Ìå”& Ìå ”, Ìå&”- Ìå'”. Ìå(‘”	 Ìæš” Ìç	” Ìç” Ìç” Ìç”. Ìç*”2 Ìç.”6 Ìç2”7 Ìç3”= Ìç9”? Ìèš” Ìé” Ìé
+” Ìé”$ Ìé”% Ìé”) Ìé#”+ Ìé%”1 Ìé+”2 Ìé,”3 Ìé-‘”	 Ìêš” Ìë	” Ìë” Ìë” Ìë”# Ìë”' Ìë#”+ Ìë'”, Ìë(”2 Ìë.”4 Ììš” Ìí” Ìí
+” Ìí” Ìí” Ìí” Ìí”  Ìí”& Ìí ”' Ìí!”( Ìí"‘”	 Ìîš” Ìï	” Ìï” Ìï” Ìï”& Ìï"”* Ìï&”. Ìï*”/ Ìï+”5 Ìï1”7 Ìï3š” Ìğ” Ìğ
+” Ìğ” Ìğ” Ìğ”! Ìğ”# Ìğ”) Ìğ#”* Ìğ$”+ Ìğ%‘”	 Ìñš” Ìò	” Ìò” Ìò” Ìò”% Ìò!”) Ìò%”- Ìò)”. Ìò*”4 Ìò0”6 Ìò1š” Ìó” Ìó
+” Ìó” Ìó” Ìó”  Ìó”" Ìó”( Ìó"”) Ìó#”* Ìó$‘”	 Ìôš” Ìõ	” Ìõ” Ìõ” Ìõ”( Ìõ$”, Ìõ(”0 Ìõ,”1 Ìõ-”7 Ìõ3”9 Ìõ5š” Ìö” Ìö
+” Ìö” Ìö” Ìö”# Ìö”% Ìö”+ Ìö%”, Ìö&”- Ìö'‘”	 Ì÷š” Ìø	” Ìø” Ìø” Ìø”6 Ìø2”: Ìø6”> Ìø:”? Ìø;”ÌE ÌøÌA”ÌG ÌøÌCš” Ìù” Ìù
+” Ìù”, Ìù&”- Ìù'”1 Ìù+”3 Ìù-”9 Ìù3”: Ìù4”; Ìù5‘”	 Ìúš” Ìû	” Ìû” Ìû” Ìû”3 Ìû/”7 Ìû3”; Ìû7”< Ìû8”ÌB Ìû>”ÌD ÌûÌ@š” Ìü” Ìü
+” Ìü”) Ìü#”* Ìü$”. Ìü(”0 Ìü*”6 Ìü0”7 Ìü1”8 Ìü2‘”	 Ìıš” Ìş	” Ìş” Ìş” Ìş”ÌD ÌşÌ@”ÌH ÌşÌD”ÌL ÌşÌH”ÌM ÌşÌI”ÌS ÌşÌO”ÌU ÌşÌQš” Ìÿ” Ìÿ
+” Ìÿ”: Ìÿ4”; Ìÿ5”? Ìÿ9”ÌA Ìÿ;”ÌG ÌÿÌA”ÌH ÌÿÌB”ÌI ÌÿÌC‘”	 Í š” Í	” Í” Í” Í”ÌB Í>”ÌF ÍÌB”ÌJ ÍÌF”ÌK ÍÌG”ÌQ ÍÌM”ÌS ÍÌOš” Í” Í
+” Í”8 Í2”9 Í3”= Í7”? Í9”ÌE Í?”ÌF ÍÌ@”ÌG ÍÌA‘”	 Íš” Í	” Í” Í” Í”9 Í5”= Í9”ÌA Í=”ÌB Í>”ÌH ÍÌD”ÌJ ÍÌFš” Í” Í
+” Í”/ Í)”0 Í*”4 Í.”6 Í0”< Í6”= Í7”> Í8‘”	 Íš” Í	” Í” Í” Í”ÌA Í=”ÌE ÍÌA”ÌI ÍÌE”ÌJ ÍÌF”ÌP ÍÌL”ÌR ÍÌNš” Í” Í
+” Í”7 Í1”8 Í2”< Í6”> Í8”ÌD Í>”ÌE Í?”ÌF ÍÌ@‘”	 Í	š” Í
+	” Í
+” Í
+” Í
+”1 Í
+-”5 Í
+1”9 Í
+5”: Í
+6”Ì@ Í
+<”ÌB Í
+>š” Í” Í
+” Í”' Í!”( Í"”, Í&”. Í(”4 Í.”5 Í/”6 Í0‘”	 Íš” Í	” Í” Í” Í”ÌG ÍÌC”ÌK ÍÌG”ÌO ÍÌK”ÌP ÍÌL”ÌV ÍÌR”ÌX ÍÌTš” Í” Í
+” Í”= Í7”> Í8”ÌB Í<”ÌD Í>”ÌJ ÍÌD”ÌK ÍÌE”ÌL ÍÌF‘”	 Íš” Í	” Í” Í” Í”2 Í.”6 Í2”: Í6”; Í7”ÌA Í=”ÌC Í?š” Í” Í
+” Í”( Í"”) Í#”- Í'”/ Í)”5 Í/”6 Í0”7 Í1‘”	 Íš” Í	” Í” Í” Í”3 Í/”7 Í3”; Í7”< Í8”ÌB Í>”ÌD ÍÌ@š” Í” Í
+” Í”) Í#”* Í$”. Í(”0 Í*”6 Í0”7 Í1”8 Í2‘”	 Íš” Í	” Í” Í” Í”? Í;”ÌC Í?”ÌG ÍÌC”ÌH ÍÌD”ÌN ÍÌJ”ÌP ÍÌLš” Í” Í
+” Í”5 Í/”6 Í0”: Í4”< Í6”ÌB Í<”ÌC Í=”ÌD Í>‘”	 Íš” Í	” Í” Í” Í”ÌJ ÍÌF”ÌN ÍÌJ”ÌR ÍÌN”ÌS ÍÌO”ÌY ÍÌU”Ì[ ÍÌWš” Í” Í
+” Í”Ì@ Í:”ÌA Í;”ÌE Í?”ÌG ÍÌA”ÌM ÍÌG”ÌN ÍÌH”ÌO ÍÌI‘”	 Íš” Í	” Í” Í” Í”7 Í3”; Í7”? Í;”Ì@ Í<”ÌF ÍÌB”ÌH ÍÌDš” Í” Í
+” Í”- Í'”. Í(”2 Í,”4 Í.”: Í4”; Í5”< Í6‘”	 Íš” Í	” Í” Í” Í”& Í"”* Í&”. Í*”/ Í+”5 Í1”7 Í3š” Í ” Í 
+” Í ” Í ” Í ”! Í ”# Í ”) Í #”* Í $”+ Í %‘”	 Í!‘” Í"
+š” Í#” Í#” Í#” Í#” Í#”# Í#”% Í#”+ Í#%”, Í#&”- Í#'‘”	 Í$’” Í%” Í%–” Í'
+” Í'”	 Í'” Í'” Í'!” Í'5” Í(” Í(
+” Í(” Í(”' Í(%”( Í(&”0 Í(.”1 Í(/”5 Í(3”6 Í(4”: Í(ÌO”; Í(ÌP”< Í(ÌQŸ” Í)” Í)” Í)” Í)”  Í)”! Í)”% Í)#”& Í)$”* Í)(”+ Í))”2 Í)0”4 Í)2”; Í)9”< Í):”= Í);–” Í+” Í+
+” Í+” Í+” Í+” Í+–” Í,” Í,
+” Í,”! Í,”# Í,!”$ Í,"œ” Í-” Í-
+” Í-” Í-” Í-” Í-” Í-”# Í-!”$ Í-"”* Í-(”+ Í-)”, Í-*’” Í.” Í.–” Í0
+” Í0” Í0” Í0(” Í0*” Í0>›” Í1” Í1” Í1” Í1” Í1” Í1”" Í1”# Í1”- Í1)”. Í14”/ Í15›” Í2” Í2” Í2” Í2” Í2” Í2”$ Í2 ”% Í2!”/ Í2+”0 Í26”1 Í27œ” Í3” Í3” Í3” Í3”  Í3”! Í3”. Í3*”/ Í3+”5 Í31”7 Í33”? Í3;”Ì@ Í3<Ü ” Í4” Í4” Í4” Í4” Í4” Í4” Í4” Í4”& Í4 ”' Í4!”- Í4'”/ Í4)”3 Í4-”4 Í4.”: Í44”; Í45”< Í46Ü ” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5#” Í5$”& Í5+”' Í5,”- Í52”/ Í54”0 Í55”1 Í56”2 Í57”3 Í58’” Í6” Í6–” Í8
+”	 Í8”
+ Í8” Í8 ” Í8"” Í86›” Í9” Í9” Í9” Í9” Í9” Í9”! Í9”" Í9”. Í9*”/ Í96”0 Í97›” Í:” Í:” Í:” Í:” Í:” Í:”" Í:”# Í:”- Í:)”. Í:4”/ Í:5›” Í;” Í;” Í;” Í;” Í;” Í;”& Í;"”' Í;#”3 Í;/”4 Í;:”5 Í;;”” Í<” Í<” Í<” Í<œ” Í=” Í=” Í=”" Í=”$ Í=”% Í=”* Í=$”+ Í=%”1 Í=+”3 Í=-”= Í=7”> Í=8Ü ” Í>	” Í>” Í>” Í>” Í>” Í>”  Í>”! Í>”* Í>"”+ Í>#”1 Í>)”3 Í>+”7 Í>/”8 Í>0”> Í>6”? Í>7”Ì@ Í>8Ü ” Í?	” Í?” Í?” Í?” Í?” Í?” Í? ” Í?!”" Í?%”# Í?&”* Í?-”+ Í?.”1 Í?4”3 Í?6”4 Í?7”5 Í?8”6 Í?9”7 Í?:‘”	 Í@‘” Í@
+œ” ÍA” ÍA” ÍA”" ÍA”$ ÍA”% ÍA”3 ÍA-”4 ÍA.”: ÍA4”< ÍA6”ÌF ÍAÌ@”ÌG ÍAÌAÜ ” ÍB	” ÍB” ÍB” ÍB” ÍB” ÍB”  ÍB”! ÍB”* ÍB"”+ ÍB#”1 ÍB)”3 ÍB+”7 ÍB/”8 ÍB0”> ÍB6”? ÍB7”Ì@ ÍB8Ü ” ÍC	” ÍC” ÍC” ÍC” ÍC” ÍC” ÍC ” ÍC!”" ÍC%”# ÍC&”* ÍC-”+ ÍC.”1 ÍC4”3 ÍC6”4 ÍC7”5 ÍC8”6 ÍC9”7 ÍC:‘”	 ÍD’” ÍE” ÍE–” ÍG
+”
+ ÍG” ÍG” ÍG!” ÍG#” ÍG7›” ÍH” ÍH” ÍH” ÍH” ÍH” ÍH”' ÍH#”( ÍH$”5 ÍH1”6 ÍH=”7 ÍH>š” ÍI” ÍI” ÍI” ÍI”  ÍI”! ÍI”' ÍI#”( ÍI$”3 ÍI/”4 ÍI0Ü ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ” ÍJ”& ÍJ ”' ÍJ!”- ÍJ'”/ ÍJ)”3 ÍJ-”4 ÍJ.”: ÍJ4”; ÍJ5”< ÍJ6Ü ” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK#” ÍK$”& ÍK+”' ÍK,”- ÍK2”/ ÍK4”0 ÍK5”1 ÍK6”2 ÍK7”3 ÍK8’” ÍL” ÍL–” ÍN
+” ÍN” ÍN” ÍN'” ÍN)” ÍN=›” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO”" ÍO”# ÍO”+ ÍO'”, ÍO2”- ÍO3” ÍP” ÍP” ÍP” ÍP”" ÍP”# ÍP”. ÍP*”0 ÍP,”1 ÍP-”= ÍP9”> ÍP:”ÌD ÍPÌ@”ÌE ÍPÌA”ÌF ÍPÌA–” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQœ” ÍR” ÍR
+” ÍR” ÍR” ÍR”! ÍR”# ÍR”' ÍR!”( ÍR"”. ÍR(”/ ÍR)”0 ÍR*‘”	 ÍS‘” ÍS
+š” ÍT” ÍT
+” ÍT” ÍT” ÍT” ÍT”! ÍT”* ÍT$”+ ÍT%”, ÍT&‘”	 ÍU’” ÍV” ÍV–” ÍX
+” ÍX” ÍX” ÍX$” ÍX&” ÍX:˜” ÍY” ÍY” ÍY” ÍY”  ÍY”! ÍY”* ÍY&”, ÍY(Ü ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ” ÍZ”& ÍZ ”' ÍZ!”- ÍZ'”/ ÍZ)”3 ÍZ-”4 ÍZ.”: ÍZ4”; ÍZ5”< ÍZ6Ü ” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[” Í[#” Í[$”& Í[+”' Í[,”- Í[2”/ Í[4”0 Í[5”1 Í[6”2 Í[7”3 Í[8’” Í\” Í\–” Í^
+” Í^” Í^” Í^$” Í^&” Í^:˜” Í_” Í_” Í_	” Í_” Í_” Í_” Í_” Í_’” Í`” Í`–” Íb
+”  Íb&”! Íb'”" Íb4”$ Íb6”* ÍbÌJ˜” Íc” Íc” Íc	” Íc” Íc” Íc” Íc” Íc’” Íd” Íd–” Íf
+” Íf” Íf” Íf"” Íf$” Íf8˜” Íg” Íg” Íg	” Íg” Íg” Íg” Íg” Íg’” Íh” Íh–” Íj
+” Íj” Íj” Íj&” Íj(” Íj<˜” Ík” Ík” Ík	” Ík” Ík” Ík” Ík” Ík’” Íl” Íl–” Ín
+” Ín” Ín” Ín+” Ín-”! ÍnÌAœ” Ío” Ío” Ío” Ío”  Ío”! Ío”, Ío(”. Ío*”/ Ío+”9 Ío5”; Ío7”< Ío8Ü ” Íp” Íp” Íp	” Íp” Íp” Íp” Íp”# Íp”$ Íp”* Íp%”, Íp'”6 Íp1”7 Íp2”ÌB Íp=”ÌD Íp?”ÌE ÍpÌ@”ÌO ÍpÌJ”ÌQ ÍpÌL”ÌU ÍpÌP”Ì\ ÍpÌW”Ì^ ÍpÌY”Ìi ÍpÌd”Ìk ÍpÌf”Ìl ÍpÌg”Ìm ÍpÌh’” Íq” Íq–” Ís
+” Ís” Ís” Ís)” Ís+” Ís?Ü ” Ít” Ít” Ít	” Ít” Ít” Ít” Ít”# Ít”$ Ít”* Ít%”, Ít'”6 Ít1”7 Ít2”ÌB Ít=”ÌD Ít?”ÌE ÍtÌ@”ÌS ÍtÌN”ÌU ÍtÌP”ÌV ÍtÌQ”ÌW ÍtÌR’” Íu” Íu–” Íw
+” Íw” Íw” Íw.” Íw0”$ ÍwÌD›” Íx” Íx” Íx” Íx” Íx” Íx”$ Íx ”% Íx!”/ Íx+”0 Íx6”1 Íx7›” Íy” Íy” Íy” Íy” Íy” Íy”& Íy"”' Íy#”4 Íy0”5 Íy;”6 Íy<œ” Íz” Íz” Íz” Íz”  Íz”! Íz”/ Íz+”0 Íz,”8 Íz4”: Íz6”ÌD ÍzÌ@”ÌE ÍzÌAÜ ” Í{” Í{” Í{” Í{” Í{” Í{” Í{” Í{”& Í{ ”' Í{!”- Í{'”/ Í{)”3 Í{-”4 Í{.”: Í{4”; Í{5”< Í{6Ü ” Í|” Í|” Í|” Í|” Í|” Í|” Í|” Í|” Í|#” Í|$”& Í|+”' Í|,”- Í|2”/ Í|4”0 Í|5”1 Í|6”2 Í|7”3 Í|8’” Í}” Í}–” Í
+” Í” Í” Í#” Í%” Í9œ” Í€” Í€” Í€” Í€” Í€” Í€”* Í€&”, Í€(”- Í€)”; Í€7”= Í€9”> Í€:” Í” Í” Í	” Í” Í” Í” Í”# Í”$ Í ”* Í&”, Í(”1 Í-”2 Í.”3 Í/’” Í‚” Í‚–” Í„
+” Í„” Í„” Í„&” Í„(” Í„<Ü ” Í…” Í…” Í…	” Í…” Í…” Í…” Í…”# Í…”$ Í… ”* Í…&”, Í…(”6 Í…2”7 Í…3”ÌB Í…>”ÌD Í…Ì@”ÌE Í…ÌA”ÌP Í…ÌL”ÌR Í…ÌN”ÌS Í…ÌO”ÌT Í…ÌP’” Í†” Í†–” Íˆ
+” Íˆ” Íˆ” Íˆ%” Íˆ'” Íˆ;›” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰”! Í‰”" Í‰”/ Í‰+”0 Í‰6”1 Í‰7š” ÍŠ” ÍŠ” ÍŠ” ÍŠ”  ÍŠ”! ÍŠ”+ ÍŠ'”, ÍŠ(”1 ÍŠ-”2 ÍŠ.Ü ” Í‹” Í‹” Í‹” Í‹” Í‹” Í‹” Í‹” Í‹”& Í‹ ”' Í‹!”- Í‹'”/ Í‹)”3 Í‹-”4 Í‹.”: Í‹4”; Í‹5”< Í‹6Ü ” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ#” ÍŒ$”& ÍŒ+”' ÍŒ,”- ÍŒ2”/ ÍŒ4”0 ÍŒ5”1 ÍŒ6”2 ÍŒ7”3 ÍŒ8’” Í” Í–” Í
+” Í” Í” Í(” Í*” Í>œ” Í” Í” Í	” Í” Í” Í” Í”# Í”$ Í ”* Í&”+ Í'”, Í(’” Í‘” Í‘–” Í“
+” Í“%”  Í“&”$ Í“6”& Í“8”, Í“ÌL›” Í”” Í”” Í”” Í””! Í””" Í””* Í”&”+ Í”'”; Í”7”< Í”ÌC”= Í”ÌDœ” Í•” Í•” Í•” Í•”  Í•”! Í•”, Í•(”. Í•*”/ Í•+”9 Í•5”; Í•7”< Í•8˜” Í–” Í–” Í–”" Í–”# Í–”1 Í–-”2 Í–.”3 Í–.œ” Í—” Í—” Í—	” Í—” Í—” Í—” Í—”# Í—”$ Í— ”* Í—&”+ Í—'”, Í—(’” Í˜” Í˜–” Íš
+” Íš"” Íš#”! Íš3”# Íš5”) ÍšÌI›” Í›” Í›” Í›” Í›” Í›” Í›”% Í›!”& Í›"”1 Í›-”2 Í›8”3 Í›9œ” Íœ” Íœ” Íœ” Íœ”  Íœ”! Íœ”, Íœ(”. Íœ*”/ Íœ+”9 Íœ5”; Íœ7”< Íœ8˜” Í” Í” Í”" Í”# Í”, Í(”- Í)”. Í*œ” Í” Í” Í	” Í” Í” Í” Í”# Í”$ Í ”* Í&”+ Í'”, Í(’” ÍŸ” ÍŸ–” Í¡
+”- Í¡3”. Í¡4”2 Í¡ÌD”4 Í¡ÌF”: Í¡ÌZ›” Í¢” Í¢”( Í¢$”+ Í¢'”/ Í¢+”0 Í¢,”8 Í¢4”9 Í¢5”ÌW Í¢ÌS”ÌX Í¢Ì_”ÌY Í¢Ì`œ” Í£” Í£” Í£” Í£”  Í£”! Í£”, Í£(”. Í£*”/ Í£+”9 Í£5”; Í£7”< Í£8˜” Í¤” Í¤” Í¤”. Í¤*”/ Í¤+”ÌK Í¤ÌG”ÌL Í¤ÌH”ÌM Í¤ÌIœ” Í¥” Í¥” Í¥	” Í¥” Í¥” Í¥” Í¥”# Í¥”$ Í¥ ”* Í¥&”+ Í¥'”, Í¥(’” Í¦” Í¦–” Í¨
+”+ Í¨1”, Í¨2”0 Í¨ÌB”2 Í¨ÌD”8 Í¨ÌX›” Í©” Í©”& Í©"”) Í©%”- Í©)”. Í©*”6 Í©2”7 Í©3”ÌS Í©ÌO”ÌT Í©Ì[”ÌU Í©Ì\œ” Íª” Íª” Íª” Íª”  Íª”! Íª”, Íª(”. Íª*”/ Íª+”9 Íª5”; Íª7”< Íª8˜” Í«” Í«” Í«”1 Í«-”2 Í«.”ÌL Í«ÌH”ÌM Í«ÌI”ÌN Í«ÌJœ” Í¬” Í¬” Í¬	” Í¬” Í¬” Í¬” Í¬”# Í¬”$ Í¬ ”* Í¬&”+ Í¬'”, Í¬(’” Í­” Í­–” Í¯
+”" Í¯(”# Í¯)”' Í¯9”) Í¯;”/ Í¯ÌO›” Í°” Í°” Í°”  Í°”$ Í° ”% Í°!”- Í°)”. Í°*”ÌA Í°=”ÌB Í°ÌI”ÌC Í°ÌJœ” Í±” Í±” Í±” Í±”  Í±”! Í±”, Í±(”. Í±*”/ Í±+”9 Í±5”; Í±7”< Í±8˜” Í²” Í²” Í²”( Í²$”) Í²%”: Í²6”; Í²7”< Í²8œ” Í³” Í³” Í³	” Í³” Í³” Í³” Í³”# Í³”$ Í³ ”* Í³&”+ Í³'”, Í³(’” Í´” Í´–” Í¶
+”* Í¶0”+ Í¶1”/ Í¶ÌA”1 Í¶ÌC”7 Í¶ÌW›” Í·” Í·”% Í·!”( Í·$”, Í·(”- Í·)”5 Í·1”6 Í·2”ÌQ Í·ÌM”ÌR Í·ÌY”ÌS Í·ÌZœ” Í¸” Í¸” Í¸” Í¸”  Í¸”! Í¸”, Í¸(”. Í¸*”/ Í¸+”9 Í¸5”; Í¸7”< Í¸8˜” Í¹” Í¹” Í¹”. Í¹*”/ Í¹+”ÌH Í¹ÌD”ÌI Í¹ÌE”ÌJ Í¹ÌFœ” Íº” Íº” Íº	” Íº” Íº” Íº” Íº”# Íº”$ Íº ”* Íº&”+ Íº'”, Íº(’” Í»” Í»–” Í½
+” Í½ ” Í½!” Í½1”! Í½3”' Í½ÌG›” Í¾” Í¾”" Í¾”% Í¾!”) Í¾%”* Í¾&”2 Í¾.”3 Í¾/”ÌK Í¾ÌG”ÌL Í¾ÌS”ÌM Í¾ÌTœ” Í¿” Í¿” Í¿” Í¿”  Í¿”! Í¿”, Í¿(”. Í¿*”/ Í¿+”9 Í¿5”; Í¿7”< Í¿8˜” ÍÀ” ÍÀ” ÍÀ”* ÍÀ&”+ ÍÀ'”ÌA ÍÀ=”ÌB ÍÀ>”ÌC ÍÀ?œ” ÍÁ” ÍÁ” ÍÁ	” ÍÁ” ÍÁ” ÍÁ” ÍÁ”# ÍÁ”$ ÍÁ ”* ÍÁ&”+ ÍÁ'”, ÍÁ(’” ÍÂ” ÍÂ–” ÍÄ
+”0 ÍÄ6”1 ÍÄ7”5 ÍÄÌG”7 ÍÄÌI”= ÍÄÌ]›” ÍÅ” ÍÅ”! ÍÅ”$ ÍÅ ”( ÍÅ$”) ÍÅ%”1 ÍÅ-”2 ÍÅ.”ÌI ÍÅÌE”ÌJ ÍÅÌQ”ÌK ÍÅÌRœ” ÍÆ” ÍÆ” ÍÆ” ÍÆ”  ÍÆ”! ÍÆ”, ÍÆ(”. ÍÆ*”/ ÍÆ+”9 ÍÆ5”; ÍÆ7”< ÍÆ8˜” ÍÇ” ÍÇ” ÍÇ”) ÍÇ%”* ÍÇ&”? ÍÇ;”Ì@ ÍÇ<”ÌA ÍÇ=œ” ÍÈ” ÍÈ” ÍÈ	” ÍÈ” ÍÈ” ÍÈ” ÍÈ”# ÍÈ”$ ÍÈ ”* ÍÈ&”+ ÍÈ'”, ÍÈ(’” ÍÉ” ÍÉ–” ÍË
+” ÍË!” ÍË"”  ÍË2”" ÍË4”( ÍËÌH›” ÍÌ” ÍÌ” ÍÌ” ÍÌ” ÍÌ” ÍÌ”& ÍÌ"”' ÍÌ#”3 ÍÌ/”4 ÍÌ;”5 ÍÌ<œ” ÍÍ” ÍÍ” ÍÍ” ÍÍ”  ÍÍ”! ÍÍ”, ÍÍ(”. ÍÍ*”/ ÍÍ+”9 ÍÍ5”; ÍÍ7”< ÍÍ8˜” ÍÎ” ÍÎ” ÍÎ”" ÍÎ”# ÍÎ”- ÍÎ)”. ÍÎ*”/ ÍÎ+œ” ÍÏ” ÍÏ” ÍÏ	” ÍÏ” ÍÏ” ÍÏ” ÍÏ”# ÍÏ”$ ÍÏ ”* ÍÏ&”+ ÍÏ'”, ÍÏ(’” ÍĞ” ÍĞ–” ÍÒ
+” ÍÒ"” ÍÒ#”! ÍÒ3”# ÍÒ5”) ÍÒÌI›” ÍÓ” ÍÓ” ÍÓ”! ÍÓ”% ÍÓ!”& ÍÓ"”. ÍÓ*”/ ÍÓ+”ÌC ÍÓ?”ÌD ÍÓÌK”ÌE ÍÓÌLœ” ÍÔ” ÍÔ” ÍÔ” ÍÔ”  ÍÔ”! ÍÔ”, ÍÔ(”. ÍÔ*”/ ÍÔ+”9 ÍÔ5”; ÍÔ7”< ÍÔ8˜” ÍÕ” ÍÕ” ÍÕ”& ÍÕ"”' ÍÕ#”9 ÍÕ5”: ÍÕ6”; ÍÕ7œ” ÍÖ” ÍÖ” ÍÖ	” ÍÖ” ÍÖ” ÍÖ” ÍÖ”# ÍÖ”$ ÍÖ ”* ÍÖ&”+ ÍÖ'”, ÍÖ(’” Í×” Í×–” ÍÙ
+”( ÍÙ.”) ÍÙ/”- ÍÙ?”/ ÍÙÌA”5 ÍÙÌU›” ÍÚ” ÍÚ”# ÍÚ”& ÍÚ"”* ÍÚ&”+ ÍÚ'”3 ÍÚ/”4 ÍÚ0”ÌM ÍÚÌI”ÌN ÍÚÌU”ÌO ÍÚÌVœ” ÍÛ” ÍÛ” ÍÛ” ÍÛ”  ÍÛ”! ÍÛ”, ÍÛ(”. ÍÛ*”/ ÍÛ+”9 ÍÛ5”; ÍÛ7”< ÍÛ8˜” ÍÜ” ÍÜ” ÍÜ”+ ÍÜ'”, ÍÜ(”ÌC ÍÜ?”ÌD ÍÜÌ@”ÌE ÍÜÌAœ” Íİ” Íİ” Íİ	” Íİ” Íİ” Íİ” Íİ”# Íİ”$ Íİ ”* Íİ&”+ Íİ'”, Íİ(’” ÍŞ” ÍŞ–” Íà
+”3 Íà9”4 Íà:”8 ÍàÌJ”: ÍàÌL”Ì@ ÍàÌ`›” Íá” Íá” Íá” Íá” Íá” Íá”' Íá#”( Íá$”5 Íá1”6 Íá=”7 Íá>œ” Íâ” Íâ” Íâ” Íâ”  Íâ”! Íâ”, Íâ(”. Íâ*”/ Íâ+”9 Íâ5”; Íâ7”< Íâ8˜” Íã” Íã” Íã”7 Íã3”8 Íã4”ÌC Íã?”ÌD ÍãÌ@”ÌE ÍãÌAœ” Íä” Íä” Íä	” Íä” Íä” Íä” Íä”# Íä”$ Íä ”* Íä&”+ Íä'”, Íä(’” Íå” Íå–” Íç
+”  Íç&”! Íç'”" Íç4”$ Íç6”* ÍçÌJ˜” Íè” Íè” Íè	” Íè” Íè” Íè” Íè” Íè’” Íé” Íé–” Íë
+” Íë” Íë” Íë&” Íë(” Íë<›” Íì” Íì” Íì” Íì” Íì” Íì”! Íì”" Íì”) Íì%”* Íì0”+ Íì1” Íí” Íí” Íí” Íí” Íí” Íí”( Íí$”* Íí&”+ Íí'”6 Íí2”7 Íí3”< Íí8”= Íí9”> Íí:–” Íî” Íî” Íî
+” Íî” Íî” Íîœ” Íï” Íï
+” Íï” Íï” Íï”! Íï”# Íï”' Íï!”( Íï"”. Íï(”/ Íï)”0 Íï*‘”	 Íğ‘” Íğ
+š” Íñ” Íñ
+” Íñ” Íñ” Íñ” Íñ”! Íñ”$ Íñ”% Íñ”& Íñ ‘”	 Íò’” Íó” Íó‘” ÍôÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ·‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCacheÜ ÔrJ•¤type¥start£endªspecifiers¦source±ImportDeclaration .‘ÔrK•¤type¥start£end¨imported¥local¯ImportSpecifier	ÔrL”¤type¥start£end¤nameªIdentifier	ªChatClientLªIdentifier	ªChatClientÔrM•¤type¥start£end¥value£raw§Literal-°@easemob/chatsdk²'@easemob/chatsdk'J±ImportDeclaration0Ìf‘ÔrN”¤type¥start£end¥local¶ImportDefaultSpecifier7ÌILªIdentifier7ÌI²ChatManagerWrapperM§LiteralÌOÌe´./ChatManagerWrapper¶'./ChatManagerWrapper'J±ImportDeclarationÌhÌ¦‘N¶ImportDefaultSpecifierÌoÌ…LªIdentifierÌoÌ…¶ChatRoomManagerWrapperM§LiteralÌ‹Ì¥¸./ChatRoomManagerWrapperº'./ChatRoomManagerWrapper'J±ImportDeclarationÌ¨Ìê‘N¶ImportDefaultSpecifierÌ¯ÌÇLªIdentifierÌ¯ÌÇ¸ChatThreadManagerWrapperM§LiteralÌÍÌéº./ChatThreadManagerWrapper¼'./ChatThreadManagerWrapper'J±ImportDeclarationÌìÍ(‘N¶ImportDefaultSpecifierÌóÍLªIdentifierÌóÍµContactManagerWrapperM§LiteralÍÍ'·./ContactManagerWrapper¹'./ContactManagerWrapper'J±ImportDeclarationÍ*Íb‘N¶ImportDefaultSpecifierÍ1ÍDLªIdentifierÍ1ÍD³ConversationWrapperM§LiteralÍJÍaµ./ConversationWrapper·'./ConversationWrapper'J±ImportDeclarationÍdÍœ‘N¶ImportDefaultSpecifierÍkÍ~LªIdentifierÍkÍ~³GroupManagerWrapperM§LiteralÍ„Í›µ./GroupManagerWrapper·'./GroupManagerWrapper'J±ImportDeclarationÍÍÌ‘N¶ImportDefaultSpecifierÍ¥Í³LªIdentifierÍ¥Í³®MessageWrapperM§LiteralÍ¹ÍË°./MessageWrapper²'./MessageWrapper'J±ImportDeclarationÍÎÍó‘N¶ImportDefaultSpecifierÍÕÍŞLªIdentifierÍÕÍŞ©MethodKeyM§LiteralÍäÍò¬./MethodKeys®'./MethodKeys'J±ImportDeclarationÍõÍ0‘N¶ImportDefaultSpecifierÍüÍLªIdentifierÍüÍ±ChatOptionsHelperM§LiteralÍÍ/º./models/ChatOptionsHelper¼'./models/ChatOptionsHelper'J±ImportDeclarationÍ2Íp‘N¶ImportDefaultSpecifierÍ9ÍOLªIdentifierÍ9ÍO¶PresenceManagerWrapperM§LiteralÍUÍo¸./PresenceManagerWrapperº'./PresenceManagerWrapper'J±ImportDeclarationÍrÍ¢‘N¶ImportDefaultSpecifierÍyÍˆLªIdentifierÍyÍˆ¯ProgressManagerM§LiteralÍÍ¡±./ProgressManager³'./ProgressManager'J±ImportDeclarationÍ¤ÍÚ‘N¶ImportDefaultSpecifierÍ«Í½LªIdentifierÍ«Í½²PushManagerWrapperM§LiteralÍÃÍÙ´./PushManagerWrapper¶'./PushManagerWrapper'J±ImportDeclarationÍÜÍ‘N¶ImportDefaultSpecifierÍãÍùLªIdentifierÍãÍù¶UserInfoManagerWrapperM§LiteralÍÿÍ¸./UserInfoManagerWrapperº'./UserInfoManagerWrapper'J±ImportDeclarationÍÍ<‘N¶ImportDefaultSpecifierÍ#Í*LªIdentifierÍ#Í*§WrapperM§LiteralÍ0Í;©./Wrapper«'./Wrapper'J±ImportDeclarationÍ>Í‡‘N¶ImportDefaultSpecifierÍEÍ]LªIdentifierÍEÍ]¸LoginExtensionInfoHelperM§LiteralÍcÍ†Ù!./models/LoginExtensionInfoHelperÙ#'./models/LoginExtensionInfoHelper'

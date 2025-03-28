@@ -1,0 +1,29 @@
+name: im_flutter_sdk_android
+description: "A new Flutter project."
+version: 4.13.0
+homepage:
+
+environment:
+  sdk: '>=3.3.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  im_flutter_sdk_interface:
+    path: ../im_flutter_sdk_interface
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+
+  plugin:
+    implements: im_flutter_sdk
+    platforms:
+      android:
+        dartPluginClass: ClientAndroid
+        package: com.easemob.im_flutter_sdk
+        pluginClass: ImFlutterSdkPlugin
