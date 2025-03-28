@@ -1367,6 +1367,8 @@
         }.mutableCopy;
         if(aAnnouncement != nil) {
             map[@"announcement"] = aAnnouncement;
+        }else {
+            map[@"announcement"] = @"";
         }
         [weakSelf.channel invokeMethod:ChatOnGroupChanged
                          arguments:map];

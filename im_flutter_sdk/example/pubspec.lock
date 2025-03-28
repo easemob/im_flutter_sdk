@@ -81,31 +81,28 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.13.0"
+    version: "4.13.0+1"
   im_flutter_sdk_android:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: im_flutter_sdk_android
-      sha256: "1e6374be259add7e8e9fdb0dbd284817767e66bb5ad0c4b90d0b1c605fd2c79f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.13.0"
+      path: "../../im_flutter_sdk_android"
+      relative: true
+    source: path
+    version: "4.13.0+1"
   im_flutter_sdk_interface:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: im_flutter_sdk_interface
-      sha256: fa78d0089dea15a0f08eda345ff9b88d2c32fa9c1233ab4652168ccd094879d6
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../im_flutter_sdk_interface"
+      relative: true
+    source: path
     version: "4.13.0"
   im_flutter_sdk_ios:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: im_flutter_sdk_ios
-      sha256: "57e012a097b5e2e736227b7873108b945b3a7f2436f5ccd9054f1220694b9283"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.13.0"
+      path: "../../im_flutter_sdk_ios"
+      relative: true
+    source: path
+    version: "4.13.0+1"
   leak_tracker:
     dependency: transitive
     description:
