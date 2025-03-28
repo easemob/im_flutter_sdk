@@ -40,6 +40,17 @@ dependencies:
   im_flutter_sdk:
     path: ../
 
+dependency_overrides:
+
+  # im_flutter_sdk_interface:
+  #   path: ../../im_flutter_sdk_interface
+
+  # im_flutter_sdk_ios:
+  #   path: ../../im_flutter_sdk_ios
+
+  # im_flutter_sdk_android:
+  #   path: ../../im_flutter_sdk_android
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

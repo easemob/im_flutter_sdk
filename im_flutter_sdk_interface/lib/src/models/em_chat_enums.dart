@@ -460,6 +460,8 @@ enum EMSearchDirection {
 /// ~end
 
 enum EMMultiDevicesEvent {
+  UnKnow,
+
   /// ~english
   /// If user A deletes a contact on Device A1, this event is triggered on Device A2.
   /// ~end

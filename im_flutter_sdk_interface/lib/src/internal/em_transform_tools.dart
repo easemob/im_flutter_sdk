@@ -2,6 +2,8 @@ import 'inner_headers.dart';
 
 EMMultiDevicesEvent? convertIntToEMMultiDevicesEvent(int? i) {
   switch (i) {
+    case -1:
+      return EMMultiDevicesEvent.UnKnow;
     case 2:
       return EMMultiDevicesEvent.CONTACT_REMOVE;
     case 3:
