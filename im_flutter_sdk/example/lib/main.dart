@@ -157,11 +157,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     Platform.isAndroid
         ? EMClient.getInstance.chatManager.removeMessageEvent(
-          "UNIQUE_HANDLER_ID",
-        )
+            "UNIQUE_HANDLER_ID",
+          )
         : EMClient.getInstance.chatManager.removeMessageEvent(
-          "UNIQUE_HANDLER_ID",
-        );
+            "UNIQUE_HANDLER_ID",
+          );
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
