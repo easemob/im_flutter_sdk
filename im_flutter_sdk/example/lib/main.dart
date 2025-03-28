@@ -1,120 +1,324 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-void main() {
+var appKey = "easemob#easeim";
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  assert(appKey.isNotEmpty, "appKey is empty");
+
+  EMOptions options = EMOptions.withAppKey(
+    appKey,
+    extSettings: {ExtSettings.kDisableIosEnterBackground: false},
+  );
+
+  await EMClient.getInstance.init(options);
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
+  // This widget is the root of your application.
   @override
-  State<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const MyHomePage(title: 'Flutter SDK Demo'),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  ScrollController scrollController = ScrollController();
+  String _userId = "";
+  String _password = "";
+  String _messageContent = "";
+  String _chatId = "";
+  final List<String> _logText = [];
+
   @override
   void initState() {
     super.initState();
+    _addChatListener();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-            child: ListView(
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      body: Container(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
           children: [
-            ListTile(onTap: init, title: const Text('init')),
-            ListTile(onTap: login, title: const Text('login')),
-            ListTile(onTap: logout, title: const Text('logout')),
-            ListTile(onTap: sendMessage, title: const Text('sendMessage')),
-            ListTile(onTap: loadMessage, title: const Text('loadMessage')),
-            ListTile(onTap: modifyMessage, title: const Text('modifyMessage')),
+            TextField(
+              decoration: const InputDecoration(hintText: "Enter username"),
+              onChanged: (username) => _userId = username,
+            ),
+            TextField(
+              decoration: const InputDecoration(hintText: "Enter password"),
+              onChanged: (password) => _password = password,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: TextButton(
+                    onPressed: _signIn,
+                    style: ButtonStyle(
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      backgroundColor: WidgetStateProperty.all(
+                        Colors.lightBlue,
+                      ),
+                    ),
+                    child: const Text("SIGN IN"),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextButton(
+                    onPressed: _signOut,
+                    style: ButtonStyle(
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      backgroundColor: WidgetStateProperty.all(
+                        Colors.lightBlue,
+                      ),
+                    ),
+                    child: const Text("SIGN OUT"),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextButton(
+                    onPressed: _signUp,
+                    style: ButtonStyle(
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                      backgroundColor: WidgetStateProperty.all(
+                        Colors.lightBlue,
+                      ),
+                    ),
+                    child: const Text("SIGN UP"),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: "Enter the username you want to send",
+              ),
+              onChanged: (chatId) => _chatId = chatId,
+            ),
+            TextField(
+              decoration: const InputDecoration(hintText: "Enter content"),
+              onChanged: (msg) => _messageContent = msg,
+            ),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: _sendMessage,
+              child: const Text("SEND TEXT"),
+              style: ButtonStyle(
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+                backgroundColor: WidgetStateProperty.all(Colors.lightBlue),
+              ),
+            ),
+            Flexible(
+              child: ListView.builder(
+                controller: scrollController,
+                itemBuilder: (_, index) {
+                  return Text(_logText[index]);
+                },
+                itemCount: _logText.length,
+              ),
+            ),
           ],
-        )),
+        ),
       ),
     );
   }
 
-  _addMessageListener() {
-    EMClient.getInstance.chatManager.addMessageEvent(
+  @override
+  void dispose() {
+    Platform.isAndroid
+        ? EMClient.getInstance.chatManager.removeMessageEvent(
+          "UNIQUE_HANDLER_ID",
+        )
+        : EMClient.getInstance.chatManager.removeMessageEvent(
+          "UNIQUE_HANDLER_ID",
+        );
+    EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
+    super.dispose();
+  }
+
+  void _addChatListener() {
+    EMClient.getInstance.addConnectionEventHandler(
       'identifier',
+      EMConnectionEventHandler(onUserDidLoginFromOtherDevice: (info) {}),
+    );
+
+    EMClient.getInstance.chatManager.addMessageEvent(
+      "UNIQUE_HANDLER_ID",
       ChatMessageEvent(
         onSuccess: (msgId, msg) {
-          debugPrint('onSuccess');
+          _addLogToConsole("on message succeed");
         },
-        onError: (msgId, msg, e) {
-          debugPrint('onError');
+        onProgress: (msgId, progress) {
+          _addLogToConsole("on message progress");
         },
-        onProgress: (msgId, progress) {},
+        onError: (msgId, msg, error) {
+          _addLogToConsole(
+            "on message failed, code: ${error.code}, desc: ${error.description}",
+          );
+        },
       ),
     );
 
     EMClient.getInstance.chatManager.addEventHandler(
-      'identifier',
+      "UNIQUE_HANDLER_ID",
       EMChatEventHandler(
         onMessagesReceived: (messages) {
-          debugPrint('onMessagesReceived ${messages.first.body}');
+          for (var msg in messages) {
+            switch (msg.body.type) {
+              case MessageType.TXT:
+                {
+                  EMTextMessageBody body = msg.body as EMTextMessageBody;
+                  _addLogToConsole(
+                    "receive text message: ${body.content}, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.IMAGE:
+                {
+                  _addLogToConsole("receive image message, from: ${msg.from}");
+                }
+                break;
+              case MessageType.VIDEO:
+                {
+                  _addLogToConsole("receive video message, from: ${msg.from}");
+                }
+                break;
+              case MessageType.LOCATION:
+                {
+                  _addLogToConsole(
+                    "receive location message, from: ${msg.from}",
+                  );
+                }
+                break;
+              case MessageType.VOICE:
+                {
+                  _addLogToConsole("receive voice message, from: ${msg.from}");
+                }
+                break;
+              case MessageType.FILE:
+                {
+                  EMClient.getInstance.chatManager.downloadAttachment(msg);
+                  _addLogToConsole("receive file message, from: ${msg.from}");
+                }
+                break;
+              case MessageType.CUSTOM:
+                {
+                  _addLogToConsole("receive custom message, from: ${msg.from}");
+                }
+                break;
+              case MessageType.CMD:
+                {
+                  // 当前回调中不会有 CMD 类型消息，CMD 类型消息通过 [EMChatManagerEventHandle.onCmdMessagesReceived] 回调接收
+                }
+                break;
+              case MessageType.COMBINE:
+                {
+                  _addLogToConsole(
+                    "receive combine message, from: ${msg.from}",
+                  );
+                }
+            }
+          }
         },
       ),
     );
   }
 
-  init() async {
-    await EMClient.getInstance.init(
-      EMOptions.withAppKey('easemob#easeim', extSettings: {
-        ExtSettings.kDisableIosEnterBackground: false,
-      }),
-    );
-    _addMessageListener();
-  }
+  void _signIn() async {
+    if (_userId.isEmpty || _password.isEmpty) {
+      _addLogToConsole("username or password is null");
+      return;
+    }
 
-  login() async {
-    await EMClient.getInstance.loginWithPassword('du001', '1');
-    debugPrint("login success");
-  }
-
-  logout() async {
-    await EMClient.getInstance.logout(true);
-  }
-
-  sendMessage() async {
-    EMMessage message = EMMessage.createTxtSendMessage(
-      content: 'hello',
-      targetId: 'du002',
-    );
-
-    await EMClient.getInstance.chatManager.sendMessage(message);
-  }
-
-  loadMessage() async {
-    EMConversation? conv =
-        await EMClient.getInstance.chatManager.getConversation('du002');
-    if (conv != null) {
-      List<EMMessage> messages = await conv.loadMessages();
-      for (EMMessage message in messages) {
-        debugPrint('message: ${message.body}');
-      }
+    try {
+      _addLogToConsole("sign in...");
+      await EMClient.getInstance.loginWithPassword(_userId, _password);
+      await EMClient.getInstance.startCallback();
+      _addLogToConsole("sign in succeed, username: $_userId");
+    } on EMError catch (e) {
+      _addLogToConsole("sign in failed, e: ${e.code} , ${e.description}");
     }
   }
 
-  modifyMessage() async {
-    List cons = await EMClient.getInstance.chatManager.loadAllConversations();
-    List<EMMessage> list = await cons.first.loadMessages();
-    debugPrint('e: ${list.last.body}');
-    await EMClient.getInstance.chatManager.modifyMessage(
-      messageId: list.last.msgId,
-      msgBody: EMCustomMessageBody(event: 'test', params: {'key1': 'sdasdas'}),
-      attributes: {"key1": "value3"},
+  void _signOut() async {
+    try {
+      _addLogToConsole("sign out...");
+      await EMClient.getInstance.logout(true);
+      _addLogToConsole("sign out succeed");
+    } on EMError catch (e) {
+      _addLogToConsole(
+        "sign out failed, code: ${e.code}, desc: ${e.description}",
+      );
+    }
+  }
+
+  void _signUp() async {
+    if (_userId.isEmpty || _password.isEmpty) {
+      _addLogToConsole("username or password is null");
+      return;
+    }
+
+    try {
+      _addLogToConsole("sign up...");
+      await EMClient.getInstance.createAccount(_userId, _password);
+      _addLogToConsole("sign up succeed, username: $_userId");
+    } on EMError catch (e) {
+      _addLogToConsole("sign up failed, e: ${e.code} , ${e.description}");
+    }
+  }
+
+  void _sendMessage() async {
+    if (_chatId.isEmpty || _messageContent.isEmpty) {
+      _addLogToConsole("single chat id or message content is null");
+      return;
+    }
+
+    var msg = EMMessage.createTxtSendMessage(
+      targetId: _chatId,
+      content: _messageContent,
     );
 
-    final msg =
-        await EMClient.getInstance.chatManager.loadMessage(list.last.msgId);
-    debugPrint('modifyMessage: ${msg?.body}, ${msg?.attributes}');
+    await EMClient.getInstance.chatManager.sendMessage(msg);
+  }
+
+  void _addLogToConsole(String log) {
+    _logText.add(_timeString + ": " + log);
+    setState(() {
+      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+    });
+  }
+
+  String get _timeString {
+    return DateTime.now().toString().split(".").first;
   }
 }

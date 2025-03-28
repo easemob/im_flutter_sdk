@@ -25,10 +25,11 @@ packages:
   im_flutter_sdk_interface:
     dependency: "direct main"
     description:
-      path: "../im_flutter_sdk_interface"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: im_flutter_sdk_interface
+      sha256: fa78d0089dea15a0f08eda345ff9b88d2c32fa9c1233ab4652168ccd094879d6
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.13.0"
   material_color_utilities:
     dependency: transitive
     description:
@@ -68,4 +69,4 @@ packages:
     version: "2.1.4"
 sdks:
   dart: ">=3.7.0-0 <4.0.0"
-  flutter: ">=3.22.0"
+  flutter: ">=3.3.0"
