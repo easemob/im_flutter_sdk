@@ -1,0 +1,34 @@
+import { FlutterPluginBinding, MethodCall, MethodCallHandler, MethodResult } from '@ohos/flutter_ohos';
+import Wrapper from './Wrapper';
+export default class ConversationWrapper extends Wrapper implements MethodCallHandler {
+    constructor(binding: FlutterPluginBinding, channelName: string);
+    onMethodCall(call: MethodCall, result: MethodResult): void;
+    private getUnreadMsgCount;
+    private markAllMessagesAsRead;
+    private markMessageAsRead;
+    private syncConversationExt;
+    private removeMessage;
+    private deleteMessageByIds;
+    private getLatestMessage;
+    private getLatestMessageFromOthers;
+    private clearAllMessages;
+    private deleteMessagesWithTs;
+    private insertMessage;
+    private appendMessage;
+    private updateConversationMessage;
+    private loadMsgWithId;
+    private loadMsgWithStartId;
+    private loadMsgWithKeywords;
+    private loadMsgWithMsgType;
+    private loadMsgWithTime;
+    private messageCount;
+    private removeMsgFromServerWithMsgList;
+    private removeMsgFromServerWithTimeStamp;
+    private pinnedMessages;
+    private remindType;
+    private searchMsgByOptions;
+    private getLocalMessageCount;
+    private deleteLocalAndServerMessages;
+    private deleteLocalAndServerMessagesByTime;
+    private conversationWithParam;
+}

@@ -1,0 +1,1744 @@
+Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ˜§import { ChatClient, ChatError, } from "@easemob/chatsdk";
+import MethodKey from "./MethodKeys";
+import CursorResultHelper from "./models/CursorResultHelper";
+import GroupHelper from "./models/GroupHelper";
+import GroupOptionsHelper from "./models/GroupOptionsHelper";
+import SharedFileHelper from "./models/SharedFileHelper";
+import { ObjToMap } from "./SafetyMapTool";
+import Wrapper from "./Wrapper";
+export default class GroupManagerWrapper extends Wrapper {
+    constructor(binding, channelName) {
+        super(binding, channelName);
+        this.clientWrapper = null;
+    }
+    registerEaseListener() {
+        this.unRegisterEaseListener();
+        let weakRef = new WeakRef(this);
+        this.listener = {
+            onWhitelistAdded(groupId, whitelist) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupWhiteListAdded");
+                data.set("groupId", groupId);
+                data.set("whitelist", whitelist);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onWhitelistRemoved(groupId, whitelist) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupWhiteListRemoved");
+                data.set("groupId", groupId);
+                data.set("whitelist", whitelist);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onAllMemberMuteStateChanged(groupId, isMuted) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupAllMemberMuteStateChanged");
+                data.set("groupId", groupId);
+                data.set("isMuted", isMuted);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onInvitationReceived(groupId, groupName, inviter, reason) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupInvitationReceived");
+                data.set("groupId", groupId);
+                data.set("groupName", groupName);
+                data.set("inviter", inviter);
+                data.set("reason", reason);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onRequestToJoinReceived(groupId, groupName, applicant, reason) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupRequestToJoinReceived");
+                data.set("groupId", groupId);
+                data.set("groupName", groupName);
+                data.set("applicant", applicant);
+                data.set("reason", reason);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onRequestToJoinAccepted(groupId, groupName, accepter) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupRequestToJoinAccepted");
+                data.set("groupId", groupId);
+                data.set("groupName", groupName);
+                data.set("accepter", accepter);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onRequestToJoinDeclined(groupId, _, decliner, applicant, reason) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupRequestToJoinDeclined");
+                data.set("groupId", groupId);
+                data.set("applicant", applicant);
+                data.set("decliner", decliner);
+                data.set("reason", reason);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onInvitationAccepted(groupId, invitee, reason) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupInvitationAccepted");
+                data.set("groupId", groupId);
+                data.set("invitee", invitee);
+                data.set("reason", reason);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onInvitationDeclined(groupId, invitee, reason) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupInvitationDeclined");
+                data.set("groupId", groupId);
+                data.set("invitee", invitee);
+                data.set("reason", reason);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onUserRemoved(groupId, groupName) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupUserRemoved");
+                data.set("groupId", groupId);
+                data.set("groupName", groupName);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onGroupDestroyed(groupId, groupName) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupDestroyed");
+                data.set("groupId", groupId);
+                data.set("groupName", groupName);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onAutoAcceptInvitationFromGroup(groupId, inviter, inviteMessage) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupAutoAcceptInvitation");
+                data.set("groupId", groupId);
+                data.set("inviter", inviter);
+                data.set("inviteMessage", inviteMessage);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onMutelistAdded(groupId, mutes, muteExpire) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupMuteListAdded");
+                data.set("groupId", groupId);
+                data.set("mutes", mutes);
+                data.set("muteExpire", muteExpire);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onMutelistRemoved(groupId, mutes) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupMuteListRemoved");
+                data.set("groupId", groupId);
+                data.set("mutes", mutes);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onAdminAdded(groupId, administrator) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupAdminAdded");
+                data.set("groupId", groupId);
+                data.set("administrator", administrator);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onAdminRemoved(groupId, administrator) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupAdminRemoved");
+                data.set("groupId", groupId);
+                data.set("administrator", administrator);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onOwnerChanged(groupId, newOwner, oldOwner) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupOwnerChanged");
+                data.set("groupId", groupId);
+                data.set("newOwner", newOwner);
+                data.set("oldOwner", oldOwner);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onMemberJoined(groupId, member) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupMemberJoined");
+                data.set("groupId", groupId);
+                data.set("member", member);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onMemberExited(groupId, member) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupMemberExited");
+                data.set("groupId", groupId);
+                data.set("member", member);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onAnnouncementChanged(groupId, announcement) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupAnnouncementChanged");
+                data.set("groupId", groupId);
+                data.set("announcement", announcement);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onSharedFileAdded(groupId, sharedFile) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupSharedFileAdded");
+                data.set("groupId", groupId);
+                data.set("sharedFile", SharedFileHelper.toJson(sharedFile));
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onSharedFileDeleted(groupId, fileId) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupSharedFileDeleted");
+                data.set("groupId", groupId);
+                data.set("fileId", fileId);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onSpecificationChanged(group) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupSpecificationDidUpdate");
+                data.set("group", GroupHelper.toJson(group));
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onStateChanged(group, isDisabled) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupStateChanged");
+                data.set("groupId", group.groupId());
+                data.set("isDisabled", isDisabled);
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+            onGroupMemberAttributeChanged(groupId, member, attributes, from) {
+                let retrievedObject = weakRef.deref();
+                let data = new Map();
+                data.set("type", "onGroupAttributesChangedOfMember");
+                data.set("groupId", groupId);
+                data.set("userId", member);
+                if (from != null) {
+                    data.set("operatorId", from);
+                }
+                if (attributes != null) {
+                    data.set("attributes", attributes);
+                }
+                retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+            },
+        };
+        ChatClient.getInstance().groupManager()?.addListener(this.listener);
+    }
+    unRegisterEaseListener() {
+        if (this.listener != null) {
+            ChatClient.getInstance().groupManager()?.removeListener(this.listener);
+        }
+    }
+    onMethodCall(call, result) {
+        if (MethodKey.getGroupWithId == call.method) {
+            this.getGroupWithId(call, result);
+        }
+        else if (MethodKey.getJoinedGroups == call.method) {
+            this.getJoinedGroups(call, result);
+        }
+        else if (MethodKey.getJoinedGroupsFromServer == call.method) {
+            this.getJoinedGroupsFromServer(call, result);
+        }
+        else if (MethodKey.getPublicGroupsFromServer == call.method) {
+            this.getPublicGroupsFromServer(call, result);
+        }
+        else if (MethodKey.createGroup == call.method) {
+            this.createGroup(call, result);
+        }
+        else if (MethodKey.getGroupSpecificationFromServer == call.method) {
+            this.getGroupSpecificationFromServer(call, result);
+        }
+        else if (MethodKey.getGroupMemberListFromServer == call.method) {
+            this.getGroupMemberListFromServer(call, result);
+        }
+        else if (MethodKey.getGroupMuteListFromServer == call.method) {
+            this.getGroupMuteListFromServer(call, result);
+        }
+        else if (MethodKey.getGroupWhiteListFromServer == call.method) {
+            this.getGroupWhiteListFromServer(call, result);
+        }
+        else if (MethodKey.isMemberInWhiteListFromServer == call.method) {
+            this.isMemberInWhiteListFromServer(call, result);
+        }
+        else if (MethodKey.getGroupFileListFromServer == call.method) {
+            this.getGroupFileListFromServer(call, result);
+        }
+        else if (MethodKey.getGroupAnnouncementFromServer == call.method) {
+            this.getGroupAnnouncementFromServer(call, result);
+        }
+        else if (MethodKey.getGroupBlockListFromServer == call.method) {
+            this.getGroupBlockListFromServer(call, result);
+        }
+        else if (MethodKey.addMembers == call.method) {
+            this.addMembers(call, result);
+        }
+        else if (MethodKey.inviterUser == call.method) {
+            this.inviterUser(call, result);
+        }
+        else if (MethodKey.removeMembers == call.method) {
+            this.removeMembers(call, result);
+        }
+        else if (MethodKey.blockMembers == call.method) {
+            this.blockMembers(call, result);
+        }
+        else if (MethodKey.unblockMembers == call.method) {
+            this.unblockMembers(call, result);
+        }
+        else if (MethodKey.updateGroupSubject == call.method) {
+            this.updateGroupSubject(call, result);
+        }
+        else if (MethodKey.updateDescription == call.method) {
+            this.updateDescription(call, result);
+        }
+        else if (MethodKey.leaveGroup == call.method) {
+            this.leaveGroup(call, result);
+        }
+        else if (MethodKey.destroyGroup == call.method) {
+            this.destroyGroup(call, result);
+        }
+        else if (MethodKey.blockGroup == call.method) {
+            this.blockGroup(call, result);
+        }
+        else if (MethodKey.unblockGroup == call.method) {
+            this.unblockGroup(call, result);
+        }
+        else if (MethodKey.updateGroupOwner == call.method) {
+            this.updateGroupOwner(call, result);
+        }
+        else if (MethodKey.addAdmin == call.method) {
+            this.addAdmin(call, result);
+        }
+        else if (MethodKey.removeAdmin == call.method) {
+            this.removeAdmin(call, result);
+        }
+        else if (MethodKey.muteMembers == call.method) {
+            this.muteMembers(call, result);
+        }
+        else if (MethodKey.unMuteMembers == call.method) {
+            this.unMuteMembers(call, result);
+        }
+        else if (MethodKey.muteAllMembers == call.method) {
+            this.muteAllMembers(call, result);
+        }
+        else if (MethodKey.unMuteAllMembers == call.method) {
+            this.unMuteAllMembers(call, result);
+        }
+        else if (MethodKey.addWhiteList == call.method) {
+            this.addWhiteList(call, result);
+        }
+        else if (MethodKey.removeWhiteList == call.method) {
+            this.removeWhiteList(call, result);
+        }
+        else if (MethodKey.uploadGroupSharedFile == call.method) {
+            this.uploadGroupSharedFile(call, result);
+        }
+        else if (MethodKey.downloadGroupSharedFile == call.method) {
+            this.downloadGroupSharedFile(call, result);
+        }
+        else if (MethodKey.removeGroupSharedFile == call.method) {
+            this.removeGroupSharedFile(call, result);
+        }
+        else if (MethodKey.updateGroupAnnouncement == call.method) {
+            this.updateGroupAnnouncement(call, result);
+        }
+        else if (MethodKey.updateGroupExt == call.method) {
+            this.updateGroupExt(call, result);
+        }
+        else if (MethodKey.joinPublicGroup == call.method) {
+            this.joinPublicGroup(call, result);
+        }
+        else if (MethodKey.requestToJoinPublicGroup == call.method) {
+            this.requestToJoinPublicGroup(call, result);
+        }
+        else if (MethodKey.acceptJoinApplication == call.method) {
+            this.acceptJoinApplication(call, result);
+        }
+        else if (MethodKey.declineJoinApplication == call.method) {
+            this.declineJoinApplication(call, result);
+        }
+        else if (MethodKey.acceptInvitationFromGroup == call.method) {
+            this.acceptInvitationFromGroup(call, result);
+        }
+        else if (MethodKey.declineInvitationFromGroup == call.method) {
+            this.declineInvitationFromGroup(call, result);
+        }
+        else if (MethodKey.setMemberAttributesFromGroup == call.method) {
+            this.setMemberAttributes(call, result);
+        }
+        else if (MethodKey.removeMemberAttributesFromGroup == call.method) {
+            this.removeMemberAttributes(call, result);
+        }
+        else if (MethodKey.fetchMemberAttributesFromGroup == call.method) {
+            this.fetchMemberAttributes(call, result);
+        }
+        else if (MethodKey.fetchMembersAttributesFromGroup == call.method) {
+            this.fetchMembersAttributes(call, result);
+        }
+        else if (MethodKey.fetchJoinedGroupCount == call.method) {
+            this.fetchJoinedGroupCount(call, result);
+        }
+        else if (MethodKey.clearAllGroupsFromDB == call.method) {
+            this.clearAllGroupsFromDB(call, result);
+        }
+        else if (MethodKey.isMemberInGroupMuteList == call.method) {
+            this.isMemberInGroupMuteList(call, result);
+        }
+        else {
+            super.onMethodCall(call, result);
+        }
+    }
+    getGroupWithId(call, result) {
+        let groupId = call.argument("groupId");
+        let group = ChatClient.getInstance().groupManager()?.getGroup(groupId);
+        if (group != null) {
+            this.onSuccess(result, call.method, GroupHelper.toJson(group));
+        }
+        else {
+            this.onSuccess(result, call.method);
+        }
+    }
+    getJoinedGroups(call, result) {
+        ChatClient.getInstance().groupManager()?.getAllGroups()
+            .then((groups) => {
+            this.onSuccess(result, call.method, GroupHelper.listToJson(groups));
+        })
+            .catch((e) => this.onError(result, e));
+    }
+    getJoinedGroupsFromServer(call, result) {
+        let pageSize = call.argument("pageSize");
+        let pageNum = call.argument("pageNum");
+        ChatClient.getInstance().groupManager()?.fetchJoinedGroupsFromServer(pageSize, pageNum)
+            .then((groups) => {
+            this.onSuccess(result, call.method, GroupHelper.listToJson(groups));
+        })
+            .catch((e) => this.onError(result, e));
+    }
+    getPublicGroupsFromServer(call, result) {
+        let pageSize = call.argument("pageSize");
+        let cursor = null;
+        if (call.hasArgument("cursor")) {
+            cursor = call.argument("cursor");
+        }
+        ChatClient.getInstance().groupManager()?.fetchPublicGroupsFromServer(pageSize, cursor)
+            .then((value) => this.onSuccess(result, call.method, CursorResultHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    createGroup(call, result) {
+        let options = GroupOptionsHelper.fromJson(call.args);
+        ChatClient.getInstance().groupManager()?.createGroup(options)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupSpecificationFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.fetchGroupFromServer(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupMemberListFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        let cursor;
+        if (call.hasArgument("cursor")) {
+            cursor = call.argument("cursor");
+        }
+        let pageSize = call.argument("pageSize");
+        ChatClient.getInstance().groupManager()?.fetchGroupMembers(groupId, pageSize, cursor)
+            .then((value) => this.onSuccess(result, call.method, CursorResultHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupMuteListFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        let pageSize = call.argument("pageSize");
+        let pageNum = call.argument("pageNum");
+        ChatClient.getInstance().groupManager()?.fetchGroupMutelist(groupId, pageNum, pageSize)
+            .then(value => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupWhiteListFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.fetchGroupWhitelist(groupId)
+            .then(value => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    isMemberInWhiteListFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.checkIfInGroupWhitelist(groupId)
+            .then(value => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupFileListFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        let pageSize = call.argument("pageSize");
+        let pageNum = call.argument("pageNum");
+        ChatClient.getInstance().groupManager()?.fetchGroupSharedFileList(groupId, pageNum, pageSize)
+            .then(value => this.onSuccess(result, call.method, SharedFileHelper.listToJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupAnnouncementFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.fetchGroupAnnouncement(groupId)
+            .then(value => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    getGroupBlockListFromServer(call, result) {
+        let groupId = call.argument("groupId");
+        let pageSize = call.argument("pageSize");
+        let pageNum = call.argument("pageNum");
+        ChatClient.getInstance().groupManager()?.fetchGroupBlocklist(groupId, pageNum, pageSize)
+            .then(value => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    addMembers(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        let welcome;
+        if (call.hasArgument("welcome")) {
+            welcome = call.argument("welcome");
+        }
+        ChatClient.getInstance().groupManager()?.addUsersToGroup(groupId, members, welcome)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    inviterUser(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        let reason;
+        if (call.hasArgument("reason")) {
+            reason = call.argument("reason");
+        }
+        ChatClient.getInstance().groupManager()?.inviteUsers(groupId, members, reason)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    removeMembers(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        ChatClient.getInstance().groupManager()?.removeUsersFromGroup(groupId, members)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    blockMembers(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        ChatClient.getInstance().groupManager()?.blockUsers(groupId, members)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    unblockMembers(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        ChatClient.getInstance().groupManager()?.unblockUsers(groupId, members)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    updateGroupSubject(call, result) {
+        let groupId = call.argument("groupId");
+        let name = call.argument("name");
+        ChatClient.getInstance().groupManager()?.changeGroupName(groupId, name)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    updateDescription(call, result) {
+        let groupId = call.argument("groupId");
+        let desc = call.argument("desc");
+        ChatClient.getInstance().groupManager()?.changeGroupDescription(groupId, desc)
+            .then(value => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    leaveGroup(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.leaveGroup(groupId)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    destroyGroup(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.destroyGroup(groupId)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    blockGroup(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.blockGroupMessage(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    unblockGroup(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.unblockGroupMessage(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    updateGroupOwner(call, result) {
+        let groupId = call.argument("groupId");
+        let owner = call.argument("owner");
+        ChatClient.getInstance().groupManager()?.changeOwner(groupId, owner)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    addAdmin(call, result) {
+        let groupId = call.argument("groupId");
+        let admin = call.argument("admin");
+        ChatClient.getInstance().groupManager()?.addGroupAdmin(groupId, admin)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    removeAdmin(call, result) {
+        let groupId = call.argument("groupId");
+        let admin = call.argument("admin");
+        ChatClient.getInstance().groupManager()?.removeGroupAdmin(groupId, admin)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    muteMembers(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        let duration = call.argument("duration");
+        ChatClient.getInstance().groupManager()?.muteGroupMembers(groupId, members, duration)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    unMuteMembers(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        ChatClient.getInstance().groupManager()?.unmuteGroupMembers(groupId, members)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    muteAllMembers(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.muteAllMembers(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    unMuteAllMembers(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.unmuteAllMembers(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    addWhiteList(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        ChatClient.getInstance().groupManager()?.addToGroupWhitelist(groupId, members)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    removeWhiteList(call, result) {
+        let groupId = call.argument("groupId");
+        let members = call.argument("members");
+        ChatClient.getInstance().groupManager()?.removeFromGroupWhitelist(groupId, members)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    uploadGroupSharedFile(call, result) {
+        let groupId = call.argument("groupId");
+        let filePath = call.argument("filePath");
+        let weakRef = new WeakRef(this);
+        ChatClient.getInstance().groupManager()?.uploadGroupSharedFile(groupId, filePath)
+            .then((_) => this.onSuccess(result, call.method, true))
+            .catch((e) => this.onError(result, e));
+    }
+    downloadGroupSharedFile(call, result) {
+        let groupId = call.argument("groupId");
+        let fileId = call.argument("fileId");
+        let savePath = call.argument("savePath");
+        let weakRef = new WeakRef(this);
+        ChatClient.getInstance().groupManager()?.downloadGroupSharedFile(groupId, fileId, savePath, {
+            onSuccess() {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.clientWrapper?.progressManager?.sendDownloadSuccessToFlutter(fileId, savePath);
+            },
+            onProgress(progress) {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.clientWrapper?.progressManager?.sendDownloadProgressToFlutter(fileId, progress);
+            },
+            onError(code, desc) {
+                let retrievedObject = weakRef.deref();
+                retrievedObject?.clientWrapper?.progressManager?.sendDownloadErrorToFlutter(fileId, new ChatError(code, desc));
+            },
+        }).then(() => this.onSuccess(result, call.method));
+    }
+    removeGroupSharedFile(call, result) {
+        let groupId = call.argument("groupId");
+        let fileId = call.argument("fileId");
+        ChatClient.getInstance().groupManager()?.deleteGroupSharedFile(groupId, fileId)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    updateGroupAnnouncement(call, result) {
+        let groupId = call.argument("groupId");
+        let announcement = call.argument("announcement");
+        ChatClient.getInstance().groupManager()?.updateGroupAnnouncement(groupId, announcement)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    updateGroupExt(call, result) {
+        let groupId = call.argument("groupId");
+        let ext = call.argument("ext");
+        ChatClient.getInstance().groupManager()?.updateGroupExtension(groupId, ext)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    joinPublicGroup(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.joinGroup(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    requestToJoinPublicGroup(call, result) {
+        let groupId = call.argument("groupId");
+        let reason;
+        if (call.hasArgument("reason")) {
+            reason = call.argument("reason");
+        }
+        ChatClient.getInstance().groupManager()?.applyJoinToGroup(groupId, reason)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    acceptJoinApplication(call, result) {
+        let groupId = call.argument("groupId");
+        let username = call.argument("username");
+        ChatClient.getInstance().groupManager()?.acceptApplication(groupId, username)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    declineJoinApplication(call, result) {
+        let groupId = call.argument("groupId");
+        let username = call.argument("username");
+        let reason;
+        if (call.hasArgument("reason")) {
+            reason = call.argument("reason");
+        }
+        ChatClient.getInstance().groupManager()?.declineApplication(groupId, username, reason)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    acceptInvitationFromGroup(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.acceptInvitation(groupId)
+            .then((value) => this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+            .catch((e) => this.onError(result, e));
+    }
+    declineInvitationFromGroup(call, result) {
+        let groupId = call.argument("groupId");
+        let reason;
+        if (call.hasArgument("reason")) {
+            reason = call.argument("reason");
+        }
+        ChatClient.getInstance().groupManager()?.declineInvitation(groupId, reason)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    setMemberAttributes(call, result) {
+        let groupId = call.argument("groupId");
+        let userId = call.argument("userId");
+        let map = ObjToMap(call.argument("attributes"));
+        ChatClient.getInstance().groupManager()?.setMemberAttributes(groupId, userId, map)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    removeMemberAttributes(call, result) {
+        let groupId = call.argument("groupId");
+        let userId;
+        if (call.hasArgument("userId")) {
+            userId = call.argument("userId");
+        }
+        else {
+            userId = ChatClient.getInstance().getCurrentUser();
+        }
+        let keys = call.argument("keys");
+        let map = new Map();
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
+            map.set(key, "");
+        }
+        ChatClient.getInstance().groupManager()?.setMemberAttributes(groupId, userId, map)
+            .then(() => this.onSuccess(result, call.method))
+            .catch((e) => this.onError(result, e));
+    }
+    fetchMemberAttributes(call, result) {
+        let groupId = call.argument("groupId");
+        let userId;
+        if (call.hasArgument("userId")) {
+            userId = call.argument("userId");
+        }
+        else {
+            userId = ChatClient.getInstance().getCurrentUser();
+        }
+        ChatClient.getInstance().groupManager()?.fetchMemberAttributes(groupId, userId)
+            .then((value) => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    fetchMembersAttributes(call, result) {
+        let groupId = call.argument("groupId");
+        let userIds = call.argument("userIds");
+        ChatClient.getInstance().groupManager()?.fetchMembersAttributes(groupId, userIds)
+            .then((value) => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    fetchJoinedGroupCount(call, result) {
+        ChatClient.getInstance().groupManager()?.fetchJoinedGroupsCount()
+            .then((value) => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+    clearAllGroupsFromDB(call, result) {
+        ChatClient.getInstance().groupManager()?.clearAllLocalGroups();
+        this.onSuccess(result, call.method);
+    }
+    isMemberInGroupMuteList(call, result) {
+        let groupId = call.argument("groupId");
+        ChatClient.getInstance().groupManager()?.checkIfInGroupMutelist(groupId)
+            .then((value) => this.onSuccess(result, call.method, value))
+            .catch((e) => this.onError(result, e));
+    }
+}
+//# sourceMappingURL=GroupManagerWrapper.js.mapÂ˜°@easemob/chatsdkÙƒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/MethodKeys.etsÙ’/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/CursorResultHelper.etsÙ‹/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/GroupHelper.etsÙ’/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/GroupOptionsHelper.etsÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/SharedFileHelper.etsÙ†/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/SafetyMapTool.etsÙ€/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/Wrapper.etsÙŒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/GroupManagerWrapper.etsÔrB›ªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¯hostModulesInfo³im_flutter_sdk_ohosÃÂÙU/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohosÙP/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos³im_flutter_sdk_ohos¥1.0.0Ô  ÙU/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohosÃ‘ÔrC’²hostDependencyName®hostModuleNameµ./GroupManagerWrapper³im_flutter_sdk_ohosÃÚ™import { ChatClient,
+  ChatError, Group, GroupListener, SharedFile,
+ } from "@easemob/chatsdk";
+import { Any, FlutterPluginBinding,
+  MethodCall,
+  MethodCallHandler,
+  MethodResult } from "@ohos/flutter_ohos";
+import ClientWrapper from "./ClientWrapper";
+import MethodKey from "./MethodKeys";
+import CursorResultHelper from "./models/CursorResultHelper";
+import GroupHelper from "./models/GroupHelper";
+import GroupOptionsHelper from "./models/GroupOptionsHelper";
+import SharedFileHelper from "./models/SharedFileHelper";
+import { IsObj, ObjToMap } from "./SafetyMapTool";
+import Wrapper from "./Wrapper";
+
+export default class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
+  private listener: GroupListener | undefined;
+  public clientWrapper: ClientWrapper | null = null;
+
+  constructor(binding: FlutterPluginBinding, channelName: string) {
+    super(binding, channelName);
+  }
+
+  registerEaseListener() {
+    this.unRegisterEaseListener();
+    let weakRef = new WeakRef(this);
+    this.listener = {
+      onWhitelistAdded(groupId, whitelist) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupWhiteListAdded");
+        data.set("groupId", groupId);
+        data.set("whitelist", whitelist);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onWhitelistRemoved(groupId, whitelist) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupWhiteListRemoved");
+        data.set("groupId", groupId);
+        data.set("whitelist", whitelist);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onAllMemberMuteStateChanged(groupId, isMuted) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupAllMemberMuteStateChanged");
+        data.set("groupId", groupId);
+        data.set("isMuted", isMuted);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onInvitationReceived(groupId, groupName, inviter, reason){
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupInvitationReceived");
+        data.set("groupId", groupId);
+        data.set("groupName", groupName);
+        data.set("inviter", inviter);
+        data.set("reason", reason);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onRequestToJoinReceived(groupId: string, groupName: string, applicant: string, reason: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupRequestToJoinReceived");
+        data.set("groupId", groupId);
+        data.set("groupName", groupName);
+        data.set("applicant", applicant);
+        data.set("reason", reason);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onRequestToJoinAccepted(groupId: string, groupName: string, accepter: string){
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupRequestToJoinAccepted");
+        data.set("groupId", groupId);
+        data.set("groupName", groupName);
+        data.set("accepter", accepter);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onRequestToJoinDeclined(groupId: string, _: string, decliner: string, applicant: string, reason: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupRequestToJoinDeclined");
+        data.set("groupId", groupId);
+        data.set("applicant", applicant);
+        data.set("decliner", decliner);
+        data.set("reason", reason);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onInvitationAccepted(groupId: string, invitee: string, reason: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupInvitationAccepted");
+        data.set("groupId", groupId);
+        data.set("invitee", invitee);
+        data.set("reason", reason);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onInvitationDeclined(groupId: string, invitee: string, reason: string){
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupInvitationDeclined");
+        data.set("groupId", groupId);
+        data.set("invitee", invitee);
+        data.set("reason", reason);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onUserRemoved(groupId: string, groupName: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupUserRemoved");
+        data.set("groupId", groupId);
+        data.set("groupName", groupName);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onGroupDestroyed(groupId: string, groupName: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupDestroyed");
+        data.set("groupId", groupId);
+        data.set("groupName", groupName);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onAutoAcceptInvitationFromGroup(groupId: string, inviter: string, inviteMessage: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupAutoAcceptInvitation");
+        data.set("groupId", groupId);
+        data.set("inviter", inviter);
+        data.set("inviteMessage", inviteMessage);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onMutelistAdded(groupId: string, mutes: string[], muteExpire: number) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupMuteListAdded");
+        data.set("groupId", groupId);
+        data.set("mutes", mutes);
+        data.set("muteExpire", muteExpire);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onMutelistRemoved(groupId: string, mutes: string[]) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupMuteListRemoved");
+        data.set("groupId", groupId);
+        data.set("mutes", mutes);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onAdminAdded(groupId: string, administrator: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupAdminAdded");
+        data.set("groupId", groupId);
+        data.set("administrator", administrator);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onAdminRemoved(groupId: string, administrator: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupAdminRemoved");
+        data.set("groupId", groupId);
+        data.set("administrator", administrator);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onOwnerChanged(groupId: string, newOwner: string, oldOwner: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupOwnerChanged");
+        data.set("groupId", groupId);
+        data.set("newOwner", newOwner);
+        data.set("oldOwner", oldOwner);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onMemberJoined(groupId: string, member: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupMemberJoined");
+        data.set("groupId", groupId);
+        data.set("member", member);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onMemberExited(groupId: string, member: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupMemberExited");
+        data.set("groupId", groupId);
+        data.set("member", member);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onAnnouncementChanged(groupId: string, announcement: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupAnnouncementChanged");
+        data.set("groupId", groupId);
+        data.set("announcement", announcement);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onSharedFileAdded(groupId: string, sharedFile: SharedFile) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupSharedFileAdded");
+        data.set("groupId", groupId);
+        data.set("sharedFile", SharedFileHelper.toJson(sharedFile));
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onSharedFileDeleted(groupId: string, fileId: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupSharedFileDeleted");
+        data.set("groupId", groupId);
+        data.set("fileId", fileId);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onSpecificationChanged(group) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupSpecificationDidUpdate");
+        data.set("group", GroupHelper.toJson(group)!);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onStateChanged(group: Group, isDisabled: boolean) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupStateChanged");
+        data.set("groupId", group.groupId());
+        data.set("isDisabled", isDisabled);
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+      onGroupMemberAttributeChanged(groupId: string, member: string, attributes: Map<string, string>, from: string) {
+        let retrievedObject = weakRef.deref();
+        let data = new Map<string, Object>();
+        data.set("type", "onGroupAttributesChangedOfMember");
+        data.set("groupId", groupId);
+        data.set("userId", member);
+        if (from != null) {
+          data.set("operatorId", from);
+        }
+        if (attributes != null) {
+          data.set("attributes", attributes);
+        }
+        retrievedObject?.channel?.invokeMethod(MethodKey.onGroupChanged, data);
+      },
+    }
+
+    ChatClient.getInstance().groupManager()?.addListener(this.listener);
+  }
+
+  unRegisterEaseListener() {
+    if(this.listener != null) {
+      ChatClient.getInstance().groupManager()?.removeListener(this.listener);
+    }
+  }
+
+  onMethodCall(call: MethodCall, result: MethodResult): void {
+    if (MethodKey.getGroupWithId == call.method) {
+      this.getGroupWithId(call, result);
+    } else if (MethodKey.getJoinedGroups == call.method) {
+      this.getJoinedGroups(call, result);
+    } else if (MethodKey.getJoinedGroupsFromServer == call.method) {
+      this.getJoinedGroupsFromServer(call, result);
+    } else if (MethodKey.getPublicGroupsFromServer == call.method) {
+      this.getPublicGroupsFromServer(call, result);
+    } else if (MethodKey.createGroup == call.method) {
+      this.createGroup(call, result);
+    } else if (MethodKey.getGroupSpecificationFromServer == call.method) {
+      this.getGroupSpecificationFromServer(call, result);
+    } else if (MethodKey.getGroupMemberListFromServer == call.method) {
+      this.getGroupMemberListFromServer(call, result);
+    } else if (MethodKey.getGroupMuteListFromServer == call.method) {
+      this.getGroupMuteListFromServer(call, result);
+    } else if (MethodKey.getGroupWhiteListFromServer == call.method) {
+      this.getGroupWhiteListFromServer(call, result);
+    } else if (MethodKey.isMemberInWhiteListFromServer == call.method) {
+      this.isMemberInWhiteListFromServer(call, result);
+    } else if (MethodKey.getGroupFileListFromServer == call.method) {
+      this.getGroupFileListFromServer(call, result);
+    } else if (MethodKey.getGroupAnnouncementFromServer == call.method) {
+      this.getGroupAnnouncementFromServer(call, result);
+    } else if (MethodKey.getGroupBlockListFromServer == call.method) {
+      this.getGroupBlockListFromServer(call, result);
+    } else if (MethodKey.addMembers == call.method) {
+      this.addMembers(call, result);
+    } else if (MethodKey.inviterUser == call.method){
+      this.inviterUser(call, result);
+    } else if (MethodKey.removeMembers == call.method) {
+      this.removeMembers(call, result);
+    } else if (MethodKey.blockMembers == call.method) {
+      this.blockMembers(call, result);
+    } else if (MethodKey.unblockMembers == call.method) {
+      this.unblockMembers(call, result);
+    } else if (MethodKey.updateGroupSubject == call.method) {
+      this.updateGroupSubject(call, result);
+    } else if (MethodKey.updateDescription == call.method) {
+      this.updateDescription(call, result);
+    } else if (MethodKey.leaveGroup == call.method) {
+      this.leaveGroup(call, result);
+    } else if (MethodKey.destroyGroup == call.method) {
+      this.destroyGroup(call, result);
+    } else if (MethodKey.blockGroup == call.method) {
+      this.blockGroup(call, result);
+    } else if (MethodKey.unblockGroup == call.method) {
+      this.unblockGroup(call, result);
+    } else if (MethodKey.updateGroupOwner == call.method) {
+      this.updateGroupOwner(call, result);
+    } else if (MethodKey.addAdmin == call.method) {
+      this.addAdmin(call, result);
+    } else if (MethodKey.removeAdmin == call.method) {
+      this.removeAdmin(call, result);
+    } else if (MethodKey.muteMembers == call.method) {
+      this.muteMembers(call, result);
+    } else if (MethodKey.unMuteMembers == call.method) {
+      this.unMuteMembers(call, result);
+    } else if (MethodKey.muteAllMembers == call.method) {
+      this.muteAllMembers(call, result);
+    } else if (MethodKey.unMuteAllMembers == call.method) {
+      this.unMuteAllMembers(call, result);
+    } else if (MethodKey.addWhiteList == call.method) {
+      this.addWhiteList(call, result);
+    } else if (MethodKey.removeWhiteList == call.method) {
+      this.removeWhiteList(call, result);
+    } else if (MethodKey.uploadGroupSharedFile == call.method) {
+      this.uploadGroupSharedFile(call, result);
+    } else if (MethodKey.downloadGroupSharedFile == call.method) {
+      this.downloadGroupSharedFile(call, result);
+    } else if (MethodKey.removeGroupSharedFile == call.method) {
+      this.removeGroupSharedFile(call, result);
+    } else if (MethodKey.updateGroupAnnouncement == call.method) {
+      this.updateGroupAnnouncement(call, result);
+    } else if (MethodKey.updateGroupExt == call.method) {
+      this.updateGroupExt(call, result);
+    } else if (MethodKey.joinPublicGroup == call.method) {
+      this.joinPublicGroup(call, result);
+    } else if (MethodKey.requestToJoinPublicGroup == call.method) {
+      this.requestToJoinPublicGroup(call, result);
+    } else if (MethodKey.acceptJoinApplication == call.method) {
+      this.acceptJoinApplication(call, result);
+    } else if (MethodKey.declineJoinApplication == call.method) {
+      this.declineJoinApplication(call, result);
+    } else if (MethodKey.acceptInvitationFromGroup == call.method) {
+      this.acceptInvitationFromGroup(call, result);
+    } else if (MethodKey.declineInvitationFromGroup == call.method) {
+      this.declineInvitationFromGroup(call, result);
+    } else if (MethodKey.setMemberAttributesFromGroup == call.method) {
+      this.setMemberAttributes(call, result);
+    } else if (MethodKey.removeMemberAttributesFromGroup == call.method) {
+      this.removeMemberAttributes(call, result);
+    } else if (MethodKey.fetchMemberAttributesFromGroup == call.method) {
+      this.fetchMemberAttributes(call, result);
+    } else if (MethodKey.fetchMembersAttributesFromGroup == call.method) {
+      this.fetchMembersAttributes(call, result);
+    } else if (MethodKey.fetchJoinedGroupCount == call.method) {
+      this.fetchJoinedGroupCount(call, result);
+    } else if (MethodKey.clearAllGroupsFromDB == call.method) {
+      this.clearAllGroupsFromDB(call, result);
+    } else if (MethodKey.isMemberInGroupMuteList == call.method) {
+      this.isMemberInGroupMuteList(call, result);
+    } else {
+      super.onMethodCall(call, result);
+    }
+  }
+
+  private getGroupWithId(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let group = ChatClient.getInstance().groupManager()?.getGroup(groupId);
+    if(group != null) {
+      this.onSuccess(result, call.method, GroupHelper.toJson(group));
+    }else {
+      this.onSuccess(result, call.method);
+    }
+  }
+
+  private getJoinedGroups(call: MethodCall, result: MethodResult) {
+    ChatClient.getInstance().groupManager()?.getAllGroups()
+      .then((groups)=>{
+        this.onSuccess(result, call.method, GroupHelper.listToJson(groups));
+      })
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private getJoinedGroupsFromServer(call: MethodCall, result: MethodResult) {
+    let pageSize = call.argument("pageSize") as number;
+    let pageNum = call.argument("pageNum") as number;
+    ChatClient.getInstance().groupManager()?.fetchJoinedGroupsFromServer(pageSize, pageNum)
+      .then((groups)=>{
+        this.onSuccess(result, call.method, GroupHelper.listToJson(groups));
+      })
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private getPublicGroupsFromServer(call: MethodCall, result: MethodResult) {
+    let pageSize = call.argument("pageSize") as number;
+    let cursor: string | null = null;
+    if(call.hasArgument("cursor")) {
+      cursor = call.argument("cursor");
+    }
+
+    ChatClient.getInstance().groupManager()?.fetchPublicGroupsFromServer(pageSize, cursor)
+      .then((value)=>this.onSuccess(result, call.method, CursorResultHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private createGroup(call: MethodCall, result: MethodResult) {
+    let options = GroupOptionsHelper.fromJson(call.args);
+    ChatClient.getInstance().groupManager()?.createGroup(options)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private getGroupSpecificationFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.fetchGroupFromServer(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private getGroupMemberListFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let cursor: string | undefined;
+    if(call.hasArgument("cursor")) {
+      cursor = call.argument("cursor");
+    }
+    let pageSize = call.argument("pageSize") as number;
+
+    ChatClient.getInstance().groupManager()?.fetchGroupMembers(groupId, pageSize, cursor)
+      .then((value)=>this.onSuccess(result, call.method, CursorResultHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private getGroupMuteListFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let pageSize = call.argument("pageSize") as number;
+    let pageNum = call.argument("pageNum") as number;
+    ChatClient.getInstance().groupManager()?.fetchGroupMutelist(groupId, pageNum, pageSize)
+      .then(value=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private getGroupWhiteListFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.fetchGroupWhitelist(groupId)
+      .then(value=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private isMemberInWhiteListFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.checkIfInGroupWhitelist(groupId)
+      .then(value=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private getGroupFileListFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let pageSize = call.argument("pageSize") as number;
+    let pageNum = call.argument("pageNum") as number;
+    ChatClient.getInstance().groupManager()?.fetchGroupSharedFileList(groupId, pageNum, pageSize)
+      .then(value=>this.onSuccess(result, call.method, SharedFileHelper.listToJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private getGroupAnnouncementFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.fetchGroupAnnouncement(groupId)
+      .then(value=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private getGroupBlockListFromServer(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let pageSize = call.argument("pageSize") as number;
+    let pageNum = call.argument("pageNum") as number;
+    ChatClient.getInstance().groupManager()?.fetchGroupBlocklist(groupId, pageNum, pageSize)
+      .then(value=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private addMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    let welcome: string | undefined;
+    if(call.hasArgument("welcome")) {
+      welcome = call.argument("welcome");
+    }
+    ChatClient.getInstance().groupManager()?.addUsersToGroup(groupId, members, welcome)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private inviterUser(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    let reason: string | undefined;
+    if(call.hasArgument("reason")) {
+      reason = call.argument("reason");
+    }
+    ChatClient.getInstance().groupManager()?.inviteUsers(groupId, members, reason)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private removeMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    ChatClient.getInstance().groupManager()?.removeUsersFromGroup(groupId, members)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private blockMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    ChatClient.getInstance().groupManager()?.blockUsers(groupId, members)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private unblockMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    ChatClient.getInstance().groupManager()?.unblockUsers(groupId, members)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private updateGroupSubject(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let name = call.argument("name") as string;
+    ChatClient.getInstance().groupManager()?.changeGroupName(groupId, name)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private updateDescription(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let desc = call.argument("desc") as string;
+    ChatClient.getInstance().groupManager()?.changeGroupDescription(groupId, desc)
+      .then(value=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private leaveGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.leaveGroup(groupId)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private destroyGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.destroyGroup(groupId)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private blockGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.blockGroupMessage(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private unblockGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.unblockGroupMessage(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private updateGroupOwner(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let owner = call.argument("owner") as string;
+    ChatClient.getInstance().groupManager()?.changeOwner(groupId, owner)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private addAdmin(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let admin = call.argument("admin") as string;
+    ChatClient.getInstance().groupManager()?.addGroupAdmin(groupId, admin)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private removeAdmin(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let admin = call.argument("admin") as string;
+    ChatClient.getInstance().groupManager()?.removeGroupAdmin(groupId, admin)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private muteMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    let duration = call.argument("duration") as number;
+    ChatClient.getInstance().groupManager()?.muteGroupMembers(groupId, members, duration)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private unMuteMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    ChatClient.getInstance().groupManager()?.unmuteGroupMembers(groupId, members)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private muteAllMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.muteAllMembers(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private unMuteAllMembers(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.unmuteAllMembers(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private addWhiteList(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    ChatClient.getInstance().groupManager()?.addToGroupWhitelist(groupId, members)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private removeWhiteList(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let members = call.argument("members") as Array<string>;
+    ChatClient.getInstance().groupManager()?.removeFromGroupWhitelist(groupId, members)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private uploadGroupSharedFile(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let filePath = call.argument("filePath") as string;
+    let weakRef = new WeakRef(this);
+    ChatClient.getInstance().groupManager()?.uploadGroupSharedFile(groupId, filePath)
+      .then((_)=>this.onSuccess(result, call.method, true))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private downloadGroupSharedFile(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let fileId = call.argument("fileId") as string;
+    let savePath = call.argument("savePath") as string;
+    let weakRef = new WeakRef(this);
+    ChatClient.getInstance().groupManager()?.downloadGroupSharedFile(groupId, fileId, savePath, {
+      onSuccess(){
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.clientWrapper?.progressManager?.sendDownloadSuccessToFlutter(fileId, savePath);
+      },
+      onProgress(progress) {
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.clientWrapper?.progressManager?.sendDownloadProgressToFlutter(fileId, progress);
+      },
+      onError(code, desc){
+        let retrievedObject = weakRef.deref();
+        retrievedObject?.clientWrapper?.progressManager?.sendDownloadErrorToFlutter(fileId, new ChatError(code, desc));
+      },
+    }).then(()=>this.onSuccess(result, call.method));
+  }
+  private removeGroupSharedFile(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let fileId = call.argument("fileId") as string;
+    ChatClient.getInstance().groupManager()?.deleteGroupSharedFile(groupId, fileId)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private updateGroupAnnouncement(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let announcement = call.argument("announcement") as string;
+    ChatClient.getInstance().groupManager()?.updateGroupAnnouncement(groupId, announcement)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private updateGroupExt(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let ext = call.argument("ext") as string;
+    ChatClient.getInstance().groupManager()?.updateGroupExtension(groupId, ext)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private joinPublicGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.joinGroup(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private requestToJoinPublicGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let reason: string | undefined;
+    if(call.hasArgument("reason")) {
+      reason = call.argument("reason");
+    }
+
+    ChatClient.getInstance().groupManager()?.applyJoinToGroup(groupId, reason)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private acceptJoinApplication(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let username = call.argument("username") as string;
+    ChatClient.getInstance().groupManager()?.acceptApplication(groupId, username)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+
+  private declineJoinApplication(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let username = call.argument("username") as string;
+    let reason: string | undefined;
+    if(call.hasArgument("reason")) {
+      reason = call.argument("reason");
+    }
+    ChatClient.getInstance().groupManager()?.declineApplication(groupId, username, reason)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private acceptInvitationFromGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.acceptInvitation(groupId)
+      .then((value)=>this.onSuccess(result, call.method, GroupHelper.toJson(value)))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private declineInvitationFromGroup(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let reason: string | undefined;
+    if(call.hasArgument("reason")) {
+      reason = call.argument("reason");
+    }
+    ChatClient.getInstance().groupManager()?.declineInvitation(groupId, reason)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+  private setMemberAttributes(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let userId = call.argument("userId") as string;
+    let map = ObjToMap(call.argument("attributes"))
+    ChatClient.getInstance().groupManager()?.setMemberAttributes(groupId, userId, map)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private removeMemberAttributes(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let userId: string| undefined;
+    if(call.hasArgument("userId")) {
+      userId = call.argument("userId") as string;
+    }else {
+      userId = ChatClient.getInstance().getCurrentUser();
+    }
+    let keys = call.argument("keys") as Array<string>;
+    let map = new Map<string, string>();
+    for (let index = 0; index < keys.length; index++) {
+      const key= keys[index];
+      map.set(key, "");
+    }
+    ChatClient.getInstance().groupManager()?.setMemberAttributes(groupId, userId, map)
+      .then(()=>this.onSuccess(result, call.method))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private fetchMemberAttributes(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let userId: string| undefined;
+    if(call.hasArgument("userId")) {
+      userId = call.argument("userId") as string;
+    }else {
+      userId = ChatClient.getInstance().getCurrentUser();
+    }
+    ChatClient.getInstance().groupManager()?.fetchMemberAttributes(groupId, userId)
+      .then((value)=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private fetchMembersAttributes(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    let userIds = call.argument("userIds") as Array<string>;
+
+    ChatClient.getInstance().groupManager()?.fetchMembersAttributes(groupId, userIds)
+      .then((value)=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private fetchJoinedGroupCount(call: MethodCall, result: MethodResult) {
+    ChatClient.getInstance().groupManager()?.fetchJoinedGroupsCount()
+      .then((value)=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+
+  private clearAllGroupsFromDB(call: MethodCall, result: MethodResult) {
+    ChatClient.getInstance().groupManager()?.clearAllLocalGroups()
+    this.onSuccess(result, call.method);
+  }
+
+  private isMemberInGroupMuteList(call: MethodCall, result: MethodResult) {
+    let groupId = call.argument("groupId") as string;
+    ChatClient.getInstance().groupManager()?.checkIfInGroupMutelist(groupId)
+      .then((value)=>this.onSuccess(result, call.method, value))
+      .catch((e: ChatError) => this.onError(result, e));
+  }
+}ÀÔrD˜°@easemob/chatsdk¬./MethodKeys»./models/CursorResultHelper´./models/GroupHelper»./models/GroupOptionsHelper©./Wrapper¯./SafetyMapTool¹./models/SharedFileHelperÔrE—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃ°@easemob/chatsdkAÃªoh-resolveÂEAÂÙƒ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/MethodKeys.etsAÃªoh-resolveÂEAÂÙ’/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/CursorResultHelper.etsAÃªoh-resolveÂEAÂÙ‹/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/GroupHelper.etsAÃªoh-resolveÂEAÂÙ’/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/GroupOptionsHelper.etsAÃªoh-resolveÂEAÂÙ€/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/Wrapper.etsAÃªoh-resolveÂEAÂÙ†/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/SafetyMapTool.etsAÃªoh-resolveÂEAÂÙ/Users/dujiepeng/work/flutter/flutter_sdk/im_flutter_sdk_new/im_flutter_sdk_ohos/ohos/src/main/ets/components/plugin/models/SharedFileHelper.etsAÃªoh-resolveÂ“ÔrF–§version¤fileªsourceRoot§sources¥names¨mappings¶GroupManagerWrapper.js ‘·GroupManagerWrapper.etsÜ&š”    ”  ”	  	”  ” ” ”! ”' ”9 ”: –”   ” ” ” ”$ $”% %–”  	 ” 	” 	” 	”< 	<”= 	=–”  
+ ” 
+” 
+” 
+”. 
+.”/ 
+/–”   ” ” ” ”< <”= =–”   ” ” ” ”8 8”9 9˜”   ” ”	 ” ” ”  ”* 1”+ 2–”   ” ” ” ” ”   ˜”   ” ” ” ” ”( )”1 1”8 8•” ” ” +” -”$ Ì@˜” ” 	” 
+” ” ”" ”# ”$  •” 	” ” /”! 3”" 4’” ” ’” ” –” ” ” 	”# ”% !”& "š” ” ” ” ” ”! ”" ”& "”' #”( $•” ” ” 	” ” –” ” ” ”$ ”&  ”/ )™” ” ”# ”& ”- %”. &”3 +”5 -”6 .˜” ” ” ” ” ”" ”$ ,”% -š” ” ” ” ” ” ”! ”8 0”9 1”: 2š”  ”  ”  ”  ”  ”"  ”$  ”+  #”,  $”-  %š” !” !” !” !” !”$ !”& !”/ !'”0 !(”1 !)” "” "”! "”( " ”* ""”6 ".”7 "/”Ì@ "8”ÌA "9”ÌO "ÌG”ÌQ "ÌI”ÌU "ÌM”ÌV "ÌN”ÌW "ÌO’” #” #–” $” $” $”& $ ”( $"”1 $+™” %” %”# %”& %”- %%”. %&”3 %+”5 %-”6 %.˜” &” &” &” &” &”" &”$ &,”% &-š” '” '” '” '” '” '”! '”: '2”; '3”< '4š” (” (” (” (” (”" (”$ (”+ (#”, ($”- (%š” )” )” )” )” )”$ )”& )”/ )'”0 )(”1 ))” *” *”! *”( * ”* *"”6 *.”7 */”Ì@ *8”ÌA *9”ÌO *ÌG”ÌQ *ÌI”ÌU *ÌM”ÌV *ÌN”ÌW *ÌO’” +” +–” ,”' ,!”( ,"”/ ,)”1 ,+”8 ,2™” -” -”# -”& -”- -%”. -&”3 -+”5 --”6 -.˜” .” .” .” .” .”" .”$ .,”% .-š” /” /” /” /” /” /”! /”ÌC /;”ÌD /<”ÌE /=š” 0” 0” 0” 0” 0”" 0”$ 0”+ 0#”, 0$”- 0%š” 1” 1” 1” 1” 1”" 1”$ 1”+ 1#”, 1$”- 1%” 2” 2”! 2”( 2 ”* 2"”6 2.”7 2/”Ì@ 28”ÌA 29”ÌO 2ÌG”ÌQ 2ÌI”ÌU 2ÌM”ÌV 2ÌN”ÌW 2ÌO’” 3” 3š” 4”  4”! 4”( 4"”* 4$”3 4-”5 4/”< 46”> 48”ÌD 4>™” 5” 5”# 5”& 5”- 5%”. 5&”3 5+”5 5-”6 5.˜” 6” 6” 6” 6” 6”" 6”$ 6,”% 6-š” 7” 7” 7” 7” 7” 7”! 7”< 74”= 75”> 76š” 8” 8” 8” 8” 8”" 8”$ 8”+ 8#”, 8$”- 8%š” 9” 9” 9” 9” 9”$ 9”& 9”/ 9'”0 9(”1 9)š” :” :” :” :” :”" :”$ :”+ :#”, :$”- :%š” ;” ;” ;” ;” ;”! ;”# ;”) ;!”* ;"”+ ;#” <” <”! <”( < ”* <"”6 <.”7 </”Ì@ <8”ÌA <9”ÌO <ÌG”ÌQ <ÌI”ÌU <ÌM”ÌV <ÌN”ÌW <ÌO’” =” =š” >”# >”$ >”+ >-”- >/”6 >Ì@”8 >ÌB”ÌA >ÌS”ÌC >ÌU”ÌI >Ìc™” ?” ?”# ?”& ?”- ?%”. ?&”3 ?+”5 ?-”6 ?.˜” Ì@” Ì@” Ì@” Ì@” Ì@”" Ì@”$ Ì@,”% Ì@-š” ÌA” ÌA” ÌA” ÌA” ÌA” ÌA”! ÌA”? ÌA7”Ì@ ÌA8”ÌA ÌA9š” ÌB” ÌB” ÌB” ÌB” ÌB”" ÌB”$ ÌB”+ ÌB#”, ÌB$”- ÌB%š” ÌC” ÌC” ÌC” ÌC” ÌC”$ ÌC”& ÌC”/ ÌC'”0 ÌC(”1 ÌC)š” ÌD” ÌD” ÌD” ÌD” ÌD”$ ÌD”& ÌD”/ ÌD'”0 ÌD(”1 ÌD)š” ÌE” ÌE” ÌE” ÌE” ÌE”! ÌE”# ÌE”) ÌE!”* ÌE"”+ ÌE#” ÌF” ÌF”! ÌF”( ÌF ”* ÌF"”6 ÌF.”7 ÌF/”Ì@ ÌF8”ÌA ÌF9”ÌO ÌFÌG”ÌQ ÌFÌI”ÌU ÌFÌM”ÌV ÌFÌN”ÌW ÌFÌO’” ÌG” ÌG˜” ÌH”# ÌH”$ ÌH”+ ÌH-”- ÌH/”6 ÌHÌ@”8 ÌHÌB”Ì@ ÌHÌR™” ÌI” ÌI”# ÌI”& ÌI”- ÌI%”. ÌI&”3 ÌI+”5 ÌI-”6 ÌI.˜” ÌJ” ÌJ” ÌJ” ÌJ” ÌJ”" ÌJ”$ ÌJ,”% ÌJ-š” ÌK” ÌK” ÌK” ÌK” ÌK” ÌK”! ÌK”? ÌK7”Ì@ ÌK8”ÌA ÌK9š” ÌL” ÌL” ÌL” ÌL” ÌL”" ÌL”$ ÌL”+ ÌL#”, ÌL$”- ÌL%š” ÌM” ÌM” ÌM” ÌM” ÌM”$ ÌM”& ÌM”/ ÌM'”0 ÌM(”1 ÌM)š” ÌN” ÌN” ÌN” ÌN” ÌN”# ÌN”% ÌN”- ÌN%”. ÌN&”/ ÌN'” ÌO” ÌO”! ÌO”( ÌO ”* ÌO"”6 ÌO.”7 ÌO/”Ì@ ÌO8”ÌA ÌO9”ÌO ÌOÌG”ÌQ ÌOÌI”ÌU ÌOÌM”ÌV ÌOÌN”ÌW ÌOÌO’” ÌP” ÌPœ” ÌQ”# ÌQ”$ ÌQ”+ ÌQ-”- ÌQ/”. ÌQ8”0 ÌQ:”8 ÌQÌJ”: ÌQÌL”ÌC ÌQÌ]”ÌE ÌQÌ_”ÌK ÌQÌm™” ÌR” ÌR”# ÌR”& ÌR”- ÌR%”. ÌR&”3 ÌR+”5 ÌR-”6 ÌR.˜” ÌS” ÌS” ÌS” ÌS” ÌS”" ÌS”$ ÌS,”% ÌS-š” ÌT” ÌT” ÌT” ÌT” ÌT” ÌT”! ÌT”? ÌT7”Ì@ ÌT8”ÌA ÌT9š” ÌU” ÌU” ÌU” ÌU” ÌU”" ÌU”$ ÌU”+ ÌU#”, ÌU$”- ÌU%š” ÌV” ÌV” ÌV” ÌV” ÌV”$ ÌV”& ÌV”/ ÌV'”0 ÌV(”1 ÌV)š” ÌW” ÌW” ÌW” ÌW” ÌW”# ÌW”% ÌW”- ÌW%”. ÌW&”/ ÌW'š” ÌX” ÌX” ÌX” ÌX” ÌX”! ÌX”# ÌX”) ÌX!”* ÌX"”+ ÌX#” ÌY” ÌY”! ÌY”( ÌY ”* ÌY"”6 ÌY.”7 ÌY/”Ì@ ÌY8”ÌA ÌY9”ÌO ÌYÌG”ÌQ ÌYÌI”ÌU ÌYÌM”ÌV ÌYÌN”ÌW ÌYÌO’” ÌZ” ÌZ˜” Ì[”  Ì[”! Ì[”( Ì[*”* Ì[,”1 Ì[;”3 Ì[=”9 Ì[ÌK™” Ì\” Ì\”# Ì\”& Ì\”- Ì\%”. Ì\&”3 Ì\+”5 Ì\-”6 Ì\.˜” Ì]” Ì]” Ì]” Ì]” Ì]”" Ì]”$ Ì],”% Ì]-š” Ì^” Ì^” Ì^” Ì^” Ì^” Ì^”! Ì^”< Ì^4”= Ì^5”> Ì^6š” Ì_” Ì_” Ì_” Ì_” Ì_”" Ì_”$ Ì_”+ Ì_#”, Ì_$”- Ì_%š” Ì`” Ì`” Ì`” Ì`” Ì`”" Ì`”$ Ì`”+ Ì`#”, Ì`$”- Ì`%š” Ìa” Ìa” Ìa” Ìa” Ìa”! Ìa”# Ìa”) Ìa!”* Ìa"”+ Ìa#” Ìb” Ìb”! Ìb”( Ìb ”* Ìb"”6 Ìb.”7 Ìb/”Ì@ Ìb8”ÌA Ìb9”ÌO ÌbÌG”ÌQ ÌbÌI”ÌU ÌbÌM”ÌV ÌbÌN”ÌW ÌbÌO’” Ìc” Ìc˜” Ìd”  Ìd”! Ìd”( Ìd*”* Ìd,”1 Ìd;”3 Ìd=”9 ÌdÌK™” Ìe” Ìe”# Ìe”& Ìe”- Ìe%”. Ìe&”3 Ìe+”5 Ìe-”6 Ìe.˜” Ìf” Ìf” Ìf” Ìf” Ìf”" Ìf”$ Ìf,”% Ìf-š” Ìg” Ìg” Ìg” Ìg” Ìg” Ìg”! Ìg”< Ìg4”= Ìg5”> Ìg6š” Ìh” Ìh” Ìh” Ìh” Ìh”" Ìh”$ Ìh”+ Ìh#”, Ìh$”- Ìh%š” Ìi” Ìi” Ìi” Ìi” Ìi”" Ìi”$ Ìi”+ Ìi#”, Ìi$”- Ìi%š” Ìj” Ìj” Ìj” Ìj” Ìj”! Ìj”# Ìj”) Ìj!”* Ìj"”+ Ìj#” Ìk” Ìk”! Ìk”( Ìk ”* Ìk"”6 Ìk.”7 Ìk/”Ì@ Ìk8”ÌA Ìk9”ÌO ÌkÌG”ÌQ ÌkÌI”ÌU ÌkÌM”ÌV ÌkÌN”ÌW ÌkÌO’” Ìl” Ìl–” Ìm” Ìm” Ìm”! Ìm#”# Ìm%”, Ìm6™” Ìn” Ìn”# Ìn”& Ìn”- Ìn%”. Ìn&”3 Ìn+”5 Ìn-”6 Ìn.˜” Ìo” Ìo” Ìo” Ìo” Ìo”" Ìo”$ Ìo,”% Ìo-š” Ìp” Ìp” Ìp” Ìp” Ìp” Ìp”! Ìp”5 Ìp-”6 Ìp.”7 Ìp/š” Ìq” Ìq” Ìq” Ìq” Ìq”" Ìq”$ Ìq”+ Ìq#”, Ìq$”- Ìq%š” Ìr” Ìr” Ìr” Ìr” Ìr”$ Ìr”& Ìr”/ Ìr'”0 Ìr(”1 Ìr)” Ìs” Ìs”! Ìs”( Ìs ”* Ìs"”6 Ìs.”7 Ìs/”Ì@ Ìs8”ÌA Ìs9”ÌO ÌsÌG”ÌQ ÌsÌI”ÌU ÌsÌM”ÌV ÌsÌN”ÌW ÌsÌO’” Ìt” Ìt–” Ìu” Ìu” Ìu”$ Ìu&”& Ìu(”/ Ìu9™” Ìv” Ìv”# Ìv”& Ìv”- Ìv%”. Ìv&”3 Ìv+”5 Ìv-”6 Ìv.˜” Ìw” Ìw” Ìw” Ìw” Ìw”" Ìw”$ Ìw,”% Ìw-š” Ìx” Ìx” Ìx” Ìx” Ìx” Ìx”! Ìx”3 Ìx+”4 Ìx,”5 Ìx-š” Ìy” Ìy” Ìy” Ìy” Ìy”" Ìy”$ Ìy”+ Ìy#”, Ìy$”- Ìy%š” Ìz” Ìz” Ìz” Ìz” Ìz”$ Ìz”& Ìz”/ Ìz'”0 Ìz(”1 Ìz)” Ì{” Ì{”! Ì{”( Ì{ ”* Ì{"”6 Ì{.”7 Ì{/”Ì@ Ì{8”ÌA Ì{9”ÌO Ì{ÌG”ÌQ Ì{ÌI”ÌU Ì{ÌM”ÌV Ì{ÌN”ÌW Ì{ÌO’” Ì|” Ì|˜” Ì}”+ Ì}%”, Ì}&”3 Ì}5”5 Ì}7”< Ì}ÌF”> Ì}ÌH”ÌK Ì}Ì]™” Ì~” Ì~”# Ì~”& Ì~”- Ì~%”. Ì~&”3 Ì~+”5 Ì~-”6 Ì~.˜” Ì” Ì” Ì” Ì” Ì”" Ì”$ Ì,”% Ì-š” Ì€” Ì€” Ì€” Ì€” Ì€” Ì€”! Ì€”> Ì€6”? Ì€7”Ì@ Ì€8š” Ì” Ì” Ì” Ì” Ì”" Ì”$ Ì”+ Ì#”, Ì$”- Ì%š” Ì‚” Ì‚” Ì‚” Ì‚” Ì‚”" Ì‚”$ Ì‚”+ Ì‚#”, Ì‚$”- Ì‚%š” Ìƒ” Ìƒ” Ìƒ” Ìƒ” Ìƒ”( Ìƒ ”* Ìƒ"”7 Ìƒ/”8 Ìƒ0”9 Ìƒ1” Ì„” Ì„”! Ì„”( Ì„ ”* Ì„"”6 Ì„.”7 Ì„/”Ì@ Ì„8”ÌA Ì„9”ÌO Ì„ÌG”ÌQ Ì„ÌI”ÌU Ì„ÌM”ÌV Ì„ÌN”ÌW Ì„ÌO’” Ì…” Ì…˜” Ì†” Ì†” Ì†”# Ì†%”% Ì†'”* Ì†6”, Ì†8”6 Ì†ÌJ™” Ì‡” Ì‡”# Ì‡”& Ì‡”- Ì‡%”. Ì‡&”3 Ì‡+”5 Ì‡-”6 Ì‡.˜” Ìˆ” Ìˆ” Ìˆ” Ìˆ” Ìˆ”" Ìˆ”$ Ìˆ,”% Ìˆ-š” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰” Ì‰”! Ì‰”7 Ì‰/”8 Ì‰0”9 Ì‰1š” ÌŠ” ÌŠ” ÌŠ” ÌŠ” ÌŠ”" ÌŠ”$ ÌŠ”+ ÌŠ#”, ÌŠ$”- ÌŠ%š” Ì‹” Ì‹” Ì‹” Ì‹” Ì‹”  Ì‹”" Ì‹”' Ì‹”( Ì‹ ”) Ì‹!š” ÌŒ” ÌŒ” ÌŒ” ÌŒ” ÌŒ”% ÌŒ”' ÌŒ”1 ÌŒ)”2 ÌŒ*”3 ÌŒ+” Ì” Ì”! Ì”( Ì ”* Ì"”6 Ì.”7 Ì/”Ì@ Ì8”ÌA Ì9”ÌO ÌÌG”ÌQ ÌÌI”ÌU ÌÌM”ÌV ÌÌN”ÌW ÌÌO’” Ì” Ì–” Ì” Ì” Ì”% Ì'”' Ì)”, Ì8™” Ì” Ì”# Ì”& Ì”- Ì%”. Ì&”3 Ì+”5 Ì-”6 Ì.˜” Ì‘” Ì‘” Ì‘” Ì‘” Ì‘”" Ì‘”$ Ì‘,”% Ì‘-š” Ì’” Ì’” Ì’” Ì’” Ì’” Ì’”! Ì’”9 Ì’1”: Ì’2”; Ì’3š” Ì“” Ì“” Ì“” Ì“” Ì“”" Ì“”$ Ì“”+ Ì“#”, Ì“$”- Ì“%š” Ì”” Ì”” Ì”” Ì”” Ì””  Ì””" Ì””' Ì””( Ì” ”) Ì”!” Ì•” Ì•”! Ì•”( Ì• ”* Ì•"”6 Ì•.”7 Ì•/”Ì@ Ì•8”ÌA Ì•9”ÌO Ì•ÌG”ÌQ Ì•ÌI”ÌU Ì•ÌM”ÌV Ì•ÌN”ÌW Ì•ÌO’” Ì–” Ì––” Ì—” Ì—” Ì—”  Ì—"”" Ì—$”/ Ì—9™” Ì˜” Ì˜”# Ì˜”& Ì˜”- Ì˜%”. Ì˜&”3 Ì˜+”5 Ì˜-”6 Ì˜.˜” Ì™” Ì™” Ì™” Ì™” Ì™”" Ì™”$ Ì™,”% Ì™-š” Ìš” Ìš” Ìš” Ìš” Ìš” Ìš”! Ìš”4 Ìš,”5 Ìš-”6 Ìš.š” Ì›” Ì›” Ì›” Ì›” Ì›”" Ì›”$ Ì›”+ Ì›#”, Ì›$”- Ì›%š” Ìœ” Ìœ” Ìœ” Ìœ” Ìœ”( Ìœ ”* Ìœ"”7 Ìœ/”8 Ìœ0”9 Ìœ1” Ì” Ì”! Ì”( Ì ”* Ì"”6 Ì.”7 Ì/”Ì@ Ì8”ÌA Ì9”ÌO ÌÌG”ÌQ ÌÌI”ÌU ÌÌM”ÌV ÌÌN”ÌW ÌÌO’” Ì” Ì–” ÌŸ” ÌŸ” ÌŸ”" ÌŸ$”$ ÌŸ&”1 ÌŸ;™” Ì ” Ì ”# Ì ”& Ì ”- Ì %”. Ì &”3 Ì +”5 Ì -”6 Ì .˜” Ì¡” Ì¡” Ì¡” Ì¡” Ì¡”" Ì¡”$ Ì¡,”% Ì¡-š” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢” Ì¢”! Ì¢”6 Ì¢.”7 Ì¢/”8 Ì¢0š” Ì£” Ì£” Ì£” Ì£” Ì£”" Ì£”$ Ì£”+ Ì£#”, Ì£$”- Ì£%š” Ì¤” Ì¤” Ì¤” Ì¤” Ì¤”( Ì¤ ”* Ì¤"”7 Ì¤/”8 Ì¤0”9 Ì¤1” Ì¥” Ì¥”! Ì¥”( Ì¥ ”* Ì¥"”6 Ì¥.”7 Ì¥/”Ì@ Ì¥8”ÌA Ì¥9”ÌO Ì¥ÌG”ÌQ Ì¥ÌI”ÌU Ì¥ÌM”ÌV Ì¥ÌN”ÌW Ì¥ÌO’” Ì¦” Ì¦˜” Ì§” Ì§” Ì§”" Ì§$”$ Ì§&”, Ì§6”. Ì§8”6 Ì§ÌH™” Ì¨” Ì¨”# Ì¨”& Ì¨”- Ì¨%”. Ì¨&”3 Ì¨+”5 Ì¨-”6 Ì¨.˜” Ì©” Ì©” Ì©” Ì©” Ì©”" Ì©”$ Ì©,”% Ì©-š” Ìª” Ìª” Ìª” Ìª” Ìª” Ìª”! Ìª”6 Ìª.”7 Ìª/”8 Ìª0š” Ì«” Ì«” Ì«” Ì«” Ì«”" Ì«”$ Ì«”+ Ì«#”, Ì«$”- Ì«%š” Ì¬” Ì¬” Ì¬” Ì¬” Ì¬”# Ì¬”% Ì¬”- Ì¬%”. Ì¬&”/ Ì¬'š” Ì­” Ì­” Ì­” Ì­” Ì­”# Ì­”% Ì­”- Ì­%”. Ì­&”/ Ì­'” Ì®” Ì®”! Ì®”( Ì® ”* Ì®"”6 Ì®.”7 Ì®/”Ì@ Ì®8”ÌA Ì®9”ÌO Ì®ÌG”ÌQ Ì®ÌI”ÌU Ì®ÌM”ÌV Ì®ÌN”ÌW Ì®ÌO’” Ì¯” Ì¯–” Ì°” Ì°” Ì°”" Ì°$”$ Ì°&”* Ì°4™” Ì±” Ì±”# Ì±”& Ì±”- Ì±%”. Ì±&”3 Ì±+”5 Ì±-”6 Ì±.˜” Ì²” Ì²” Ì²” Ì²” Ì²”" Ì²”$ Ì²,”% Ì²-š” Ì³” Ì³” Ì³” Ì³” Ì³” Ì³”! Ì³”6 Ì³.”7 Ì³/”8 Ì³0š” Ì´” Ì´” Ì´” Ì´” Ì´”" Ì´”$ Ì´”+ Ì´#”, Ì´$”- Ì´%š” Ìµ” Ìµ” Ìµ” Ìµ” Ìµ”! Ìµ”# Ìµ”) Ìµ!”* Ìµ"”+ Ìµ#” Ì¶” Ì¶”! Ì¶”( Ì¶ ”* Ì¶"”6 Ì¶.”7 Ì¶/”Ì@ Ì¶8”ÌA Ì¶9”ÌO Ì¶ÌG”ÌQ Ì¶ÌI”ÌU Ì¶ÌM”ÌV Ì¶ÌN”ÌW Ì¶ÌO’” Ì·” Ì·–” Ì¸” Ì¸” Ì¸”" Ì¸$”$ Ì¸&”* Ì¸4™” Ì¹” Ì¹”# Ì¹”& Ì¹”- Ì¹%”. Ì¹&”3 Ì¹+”5 Ì¹-”6 Ì¹.˜” Ìº” Ìº” Ìº” Ìº” Ìº”" Ìº”$ Ìº,”% Ìº-š” Ì»” Ì»” Ì»” Ì»” Ì»” Ì»”! Ì»”6 Ì».”7 Ì»/”8 Ì»0š” Ì¼” Ì¼” Ì¼” Ì¼” Ì¼”" Ì¼”$ Ì¼”+ Ì¼#”, Ì¼$”- Ì¼%š” Ì½” Ì½” Ì½” Ì½” Ì½”! Ì½”# Ì½”) Ì½!”* Ì½"”+ Ì½#” Ì¾” Ì¾”! Ì¾”( Ì¾ ”* Ì¾"”6 Ì¾.”7 Ì¾/”Ì@ Ì¾8”ÌA Ì¾9”ÌO Ì¾ÌG”ÌQ Ì¾ÌI”ÌU Ì¾ÌM”ÌV Ì¾ÌN”ÌW Ì¾ÌO’” Ì¿” Ì¿–” ÌÀ”! ÌÀ”" ÌÀ”) ÌÀ+”+ ÌÀ-”7 ÌÀÌA™” ÌÁ” ÌÁ”# ÌÁ”& ÌÁ”- ÌÁ%”. ÌÁ&”3 ÌÁ+”5 ÌÁ-”6 ÌÁ.˜” ÌÂ” ÌÂ” ÌÂ” ÌÂ” ÌÂ”" ÌÂ”$ ÌÂ,”% ÌÂ-š” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ” ÌÃ”! ÌÃ”= ÌÃ5”> ÌÃ6”? ÌÃ7š” ÌÄ” ÌÄ” ÌÄ” ÌÄ” ÌÄ”" ÌÄ”$ ÌÄ”+ ÌÄ#”, ÌÄ$”- ÌÄ%š” ÌÅ” ÌÅ” ÌÅ” ÌÅ” ÌÅ”' ÌÅ”) ÌÅ!”5 ÌÅ-”6 ÌÅ.”7 ÌÅ/” ÌÆ” ÌÆ”! ÌÆ”( ÌÆ ”* ÌÆ"”6 ÌÆ.”7 ÌÆ/”Ì@ ÌÆ8”ÌA ÌÆ9”ÌO ÌÆÌG”ÌQ ÌÆÌI”ÌU ÌÆÌM”ÌV ÌÆÌN”ÌW ÌÆÌO’” ÌÇ” ÌÇ–” ÌÈ” ÌÈ” ÌÈ”% ÌÈ'”' ÌÈ)”1 ÌÈ?™” ÌÉ” ÌÉ”# ÌÉ”& ÌÉ”- ÌÉ%”. ÌÉ&”3 ÌÉ+”5 ÌÉ-”6 ÌÉ.˜” ÌÊ” ÌÊ” ÌÊ” ÌÊ” ÌÊ”" ÌÊ”$ ÌÊ,”% ÌÊ-š” ÌË” ÌË” ÌË” ÌË” ÌË” ÌË”! ÌË”9 ÌË1”: ÌË2”; ÌË3š” ÌÌ” ÌÌ” ÌÌ” ÌÌ” ÌÌ”" ÌÌ”$ ÌÌ”+ ÌÌ#”, ÌÌ$”- ÌÌ%Ÿ” ÌÍ” ÌÍ” ÌÍ” ÌÍ” ÌÍ”% ÌÍ”' ÌÍ”7 ÌÍ/”8 ÌÍ0”> ÌÍ6”? ÌÍ7”ÌI ÌÍÌA”ÌJ ÌÍÌB”ÌK ÌÍÌC”ÌL ÌÍÌD” ÌÎ” ÌÎ”! ÌÎ”( ÌÎ ”* ÌÎ"”6 ÌÎ.”7 ÌÎ/”Ì@ ÌÎ8”ÌA ÌÎ9”ÌO ÌÎÌG”ÌQ ÌÎÌI”ÌU ÌÎÌM”ÌV ÌÎÌN”ÌW ÌÎÌO’” ÌÏ” ÌÏ–” ÌĞ” ÌĞ”  ÌĞ”' ÌĞ)”) ÌĞ+”/ ÌĞ9™” ÌÑ” ÌÑ”# ÌÑ”& ÌÑ”- ÌÑ%”. ÌÑ&”3 ÌÑ+”5 ÌÑ-”6 ÌÑ.˜” ÌÒ” ÌÒ” ÌÒ” ÌÒ” ÌÒ”" ÌÒ”$ ÌÒ,”% ÌÒ-š” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ” ÌÓ”! ÌÓ”; ÌÓ3”< ÌÓ4”= ÌÓ5š” ÌÔ” ÌÔ” ÌÔ” ÌÔ” ÌÔ”" ÌÔ”$ ÌÔ”+ ÌÔ#”, ÌÔ$”- ÌÔ%š” ÌÕ” ÌÕ” ÌÕ” ÌÕ” ÌÕ”! ÌÕ”# ÌÕ”) ÌÕ!”* ÌÕ"”+ ÌÕ#” ÌÖ” ÌÖ”! ÌÖ”( ÌÖ ”* ÌÖ"”6 ÌÖ.”7 ÌÖ/”Ì@ ÌÖ8”ÌA ÌÖ9”ÌO ÌÖÌG”ÌQ ÌÖÌI”ÌU ÌÖÌM”ÌV ÌÖÌN”ÌW ÌÖÌO’” Ì×” Ì×”” ÌØ”" ÌØ”# ÌØ”( ÌØ"™” ÌÙ” ÌÙ”# ÌÙ”& ÌÙ”- ÌÙ%”. ÌÙ&”3 ÌÙ+”5 ÌÙ-”6 ÌÙ.˜” ÌÚ” ÌÚ” ÌÚ” ÌÚ” ÌÚ”" ÌÚ”$ ÌÚ,”% ÌÚ-š” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ” ÌÛ”! ÌÛ”Ì@ ÌÛ8”ÌA ÌÛ9”ÌB ÌÛ:Ÿ” ÌÜ” ÌÜ” ÌÜ” ÌÜ” ÌÜ”  ÌÜ”" ÌÜ”- ÌÜ%”. ÌÜ&”4 ÌÜ,”5 ÌÜ-”: ÌÜ2”; ÌÜ4”< ÌÜ5”= ÌÜ6” Ìİ” Ìİ”! Ìİ”( Ìİ ”* Ìİ"”6 Ìİ.”7 Ìİ/”Ì@ Ìİ8”ÌA Ìİ9”ÌO ÌİÌG”ÌQ ÌİÌI”ÌU ÌİÌM”ÌV ÌİÌN”ÌW ÌİÌO’” ÌŞ” ÌŞ–” Ìß” Ìß” Ìß”  Ìß!”" Ìß#”, Ìß6™” Ìà” Ìà”# Ìà”& Ìà”- Ìà%”. Ìà&”3 Ìà+”5 Ìà-”6 Ìà.˜” Ìá” Ìá” Ìá” Ìá” Ìá”" Ìá”$ Ìá,”% Ìá-š” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ” Ìâ”! Ìâ”6 Ìâ.”7 Ìâ/”8 Ìâ0” Ìã” Ìã” Ìã” Ìã” Ìã”" Ìã”$ Ìã”) Ìã!”* Ìã"”1 Ìã)”3 Ìã+”4 Ìã,”5 Ìã-š” Ìä” Ìä” Ìä” Ìä” Ìä”% Ìä”' Ìä”1 Ìä)”2 Ìä*”3 Ìä+” Ìå” Ìå”! Ìå”( Ìå ”* Ìå"”6 Ìå.”7 Ìå/”Ì@ Ìå8”ÌA Ìå9”ÌO ÌåÌG”ÌQ ÌåÌI”ÌU ÌåÌM”ÌV ÌåÌN”ÌW ÌåÌO’” Ìæ” Ìæš” Ìç”) Ìç#”* Ìç$”1 Ìç3”3 Ìç5”9 ÌçÌC”; ÌçÌE”ÌE ÌçÌd”ÌG ÌçÌf”ÌK ÌçÌr™” Ìè” Ìè”# Ìè”& Ìè”- Ìè%”. Ìè&”3 Ìè+”5 Ìè-”6 Ìè.˜” Ìé” Ìé” Ìé” Ìé” Ìé”" Ìé”$ Ìé,”% Ìé-š” Ìê” Ìê” Ìê” Ìê” Ìê” Ìê”! Ìê”ÌC Ìê;”ÌD Ìê<”ÌE Ìê=š” Ìë” Ìë” Ìë” Ìë” Ìë”" Ìë”$ Ìë”+ Ìë#”, Ìë$”- Ìë%š” Ìì” Ìì” Ìì” Ìì” Ìì”! Ìì”# Ìì”) Ìì!”* Ìì"”+ Ìì#–” Ìí” Ìí” Ìí” Ìí”  Ìí”" Ìíš” Ìî
+” Ìî” Ìî” Ìî” Ìî”) Ìî”+ Ìî!”/ Ìî%”0 Ìî&”1 Ìî'‘” Ìï	–” Ìğ” Ìğ” Ìğ”" Ìğ”& Ìğ”( Ìğ š” Ìñ
+” Ìñ” Ìñ” Ìñ” Ìñ”) Ìñ”+ Ìñ!”5 Ìñ+”6 Ìñ,”7 Ìñ-‘” Ìò	” Ìó” Ìó”! Ìó”( Ìó ”* Ìó"”6 Ìó.”7 Ìó/”Ì@ Ìó8”ÌA Ìó9”ÌO ÌóÌG”ÌQ ÌóÌI”ÌU ÌóÌM”ÌV ÌóÌN”ÌW ÌóÌO’” Ìô” Ìô’”	 Ìõ”
+ ÌõÜ ” Ì÷” Ì÷” Ì÷” Ì÷”  Ì÷”! Ì÷”- Ì÷)”/ Ì÷+”1 Ì÷-”< Ì÷8”= Ì÷9”ÌA Ì÷=”ÌB Ì÷>”ÌJ Ì÷ÌF”ÌK Ì÷ÌG”ÌL Ì÷ÌH’” Ìø” Ìø’” Ìú” Ìú˜” Ìû” Ìû” Ìû” Ìû” Ìû” Ìû”! Ìû”# ÌûÜ ” Ìü” Ìü” Ìü”" Ìü”$ Ìü”% Ìü”1 Ìü+”3 Ìü-”5 Ìü/”ÌC Ìü=”ÌD Ìü>”ÌH ÌüÌB”ÌI ÌüÌC”ÌQ ÌüÌK”ÌR ÌüÌL”ÌS ÌüÌM‘”	 Ìı’” Ìş” Ìş–” Í ” Í ” Í ” Í ” Í !” Í 5š” Í” Í” Í” Í”$ Í ”( Í$”, Í(”- Í)”3 Í/”5 Í1š” Í” Í
+” Í” Í”  Í”$ Í”& Í ”, Í&”- Í'”. Í(‘”	 Íš” Í” Í” Í” Í”* Í(”. Í,”2 Í0”3 Í1”9 Í7”; Í9š” Í” Í
+” Í”  Í”! Í”% Í”' Í!”- Í'”. Í(”/ Í)‘”	 Íš” Í” Í” Í” Í”4 Í2”8 Í6”< Í:”= Í;”ÌC ÍÌA”ÌE ÍÌCš” Í” Í
+” Í”* Í$”+ Í%”/ Í)”1 Í+”7 Í1”8 Í2”9 Í3‘”	 Íš” Í” Í” Í” Í”4 Í2”8 Í6”< Í:”= Í;”ÌC ÍÌA”ÌE ÍÌCš” Í” Í
+” Í”* Í$”+ Í%”/ Í)”1 Í+”7 Í1”8 Í2”9 Í3‘”	 Í	š” Í	” Í	” Í	” Í	”& Í	$”* Í	(”. Í	,”/ Í	-”5 Í	3”7 Í	5š” Í
+” Í
+
+” Í
+” Í
+” Í
+”! Í
+”# Í
+”) Í
+#”* Í
+$”+ Í
+%‘”	 Íš” Í” Í” Í” Í”: Í8”> Í<”ÌB ÍÌ@”ÌC ÍÌA”ÌI ÍÌG”ÌK ÍÌIš” Í” Í
+” Í”0 Í*”1 Í+”5 Í/”7 Í1”= Í7”> Í8”? Í9‘”	 Íš” Í” Í” Í” Í”7 Í5”; Í9”? Í=”Ì@ Í>”ÌF ÍÌD”ÌH ÍÌFš” Í” Í
+” Í”- Í'”. Í(”2 Í,”4 Í.”: Í4”; Í5”< Í6‘”	 Íš” Í” Í” Í” Í”5 Í3”9 Í7”= Í;”> Í<”ÌD ÍÌB”ÌF ÍÌDš” Í” Í
+” Í”+ Í%”, Í&”0 Í*”2 Í,”8 Í2”9 Í3”: Í4‘”	 Íš” Í” Í” Í” Í”6 Í4”: Í8”> Í<”? Í=”ÌE ÍÌC”ÌG ÍÌEš” Í” Í
+” Í”, Í&”- Í'”1 Í+”3 Í-”9 Í3”: Í4”; Í5‘”	 Íš” Í” Í” Í” Í”8 Í6”< Í:”Ì@ Í>”ÌA Í?”ÌG ÍÌE”ÌI ÍÌGš” Í” Í
+” Í”. Í(”/ Í)”3 Í-”5 Í/”; Í5”< Í6”= Í7‘”	 Íš” Í” Í” Í” Í”5 Í3”9 Í7”= Í;”> Í<”ÌD ÍÌB”ÌF ÍÌDš” Í” Í
+” Í”+ Í%”, Í&”0 Í*”2 Í,”8 Í2”9 Í3”: Í4‘”	 Íš” Í” Í” Í” Í”9 Í7”= Í;”ÌA Í?”ÌB ÍÌ@”ÌH ÍÌF”ÌJ ÍÌHš” Í” Í
+” Í”/ Í)”0 Í*”4 Í.”6 Í0”< Í6”= Í7”> Í8‘”	 Íš” Í” Í” Í” Í”6 Í4”: Í8”> Í<”? Í=”ÌE ÍÌC”ÌG ÍÌEš” Í” Í
+” Í”, Í&”- Í'”1 Í+”3 Í-”9 Í3”: Í4”; Í5‘”	 Íš” Í” Í” Í” Í”% Í#”) Í'”- Í+”. Í,”4 Í2”6 Í4š” Í” Í
+” Í” Í” Í”  Í”" Í”( Í"”) Í#”* Í$‘”	 Íš” Í” Í” Í” Í”& Í$”* Í(”. Í,”/ Í-”5 Í3”7 Í4š” Í” Í
+” Í” Í” Í”! Í”# Í”) Í#”* Í$”+ Í%‘”	 Íš” Í” Í” Í” Í”( Í&”, Í*”0 Í.”1 Í/”7 Í5”9 Í7š” Í ” Í 
+” Í ” Í ” Í ”# Í ”% Í ”+ Í %”, Í &”- Í '‘”	 Í!š” Í!” Í!” Í!” Í!”' Í!%”+ Í!)”/ Í!-”0 Í!.”6 Í!4”8 Í!6š” Í"” Í"
+” Í"” Í"” Í"”" Í"”$ Í"”* Í"$”+ Í"%”, Í"&‘”	 Í#š” Í#” Í#” Í#” Í#”) Í#'”- Í#+”1 Í#/”2 Í#0”8 Í#6”: Í#8š” Í$” Í$
+” Í$” Í$”  Í$”$ Í$”& Í$ ”, Í$&”- Í$'”. Í$(‘”	 Í%š” Í%” Í%” Í%” Í%”- Í%+”1 Í%/”5 Í%3”6 Í%4”< Í%:”> Í%<š” Í&” Í&
+” Í&”# Í&”$ Í&”( Í&"”* Í&$”0 Í&*”1 Í&+”2 Í&,‘”	 Í'š” Í'” Í'” Í'” Í'”, Í'*”0 Í'.”4 Í'2”5 Í'3”; Í'9”= Í';š” Í(” Í(
+” Í(”" Í(”# Í(”' Í(!”) Í(#”/ Í()”0 Í(*”1 Í(+‘”	 Í)š” Í)” Í)” Í)” Í)”% Í)#”) Í)'”- Í)+”. Í),”4 Í)2”6 Í)4š” Í*” Í*
+” Í*” Í*” Í*”  Í*”" Í*”( Í*"”) Í*#”* Í*$‘”	 Í+š” Í+” Í+” Í+” Í+”' Í+%”+ Í+)”/ Í+-”0 Í+.”6 Í+4”8 Í+6š” Í,” Í,
+” Í,” Í,” Í,”" Í,”$ Í,”* Í,$”+ Í,%”, Í,&‘”	 Í-š” Í-” Í-” Í-” Í-”% Í-#”) Í-'”- Í-+”. Í-,”4 Í-2”6 Í-4š” Í.” Í.
+” Í.” Í.” Í.”  Í.”" Í.”( Í."”) Í.#”* Í.$‘”	 Í/š” Í/” Í/” Í/” Í/”' Í/%”+ Í/)”/ Í/-”0 Í/.”6 Í/4”8 Í/6š” Í0” Í0
+” Í0” Í0” Í0”" Í0”$ Í0”* Í0$”+ Í0%”, Í0&‘”	 Í1š” Í1” Í1” Í1” Í1”+ Í1)”/ Í1-”3 Í11”4 Í12”: Í18”< Í1:š” Í2” Í2
+” Í2”! Í2”" Í2”& Í2 ”( Í2"”. Í2(”/ Í2)”0 Í2*‘”	 Í3š” Í3” Í3” Í3” Í3”# Í3!”' Í3%”+ Í3)”, Í3*”2 Í30”4 Í32š” Í4” Í4
+” Í4” Í4” Í4” Í4”  Í4”& Í4 ”' Í4!”( Í4"‘”	 Í5š” Í5” Í5” Í5” Í5”& Í5$”* Í5(”. Í5,”/ Í5-”5 Í53”7 Í55š” Í6” Í6
+” Í6” Í6” Í6”! Í6”# Í6”) Í6#”* Í6$”+ Í6%‘”	 Í7š” Í7” Í7” Í7” Í7”& Í7$”* Í7(”. Í7,”/ Í7-”5 Í73”7 Í75š” Í8” Í8
+” Í8” Í8” Í8”! Í8”# Í8”) Í8#”* Í8$”+ Í8%‘”	 Í9š” Í9” Í9” Í9” Í9”( Í9&”, Í9*”0 Í9.”1 Í9/”7 Í95”9 Í97š” Í:” Í:
+” Í:” Í:” Í:”# Í:”% Í:”+ Í:%”, Í:&”- Í:'‘”	 Í;š” Í;” Í;” Í;” Í;”) Í;'”- Í;+”1 Í;/”2 Í;0”8 Í;6”: Í;8š” Í<” Í<
+” Í<” Í<”  Í<”$ Í<”& Í< ”, Í<&”- Í<'”. Í<(‘”	 Í=š” Í=” Í=” Í=” Í=”+ Í=)”/ Í=-”3 Í=1”4 Í=2”: Í=8”< Í=:š” Í>” Í>
+” Í>”! Í>”" Í>”& Í> ”( Í>"”. Í>(”/ Í>)”0 Í>*‘”	 Í?š” Í?” Í?” Í?” Í?”' Í?%”+ Í?)”/ Í?-”0 Í?.”6 Í?4”8 Í?6š” Í@” Í@
+” Í@” Í@” Í@”" Í@”$ Í@”* Í@$”+ Í@%”, Í@&‘”	 ÍAš” ÍA” ÍA” ÍA” ÍA”* ÍA(”. ÍA,”2 ÍA0”3 ÍA1”9 ÍA7”; ÍA9š” ÍB” ÍB
+” ÍB”  ÍB”! ÍB”% ÍB”' ÍB!”- ÍB'”. ÍB(”/ ÍB)‘”	 ÍCš” ÍC” ÍC” ÍC” ÍC”0 ÍC.”4 ÍC2”8 ÍC6”9 ÍC7”? ÍC=”ÌA ÍC?š” ÍD” ÍD
+” ÍD”& ÍD ”' ÍD!”+ ÍD%”- ÍD'”3 ÍD-”4 ÍD.”5 ÍD/‘”	 ÍEš” ÍE” ÍE” ÍE” ÍE”2 ÍE0”6 ÍE4”: ÍE8”; ÍE9”ÌA ÍE?”ÌC ÍEÌAš” ÍF” ÍF
+” ÍF”( ÍF"”) ÍF#”- ÍF'”/ ÍF)”5 ÍF/”6 ÍF0”7 ÍF1‘”	 ÍGš” ÍG” ÍG” ÍG” ÍG”0 ÍG.”4 ÍG2”8 ÍG6”9 ÍG7”? ÍG=”ÌA ÍG?š” ÍH” ÍH
+” ÍH”& ÍH ”' ÍH!”+ ÍH%”- ÍH'”3 ÍH-”4 ÍH.”5 ÍH/‘”	 ÍIš” ÍI” ÍI” ÍI” ÍI”2 ÍI0”6 ÍI4”: ÍI8”; ÍI9”ÌA ÍI?”ÌC ÍIÌAš” ÍJ” ÍJ
+” ÍJ”( ÍJ"”) ÍJ#”- ÍJ'”/ ÍJ)”5 ÍJ/”6 ÍJ0”7 ÍJ1‘”	 ÍKš” ÍK” ÍK” ÍK” ÍK”) ÍK'”- ÍK+”1 ÍK/”2 ÍK0”8 ÍK6”: ÍK8š” ÍL” ÍL
+” ÍL” ÍL”  ÍL”$ ÍL”& ÍL ”, ÍL&”- ÍL'”. ÍL(‘”	 ÍMš” ÍM” ÍM” ÍM” ÍM”* ÍM(”. ÍM,”2 ÍM0”3 ÍM1”9 ÍM7”; ÍM9š” ÍN” ÍN
+” ÍN”  ÍN”! ÍN”% ÍN”' ÍN!”- ÍN'”. ÍN(”/ ÍN)‘”	 ÍOš” ÍO” ÍO” ÍO” ÍO”3 ÍO1”7 ÍO5”; ÍO9”< ÍO:”ÌB ÍOÌ@”ÌD ÍOÌBš” ÍP” ÍP
+” ÍP”) ÍP#”* ÍP$”. ÍP(”0 ÍP*”6 ÍP0”7 ÍP1”8 ÍP2‘”	 ÍQš” ÍQ” ÍQ” ÍQ” ÍQ”0 ÍQ.”4 ÍQ2”8 ÍQ6”9 ÍQ7”? ÍQ=”ÌA ÍQ?š” ÍR” ÍR
+” ÍR”& ÍR ”' ÍR!”+ ÍR%”- ÍR'”3 ÍR-”4 ÍR.”5 ÍR/‘”	 ÍSš” ÍS” ÍS” ÍS” ÍS”1 ÍS/”5 ÍS3”9 ÍS7”: ÍS8”Ì@ ÍS>”ÌB ÍSÌ@š” ÍT” ÍT
+” ÍT”' ÍT!”( ÍT"”, ÍT&”. ÍT(”4 ÍT.”5 ÍT/”6 ÍT0‘”	 ÍUš” ÍU” ÍU” ÍU” ÍU”4 ÍU2”8 ÍU6”< ÍU:”= ÍU;”ÌC ÍUÌA”ÌE ÍUÌCš” ÍV” ÍV
+” ÍV”* ÍV$”+ ÍV%”/ ÍV)”1 ÍV+”7 ÍV1”8 ÍV2”9 ÍV3‘”	 ÍWš” ÍW” ÍW” ÍW” ÍW”5 ÍW3”9 ÍW7”= ÍW;”> ÍW<”ÌD ÍWÌB”ÌF ÍWÌDš” ÍX” ÍX
+” ÍX”+ ÍX%”, ÍX&”0 ÍX*”2 ÍX,”8 ÍX2”9 ÍX3”: ÍX4‘”	 ÍYš” ÍY” ÍY” ÍY” ÍY”7 ÍY5”; ÍY9”? ÍY=”Ì@ ÍY>”ÌF ÍYÌD”ÌH ÍYÌFš” ÍZ” ÍZ
+” ÍZ”$ ÍZ”% ÍZ”) ÍZ#”+ ÍZ%”1 ÍZ+”2 ÍZ,”3 ÍZ-‘”	 Í[š” Í[” Í[” Í[” Í[”: Í[8”> Í[<”ÌB Í[Ì@”ÌC Í[ÌA”ÌI Í[ÌG”ÌK Í[ÌIš” Í\” Í\
+” Í\”' Í\!”( Í\"”, Í\&”. Í\(”4 Í\.”5 Í\/”6 Í\0‘”	 Í]š” Í]” Í]” Í]” Í]”9 Í]7”= Í];”ÌA Í]?”ÌB Í]Ì@”ÌH Í]ÌF”ÌJ Í]ÌHš” Í^” Í^
+” Í^”& Í^ ”' Í^!”+ Í^%”- Í^'”3 Í^-”4 Í^.”5 Í^/‘”	 Í_š” Í_” Í_” Í_” Í_”: Í_8”> Í_<”ÌB Í_Ì@”ÌC Í_ÌA”ÌI Í_ÌG”ÌK Í_ÌIš” Í`” Í`
+” Í`”' Í`!”( Í`"”, Í`&”. Í`(”4 Í`.”5 Í`/”6 Í`0‘”	 Íaš” Ía” Ía” Ía” Ía”0 Ía.”4 Ía2”8 Ía6”9 Ía7”? Ía=”ÌA Ía?š” Íb” Íb
+” Íb”& Íb ”' Íb!”+ Íb%”- Íb'”3 Íb-”4 Íb.”5 Íb/‘”	 Ícš” Íc” Íc” Íc” Íc”/ Íc-”3 Íc1”7 Íc5”8 Íc6”> Íc<”Ì@ Íc>š” Íd” Íd
+” Íd”% Íd”& Íd ”* Íd$”, Íd&”2 Íd,”3 Íd-”4 Íd.‘”	 Íeš” Íe” Íe” Íe” Íe”2 Íe0”6 Íe4”: Íe8”; Íe9”ÌA Íe?”ÌC ÍeÌAš” Íf” Íf
+” Íf”( Íf"”) Íf#”- Íf'”/ Íf)”5 Íf/”6 Íf0”7 Íf1‘”	 Íg‘” Ígš” Íh” Íh” Íh” Íh” Íh”# Íh”% Íh”+ Íh%”, Íh&”- Íh'‘”	 Íi’” Íj” Íj–” Íl
+” Íl” Íl” Íl)” Íl+” Íl?›” Ím” Ím” Ím” Ím” Ím” Ím”# Ím”$ Ím ”- Ím)”. Ím4”/ Ím5Ü ” Ín” Ín” Ín” Ín” Ín” Ín”* Ín&”, Ín(”- Ín)”9 Ín5”; Ín7”= Ín9”ÌE ÍnÌA”ÌF ÍnÌB”ÌM ÍnÌI”ÌN ÍnÌJ”ÌO ÍnÌK–” Ío” Ío” Ío” Ío” Ío” ÍoÜ ” Íp” Íp
+” Íp” Íp” Íp”! Íp”# Íp”' Íp!”( Íp"”. Íp(”0 Íp*”; Íp5”< Íp6”ÌB Íp<”ÌC Íp=”ÌH ÍpÌB”ÌI ÍpÌC”ÌJ ÍpÌD”ÌK ÍpÌE‘”	 Íq‘” Íq
+œ” Ír” Ír
+” Ír” Ír” Ír”! Ír”# Ír”' Ír!”( Ír"”. Ír(”/ Ír)”0 Ír*‘”	 Ís’” Ít” Ít–” Ív
+” Ív” Ív” Ív*” Ív,”  ÍvÌ@›” Íw” Íw” Íw” Íw”  Íw”! Íw”- Íw)”/ Íw+”1 Íw-”= Íw9”? Íw;—” Íx” Íx” Íx” Íx” Íx” Íx” ÍxÜ ” Íy” Íy” Íy” Íy” Íy”! Íy”# Íy”' Íy#”( Íy$”. Íy*”0 Íy,”; Íy7”< Íy8”ÌF ÍyÌB”ÌG ÍyÌC”ÌM ÍyÌI”ÌN ÍyÌJ”ÌO ÍyÌK”ÌP ÍyÌL“” Íz”	 Íz”
+ ÍzÜ ” Í{” Í{” Í{” Í{” Í{” Í{” Í{” Í{” Í{#” Í{$”& Í{+”' Í{,”- Í{2”/ Í{4”0 Í{5”1 Í{6”2 Í{7”3 Í{8’” Í|” Í|–” Í~
+” Í~#” Í~$”" Í~4”$ Í~6”* Í~ÌJ›” Í” Í” Í” Í” Í” Í”$ Í ”% Í!”/ Í+”0 Í6”1 Í7›” Í€” Í€” Í€” Í€” Í€” Í€”# Í€”$ Í€ ”- Í€)”. Í€4”/ Í€5Ÿ” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌL ÍÌH”ÌM ÍÌI”ÌU ÍÌQ”ÌW ÍÌS”Ì^ ÍÌZ”Ì_ ÍÌ[—” Í‚” Í‚” Í‚” Í‚” Í‚” Í‚” Í‚Ü ” Íƒ” Íƒ” Íƒ” Íƒ” Íƒ”! Íƒ”# Íƒ”' Íƒ#”( Íƒ$”. Íƒ*”0 Íƒ,”; Íƒ7”< Íƒ8”ÌF ÍƒÌB”ÌG ÍƒÌC”ÌM ÍƒÌI”ÌN ÍƒÌJ”ÌO ÍƒÌK”ÌP ÍƒÌL“” Í„”	 Í„”
+ Í„Ü ” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…” Í…#” Í…$”& Í…+”' Í…,”- Í…2”/ Í…4”0 Í…5”1 Í…6”2 Í…7”3 Í…8’” Í†” Í†–” Íˆ
+” Íˆ#” Íˆ$”" Íˆ4”$ Íˆ6”* ÍˆÌJ›” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰”$ Í‰ ”% Í‰!”/ Í‰+”0 Í‰6”1 Í‰7–” ÍŠ” ÍŠ” ÍŠ” ÍŠ ” ÍŠ$” ÍŠ%™” Í‹” Í‹” Í‹” Í‹” Í‹” Í‹”% Í‹ ”& Í‹!”( Í‹#š” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ”" ÍŒ”# ÍŒ”+ ÍŒ%”, ÍŒ&”- ÍŒ'‘”	 ÍŸ” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌL ÍÌH”ÌM ÍÌI”ÌU ÍÌQ”ÌW ÍÌS”Ì] ÍÌY”Ì^ ÍÌZÜ ” Í” Í” Í” Í” Í” Í” Í” Í”! Í”" Í”+ Í#”, Í$”2 Í*”4 Í,”8 Í0”9 Í1”? Í7”ÌA Í9”ÌS ÍÌK”ÌT ÍÌL”ÌZ ÍÌR”Ì[ ÍÌS”Ì` ÍÌX”Ìa ÍÌY”Ìb ÍÌZ”Ìc ÍÌ[Ü ” Í‘” Í‘” Í‘” Í‘” Í‘” Í‘” Í‘” Í‘” Í‘#” Í‘$”& Í‘+”' Í‘,”- Í‘2”/ Í‘4”0 Í‘5”1 Í‘6”2 Í‘7”3 Í‘8’” Í’” Í’–” Í”
+” Í”” Í”” Í”&” Í”(” Í”<” Í•” Í•” Í•” Í•”( Í•$”) Í•%”1 Í•-”2 Í•.”6 Í•2”7 Í•3”; Í•7”< Í•8”= Í•9” Í–” Í–” Í–” Í–”  Í–”! Í–”- Í–)”/ Í–+”1 Í–-”< Í–8”= Í–9”ÌD Í–Ì@”ÌE Í–ÌAÜ ” Í—” Í—” Í—” Í—” Í—” Í—” Í—” Í—”! Í—”" Í—”+ Í—#”, Í—$”2 Í—*”4 Í—,”8 Í—0”9 Í—1”? Í—7”ÌA Í—9”ÌL Í—ÌD”ÌM Í—ÌE”ÌS Í—ÌK”ÌT Í—ÌL”ÌY Í—ÌQ”ÌZ Í—ÌR”Ì[ Í—ÌS”Ì\ Í—ÌTÜ ” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜#” Í˜$”& Í˜+”' Í˜,”- Í˜2”/ Í˜4”0 Í˜5”1 Í˜6”2 Í˜7”3 Í˜8’” Í™” Í™–” Í›
+”# Í›)”$ Í›*”( Í›:”* Í›<”0 Í›ÌP›” Íœ” Íœ” Íœ” Íœ” Íœ” Íœ”# Íœ”$ Íœ ”- Íœ)”. Íœ4”/ Íœ5” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌE ÍÌA”ÌF ÍÌB”ÌM ÍÌI”ÌN ÍÌJÜ ” Í” Í” Í” Í” Í” Í” Í” Í”! Í”" Í”+ Í#”, Í$”2 Í*”4 Í,”8 Í0”9 Í1”? Í7”ÌA Í9”ÌL ÍÌD”ÌM ÍÌE”ÌS ÍÌK”ÌT ÍÌL”ÌY ÍÌQ”ÌZ ÍÌR”Ì[ ÍÌS”Ì\ ÍÌTÜ ” ÍŸ” ÍŸ” ÍŸ” ÍŸ” ÍŸ” ÍŸ” ÍŸ” ÍŸ” ÍŸ#” ÍŸ$”& ÍŸ+”' ÍŸ,”- ÍŸ2”/ ÍŸ4”0 ÍŸ5”1 ÍŸ6”2 ÍŸ7”3 ÍŸ8’” Í ” Í –” Í¡
+”  Í¡&”! Í¡'”% Í¡7”' Í¡9”- Í¡ÌM›” Í¢” Í¢” Í¢” Í¢” Í¢” Í¢”# Í¢”$ Í¢ ”- Í¢)”. Í¢4”/ Í¢5”” Í£” Í£” Í£"” Í£#™” Í¤” Í¤” Í¤” Í¤” Í¤” Í¤”% Í¤ ”& Í¤!”( Í¤#š” Í¥” Í¥” Í¥” Í¥” Í¥”" Í¥”# Í¥”+ Í¥%”, Í¥&”- Í¥'‘”	 Í¦›” Í§” Í§” Í§” Í§” Í§” Í§”$ Í§ ”% Í§!”/ Í§+”0 Í§6”1 Í§7Ü ” Í©” Í©” Í©” Í©”  Í©”! Í©”- Í©)”/ Í©+”1 Í©-”ÌB Í©>”ÌC Í©?”ÌJ Í©ÌF”ÌL Í©ÌH”ÌT Í©ÌP”ÌV Í©ÌR”Ì\ Í©ÌX”Ì] Í©ÌYÜ ” Íª” Íª” Íª” Íª” Íª” Íª” Íª” Íª”! Íª”" Íª”+ Íª#”, Íª$”2 Íª*”4 Íª,”8 Íª0”9 Íª1”? Íª7”ÌA Íª9”ÌS ÍªÌK”ÌT ÍªÌL”ÌZ ÍªÌR”Ì[ ÍªÌS”Ì` ÍªÌX”Ìa ÍªÌY”Ìb ÍªÌZ”Ìc ÍªÌ[Ü ” Í«” Í«” Í«” Í«” Í«” Í«” Í«” Í«” Í«#” Í«$”& Í«+”' Í«,”- Í«2”/ Í«4”0 Í«5”1 Í«6”2 Í«7”3 Í«8’” Í¬” Í¬–” Í®
+” Í®$” Í®%”# Í®5”% Í®7”+ Í®ÌK›” Í¯” Í¯” Í¯” Í¯” Í¯” Í¯”# Í¯”$ Í¯ ”- Í¯)”. Í¯4”/ Í¯5›” Í°” Í°” Í°” Í°” Í°” Í°”$ Í° ”% Í°!”/ Í°+”0 Í°6”1 Í°7›” Í±” Í±” Í±” Í±” Í±” Í±”# Í±”$ Í± ”- Í±)”. Í±4”/ Í±5Ü ” Í²” Í²” Í²” Í²”  Í²”! Í²”- Í²)”/ Í²+”1 Í²-”ÌC Í²?”ÌD Í²Ì@”ÌK Í²ÌG”ÌM Í²ÌI”ÌT Í²ÌP”ÌV Í²ÌR”Ì^ Í²ÌZ”Ì_ Í²Ì[Ü ” Í³” Í³” Í³” Í³” Í³” Í³” Í³” Í³”  Í³”) Í³!”* Í³"”0 Í³(”2 Í³*”6 Í³.”7 Í³/”= Í³5”? Í³7”ÌD Í³<”ÌE Í³=”ÌF Í³>Ü ” Í´” Í´” Í´” Í´” Í´” Í´” Í´” Í´” Í´#” Í´$”& Í´+”' Í´,”- Í´2”/ Í´4”0 Í´5”1 Í´6”2 Í´7”3 Í´8’” Íµ” Íµ–” Í¶
+” Í¶%”  Í¶&”$ Í¶6”& Í¶8”, Í¶ÌL›” Í·” Í·” Í·” Í·” Í·” Í·”# Í·”$ Í· ”- Í·)”. Í·4”/ Í·5” Í¸” Í¸” Í¸” Í¸”  Í¸”! Í¸”- Í¸)”/ Í¸+”1 Í¸-”ÌD Í¸Ì@”ÌE Í¸ÌA”ÌL Í¸ÌH”ÌM Í¸ÌIÜ ” Í¹” Í¹” Í¹” Í¹” Í¹” Í¹” Í¹” Í¹”  Í¹”) Í¹!”* Í¹"”0 Í¹(”2 Í¹*”6 Í¹.”7 Í¹/”= Í¹5”? Í¹7”ÌD Í¹<”ÌE Í¹=”ÌF Í¹>Ü ” Íº” Íº” Íº” Íº” Íº” Íº” Íº” Íº” Íº#” Íº$”& Íº+”' Íº,”- Íº2”/ Íº4”0 Íº5”1 Íº6”2 Íº7”3 Íº8’” Í»” Í»–” Í¼
+”! Í¼'”" Í¼(”& Í¼8”( Í¼:”. Í¼ÌN›” Í½” Í½” Í½” Í½” Í½” Í½”# Í½”$ Í½ ”- Í½)”. Í½4”/ Í½5” Í¾” Í¾” Í¾” Í¾”  Í¾”! Í¾”- Í¾)”/ Í¾+”1 Í¾-”ÌH Í¾ÌD”ÌI Í¾ÌE”ÌP Í¾ÌL”ÌQ Í¾ÌMÜ ” Í¿” Í¿” Í¿” Í¿” Í¿” Í¿” Í¿” Í¿”  Í¿”) Í¿!”* Í¿"”0 Í¿(”2 Í¿*”6 Í¿.”7 Í¿/”= Í¿5”? Í¿7”ÌD Í¿<”ÌE Í¿=”ÌF Í¿>Ü ” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ” ÍÀ#” ÍÀ$”& ÍÀ+”' ÍÀ,”- ÍÀ2”/ ÍÀ4”0 ÍÀ5”1 ÍÀ6”2 ÍÀ7”3 ÍÀ8’” ÍÁ” ÍÁ–” ÍÂ
+” ÍÂ$” ÍÂ%”# ÍÂ5”% ÍÂ7”+ ÍÂÌK›” ÍÃ” ÍÃ” ÍÃ” ÍÃ” ÍÃ” ÍÃ”# ÍÃ”$ ÍÃ ”- ÍÃ)”. ÍÃ4”/ ÍÃ5›” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ”$ ÍÄ ”% ÍÄ!”/ ÍÄ+”0 ÍÄ6”1 ÍÄ7›” ÍÅ” ÍÅ” ÍÅ” ÍÅ” ÍÅ” ÍÅ”# ÍÅ”$ ÍÅ ”- ÍÅ)”. ÍÅ4”/ ÍÅ5Ü ” ÍÆ” ÍÆ” ÍÆ” ÍÆ”  ÍÆ”! ÍÆ”- ÍÆ)”/ ÍÆ+”1 ÍÆ-”ÌI ÍÆÌE”ÌJ ÍÆÌF”ÌQ ÍÆÌM”ÌS ÍÆÌO”ÌZ ÍÆÌV”Ì\ ÍÆÌX”Ìd ÍÆÌ`”Ìe ÍÆÌaÜ ” ÍÇ” ÍÇ” ÍÇ” ÍÇ” ÍÇ” ÍÇ” ÍÇ” ÍÇ”  ÍÇ”) ÍÇ!”* ÍÇ"”0 ÍÇ(”2 ÍÇ*”6 ÍÇ.”7 ÍÇ/”= ÍÇ5”? ÍÇ7”ÌO ÍÇÌG”ÌP ÍÇÌH”ÌZ ÍÇÌR”Ì[ ÍÇÌS”Ì` ÍÇÌX”Ìa ÍÇÌY”Ìb ÍÇÌZ”Ìc ÍÇÌ[Ü ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ#” ÍÈ$”& ÍÈ+”' ÍÈ,”- ÍÈ2”/ ÍÈ4”0 ÍÈ5”1 ÍÈ6”2 ÍÈ7”3 ÍÈ8’” ÍÉ” ÍÉ–” ÍÊ
+”" ÍÊ(”# ÍÊ)”' ÍÊ9”) ÍÊ;”/ ÍÊÌO›” ÍË” ÍË” ÍË” ÍË” ÍË” ÍË”# ÍË”$ ÍË ”- ÍË)”. ÍË4”/ ÍË5” ÍÌ” ÍÌ” ÍÌ” ÍÌ”  ÍÌ”! ÍÌ”- ÍÌ)”/ ÍÌ+”1 ÍÌ-”ÌG ÍÌÌC”ÌH ÍÌÌD”ÌO ÍÌÌK”ÌP ÍÌÌLÜ ” ÍÍ” ÍÍ” ÍÍ” ÍÍ” ÍÍ” ÍÍ” ÍÍ” ÍÍ”  ÍÍ”) ÍÍ!”* ÍÍ"”0 ÍÍ(”2 ÍÍ*”6 ÍÍ.”7 ÍÍ/”= ÍÍ5”? ÍÍ7”ÌD ÍÍ<”ÌE ÍÍ=”ÌF ÍÍ>Ü ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ#” ÍÎ$”& ÍÎ+”' ÍÎ,”- ÍÎ2”/ ÍÎ4”0 ÍÎ5”1 ÍÎ6”2 ÍÎ7”3 ÍÎ8’” ÍÏ” ÍÏ–” ÍĞ
+” ÍĞ%”  ÍĞ&”$ ÍĞ6”& ÍĞ8”, ÍĞÌL›” ÍÑ” ÍÑ” ÍÑ” ÍÑ” ÍÑ” ÍÑ”# ÍÑ”$ ÍÑ ”- ÍÑ)”. ÍÑ4”/ ÍÑ5›” ÍÒ” ÍÒ” ÍÒ” ÍÒ” ÍÒ” ÍÒ”$ ÍÒ ”% ÍÒ!”/ ÍÒ+”0 ÍÒ6”1 ÍÒ7›” ÍÓ” ÍÓ” ÍÓ” ÍÓ” ÍÓ” ÍÓ”# ÍÓ”$ ÍÓ ”- ÍÓ)”. ÍÓ4”/ ÍÓ5Ü ” ÍÔ” ÍÔ” ÍÔ” ÍÔ”  ÍÔ”! ÍÔ”- ÍÔ)”/ ÍÔ+”1 ÍÔ-”ÌD ÍÔÌ@”ÌE ÍÔÌA”ÌL ÍÔÌH”ÌN ÍÔÌJ”ÌU ÍÔÌQ”ÌW ÍÔÌS”Ì_ ÍÔÌ[”Ì` ÍÔÌ\Ü ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ” ÍÕ”  ÍÕ”) ÍÕ!”* ÍÕ"”0 ÍÕ(”2 ÍÕ*”6 ÍÕ.”7 ÍÕ/”= ÍÕ5”? ÍÕ7”ÌD ÍÕ<”ÌE ÍÕ=”ÌF ÍÕ>Ü ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ#” ÍÖ$”& ÍÖ+”' ÍÖ,”- ÍÖ2”/ ÍÖ4”0 ÍÖ5”1 ÍÖ6”2 ÍÖ7”3 ÍÖ8’” Í×” Í×–” ÍØ
+” ÍØ” ÍØ” ÍØ%” ÍØ'” ÍØ;›” ÍÙ” ÍÙ” ÍÙ” ÍÙ” ÍÙ” ÍÙ”# ÍÙ”$ ÍÙ ”- ÍÙ)”. ÍÙ4”/ ÍÙ5›” ÍÚ” ÍÚ” ÍÚ” ÍÚ” ÍÚ” ÍÚ”# ÍÚ”$ ÍÚ ”- ÍÚ)”. ÍÚ;”/ ÍÚ<”” ÍÛ” ÍÛ” ÍÛ#” ÍÛ$™” ÍÜ” ÍÜ” ÍÜ” ÍÜ” ÍÜ” ÍÜ”& ÍÜ!”' ÍÜ"”) ÍÜ$š” Íİ” Íİ” Íİ” Íİ” Íİ”# Íİ”$ Íİ”- Íİ'”. Íİ(”/ Íİ)‘”	 ÍŞÜ ” Íß” Íß” Íß” Íß”  Íß”! Íß”- Íß)”/ Íß+”1 Íß-”Ì@ Íß<”ÌA Íß=”ÌH ÍßÌD”ÌJ ÍßÌF”ÌQ ÍßÌM”ÌS ÍßÌO”ÌZ ÍßÌV”Ì[ ÍßÌWÜ ” Íà” Íà” Íà” Íà” Íà” Íà” Íà” Íà”  Íà”) Íà!”* Íà"”0 Íà(”2 Íà*”6 Íà.”7 Íà/”= Íà5”? Íà7”ÌJ ÍàÌB”ÌK ÍàÌC”ÌQ ÍàÌI”ÌR ÍàÌJ”ÌW ÍàÌO”ÌX ÍàÌP”ÌY ÍàÌQ”ÌZ ÍàÌRÜ ” Íá” Íá” Íá” Íá” Íá” Íá” Íá” Íá” Íá#” Íá$”& Íá+”' Íá,”- Íá2”/ Íá4”0 Íá5”1 Íá6”2 Íá7”3 Íá8’” Íâ” Íâ–” Íä
+” Íä” Íä” Íä&” Íä(” Íä<›” Íå” Íå” Íå” Íå” Íå” Íå”# Íå”$ Íå ”- Íå)”. Íå4”/ Íå5›” Íæ” Íæ” Íæ” Íæ” Íæ” Íæ”# Íæ”$ Íæ ”- Íæ)”. Íæ;”/ Íæ<”” Íç” Íç” Íç"” Íç#™” Íè” Íè” Íè” Íè” Íè” Íè”% Íè ”& Íè!”( Íè#š” Íé” Íé” Íé” Íé” Íé”" Íé”# Íé”+ Íé%”, Íé&”- Íé'‘”	 ÍêÜ ” Íë” Íë” Íë” Íë”  Íë”! Íë”- Íë)”/ Íë+”1 Íë-”< Íë8”= Íë9”ÌD ÍëÌ@”ÌF ÍëÌB”ÌM ÍëÌI”ÌO ÍëÌK”ÌU ÍëÌQ”ÌV ÍëÌRÜ ” Íì” Íì” Íì” Íì” Íì” Íì” Íì” Íì”  Íì”) Íì!”* Íì"”0 Íì(”2 Íì*”6 Íì.”7 Íì/”= Íì5”? Íì7”ÌJ ÍìÌB”ÌK ÍìÌC”ÌQ ÍìÌI”ÌR ÍìÌJ”ÌW ÍìÌO”ÌX ÍìÌP”ÌY ÍìÌQ”ÌZ ÍìÌRÜ ” Íí” Íí” Íí” Íí” Íí” Íí” Íí” Íí” Íí#” Íí$”& Íí+”' Íí,”- Íí2”/ Íí4”0 Íí5”1 Íí6”2 Íí7”3 Íí8’” Íî” Íî–” Íï
+” Íï” Íï” Íï(” Íï*” Íï>›” Íğ” Íğ” Íğ” Íğ” Íğ” Íğ”# Íğ”$ Íğ ”- Íğ)”. Íğ4”/ Íğ5›” Íñ” Íñ” Íñ” Íñ” Íñ” Íñ”# Íñ”$ Íñ ”- Íñ)”. Íñ;”/ Íñ<Ÿ” Íò” Íò” Íò” Íò”  Íò”! Íò”- Íò)”/ Íò+”1 Íò-”ÌE ÍòÌA”ÌF ÍòÌB”ÌM ÍòÌI”ÌO ÍòÌK”ÌV ÍòÌR”ÌW ÍòÌSÜ ” Íó” Íó” Íó” Íó” Íó” Íó” Íó” Íó”  Íó”) Íó!”* Íó"”0 Íó(”2 Íó*”6 Íó.”7 Íó/”= Íó5”? Íó7”ÌJ ÍóÌB”ÌK ÍóÌC”ÌQ ÍóÌI”ÌR ÍóÌJ”ÌW ÍóÌO”ÌX ÍóÌP”ÌY ÍóÌQ”ÌZ ÍóÌRÜ ” Íô” Íô” Íô” Íô” Íô” Íô” Íô” Íô” Íô#” Íô$”& Íô+”' Íô,”- Íô2”/ Íô4”0 Íô5”1 Íô6”2 Íô7”3 Íô8’” Íõ” Íõ–” Íö
+” Íö” Íö” Íö'” Íö)” Íö=›” Í÷” Í÷” Í÷” Í÷” Í÷” Í÷”# Í÷”$ Í÷ ”- Í÷)”. Í÷4”/ Í÷5›” Íø” Íø” Íø” Íø” Íø” Íø”# Íø”$ Íø ”- Íø)”. Íø;”/ Íø<Ÿ” Íù” Íù” Íù” Íù”  Íù”! Íù”- Íù)”/ Íù+”1 Íù-”; Íù7”< Íù8”ÌC Íù?”ÌE ÍùÌA”ÌL ÍùÌH”ÌM ÍùÌIÜ ” Íú” Íú” Íú” Íú” Íú” Íú” Íú” Íú”  Íú”) Íú!”* Íú"”0 Íú(”2 Íú*”6 Íú.”7 Íú/”= Íú5”? Íú7”ÌJ ÍúÌB”ÌK ÍúÌC”ÌQ ÍúÌI”ÌR ÍúÌJ”ÌW ÍúÌO”ÌX ÍúÌP”ÌY ÍúÌQ”ÌZ ÍúÌRÜ ” Íû” Íû” Íû” Íû” Íû” Íû” Íû” Íû” Íû#” Íû$”& Íû+”' Íû,”- Íû2”/ Íû4”0 Íû5”1 Íû6”2 Íû7”3 Íû8’” Íü” Íü–” Íı
+” Íı” Íı” Íı)” Íı+” Íı?›” Íş” Íş” Íş” Íş” Íş” Íş”# Íş”$ Íş ”- Íş)”. Íş4”/ Íş5›” Íÿ” Íÿ” Íÿ” Íÿ” Íÿ” Íÿ”# Íÿ”$ Íÿ ”- Íÿ)”. Íÿ;”/ Íÿ<Ÿ” Í ” Í ” Í ” Í ”  Í ”! Í ”- Í )”/ Í +”1 Í -”= Í 9”> Í :”ÌE Í ÌA”ÌG Í ÌC”ÌN Í ÌJ”ÌO Í ÌKÜ ” Í” Í” Í” Í” Í” Í” Í” Í”  Í”) Í!”* Í"”0 Í(”2 Í*”6 Í.”7 Í/”= Í5”? Í7”ÌJ ÍÌB”ÌK ÍÌC”ÌQ ÍÌI”ÌR ÍÌJ”ÌW ÍÌO”ÌX ÍÌP”ÌY ÍÌQ”ÌZ ÍÌRÜ ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í” Í–” Í
+” Í” Í” Í-” Í/”# ÍÌC›” Í” Í” Í” Í” Í” Í”# Í”$ Í ”- Í)”. Í4”/ Í5›” Í” Í” Í” Í” Í” Í”  Í”! Í”' Í#”( Í.”) Í/Ÿ” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”Ì@ Í<”ÌA Í=”ÌH ÍÌD”ÌJ ÍÌF”ÌN ÍÌJ”ÌO ÍÌKÜ ” Í” Í” Í” Í” Í” Í” Í” Í”  Í”) Í!”* Í"”0 Í(”2 Í*”6 Í.”7 Í/”= Í5”? Í7”ÌJ ÍÌB”ÌK ÍÌC”ÌQ ÍÌI”ÌR ÍÌJ”ÌW ÍÌO”ÌX ÍÌP”ÌY ÍÌQ”ÌZ ÍÌRÜ ” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	” Í	#” Í	$”& Í	+”' Í	,”- Í	2”/ Í	4”0 Í	5”1 Í	6”2 Í	7”3 Í	8’” Í
+” Í
+–” Í
+” Í” Í” Í,” Í.”" ÍÌB›” Í” Í” Í” Í” Í” Í”# Í”$ Í ”- Í)”. Í4”/ Í5›” Í” Í” Í” Í” Í” Í”  Í”! Í”' Í#”( Í.”) Í/Ÿ” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌG ÍÌC”ÌH ÍÌD”ÌO ÍÌK”ÌQ ÍÌM”ÌU ÍÌQ”ÌV ÍÌRÜ ” Í” Í” Í” Í” Í” Í” Í” Í”  Í”) Í!”* Í"”0 Í(”2 Í*”6 Í.”7 Í/”= Í5”? Í7”ÌJ ÍÌB”ÌK ÍÌC”ÌQ ÍÌI”ÌR ÍÌJ”ÌW ÍÌO”ÌX ÍÌP”ÌY ÍÌQ”ÌZ ÍÌRÜ ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í” Í–” Í
+” Í” Í” Í%” Í'” Í;›” Í” Í” Í” Í” Í” Í”# Í”$ Í ”- Í)”. Í4”/ Í5” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”; Í7”< Í8”ÌC Í?”ÌD ÍÌ@Ü ” Í” Í” Í” Í” Í” Í” Í” Í”& Í”' Í”- Í%”/ Í'”3 Í+”4 Í,”: Í2”; Í3”< Í4Ü ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í” Í–” Í
+” Í” Í” Í'” Í)” Í=›” Í” Í” Í” Í” Í” Í”# Í”$ Í ”- Í)”. Í4”/ Í5” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”= Í9”> Í:”ÌE ÍÌA”ÌF ÍÌBÜ ” Í” Í” Í” Í” Í” Í” Í” Í”& Í”' Í”- Í%”/ Í'”3 Í+”4 Í,”: Í2”; Í3”< Í4Ü ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í” Í–” Í
+” Í” Í” Í%” Í'” Í;›” Í” Í” Í” Í” Í” Í”# Í”$ Í ”- Í)”. Í4”/ Í5” Í ” Í ” Í ” Í ”  Í ”! Í ”- Í )”/ Í +”1 Í -”ÌB Í >”ÌC Í ?”ÌJ Í ÌF”ÌK Í ÌGÜ ” Í!” Í!” Í!” Í!” Í!” Í!” Í!” Í!”! Í!”" Í!”+ Í!#”, Í!$”2 Í!*”4 Í!,”8 Í!0”9 Í!1”? Í!7”ÌA Í!9”ÌL Í!ÌD”ÌM Í!ÌE”ÌS Í!ÌK”ÌT Í!ÌL”ÌY Í!ÌQ”ÌZ Í!ÌR”Ì[ Í!ÌS”Ì\ Í!ÌTÜ ” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"” Í"#” Í"$”& Í"+”' Í",”- Í"2”/ Í"4”0 Í"5”1 Í"6”2 Í"7”3 Í"8’” Í#” Í#–” Í$
+” Í$” Í$” Í$'” Í$)” Í$=›” Í%” Í%” Í%” Í%” Í%” Í%”# Í%”$ Í% ”- Í%)”. Í%4”/ Í%5” Í&” Í&” Í&” Í&”  Í&”! Í&”- Í&)”/ Í&+”1 Í&-”ÌD Í&Ì@”ÌE Í&ÌA”ÌL Í&ÌH”ÌM Í&ÌIÜ ” Í'” Í'” Í'” Í'” Í'” Í'” Í'” Í'”! Í'”" Í'”+ Í'#”, Í'$”2 Í'*”4 Í',”8 Í'0”9 Í'1”? Í'7”ÌA Í'9”ÌL Í'ÌD”ÌM Í'ÌE”ÌS Í'ÌK”ÌT Í'ÌL”ÌY Í'ÌQ”ÌZ Í'ÌR”Ì[ Í'ÌS”Ì\ Í'ÌTÜ ” Í(” Í(” Í(” Í(” Í(” Í(” Í(” Í(” Í(#” Í($”& Í(+”' Í(,”- Í(2”/ Í(4”0 Í(5”1 Í(6”2 Í(7”3 Í(8’” Í)” Í)–” Í*
+” Í*” Í*” Í*+” Í*-”! Í*ÌA›” Í+” Í+” Í+” Í+” Í+” Í+”# Í+”$ Í+ ”- Í+)”. Í+4”/ Í+5›” Í,” Í,” Í,” Í,” Í,” Í,”! Í,”" Í,”) Í,%”* Í,0”+ Í,1Ÿ” Í-” Í-” Í-” Í-”  Í-”! Í-”- Í-)”/ Í-+”1 Í--”< Í-8”= Í-9”ÌD Í-Ì@”ÌF Í-ÌB”ÌK Í-ÌG”ÌL Í-ÌHÜ ” Í.” Í.” Í.” Í.” Í.” Í.” Í.” Í.”! Í.”" Í.”+ Í.#”, Í.$”2 Í.*”4 Í.,”8 Í.0”9 Í.1”? Í.7”ÌA Í.9”ÌL Í.ÌD”ÌM Í.ÌE”ÌS Í.ÌK”ÌT Í.ÌL”ÌY Í.ÌQ”ÌZ Í.ÌR”Ì[ Í.ÌS”Ì\ Í.ÌTÜ ” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/” Í/#” Í/$”& Í/+”' Í/,”- Í/2”/ Í/4”0 Í/5”1 Í/6”2 Í/7”3 Í/8’” Í0” Í0–” Í1
+” Í1” Í1” Í1#” Í1%” Í19›” Í2” Í2” Í2” Í2” Í2” Í2”# Í2”$ Í2 ”- Í2)”. Í24”/ Í25›” Í3” Í3” Í3” Í3” Í3” Í3”! Í3”" Í3”) Í3%”* Í30”+ Í31Ÿ” Í4” Í4” Í4” Í4”  Í4”! Í4”- Í4)”/ Í4+”1 Í4-”> Í4:”? Í4;”ÌF Í4ÌB”ÌH Í4ÌD”ÌM Í4ÌI”ÌN Í4ÌJÜ ” Í5” Í5” Í5” Í5” Í5” Í5” Í5” Í5”! Í5”" Í5”+ Í5#”, Í5$”2 Í5*”4 Í5,”8 Í50”9 Í51”? Í57”ÌA Í59”ÌL Í5ÌD”ÌM Í5ÌE”ÌS Í5ÌK”ÌT Í5ÌL”ÌY Í5ÌQ”ÌZ Í5ÌR”Ì[ Í5ÌS”Ì\ Í5ÌTÜ ” Í6” Í6” Í6” Í6” Í6” Í6” Í6” Í6” Í6#” Í6$”& Í6+”' Í6,”- Í62”/ Í64”0 Í65”1 Í66”2 Í67”3 Í68’” Í7” Í7–” Í8
+” Í8” Í8” Í8&” Í8(” Í8<›” Í9” Í9” Í9” Í9” Í9” Í9”# Í9”$ Í9 ”- Í9)”. Í94”/ Í95›” Í:” Í:” Í:” Í:” Í:” Í:”! Í:”" Í:”) Í:%”* Í:0”+ Í:1Ÿ” Í;” Í;” Í;” Í;”  Í;”! Í;”- Í;)”/ Í;+”1 Í;-”ÌA Í;=”ÌB Í;>”ÌI Í;ÌE”ÌK Í;ÌG”ÌP Í;ÌL”ÌQ Í;ÌMÜ ” Í<” Í<” Í<” Í<” Í<” Í<” Í<” Í<”! Í<”" Í<”+ Í<#”, Í<$”2 Í<*”4 Í<,”8 Í<0”9 Í<1”? Í<7”ÌA Í<9”ÌL Í<ÌD”ÌM Í<ÌE”ÌS Í<ÌK”ÌT Í<ÌL”ÌY Í<ÌQ”ÌZ Í<ÌR”Ì[ Í<ÌS”Ì\ Í<ÌTÜ ” Í=” Í=” Í=” Í=” Í=” Í=” Í=” Í=” Í=#” Í=$”& Í=+”' Í=,”- Í=2”/ Í=4”0 Í=5”1 Í=6”2 Í=7”3 Í=8’” Í>” Í>–” Í?
+” Í?” Í?” Í?&” Í?(” Í?<›” Í@” Í@” Í@” Í@” Í@” Í@”# Í@”$ Í@ ”- Í@)”. Í@4”/ Í@5›” ÍA” ÍA” ÍA” ÍA” ÍA” ÍA”# ÍA”$ ÍA ”- ÍA)”. ÍA;”/ ÍA<›” ÍB” ÍB” ÍB” ÍB” ÍB” ÍB”$ ÍB ”% ÍB!”/ ÍB+”0 ÍB6”1 ÍB7Ü ” ÍC” ÍC” ÍC” ÍC”  ÍC”! ÍC”- ÍC)”/ ÍC+”1 ÍC-”ÌA ÍC=”ÌB ÍC>”ÌI ÍCÌE”ÌK ÍCÌG”ÌR ÍCÌN”ÌT ÍCÌP”Ì\ ÍCÌX”Ì] ÍCÌYÜ ” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD” ÍD”! ÍD”" ÍD”+ ÍD#”, ÍD$”2 ÍD*”4 ÍD,”8 ÍD0”9 ÍD1”? ÍD7”ÌA ÍD9”ÌL ÍDÌD”ÌM ÍDÌE”ÌS ÍDÌK”ÌT ÍDÌL”ÌY ÍDÌQ”ÌZ ÍDÌR”Ì[ ÍDÌS”Ì\ ÍDÌTÜ ” ÍE” ÍE” ÍE” ÍE” ÍE” ÍE” ÍE” ÍE” ÍE#” ÍE$”& ÍE+”' ÍE,”- ÍE2”/ ÍE4”0 ÍE5”1 ÍE6”2 ÍE7”3 ÍE8’” ÍF” ÍF–” ÍG
+” ÍG” ÍG” ÍG(” ÍG*” ÍG>›” ÍH” ÍH” ÍH” ÍH” ÍH” ÍH”# ÍH”$ ÍH ”- ÍH)”. ÍH4”/ ÍH5›” ÍI” ÍI” ÍI” ÍI” ÍI” ÍI”# ÍI”$ ÍI ”- ÍI)”. ÍI;”/ ÍI<Ÿ” ÍJ” ÍJ” ÍJ” ÍJ”  ÍJ”! ÍJ”- ÍJ)”/ ÍJ+”1 ÍJ-”ÌC ÍJ?”ÌD ÍJÌ@”ÌK ÍJÌG”ÌM ÍJÌI”ÌT ÍJÌP”ÌU ÍJÌQÜ ” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK” ÍK”! ÍK”" ÍK”+ ÍK#”, ÍK$”2 ÍK*”4 ÍK,”8 ÍK0”9 ÍK1”? ÍK7”ÌA ÍK9”ÌL ÍKÌD”ÌM ÍKÌE”ÌS ÍKÌK”ÌT ÍKÌL”ÌY ÍKÌQ”ÌZ ÍKÌR”Ì[ ÍKÌS”Ì\ ÍKÌTÜ ” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL” ÍL#” ÍL$”& ÍL+”' ÍL,”- ÍL2”/ ÍL4”0 ÍL5”1 ÍL6”2 ÍL7”3 ÍL8’” ÍM” ÍM–” ÍN
+” ÍN” ÍN” ÍN)” ÍN+” ÍN?›” ÍO” ÍO” ÍO” ÍO” ÍO” ÍO”# ÍO”$ ÍO ”- ÍO)”. ÍO4”/ ÍO5” ÍP” ÍP” ÍP” ÍP”  ÍP”! ÍP”- ÍP)”/ ÍP+”1 ÍP-”? ÍP;”Ì@ ÍP<”ÌG ÍPÌC”ÌH ÍPÌDÜ ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ” ÍQ”! ÍQ”" ÍQ”+ ÍQ#”, ÍQ$”2 ÍQ*”4 ÍQ,”8 ÍQ0”9 ÍQ1”? ÍQ7”ÌA ÍQ9”ÌL ÍQÌD”ÌM ÍQÌE”ÌS ÍQÌK”ÌT ÍQÌL”ÌY ÍQÌQ”ÌZ ÍQÌR”Ì[ ÍQÌS”Ì\ ÍQÌTÜ ” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR” ÍR#” ÍR$”& ÍR+”' ÍR,”- ÍR2”/ ÍR4”0 ÍR5”1 ÍR6”2 ÍR7”3 ÍR8’” ÍS” ÍS–” ÍT
+” ÍT” ÍT” ÍT+” ÍT-”! ÍTÌA›” ÍU” ÍU” ÍU” ÍU” ÍU” ÍU”# ÍU”$ ÍU ”- ÍU)”. ÍU4”/ ÍU5” ÍV” ÍV” ÍV” ÍV”  ÍV”! ÍV”- ÍV)”/ ÍV+”1 ÍV-”ÌA ÍV=”ÌB ÍV>”ÌI ÍVÌE”ÌJ ÍVÌFÜ ” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW” ÍW”! ÍW”" ÍW”+ ÍW#”, ÍW$”2 ÍW*”4 ÍW,”8 ÍW0”9 ÍW1”? ÍW7”ÌA ÍW9”ÌL ÍWÌD”ÌM ÍWÌE”ÌS ÍWÌK”ÌT ÍWÌL”ÌY ÍWÌQ”ÌZ ÍWÌR”Ì[ ÍWÌS”Ì\ ÍWÌTÜ ” ÍX” ÍX” ÍX” ÍX” ÍX” ÍX” ÍX” ÍX” ÍX#” ÍX$”& ÍX+”' ÍX,”- ÍX2”/ ÍX4”0 ÍX5”1 ÍX6”2 ÍX7”3 ÍX8’” ÍY” ÍY–” ÍZ
+” ÍZ” ÍZ” ÍZ'” ÍZ)” ÍZ=›” Í[” Í[” Í[” Í[” Í[” Í[”# Í[”$ Í[ ”- Í[)”. Í[4”/ Í[5›” Í\” Í\” Í\” Í\” Í\” Í\”# Í\”$ Í\ ”- Í\)”. Í\;”/ Í\<Ÿ” Í]” Í]” Í]” Í]”  Í]”! Í]”- Í])”/ Í]+”1 Í]-”ÌD Í]Ì@”ÌE Í]ÌA”ÌL Í]ÌH”ÌN Í]ÌJ”ÌU Í]ÌQ”ÌV Í]ÌRÜ ” Í^” Í^” Í^” Í^” Í^” Í^” Í^” Í^”& Í^”' Í^”- Í^%”/ Í^'”3 Í^+”4 Í^,”: Í^2”; Í^3”< Í^4Ü ” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_” Í_#” Í_$”& Í_+”' Í_,”- Í_2”/ Í_4”0 Í_5”1 Í_6”2 Í_7”3 Í_8’” Í`” Í`–” Ía
+” Ía” Ía” Ía*” Ía,”  ÍaÌ@›” Íb” Íb” Íb” Íb” Íb” Íb”# Íb”$ Íb ”- Íb)”. Íb4”/ Íb5›” Íc” Íc” Íc” Íc” Íc” Íc”# Íc”$ Íc ”- Íc)”. Íc;”/ Íc<Ÿ” Íd” Íd” Íd” Íd”  Íd”! Íd”- Íd)”/ Íd+”1 Íd-”ÌI ÍdÌE”ÌJ ÍdÌF”ÌQ ÍdÌM”ÌS ÍdÌO”ÌZ ÍdÌV”Ì[ ÍdÌWÜ ” Íe” Íe” Íe” Íe” Íe” Íe” Íe” Íe”& Íe”' Íe”- Íe%”/ Íe'”3 Íe+”4 Íe,”: Íe2”; Íe3”< Íe4Ü ” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf” Íf#” Íf$”& Íf+”' Íf,”- Íf2”/ Íf4”0 Íf5”1 Íf6”2 Íf7”3 Íf8’” Íg” Íg–” Íh
+” Íh” Íh ” Íh0”  Íh2”& ÍhÌF›” Íi” Íi” Íi” Íi” Íi” Íi”# Íi”$ Íi ”- Íi)”. Íi4”/ Íi5›” Íj” Íj” Íj” Íj” Íj” Íj”$ Íj ”% Íj!”/ Íj+”0 Íj6”1 Íj7š” Ík” Ík” Ík” Ík” Ík”! Ík”" Ík”& Ík"”' Ík#”( Ík$Ÿ” Íl” Íl” Íl” Íl”  Íl”! Íl”- Íl)”/ Íl+”1 Íl-”ÌF ÍlÌB”ÌG ÍlÌC”ÌN ÍlÌJ”ÌP ÍlÌL”ÌX ÍlÌT”ÌY ÍlÌUÜ ” Ím” Ím” Ím” Ím” Ím” Ím” Ím” Ím” Ím” Ím”' Ím”( Ím ”. Ím&”0 Ím(”4 Ím,”5 Ím-”; Ím3”= Ím5”ÌA Ím9”ÌB Ím:”ÌC Ím;Ü ” Ín” Ín” Ín” Ín” Ín” Ín” Ín” Ín” Ín#” Ín$”& Ín+”' Ín,”- Ín2”/ Ín4”0 Ín5”1 Ín6”2 Ín7”3 Ín8’” Ío” Ío–” Íp
+” Íp!” Íp"”  Íp2”" Íp4”( ÍpÌH›” Íq” Íq” Íq” Íq” Íq” Íq”# Íq”$ Íq ”- Íq)”. Íq4”/ Íq5›” Ír” Ír” Ír” Ír” Ír” Ír”" Ír”# Ír”+ Ír'”, Ír2”- Ír3›” Ís” Ís” Ís” Ís” Ís” Ís”$ Ís ”% Ís!”/ Ís+”0 Ís6”1 Ís7š” Ít” Ít” Ít” Ít” Ít”! Ít”" Ít”& Ít"”' Ít#”( Ít$Ü ” Íu” Íu” Íu” Íu”  Íu”! Íu”- Íu)”/ Íu+”1 Íu-”ÌH ÍuÌD”ÌI ÍuÌE”ÌP ÍuÌL”ÌR ÍuÌN”ÌX ÍuÌT”ÌZ ÍuÌV”Ìb ÍuÌ^”Ìd ÍuÌ`’” Ív” Ív™” Íw” Íw”# Íw”& Íw”- Íw%”. Íw&”3 Íw+”5 Íw-”6 Íw.” Íx” Íx”! Íx”. Íx&”0 Íx(”? Íx7”ÌA Íx9”Ì] ÍxÌU”Ì^ ÍxÌV”Ìd ÍxÌ\”Ìf ÍxÌ^”Ìn ÍxÌf”Ìo ÍxÌg”Ìp ÍxÌh’” Íy” Íy”” Íz” Íz” Íz” Íz™” Í{” Í{”# Í{”& Í{”- Í{%”. Í{&”3 Í{+”5 Í{-”6 Í{.” Í|” Í|”! Í|”. Í|&”0 Í|(”? Í|7”ÌA Í|9”Ì^ Í|ÌV”Ì_ Í|ÌW”Ìe Í|Ì]”Ìg Í|Ì_”Ìo Í|Ìg”Ìp Í|Ìh”Ìq Í|Ìi’” Í}” Í}–” Í~” Í~” Í~” Í~” Í~” Í~™” Í” Í”# Í”& Í”- Í%”. Í&”3 Í+”5 Í-”6 Í.Ü ” Í€” Í€”! Í€”. Í€&”0 Í€(”? Í€7”ÌA Í€9”Ì[ Í€ÌS”Ì\ Í€ÌT”Ìb Í€ÌZ”Ìd Í€Ì\”Ìh Í€Ì`”Ìq Í€Ìi”Ìr Í€Ìj”Ìv Í€Ìn”Ìx Í€Ìp”Ì| Í€Ìt”Ì} Í€Ìu”Ì~ Í€Ìv”Ì Í€Ìw’” Í” ÍÜ ”	 Í‚”
+ Í‚” Í‚” Í‚” Í‚” Í‚” Í‚” Í‚” Í‚” Í‚”$ Í‚”% Í‚”+ Í‚%”- Í‚'”1 Í‚+”2 Í‚,”8 Í‚2”9 Í‚3”: Í‚4”; Í‚5’” Íƒ” Íƒ–” Í„
+” Í„” Í„ ” Í„0”  Í„2”& Í„ÌF›” Í…” Í…” Í…” Í…” Í…” Í…”# Í…”$ Í… ”- Í…)”. Í…4”/ Í…5›” Í†” Í†” Í†” Í†” Í†” Í†”" Í†”# Í†”+ Í†'”, Í†2”- Í†3Ÿ” Í‡” Í‡” Í‡” Í‡”  Í‡”! Í‡”- Í‡)”/ Í‡+”1 Í‡-”ÌF Í‡ÌB”ÌG Í‡ÌC”ÌN Í‡ÌJ”ÌP Í‡ÌL”ÌV Í‡ÌR”ÌW Í‡ÌSÜ ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ” Íˆ”& Íˆ”' Íˆ”- Íˆ%”/ Íˆ'”3 Íˆ+”4 Íˆ,”: Íˆ2”; Íˆ3”< Íˆ4Ü ” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰” Í‰#” Í‰$”& Í‰+”' Í‰,”- Í‰2”/ Í‰4”0 Í‰5”1 Í‰6”2 Í‰7”3 Í‰8’” ÍŠ” ÍŠ–” Í‹
+” Í‹!” Í‹"”  Í‹2”" Í‹4”( Í‹ÌH›” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ” ÍŒ”# ÍŒ”$ ÍŒ ”- ÍŒ)”. ÍŒ4”/ ÍŒ5›” Í” Í” Í” Í” Í”  Í”( Í$”) Í%”7 Í3”8 Í>”9 Í?Ÿ” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌH ÍÌD”ÌI ÍÌE”ÌP ÍÌL”ÌR ÍÌN”Ì^ ÍÌZ”Ì_ ÍÌ[Ü ” Í” Í” Í” Í” Í” Í” Í” Í”! Í”" Í”+ Í#”, Í$”2 Í*”4 Í,”8 Í0”9 Í1”? Í7”ÌA Í9”ÌL ÍÌD”ÌM ÍÌE”ÌS ÍÌK”ÌT ÍÌL”ÌY ÍÌQ”ÌZ ÍÌR”Ì[ ÍÌS”Ì\ ÍÌTÜ ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í‘” Í‘–” Í“
+” Í“” Í“” Í“)” Í“+” Í“?›” Í”” Í”” Í”” Í”” Í”” Í””# Í””$ Í” ”- Í”)”. Í”4”/ Í”5›” Í•” Í•” Í•” Í•” Í•” Í•” Í•”  Í•”% Í•!”& Í•,”' Í•-Ÿ” Í–” Í–” Í–” Í–”  Í–”! Í–”- Í–)”/ Í–+”1 Í–-”ÌE Í–ÌA”ÌF Í–ÌB”ÌM Í–ÌI”ÌO Í–ÌK”ÌR Í–ÌN”ÌS Í–ÌOÜ ” Í—” Í—” Í—” Í—” Í—” Í—” Í—” Í—”! Í—”" Í—”+ Í—#”, Í—$”2 Í—*”4 Í—,”8 Í—0”9 Í—1”? Í—7”ÌA Í—9”ÌL Í—ÌD”ÌM Í—ÌE”ÌS Í—ÌK”ÌT Í—ÌL”ÌY Í—ÌQ”ÌZ Í—ÌR”Ì[ Í—ÌS”Ì\ Í—ÌTÜ ” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜” Í˜#” Í˜$”& Í˜+”' Í˜,”- Í˜2”/ Í˜4”0 Í˜5”1 Í˜6”2 Í˜7”3 Í˜8’” Í™” Í™–” Íš
+” Íš” Íš” Íš*” Íš,”  ÍšÌ@›” Í›” Í›” Í›” Í›” Í›” Í›”# Í›”$ Í› ”- Í›)”. Í›4”/ Í›5” Íœ” Íœ” Íœ” Íœ”  Íœ”! Íœ”- Íœ)”/ Íœ+”1 Íœ-”: Íœ6”; Íœ7”ÌB Íœ>”ÌC Íœ?Ü ” Í” Í” Í” Í” Í” Í” Í” Í”! Í”" Í”+ Í#”, Í$”2 Í*”4 Í,”8 Í0”9 Í1”? Í7”ÌA Í9”ÌL ÍÌD”ÌM ÍÌE”ÌS ÍÌK”ÌT ÍÌL”ÌY ÍÌQ”ÌZ ÍÌR”Ì[ ÍÌS”Ì\ ÍÌTÜ ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” ÍŸ” ÍŸ–” Í¡
+” Í¡"” Í¡#”! Í¡3”# Í¡5”) Í¡ÌI›” Í¢” Í¢” Í¢” Í¢” Í¢” Í¢”# Í¢”$ Í¢ ”- Í¢)”. Í¢4”/ Í¢5”” Í£” Í£” Í£"” Í£#™” Í¤” Í¤” Í¤” Í¤” Í¤” Í¤”% Í¤ ”& Í¤!”( Í¤#š” Í¥” Í¥” Í¥” Í¥” Í¥”" Í¥”# Í¥”+ Í¥%”, Í¥&”- Í¥'‘”	 Í¦Ÿ” Í¨” Í¨” Í¨” Í¨”  Í¨”! Í¨”- Í¨)”/ Í¨+”1 Í¨-”ÌA Í¨=”ÌB Í¨>”ÌI Í¨ÌE”ÌK Í¨ÌG”ÌQ Í¨ÌM”ÌR Í¨ÌNÜ ” Í©” Í©” Í©” Í©” Í©” Í©” Í©” Í©”! Í©”" Í©”+ Í©#”, Í©$”2 Í©*”4 Í©,”8 Í©0”9 Í©1”? Í©7”ÌA Í©9”ÌL Í©ÌD”ÌM Í©ÌE”ÌS Í©ÌK”ÌT Í©ÌL”ÌY Í©ÌQ”ÌZ Í©ÌR”Ì[ Í©ÌS”Ì\ Í©ÌTÜ ” Íª” Íª” Íª” Íª” Íª” Íª” Íª” Íª” Íª#” Íª$”& Íª+”' Íª,”- Íª2”/ Íª4”0 Íª5”1 Íª6”2 Íª7”3 Íª8’” Í«” Í«–” Í¬
+” Í¬” Í¬ ” Í¬0”  Í¬2”& Í¬ÌF›” Í­” Í­” Í­” Í­” Í­” Í­”# Í­”$ Í­ ”- Í­)”. Í­4”/ Í­5›” Í®” Í®” Í®” Í®” Í®” Í®”$ Í® ”% Í®!”/ Í®+”0 Í®6”1 Í®7Ÿ” Í¯” Í¯” Í¯” Í¯”  Í¯”! Í¯”- Í¯)”/ Í¯+”1 Í¯-”ÌB Í¯>”ÌC Í¯?”ÌJ Í¯ÌF”ÌL Í¯ÌH”ÌT Í¯ÌP”ÌU Í¯ÌQÜ ” Í°” Í°” Í°” Í°” Í°” Í°” Í°” Í°”! Í°”" Í°”+ Í°#”, Í°$”2 Í°*”4 Í°,”8 Í°0”9 Í°1”? Í°7”ÌA Í°9”ÌL Í°ÌD”ÌM Í°ÌE”ÌS Í°ÌK”ÌT Í°ÌL”ÌY Í°ÌQ”ÌZ Í°ÌR”Ì[ Í°ÌS”Ì\ Í°ÌTÜ ” Í±” Í±” Í±” Í±” Í±” Í±” Í±” Í±” Í±#” Í±$”& Í±+”' Í±,”- Í±2”/ Í±4”0 Í±5”1 Í±6”2 Í±7”3 Í±8’” Í²” Í²–” Íµ
+” Íµ ” Íµ!” Íµ1”! Íµ3”' ÍµÌG›” Í¶” Í¶” Í¶” Í¶” Í¶” Í¶”# Í¶”$ Í¶ ”- Í¶)”. Í¶4”/ Í¶5›” Í·” Í·” Í·” Í·” Í·” Í·”$ Í· ”% Í·!”/ Í·+”0 Í·6”1 Í·7”” Í¸” Í¸” Í¸"” Í¸#™” Í¹” Í¹” Í¹” Í¹” Í¹” Í¹”% Í¹ ”& Í¹!”( Í¹#š” Íº” Íº” Íº” Íº” Íº”" Íº”# Íº”+ Íº%”, Íº&”- Íº'‘”	 Í»Ü ” Í¼” Í¼” Í¼” Í¼”  Í¼”! Í¼”- Í¼)”/ Í¼+”1 Í¼-”ÌC Í¼?”ÌD Í¼Ì@”ÌK Í¼ÌG”ÌM Í¼ÌI”ÌU Í¼ÌQ”ÌW Í¼ÌS”Ì] Í¼ÌY”Ì^ Í¼ÌZÜ ” Í½” Í½” Í½” Í½” Í½” Í½” Í½” Í½”! Í½”" Í½”+ Í½#”, Í½$”2 Í½*”4 Í½,”8 Í½0”9 Í½1”? Í½7”ÌA Í½9”ÌL Í½ÌD”ÌM Í½ÌE”ÌS Í½ÌK”ÌT Í½ÌL”ÌY Í½ÌQ”ÌZ Í½ÌR”Ì[ Í½ÌS”Ì\ Í½ÌTÜ ” Í¾” Í¾” Í¾” Í¾” Í¾” Í¾” Í¾” Í¾” Í¾#” Í¾$”& Í¾+”' Í¾,”- Í¾2”/ Í¾4”0 Í¾5”1 Í¾6”2 Í¾7”3 Í¾8’” Í¿” Í¿–” ÍÀ
+” ÍÀ#” ÍÀ$”" ÍÀ4”$ ÍÀ6”* ÍÀÌJ›” ÍÁ” ÍÁ” ÍÁ” ÍÁ” ÍÁ” ÍÁ”# ÍÁ”$ ÍÁ ”- ÍÁ)”. ÍÁ4”/ ÍÁ5” ÍÂ” ÍÂ” ÍÂ” ÍÂ”  ÍÂ”! ÍÂ”- ÍÂ)”/ ÍÂ+”1 ÍÂ-”ÌA ÍÂ=”ÌB ÍÂ>”ÌI ÍÂÌE”ÌJ ÍÂÌFÜ ” ÍÃ” ÍÃ” ÍÃ” ÍÃ” ÍÃ” ÍÃ” ÍÃ” ÍÃ”! ÍÃ”" ÍÃ”+ ÍÃ#”, ÍÃ$”2 ÍÃ*”4 ÍÃ,”8 ÍÃ0”9 ÍÃ1”? ÍÃ7”ÌA ÍÃ9”ÌL ÍÃÌD”ÌM ÍÃÌE”ÌS ÍÃÌK”ÌT ÍÃÌL”ÌY ÍÃÌQ”ÌZ ÍÃÌR”Ì[ ÍÃÌS”Ì\ ÍÃÌTÜ ” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ” ÍÄ#” ÍÄ$”& ÍÄ+”' ÍÄ,”- ÍÄ2”/ ÍÄ4”0 ÍÄ5”1 ÍÄ6”2 ÍÄ7”3 ÍÄ8’” ÍÅ” ÍÅ–” ÍÇ
+” ÍÇ$” ÍÇ%”# ÍÇ5”% ÍÇ7”+ ÍÇÌK›” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ” ÍÈ”# ÍÈ”$ ÍÈ ”- ÍÈ)”. ÍÈ4”/ ÍÈ5”” ÍÉ” ÍÉ” ÍÉ"” ÍÉ#™” ÍÊ” ÍÊ” ÍÊ” ÍÊ” ÍÊ” ÍÊ”% ÍÊ ”& ÍÊ!”( ÍÊ#š” ÍË” ÍË” ÍË” ÍË” ÍË”" ÍË”# ÍË”+ ÍË%”, ÍË&”- ÍË'‘”	 ÍÌŸ” ÍÍ” ÍÍ” ÍÍ” ÍÍ”  ÍÍ”! ÍÍ”- ÍÍ)”/ ÍÍ+”1 ÍÍ-”ÌB ÍÍ>”ÌC ÍÍ?”ÌJ ÍÍÌF”ÌL ÍÍÌH”ÌR ÍÍÌN”ÌS ÍÍÌOÜ ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ” ÍÎ”& ÍÎ”' ÍÎ”- ÍÎ%”/ ÍÎ'”3 ÍÎ+”4 ÍÎ,”: ÍÎ2”; ÍÎ3”< ÍÎ4Ü ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ” ÍÏ#” ÍÏ$”& ÍÏ+”' ÍÏ,”- ÍÏ2”/ ÍÏ4”0 ÍÏ5”1 ÍÏ6”2 ÍÏ7”3 ÍÏ8’” ÍĞ” ÍĞ–” ÍÑ
+” ÍÑ” ÍÑ” ÍÑ.” ÍÑ0”$ ÍÑÌD›” ÍÒ” ÍÒ” ÍÒ” ÍÒ” ÍÒ” ÍÒ”# ÍÒ”$ ÍÒ ”- ÍÒ)”. ÍÒ4”/ ÍÒ5›” ÍÓ” ÍÓ” ÍÓ” ÍÓ” ÍÓ” ÍÓ”" ÍÓ”# ÍÓ”+ ÍÓ'”, ÍÓ2”- ÍÓ3” ÍÔ” ÍÔ” ÍÔ” ÍÔ” ÍÔ” ÍÔ” ÍÔ”  ÍÔ”( ÍÔ$”) ÍÔ%”5 ÍÔ1”6 ÍÔ2”7 ÍÔ3”8 ÍÔ3Ü ” ÍÕ” ÍÕ” ÍÕ” ÍÕ”  ÍÕ”! ÍÕ”- ÍÕ)”/ ÍÕ+”1 ÍÕ-”ÌD ÍÕÌ@”ÌE ÍÕÌA”ÌL ÍÕÌH”ÌN ÍÕÌJ”ÌT ÍÕÌP”ÌV ÍÕÌR”ÌY ÍÕÌU”ÌZ ÍÕÌVÜ ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ” ÍÖ”& ÍÖ”' ÍÖ”- ÍÖ%”/ ÍÖ'”3 ÍÖ+”4 ÍÖ,”: ÍÖ2”; ÍÖ3”< ÍÖ4Ü ” Í×” Í×” Í×” Í×” Í×” Í×” Í×” Í×” Í×#” Í×$”& Í×+”' Í×,”- Í×2”/ Í×4”0 Í×5”1 Í×6”2 Í×7”3 Í×8’” ÍØ” ÍØ–” ÍÚ
+” ÍÚ ” ÍÚ!” ÍÚ1”! ÍÚ3”' ÍÚÌG›” ÍÛ” ÍÛ” ÍÛ” ÍÛ” ÍÛ” ÍÛ”# ÍÛ”$ ÍÛ ”- ÍÛ)”. ÍÛ4”/ ÍÛ5”” ÍÜ” ÍÜ” ÍÜ!” ÍÜ"™” Íİ” Íİ” Íİ” Íİ” Íİ” Íİ”% Íİ ”& Íİ!”( Íİ#š” ÍŞ” ÍŞ” ÍŞ” ÍŞ” ÍŞ”" ÍŞ”# ÍŞ”+ ÍŞ%”, ÍŞ0”- ÍŞ1‘”	 Íß‘” Íß
+›” Íà” Íà” Íà” Íà”  Íà”+ Íà%”- Íà'”. Íà(”< Íà6”> Íà8”? Íà9‘”	 Íá›” Íâ” Íâ” Íâ” Íâ” Íâ” Íâ”  Íâ”! Íâ”' Íâ#”( Íâ5”) Íâ6˜” Íã” Íã” Íã” Íã” Íã” Íã” Íã'” Íã(Ü ” Íä” Íä	” Íä” Íä” Íä” Íä” Íä”! Íä”$ Íä ”( Íä$”) Íä%”/ Íä+”1 Íä-”6 Íä2”8 Íä4”: Íä6™” Íå” Íå” Íå” Íå” Íå” Íå”" Íå”# Íå”$ Íåš” Íæ” Íæ	” Íæ
+” Íæ” Íæ” Íæ” Íæ” Íæ” Íæ” Íæ‘”	 ÍçÜ ” Íè” Íè” Íè” Íè”  Íè”! Íè”- Íè)”/ Íè+”1 Íè-”ÌD ÍèÌ@”ÌE ÍèÌA”ÌL ÍèÌH”ÌN ÍèÌJ”ÌT ÍèÌP”ÌV ÍèÌR”ÌY ÍèÌU”ÌZ ÍèÌVÜ ” Íé” Íé” Íé” Íé” Íé” Íé” Íé” Íé”& Íé”' Íé”- Íé%”/ Íé'”3 Íé+”4 Íé,”: Íé2”; Íé3”< Íé4Ü ” Íê” Íê” Íê” Íê” Íê” Íê” Íê” Íê” Íê#” Íê$”& Íê+”' Íê,”- Íê2”/ Íê4”0 Íê5”1 Íê6”2 Íê7”3 Íê8’” Íë” Íë–” Íí
+” Íí” Íí ” Íí0”  Íí2”& ÍíÌF›” Íî” Íî” Íî” Íî” Íî” Íî”# Íî”$ Íî ”- Íî)”. Íî4”/ Íî5”” Íï” Íï” Íï!” Íï"™” Íğ” Íğ” Íğ” Íğ” Íğ” Íğ”% Íğ ”& Íğ!”( Íğ#š” Íñ” Íñ” Íñ” Íñ” Íñ”" Íñ”# Íñ”+ Íñ%”, Íñ0”- Íñ1‘”	 Íò‘” Íò
+›” Íó” Íó” Íó” Íó”  Íó”+ Íó%”- Íó'”. Íó(”< Íó6”> Íó8”? Íó9‘”	 ÍôŸ” Íõ” Íõ” Íõ” Íõ”  Íõ”! Íõ”- Íõ)”/ Íõ+”1 Íõ-”ÌF ÍõÌB”ÌG ÍõÌC”ÌN ÍõÌJ”ÌP ÍõÌL”ÌV ÍõÌR”ÌW ÍõÌSÜ ” Íö” Íö” Íö” Íö” Íö” Íö” Íö” Íö”! Íö”" Íö”+ Íö#”, Íö$”2 Íö*”4 Íö,”8 Íö0”9 Íö1”? Íö7”ÌA Íö9”ÌF Íö>”ÌG Íö?”ÌH ÍöÌ@Ü ” Í÷” Í÷” Í÷” Í÷” Í÷” Í÷” Í÷” Í÷” Í÷#” Í÷$”& Í÷+”' Í÷,”- Í÷2”/ Í÷4”0 Í÷5”1 Í÷6”2 Í÷7”3 Í÷8’” Íø” Íø–” Íú
+” Íú ” Íú!” Íú1”! Íú3”' ÍúÌG›” Íû” Íû” Íû” Íû” Íû” Íû”# Íû”$ Íû ”- Íû)”. Íû4”/ Íû5›” Íü” Íü” Íü” Íü” Íü” Íü”# Íü”$ Íü ”- Íü)”. Íü;”/ Íü<Ÿ” Íş” Íş” Íş” Íş”  Íş”! Íş”- Íş)”/ Íş+”1 Íş-”ÌG ÍşÌC”ÌH ÍşÌD”ÌO ÍşÌK”ÌQ ÍşÌM”ÌX ÍşÌT”ÌY ÍşÌUÜ ” Íÿ” Íÿ” Íÿ” Íÿ” Íÿ” Íÿ” Íÿ” Íÿ”! Íÿ”" Íÿ”+ Íÿ#”, Íÿ$”2 Íÿ*”4 Íÿ,”8 Íÿ0”9 Íÿ1”? Íÿ7”ÌA Íÿ9”ÌF Íÿ>”ÌG Íÿ?”ÌH ÍÿÌ@Ü ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í ” Í #” Í $”& Í +”' Í ,”- Í 2”/ Í 4”0 Í 5”1 Í 6”2 Í 7”3 Í 8’” Í” Í–” Í
+” Í” Í ” Í0”  Í2”& ÍÌF›” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌG ÍÌC”ÌI ÍÌEÜ ” Í” Í” Í” Í” Í” Í” Í” Í”! Í”" Í”+ Í#”, Í$”2 Í*”4 Í,”8 Í0”9 Í1”? Í7”ÌA Í9”ÌF Í>”ÌG Í?”ÌH ÍÌ@Ü ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í” Í–” Í	
+” Í	” Í	” Í	/” Í	1”% Í	ÌEœ” Í
+” Í
+” Í
+” Í
+”  Í
+”! Í
+”- Í
+)”/ Í
++”1 Í
+-”ÌD Í
+Ì@”ÌF Í
+ÌB”ÌG Í
+ÌBœ” Í” Í” Í	” Í” Í” Í” Í”# Í”$ Í ”* Í&”+ Í'”, Í(’” Í” Í–” Í
+” Í!” Í"”  Í2”" Í4”( ÍÌH›” Í” Í” Í” Í” Í” Í”# Í”$ Í ”- Í)”. Í4”/ Í5” Í” Í” Í” Í”  Í”! Í”- Í)”/ Í+”1 Í-”ÌG ÍÌC”ÌH ÍÌD”ÌO ÍÌK”ÌP ÍÌLÜ ” Í” Í” Í” Í” Í” Í” Í” Í”! Í”" Í”+ Í#”, Í$”2 Í*”4 Í,”8 Í0”9 Í1”? Í7”ÌA Í9”ÌF Í>”ÌG Í?”ÌH ÍÌ@Ü ” Í” Í” Í” Í” Í” Í” Í” Í” Í#” Í$”& Í+”' Í,”- Í2”/ Í4”0 Í5”1 Í6”2 Í7”3 Í8’” Í” Í‘” ÍÔrG–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ'‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
+ ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ‘”  Ì» ‘”  Ì¼ ‘”  Ì½ ‘”  Ì¾ ‘”  Ì¿ ‘”  ÌÀ ‘”  ÌÁ ‘”  ÌÂ ‘”  ÌÃ ‘”  ÌÄ ‘”  ÌÅ ‘”  ÌÆ ‘”  ÌÇ ‘”  ÌÈ ‘”  ÌÉ ‘”  ÌÊ ‘”  ÌË ‘”  ÌÌ ‘”  ÌÍ ‘”  ÌÎ ‘”  ÌÏ ‘”  ÌĞ ‘”  ÌÑ ‘”  ÌÒ ‘”  ÌÓ ‘”  ÌÔ ‘”  ÌÕ ‘”  ÌÖ ‘”  Ì× ‘”  ÌØ ‘”  ÌÙ ‘”  ÌÚ ‘”  ÌÛ ‘”  ÌÜ ‘”  Ìİ ‘”  ÌŞ ‘”  Ìß ‘”  Ìà ‘”  Ìá ‘”  Ìâ ‘”  Ìã ‘”  Ìä ‘”  Ìå ‘”  Ìæ ‘”  Ìç ‘”  Ìè ‘”  Ìé ‘”  Ìê ‘”  Ìë ‘”  Ìì ‘”  Ìí ‘”  Ìî ‘”  Ìï ‘”  Ìğ ‘”  Ìñ ‘”  Ìò ‘”  Ìó ‘”  Ìô ‘”  Ìõ ‘”  Ìö ‘”  Ì÷ ‘”  Ìø ‘”  Ìù ‘”  Ìú ‘”  Ìû ‘”  Ìü ‘”  Ìı ‘”  Ìş ‘”  Ìÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ‘”  ÍÇ ‘”  ÍÈ ‘”  ÍÉ ‘”  ÍÊ ‘”  ÍË ‘”  ÍÌ ‘”  ÍÍ ‘”  ÍÎ ‘”  ÍÏ ‘”  ÍĞ ‘”  ÍÑ ‘”  ÍÒ ‘”  ÍÓ ‘”  ÍÔ ‘”  ÍÕ ‘”  ÍÖ ‘”  Í× ‘”  ÍØ ‘”  ÍÙ ‘”  ÍÚ ‘”  ÍÛ ‘”  ÍÜ ‘”  Íİ ‘”  ÍŞ ‘”  Íß ‘”  Íà ‘”  Íá ‘”  Íâ ‘”  Íã ‘”  Íä ‘”  Íå ‘”  Íæ ‘”  Íç ‘”  Íè ‘”  Íé ‘”  Íê ‘”  Íë ‘”  Íì ‘”  Íí ‘”  Íî ‘”  Íï ‘”  Íğ ‘”  Íñ ‘”  Íò ‘”  Íó ‘”  Íô ‘”  Íõ ‘”  Íö ‘”  Í÷ ‘”  Íø ‘”  Íù ‘”  Íú ‘”  Íû ‘”  Íü ‘”  Íı ‘”  Íş ‘”  Íÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ‘”  Í' ‘”  Í( ‘”  Í) ‘”  Í* ‘”  Í+ ‘”  Í, ‘”  Í- ‘”  Í. ‘”  Í/ ‘”  Í0 ‘”  Í1 ‘”  Í2 ‘”  Í3 ‘”  Í4 ‘”  Í5 ‘”  Í6 ‘”  Í7 ‘”  Í8 ‘”  Í9 ‘”  Í: ‘”  Í; ‘”  Í< ‘”  Í= ‘”  Í> ‘”  Í? ‘”  Í@ ‘”  ÍA ‘”  ÍB ‘”  ÍC ‘”  ÍD ‘”  ÍE ‘”  ÍF ‘”  ÍG ‘”  ÍH ‘”  ÍI ‘”  ÍJ ‘”  ÍK ‘”  ÍL ‘”  ÍM ‘”  ÍN ‘”  ÍO ‘”  ÍP ‘”  ÍQ ‘”  ÍR ‘”  ÍS ‘”  ÍT ‘”  ÍU ‘”  ÍV ‘”  ÍW ‘”  ÍX ‘”  ÍY ‘”  ÍZ ‘”  Í[ ‘”  Í\ ‘”  Í] ‘”  Í^ ‘”  Í_ ‘”  Í` ‘”  Ía ‘”  Íb ‘”  Íc ‘”  Íd ‘”  Íe ‘”  Íf ‘”  Íg ‘”  Íh ‘”  Íi ‘”  Íj ‘”  Ík ‘”  Íl ‘”  Ím ‘”  Ín ‘”  Ío ‘”  Íp ‘”  Íq ‘”  Ír ‘”  Ís ‘”  Ít ‘”  Íu ‘”  Ív ‘”  Íw ‘”  Íx ‘”  Íy ‘”  Íz ‘”  Í{ ‘”  Í| ‘”  Í} ‘”  Í~ ‘”  Í ‘”  Í€ ‘”  Í ‘”  Í‚ ‘”  Íƒ ‘”  Í„ ‘”  Í… ‘”  Í† ‘”  Í‡ ‘”  Íˆ ‘”  Í‰ ‘”  ÍŠ ‘”  Í‹ ‘”  ÍŒ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í‘ ‘”  Í’ ‘”  Í“ ‘”  Í” ‘”  Í• ‘”  Í– ‘”  Í— ‘”  Í˜ ‘”  Í™ ‘”  Íš ‘”  Í› ‘”  Íœ ‘”  Í ‘”  Í ‘”  ÍŸ ‘”  Í  ‘”  Í¡ ‘”  Í¢ ‘”  Í£ ‘”  Í¤ ‘”  Í¥ ‘”  Í¦ ‘”  Í§ ‘”  Í¨ ‘”  Í© ‘”  Íª ‘”  Í« ‘”  Í¬ ‘”  Í­ ‘”  Í® ‘”  Í¯ ‘”  Í° ‘”  Í± ‘”  Í² ‘”  Í³ ‘”  Í´ ‘”  Íµ ‘”  Í¶ ‘”  Í· ‘”  Í¸ ‘”  Í¹ ‘”  Íº ‘”  Í» ‘”  Í¼ ‘”  Í½ ‘”  Í¾ ‘”  Í¿ ‘”  ÍÀ ‘”  ÍÁ ‘”  ÍÂ ‘”  ÍÃ ‘”  ÍÄ ‘”  ÍÅ ‘”  ÍÆ ‘”  ÍÇ ‘”  ÍÈ ‘”  ÍÉ ‘”  ÍÊ ‘”  ÍË ‘”  ÍÌ ‘”  ÍÍ ‘”  ÍÎ ‘”  ÍÏ ‘”  ÍĞ ‘”  ÍÑ ‘”  ÍÒ ‘”  ÍÓ ‘”  ÍÔ ‘”  ÍÕ ‘”  ÍÖ ‘”  Í× ‘”  ÍØ ‘”  ÍÙ ‘”  ÍÚ ‘”  ÍÛ ‘”  ÍÜ ‘”  Íİ ‘”  ÍŞ ‘”  Íß ‘”  Íà ‘”  Íá ‘”  Íâ ‘”  Íã ‘”  Íä ‘”  Íå ‘”  Íæ ‘”  Íç ‘”  Íè ‘”  Íé ‘”  Íê ‘”  Íë ‘”  Íì ‘”  Íí ‘”  Íî ‘”  Íï ‘”  Íğ ‘”  Íñ ‘”  Íò ‘”  Íó ‘”  Íô ‘”  Íõ ‘”  Íö ‘”  Í÷ ‘”  Íø ‘”  Íù ‘”  Íú ‘”  Íû ‘”  Íü ‘”  Íı ‘”  Íş ‘”  Íÿ ‘”  Í  ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í	 ‘”  Í
+ ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í ‘”  Í  ‘”  Í! ‘”  Í" ‘”  Í# ‘”  Í$ ‘”  Í% ‘”  Í& ÔrH’§missing¦pluginÃ¦genAbcÂÔ  ÔrI”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache˜ÔrJ•¤type¥start£endªspecifiers¦source±ImportDeclaration :’ÔrK•¤type¥start£end¨imported¥local¯ImportSpecifier	ÔrL”¤type¥start£end¤nameªIdentifier	ªChatClientLªIdentifier	ªChatClientK¯ImportSpecifierLªIdentifier©ChatErrorLªIdentifier©ChatErrorÔrM•¤type¥start£end¥value£raw§Literal'9°@easemob/chatsdk²"@easemob/chatsdk"J±ImportDeclaration<Ìa‘ÔrN”¤type¥start£end¥local¶ImportDefaultSpecifierÌCÌLLªIdentifierÌCÌL©MethodKeyM§LiteralÌRÌ`¬./MethodKeys®"./MethodKeys"J±ImportDeclarationÌcÌ ‘N¶ImportDefaultSpecifierÌjÌ|LªIdentifierÌjÌ|²CursorResultHelperM§LiteralÌ‚ÌŸ»./models/CursorResultHelper½"./models/CursorResultHelper"J±ImportDeclarationÌ¢ÌÑ‘N¶ImportDefaultSpecifierÌ©Ì´LªIdentifierÌ©Ì´«GroupHelperM§LiteralÌºÌĞ´./models/GroupHelper¶"./models/GroupHelper"J±ImportDeclarationÌÓÍ‘N¶ImportDefaultSpecifierÌÚÌìLªIdentifierÌÚÌì²GroupOptionsHelperM§LiteralÌòÍ»./models/GroupOptionsHelper½"./models/GroupOptionsHelper"J±ImportDeclarationÍÍK‘N¶ImportDefaultSpecifierÍÍ)LªIdentifierÍÍ)°SharedFileHelperM§LiteralÍ/ÍJ¹./models/SharedFileHelper»"./models/SharedFileHelper"J±ImportDeclarationÍMÍx‘K¯ImportSpecifierÍVÍ^LªIdentifierÍVÍ^¨ObjToMapLªIdentifierÍVÍ^¨ObjToMapM§LiteralÍfÍw¯./SafetyMapTool±"./SafetyMapTool"J±ImportDeclarationÍzÍš‘N¶ImportDefaultSpecifierÍÍˆLªIdentifierÍÍˆ§WrapperM§LiteralÍÍ™©./Wrapper«"./Wrapper"
