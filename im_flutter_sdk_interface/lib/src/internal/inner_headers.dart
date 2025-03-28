@@ -47,5 +47,3 @@ export '../../interface/platform_interface/user_info_manager.dart';
 export '../event_handler/manager_event_handler.dart';
 export '../tools/chat_area_code.dart';
 export '../tools/em_tools.dart';
-
-

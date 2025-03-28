@@ -40,7 +40,7 @@ extension MapExtension on Map {
               dynamic data = convert.jsonDecode(value);
               value = data;
               break;
-            // ignore: empty_catches
+              // ignore: empty_catches
             } on FormatException {}
           } while (false);
           ret[tmpKey] = value;
