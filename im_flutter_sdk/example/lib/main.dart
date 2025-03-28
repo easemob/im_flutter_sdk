@@ -11,6 +11,7 @@ void main() async {
 
   EMOptions options = EMOptions.withAppKey(
     appKey,
+    autoLogin: false,
     extSettings: {ExtSettings.kDisableIosEnterBackground: false},
   );
 
@@ -252,6 +253,40 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     );
+    EMClient.getInstance.groupManager.removeEventHandler('identifier');
+    EMClient.getInstance.chatRoomManager
+        .addEventHandler('identifier', EMChatRoomEventHandler(onAnnouncementChangedFromChatRoom: (roomId, announcement) {
+          
+        },));
+    EMClient.getInstance.groupManager.addEventHandler(
+        'identifier',
+        EMGroupEventHandler(
+          onAnnouncementChangedFromGroup: (groupId, announcement) {
+            _addLogToConsole(
+              "onAnnouncementChangedFromGroup, groupId: $groupId, announcement: $announcement",
+            );
+          },
+          onAdminAddedFromGroup: (groupId, admin) {
+            _addLogToConsole(
+              "onAdminAddedFromGroup, groupId: $groupId, admin: $admin",
+            );
+          },
+          onUserRemovedFromGroup: (groupId, groupName) {
+            _addLogToConsole(
+              "onUserRemovedFromGroup, groupId: $groupId, groupName: $groupName",
+            );
+          },
+          onMemberJoinedFromGroup: (groupId, member) {
+            _addLogToConsole(
+              "onMemberJoinedFromGroup, groupId: $groupId, member: $member",
+            );
+          },
+          onMemberExitedFromGroup: (groupId, member) {
+            _addLogToConsole(
+              "onMemberExitedFromGroup, groupId: $groupId, member: $member",
+            );
+          },
+        ));
   }
 
   void _signIn() async {
@@ -283,11 +318,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _signUp() async {
-    if (_userId.isEmpty || _password.isEmpty) {
-      _addLogToConsole("username or password is null");
-      return;
-    }
-
     try {
       _addLogToConsole("sign up...");
       await EMClient.getInstance.createAccount(_userId, _password);
@@ -312,7 +342,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addLogToConsole(String log) {
-    _logText.add(_timeString + ": " + log);
+    _logText.add("$_timeString: $log");
     setState(() {
       scrollController.jumpTo(scrollController.position.maxScrollExtent);
     });
