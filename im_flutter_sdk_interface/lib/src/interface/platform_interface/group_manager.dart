@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
-import 'package:im_flutter_sdk_interface/interface/manager_mixin.dart';
+import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
+import 'package:im_flutter_sdk_interface/src/models/group_member_info.dart';
 
 class GroupManager with ManagerMixin {
   /// ~english
@@ -369,6 +370,8 @@ class GroupManager with ManagerMixin {
   ///
   /// Param [groupName] The group name.
   ///
+  /// Param [avatar] The group avatar.
+  ///
   /// Param [desc] The group description.
   ///
   /// Param [inviteMembers] The group member array. The group owner ID is optional.
@@ -395,6 +398,8 @@ class GroupManager with ManagerMixin {
   ///
   /// Param [groupName] 群组名称。
   ///
+  /// Param [avatar] 群组头像。
+  ///
   /// Param [desc] 群组描述。
   ///
   /// Param [inviteMembers] 群成员数组。群主 ID 可选。
@@ -414,6 +419,7 @@ class GroupManager with ManagerMixin {
   /// ~end
   Future<EMGroup> createGroup({
     String? groupName,
+    String? avatar,
     String? desc,
     List<String>? inviteMembers,
     String? inviteReason,
@@ -1760,6 +1766,7 @@ class GroupManager with ManagerMixin {
     throw UnimplementedError("not implemented");
   }
 
+  ///
   Future<bool> isMemberInGroupMuteList(String groupId) async {
     throw UnimplementedError("not implemented");
   }
@@ -1776,6 +1783,39 @@ class GroupManager with ManagerMixin {
   /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<void> clearAllGroupsFromLocal() async {
+    throw UnimplementedError("not implemented");
+  }
+
+  ///
+  ///  \~chinese
+  ///  获取群组成员列表。
+  ///  这里需要注意的是：
+  ///  - 每次调用只返回一页的数据。首次调用传空值，会从最新的第一条开始取；
+  ///  - aPageSize 是这次接口调用期望返回的列表数据个数，如当前在最后一页，返回的数据会是 count < aPageSize；
+  ///  - 列表页码 aPageNum 是方便服务器分页查询返回，对于数据量未知且很大的情况，分页获取，服务器会根据每次的页数和每次的pagesize 返回数据，直到返回所有数据。
+  ///
+  ///  Param [groupId]         群组 ID。
+  ///  Param [cursor]         游标，首次调用传空。下次传上次返回的值。
+  ///  Param [limit]        获取多少条。
+  ///
+  ///  ~end
+  ///
+  ///
+  ///  \~english
+  ///  Gets the list of group members from the server.
+  ///
+  ///  Param [groupId]  The group ID.
+  ///  Param [cursor] The cursor when joins the group. Sets the parameter as nil for the first time. Next time, pass the value returned last time.
+  ///  Param [limit ] The page size.
+  ///
+  ///  ~end
+  ///
+
+  Future<EMCursorResult<GroupMemberInfo>> fetchGroupMembersInfo({
+    required String groupId,
+    String? cursor,
+    int limit = 20,
+  }) async {
     throw UnimplementedError("not implemented");
   }
 }

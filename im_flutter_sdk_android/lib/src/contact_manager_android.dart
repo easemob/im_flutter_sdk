@@ -26,7 +26,7 @@ class ContactManagerAndroid extends ContactManager {
     String? reason,
   }) async {
     Map req = {
-      'username': userId,
+      'userId': userId,
     };
     req.putIfNotNull("reason", reason);
 
@@ -67,7 +67,7 @@ class ContactManagerAndroid extends ContactManager {
     String userId, {
     bool keepConversation = false,
   }) async {
-    Map req = {'username': userId, 'keepConversation': keepConversation};
+    Map req = {'userId': userId, 'keepConversation': keepConversation};
     Map result =
         await ContactChannel.invokeMethod(ChatMethodKeys.deleteContact, req);
     try {
@@ -236,7 +236,7 @@ class ContactManagerAndroid extends ContactManager {
   Future<void> addUserToBlockList(
     String userId,
   ) async {
-    Map req = {'username': userId};
+    Map req = {'userId': userId};
     Map result = await ContactChannel.invokeMethod(
       ChatMethodKeys.addUserToBlockList,
       req,
@@ -265,7 +265,7 @@ class ContactManagerAndroid extends ContactManager {
   /// ~end
   @override
   Future<void> removeUserFromBlockList(String userId) async {
-    Map req = {'username': userId};
+    Map req = {'userId': userId};
     Map result = await ContactChannel.invokeMethod(
         ChatMethodKeys.removeUserFromBlockList, req);
     try {
@@ -428,7 +428,7 @@ class ContactManagerAndroid extends ContactManager {
   /// ~end
   @override
   Future<void> acceptInvitation(String userId) async {
-    Map req = {'username': userId};
+    Map req = {'userId': userId};
     Map result =
         await ContactChannel.invokeMethod(ChatMethodKeys.acceptInvitation, req);
     try {
@@ -455,7 +455,7 @@ class ContactManagerAndroid extends ContactManager {
   /// ~end
   @override
   Future<void> declineInvitation(String userId) async {
-    Map req = {'username': userId};
+    Map req = {'userId': userId};
     Map result = await ContactChannel.invokeMethod(
         ChatMethodKeys.declineInvitation, req);
     try {

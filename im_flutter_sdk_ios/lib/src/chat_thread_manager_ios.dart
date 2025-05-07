@@ -435,7 +435,7 @@ class ChatThreadManagerIOS extends ChatThreadManager {
   }) async {
     Map req = {
       "name": name,
-      "messageId": messageId,
+      "msgId": messageId,
       "parentId": parentId,
     };
     Map result = await ThreadChannel.invokeMethod(

@@ -172,8 +172,7 @@ class ChatMethodKeys {
   static const String loadMsgWithMsgType = "loadMsgWithMsgType";
   static const String loadMsgWithTime = "loadMsgWithTime";
   static const String messageCount = "messageCount";
-  static const String removeMsgFromServerWithMsgList =
-      "removeMsgFromServerWithMsgList";
+
   static const String removeMsgFromServerWithTimeStamp =
       "removeMsgFromServerWithTimeStamp";
 
@@ -430,4 +429,7 @@ class ChatMethodKeys {
 
   // 4.12.1
   static const String isMemberInChatRoomMuteList = "isMemberInChatRoomMuteList";
+
+  // 4.14.0
+  static const String fetchGroupMembersInfo = "fetchGroupMembersInfo";
 }

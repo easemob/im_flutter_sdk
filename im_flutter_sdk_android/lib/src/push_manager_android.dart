@@ -233,7 +233,7 @@ class PushManagerAndroid extends PushManager {
     required ChatSilentModeParam param,
   }) async {
     Map req = {};
-    req["conversationId"] = conversationId;
+    req["convId"] = conversationId;
     req["conversationType"] = type.index;
     req["param"] = param.toJson();
 
@@ -275,7 +275,7 @@ class PushManagerAndroid extends PushManager {
     required EMConversationType type,
   }) async {
     Map req = {};
-    req["conversationId"] = conversationId;
+    req["convId"] = conversationId;
     req["conversationType"] = type.index;
     Map result = await PushChannel.invokeMethod(
         ChatMethodKeys.removeConversationSilentMode, req);
@@ -315,7 +315,7 @@ class PushManagerAndroid extends PushManager {
     required EMConversationType type,
   }) async {
     Map req = {};
-    req["conversationId"] = conversationId;
+    req["convId"] = conversationId;
     req["conversationType"] = type.index;
     Map result = await PushChannel.invokeMethod(
         ChatMethodKeys.fetchConversationSilentMode, req);

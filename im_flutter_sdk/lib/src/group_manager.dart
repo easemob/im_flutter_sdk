@@ -248,6 +248,7 @@ class EMGroupManager {
   /// ~end
   Future<EMGroup> createGroup({
     String? groupName,
+    String? avatar,
     String? desc,
     List<String>? inviteMembers,
     String? inviteReason,
@@ -255,6 +256,7 @@ class EMGroupManager {
   }) async {
     return Client.instance.groupManager.createGroup(
       groupName: groupName,
+      avatar: avatar,
       desc: desc,
       inviteMembers: inviteMembers,
       inviteReason: inviteReason,
@@ -1696,5 +1698,41 @@ class EMGroupManager {
   /// ~end
   Future<void> clearAllGroupsFromLocal() async {
     return Client.instance.groupManager.clearAllGroupsFromLocal();
+  }
+
+  ///
+  ///  \~chinese
+  ///  获取群组成员列表。
+  ///  这里需要注意的是：
+  ///  - 每次调用只返回一页的数据。首次调用传空值，会从最新的第一条开始取；
+  ///  - aPageSize 是这次接口调用期望返回的列表数据个数，如当前在最后一页，返回的数据会是 count < aPageSize；
+  ///  - 列表页码 aPageNum 是方便服务器分页查询返回，对于数据量未知且很大的情况，分页获取，服务器会根据每次的页数和每次的pagesize 返回数据，直到返回所有数据。
+  ///
+  ///  Param [groupId]         群组 ID。
+  ///  Param [cursor]         游标，首次调用传空。下次传上次返回的值。
+  ///  Param [limit]        获取多少条。
+  ///
+  ///  ~end
+  ///
+  ///
+  ///  \~english
+  ///  Gets the list of group members from the server.
+  ///
+  ///  Param [groupId]  The group ID.
+  ///  Param [cursor] The cursor when joins the group. Sets the parameter as nil for the first time. Next time, pass the value returned last time.
+  ///  Param [limit ] The page size.
+  ///
+  ///  ~end
+  ///
+  Future<EMCursorResult<GroupMemberInfo>> fetchGroupMembersInfo({
+    required String groupId,
+    String? cursor,
+    int limit = 20,
+  }) async {
+    return Client.instance.groupManager.fetchGroupMembersInfo(
+      groupId: groupId,
+      cursor: cursor,
+      limit: limit,
+    );
   }
 }

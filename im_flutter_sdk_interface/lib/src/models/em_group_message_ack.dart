@@ -91,7 +91,7 @@ class EMGroupMessageAck {
   factory EMGroupMessageAck.fromJson(Map map) {
     EMGroupMessageAck ack = EMGroupMessageAck(
       ackId: map["ack_id"],
-      messageId: map["msg_id"] as String,
+      messageId: map["msgId"] as String,
       from: map["from"] as String,
       content: map["content"],
       readCount: map["count"] ?? 0,

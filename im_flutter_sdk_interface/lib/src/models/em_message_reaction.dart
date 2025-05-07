@@ -150,8 +150,8 @@ class EMMessageReactionEvent {
   });
 
   factory EMMessageReactionEvent.fromJson(Map map) {
-    String conversationId = map["conversationId"];
-    String messageId = map["messageId"];
+    String conversationId = map["convId"];
+    String messageId = map["msgId"];
     List<EMMessageReaction> reactions = [];
     map["reactions"]?.forEach((element) {
       reactions.add(EMMessageReaction.fromJson(element));

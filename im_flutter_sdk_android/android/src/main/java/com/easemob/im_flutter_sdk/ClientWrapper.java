@@ -179,7 +179,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void createAccount(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         asyncRunnable(()->{
             try {
@@ -193,7 +193,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void login(JSONObject param, String channelName, Result result) throws JSONException {
         boolean isPwd = param.getBoolean("isPassword");
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String pwdOrToken = param.getString("pwdOrToken");
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
@@ -243,7 +243,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
 
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String agoraToken = param.getString("agora_token");
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
@@ -290,7 +290,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void kickDevice(JSONObject param, String channelName, Result result) throws JSONException {
 
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         String resource = param.getString("resource");
         boolean isPwd = param.optBoolean("isPwd");
@@ -316,7 +316,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void kickAllDevices(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         boolean isPwd = param.optBoolean("isPwd");
         if (isPwd) {
@@ -362,7 +362,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         boolean isPwd = param.optBoolean("isPwd");
         if (isPwd) {
@@ -458,7 +458,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", event);
                 data.put("target", target);
-                data.put("users", userNames);
+                data.put("userIds", userNames);
                 post(()-> channel.invokeMethod(MethodKey.onMultiDeviceGroupEvent, data));
             }
 
@@ -466,7 +466,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", event);
                 data.put("target", target);
-                data.put("users", usernames);
+                data.put("userIds", usernames);
                 post(()-> channel.invokeMethod(MethodKey.onMultiDeviceThreadEvent, data));
             }
 

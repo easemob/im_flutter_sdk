@@ -545,6 +545,7 @@ class EMMessage {
     String? displayName,
     String? thumbnailLocalPath,
     bool sendOriginalImage = false,
+    bool isGif = false,
     int? fileSize,
     double? width,
     double? height,
@@ -559,6 +560,7 @@ class EMMessage {
               sendOriginalImage: sendOriginalImage,
               width: width,
               height: height,
+              isGif: isGif,
             ));
 
   /// ~english
@@ -909,7 +911,7 @@ class EMMessage {
     data.putIfNotNull("hasDeliverAck", hasDeliverAck);
     data.putIfNotNull("needGroupAck", needGroupAck);
     data.putIfNotNull("msgId", msgId);
-    data.putIfNotNull("conversationId", conversationId ?? to);
+    data.putIfNotNull("convId", conversationId ?? to);
     data.putIfNotNull("chatType", chatType.index);
     data.putIfNotNull("localTime", localTime);
     data.putIfNotNull("serverTime", serverTime);
@@ -939,7 +941,7 @@ class EMMessage {
       ..needGroupAck = map.boolValue('needGroupAck')
       ..hasDeliverAck = map.boolValue('hasDeliverAck')
       .._msgId = map["msgId"]
-      ..conversationId = map["conversationId"]
+      ..conversationId = map["convId"]
       ..chatType = ChatType.values[map["chatType"]]
       ..localTime = map["localTime"] ?? 0
       ..serverTime = map["serverTime"] ?? 0
@@ -1482,6 +1484,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     super.fileSize,
     this.width,
     this.height,
+    this.isGif = false,
   }) : super(
           type: MessageType.IMAGE,
         );
@@ -1495,6 +1498,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     height = (map["height"] ?? 0).toDouble();
     width = (map["width"] ?? 0).toDouble();
     thumbnailStatus = DownloadStatus.values[map["thumbnailStatus"]];
+    isGif = map["isGif"] ?? false;
   }
 
   @override
@@ -1507,6 +1511,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
     data.putIfNotNull("thumbnailStatus", thumbnailStatus.index);
+    data.putIfNotNull('isGif', isGif);
     return data;
   }
 
@@ -1577,6 +1582,12 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// 图片高度，单位为像素。
   /// ~end
   double? height;
+
+  /// ~english
+  /// ~end
+  /// ~chinese
+  /// ~end
+  bool isGif = false;
 }
 
 /// ~english

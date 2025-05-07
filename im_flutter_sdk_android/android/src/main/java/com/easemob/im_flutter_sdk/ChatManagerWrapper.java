@@ -266,7 +266,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void ackMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String to = params.getString("to");
 
         asyncRunnable(() -> {
@@ -280,7 +280,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void ackGroupMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String to = params.getString("group_id");
         String content = null;
         if(params.has("content")) {
@@ -310,7 +310,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void recallMessage(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String ext;
         if (params.has("ext")) {
             ext = params.getString("ext");
@@ -333,7 +333,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getMessage(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
 
         asyncRunnable(() -> {
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
@@ -838,7 +838,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void asyncFetchGroupMessageAckFromServer(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String ackId = null;
         if (params.has("ack_id")){
             ackId = params.getString("ack_id");
@@ -858,7 +858,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void deleteRemoteConversation(JSONObject params, String channelName, Result result) throws JSONException {
-        String conversationId = params.getString("conversationId");
+        String conversationId = params.getString("convId");
         EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         boolean isDeleteRemoteMessage = params.getBoolean("isDeleteRemoteMessage");
         EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
@@ -1225,8 +1225,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             @Override
             public void onMessagePinChanged(String messageId, String conversationId, EMMessagePinInfo.PinOperation pinOperation, EMMessagePinInfo pinInfo) {
                 Map<String, Object> map = new HashMap<>();
-                map.put("messageId", messageId);
-                map.put("conversationId", conversationId);
+                map.put("msgId", messageId);
+                map.put("convId", conversationId);
                 map.put("pinOperation", pinOperation.ordinal());
                 map.put("pinInfo", MessagePinInfoHelper.toJson(pinInfo));
                 post(() -> channel.invokeMethod(MethodKey.onMessagePinChanged, map));

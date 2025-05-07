@@ -5,6 +5,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
@@ -92,9 +93,6 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             else if(MethodKey.messageCount.equals(call.method)) {
                 messageCount(param, call.method, result);
             }
-            else if (MethodKey.removeMsgFromServerWithMsgList.equals(call.method)) {
-                removeMsgFromServerWithMsgList(param, call.method, result);
-            }
             else if (MethodKey.removeMsgFromServerWithTimeStamp.equals(call.method)) {
                 removeMsgFromServerWithTimeStamp(param, call.method, result);
             }
@@ -144,10 +142,10 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void markMessageAsRead(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-        String msg_id = params.getString("msg_id");
+        String msgId = params.getString("msgId");
 
         asyncRunnable(()->{
-            conversation.markMessageAsRead(msg_id);
+            conversation.markMessageAsRead(msgId);
             onSuccess(result, channelName, true);
         });
     }
@@ -168,10 +166,10 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void removeMessage(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-        String msg_id = params.getString("msg_id");
+        String msgId = params.getString("msgId");
 
         asyncRunnable(()->{
-            conversation.removeMessage(msg_id);
+            conversation.removeMessage(msgId);
             onSuccess(result, channelName, true);
         });
     }
@@ -277,7 +275,7 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
     }
 
     private void loadMsgWithId(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         asyncRunnable(()->{
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
             if(msg == null) {
@@ -306,11 +304,17 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
     private void loadMsgWithKeywords(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
         String keywords = params.getString("keywords");
-        String sender = null;
-        if (params.has("from")) {
-            sender = params.getString("from");
+        List<String> senders;
+        if (params.has("senders")) {
+            senders = new ArrayList<>();
+            JSONArray jsonArray = params.getJSONArray("senders");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                senders.add(jsonArray.getString(i));
+            }
+        } else {
+            senders = null;
         }
-        final String name = sender;
+
         int count = params.getInt("count");
         long timestamp = params.getLong("timestamp");
         EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
@@ -320,13 +324,16 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         }else {
             scope = EMConversation.EMMessageSearchScope.ALL;
         }
-        asyncRunnable(()->{
-            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, name, direction, scope);
-            List<Map> messages = new ArrayList<>();
-            for(EMMessage msg: msgList) {
-                messages.add(MessageHelper.toJson(msg));
+
+        conversation.asyncSearchMsgFromDB(keywords, timestamp, count, senders, direction, scope, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName) {
+            @Override
+            public void onSuccess(List<EMMessage> msgList) {
+                List<Map> messages = new ArrayList<>();
+                for(EMMessage msg: msgList) {
+                    messages.add(MessageHelper.toJson(msg));
+                }
+                super.updateObject(messages);
             }
-            onSuccess(result, channelName, messages);
         });
     }
 
@@ -374,17 +381,7 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
         asyncRunnable(()->{
             onSuccess(result, channelName,  conversation.getAllMsgCount());
         });
-    }
-
-    private void removeMsgFromServerWithMsgList(JSONObject params, String channelName, Result result) throws JSONException {
-        JSONArray jsonAry = params.getJSONArray("msgIds");
-        List<String> msgIds = new ArrayList<>();
-        for (int i = 0; i < jsonAry.length(); i++) {
-            msgIds.add((String) jsonAry.get(i));
-        }
-        EMConversation conversation = conversationWithParam(params);
-        conversation.removeMessagesFromServer(msgIds, new EMWrapperCallBack(result, channelName, null));
-    }
+    } 
 
     private void removeMsgFromServerWithTimeStamp(JSONObject params, String channelName, Result result) throws JSONException {
         long timestamp = params.getLong("timestamp");
@@ -438,8 +435,8 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void getLocalMessageCount(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-        long startMs = params.optLong("startMs");
-        long endMs = params.optLong("endMs");
+        long startMs = params.optLong("startTs");
+        long endMs = params.optLong("endTs");
         int count = conversation.getAllMsgCount(startMs, endMs);
         asyncRunnable(()->{
             onSuccess(result, channelName, count);
@@ -460,7 +457,7 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
 
     private void deleteLocalAndServerMessagesByTime(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
-        long beforeMs = params.optLong("beforeMs");
+        long beforeMs = params.optLong("beforeTs");
         conversation.removeMessagesFromServer(beforeMs, new EMWrapperCallBack(result, channelName,null));
     }
 

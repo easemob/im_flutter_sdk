@@ -13,8 +13,8 @@
 
 - (nonnull NSDictionary *)toJson {
     NSMutableDictionary *ret = [NSMutableDictionary dictionary];
-    ret[@"conversationId"] = self.conversationId;
-    ret[@"messageId"] = self.messageId;
+    ret[@"convId"] = self.conversationId;
+    ret[@"msgId"] = self.messageId;
     NSMutableArray *reactions = [NSMutableArray array];
     for (EMMessageReaction *reaction in self.reactions) {
         [reactions addObject:[reaction toJson]];
