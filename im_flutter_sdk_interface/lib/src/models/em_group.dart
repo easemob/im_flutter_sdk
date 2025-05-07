@@ -358,7 +358,7 @@ class EMGroup {
     bool? messageBlocked = map["messageBlocked"];
     bool? isAllMemberMuted = map["isAllMemberMuted"];
     EMGroupPermissionType? permissionType =
-        _EMGroupPermissionType.values(map['permissionType']);
+        EMGroupPermissionTypeExtension.values(map['permissionType']);
     int? maxUserCount = map["maxUserCount"];
     bool? isMemberOnly = map["isMemberOnly"];
     bool? isMemberAllowToInvite = map["isMemberAllowToInvite"];
@@ -451,11 +451,5 @@ class EMGroupInfo {
       groupId: groupId,
       name: groupName,
     );
-  }
-}
-
-extension _EMGroupPermissionType on EMGroupPermissionType {
-  static EMGroupPermissionType values(int type) {
-    return EMGroupPermissionType.values[type + 1];
   }
 }

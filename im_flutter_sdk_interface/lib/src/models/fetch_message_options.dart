@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import '../internal/inner_headers.dart';
 
 /// ~english
@@ -14,6 +16,8 @@ class FetchMessageOptions {
   /// Param [direction] The message search direction. The default value is [EMSearchDirection.Up]. See [EMSearchDirection].
   ///
   /// Param [from] The user ID of the message sender in the group conversation.
+  ///
+  /// Param [senders] The user IDs of the message senders in the group conversation.
   ///
   /// Param [msgTypes] The array of message types for query. The default value is `null`, indicating that all types of messages are retrieved.
   ///
@@ -43,6 +47,8 @@ class FetchMessageOptions {
   ///
   /// Param [from] 群组会话中的消息发送方的用户 ID。
   ///
+  /// Param [senders] 群组会话中的消息发送方的用户 ID 列表。
+  ///
   /// Param [msgTypes] 要查询的消息类型数组。默认值为 `null`，表示返回所有类型的消息。
   ///
   /// Param [startTs] 消息查询的起始时间，Unix 时间戳，单位为毫秒。默认为 `-1`，表示消息查询时会忽略该参数。
@@ -59,12 +65,15 @@ class FetchMessageOptions {
   /// ~end
   const FetchMessageOptions({
     this.from,
+    this.senders,
     this.msgTypes,
     this.startTs = -1,
     this.endTs = -1,
     this.needSave = false,
     this.direction = EMSearchDirection.Up,
   });
+
+  @Deprecated('Use [senders] instead')
 
   /// ~english
   /// The user ID of the message sender in the group conversation.
@@ -74,6 +83,15 @@ class FetchMessageOptions {
   /// 群组会话中的消息发送方的用户 ID。
   /// ~end
   final String? from;
+
+  /// ~english
+  /// The user IDs of the message senders in the group conversation.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群组会话中的消息发送方的用户 ID 列表。
+  /// ~end
+  final List<String>? senders;
 
   /// ~english
   /// The array of message types for query. The default value is `null`, indicating that all types of messages are retrieved.
@@ -144,6 +162,7 @@ class FetchMessageOptions {
     data.putIfNotNull('startTs', startTs);
     data.putIfNotNull('endTs', endTs);
     data.putIfNotNull('from', from);
+    data.putIfNotNull('senders', senders);
     data.putIfNotNull('needSave', needSave);
     data.putIfNotNull(
         'msgTypes', msgTypes?.toSet().map<int>((e) => e.index).toList());

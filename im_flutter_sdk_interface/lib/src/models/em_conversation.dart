@@ -295,7 +295,7 @@ class EMConversation {
   /// ~end
   Future<void> markMessageAsRead(String messageId) async {
     Map req = _toJson();
-    req['msg_id'] = messageId;
+    req['msgId'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.markMessageAsRead, req);
     try {
@@ -434,7 +434,7 @@ class EMConversation {
   /// ~end
   Future<void> deleteMessage(String messageId) async {
     Map req = _toJson();
-    req['msg_id'] = messageId;
+    req['msgId'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.removeMessage, req);
     try {
@@ -523,7 +523,7 @@ class EMConversation {
   /// ~end
   Future<EMMessage?> loadMessage(String messageId) async {
     Map req = _toJson();
-    req['msg_id'] = messageId;
+    req['msgId'] = messageId;
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithId, req);
     try {
@@ -674,7 +674,7 @@ class EMConversation {
   ///
   /// Param [keywords] The keywords in message.
   ///
-  /// Param [sender] The message sender. If you do not set this parameter, the SDK ignores this parameter when retrieving messages.
+  /// Param [senders] The message sender list. If you do not set this parameter, the SDK ignores this parameter when retrieving messages.
   ///
   /// Param [timestamp] The starting message timestamp for search.
   ///
@@ -698,7 +698,7 @@ class EMConversation {
   ///
   /// Param [keywords] 搜索消息中的关键词。
   ///
-  /// Param [sender] 消息发送方。若不设置该参数，SDK 搜索消息时会忽略该参数。
+  /// Param [senders] 消息发送方列表。若不设置该参数，SDK 搜索消息时会忽略该参数。
   ///
   /// Param [timestamp] 搜索的起始消息时间戳。
   ///
@@ -714,7 +714,7 @@ class EMConversation {
   /// ~end
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
-    String? sender,
+    List<String>? senders,
     int timestamp = -1,
     int count = 20,
     MessageSearchScope searchScope = MessageSearchScope.All,
@@ -726,7 +726,7 @@ class EMConversation {
     req['timestamp'] = timestamp;
     req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
     req['direction'] = direction.index;
-    req.putIfNotNull("from", sender);
+    req.putIfNotNull("senders", senders);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);
@@ -979,8 +979,8 @@ class EMConversation {
     required int endMs,
   }) async {
     Map req = _toJson();
-    req.putIfNotNull("startMs", startMs);
-    req.putIfNotNull("endMs", endMs);
+    req.putIfNotNull("startTs", startMs);
+    req.putIfNotNull("endTs", endMs);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.conversationGetLocalMessageCount, req);
     try {
@@ -1046,7 +1046,7 @@ class EMConversation {
   Future<void> deleteLocalAndServerMessagesByTime(
       {required int beforeMs}) async {
     Map req = _toJson();
-    req.putIfNotNull("beforeMs", beforeMs);
+    req.putIfNotNull("beforeTs", beforeMs);
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
     try {

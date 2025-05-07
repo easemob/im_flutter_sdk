@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
-import 'package:im_flutter_sdk_interface/interface/manager_mixin.dart';
+import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
 
 class ContactManager with ManagerMixin {
   final Map<String, EMContactEventHandler> _eventHandlesMap = {};
@@ -18,7 +18,7 @@ class ContactManager with ManagerMixin {
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
-    String username = event['username'];
+    String username = event['userId'];
     String? reason = event['reason'];
 
     for (var element in _eventHandlesMap.values) {

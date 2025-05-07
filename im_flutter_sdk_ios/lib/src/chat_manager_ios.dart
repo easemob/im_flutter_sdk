@@ -139,7 +139,7 @@ class ChatManagerIOS extends ChatManager {
   /// ~end
   @override
   Future<bool> sendMessageReadAck(EMMessage message) async {
-    Map req = {"to": message.from, "msg_id": message.msgId};
+    Map req = {"to": message.from, "msgId": message.msgId};
     Map result =
         await ChatChannel.invokeMethod(ChatMethodKeys.ackMessageRead, req);
     try {
@@ -191,7 +191,7 @@ class ChatManagerIOS extends ChatManager {
     String? content,
   }) async {
     Map req = {
-      "msg_id": msgId,
+      "msgId": msgId,
       "group_id": groupId,
     };
     req.putIfNotNull("content", content);
@@ -261,7 +261,7 @@ class ChatManagerIOS extends ChatManager {
   @override
   Future<void> recallMessage(String messageId, {String? ext}) async {
     Map req = {
-      "msg_id": messageId,
+      "msgId": messageId,
     };
     req.putIfNotNull('ext', ext);
     Map result =
@@ -294,7 +294,7 @@ class ChatManagerIOS extends ChatManager {
   /// ~end
   @override
   Future<EMMessage?> loadMessage(String messageId) async {
-    Map req = {"msg_id": messageId};
+    Map req = {"msgId": messageId};
     Map<String, dynamic> result =
         await ChatChannel.invokeMethod(ChatMethodKeys.getMessage, req);
     try {
@@ -1248,7 +1248,7 @@ class ChatManagerIOS extends ChatManager {
     String? startAckId,
     int pageSize = 0,
   }) async {
-    Map req = {"msg_id": msgId, "group_id": groupId};
+    Map req = {"msgId": msgId, "group_id": groupId};
     req["pageSize"] = pageSize;
     req.putIfNotNull("ack_id", startAckId);
 
@@ -1306,7 +1306,7 @@ class ChatManagerIOS extends ChatManager {
     bool isDeleteMessage = true,
   }) async {
     Map req = {};
-    req["conversationId"] = conversationId;
+    req["convId"] = conversationId;
     if (conversationType == EMConversationType.Chat) {
       req["conversationType"] = 0;
     } else if (conversationType == EMConversationType.GroupChat) {

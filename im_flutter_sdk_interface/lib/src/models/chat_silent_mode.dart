@@ -259,7 +259,7 @@ class ChatSilentModeResult {
     ChatSilentModeTime endTime = ChatSilentModeTime.fromJson(map["endTime"]);
     ChatPushRemindType remindType =
         ChatPushRemindType.values[map["remindType"]];
-    String conversationId = map["conversationId"];
+    String conversationId = map["convId"];
     EMConversationType conversationType =
         EMConversationType.values[map["conversationType"]];
     return ChatSilentModeResult(

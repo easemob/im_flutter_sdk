@@ -27,7 +27,7 @@
     }
     
     NSString *to = aJson[@"to"];
-    NSString *conversationId = aJson[@"conversationId"];
+    NSString *conversationId = aJson[@"convId"];
     
 
     
@@ -74,7 +74,7 @@
     ret[@"from"] = self.from;
     ret[@"msgId"] = self.messageId;
     ret[@"to"] = self.to;
-    ret[@"conversationId"] = self.conversationId;
+    ret[@"convId"] = self.conversationId;
     ret[@"hasRead"] = @(self.isRead);
     ret[@"hasDeliverAck"] = @(self.isDeliverAcked);
     ret[@"hasReadAck"] = @(self.isReadAcked);
@@ -380,6 +380,7 @@
     ret.size = CGSizeMake([aJson[@"width"] floatValue], [aJson[@"height"] floatValue]);
     ret.thumbnailDownloadStatus = [EnumTools downloadStatusFromInt:[aJson[@"thumbnailStatus"] integerValue]];
     ret.compressionRatio = [aJson[@"sendOriginalImage"] boolValue] ? 1.0 : 0.6;
+    ret.isGif = [aJson[@"isGif"] boolValue];
     return ret;
 }
 
@@ -398,6 +399,7 @@
     ret[@"displayName"] = self.displayName;
     ret[@"localPath"] = self.localPath;
     ret[@"sendOriginalImage"] = self.compressionRatio == 1.0 ? @(YES) : @(NO);
+    ret[@"isGif"] = @(self.isGif);
     return ret;
 }
 @end

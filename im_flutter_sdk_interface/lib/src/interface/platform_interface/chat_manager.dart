@@ -2,7 +2,7 @@
 
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
-import 'package:im_flutter_sdk_interface/interface/manager_mixin.dart';
+import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
 
 class ChatManager with ManagerMixin {
   final Map<String, EMChatEventHandler> _eventHandlesMap = {};
@@ -161,8 +161,8 @@ class ChatManager with ManagerMixin {
   }
 
   Future<void> _onMessagePinChanged(dynamic obj) async {
-    String messageId = obj["messageId"] ?? "";
-    String conversationId = obj["conversationId"] ?? "";
+    String messageId = obj["msgId"] ?? "";
+    String conversationId = obj["convId"] ?? "";
     MessagePinOperation pinOperation =
         MessagePinOperation.values[obj["pinOperation"]];
     MessagePinInfo pinInfo = MessagePinInfo.fromJson(obj["pinInfo"]);

@@ -247,7 +247,7 @@ class ClientAndroid extends Client {
   @override
   Future<void> createAccount(String userId, String password) async {
     EMLog.v('create account: $userId : $password');
-    Map req = {'username': userId, 'password': password};
+    Map req = {'userId': userId, 'password': password};
     Map result =
         await ClientChannel.invokeMethod(ChatMethodKeys.createAccount, req);
     try {
@@ -299,7 +299,7 @@ class ClientAndroid extends Client {
   ]) async {
     EMLog.v('login: $userId : $pwdOrToken, isPassword: $isPassword');
     Map req = {
-      'username': userId,
+      'userId': userId,
       'pwdOrToken': pwdOrToken,
       'isPassword': isPassword
     };
@@ -607,7 +607,7 @@ class ClientAndroid extends Client {
   /// ~end
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String userId, required String password}) async {
-    Map req = {'username': userId, 'password': password};
+    Map req = {'userId': userId, 'password': password};
     Map result = await ClientChannel.invokeMethod(
         ChatMethodKeys.getLoggedInDevicesFromServer, req);
     try {
@@ -655,7 +655,7 @@ class ClientAndroid extends Client {
     required String pwdOrToken,
     bool isPwd = true,
   }) async {
-    Map req = {'username': userId, 'password': pwdOrToken, 'isPwd': isPwd};
+    Map req = {'userId': userId, 'password': pwdOrToken, 'isPwd': isPwd};
     Map result = await ClientChannel.invokeMethod(
         ChatMethodKeys.getLoggedInDevicesFromServer, req);
     try {
@@ -702,7 +702,7 @@ class ClientAndroid extends Client {
   }) async {
     EMLog.v('kickDevice: $userId, "******"');
     Map req = {
-      'username': userId,
+      'userId': userId,
       'password': pwdOrToken,
       'resource': resource,
       'isPwd': isPwd,
@@ -746,7 +746,7 @@ class ClientAndroid extends Client {
     required String pwdOrToken,
     bool isPwd = true,
   }) async {
-    Map req = {'username': userId, 'password': pwdOrToken, 'isPwd': isPwd};
+    Map req = {'userId': userId, 'password': pwdOrToken, 'isPwd': isPwd};
     Map result =
         await ClientChannel.invokeMethod(ChatMethodKeys.kickAllDevices, req);
     try {

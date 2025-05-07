@@ -5,7 +5,7 @@ class RecallMessageInfo {
     return RecallMessageInfo(
       recallMessageId: map['recallMsgId'],
       recallBy: map['recallBy'],
-      conversationId: map['conversationId'],
+      conversationId: map['convId'],
       recallMessage: map.getValue<EMMessage>(
         "msg",
         callback: (map) {

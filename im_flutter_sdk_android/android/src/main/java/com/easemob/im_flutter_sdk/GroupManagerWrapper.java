@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
+import com.hyphenate.chat.EMGroupMemberInfo;
 import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.exceptions.HyphenateException;
@@ -40,7 +41,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     @Override
-    public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+    public void onMethodCall(MethodCall call, Result result) {
 
         JSONObject param = (JSONObject) call.arguments;
         try {
@@ -150,6 +151,9 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             // 4.10
             else if (MethodKey.isMemberInGroupMuteList.equals(call.method)) {
                 isMemberInGroupMuteList(param, call.method, result);
+            }
+            else if (MethodKey.fetchGroupMembersInfo.equals(call.method)) {
+                fetchGroupMembersInfo(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -791,8 +795,8 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         String groupId = param.getString("groupId");
 
         String username = null;
-        if (param.has("username")){
-            username = param.getString("username");
+        if (param.has("userId")){
+            username = param.getString("userId");
         }
 
         EMClient.getInstance().groupManager().asyncAcceptApplication(username, groupId, new EMWrapperCallBack(result, channelName, null));
@@ -801,8 +805,8 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     private void declineJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String username = null;
-        if (param.has("username")){
-            username = param.getString("username");
+        if (param.has("userId")){
+            username = param.getString("userId");
         }
         String reason = null;
         if (param.has("reason")){
@@ -832,8 +836,8 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     private void declineInvitationFromGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String username = null;
-        if (param.has("username")){
-            username = param.getString("username");
+        if (param.has("userId")){
+            username = param.getString("userId");
         }
         String reason = null;
         if (param.has("reason")){
@@ -1321,5 +1325,19 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             }
         });
     }
+
+    private void fetchGroupMembersInfo(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        int limit = param.getInt("limit");
+        String cursor = param.optString("cursor");
+        EMClient.getInstance().groupManager().asyncFetchGroupMembersInfo(groupId, cursor, limit, new EMValueWrapperCallBack<EMCursorResult<EMGroupMemberInfo>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMGroupMemberInfo> object) {
+                updateObject(CursorResultHelper.toJson(object));
+            }
+        });
+    }
+
+
 
 }

@@ -328,7 +328,7 @@
            channelName:(NSString *)aChannelName
                 result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *msgId = param[@"msg_id"];
+    NSString *msgId = param[@"msgId"];
     NSString *to = param[@"to"];
     [EMClient.sharedClient.chatManager sendMessageReadAck:msgId
                                                    toUser:to
@@ -345,7 +345,7 @@
                 channelName:(NSString *)aChannelName
                      result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *msgId = param[@"msg_id"];
+    NSString *msgId = param[@"msgId"];
     NSString *groupId = param[@"group_id"];
     NSString *content = param[@"content"];
     [EMClient.sharedClient.chatManager sendGroupMessageReadAck:msgId
@@ -380,7 +380,7 @@
           channelName:(NSString *)aChannelName
                result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *msgId = param[@"msg_id"];
+    NSString *msgId = param[@"msgId"];
     NSString *ext = param[@"ext"];
     EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     if (!msg) {
@@ -406,7 +406,7 @@
                     channelName:(NSString *)aChannelName
                          result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *msgId = param[@"msg_id"];
+    NSString *msgId = param[@"msgId"];
     EMChatMessage *msg = [EMClient.sharedClient.chatManager getMessageWithMessageId:msgId];
     [weakSelf wrapperCallBack:result
                   channelName:aChannelName
@@ -830,7 +830,7 @@
 - (void)fetchGroupReadAck:(NSDictionary *)param
               channelName:(NSString *)aChannelName
                    result:(FlutterResult) result {
-    NSString *msgId = param[@"msg_id"];
+    NSString *msgId = param[@"msgId"];
     int pageSize = [param[@"pageSize"] intValue];
     NSString *ackId = param[@"ack_id"];
     __weak typeof(self) weakSelf = self;
@@ -897,7 +897,7 @@
                           result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
-    NSString *conversationId = param[@"conversationId"];
+    NSString *conversationId = param[@"convId"];
     EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
     BOOL isDeleteRemoteMessage = [param[@"isDeleteRemoteMessage"] boolValue];
     
@@ -1487,8 +1487,8 @@
                   operation:(EMMessagePinOperation)pinOperation
                     pinInfo:(EMMessagePinInfo *)pinInfo{
     NSDictionary *dict = @{
-        @"messageId": messageId,
-        @"conversationId": conversationId,
+        @"msgId": messageId,
+        @"convId": conversationId,
         @"pinOperation": @(pinOperation),
         @"pinInfo": [pinInfo toJson]
     };

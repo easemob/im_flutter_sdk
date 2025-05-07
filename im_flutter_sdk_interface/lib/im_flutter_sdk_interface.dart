@@ -1,13 +1,13 @@
-export 'package:im_flutter_sdk_interface/interface/platform_interface/client.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/chat_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/chat_room_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/chat_thread_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/contact_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/group_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/presence_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/push_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/user_info_manager.dart';
-export 'package:im_flutter_sdk_interface/interface/platform_interface/progress_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/client.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/chat_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/chat_room_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/chat_thread_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/contact_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/group_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/presence_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/push_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/user_info_manager.dart';
+export 'package:im_flutter_sdk_interface/src/interface/platform_interface/progress_manager.dart';
 
 export 'src/models/em_group_message_ack.dart';
 export 'src/models/em_chat_room.dart';
@@ -21,6 +21,7 @@ export 'src/models/em_translate_language.dart';
 export 'src/models/em_presence.dart';
 export 'src/models/login_extension_info.dart';
 export 'src/models/message_search_options.dart';
+export 'src/models/group_member_info.dart';
 
 export 'src/models/em_options.dart';
 export 'src/models/em_push_configs.dart';

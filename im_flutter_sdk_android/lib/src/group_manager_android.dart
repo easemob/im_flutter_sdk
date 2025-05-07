@@ -221,6 +221,7 @@ class GroupManagerAndroid extends GroupManager {
   @override
   Future<EMGroup> createGroup({
     String? groupName,
+    String? avatar,
     String? desc,
     List<String>? inviteMembers,
     String? inviteReason,
@@ -228,6 +229,7 @@ class GroupManagerAndroid extends GroupManager {
   }) async {
     Map req = {'options': options.toJson()};
     req.putIfNotNull("groupName", groupName);
+    req.putIfNotNull("avatar", avatar);
     req.putIfNotNull("desc", desc);
     req.putIfNotNull("inviteMembers", inviteMembers);
     req.putIfNotNull("inviteReason", inviteReason);
@@ -1659,7 +1661,7 @@ class GroupManagerAndroid extends GroupManager {
     String groupId,
     String username,
   ) async {
-    Map req = {'groupId': groupId, 'username': username};
+    Map req = {'groupId': groupId, 'userId': username};
     Map result = await GroupChannel.invokeMethod(
         ChatMethodKeys.acceptJoinApplication, req);
     try {
@@ -1702,7 +1704,7 @@ class GroupManagerAndroid extends GroupManager {
     String username, {
     String? reason,
   }) async {
-    Map req = {'groupId': groupId, 'username': username};
+    Map req = {'groupId': groupId, 'userId': username};
     req.putIfNotNull('reason', reason);
 
     Map result = await GroupChannel.invokeMethod(
@@ -2048,6 +2050,35 @@ class GroupManagerAndroid extends GroupManager {
         await GroupChannel.invokeMethod(ChatMethodKeys.clearAllGroupsFromDB);
     try {
       EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<EMCursorResult<GroupMemberInfo>> fetchGroupMembersInfo({
+    required String groupId,
+    String? cursor,
+    int limit = 20,
+  }) async {
+    Map req = {
+      "groupId": groupId,
+      "limit": limit,
+    };
+
+    req.putIfNotNull('cursor', cursor);
+
+    Map result = await GroupChannel.invokeMethod(
+      ChatMethodKeys.fetchGroupMembersInfo,
+      req,
+    );
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<GroupMemberInfo>.fromJson(
+          result[ChatMethodKeys.fetchGroupMembersInfo],
+          dataItemCallback: (value) {
+        return GroupMemberInfo.fromJson(value);
+      });
     } catch (e) {
       rethrow;
     }

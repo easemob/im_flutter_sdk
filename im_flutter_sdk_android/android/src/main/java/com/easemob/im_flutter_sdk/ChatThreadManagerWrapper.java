@@ -171,7 +171,7 @@ public class ChatThreadManagerWrapper extends Wrapper implements MethodChannel.M
     }
 
     private void createChatThread(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
-        String messageId = param.getString("messageId");
+        String messageId = param.getString("msgId");
         String name = param.getString("name");
         String parentId = param.getString("parentId");
         EMClient.getInstance().chatThreadManager().createChatThread(parentId, messageId, name, new EMValueWrapperCallBack<EMChatThread>(result, channelName){

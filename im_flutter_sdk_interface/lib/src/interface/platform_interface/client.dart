@@ -1,9 +1,10 @@
 import 'package:flutter/services.dart';
-import 'package:im_flutter_sdk_interface/interface/manager_mixin.dart';
-import 'package:im_flutter_sdk_interface/interface/method_channel/default_channels.dart';
+import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
+import 'package:im_flutter_sdk_interface/src/interface/method_channel/default_channels.dart';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../../src/internal/inner_headers.dart';
+import '../../internal/inner_headers.dart';
 
 abstract class Client extends PlatformInterface with ManagerMixin {
   static final Object _token = Object();
@@ -308,7 +309,7 @@ abstract class Client extends PlatformInterface with ManagerMixin {
   Future<void> _onMultiDeviceGroupEvent(Map map) async {
     EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
     String target = map['target'];
-    List<String>? users = map.getList("users");
+    List<String>? users = map.getList("userIds");
 
     for (var handler in _multiDeviceHandlers.values) {
       handler.onGroupEvent?.call(event, target, users);
@@ -328,7 +329,7 @@ abstract class Client extends PlatformInterface with ManagerMixin {
   Future<void> _onMultiDeviceThreadEvent(Map map) async {
     EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
     String target = map['target'] ?? '';
-    List<String> users = map.getList("users") ?? [];
+    List<String> users = map.getList("userIds") ?? [];
 
     for (var handler in _multiDeviceHandlers.values) {
       handler.onChatThreadEvent?.call(event, target, users);

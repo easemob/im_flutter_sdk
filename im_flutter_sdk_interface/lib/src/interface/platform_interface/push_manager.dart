@@ -1,5 +1,5 @@
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
-import 'package:im_flutter_sdk_interface/interface/manager_mixin.dart';
+import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
 
 class PushManager with ManagerMixin {
   @override

@@ -149,7 +149,6 @@ public class MethodKey {
     static final String loadMsgWithMsgType = "loadMsgWithMsgType";
     static final String loadMsgWithTime = "loadMsgWithTime";
     static final String messageCount = "messageCount";
-    static final String removeMsgFromServerWithMsgList = "removeMsgFromServerWithMsgList";
     static final String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
 
     // EMMessage method
@@ -370,4 +369,7 @@ public class MethodKey {
 
     // 4.12.1
     static final String isMemberInChatRoomMuteList = "isMemberInChatRoomMuteList";
+
+    // 4.14.0
+    static final String fetchGroupMembersInfo = "fetchGroupMembersInfo";
 }
