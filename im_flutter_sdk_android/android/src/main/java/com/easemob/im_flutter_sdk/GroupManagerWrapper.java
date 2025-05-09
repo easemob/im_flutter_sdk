@@ -892,7 +892,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onSuccess(Map<String, Map<String, String>> object) {
-                updateObject(object);
+                updateObject(object.get(finalUserId));
             }
         });
     }
