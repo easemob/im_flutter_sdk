@@ -14,6 +14,7 @@ class EMGroup {
   EMGroup({
     required this.groupId,
     this.name,
+    this.avatarUrl,
     this.description,
     this.owner,
     this.announcement,
@@ -57,6 +58,15 @@ class EMGroup {
   /// **Return** 群组名称。
   /// ~end
   final String? name;
+
+  /// ~english
+  /// Gets the group avatar.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组头像。
+  /// ~end
+  final String? avatarUrl;
 
   /// ~english
   /// Gets the group description.
@@ -347,6 +357,7 @@ class EMGroup {
   factory EMGroup.fromJson(Map map) {
     String groupId = map['groupId'];
     String? name = map["name"];
+    String? avatarUrl = map["avatarUrl"];
     String? description = map["desc"];
     String? owner = map["owner"];
     String? announcement = map["announcement"];
@@ -367,6 +378,7 @@ class EMGroup {
 
     return EMGroup(
       groupId: groupId,
+      avatarUrl: avatarUrl,
       name: name,
       description: description,
       owner: owner,
@@ -391,6 +403,7 @@ class EMGroup {
     Map data = {};
     data.putIfNotNull("groupId", groupId);
     data.putIfNotNull("name", name);
+    data.putIfNotNull("avatarUrl", avatarUrl);
     data.putIfNotNull("desc", description);
     data.putIfNotNull("owner", owner);
     data.putIfNotNull("announcement", announcement);
