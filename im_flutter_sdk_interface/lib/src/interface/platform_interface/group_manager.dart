@@ -1817,4 +1817,12 @@ class GroupManager with ManagerMixin {
   }) async {
     throw UnimplementedError("not implemented");
   }
+
+
+  Future<EMGroup> updateGroupAvatar({
+    required String groupId,
+    required String avatarUrl,
+  }) async {
+    throw UnimplementedError("not implemented");
+  }
 }

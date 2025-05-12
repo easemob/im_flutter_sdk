@@ -326,8 +326,12 @@
     else if ([isMemberInGroupMuteList isEqualToString:call.method]) {
         [self isMemberInGroupMuteList:call.arguments channelName:call.method result:result];
     }
+    // 4.14.0
     else if ([fetchGroupMembersInfo isEqual:call.method]) {
         [self fetchGroupMembersInfo:call.arguments channelName:call.method result:result];
+    }
+    else if ([updateGroupAvatar isEqual:call.method]) {
+        [self updateGroupAvatar:call.arguments channelName:call.method result:result];
     }
     else
     {
@@ -1495,9 +1499,19 @@
     }];
 }
 
-
-
-
+- (void)updateGroupAvatar:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *groupId = param[@"groupId"];
+    NSString *avatarUrl = param[@"avatarUrl"];
+    [EMClient.sharedClient.groupManager updateGroupAvatar:avatarUrl
+                                                  groupId:groupId
+                                               completion:^(EMGroup * _Nullable group, EMError * _Nullable error) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:error
+                           object:[group toJson]];
+    }];
+}
 
 
 @end

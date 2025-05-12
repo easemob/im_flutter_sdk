@@ -1735,4 +1735,39 @@ class EMGroupManager {
       limit: limit,
     );
   }
+
+  /// ~english
+  /// 更改群组头像 。
+  ///
+  /// 该方法只有群主才有权限调用。
+  ///
+  /// Param [groupId]         群组 ID。
+  /// Param [avatarUrl]         新头像。
+  ///
+  /// **Return** [EMGroup], 群组对象。
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  ///
+  /// ~english
+  /// Changes the group avatar.
+  ///
+  ///  Only the group owner can call this method.
+  ///
+  ///  Param [groupId]         The group ID.
+  ///  Param [avatarUrl]     The new avatar.
+  ///
+  /// **Return** [EMGroup]
+  /// **Throws** A description of the exception. See [EMError].
+  ///
+  /// ~end
+  ///
+
+  Future<EMGroup> updateGroupAvatar({
+    required String groupId,
+    required String avatarUrl,
+  }) async {
+    return Client.instance.groupManager.updateGroupAvatar(
+      groupId: groupId,
+      avatarUrl: avatarUrl,
+    );
+  }
 }

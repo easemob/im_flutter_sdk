@@ -2083,4 +2083,23 @@ class GroupManagerAndroid extends GroupManager {
       rethrow;
     }
   }
+
+  @override
+  Future<EMGroup> updateGroupAvatar({
+    required String groupId,
+    required String avatarUrl,
+  }) async {
+    Map req = {
+      "groupId": groupId,
+      "avatarUrl": avatarUrl,
+    };
+    Map result =
+        await GroupChannel.invokeMethod(ChatMethodKeys.updateGroupAvatar, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      return EMGroup.fromJson(result[ChatMethodKeys.updateGroupAvatar]);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

@@ -396,3 +396,5 @@ static NSString *const changeAppId = @"changeAppId";
 static NSString *const isMemberInChatRoomMuteList = @"isMemberInChatRoomMuteList";
 
 static NSString *const fetchGroupMembersInfo = @"fetchGroupMembersInfo";
+
+static NSString *const updateGroupAvatar = @"updateGroupAvatar";
