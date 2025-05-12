@@ -74,6 +74,7 @@ export 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart'
         MessagePinInfo,
         LoginExtensionInfo,
         MessageSearchOptions,
+        GroupMemberInfo,
         ChatAreaCode;
 
 export 'src/chat_manager.dart';
