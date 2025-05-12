@@ -72,6 +72,16 @@ class EMWrapperCallBack implements EMCallBack {
         });
     }
 
+    public void updateObject(Object object) {
+        post(()-> {
+            Map<String, Object> data = new HashMap<>();
+            if (object != null) {
+                data.put(channelName, object);
+            }
+            result.success(data);
+        });
+    }
+
     @Override
     public void onError(int code, String desc) {
         post(() -> {

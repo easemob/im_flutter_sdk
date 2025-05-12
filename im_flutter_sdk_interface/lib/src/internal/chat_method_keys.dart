@@ -432,4 +432,6 @@ class ChatMethodKeys {
 
   // 4.14.0
   static const String fetchGroupMembersInfo = "fetchGroupMembersInfo";
+
+  static const String updateGroupAvatar = "updateGroupAvatar";
 }

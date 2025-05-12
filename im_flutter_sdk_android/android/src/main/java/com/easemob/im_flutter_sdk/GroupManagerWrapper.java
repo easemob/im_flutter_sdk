@@ -152,8 +152,12 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.isMemberInGroupMuteList.equals(call.method)) {
                 isMemberInGroupMuteList(param, call.method, result);
             }
+            // 4.14.0
             else if (MethodKey.fetchGroupMembersInfo.equals(call.method)) {
                 fetchGroupMembersInfo(param, call.method, result);
+            }
+            else if (MethodKey.updateGroupAvatar.equals(call.method)) {
+                updateGroupAvatar(param, call.method, result);
             }
             else {
                 super.onMethodCall(call, result);
@@ -1338,6 +1342,15 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
-
-
+    private void updateGroupAvatar(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        String avatarUrl = param.optString("avatarUrl");
+        EMClient.getInstance().groupManager().asyncChangeGroupAvatar(groupId, avatarUrl, new EMWrapperCallBack(result, channelName,  null) {
+            @Override
+            public void onSuccess() {
+                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
+                super.updateObject(GroupHelper.toJson(group));
+            }
+        });
+    }
 }
