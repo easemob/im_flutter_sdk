@@ -182,6 +182,7 @@ class GroupHelper {
         Map<String, Object> data = new HashMap<>();
         CommonUtil.putObjectToMap(data, "groupId", group.getGroupId());
         CommonUtil.putObjectToMap(data, "name", group.getGroupName());
+        CommonUtil.putObjectToMap(data, "avatarUrl", group.getGroupAvatar());
         CommonUtil.putObjectToMap(data, "desc", group.getDescription());
         CommonUtil.putObjectToMap(data, "owner", group.getOwner());
         CommonUtil.putObjectToMap(data, "announcement", group.getAnnouncement());
