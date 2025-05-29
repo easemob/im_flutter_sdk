@@ -246,6 +246,16 @@ class GroupManager with ManagerMixin {
             attributes,
             operatorId,
           );
+        case "onGroupMembersJoined":
+          String groupId = map["groupId"];
+          List<String> members = List.from(map['userIds'] ?? []);
+          element.onAllowListRemovedFromGroup?.call(groupId, members);
+          break;
+        case "onGroupMembersExited":
+          String groupId = map["groupId"];
+          List<String> members = List.from(map['userIds'] ?? []);
+          element.onAllowListRemovedFromGroup?.call(groupId, members);
+          break;
       }
     }
   }
@@ -1817,7 +1827,6 @@ class GroupManager with ManagerMixin {
   }) async {
     throw UnimplementedError("not implemented");
   }
-
 
   Future<EMGroup> updateGroupAvatar({
     required String groupId,

@@ -1559,6 +1559,31 @@ class EMGroupEventHandler {
   )? onAttributesChangedOfGroupMember;
 
   /// ~english
+  ///
+  /// Occurs when members join the group.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 成员加入群组的回调。
+  /// ~end
+  final void Function(
+    String groupId,
+    List<String> userIds,
+  )? onMembersJoinedFromGroup;
+
+  /// ~english
+  /// Occurs when members leave the group.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 成员离开群组的回调。
+  /// ~end
+  final void Function(
+    String groupId,
+    List<String> userIds,
+  )? onMembersExitedFromGroup;
+
+  /// ~english
   /// The group manager listener callback.
   ///
   /// Param [onAdminAddedFromGroup] A member is set as an admin.
@@ -1610,6 +1635,11 @@ class EMGroupEventHandler {
   /// Param [onDisableChanged] Te group is enabled or disabled.
   ///
   /// Param [onAttributesChangedOfGroupMember] A custom attribute(s) of a group member is/are changed.
+  ///
+  /// Param [onMembersJoinedFromGroup] members joins ths group.
+  ///
+  /// Param [onMembersExitedFromGroup] members leaves the group.
+  ///
   /// ~end
   ///
   /// ~chinese
@@ -1664,6 +1694,10 @@ class EMGroupEventHandler {
   /// Param [onDisableChanged] 群是禁用状态变更。
   ///
   /// Param [onAttributesChangedOfGroupMember] 群组成员自定义属性有变更。
+  ///
+  /// Param [onMembersJoinedFromGroup] 成员加入群组。
+  ///
+  /// Param [onMembersExitedFromGroup] 成员离开群组。
   /// ~end
   EMGroupEventHandler({
     this.onAdminAddedFromGroup,
@@ -1677,7 +1711,9 @@ class EMGroupEventHandler {
     this.onInvitationAcceptedFromGroup,
     this.onInvitationDeclinedFromGroup,
     this.onInvitationReceivedFromGroup,
+    @Deprecated('Use onMemberExitedFromGroup instead')
     this.onMemberExitedFromGroup,
+    @Deprecated('Use onMembersJoinedFromGroup instead')
     this.onMemberJoinedFromGroup,
     this.onMuteListAddedFromGroup,
     this.onMuteListRemovedFromGroup,
@@ -1691,6 +1727,8 @@ class EMGroupEventHandler {
     this.onSpecificationDidUpdate,
     this.onDisableChanged,
     this.onAttributesChangedOfGroupMember,
+    this.onMembersJoinedFromGroup,
+    this.onMembersExitedFromGroup,
   });
 }
 

@@ -1306,6 +1306,32 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                         }
                 );
             }
+
+            @Override
+            public void onMembersJoined(String groupId, List<String> members) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onGroupMembersJoined");
+                            data.put("groupId", groupId);
+                            data.put("userIds", members);
+                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onMembersExited(String groupId, List<String> members) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onGroupMembersExited");
+                            data.put("groupId", groupId);
+                            data.put("userIds", members);
+                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
+                        }
+                );
+            }
         };
         EMClient.getInstance().groupManager().addGroupChangeListener(groupChangeListener);
     }
