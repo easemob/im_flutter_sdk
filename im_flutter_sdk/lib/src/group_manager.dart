@@ -252,8 +252,9 @@ class EMGroupManager {
     String? desc,
     List<String>? inviteMembers,
     String? inviteReason,
-    required EMGroupOptions options,
+    EMGroupOptions? options,
   }) async {
+    options ??= EMGroupOptions();
     return Client.instance.groupManager.createGroup(
       groupName: groupName,
       avatar: avatar,
