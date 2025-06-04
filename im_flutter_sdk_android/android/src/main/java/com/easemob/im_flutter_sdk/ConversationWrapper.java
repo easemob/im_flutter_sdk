@@ -304,7 +304,8 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
     private void loadMsgWithKeywords(JSONObject params, String channelName, Result result) throws JSONException {
         EMConversation conversation = conversationWithParam(params);
         String keywords = params.getString("keywords");
-        List<String> senders;
+        List<String> senders = null;
+        String sender = null;
         if (params.has("senders")) {
             senders = new ArrayList<>();
             JSONArray jsonArray = params.getJSONArray("senders");
@@ -312,7 +313,9 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
                 senders.add(jsonArray.getString(i));
             }
         } else {
-            senders = null;
+            if (params.has("from")) {
+                sender = params.getString("from");
+            }
         }
 
         int count = params.getInt("count");
@@ -325,16 +328,25 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
             scope = EMConversation.EMMessageSearchScope.ALL;
         }
 
-        conversation.asyncSearchMsgFromDB(keywords, timestamp, count, senders, direction, scope, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName) {
-            @Override
-            public void onSuccess(List<EMMessage> msgList) {
-                List<Map> messages = new ArrayList<>();
-                for(EMMessage msg: msgList) {
-                    messages.add(MessageHelper.toJson(msg));
+        if(senders != null) {
+            conversation.asyncSearchMsgFromDB(keywords, timestamp, count, senders, direction, scope, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName) {
+                @Override
+                public void onSuccess(List<EMMessage> msgList) {
+                    List<Map> messages = new ArrayList<>();
+                    for(EMMessage msg: msgList) {
+                        messages.add(MessageHelper.toJson(msg));
+                    }
+                    super.updateObject(messages);
                 }
-                super.updateObject(messages);
+            });
+        }else {
+            List<EMMessage> msgList = conversation.searchMsgFromDB(keywords, timestamp, count, sender, direction, scope);
+            List<Map> messages = new ArrayList<>();
+            for(EMMessage msg: msgList) {
+                messages.add(MessageHelper.toJson(msg));
             }
-        });
+            onSuccess(result, channelName, messages);
+        }
     }
 
     private void loadMsgWithMsgType(JSONObject params, String channelName, Result result) throws JSONException {

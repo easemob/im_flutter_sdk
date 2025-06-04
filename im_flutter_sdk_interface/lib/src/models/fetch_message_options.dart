@@ -64,6 +64,7 @@ class FetchMessageOptions {
   /// - `false`（默认）：不保存到数据库。
   /// ~end
   const FetchMessageOptions({
+    @Deprecated('use [senders] instead')
     this.from,
     this.senders,
     this.msgTypes,

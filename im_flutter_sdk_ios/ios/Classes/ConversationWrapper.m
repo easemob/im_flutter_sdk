@@ -538,6 +538,10 @@
     long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
     NSArray *senders = param[@"senders"];
+    NSString *sender = param[@"sender"];
+    if(senders == nil && sender != nil) {
+        senders = @[sender];
+    }
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
     EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     [self getConversationWithParam:param
