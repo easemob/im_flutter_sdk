@@ -1507,7 +1507,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data.putIfNotNull("thumbnailLocalPath", thumbnailLocalPath);
     data.putIfNotNull("thumbnailRemotePath", thumbnailRemotePath);
     data.putIfNotNull("thumbnailSecret", thumbnailSecret);
-    data.putIfNotNull("sendOriginalImage", sendOriginalImage);
+    data.putIfNotNull("sendOriginalImage", isGif ? true : sendOriginalImage);
     data.putIfNotNull("height", height ?? 0.0);
     data.putIfNotNull("width", width ?? 0.0);
     data.putIfNotNull("thumbnailStatus", thumbnailStatus.index);

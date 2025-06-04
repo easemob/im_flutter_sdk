@@ -706,6 +706,7 @@ class EMConversation {
   ///
   /// Param [searchScope] 消息搜索范围，详见 [MessageSearchScope]。
   ///
+  ///
   /// Param [direction] 消息搜索方向。
   ///
   /// **Return** 消息列表。
@@ -714,6 +715,8 @@ class EMConversation {
   /// ~end
   Future<List<EMMessage>> loadMessagesWithKeyword(
     String keywords, {
+    @Deprecated('The `sender` parameter is deprecated, use `senders` instead.')
+    String? sender,
     List<String>? senders,
     int timestamp = -1,
     int count = 20,
@@ -727,6 +730,7 @@ class EMConversation {
     req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
     req['direction'] = direction.index;
     req.putIfNotNull("senders", senders);
+    req.putIfNotNull("from", sender);
 
     Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.loadMsgWithKeywords, req);

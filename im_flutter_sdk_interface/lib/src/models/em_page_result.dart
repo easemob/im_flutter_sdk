@@ -51,5 +51,5 @@ class EMPageResult<T> {
   /// ~chinese
   /// 获取 <T> 泛型数据。
   /// ~end
-  List<T>? get data => _data;
+  List<T> get data => _data;
 }
