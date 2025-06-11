@@ -797,7 +797,7 @@
                 @"roomId":aChatroom.chatroomId,
                 @"roomName":aChatroom.subject,
             };
-        } else if (aReason == EMChatroomBeKickedReasonBeRemoved) {
+        } else {
             type = @"onRoomRemoved";
             map = @{
                 @"type":type,
