@@ -1,8 +1,8 @@
 
-## 4.14.0
+## 4.15.0
 
-- 安卓依赖 SDK 升级到 4.14.0；
-- iOS以来 SDK 升级到 4.14.0；
+- 安卓依赖 SDK 升级到 4.15.0；
+- iOS以来 SDK 升级到 4.15.0；
 - 支持 Gif 图片消息；
 - 支持 群头像功能；
 - 支持 消息附件鉴权，该功能需要联系商务开通，开通后必须调用 SDK 的 API 才能下载消息附件。
@@ -10,7 +10,7 @@
 - 支持 加载本地会话消息时，只加载指定群成员发送的消息；
 - 支持 获取群成员信息 时包括成员加群时间；
 - 修复 安卓获取自己的群成员属性时解释失败的问题；
-- 
+- 新增 `onMembersJoinedFromGroup` 和 `onMembersExitedFromGroup` 回调，`onMembersJoinedFromGroup` 和 `onMemberExitedFromGroup` 标记过期；
 
 ## 4.13.0+1
 
