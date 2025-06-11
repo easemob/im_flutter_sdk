@@ -11,8 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  im_flutter_sdk_interface:
-    path: ../im_flutter_sdk_interface
+  im_flutter_sdk_interface: ^4.15.0
 
 dev_dependencies:
   flutter_test:
