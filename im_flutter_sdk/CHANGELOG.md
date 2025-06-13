@@ -10,7 +10,9 @@
 - 支持 加载本地会话消息时，只加载指定群成员发送的消息；
 - 支持 获取群成员信息 时包括成员加群时间；
 - 修复 安卓获取自己的群成员属性时解释失败的问题；
-- 新增 `onMembersJoinedFromGroup` 和 `onMembersExitedFromGroup` 回调，`onMembersJoinedFromGroup` 和 `onMemberExitedFromGroup` 标记过期；
+- 修复 `ChatRoomEventHandler#onRemovedFromChatRoom` 不执行；
+- 新增 `onMembersJoinedFromGroup` 和 `onMembersExitedFromGroup` 回调，`onMemberJoinedFromGroup` 和 `onMemberExitedFromGroup` 标记过期；
+- 新增 `EMGroupManager#updateGroupName` 和 `EMGroupManager#updateGroupDesc`方法，标记 `EMGroupManager#changeGroupName` 和 `EMGroupManager#changeGroupDescription` 方法过期;
 
 ## 4.13.0+1
 

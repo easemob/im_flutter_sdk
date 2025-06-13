@@ -253,9 +253,9 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             groupName = param.getString("groupName");
         }
 
-        String avatar = null;
-        if(param.has("avatar")) {
-            avatar = param.getString("avatar");
+        String avatarUrl = null;
+        if(param.has("avatarUrl")) {
+            avatarUrl = param.getString("avatarUrl");
         }
 
         String desc = null;
@@ -288,7 +288,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                 updateObject(GroupHelper.toJson(object));
             }
         };
-        EMClient.getInstance().groupManager().asyncCreateGroup(groupName, avatar, desc, members, inviteReason, options, callBack);
+        EMClient.getInstance().groupManager().asyncCreateGroup(groupName, avatarUrl, desc, members, inviteReason, options, callBack);
     }
 
     private void getGroupSpecificationFromServer(JSONObject param, String channelName, Result result)
