@@ -13,9 +13,11 @@ import '../internal/inner_headers.dart';
 class EMGroup {
   EMGroup({
     required this.groupId,
-    this.name,
+    @Deprecated('Use [groupName] instead') this.name,
+    this.groupName,
     this.avatarUrl,
-    this.description,
+    @Deprecated('Use [desc] instead') this.description,
+    this.desc,
     this.owner,
     this.announcement,
     this.memberCount,
@@ -42,6 +44,8 @@ class EMGroup {
   /// ~end
   final String groupId;
 
+  @Deprecated('Use [desc] instead')
+
   /// ~english
   /// Gets the group name.
   ///
@@ -60,6 +64,23 @@ class EMGroup {
   final String? name;
 
   /// ~english
+  /// Gets the group name.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组名称。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组名称。
+  /// ~end
+  final String? groupName;
+
+  /// ~english
   /// Gets the group avatar.
   /// ~end
   ///
@@ -67,6 +88,8 @@ class EMGroup {
   /// 从内存中获取群组头像。
   /// ~end
   final String? avatarUrl;
+
+  @Deprecated('Use [desc] instead')
 
   /// ~english
   /// Gets the group description.
@@ -84,6 +107,23 @@ class EMGroup {
   /// **Return** 群组描述。
   /// ~end
   final String? description;
+
+  /// ~english
+  /// Gets the group description.
+  ///
+  /// **Note**
+  /// To get the correct value, ensure that you call [EMGroupManager.fetchGroupInfoFromServer] before calling this method.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从内存中获取群组描述。
+  ///
+  /// **Note**
+  /// 如需最新数据，需先从服务器获取：[EMGroupManager.fetchGroupInfoFromServer]。
+  ///
+  /// **Return** 群组描述。
+  /// ~end
+  final String? desc;
 
   /// ~english
   /// Gets the user ID of the group owner.
@@ -379,8 +419,12 @@ class EMGroup {
     return EMGroup(
       groupId: groupId,
       avatarUrl: avatarUrl,
+      // ignore: deprecated_member_use_from_same_package
       name: name,
+      groupName: name,
+      // ignore: deprecated_member_use_from_same_package
       description: description,
+      desc: description,
       owner: owner,
       announcement: announcement,
       memberCount: memberCount,
@@ -402,9 +446,11 @@ class EMGroup {
   Map toJson() {
     Map data = {};
     data.putIfNotNull("groupId", groupId);
-    data.putIfNotNull("name", name);
+    // ignore: deprecated_member_use_from_same_package
+    data.putIfNotNull("name", groupName ?? name);
     data.putIfNotNull("avatarUrl", avatarUrl);
-    data.putIfNotNull("desc", description);
+    // ignore: deprecated_member_use_from_same_package
+    data.putIfNotNull("desc", desc ?? description);
     data.putIfNotNull("owner", owner);
     data.putIfNotNull("announcement", announcement);
     data.putIfNotNull("memberCount", memberCount);

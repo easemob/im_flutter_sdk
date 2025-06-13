@@ -407,7 +407,7 @@
 - (void)createGroup:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     [EMClient.sharedClient.groupManager createGroupWithSubject:param[@"groupName"]
-                                                        avatar:param[@"avatar"]
+                                                        avatar:param[@"avatarUrl"]
                                                    description:param[@"desc"]
                                                       invitees:param[@"inviteMembers"]
                                                        message:param[@"inviteReason"]

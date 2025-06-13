@@ -248,7 +248,7 @@ class EMGroupManager {
   /// ~end
   Future<EMGroup> createGroup({
     String? groupName,
-    String? avatar,
+    String? avatarUrl,
     String? desc,
     List<String>? inviteMembers,
     String? inviteReason,
@@ -257,7 +257,7 @@ class EMGroupManager {
     options ??= EMGroupOptions();
     return Client.instance.groupManager.createGroup(
       groupName: groupName,
-      avatar: avatar,
+      avatarUrl: avatarUrl,
       desc: desc,
       inviteMembers: inviteMembers,
       inviteReason: inviteReason,
@@ -734,6 +734,8 @@ class EMGroupManager {
     return Client.instance.groupManager.unblockMembers(groupId, members);
   }
 
+  @Deprecated('Use [updateGroupName] instead')
+
   /// ~english
   /// Changes the group name.
   ///
@@ -765,6 +767,38 @@ class EMGroupManager {
   }
 
   /// ~english
+  /// Changes the group name.
+  ///
+  /// Only the group owner or admin can call this method.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [name] The new group name.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 修改群组名称。
+  ///
+  /// 仅群主和管理员可调用此方法。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [name] 修改后的群组名称。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 详见 [EMError]。
+  /// ~end
+  Future<void> updateGroupName(
+    String groupId,
+    String name,
+  ) async {
+    return Client.instance.groupManager.updateGroupName(groupId, name);
+  }
+
+  @Deprecated('Use [updateGroupDesc] instead')
+
+  /// ~english
   /// Changes the group description.
   ///
   /// Only the group owner or admin can call this method.
@@ -792,6 +826,36 @@ class EMGroupManager {
     String desc,
   ) async {
     return Client.instance.groupManager.changeGroupDescription(groupId, desc);
+  }
+
+  /// ~english
+  /// Changes the group description.
+  ///
+  /// Only the group owner or admin can call this method.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [desc] The new group description.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 修改群描述。
+  ///
+  /// 仅群主和管理员可调用此方法。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [desc] 修改后的群描述。
+  ///
+  /// **Throws**  如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
+  /// ~end
+  Future<void> updateGroupDesc(
+    String groupId,
+    String desc,
+  ) async {
+    return Client.instance.groupManager.updateGroupDesc(groupId, desc);
   }
 
   /// ~english
@@ -1762,7 +1826,7 @@ class EMGroupManager {
   /// ~end
   ///
 
-  Future<EMGroup> updateGroupAvatar({
+  Future<EMGroup> updateGroupAvatarUrl({
     required String groupId,
     required String avatarUrl,
   }) async {

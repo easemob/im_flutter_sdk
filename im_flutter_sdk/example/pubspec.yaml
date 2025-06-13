@@ -41,6 +41,10 @@ dependencies:
     path: ../
 
 
+dependency_overrides:
+
+
+
 
 dev_dependencies:
   flutter_test:
