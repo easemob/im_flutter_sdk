@@ -424,16 +424,26 @@
 - (void)getGroupSpecificationFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *groupId = param[@"groupId"];
-    BOOL fetchMembers = [param[@"fetchMembers"] boolValue];
-    [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
-                                                                 fetchMembers:fetchMembers
-                                                                   completion:^(EMGroup *aGroup, EMError *aError)
-     {
-        [weakSelf wrapperCallBack:result
-                      channelName:aChannelName
-                            error:aError
-                           object:[aGroup toJson]];
-    }];
+    if(param[@"fetchMembers"] != nil && [param[@"fetchMembers"] boolValue]) {
+        [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
+                                                                     fetchMembers:YES
+                                                                       completion:^(EMGroup *aGroup, EMError *aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:[aGroup toJson]];
+        }];
+    }else {
+        [EMClient.sharedClient.groupManager getGroupSpecificationFromServerWithId:groupId
+                                                                       completion:^(EMGroup *aGroup, EMError *aError)
+         {
+            [weakSelf wrapperCallBack:result
+                          channelName:aChannelName
+                                error:aError
+                               object:[aGroup toJson]];
+        }];
+    }
 }
 
 - (void)getGroupMemberListFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {

@@ -209,7 +209,7 @@ class ChatRoomManager with ManagerMixin {
   ///
   /// Param [roomId] The ID of the chat room to join.
   ///
-  /// Param [leaveOther] Whether to leave all the currently joined chat rooms when joining a chat room.
+  /// Param [leaveOtherRooms] Whether to leave all the currently joined chat rooms when joining a chat room.
   ///
   /// Param [ext] The extension information.
   ///
@@ -223,7 +223,7 @@ class ChatRoomManager with ManagerMixin {
   ///
   /// Param [roomId] 要加入的聊天室ID。
   ///
-  /// Parm [leaveOther] 加入聊天室时候，是否退出已加入的聊天室。
+  /// Parm [leaveOtherRooms] 加入聊天室时候，是否退出已加入的聊天室。
   ///
   /// Param [ext] 扩展信息。
   ///
@@ -231,7 +231,7 @@ class ChatRoomManager with ManagerMixin {
   /// ~end
   Future<void> joinChatRoom(
     String roomId, {
-    bool leaveOther = true,
+    bool leaveOtherRooms = false,
     String? ext,
   }) async {
     throw UnimplementedError("not implemented.");
@@ -308,7 +308,7 @@ class ChatRoomManager with ManagerMixin {
   /// ~end
   Future<EMChatRoom> fetchChatRoomInfoFromServer(
     String roomId, {
-    bool fetchMembers = false,
+    @Deprecated('') bool? fetchMembers,
   }) async {
     throw UnimplementedError("not implemented.");
   }

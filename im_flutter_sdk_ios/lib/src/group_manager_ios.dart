@@ -109,9 +109,10 @@ class GroupManagerIOS extends GroupManager {
   @override
   Future<EMGroup> fetchGroupInfoFromServer(
     String groupId, {
-    bool fetchMembers = false,
+    @Deprecated('') bool? fetchMembers,
   }) async {
-    Map req = {"groupId": groupId, "fetchMembers": fetchMembers};
+    Map req = {"groupId": groupId};
+    req.putIfNotNull("fetchMembers", fetchMembers);
     Map result = await GroupChannel.invokeMethod(
         ChatMethodKeys.getGroupSpecificationFromServer, req);
     try {

@@ -98,7 +98,7 @@ class EMChatRoomManager {
   ///
   /// Param [roomId] The ID of the chat room to join.
   ///
-  /// Param [leaveOther] Whether to leave all the currently joined chat rooms when joining a chat room.
+  /// Param [leaveOtherRooms] Whether to leave all the currently joined chat rooms when joining a chat room.
   ///
   /// Param [ext] The extension information.
   ///
@@ -112,7 +112,7 @@ class EMChatRoomManager {
   ///
   /// Param [roomId] 要加入的聊天室ID。
   ///
-  /// Parm [leaveOther] 加入聊天室时候，是否退出已加入的聊天室。
+  /// Parm [leaveOtherRooms] 加入聊天室时候，是否退出已加入的聊天室。
   ///
   /// Param [ext] 扩展信息。
   ///
@@ -120,12 +120,13 @@ class EMChatRoomManager {
   /// ~end
   Future<void> joinChatRoom(
     String roomId, {
-    bool leaveOther = true,
+    @Deprecated('') bool? leaveOther,
+    bool leaveOtherRooms = false,
     String? ext,
   }) async {
     return Client.instance.chatRoomManager.joinChatRoom(
       roomId,
-      leaveOther: leaveOther,
+      leaveOtherRooms: leaveOther ?? leaveOtherRooms,
       ext: ext,
     );
   }
@@ -204,10 +205,11 @@ class EMChatRoomManager {
   /// ~end
   Future<EMChatRoom> fetchChatRoomInfoFromServer(
     String roomId, {
-    bool fetchMembers = false,
+    @Deprecated('') bool? fetchMembers,
   }) async {
     return Client.instance.chatRoomManager.fetchChatRoomInfoFromServer(
       roomId,
+      // ignore: deprecated_member_use
       fetchMembers: fetchMembers,
     );
   }

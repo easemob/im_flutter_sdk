@@ -292,10 +292,11 @@ class EMGroupManager {
   /// ~end
   Future<EMGroup> fetchGroupInfoFromServer(
     String groupId, {
-    bool fetchMembers = false,
+    @Deprecated('') bool? fetchMembers,
   }) async {
     return Client.instance.groupManager.fetchGroupInfoFromServer(
       groupId,
+      // ignore: deprecated_member_use
       fetchMembers: fetchMembers,
     );
   }

@@ -294,10 +294,15 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     private void getGroupSpecificationFromServer(JSONObject param, String channelName, Result result)
             throws JSONException {
         String groupId = param.getString("groupId");
-        boolean fetchMembers = param.getBoolean("fetchMembers");
+        final boolean fetchMembers = param.optBoolean("fetchMembers", false);
         asyncRunnable(() -> {
             try {
-                EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId, fetchMembers);
+                EMGroup group;
+                if(fetchMembers) {
+                    group = EMClient.getInstance().groupManager().getGroupFromServer(groupId, true);
+                }else {
+                    group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
+                }
                 onSuccess(result, channelName, GroupHelper.toJson(group));
             } catch (HyphenateException e) {
                 onError(result, e);
