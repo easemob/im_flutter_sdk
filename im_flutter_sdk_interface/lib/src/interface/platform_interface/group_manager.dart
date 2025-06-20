@@ -464,7 +464,7 @@ class GroupManager with ManagerMixin {
   /// ~end
   Future<EMGroup> fetchGroupInfoFromServer(
     String groupId, {
-    bool fetchMembers = false,
+    @Deprecated('') bool? fetchMembers,
   }) async {
     throw UnimplementedError("not implemented");
   }

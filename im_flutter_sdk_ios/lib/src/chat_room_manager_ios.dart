@@ -10,7 +10,7 @@ class ChatRoomManagerIOS extends ChatRoomManager {
   ///
   /// Param [roomId] The ID of the chat room to join.
   ///
-  /// Param [leaveOther] Whether to leave all the currently joined chat rooms when joining a chat room.
+  /// Param [leaveOtherRooms] Whether to leave all the currently joined chat rooms when joining a chat room.
   ///
   /// Param [ext] The extension information.
   ///
@@ -24,7 +24,7 @@ class ChatRoomManagerIOS extends ChatRoomManager {
   ///
   /// Param [roomId] 要加入的聊天室ID。
   ///
-  /// Parm [leaveOther] 加入聊天室时候，是否退出已加入的聊天室。
+  /// Parm [leaveOtherRooms] 加入聊天室时候，是否退出已加入的聊天室。
   ///
   /// Param [ext] 扩展信息。
   ///
@@ -33,12 +33,12 @@ class ChatRoomManagerIOS extends ChatRoomManager {
   @override
   Future<void> joinChatRoom(
     String roomId, {
-    bool leaveOther = true,
+    bool leaveOtherRooms = false,
     String? ext,
   }) async {
     Map req = {
       "roomId": roomId,
-      "leaveOtherRooms": leaveOther,
+      "leaveOtherRooms": leaveOtherRooms,
     };
     req.putIfNotNull("ext", ext);
 
@@ -143,8 +143,10 @@ class ChatRoomManagerIOS extends ChatRoomManager {
   @override
   Future<EMChatRoom> fetchChatRoomInfoFromServer(
     String roomId, {
-    bool fetchMembers = false,
+    @Deprecated('') bool? fetchMembers,
   }) async {
+    Map req = {"roomId": roomId};
+    req.putIfNotNull("fetchMembers", fetchMembers);
     Map result = await ChatRoomChannel.invokeMethod(
         ChatMethodKeys.fetchChatRoomInfoFromServer,
         {"roomId": roomId, "fetchMembers": fetchMembers});
