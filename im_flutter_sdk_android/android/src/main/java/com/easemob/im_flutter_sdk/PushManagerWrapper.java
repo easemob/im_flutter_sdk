@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMPushConfigs;
@@ -118,16 +119,15 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void updatePushNickname(JSONObject params, String channelName,  Result result) throws JSONException {
-        String nickname = params.getString("nickname");
+        String username = EMClient.getInstance().getCurrentUser();
+        if (username == null) {
+            HyphenateException e = new HyphenateException(EMError.USER_NOT_LOGIN,"User not login");
+            onError(result, e);
+            return;
+        }
 
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().pushManager().updatePushNickname(nickname);
-                onSuccess(result, channelName, nickname);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+        String nickname = params.getString("nickname");
+        EMClient.getInstance().pushManager().asyncUpdatePushNickname(nickname, new EMWrapperCallBack(result, channelName, true));
     }
 
 

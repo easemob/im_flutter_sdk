@@ -137,6 +137,15 @@
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *nickname = param[@"nickname"];
+    if (!nickname || [nickname length] == 0) {
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+
     [EMClient.sharedClient.pushManager updatePushDisplayName:nickname
                                                   completion:^(NSString * _Nonnull aDisplayName, EMError * _Nonnull aError)
      {
