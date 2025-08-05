@@ -120,7 +120,7 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
 
     private void updatePushNickname(JSONObject params, String channelName,  Result result) throws JSONException {
         String username = EMClient.getInstance().getCurrentUser();
-        if (username == null) {
+        if (username == null || username.isEmpty()) {
             HyphenateException e = new HyphenateException(EMError.USER_NOT_LOGIN,"User not login");
             onError(result, e);
             return;
