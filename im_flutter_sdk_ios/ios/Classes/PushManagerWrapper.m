@@ -136,9 +136,19 @@
                channelName:(NSString *)aChannelName
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
+
+    if(!EMClient.sharedClient.isLoggedIn) {
+        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+
     NSString *nickname = param[@"nickname"];
     if (!nickname || [nickname length] == 0) {
-        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorInvalidParam];
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorUserIllegalArgument];
         [weakSelf wrapperCallBack:result
                       channelName:aChannelName
                             error:e
