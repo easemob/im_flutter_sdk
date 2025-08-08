@@ -294,7 +294,8 @@
 - (void)fetchChatroomInfoFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
     NSString *chatroomId = param[@"roomId"];
-    BOOL fetchMembers = [param[@"fetchMembers"] boolValue];
+    id v = param[@"fetchMembers"];
+    BOOL fetchMembers = [v isKindOfClass:[NSNumber class]] ? [v boolValue] : NO;
     
     [EMClient.sharedClient.roomManager getChatroomSpecificationFromServerWithId:chatroomId fetchMembers:fetchMembers completion:^(EMChatroom *aChatroom, EMError *aError) {
         [weakSelf wrapperCallBack:result
