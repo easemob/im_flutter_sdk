@@ -1210,7 +1210,9 @@
 - (void)modifyMessage:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
     NSString *msgId = param[@"msgId"];
-    EMMessageBody *body = [EMMessageBody fromJson:param[@"msgBody"]];
+    EMMessageBody *body = (param[@"msgBody"] && ![param[@"msgBody"] isKindOfClass:[NSNull class]])
+    ? [EMMessageBody fromJson:param[@"msgBody"]]
+    : nil;
     NSDictionary *ext = param[@"attributes"];
     [EMClient.sharedClient.chatManager modifyMessage:msgId
                                                 body:body

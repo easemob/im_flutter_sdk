@@ -1444,6 +1444,12 @@ class EMChatManager {
     EMMessageBody? msgBody,
     Map<String, dynamic>? attributes,
   }) async {
+    assert(
+      msgBody == null ||
+          msgBody.type == MessageType.TXT ||
+          msgBody.type == MessageType.CUSTOM,
+      'Only support EMTextMessageBody and EMCustomMessageBody',
+    );
     return Client.instance.chatManager.modifyMessage(
       messageId: messageId,
       msgBody: msgBody,
