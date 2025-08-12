@@ -1002,7 +1002,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
     private void modifyMessage(JSONObject params, String channelName, Result result) throws JSONException {
         String msgId = params.optString("msgId");
-        EMMessageBody body = MessageBodyHelper.fromJson(params.optJSONObject("msgBody"));
+        EMMessageBody body = (params.has("msgBody") && !params.isNull("msgBody"))
+                ? MessageBodyHelper.fromJson(params.optJSONObject("msgBody"))
+                : null;
         Map<String, Object> ext = new HashMap<>();
         if(params.has("attributes")) {
             JSONObject data = params.getJSONObject("attributes");
