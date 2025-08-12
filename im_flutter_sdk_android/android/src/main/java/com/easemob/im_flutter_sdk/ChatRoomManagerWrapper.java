@@ -159,7 +159,7 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
     private void fetchChatRoomInfoFromServer(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String roomId = param.getString("roomId");
-        boolean fetchMembers = param.getBoolean("fetchMembers");
+        boolean fetchMembers = param.optBoolean("fetchMembers", false);
         asyncRunnable(() -> {
             EMChatRoom room = null;
             try {
