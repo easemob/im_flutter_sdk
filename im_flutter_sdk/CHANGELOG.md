@@ -1,4 +1,10 @@
 
+## 4.15.1
+
+- 修复 `updatePushNickname` 在未登录和参数异常时导致的崩溃问题；
+- 修复 `fetchChatroomInfoFromServer` 在取消`fetchMembers`参数后导致的崩溃问题；
+- 修复 `modifyMessage` 在传入消息体为空时导致的崩溃问题；
+
 ## 4.15.0
 
 - 安卓依赖 SDK 升级到 4.15.0；
