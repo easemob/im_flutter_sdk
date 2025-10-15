@@ -263,6 +263,10 @@ class EMClient {
   /// Param [options] 配置，不可为空。
   /// ~end
   Future<void> init(EMOptions options) async {
+    assert(
+      options.appId?.isNotEmpty == true || options.appKey?.isNotEmpty == true,
+      'appId and appKey cannot both be empty',
+    );
     return Client.instance.init(options);
   }
 
