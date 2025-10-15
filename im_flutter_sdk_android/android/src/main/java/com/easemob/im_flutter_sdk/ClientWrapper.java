@@ -529,7 +529,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 }
                 else if (errorCode == 8) {
                     post(() -> channel.invokeMethod(MethodKey.onAppActiveNumberReachLimit, null));
-                }
+                }                
                 else {
                     post(() -> channel.invokeMethod(MethodKey.onDisconnected, null));
                 }
@@ -547,7 +547,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onLogout(int errorCode, EMLoginExtensionInfo info) {
-                if (errorCode == 206) {
+                if (errorCode == 206 || errorCode == 220) {
                     ListenerHandle.getInstance().clearHandle();
                     post(() -> channel.invokeMethod(MethodKey.onUserDidLoginFromOtherDevice, LoginExtensionInfoHelper.toJson(info)));
                 }
