@@ -1566,11 +1566,15 @@ class ChatManagerAndroid extends ChatManager {
 
     try {
       EMError.hasErrorFromResult(result);
-      return EMCursorResult<EMMessageReaction>.fromJson(
-          result[ChatMethodKeys.fetchReactionDetail],
-          dataItemCallback: (value) {
-        return EMMessageReaction.fromJson(value);
-      });
+      final data = result[ChatMethodKeys.fetchReactionDetail];
+      if (data != null) {
+        return EMCursorResult<EMMessageReaction>.fromJson(data,
+            dataItemCallback: (value) {
+          return EMMessageReaction.fromJson(value);
+        });
+      } else {
+        return EMCursorResult<EMMessageReaction>(null, []);
+      }
     } catch (e) {
       rethrow;
     }
