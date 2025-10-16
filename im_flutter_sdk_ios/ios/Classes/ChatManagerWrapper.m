@@ -1034,7 +1034,7 @@
                                               completion:^(EMMessageReaction * reaction, NSString * _Nullable cursor, EMError * error)
      {
         EMCursorResult *cursorResult = nil;
-        if (error == nil) {
+        if (error == nil && reaction != nil) {
             cursorResult = [EMCursorResult cursorResultWithList:@[reaction] andCursor:cursor];
         }
         
