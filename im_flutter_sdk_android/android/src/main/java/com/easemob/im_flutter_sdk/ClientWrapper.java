@@ -14,6 +14,8 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+import android.content.Context;
+
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
@@ -22,6 +24,7 @@ import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.util.DeviceUuidFactory;
 
 
 import org.json.JSONException;
@@ -116,6 +119,10 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.getToken.equals(call.method))
             {
                 getToken(param, call.method, result);
+            }
+            else if (MethodKey.getCurrentDeviceId.equals(call.method))
+            {
+                getCurrentDeviceId(param, call.method, result);
             }
             else if (MethodKey.isConnected.equals(call.method)) {
                 isConnected(param, call.method, result);
@@ -260,6 +267,31 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private void getToken(JSONObject param, String channelName, Result result) throws JSONException
     {
         asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().getAccessToken()));
+    }
+
+    private void getCurrentDeviceId(JSONObject param, String channelName, Result result) throws JSONException {
+        asyncRunnable(()->{
+            // 手动构建 Map 对象，避免 EMDeviceInfo 只读属性问题
+            Map<String, Object> deviceInfo = new HashMap<>();
+            deviceInfo.put("deviceName", "");
+            deviceInfo.put("resource", "");
+
+            Context context = EMClient.getInstance().getContext();
+
+            String deviceUuid = "";
+            if (context != null) {
+                try {
+                    DeviceUuidFactory factory = new DeviceUuidFactory(context);
+                    deviceUuid = factory.getDeviceUuid().toString();
+                } catch (Exception e) {
+                    // 获取失败时使用空字符串
+                }
+            }
+
+            deviceInfo.put("deviceUUID", deviceUuid);
+
+            onSuccess(result, channelName, deviceInfo);
+        });
     }
 
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {

@@ -17,6 +17,7 @@ class ChatMethodKeys {
 
   static const String getToken = "getToken";
   static const String getCurrentUser = "getCurrentUser";
+  static const String getCurrentDeviceId = "getCurrentDeviceId";
   static const String isLoggedInBefore = "isLoggedInBefore";
   static const String isConnected = "isConnected";
 
