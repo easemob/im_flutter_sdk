@@ -24,6 +24,7 @@ static NSString *const ChatGetLoggedInDevicesFromServer = @"getLoggedInDevicesFr
 
 static NSString *const ChatGetToken = @"getToken";
 static NSString *const ChatGetCurrentUser = @"getCurrentUser";
+static NSString *const ChatGetCurrentDeviceId = @"getCurrentDeviceId";
 static NSString *const ChatIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const ChatIsConnected = @"isConnected";
 

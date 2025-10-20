@@ -252,6 +252,21 @@ class EMClient {
   }
 
   /// ~english
+  /// Gets the current device ID.
+  ///
+  /// **Return** The current device ID.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取当前设备 ID。
+  ///
+  /// **Return** 当前设备 ID。
+  /// ~end
+  Future<String> getCurrentDeviceId() async {
+    return Client.instance.getCurrentDeviceId();
+  }
+
+  /// ~english
   /// Initializes the SDK.
   ///
   /// Param [options] The configurations: [EMOptions]. Ensure that you set this parameter.

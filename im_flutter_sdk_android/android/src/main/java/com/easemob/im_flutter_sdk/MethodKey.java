@@ -18,6 +18,7 @@ public class MethodKey {
 
     static final String getToken = "getToken";
     static final String getCurrentUser = "getCurrentUser";
+    static final String getCurrentDeviceId = "getCurrentDeviceId";
     static final String isLoggedInBefore = "isLoggedInBefore";
     static final String isConnected = "isConnected";
 
