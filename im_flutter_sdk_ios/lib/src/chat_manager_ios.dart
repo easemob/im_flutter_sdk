@@ -2145,4 +2145,36 @@ class ChatManagerIOS extends ChatManager {
       rethrow;
     }
   }
+
+  @override
+  Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
+    String? keyword,
+    int timestamp = -1,
+    String? sender,
+    EMSearchDirection direction = EMSearchDirection.Up,
+    MessageSearchScope scope = MessageSearchScope.All,
+  }) async {
+    Map req = {};
+    req.putIfNotNull("keyword", keyword);
+    req["timestamp"] = timestamp;
+    req.putIfNotNull("sender", sender);
+    req["direction"] = direction.index;
+    req["scope"] = scope.index;
+    Map result = await ChatChannel.invokeMethod(
+        ChatMethodKeys.loadConversationMessagesWithKeyword, req);
+    try {
+      EMError.hasErrorFromResult(result);
+      Map<String, List<String>> resultMap = {};
+      Map? data =
+          result[ChatMethodKeys.loadConversationMessagesWithKeyword];
+      if (data != null) {
+        data.forEach((key, value) {
+          resultMap[key] = List<String>.from(value);
+        });
+      }
+      return resultMap;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

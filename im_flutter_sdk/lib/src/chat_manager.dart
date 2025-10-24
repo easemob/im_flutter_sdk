@@ -1676,4 +1676,65 @@ class EMChatManager {
   Future<int> getAllMessageCount() async {
     return Client.instance.chatManager.getAllMessageCount();
   }
+
+  /// ~english
+  /// Loads conversation messages with the specified keyword from the local database.
+  ///
+  /// Returns a map of conversation IDs and their corresponding message ID lists.
+  /// The message ID list is sorted according to the `direction` parameter.
+  ///
+  /// Param [keyword] The search keyword. Set it to `null` to ignore this parameter.
+  ///
+  /// Param [timestamp] The starting Unix timestamp for the search, in milliseconds.
+  /// If the timestamp is negative, the SDK retrieves messages from the latest one.
+  ///
+  /// Param [sender] The message sender. Set it to `null` to ignore this parameter.
+  ///
+  /// Param [direction] The message search direction. See [EMSearchDirection].
+  /// - (Default) `Up`: Retrieve messages in the reverse chronological order of the timestamp.
+  /// - `Down`: Retrieve messages in the chronological order of the timestamp.
+  ///
+  /// Param [scope] The message search scope. See [MessageSearchScope].
+  ///
+  /// **Return** A map where the key is the conversation ID and the value is the list of message IDs.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 通过关键词从本地数据库中获取消息，返回会话 ID 及消息 ID 列表的映射关系。
+  ///
+  /// 消息ID列表按 `direction` 设置的方向排列。
+  ///
+  /// Param [keyword] 搜索关键词，设为 `null` 表示忽略该参数。
+  ///
+  /// Param [timestamp] 搜索开始的 Unix 时间戳。单位为毫秒。如果该参数设置的时间戳为负数，则从最新消息向前获取。
+  ///
+  /// Param [sender] 消息发送方。设为 `null` 表示忽略该参数。
+  ///
+  /// Param [direction] 消息搜索方向。详见 [EMSearchDirection]。
+  /// - （默认）`Up`：按消息时间戳的逆序获取。
+  /// - `Down`：按消息时间戳的顺序获取。
+  ///
+  /// Param [scope] 消息搜索范围。详见 [MessageSearchScope]。
+  ///
+  /// **Return** 会话 ID 及消息 ID 列表的映射关系。键为会话 ID，值为消息 ID 列表。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
+    String? keyword,
+    int timestamp = -1,
+    String? sender,
+    EMSearchDirection direction = EMSearchDirection.Up,
+    MessageSearchScope scope = MessageSearchScope.All,
+  }) async {
+    return Client.instance.chatManager.loadConversationMessagesWithKeyword(
+      keyword: keyword,
+      timestamp: timestamp,
+      sender: sender,
+      direction: direction,
+      scope: scope,
+    );
+  }
 }

@@ -236,6 +236,10 @@
     else if ([getMessageCount isEqualToString:call.method]) {
         [self getMessageCount:call.arguments channelName:call.method result:result];
     }
+    // 4.15.2
+    else if ([loadConversationMessagesWithKeyword isEqualToString:call.method]) {
+        [self loadConversationMessagesWithKeyword:call.arguments channelName:call.method result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -1561,6 +1565,32 @@
                       channelName:aChannelName
                             error:aError
                            object:@(count)];
+    }];
+}
+
+#pragma mark 4.15.2
+
+- (void)loadConversationMessagesWithKeyword:(NSDictionary *)param
+                                channelName:(NSString *)aChannelName
+                                     result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *keyword = ([param[@"keyword"] isKindOfClass:[NSNull class]] || param[@"keyword"] == nil) ? nil : param[@"keyword"];
+    long long timestamp = [param[@"timestamp"] longLongValue];
+    NSString *sender = ([param[@"sender"] isKindOfClass:[NSNull class]] || param[@"sender"] == nil) ? nil : param[@"sender"];
+    EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
+    EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"scope"] integerValue];
+
+    [EMClient.sharedClient.chatManager loadConversationMessagesWithKeyword:keyword
+                                                                timestamp:timestamp
+                                                                 fromUser:sender
+                                                          searchDirection:direction
+                                                                    scope:scope
+                                                               completion:^(NSDictionary<NSString *,NSArray<NSString *> *> * _Nullable aConversationMessages, EMError * _Nullable aError)
+     {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:aConversationMessages];
     }];
 }
 
