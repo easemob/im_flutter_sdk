@@ -375,4 +375,7 @@ public class MethodKey {
     static final String fetchGroupMembersInfo = "fetchGroupMembersInfo";
 
     static final String updateGroupAvatar = "updateGroupAvatar";
+
+    // 4.15.2
+    static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
 }

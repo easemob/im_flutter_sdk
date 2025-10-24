@@ -399,3 +399,6 @@ static NSString *const isMemberInChatRoomMuteList = @"isMemberInChatRoomMuteList
 static NSString *const fetchGroupMembersInfo = @"fetchGroupMembersInfo";
 
 static NSString *const updateGroupAvatar = @"updateGroupAvatar";
+
+// 4.15.2
+static NSString *const loadConversationMessagesWithKeyword = @"loadConversationMessagesWithKeyword";
