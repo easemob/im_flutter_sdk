@@ -716,7 +716,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void loadAllConversations(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
+        asyncHeavyWorkRunnable(()->{
             if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().isEmpty()) {
                 onSuccess(result, channelName, new ArrayList<>());
                 return;

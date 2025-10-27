@@ -21,6 +21,7 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
 
   private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
   private final ExecutorService cachedThreadPool = Executors.newFixedThreadPool(CPU_COUNT + 1);
+  private final ExecutorService heavyWorkCachedThreadPool = Executors.newFixedThreadPool(CPU_COUNT + 1);
 
   public Wrapper(FlutterPlugin.FlutterPluginBinding flutterPluginBinding, String channelName) {
     this.context = flutterPluginBinding.getApplicationContext();
@@ -40,6 +41,10 @@ public class Wrapper implements MethodChannel.MethodCallHandler {
 
   public void asyncRunnable(Runnable runnable) {
     cachedThreadPool.execute(runnable);
+  }
+
+  public void asyncHeavyWorkRunnable(Runnable runnable) {
+    heavyWorkCachedThreadPool.execute(runnable);
   }
 
   public void onSuccess(MethodChannel.Result result, String channelName, Object object) {
