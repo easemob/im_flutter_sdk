@@ -18,6 +18,7 @@ public class MethodKey {
 
     static final String getToken = "getToken";
     static final String getCurrentUser = "getCurrentUser";
+    static final String getCurrentDeviceId = "getCurrentDeviceId";
     static final String isLoggedInBefore = "isLoggedInBefore";
     static final String isConnected = "isConnected";
 
@@ -374,4 +375,7 @@ public class MethodKey {
     static final String fetchGroupMembersInfo = "fetchGroupMembersInfo";
 
     static final String updateGroupAvatar = "updateGroupAvatar";
+
+    // 4.15.2
+    static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
 }
