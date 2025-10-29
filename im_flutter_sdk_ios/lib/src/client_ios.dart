@@ -189,6 +189,18 @@ class ClientIOS extends Client {
     }
   }
 
+  @override
+  Future<String> getCurrentDeviceId() async {
+    Map result = await ClientChannel.invokeMethod(ChatMethodKeys.getCurrentDeviceId);
+    try {
+      EMError.hasErrorFromResult(result);
+      EMDeviceInfo deviceInfo = EMDeviceInfo.fromJson(result[ChatMethodKeys.getCurrentDeviceId]);
+      return deviceInfo.deviceUUID ?? '';
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// ~english
   /// Initializes the SDK.
   ///

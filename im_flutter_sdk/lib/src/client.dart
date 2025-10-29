@@ -252,6 +252,21 @@ class EMClient {
   }
 
   /// ~english
+  /// Gets the current device ID.
+  ///
+  /// **Return** The current device ID.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取当前设备 ID。
+  ///
+  /// **Return** 当前设备 ID。
+  /// ~end
+  Future<String> getCurrentDeviceId() async {
+    return Client.instance.getCurrentDeviceId();
+  }
+
+  /// ~english
   /// Initializes the SDK.
   ///
   /// Param [options] The configurations: [EMOptions]. Ensure that you set this parameter.
@@ -263,6 +278,10 @@ class EMClient {
   /// Param [options] 配置，不可为空。
   /// ~end
   Future<void> init(EMOptions options) async {
+    assert(
+      options.appId?.isNotEmpty == true || options.appKey?.isNotEmpty == true,
+      'appId and appKey cannot both be empty',
+    );
     return Client.instance.init(options);
   }
 

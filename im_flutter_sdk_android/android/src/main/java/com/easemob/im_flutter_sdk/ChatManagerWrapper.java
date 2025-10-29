@@ -164,6 +164,10 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.getMessageCount.equals(call.method)) {
                 getMessageCount(params, call.method, result);
             }
+            // 4.15.2
+            else if (MethodKey.loadConversationMessagesWithKeyword.equals(call.method)) {
+                loadConversationMessagesWithKeyword(params, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -712,7 +716,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void loadAllConversations(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
+        asyncHeavyWorkRunnable(()->{
             if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().isEmpty()) {
                 onSuccess(result, channelName, new ArrayList<>());
                 return;
@@ -1291,6 +1295,39 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 updateObject(object);
             }
         } );
+    }
+
+    // 4.15.2
+    private void loadConversationMessagesWithKeyword(JSONObject params, String channelName, Result result) throws JSONException {
+        String keyword = null;
+        if (params.has("keyword") && !params.isNull("keyword")) {
+            keyword = params.getString("keyword");
+        }
+        long timestamp = params.getLong("timestamp");
+        String sender = null;
+        if (params.has("sender") && !params.isNull("sender")) {
+            sender = params.getString("sender");
+        }
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        EMConversation.EMMessageSearchScope scope = EMConversation.EMMessageSearchScope.values()[params.getInt("scope")];
+
+        EMClient.getInstance().chatManager().asyncLoadConversationMessagesWithKeyword(
+            keyword, 
+            timestamp, 
+            sender, 
+            direction, 
+            scope,
+            new EMValueWrapperCallBack<Map<String, List<String>>>(result, channelName) {
+                @Override
+                public void onSuccess(Map<String, List<String>> object) {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    for (Map.Entry<String, List<String>> entry : object.entrySet()) {
+                        resultMap.put(entry.getKey(), entry.getValue());
+                    }
+                    updateObject(resultMap);
+                }
+            }
+        );
     }
 
 }
