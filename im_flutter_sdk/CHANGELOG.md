@@ -1,4 +1,12 @@
 
+## 4.15.2
+- 修复被登出时,返回220的错误码无法触发回调的问题;
+- 修复 `fetchReactionDetail` 获取不存在的Reaction时崩溃的问题;
+- 新增 `getCurrentDeviceId` API ;
+- 新增 `loadConversationMessagesWithKeyword` API ;
+- 修复安卓上频繁调用 `EMConversation` 中的 API 时, 导致的ANR问题;
+
+
 ## 4.15.1
 
 - 修复 `updatePushNickname` 在未登录和参数异常时导致的崩溃问题；
