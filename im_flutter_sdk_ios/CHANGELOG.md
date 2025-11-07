@@ -1,3 +1,8 @@
+## 4.15.2
+- 修复 `fetchReactionDetail` 获取不存在的Reaction时崩溃的问题;
+- 新增 `getCurrentDeviceId` API ;
+- 新增 `loadConversationMessagesWithKeyword` API ;
+
 ## 4.15.1
 
 ## 4.15.0
