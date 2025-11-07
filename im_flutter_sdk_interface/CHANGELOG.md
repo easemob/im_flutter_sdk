@@ -1,3 +1,7 @@
+## 4.15.2
+- 新增 `getCurrentDeviceId` API ;
+- 新增 `loadConversationMessagesWithKeyword` API ;
+
 ## 4.15.1
 
 ## 4.15.0

@@ -1,3 +1,10 @@
+## 4.15.2
+- 修复被登出时,返回220的错误码无法触发回调的问题;
+- 修复 `fetchReactionDetail` 获取不存在的Reaction时崩溃的问题;
+- 新增 `getCurrentDeviceId` API ;
+- 新增 `loadConversationMessagesWithKeyword` API ;
+- 修复频繁调用会话API时, 导致的ANR问题;
+
 ## 4.15.1
 
 ## 4.15.0
