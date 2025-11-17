@@ -1,4 +1,4 @@
-import '../internal/inner_headers.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 /// ~english
 /// The push configuration class.

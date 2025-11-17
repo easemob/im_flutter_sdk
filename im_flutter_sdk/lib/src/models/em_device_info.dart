@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 
 /// ~english
 /// The EMDeviceInfo class, which contains the multi-device information.

@@ -1,5 +1,3 @@
-// ignore_for_file: constant_identifier_names
-
 import 'package:flutter/services.dart';
 
 const channelPrefix = 'com.chat.im';
