@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
-import '../internal/inner_headers.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 
 /// ~english
 /// The parameter configuration class for pulling historical messages from the server.

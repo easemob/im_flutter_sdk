@@ -1,5 +1,4 @@
 export 'chat_method_keys.dart';
-export 'em_channel_manager.dart';
 export 'em_event_keys.dart';
 export 'em_push_config.dart';
 export 'em_transform_tools.dart';
@@ -30,20 +29,3 @@ export '../models/recall_message_info.dart';
 export '../models/message_pin_info.dart';
 export '../models/login_extension_info.dart';
 export '../models/message_search_options.dart';
-export '../tools/em_extension.dart';
-export '../tools/em_log.dart';
-
-export '../interface/platform_interface/chat_manager.dart';
-export '../interface/platform_interface/chat_room_manager.dart';
-export '../interface/platform_interface/chat_thread_manager.dart';
-export '../interface/platform_interface/client.dart';
-export '../interface/platform_interface/contact_manager.dart';
-export '../interface/platform_interface/group_manager.dart';
-export '../interface/platform_interface/progress_manager.dart';
-
-export '../interface/platform_interface/presence_manager.dart';
-export '../interface/platform_interface/push_manager.dart';
-export '../interface/platform_interface/user_info_manager.dart';
-export '../event_handler/manager_event_handler.dart';
-export '../tools/chat_area_code.dart';
-export '../tools/em_tools.dart';

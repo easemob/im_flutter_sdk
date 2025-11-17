@@ -1,7 +1,7 @@
 import 'dart:core';
 import 'package:flutter/services.dart';
-
-import '../internal/inner_headers.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 
 /// ~english
 /// The conversation class, indicating a one-to-one chat, a group chat, or a conversation chat. It contains the messages that are sent and received within the conversation.
@@ -933,7 +933,7 @@ class EMConversation {
     req['count'] = options.count;
     req['direction'] = options.direction.index;
     req.putIfNotNull("from", options.from);
-    req['types'] = options.types.map((e) => e.index).toList();
+    req['types'] = options.types.map((e) => (e).index).toList();
     Map result = await _emConversationChannel.invokeMethod(
         ChatMethodKeys.conversationSearchMsgsByOptions, req);
     try {

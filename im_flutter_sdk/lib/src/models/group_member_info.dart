@@ -1,4 +1,4 @@
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 class GroupMemberInfo {
   final String userId;

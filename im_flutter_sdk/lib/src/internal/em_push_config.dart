@@ -1,4 +1,4 @@
-import 'inner_headers.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 
 /// ~english
 /// The push configuration class, which contains the push configuration information, such as the push style.

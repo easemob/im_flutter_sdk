@@ -4,7 +4,7 @@ import 'package:im_flutter_sdk_interface/src/interface/method_channel/default_ch
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import '../../internal/inner_headers.dart';
+import '../../../../../im_flutter_sdk/lib/src/internal/inner_headers.dart';
 
 abstract class Client extends PlatformInterface with ManagerMixin {
   static final Object _token = Object();

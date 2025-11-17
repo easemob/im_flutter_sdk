@@ -1,4 +1,5 @@
-import '../internal/inner_headers.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 
 class RecallMessageInfo {
   factory RecallMessageInfo.fromJson(Map map) {
