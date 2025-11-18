@@ -1,4 +1,5 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -9,6 +10,9 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// 用户属性类，用于获取和更新用户属性。
 /// ~end
 class EMUserInfoManager {
+  // The map of effective contacts.
+  final Map<String, EMUserInfo> _effectiveUserInfoMap = {};
+
   /// ~english
   /// Modifies the user attributes of the current user.
   ///
@@ -34,7 +38,7 @@ class EMUserInfoManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
-  //
+  ///
   /// ~chinese
   /// 修改当前用户的属性信息。
   ///
@@ -61,6 +65,7 @@ class EMUserInfoManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<EMUserInfo> updateUserInfo({
     String? nickname,
     String? avatarUrl,
@@ -71,16 +76,27 @@ class EMUserInfoManager {
     String? birth,
     String? ext,
   }) async {
-    return Client.instance.userInfoManager.updateUserInfo(
-      nickname: nickname,
-      avatarUrl: avatarUrl,
-      mail: mail,
-      phone: phone,
-      gender: gender,
-      sign: sign,
-      birth: birth,
-      ext: ext,
-    );
+    try {
+      Map req = {};
+      req.putIfNotNull("nickName", nickname);
+      req.putIfNotNull("avatarUrl", avatarUrl);
+      req.putIfNotNull("mail", mail);
+      req.putIfNotNull("phone", phone);
+      req.putIfNotNull("gender", gender);
+      req.putIfNotNull("sign", sign);
+      req.putIfNotNull("birth", birth);
+      req.putIfNotNull("ext", ext);
+
+      Map result = await Client.instance.userInfoManager
+          .callNativeMethod(ChatMethodKeys.updateOwnUserInfo, req);
+      EMError.hasErrorFromResult(result);
+      EMUserInfo info =
+          EMUserInfo.fromJson(result[ChatMethodKeys.updateOwnUserInfo]);
+      _effectiveUserInfoMap[info.userId] = info;
+      return info;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -102,8 +118,25 @@ class EMUserInfoManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<EMUserInfo?> fetchOwnInfo({int expireTime = 0}) async {
-    return Client.instance.userInfoManager.fetchOwnInfo(expireTime: expireTime);
+    try {
+      String? currentUser = await EMClient.getInstance.getCurrentUserId();
+      if (currentUser == null) {
+        throw EMError.fromJson({
+          "code": 201,
+          "description": "Not login",
+        });
+      }
+      Map<String, EMUserInfo> ret = await fetchUserInfoById(
+        [currentUser],
+        expireTime: expireTime,
+      );
+      _effectiveUserInfoMap[ret.values.first.userId] = ret.values.first;
+      return ret.values.first;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -129,12 +162,44 @@ class EMUserInfoManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<Map<String, EMUserInfo>> fetchUserInfoById(
     List<String> userIds, {
     int expireTime = 0,
   }) async {
-    return Client.instance.userInfoManager
-        .fetchUserInfoById(userIds, expireTime: expireTime);
+    try {
+      List<String> needReqIds = userIds
+          .where((element) =>
+              !_effectiveUserInfoMap.containsKey(element) ||
+              (_effectiveUserInfoMap.containsKey(element) &&
+                  DateTime.now().millisecondsSinceEpoch -
+                          _effectiveUserInfoMap[element]!.expireTime >
+                      expireTime * 1000))
+          .toList();
+      Map<String, EMUserInfo> resultMap = {};
+
+      for (var element in userIds) {
+        if (_effectiveUserInfoMap.containsKey(element)) {
+          resultMap[element] = _effectiveUserInfoMap[element]!;
+        }
+      }
+      if (needReqIds.isEmpty) {
+        return resultMap;
+      }
+
+      Map req = {'userIds': needReqIds};
+      Map result = await Client.instance.userInfoManager
+          .callNativeMethod(ChatMethodKeys.fetchUserInfoById, req);
+      EMError.hasErrorFromResult(result);
+      result[ChatMethodKeys.fetchUserInfoById]?.forEach((key, value) {
+        EMUserInfo eUserInfo = EMUserInfo.fromJson(value);
+        resultMap[key] = eUserInfo;
+        _effectiveUserInfoMap[key] = eUserInfo;
+      });
+      return resultMap;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -144,7 +209,8 @@ class EMUserInfoManager {
   /// ~chinese
   /// 清理内存中的用户属性。
   /// ~end
+
   void clearUserInfoCache() {
-    return Client.instance.userInfoManager.clearUserInfoCache();
+    _effectiveUserInfoMap.clear();
   }
 }

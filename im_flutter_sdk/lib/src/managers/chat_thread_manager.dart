@@ -1,4 +1,5 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -9,6 +10,8 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// 子区管理类。
 /// ~end
 class EMChatThreadManager {
+  final Map<String, EMChatThreadEventHandler> _eventHandlesMap = {};
+
   /// ~english
   /// Adds the chat thread event handler. After calling this method, you can handle for chat thread event when they arrive.
   ///
@@ -28,8 +31,7 @@ class EMChatThreadManager {
     String identifier,
     EMChatThreadEventHandler handler,
   ) {
-    return Client.instance.chatThreadManager
-        .addEventHandler(identifier, handler);
+    _eventHandlesMap[identifier] = handler;
   }
 
   /// ~english
@@ -44,7 +46,7 @@ class EMChatThreadManager {
   /// Param [identifier] 需要移除事件监听的 ID。
   /// ~end
   void removeEventHandler(String identifier) {
-    return Client.instance.chatThreadManager.removeEventHandler(identifier);
+    _eventHandlesMap.remove(identifier);
   }
 
   /// ~english
@@ -63,7 +65,7 @@ class EMChatThreadManager {
   /// **Return** Thread 事件监听。
   /// ~end
   EMChatThreadEventHandler? getEventHandler(String identifier) {
-    return Client.instance.chatThreadManager.getEventHandler(identifier);
+    return _eventHandlesMap[identifier];
   }
 
   /// ~english
@@ -74,7 +76,7 @@ class EMChatThreadManager {
   /// 清除所有 Thread 监听。
   /// ~end
   void clearEventHandlers() {
-    return Client.instance.chatThreadManager.clearEventHandlers();
+    _eventHandlesMap.clear();
   }
 
   /// ~english
@@ -96,12 +98,22 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMChatThread?> fetchChatThread({
     required String chatThreadId,
   }) async {
-    return Client.instance.chatThreadManager.fetchChatThread(
-      chatThreadId: chatThreadId,
-    );
+    try {
+      Map req = {"threadId": chatThreadId};
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.fetchChatThreadDetail,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return EMChatThread.fromJson(
+          result[ChatMethodKeys.fetchChatThreadDetail]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -127,14 +139,25 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreads({
     String? cursor,
     int limit = 20,
   }) async {
-    return Client.instance.chatThreadManager.fetchJoinedChatThreads(
-      cursor: cursor,
-      limit: limit,
-    );
+    try {
+      Map req = {"pageSize": limit};
+      req.putIfNotNull("cursor", cursor);
+      Map result = await Client.instance.chatThreadManager
+          .callNativeMethod(ChatMethodKeys.fetchJoinedChatThreads, req);
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(
+          result[ChatMethodKeys.fetchJoinedChatThreads],
+          dataItemCallback: (map) {
+        return EMChatThread.fromJson(map);
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -164,16 +187,29 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMCursorResult<EMChatThread>> fetchChatThreadsWithParentId({
     required String parentId,
     String? cursor,
     int limit = 20,
   }) async {
-    return Client.instance.chatThreadManager.fetchChatThreadsWithParentId(
-      parentId: parentId,
-      cursor: cursor,
-      limit: limit,
-    );
+    try {
+      Map req = {
+        "parentId": parentId,
+        "pageSize": limit,
+      };
+      req.putIfNotNull("cursor", cursor);
+      Map result = await Client.instance.chatThreadManager
+          .callNativeMethod(ChatMethodKeys.fetchChatThreadsWithParentId, req);
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(
+          result[ChatMethodKeys.fetchChatThreadsWithParentId],
+          dataItemCallback: (map) {
+        return EMChatThread.fromJson(map);
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -203,16 +239,29 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMCursorResult<EMChatThread>> fetchJoinedChatThreadsWithParentId({
     required String parentId,
     String? cursor,
     int limit = 20,
   }) async {
-    return Client.instance.chatThreadManager.fetchJoinedChatThreadsWithParentId(
-      parentId: parentId,
-      cursor: cursor,
-      limit: limit,
-    );
+    try {
+      Map req = {
+        "parentId": parentId,
+        "pageSize": limit,
+      };
+      req.putIfNotNull("cursor", cursor);
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+          ChatMethodKeys.fetchJoinedChatThreadsWithParentId, req);
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(
+          result[ChatMethodKeys.fetchJoinedChatThreadsWithParentId],
+          dataItemCallback: (map) {
+        return EMChatThread.fromJson(map);
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -247,16 +296,29 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMCursorResult<String>> fetchChatThreadMembers({
     required String chatThreadId,
     String? cursor,
     int limit = 20,
   }) async {
-    return Client.instance.chatThreadManager.fetchChatThreadMembers(
-      chatThreadId: chatThreadId,
-      cursor: cursor,
-      limit: limit,
-    );
+    try {
+      Map req = {
+        "pageSize": limit,
+        "threadId": chatThreadId,
+      };
+      req.putIfNotNull("cursor", cursor);
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.fetchChatThreadMember,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<String>.fromJson(
+          result[ChatMethodKeys.fetchChatThreadMember],
+          dataItemCallback: (obj) => obj);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -278,12 +340,33 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<Map<String, EMMessage>> fetchLatestMessageWithChatThreads({
     required List<String> chatThreadIds,
   }) async {
-    return Client.instance.chatThreadManager.fetchLatestMessageWithChatThreads(
-      chatThreadIds: chatThreadIds,
-    );
+    try {
+      Map req = {
+        "threadIds": chatThreadIds,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.fetchLastMessageWithChatThreads,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      Map? map = result[ChatMethodKeys.fetchLastMessageWithChatThreads];
+      Map<String, EMMessage> ret = {};
+      if (map == null) {
+        return ret;
+      }
+
+      for (var key in map.keys) {
+        Map<String, dynamic> msgMap = map[key];
+        ret[key] = EMMessage.fromJson(msgMap);
+      }
+      return ret;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -310,14 +393,24 @@ class EMChatThreadManager {
   ///
   /// **Throws** A description of the exception. See [EMError].
   /// ~end
+
   Future<void> removeMemberFromChatThread({
     required String memberId,
     required String chatThreadId,
   }) async {
-    return Client.instance.chatThreadManager.removeMemberFromChatThread(
-      memberId: memberId,
-      chatThreadId: chatThreadId,
-    );
+    try {
+      Map req = {
+        "memberId": memberId,
+        "threadId": chatThreadId,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.removeMemberFromChatThread,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -348,14 +441,24 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> updateChatThreadName({
     required String chatThreadId,
     required String newName,
   }) async {
-    return Client.instance.chatThreadManager.updateChatThreadName(
-      chatThreadId: chatThreadId,
-      newName: newName,
-    );
+    try {
+      Map req = {
+        "name": newName,
+        "threadId": chatThreadId,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.updateChatThreadSubject,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -402,16 +505,27 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMChatThread> createChatThread({
     required String name,
     required String messageId,
     required String parentId,
   }) async {
-    return Client.instance.chatThreadManager.createChatThread(
-      name: name,
-      messageId: messageId,
-      parentId: parentId,
-    );
+    try {
+      Map req = {
+        "name": name,
+        "msgId": messageId,
+        "parentId": parentId,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.createChatThread,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return EMChatThread.fromJson(result[ChatMethodKeys.createChatThread]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -446,12 +560,23 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<EMChatThread> joinChatThread({
     required String chatThreadId,
   }) async {
-    return Client.instance.chatThreadManager.joinChatThread(
-      chatThreadId: chatThreadId,
-    );
+    try {
+      Map req = {
+        "threadId": chatThreadId,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.joinChatThread,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return EMChatThread.fromJson(result[ChatMethodKeys.joinChatThread]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -479,12 +604,22 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> leaveChatThread({
     required String chatThreadId,
   }) async {
-    return Client.instance.chatThreadManager.leaveChatThread(
-      chatThreadId: chatThreadId,
-    );
+    try {
+      Map req = {
+        "threadId": chatThreadId,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.leaveChatThread,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -516,11 +651,21 @@ class EMChatThreadManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> destroyChatThread({
     required String chatThreadId,
   }) async {
-    return Client.instance.chatThreadManager.destroyChatThread(
-      chatThreadId: chatThreadId,
-    );
+    try {
+      Map req = {
+        "threadId": chatThreadId,
+      };
+      Map result = await Client.instance.chatThreadManager.callNativeMethod(
+        ChatMethodKeys.destroyChatThread,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 }

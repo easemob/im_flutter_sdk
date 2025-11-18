@@ -1,4 +1,6 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -31,9 +33,14 @@ class EMClient {
 
   final EMChatThreadManager chatThreadManager = EMChatThreadManager();
 
-  String? get currentUserId => Client.instance.currentUserId;
+  String? get currentUserId => _currentUserId;
+  String? _currentUserId;
 
-  EMOptions? get options => Client.instance.options;
+  EMOptions? get options => _options;
+  EMOptions? _options;
+
+  final Map<String, EMConnectionEventHandler> _connectionHandlers = {};
+  final Map<String, EMMultiDeviceEventHandler> _multiDeviceHandlers = {};
 
   /// ~english
   /// Adds the connection event handler. After calling this method, you can handle new connection events when they arrive.
@@ -54,7 +61,7 @@ class EMClient {
     String identifier,
     EMConnectionEventHandler handler,
   ) {
-    return Client.instance.addConnectionEventHandler(identifier, handler);
+    _connectionHandlers[identifier] = handler;
   }
 
   /// ~english
@@ -69,7 +76,7 @@ class EMClient {
   /// Param [identifier] 监听事件对应 ID。
   /// ~end
   void removeConnectionEventHandler(String identifier) {
-    return Client.instance.removeConnectionEventHandler(identifier);
+    _connectionHandlers.remove(identifier);
   }
 
   /// ~english
@@ -88,7 +95,7 @@ class EMClient {
   /// **Return** 连接状态监听。
   /// ~end
   EMConnectionEventHandler? getConnectionEventHandler(String identifier) {
-    return Client.instance.getConnectionEventHandler(identifier);
+    return _connectionHandlers[identifier];
   }
 
   /// ~english
@@ -99,7 +106,7 @@ class EMClient {
   /// 清除所以连接状态监听。
   /// ~end
   void clearConnectionEventHandlers() {
-    return Client.instance.clearConnectionEventHandlers();
+    return _connectionHandlers.clear();
   }
 
   /// ~english
@@ -121,7 +128,7 @@ class EMClient {
     String identifier,
     EMMultiDeviceEventHandler handler,
   ) {
-    return Client.instance.addMultiDeviceEventHandler(identifier, handler);
+    _multiDeviceHandlers[identifier] = handler;
   }
 
   /// ~english
@@ -136,7 +143,7 @@ class EMClient {
   /// Param [identifier] 要移除多设备事件监听对应的 ID。
   /// ~end
   void removeMultiDeviceEventHandler(String identifier) {
-    return Client.instance.removeMultiDeviceEventHandler(identifier);
+    _multiDeviceHandlers.remove(identifier);
   }
 
   /// ~english
@@ -155,7 +162,7 @@ class EMClient {
   /// **Return** 多设备事件监听。
   /// ~end
   EMMultiDeviceEventHandler? getMultiDeviceEventHandler(String identifier) {
-    return Client.instance.getMultiDeviceEventHandler(identifier);
+    return _multiDeviceHandlers[identifier];
   }
 
   /// ~english
@@ -166,7 +173,7 @@ class EMClient {
   /// 清除所有多设备事件监听。
   /// ~end
   void clearMultiDeviceEventHandlers() {
-    return Client.instance.clearMultiDeviceEventHandlers();
+    return _multiDeviceHandlers.clear();
   }
 
   /// ~english
@@ -176,12 +183,16 @@ class EMClient {
   /// ~end
   ///
   /// ~chinese
-  /// /// 开始回调通知。
+  /// 开始回调通知。
   ///
   /// 当UI准备好后调用，调用之后才能收到 [EMChatRoomEventHandler], [EMContactEventHandler], [EMGroupEventHandler] 监听。
   /// ~end
   Future<void> startCallback() async {
-    return Client.instance.startCallback();
+    try {
+      await Client.instance.callNativeMethod(ChatMethodKeys.startCallback);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -199,7 +210,15 @@ class EMClient {
   /// - `false`：否。
   /// ~end
   Future<bool> isConnected() async {
-    return Client.instance.isConnected();
+    try {
+      Map result = await Client.instance.callNativeMethod(
+        ChatMethodKeys.isConnected,
+      );
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isConnected);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -220,7 +239,14 @@ class EMClient {
   ///   - `false`：否。
   /// ~end
   Future<bool> isLoginBefore() async {
-    return Client.instance.isLoginBefore();
+    try {
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.isLoggedInBefore);
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isLoggedInBefore);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -235,7 +261,20 @@ class EMClient {
   /// **Return** 当前登录的用户 ID。
   /// ~end
   Future<String?> getCurrentUserId() async {
-    return Client.instance.getCurrentUserId();
+    try {
+      Map result =
+          await Client.instance.callNativeMethod(ChatMethodKeys.getCurrentUser);
+      EMError.hasErrorFromResult(result);
+      _currentUserId = result[ChatMethodKeys.getCurrentUser];
+      if (_currentUserId != null) {
+        if (_currentUserId!.isEmpty) {
+          _currentUserId = null;
+        }
+      }
+      return _currentUserId;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -248,7 +287,14 @@ class EMClient {
   /// **Return** 当前登录账号的 Token。
   /// ~end
   Future<String> getAccessToken() async {
-    return Client.instance.getAccessToken();
+    try {
+      Map result =
+          await Client.instance.callNativeMethod(ChatMethodKeys.getToken);
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.getToken];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -263,7 +309,16 @@ class EMClient {
   /// **Return** 当前设备 ID。
   /// ~end
   Future<String> getCurrentDeviceId() async {
-    return Client.instance.getCurrentDeviceId();
+    try {
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.getCurrentDeviceId);
+      EMError.hasErrorFromResult(result);
+      EMDeviceInfo deviceInfo =
+          EMDeviceInfo.fromJson(result[ChatMethodKeys.getCurrentDeviceId]);
+      return deviceInfo.deviceUUID ?? '';
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -278,11 +333,17 @@ class EMClient {
   /// Param [options] 配置，不可为空。
   /// ~end
   Future<void> init(EMOptions options) async {
-    assert(
-      options.appId?.isNotEmpty == true || options.appKey?.isNotEmpty == true,
-      'appId and appKey cannot both be empty',
-    );
-    return Client.instance.init(options);
+    // _updataHandler();
+
+    try {
+      _options = options;
+      EMLog.v('init: $options');
+      await Client.instance
+          .callNativeMethod(ChatMethodKeys.init, options.toJson());
+      _currentUserId = await getCurrentUserId();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -308,7 +369,15 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> createAccount(String userId, String password) async {
-    return Client.instance.createAccount(userId, password);
+    try {
+      EMLog.v('create account: $userId : $password');
+      Map req = {'userId': userId, 'password': password};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.createAccount, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use [loginWithToken or loginWithPassword] instead')
@@ -350,7 +419,20 @@ class EMClient {
     String pwdOrToken, [
     bool isPassword = true,
   ]) async {
-    return Client.instance.login(userId, pwdOrToken, isPassword);
+    try {
+      EMLog.v('login: $userId : $pwdOrToken, isPassword: $isPassword');
+      Map req = {
+        'userId': userId,
+        'pwdOrToken': pwdOrToken,
+        'isPassword': isPassword
+      };
+      Map result =
+          await Client.instance.callNativeMethod(ChatMethodKeys.login, req);
+      EMError.hasErrorFromResult(result);
+      _currentUserId = userId;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use [loginWithToken] instead')
@@ -380,7 +462,11 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> loginWithAgoraToken(String userId, String agoraToken) async {
-    return Client.instance.loginWithAgoraToken(userId, agoraToken);
+    try {
+      return login(userId, agoraToken, false);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -413,7 +499,12 @@ class EMClient {
     String userId,
     String token,
   ) async {
-    return Client.instance.loginWithToken(userId, token);
+    try {
+      // ignore: deprecated_member_use_from_same_package
+      return login(userId, token, false);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -446,7 +537,12 @@ class EMClient {
     String userId,
     String password,
   ) async {
-    return Client.instance.loginWithPassword(userId, password);
+    try {
+      // ignore: deprecated_member_use_from_same_package
+      return login(userId, password, true);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -467,7 +563,14 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> renewAgoraToken(String agoraToken) async {
-    return Client.instance.renewAgoraToken(agoraToken);
+    try {
+      Map req = {"agora_token": agoraToken};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.renewToken, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -493,7 +596,16 @@ class EMClient {
   Future<void> logout([
     bool unbindDeviceToken = true,
   ]) async {
-    return Client.instance.logout(unbindDeviceToken);
+    try {
+      EMLog.v('logout unbindDeviceToken: $unbindDeviceToken');
+      Map req = {'unbindToken': unbindDeviceToken};
+      Map result =
+          await Client.instance.callNativeMethod(ChatMethodKeys.logout, req);
+      EMError.hasErrorFromResult(result);
+      _clearAllInfo();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -519,7 +631,16 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<bool> changeAppKey({required String newAppKey}) async {
-    return Client.instance.changeAppKey(newAppKey: newAppKey);
+    try {
+      EMLog.v('changeAppKey: $newAppKey');
+      Map req = {'appKey': newAppKey};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.changeAppKey, req);
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.changeAppKey);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -545,7 +666,16 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<bool> changeAppId({required String newAppId}) async {
-    return Client.instance.changeAppId(newAppId: newAppId);
+    try {
+      EMLog.v('newAppId: $newAppId');
+      Map req = {'appId': newAppId};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.changeAppId, req);
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.changeAppKey);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -566,7 +696,15 @@ class EMClient {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<String> compressLogs() async {
-    return Client.instance.compressLogs();
+    try {
+      EMLog.v('compressLogs:');
+      Map result =
+          await Client.instance.callNativeMethod(ChatMethodKeys.compressLogs);
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.compressLogs];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use [fetchLoggedInDevices] instead')
@@ -596,10 +734,19 @@ class EMClient {
   /// ~end
   Future<List<EMDeviceInfo>> getLoggedInDevicesFromServer(
       {required String userId, required String password}) async {
-    return Client.instance.getLoggedInDevicesFromServer(
-      userId: userId,
-      password: password,
-    );
+    try {
+      Map req = {'userId': userId, 'password': password};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.getLoggedInDevicesFromServer, req);
+      EMError.hasErrorFromResult(result);
+      List<EMDeviceInfo> list = [];
+      result[ChatMethodKeys.getLoggedInDevicesFromServer]?.forEach((info) {
+        list.add(EMDeviceInfo.fromJson(info));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -634,11 +781,19 @@ class EMClient {
     required String pwdOrToken,
     bool isPwd = true,
   }) async {
-    return Client.instance.fetchLoggedInDevices(
-      userId: userId,
-      pwdOrToken: pwdOrToken,
-      isPwd: isPwd,
-    );
+    try {
+      Map req = {'userId': userId, 'password': pwdOrToken, 'isPwd': isPwd};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.getLoggedInDevicesFromServer, req);
+      EMError.hasErrorFromResult(result);
+      List<EMDeviceInfo> list = [];
+      result[ChatMethodKeys.getLoggedInDevicesFromServer]?.forEach((info) {
+        list.add(EMDeviceInfo.fromJson(info));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -670,12 +825,20 @@ class EMClient {
     required String resource,
     bool isPwd = true,
   }) async {
-    return Client.instance.kickDevice(
-      userId: userId,
-      pwdOrToken: pwdOrToken,
-      resource: resource,
-      isPwd: isPwd,
-    );
+    try {
+      EMLog.v('kickDevice: $userId, "******"');
+      Map req = {
+        'userId': userId,
+        'password': pwdOrToken,
+        'resource': resource,
+        'isPwd': isPwd,
+      };
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.kickDevice, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -707,10 +870,191 @@ class EMClient {
     required String pwdOrToken,
     bool isPwd = true,
   }) async {
-    return Client.instance.kickAllDevices(
-      userId: userId,
-      pwdOrToken: pwdOrToken,
-      isPwd: isPwd,
-    );
+    try {
+      Map req = {'userId': userId, 'password': pwdOrToken, 'isPwd': isPwd};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.kickAllDevices, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateUsingHttpsOnlySetting(bool usingHttpsOnly) async {
+    try {
+      Map req = {'usingHttpsOnly': usingHttpsOnly};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateUsingHttpsOnlySetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(usingHttpsOnly: usingHttpsOnly);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
+  ///
+
+  Future<void> updateLoginExtensionInfoSetting(String extension) async {
+    try {
+      Map req = {'extension': extension};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateLoginExtensionInfo, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(loginExtension: extension);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateDeleteMessagesWhenLeaveGroupSetting(
+      bool deleteMessagesWhenLeaveGroup) async {
+    try {
+      Map req = {'deleteMessagesWhenLeaveGroup': deleteMessagesWhenLeaveGroup};
+      Map result = await Client.instance.callNativeMethod(
+          ChatMethodKeys.updateDeleteMessagesWhenLeaveGroupSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(
+          deleteMessagesWhenLeaveGroup: deleteMessagesWhenLeaveGroup);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateDeleteMessageWhenLeaveRoomSetting(
+      bool deleteMessageWhenLeaveRoom) async {
+    try {
+      Map req = {'deleteMessageWhenLeaveRoom': deleteMessageWhenLeaveRoom};
+      Map result = await Client.instance.callNativeMethod(
+          ChatMethodKeys.updateDeleteMessageWhenLeaveRoomSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(
+          deleteMessageWhenLeaveRoom: deleteMessageWhenLeaveRoom);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateRoomOwnerCanLeaveSetting(bool roomOwnerCanLeave) async {
+    try {
+      Map req = {'roomOwnerCanLeave': roomOwnerCanLeave};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateRoomOwnerCanLeaveSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(roomOwnerCanLeave: roomOwnerCanLeave);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateAutoAcceptGroupInvitationSetting(
+      bool autoAcceptGroupInvitation) async {
+    try {
+      Map req = {'autoAcceptGroupInvitation': autoAcceptGroupInvitation};
+      Map result = await Client.instance.callNativeMethod(
+          ChatMethodKeys.updateAutoAcceptGroupInvitationSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(
+          autoAcceptGroupInvitation: autoAcceptGroupInvitation);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateAutoAcceptFriendInvitationSetting(
+      bool acceptInvitationAlways) async {
+    try {
+      Map req = {'acceptInvitationAlways': acceptInvitationAlways};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateAcceptInvitationAlways, req);
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(acceptInvitationAlways: acceptInvitationAlways);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateAutoDownloadAttachmentThumbnailSetting(
+      bool autoDownloadThumbnail) async {
+    try {
+      Map req = {'autoDownloadThumbnail': autoDownloadThumbnail};
+      Map result = await Client.instance.callNativeMethod(
+          ChatMethodKeys.updateAutoDownloadAttachmentThumbnailSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(autoDownloadThumbnail: autoDownloadThumbnail);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateRequireAckSetting(bool requireAck) async {
+    try {
+      Map req = {'requireAck': requireAck};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateRequireAckSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(requireAck: requireAck);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateDeliveryAckSetting(bool requireDeliveryAck) async {
+    try {
+      Map req = {'requireDeliveryAck': requireDeliveryAck};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateDeliveryAckSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(requireDeliveryAck: requireDeliveryAck);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateSortMessageByServerTimeSetting(
+      bool sortMessageByServerTime) async {
+    try {
+      Map req = {'sortMessageByServerTime': sortMessageByServerTime};
+      Map result = await Client.instance.callNativeMethod(
+          ChatMethodKeys.updateSortMessageByServerTimeSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(sortMessageByServerTime: sortMessageByServerTime);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateMessagesReceiveCallbackIncludeSendSetting(
+      bool includeSend) async {
+    try {
+      Map req = {'includeSend': includeSend};
+      Map result = await Client.instance.callNativeMethod(
+          ChatMethodKeys.updateMessagesReceiveCallbackIncludeSendSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options =
+          _options?.copyWith(messagesReceiveCallbackIncludeSend: includeSend);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateRegradeMessagesAsReadSetting(bool isRead) async {
+    try {
+      Map req = {'isRead': isRead};
+      Map result = await Client.instance
+          .callNativeMethod(ChatMethodKeys.updateRegradeMessagesSetting, req);
+      EMError.hasErrorFromResult(result);
+      _options = _options?.copyWith(regardImportMessagesAsRead: isRead);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  void _clearAllInfo() {
+    _currentUserId = null;
+    userInfoManager.clearUserInfoCache();
   }
 }

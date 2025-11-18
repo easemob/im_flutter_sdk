@@ -1,10 +1,3 @@
 export 'package:im_flutter_sdk_interface/src/interface/platform_interface/client.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/chat_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/chat_room_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/chat_thread_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/contact_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/group_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/presence_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/push_manager.dart';
-export 'package:im_flutter_sdk_interface/src/interface/platform_interface/user_info_manager.dart';
 export 'package:im_flutter_sdk_interface/src/interface/platform_interface/progress_manager.dart';
+export 'package:im_flutter_sdk_interface/src/event_handler/channel_manager.dart';
