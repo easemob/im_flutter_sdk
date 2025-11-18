@@ -1,4 +1,5 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -25,6 +26,8 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 ///   ```
 /// ~end
 class EMChatRoomManager {
+  final Map<String, EMChatRoomEventHandler> _eventHandlesMap = {};
+
   /// ~english
   /// Adds the room event handler. After calling this method, you can handle for new room event when they arrive.
   ///
@@ -44,7 +47,7 @@ class EMChatRoomManager {
     String identifier,
     EMChatRoomEventHandler handler,
   ) {
-    return Client.instance.chatRoomManager.addEventHandler(identifier, handler);
+    _eventHandlesMap[identifier] = handler;
   }
 
   /// ~english
@@ -59,7 +62,7 @@ class EMChatRoomManager {
   /// Param [identifier] 聊天室事件 ID。
   /// ~end
   void removeEventHandler(String identifier) {
-    return Client.instance.chatRoomManager.removeEventHandler(identifier);
+    _eventHandlesMap.remove(identifier);
   }
 
   /// ~english
@@ -78,7 +81,7 @@ class EMChatRoomManager {
   /// **Return** 聊天室事件。
   /// ~end
   EMChatRoomEventHandler? getEventHandler(String identifier) {
-    return Client.instance.chatRoomManager.getEventHandler(identifier);
+    return _eventHandlesMap[identifier];
   }
 
   /// ~english
@@ -89,10 +92,9 @@ class EMChatRoomManager {
   /// 清除所有聊天室事件。
   /// ~end
   void clearEventHandlers() {
-    return Client.instance.chatRoomManager.clearEventHandlers();
+    _eventHandlesMap.clear();
   }
 
-  /// ~english
   /// Joins the chat room.
   ///
   /// To exit the chat room, call [leaveChatRoom].
@@ -119,17 +121,25 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> joinChatRoom(
     String roomId, {
-    @Deprecated('') bool? leaveOther,
     bool leaveOtherRooms = false,
     String? ext,
   }) async {
-    return Client.instance.chatRoomManager.joinChatRoom(
-      roomId,
-      leaveOtherRooms: leaveOther ?? leaveOtherRooms,
-      ext: ext,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+        "leaveOtherRooms": leaveOtherRooms,
+      };
+      req.putIfNotNull("ext", ext);
+
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.joinChatRoom, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -147,8 +157,15 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> leaveChatRoom(String roomId) async {
-    return Client.instance.chatRoomManager.leaveChatRoom(roomId);
+    try {
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.leaveChatRoom, {"roomId": roomId});
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -174,14 +191,24 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<EMPageResult<EMChatRoom>> fetchPublicChatRoomsFromServer({
     int pageNum = 1,
     int pageSize = 200,
   }) async {
-    return Client.instance.chatRoomManager.fetchPublicChatRoomsFromServer(
-      pageNum: pageNum,
-      pageSize: pageSize,
-    );
+    try {
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+          ChatMethodKeys.fetchPublicChatRoomsFromServer,
+          {"pageNum": pageNum, "pageSize": pageSize});
+      EMError.hasErrorFromResult(result);
+      return EMPageResult<EMChatRoom>.fromJson(
+          result[ChatMethodKeys.fetchPublicChatRoomsFromServer],
+          dataItemCallback: (map) {
+        return EMChatRoom.fromJson(map);
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -204,15 +231,21 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<EMChatRoom> fetchChatRoomInfoFromServer(
     String roomId, {
     @Deprecated('') bool? fetchMembers,
   }) async {
-    return Client.instance.chatRoomManager.fetchChatRoomInfoFromServer(
-      roomId,
-      // ignore: deprecated_member_use
-      fetchMembers: fetchMembers,
-    );
+    try {
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+          ChatMethodKeys.fetchChatRoomInfoFromServer,
+          {"roomId": roomId, "fetchMembers": fetchMembers});
+      EMError.hasErrorFromResult(result);
+      return EMChatRoom.fromJson(
+          result[ChatMethodKeys.fetchChatRoomInfoFromServer]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -234,8 +267,20 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<EMChatRoom?> getChatRoomWithId(String roomId) async {
-    return Client.instance.chatRoomManager.getChatRoomWithId(roomId);
+    try {
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.getChatRoom, {"roomId": roomId});
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getChatRoom)) {
+        return EMChatRoom.fromJson(result[ChatMethodKeys.getChatRoom]);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -273,6 +318,7 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<EMChatRoom> createChatRoom(
     String name, {
     String? desc,
@@ -280,13 +326,20 @@ class EMChatRoomManager {
     int maxUserCount = 300,
     List<String>? members,
   }) async {
-    return Client.instance.chatRoomManager.createChatRoom(
-      name,
-      desc: desc,
-      welcomeMsg: welcomeMsg,
-      maxUserCount: maxUserCount,
-      members: members,
-    );
+    try {
+      Map req = {};
+      req['subject'] = name;
+      req['maxUserCount'] = maxUserCount;
+      req.putIfNotNull("desc", desc);
+      req.putIfNotNull("welcomeMsg", welcomeMsg);
+      req.putIfNotNull("members", members);
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.createChatRoom, req);
+      EMError.hasErrorFromResult(result);
+      return EMChatRoom.fromJson(result[ChatMethodKeys.createChatRoom]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -308,8 +361,18 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> destroyChatRoom(String roomId) async {
-    return Client.instance.chatRoomManager.destroyChatRoom(roomId);
+
+  Future<void> destroyChatRoom(
+    String roomId,
+  ) async {
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.destroyChatRoom, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -335,8 +398,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> changeChatRoomName(String roomId, String name) async {
-    return Client.instance.chatRoomManager.changeChatRoomName(roomId, name);
+
+  Future<void> changeChatRoomName(
+    String roomId,
+    String name,
+  ) async {
+    try {
+      Map req = {"roomId": roomId, "subject": name};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.changeChatRoomSubject, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -362,14 +436,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> changeChatRoomDescription(
     String roomId,
     String description,
   ) async {
-    return Client.instance.chatRoomManager.changeChatRoomDescription(
-      roomId,
-      description,
-    );
+    try {
+      Map req = {"roomId": roomId, "description": description};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.changeChatRoomDescription, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -401,16 +480,24 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<EMCursorResult<String>> fetchChatRoomMembers(
     String roomId, {
     String? cursor,
     int pageSize = 200,
   }) async {
-    return Client.instance.chatRoomManager.fetchChatRoomMembers(
-      roomId,
-      cursor: cursor,
-      pageSize: pageSize,
-    );
+    try {
+      Map req = {"roomId": roomId, "pageSize": pageSize};
+      req.putIfNotNull("cursor", cursor);
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.fetchChatRoomMembers, req);
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult<String>.fromJson(
+          result[ChatMethodKeys.fetchChatRoomMembers],
+          dataItemCallback: (obj) => obj);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -440,16 +527,24 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> muteChatRoomMembers(
     String roomId,
     List<String> muteMembers, {
     int duration = -1,
   }) async {
-    return Client.instance.chatRoomManager.muteChatRoomMembers(
-      roomId,
-      muteMembers,
-      duration: duration,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+        "muteMembers": muteMembers,
+        "duration": duration
+      };
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.muteChatRoomMembers, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -475,14 +570,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> unMuteChatRoomMembers(
     String roomId,
     List<String> unMuteMembers,
   ) async {
-    return Client.instance.chatRoomManager.unMuteChatRoomMembers(
-      roomId,
-      unMuteMembers,
-    );
+    try {
+      Map req = {"roomId": roomId, "unMuteMembers": unMuteMembers};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.unMuteChatRoomMembers, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -508,8 +608,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> changeOwner(String roomId, String newOwner) async {
-    return Client.instance.chatRoomManager.changeOwner(roomId, newOwner);
+
+  Future<void> changeOwner(
+    String roomId,
+    String newOwner,
+  ) async {
+    try {
+      Map req = {"roomId": roomId, "newOwner": newOwner};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.changeChatRoomOwner, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -535,8 +646,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> addChatRoomAdmin(String roomId, String admin) async {
-    return Client.instance.chatRoomManager.addChatRoomAdmin(roomId, admin);
+
+  Future<void> addChatRoomAdmin(
+    String roomId,
+    String admin,
+  ) async {
+    try {
+      Map req = {"roomId": roomId, "admin": admin};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.addChatRoomAdmin, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -558,8 +680,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<void> removeChatRoomAdmin(String roomId, String admin) async {
-    return Client.instance.chatRoomManager.removeChatRoomAdmin(roomId, admin);
+
+  Future<void> removeChatRoomAdmin(
+    String roomId,
+    String admin,
+  ) async {
+    try {
+      Map req = {"roomId": roomId, "admin": admin};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.removeChatRoomAdmin, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -593,16 +726,21 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<List<String>> fetchChatRoomMuteList(
     String roomId, {
     int pageNum = 1,
     int pageSize = 200,
   }) async {
-    return Client.instance.chatRoomManager.fetchChatRoomMuteList(
-      roomId,
-      pageNum: pageNum,
-      pageSize: pageSize,
-    );
+    try {
+      Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.fetchChatRoomMuteList, req);
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomMuteList]?.cast<String>() ?? [];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -628,14 +766,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> removeChatRoomMembers(
     String roomId,
     List<String> members,
   ) async {
-    return Client.instance.chatRoomManager.removeChatRoomMembers(
-      roomId,
-      members,
-    );
+    try {
+      Map req = {"roomId": roomId, "members": members};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.removeChatRoomMembers, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -670,14 +813,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> blockChatRoomMembers(
     String roomId,
     List<String> members,
   ) async {
-    return Client.instance.chatRoomManager.blockChatRoomMembers(
-      roomId,
-      members,
-    );
+    try {
+      Map req = {"roomId": roomId, "members": members};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.blockChatRoomMembers, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -703,14 +851,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> unBlockChatRoomMembers(
     String roomId,
     List<String> members,
   ) async {
-    return Client.instance.chatRoomManager.unBlockChatRoomMembers(
-      roomId,
-      members,
-    );
+    try {
+      Map req = {"roomId": roomId, "members": members};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.unBlockChatRoomMembers, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -744,16 +897,22 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<List<String>> fetchChatRoomBlockList(
     String roomId, {
     int pageNum = 1,
     int pageSize = 200,
   }) async {
-    return Client.instance.chatRoomManager.fetchChatRoomBlockList(
-      roomId,
-      pageNum: pageNum,
-      pageSize: pageSize,
-    );
+    try {
+      Map req = {"roomId": roomId, "pageNum": pageNum, "pageSize": pageSize};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.fetchChatRoomBlockList, req);
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomBlockList]?.cast<String>() ??
+          [];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -779,14 +938,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> updateChatRoomAnnouncement(
     String roomId,
     String announcement,
   ) async {
-    return Client.instance.chatRoomManager.updateChatRoomAnnouncement(
-      roomId,
-      announcement,
-    );
+    try {
+      Map req = {"roomId": roomId, "announcement": announcement};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.updateChatRoomAnnouncement, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -808,8 +972,19 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<String?> fetchChatRoomAnnouncement(String roomId) async {
-    return Client.instance.chatRoomManager.fetchChatRoomAnnouncement(roomId);
+
+  Future<String?> fetchChatRoomAnnouncement(
+    String roomId,
+  ) async {
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager
+          .callNativeMethod(ChatMethodKeys.fetchChatRoomAnnouncement, req);
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomAnnouncement];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -835,9 +1010,24 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<List<String>> fetchChatRoomAllowListFromServer(String roomId) async {
-    return Client.instance.chatRoomManager
-        .fetchChatRoomAllowListFromServer(roomId);
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+          ChatMethodKeys.fetchChatRoomWhiteListFromServer, req);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.fetchChatRoomWhiteListFromServer]
+          ?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -861,8 +1051,18 @@ class EMChatRoomManager {
   /// - `false`: 否。
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<bool> isMemberInChatRoomAllowList(String roomId) async {
-    return Client.instance.chatRoomManager.isMemberInChatRoomAllowList(roomId);
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+          ChatMethodKeys.isMemberInChatRoomWhiteListFromServer, req);
+      EMError.hasErrorFromResult(result);
+      return result
+          .boolValue(ChatMethodKeys.isMemberInChatRoomWhiteListFromServer);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -888,14 +1088,24 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> addMembersToChatRoomAllowList(
     String roomId,
     List<String> members,
   ) async {
-    return Client.instance.chatRoomManager.addMembersToChatRoomAllowList(
-      roomId,
-      members,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+        "members": members,
+      };
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.addMembersToChatRoomWhiteList,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -921,14 +1131,24 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> removeMembersFromChatRoomAllowList(
     String roomId,
     List<String> members,
   ) async {
-    return Client.instance.chatRoomManager.removeMembersFromChatRoomAllowList(
-      roomId,
-      members,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+        "members": members,
+      };
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.removeMembersFromChatRoomWhiteList,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -954,8 +1174,18 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> muteAllChatRoomMembers(String roomId) async {
-    return Client.instance.chatRoomManager.muteAllChatRoomMembers(roomId);
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.muteAllChatRoomMembers,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -977,8 +1207,18 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<void> unMuteAllChatRoomMembers(String roomId) async {
-    return Client.instance.chatRoomManager.unMuteAllChatRoomMembers(roomId);
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.unMuteAllChatRoomMembers,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -1004,14 +1244,26 @@ class EMChatRoomManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
+
   Future<Map<String, String>?> fetchChatRoomAttributes({
     required String roomId,
     List<String>? keys,
   }) async {
-    return Client.instance.chatRoomManager.fetchChatRoomAttributes(
-      roomId: roomId,
-      keys: keys,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+      };
+      req.putIfNotNull("keys", keys);
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.fetchChatRoomAttributes,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.fetchChatRoomAttributes]
+          ?.cast<String, String>();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -1052,19 +1304,32 @@ class EMChatRoomManager {
   /// **Return** ' failureKeys map '以键值格式返回，其中键是属性键，值是失败的原因。
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  ///
   /// ~end
+
   Future<Map<String, int>?> addAttributes(
     String roomId, {
     required Map<String, String> attributes,
     bool deleteWhenLeft = false,
     bool overwrite = false,
   }) async {
-    return Client.instance.chatRoomManager.addAttributes(
-      roomId,
-      attributes: attributes,
-      deleteWhenLeft: deleteWhenLeft,
-      overwrite: overwrite,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+        "attributes": attributes,
+        "autoDelete": deleteWhenLeft,
+        "forced": overwrite,
+      };
+
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.setChatRoomAttributes,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.setChatRoomAttributes]?.cast<String, int>();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -1096,19 +1361,42 @@ class EMChatRoomManager {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   ///
   /// ~end
+
   Future<Map<String, int>?> removeAttributes(
     String roomId, {
     required List<String> keys,
     bool force = false,
   }) async {
-    return Client.instance.chatRoomManager.removeAttributes(
-      roomId,
-      keys: keys,
-      force: force,
-    );
+    try {
+      Map req = {
+        "roomId": roomId,
+        "keys": keys,
+        "forced": force,
+      };
+
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.removeChatRoomAttributes,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return result[ChatMethodKeys.removeChatRoomAttributes]
+          ?.cast<String, int>();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<bool> isMemberInChatRoomMuteList(String roomId) async {
-    return Client.instance.chatRoomManager.isMemberInChatRoomMuteList(roomId);
+    try {
+      Map req = {"roomId": roomId};
+      Map result = await Client.instance.chatRoomManager.callNativeMethod(
+        ChatMethodKeys.isMemberInChatRoomMuteList,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      return result.boolValue(ChatMethodKeys.isMemberInChatRoomMuteList);
+    } catch (e) {
+      rethrow;
+    }
   }
 }

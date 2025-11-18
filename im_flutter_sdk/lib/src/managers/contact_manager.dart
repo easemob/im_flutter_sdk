@@ -1,4 +1,5 @@
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
@@ -10,6 +11,8 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// 联系人管理类，用于记录、查询和修改用户的联系人列表。
 /// ~end
 class EMContactManager {
+  final Map<String, EMContactEventHandler> _eventHandlesMap = {};
+
   /// ~english
   /// Adds the contact event handler. After calling this method, you can handle for new contact event when they arrive.
   ///
@@ -29,7 +32,7 @@ class EMContactManager {
     String identifier,
     EMContactEventHandler handler,
   ) {
-    return Client.instance.contactManager.addEventHandler(identifier, handler);
+    _eventHandlesMap[identifier] = handler;
   }
 
   /// ~english
@@ -44,7 +47,7 @@ class EMContactManager {
   /// Param [identifier] 自定义处理程序标识符。
   /// ~end
   void removeEventHandler(String identifier) {
-    return Client.instance.contactManager.removeEventHandler(identifier);
+    _eventHandlesMap.remove(identifier);
   }
 
   /// ~english
@@ -63,7 +66,7 @@ class EMContactManager {
   /// **Return** 事件的句柄。
   /// ~end
   EMContactEventHandler? getEventHandler(String identifier) {
-    return Client.instance.contactManager.getEventHandler(identifier);
+    return _eventHandlesMap[identifier];
   }
 
   /// ~english
@@ -74,7 +77,7 @@ class EMContactManager {
   /// 清除所有联系人事件处理程序。
   /// ~end
   void clearEventHandlers() {
-    return Client.instance.contactManager.clearEventHandlers();
+    _eventHandlesMap.clear();
   }
 
   /// ~english
@@ -96,14 +99,22 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<void> addContact(
     String userId, {
     String? reason,
   }) async {
-    return Client.instance.contactManager.addContact(
-      userId,
-      reason: reason,
-    );
+    try {
+      Map req = {
+        'userId': userId,
+      };
+      req.putIfNotNull("reason", reason);
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.addContact, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -129,14 +140,19 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<void> deleteContact(
     String userId, {
     bool keepConversation = false,
   }) async {
-    return Client.instance.contactManager.deleteContact(
-      userId,
-      keepConversation: keepConversation,
-    );
+    try {
+      Map req = {'userId': userId, 'keepConversation': keepConversation};
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.deleteContact, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use fetchAllContactIds instead.')
@@ -157,7 +173,20 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactsFromServer() async {
-    return Client.instance.contactManager.getAllContactsFromServer();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getAllContactsFromServer);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -175,8 +204,22 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<String>> fetchAllContactIds() async {
-    return Client.instance.contactManager.fetchAllContactIds();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getAllContactsFromServer);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getAllContactsFromServer]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use getAllContactIds instead.')
@@ -197,7 +240,21 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getAllContactsFromDB() async {
-    return Client.instance.contactManager.getAllContactsFromDB();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getAllContactsFromDB);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -215,8 +272,23 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<String>> getAllContactIds() async {
-    return Client.instance.contactManager.getAllContactIds();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getAllContactsFromDB);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getAllContactsFromDB]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -236,8 +308,20 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
-  Future<void> addUserToBlockList(String userId) async {
-    return Client.instance.contactManager.addUserToBlockList(userId);
+
+  Future<void> addUserToBlockList(
+    String userId,
+  ) async {
+    try {
+      Map req = {'userId': userId};
+      Map result = await Client.instance.contactManager.callNativeMethod(
+        ChatMethodKeys.addUserToBlockList,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -255,8 +339,16 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<void> removeUserFromBlockList(String userId) async {
-    return Client.instance.contactManager.removeUserFromBlockList(userId);
+    try {
+      Map req = {'userId': userId};
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.removeUserFromBlockList, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use fetchBlockIds instead.')
@@ -277,7 +369,20 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getBlockListFromServer() async {
-    return Client.instance.contactManager.getBlockListFromServer();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getBlockListFromServer);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -295,8 +400,22 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<String>> fetchBlockIds() async {
-    return Client.instance.contactManager.fetchBlockIds();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getBlockListFromServer);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getBlockListFromServer]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated('Use getBlockIds instead.')
@@ -317,7 +436,20 @@ class EMContactManager {
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<String>> getBlockListFromDB() async {
-    return Client.instance.contactManager.getBlockListFromDB();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getBlockListFromDB);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getBlockListFromDB]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -335,8 +467,22 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<String>> getBlockIds() async {
-    return Client.instance.contactManager.getBlockIds();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getBlockListFromDB);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.getBlockListFromDB]?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -354,8 +500,16 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<void> acceptInvitation(String userId) async {
-    return Client.instance.contactManager.acceptInvitation(userId);
+    try {
+      Map req = {'userId': userId};
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.acceptInvitation, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -373,8 +527,16 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<void> declineInvitation(String userId) async {
-    return Client.instance.contactManager.declineInvitation(userId);
+    try {
+      Map req = {'userId': userId};
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.declineInvitation, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -392,8 +554,20 @@ class EMContactManager {
   ///
   /// **Throws**  如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<String>> getSelfIdsOnOtherPlatform() async {
-    return Client.instance.contactManager.getSelfIdsOnOtherPlatform();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getSelfIdsOnOtherPlatform);
+      EMError.hasErrorFromResult(result);
+      List<String> devices = [];
+      result[ChatMethodKeys.getSelfIdsOnOtherPlatform]?.forEach((element) {
+        devices.add(element);
+      });
+      return devices;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -411,8 +585,20 @@ class EMContactManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<EMContact>> getAllContacts() async {
-    return Client.instance.contactManager.getAllContacts();
+    Map result = await Client.instance.contactManager
+        .callNativeMethod(ChatMethodKeys.getAllContacts);
+    try {
+      EMError.hasErrorFromResult(result);
+      List<EMContact> list = [];
+      result[ChatMethodKeys.getAllContacts]?.forEach((element) {
+        list.add(EMContact.fromJson(element));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -426,14 +612,19 @@ class EMContactManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<void> setContactRemark({
     required String userId,
     required String remark,
   }) async {
-    return Client.instance.contactManager.setContactRemark(
-      userId: userId,
-      remark: remark,
-    );
+    try {
+      Map req = {'userId': userId, "remark": remark};
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.setContactRemark, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -455,8 +646,21 @@ class EMContactManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<EMContact?> getContact({required String userId}) async {
-    return Client.instance.contactManager.getContact(userId: userId);
+    try {
+      Map req = {'userId': userId};
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.getContact, req);
+      EMError.hasErrorFromResult(result);
+      if (result.containsKey(ChatMethodKeys.getContact)) {
+        return EMContact.fromJson(result[ChatMethodKeys.getContact]);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -474,8 +678,20 @@ class EMContactManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<List<EMContact>> fetchAllContacts() async {
-    return Client.instance.contactManager.fetchAllContacts();
+    try {
+      Map result = await Client.instance.contactManager
+          .callNativeMethod(ChatMethodKeys.fetchAllContacts);
+      EMError.hasErrorFromResult(result);
+      List<EMContact> list = [];
+      result[ChatMethodKeys.fetchAllContacts]?.forEach((element) {
+        list.add(EMContact.fromJson(element));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -501,13 +717,25 @@ class EMContactManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
+
   Future<EMCursorResult<EMContact>> fetchContacts({
     String? cursor,
     int pageSize = 20,
   }) async {
-    return Client.instance.contactManager.fetchContacts(
-      cursor: cursor,
-      pageSize: pageSize,
-    );
+    try {
+      Map map = {"pageSize": pageSize};
+      map.putIfNotNull('cursor', cursor);
+      Map result = await Client.instance.contactManager.callNativeMethod(
+        ChatMethodKeys.fetchContacts,
+        map,
+      );
+      EMError.hasErrorFromResult(result);
+      return EMCursorResult.fromJson(result[ChatMethodKeys.fetchContacts],
+          dataItemCallback: (map) {
+        return EMContact.fromJson(map);
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 }

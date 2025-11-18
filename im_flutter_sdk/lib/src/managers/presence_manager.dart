@@ -9,6 +9,8 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// 用户在线状态管理类。
 /// ~end
 class EMPresenceManager {
+  final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
+
   /// ~english
   /// Adds the presence event handler. After calling this method, you can handle for new presence event when they arrive.
   ///
@@ -28,7 +30,7 @@ class EMPresenceManager {
     String identifier,
     EMPresenceEventHandler handler,
   ) {
-    return Client.instance.presenceManager.addEventHandler(identifier, handler);
+    _eventHandlesMap[identifier] = handler;
   }
 
   /// ~english
@@ -43,7 +45,7 @@ class EMPresenceManager {
   /// Param [identifier] 事件 ID。
   /// ~end
   void removeEventHandler(String identifier) {
-    return Client.instance.presenceManager.removeEventHandler(identifier);
+    _eventHandlesMap.remove(identifier);
   }
 
   /// ~english
@@ -62,7 +64,7 @@ class EMPresenceManager {
   /// **Return** Presence 事件。
   /// ~end
   EMPresenceEventHandler? getEventHandler(String identifier) {
-    return Client.instance.presenceManager.getEventHandler(identifier);
+    return _eventHandlesMap[identifier];
   }
 
   /// ~english
@@ -73,7 +75,7 @@ class EMPresenceManager {
   /// 清除所有 Presence 事件。
   /// ~end
   void clearEventHandlers() {
-    return Client.instance.presenceManager.clearEventHandlers();
+    _eventHandlesMap.clear();
   }
 
   /// ~english
@@ -91,10 +93,18 @@ class EMPresenceManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
+
   Future<void> publishPresence(
     String description,
   ) async {
-    return Client.instance.presenceManager.publishPresence(description);
+    try {
+      Map req = {'desc': description};
+      Map result = await Client.instance.presenceManager
+          .callNativeMethod(ChatMethodKeys.presenceWithDescription, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -120,12 +130,24 @@ class EMPresenceManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
+
   Future<List<EMPresence>> subscribe({
     required List<String> members,
     required int expiry,
   }) async {
-    return Client.instance.presenceManager
-        .subscribe(members: members, expiry: expiry);
+    try {
+      Map req = {'members': members, "expiry": expiry};
+      Map result = await Client.instance.presenceManager
+          .callNativeMethod(ChatMethodKeys.presenceSubscribe, req);
+      EMError.hasErrorFromResult(result);
+      List<EMPresence> list = [];
+      result[ChatMethodKeys.presenceSubscribe]?.forEach((element) {
+        list.add(EMPresence.fromJson(element));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -143,10 +165,18 @@ class EMPresenceManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
+
   Future<void> unsubscribe({
     required List<String> members,
   }) async {
-    return Client.instance.presenceManager.unsubscribe(members: members);
+    try {
+      Map req = {'members': members};
+      Map result = await Client.instance.presenceManager
+          .callNativeMethod(ChatMethodKeys.presenceUnsubscribe, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -172,12 +202,27 @@ class EMPresenceManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
+
   Future<List<String>> fetchSubscribedMembers({
     int pageNum = 1,
     int pageSize = 20,
   }) async {
-    return Client.instance.presenceManager
-        .fetchSubscribedMembers(pageNum: pageNum, pageSize: pageSize);
+    try {
+      Map req = {'pageNum': pageNum, "pageSize": pageSize};
+      Map result = await Client.instance.presenceManager.callNativeMethod(
+          ChatMethodKeys.fetchSubscribedMembersWithPageNum, req);
+      EMError.hasErrorFromResult(result);
+      List<String> list = [];
+      result[ChatMethodKeys.fetchSubscribedMembersWithPageNum]
+          ?.forEach((element) {
+        if (element is String) {
+          list.add(element);
+        }
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -199,10 +244,22 @@ class EMPresenceManager {
   ///
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。参见 [EMError]。
   /// ~end
+
   Future<List<EMPresence>> fetchPresenceStatus({
     required List<String> members,
   }) async {
-    return Client.instance.presenceManager
-        .fetchPresenceStatus(members: members);
+    try {
+      Map req = {'members': members};
+      Map result = await Client.instance.presenceManager
+          .callNativeMethod(ChatMethodKeys.fetchPresenceStatus, req);
+      EMError.hasErrorFromResult(result);
+      List<EMPresence> list = [];
+      result[ChatMethodKeys.fetchPresenceStatus]?.forEach((element) {
+        list.add(EMPresence.fromJson(element));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
 /// The message class.
@@ -375,7 +374,7 @@ class EMMessage {
     required this.body,
     this.to,
     this.chatType = ChatType.Chat,
-  })  : from = Client.instance.currentUserId,
+  })  : from = EMClient.getInstance.currentUserId,
         conversationId = to {
     hasRead = true;
     direction = MessageDirection.SEND;

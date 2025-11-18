@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
@@ -16,8 +18,17 @@ class EMPushManager {
   /// ~chinese
   /// 从服务器获取推送设置信息。
   /// ~end
+
   Future<EMPushConfigs> fetchPushConfigsFromServer() async {
-    return Client.instance.pushManager.fetchPushConfigsFromServer();
+    try {
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.getImPushConfigFromServer);
+      EMError.hasErrorFromResult(result);
+      return EMPushConfigs.fromJson(
+          result[ChatMethodKeys.getImPushConfigFromServer]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -41,8 +52,16 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> updatePushNickname(String nickname) async {
-    return Client.instance.pushManager.updatePushNickname(nickname);
+    try {
+      Map req = {'nickname': nickname};
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.updatePushNickname, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -60,8 +79,16 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> updatePushDisplayStyle(DisplayStyle displayStyle) async {
-    return Client.instance.pushManager.updatePushDisplayStyle(displayStyle);
+    try {
+      Map req = {'pushStyle': displayStyle == DisplayStyle.Simple ? 0 : 1};
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.updateImPushStyle, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated("Use [bindDeviceToken] instead")
@@ -82,7 +109,18 @@ class EMPushManager {
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<void> updateHMSPushToken(String token) async {
-    return Client.instance.pushManager.updateHMSPushToken(token);
+    if (Platform.isAndroid) {
+      try {
+        Map req = {'token': token};
+        Map result = await Client.instance.pushManager
+            .callNativeMethod(ChatMethodKeys.updateHMSPushToken, req);
+        EMError.hasErrorFromResult(result);
+      } catch (e) {
+        rethrow;
+      }
+    } else {
+      return;
+    }
   }
 
   @Deprecated("Use [bindDeviceToken] instead")
@@ -103,7 +141,14 @@ class EMPushManager {
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<void> updateFCMPushToken(String token) async {
-    return Client.instance.pushManager.updateFCMPushToken(token);
+    try {
+      Map req = {'token': token};
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.updateFCMPushToken, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @Deprecated("Use [bindDeviceToken] instead")
@@ -124,7 +169,18 @@ class EMPushManager {
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
   Future<void> updateAPNsDeviceToken(String token) async {
-    return Client.instance.pushManager.updateAPNsDeviceToken(token);
+    if (Platform.isIOS) {
+      try {
+        Map req = {'token': token};
+        Map result = await Client.instance.pushManager
+            .callNativeMethod(ChatMethodKeys.updateAPNsPushToken, req);
+        EMError.hasErrorFromResult(result);
+      } catch (e) {
+        rethrow;
+      }
+    } else {
+      return;
+    }
   }
 
   /// ~english
@@ -142,10 +198,17 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> bindDeviceToken(
       {required String notifierName, required String deviceToken}) async {
-    return Client.instance.pushManager
-        .bindDeviceToken(notifierName: notifierName, deviceToken: deviceToken);
+    try {
+      Map req = {'notifierName': notifierName, 'deviceToken': deviceToken};
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.bindDeviceToken, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -172,13 +235,24 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> setConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
     required ChatSilentModeParam param,
   }) async {
-    return Client.instance.pushManager.setConversationSilentMode(
-        conversationId: conversationId, type: type, param: param);
+    try {
+      Map req = {};
+      req["convId"] = conversationId;
+      req["conversationType"] = type.index;
+      req["param"] = param.toJson();
+
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.setConversationSilentMode, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -204,12 +278,21 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> removeConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
   }) async {
-    return Client.instance.pushManager.removeConversationSilentMode(
-        conversationId: conversationId, type: type);
+    try {
+      Map req = {};
+      req["convId"] = conversationId;
+      req["conversationType"] = type.index;
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.removeConversationSilentMode, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -235,12 +318,23 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<ChatSilentModeResult> fetchConversationSilentMode({
     required String conversationId,
     required EMConversationType type,
   }) async {
-    return Client.instance.pushManager.fetchConversationSilentMode(
-        conversationId: conversationId, type: type);
+    try {
+      Map req = {};
+      req["convId"] = conversationId;
+      req["conversationType"] = type.index;
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.fetchConversationSilentMode, req);
+      EMError.hasErrorFromResult(result);
+      Map map = result[ChatMethodKeys.fetchConversationSilentMode];
+      return ChatSilentModeResult.fromJson(map);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -258,10 +352,21 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> setSilentModeForAll({
     required ChatSilentModeParam param,
   }) async {
-    return Client.instance.pushManager.setSilentModeForAll(param: param);
+    try {
+      Map req = {};
+      req["param"] = param.toJson();
+      Map result = await Client.instance.pushManager.callNativeMethod(
+        ChatMethodKeys.setSilentModeForAll,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -279,8 +384,18 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<ChatSilentModeResult> fetchSilentModeForAll() async {
-    return Client.instance.pushManager.fetchSilentModeForAll();
+    try {
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.fetchSilentModeForAll);
+      EMError.hasErrorFromResult(result);
+      return ChatSilentModeResult.fromJson(
+        result[ChatMethodKeys.fetchSilentModeForAll],
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -302,11 +417,33 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<Map<String, ChatSilentModeResult>> fetchSilentModeForConversations(
     List<EMConversation> conversations,
   ) async {
-    return Client.instance.pushManager
-        .fetchSilentModeForConversations(conversations);
+    try {
+      Map<String, int> req = {};
+      for (var item in conversations) {
+        req[item.id] = item.type.index;
+      }
+      Map result = await Client.instance.pushManager.callNativeMethod(
+        ChatMethodKeys.fetchSilentModeForConversations,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+      Map<String, ChatSilentModeResult> ret = {};
+      Map? tmpMap = result[ChatMethodKeys.fetchSilentModeForConversations];
+      if (tmpMap != null) {
+        for (var item in tmpMap.entries) {
+          if (item.key is String && item.value is Map) {
+            ret[item.key] = ChatSilentModeResult.fromJson(item.value);
+          }
+        }
+      }
+      return ret;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -324,9 +461,18 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> setPreferredNotificationLanguage(String languageCode) async {
-    return Client.instance.pushManager
-        .setPreferredNotificationLanguage(languageCode);
+    try {
+      Map req = {"code": languageCode};
+      Map result = await Client.instance.pushManager.callNativeMethod(
+        ChatMethodKeys.setPreferredNotificationLanguage,
+        req,
+      );
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -344,8 +490,18 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<String?> fetchPreferredNotificationLanguage() async {
-    return Client.instance.pushManager.fetchPreferredNotificationLanguage();
+    try {
+      Map result = await Client.instance.pushManager.callNativeMethod(
+        ChatMethodKeys.fetchPreferredNotificationLanguage,
+      );
+      EMError.hasErrorFromResult(result);
+      String? ret = result[ChatMethodKeys.fetchPreferredNotificationLanguage];
+      return ret;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -363,8 +519,17 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> setPushTemplate(String pushTemplateName) async {
-    return Client.instance.pushManager.setPushTemplate(pushTemplateName);
+    try {
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.setPushTemplate, {
+        "pushTemplateName": pushTemplateName,
+      });
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// ~english
@@ -382,8 +547,17 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<String?> getPushTemplate() async {
-    return Client.instance.pushManager.getPushTemplate();
+    try {
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.getPushTemplate);
+      EMError.hasErrorFromResult(result);
+      String? ret = result[ChatMethodKeys.getPushTemplate];
+      return ret;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   // 481
@@ -401,7 +575,14 @@ class EMPushManager {
   ///
   /// **Throws** 如果有异常会在此抛出，包括错误码和错误信息，详见 [EMError]。
   /// ~end
+
   Future<void> syncConversationsSilentMode() async {
-    return Client.instance.pushManager.syncConversationsSilentMode();
+    try {
+      Map result = await Client.instance.pushManager
+          .callNativeMethod(ChatMethodKeys.syncSilentModels);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
   }
 }
