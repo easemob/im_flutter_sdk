@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -10,6 +12,32 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// ~end
 class EMPresenceManager {
   final Map<String, EMPresenceEventHandler> _eventHandlesMap = {};
+
+  EMPresenceManager() {
+    Client.instance.presenceManager
+        .updateNativeHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
+      Map? argMap = call.arguments;
+      if (call.method == ChatMethodKeys.onPresenceStatusChanged) {
+        return _presenceChange(argMap!);
+      }
+    });
+  }
+
+  Future<void> _presenceChange(Map event) async {
+    List? mapList = event['presences'];
+    if (mapList == null) {
+      return;
+    }
+    List<EMPresence> pList = [];
+    for (var item in mapList) {
+      pList.add(EMPresence.fromJson(item));
+    }
+
+    for (var handle in _eventHandlesMap.values) {
+      handle.onPresenceStatusChanged?.call(pList);
+    }
+  }
 
   /// ~english
   /// Adds the presence event handler. After calling this method, you can handle for new presence event when they arrive.

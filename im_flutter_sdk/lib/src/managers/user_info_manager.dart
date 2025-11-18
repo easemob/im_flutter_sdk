@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -12,6 +14,13 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 class EMUserInfoManager {
   // The map of effective contacts.
   final Map<String, EMUserInfo> _effectiveUserInfoMap = {};
+
+  EMUserInfoManager() {
+    Client.instance.userInfoManager
+        .updateNativeHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
+    });
+  }
 
   /// ~english
   /// Modifies the user attributes of the current user.

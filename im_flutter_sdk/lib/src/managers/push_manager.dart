@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -18,6 +20,12 @@ class EMPushManager {
   /// ~chinese
   /// 从服务器获取推送设置信息。
   /// ~end
+
+  EMPushManager() {
+    Client.instance.pushManager.updateNativeHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
+    });
+  }
 
   Future<EMPushConfigs> fetchPushConfigsFromServer() async {
     try {

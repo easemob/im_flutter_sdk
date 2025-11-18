@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
@@ -12,6 +14,43 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// ~end
 class EMContactManager {
   final Map<String, EMContactEventHandler> _eventHandlesMap = {};
+
+  EMContactManager() {
+    Client.instance.contactManager.updateNativeHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
+      Map? argMap = call.arguments;
+      if (call.method == ChatMethodKeys.onContactChanged) {
+        return _onContactChanged(argMap!);
+      }
+    });
+  }
+
+  Future<void> _onContactChanged(Map event) async {
+    var type = event['type'];
+    String username = event['userId'];
+    String? reason = event['reason'];
+
+    for (var element in _eventHandlesMap.values) {
+      switch (type) {
+        case EMContactChangeEvent.CONTACT_ADD:
+          element.onContactAdded?.call(username);
+          break;
+        case EMContactChangeEvent.CONTACT_DELETE:
+          element.onContactDeleted?.call(username);
+          break;
+        case EMContactChangeEvent.INVITED:
+          element.onContactInvited?.call(username, reason);
+          break;
+        case EMContactChangeEvent.INVITATION_ACCEPTED:
+          element.onFriendRequestAccepted?.call(username);
+          break;
+        case EMContactChangeEvent.INVITATION_DECLINED:
+          element.onFriendRequestDeclined?.call(username);
+          break;
+        default:
+      }
+    }
+  }
 
   /// ~english
   /// Adds the contact event handler. After calling this method, you can handle for new contact event when they arrive.

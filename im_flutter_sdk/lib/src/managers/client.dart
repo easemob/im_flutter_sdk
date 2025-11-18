@@ -15,23 +15,214 @@ class EMClient {
   static EMClient? _instance;
 
   static EMClient get getInstance => _instance ??= EMClient._internal();
-  EMClient._internal();
+  EMClient._internal() {
+    Client.instance.updateNativeHandler((call) async {
+      Map<String, dynamic>? argMap = call.arguments;
+      EMLog.d("${call.method}: arguments: $argMap");
+      if (call.method == ChatMethodKeys.onConnected) {
+        return _onConnected();
+      } else if (call.method == ChatMethodKeys.onDisconnected) {
+        return _onDisconnected();
+      } else if (call.method == ChatMethodKeys.onUserDidLoginFromOtherDevice) {
+        LoginExtensionInfo info = LoginExtensionInfo.fromJson(argMap!);
+        _onUserDidLoginFromOtherDevice(info);
+      } else if (call.method == ChatMethodKeys.onUserDidRemoveFromServer) {
+        _onUserDidRemoveFromServer();
+      } else if (call.method == ChatMethodKeys.onUserDidForbidByServer) {
+        _onUserDidForbidByServer();
+      } else if (call.method == ChatMethodKeys.onUserDidChangePassword) {
+        _onUserDidChangePassword();
+      } else if (call.method == ChatMethodKeys.onUserDidLoginTooManyDevice) {
+        _onUserDidLoginTooManyDevice();
+      } else if (call.method == ChatMethodKeys.onUserKickedByOtherDevice) {
+        _onUserKickedByOtherDevice();
+      } else if (call.method == ChatMethodKeys.onUserAuthenticationFailed) {
+        _onUserAuthenticationFailed();
+      } else if (call.method == ChatMethodKeys.onMultiDeviceGroupEvent) {
+        _onMultiDeviceGroupEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceContactEvent) {
+        _onMultiDeviceContactEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onMultiDeviceThreadEvent) {
+        _onMultiDeviceThreadEvent(argMap!);
+      } else if (call.method ==
+          ChatMethodKeys.onMultiDeviceRemoveMessagesEvent) {
+        _onMultiDeviceRoamMessagesRemovedEvent(argMap!);
+      } else if (call.method ==
+          ChatMethodKeys.onMultiDevicesConversationEvent) {
+        _onMultiDevicesConversationEvent(argMap!);
+      } else if (call.method == ChatMethodKeys.onSendDataToFlutter) {
+        _onReceiveCustomData(argMap!);
+      } else if (call.method == ChatMethodKeys.onTokenWillExpire) {
+        _onTokenWillExpire(argMap);
+      } else if (call.method == ChatMethodKeys.onTokenDidExpire) {
+        _onTokenDidExpire(argMap);
+      } else if (call.method == ChatMethodKeys.onAppActiveNumberReachLimit) {
+        _onAppActiveNumberReachLimit(argMap);
+      } else if (call.method == ChatMethodKeys.onOfflineMessageSyncStart) {
+        _onOfflineMessageSyncStart(argMap);
+      } else if (call.method == ChatMethodKeys.onOfflineMessageSyncFinish) {
+        _onOfflineMessageSyncFinish(argMap);
+      }
+    });
+  }
 
-  final EMChatManager chatManager = EMChatManager();
+  Future<void> _onConnected() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onConnected?.call();
+    }
+  }
 
-  final EMGroupManager groupManager = EMGroupManager();
+  Future<void> _onDisconnected() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onDisconnected?.call();
+    }
+  }
 
-  final EMContactManager contactManager = EMContactManager();
+  Future<void> _onUserDidLoginFromOtherDevice(LoginExtensionInfo info) async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onUserDidLoginFromOtherDevice?.call(info);
+    }
+  }
 
-  final EMChatRoomManager chatRoomManager = EMChatRoomManager();
+  Future<void> _onUserDidRemoveFromServer() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onUserDidRemoveFromServer?.call();
+    }
+  }
 
-  final EMPushManager pushManager = EMPushManager();
+  Future<void> _onUserDidForbidByServer() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onUserDidForbidByServer?.call();
+    }
+  }
 
-  final EMPresenceManager presenceManager = EMPresenceManager();
+  Future<void> _onUserDidChangePassword() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onUserDidChangePassword?.call();
+    }
+  }
 
-  final EMUserInfoManager userInfoManager = EMUserInfoManager();
+  Future<void> _onUserDidLoginTooManyDevice() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onUserDidLoginTooManyDevice?.call();
+    }
+  }
 
-  final EMChatThreadManager chatThreadManager = EMChatThreadManager();
+  Future<void> _onUserKickedByOtherDevice() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onUserKickedByOtherDevice?.call();
+    }
+  }
+
+  Future<void> _onUserAuthenticationFailed() async {
+    for (var handler in _connectionHandlers.values) {
+      handler.onDisconnected?.call();
+    }
+  }
+
+  void _onTokenWillExpire(Map? map) {
+    for (var item in _connectionHandlers.values) {
+      item.onTokenWillExpire?.call();
+    }
+  }
+
+  void _onTokenDidExpire(Map? map) {
+    for (var item in _connectionHandlers.values) {
+      item.onTokenDidExpire?.call();
+    }
+  }
+
+  void _onAppActiveNumberReachLimit(Map? map) {
+    for (var item in _connectionHandlers.values) {
+      item.onAppActiveNumberReachLimit?.call();
+    }
+  }
+
+  void _onOfflineMessageSyncStart(Map? map) {
+    for (var item in _connectionHandlers.values) {
+      item.onOfflineMessageSyncStart?.call();
+    }
+  }
+
+  void _onOfflineMessageSyncFinish(Map? map) {
+    for (var item in _connectionHandlers.values) {
+      item.onOfflineMessageSyncFinish?.call();
+    }
+  }
+
+  Future<void> _onMultiDeviceGroupEvent(Map map) async {
+    EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
+    String target = map['target'];
+    List<String>? users = map.getList("userIds");
+
+    for (var handler in _multiDeviceHandlers.values) {
+      handler.onGroupEvent?.call(event, target, users);
+    }
+  }
+
+  Future<void> _onMultiDeviceContactEvent(Map map) async {
+    EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
+    String target = map['target'];
+    String? ext = map['ext'];
+
+    for (var handler in _multiDeviceHandlers.values) {
+      handler.onContactEvent?.call(event, target, ext);
+    }
+  }
+
+  Future<void> _onMultiDeviceThreadEvent(Map map) async {
+    EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
+    String target = map['target'] ?? '';
+    List<String> users = map.getList("userIds") ?? [];
+
+    for (var handler in _multiDeviceHandlers.values) {
+      handler.onChatThreadEvent?.call(event, target, users);
+    }
+  }
+
+  Future<void> _onMultiDeviceRoamMessagesRemovedEvent(Map map) async {
+    String convId = map['convId'];
+    String deviceId = map['deviceId'];
+    for (var handler in _multiDeviceHandlers.values) {
+      handler.onRemoteMessagesRemoved?.call(convId, deviceId);
+    }
+  }
+
+  Future<void> _onMultiDevicesConversationEvent(Map map) async {
+    EMMultiDevicesEvent event = convertIntToEMMultiDevicesEvent(map['event'])!;
+    String convId = map['convId'];
+    EMConversationType type = EMConversationType.values[map['convType']];
+    for (var handler in _multiDeviceHandlers.values) {
+      handler.onConversationEvent?.call(event, convId, type);
+    }
+  }
+
+  void _onReceiveCustomData(Map map) {
+    // TODO:
+    // customEventHandler?.call(map);
+  }
+
+  EMChatManager? _chatManager;
+  EMContactManager? _contactManager;
+  EMGroupManager? _groupManager;
+  EMChatRoomManager? _roomManager;
+  EMPresenceManager? _presenceManager;
+  EMPushManager? _pushManager;
+  EMChatThreadManager? _threadManager;
+  EMUserInfoManager? _userInfoManager;
+
+  EMChatManager get chatManager => _chatManager ??= EMChatManager();
+  EMContactManager get contactManager => _contactManager ??= EMContactManager();
+  EMChatRoomManager get roomManager => _roomManager ??= EMChatRoomManager();
+  EMGroupManager get groupManager => _groupManager ??= EMGroupManager();
+  EMPushManager get pushManager => _pushManager ??= EMPushManager();
+  EMPresenceManager get presenceManager =>
+      _presenceManager ??= EMPresenceManager();
+  EMUserInfoManager get userInfoManager =>
+      _userInfoManager ??= EMUserInfoManager();
+
+  EMChatThreadManager get threadManager =>
+      _threadManager ??= EMChatThreadManager();
 
   String? get currentUserId => _currentUserId;
   String? _currentUserId;
@@ -41,6 +232,17 @@ class EMClient {
 
   final Map<String, EMConnectionEventHandler> _connectionHandlers = {};
   final Map<String, EMMultiDeviceEventHandler> _multiDeviceHandlers = {};
+
+  void _updataHandler() {
+    chatManager;
+    contactManager;
+    roomManager;
+    groupManager;
+    pushManager;
+    presenceManager;
+    userInfoManager;
+    threadManager;
+  }
 
   /// ~english
   /// Adds the connection event handler. After calling this method, you can handle new connection events when they arrive.
@@ -333,7 +535,7 @@ class EMClient {
   /// Param [options] 配置，不可为空。
   /// ~end
   Future<void> init(EMOptions options) async {
-    // _updataHandler();
+    _updataHandler();
 
     try {
       _options = options;

@@ -1,6 +1,8 @@
 import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
 
 class ProgressManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {}
   // @override
   // void initHandler() {
   //   ProgressChannel.setMethodCallHandler((call) async {
