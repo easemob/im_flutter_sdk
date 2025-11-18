@@ -49,7 +49,6 @@ class ClientAndroid extends Client {
 }
 
 class ChatManagerAndroid extends ChatManager {
-  ChatManagerAndroid() : super();
   @override
   Future<dynamic> callNativeMethod(String method, [dynamic params]) async {
     return ChatChannel.invokeMethod(method, params);

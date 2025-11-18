@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
@@ -29,6 +30,170 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// ~end
 class EMChatManager {
   final Map<String, EMChatEventHandler> _eventHandlesMap = {};
+
+  EMChatManager() {
+    Client.instance.chatManager.updateNativeHandler((MethodCall call) {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
+      if (call.method == ChatMethodKeys.onMessagesReceived) {
+        return _onMessagesReceived(call.arguments);
+      } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {
+        return _onCmdMessagesReceived(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessagesRead) {
+        return _onMessagesRead(call.arguments);
+      } else if (call.method == ChatMethodKeys.onGroupMessageRead) {
+        return _onGroupMessageRead(call.arguments);
+      } else if (call.method ==
+          ChatMethodKeys.onReadAckForGroupMessageUpdated) {
+        return _onReadAckForGroupMessageUpdated(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessagesDelivered) {
+        return _onMessagesDelivered(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessagesRecalled) {
+        return _onMessagesRecalled(call.arguments);
+      } else if (call.method == ChatMethodKeys.onConversationUpdate) {
+        return _onConversationsUpdate(call.arguments);
+      } else if (call.method == ChatMethodKeys.onConversationHasRead) {
+        return _onConversationHasRead(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessageReactionDidChange) {
+        return _messageReactionDidChange(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessageContentChanged) {
+        return _onMessageContentChanged(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessagePinChanged) {
+        return _onMessagePinChanged(call.arguments);
+      } else if (call.method == ChatMethodKeys.onMessagesRecalledInfo) {
+        return _onMessagesRecalledInfo(call.arguments);
+      }
+      return Future.value();
+    });
+  }
+  Future<void> _onMessagesReceived(List messages) async {
+    List<EMMessage> messageList = [];
+    for (var message in messages) {
+      messageList.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesReceived?.call(messageList);
+    }
+  }
+
+  Future<void> _onCmdMessagesReceived(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onCmdMessagesReceived?.call(list);
+    }
+  }
+
+  Future<void> _onMessagesRead(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRead?.call(list);
+    }
+  }
+
+  Future<void> _onGroupMessageRead(List messages) async {
+    List<EMGroupMessageAck> list = [];
+    for (var message in messages) {
+      list.add(EMGroupMessageAck.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onGroupMessageRead?.call(list);
+    }
+  }
+
+  Future<void> _onReadAckForGroupMessageUpdated(List messages) async {
+    for (var item in _eventHandlesMap.values) {
+      item.onReadAckForGroupMessageUpdated?.call();
+    }
+  }
+
+  Future<void> _onMessagesDelivered(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesDelivered?.call(list);
+    }
+  }
+
+  Future<void> _onMessagesRecalled(List messages) async {
+    List<EMMessage> list = [];
+    for (var message in messages) {
+      list.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRecalled?.call(list);
+    }
+  }
+
+  Future<void> _onMessagesRecalledInfo(List infos) async {
+    List<RecallMessageInfo> list = [];
+    for (var info in infos) {
+      list.add(RecallMessageInfo.fromJson(info));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagesRecalledInfo?.call(list);
+    }
+  }
+
+  Future<void> _onConversationsUpdate(dynamic obj) async {
+    for (var item in _eventHandlesMap.values) {
+      item.onConversationsUpdate?.call();
+    }
+  }
+
+  Future<void> _onConversationHasRead(dynamic obj) async {
+    String from = (obj as Map)['from'];
+    String to = obj['to'];
+
+    for (var item in _eventHandlesMap.values) {
+      item.onConversationRead?.call(from, to);
+    }
+  }
+
+  Future<void> _messageReactionDidChange(List reactionChangeList) async {
+    List<EMMessageReactionEvent> list = [];
+    for (var reactionChange in reactionChangeList) {
+      list.add(EMMessageReactionEvent.fromJson(reactionChange));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onMessageReactionDidChange?.call(list);
+    }
+  }
+
+  Future<void> _onMessageContentChanged(dynamic obj) async {
+    EMMessage msg = EMMessage.fromJson(obj["message"]);
+    String operator = obj["operator"] ?? "";
+    int operationTime = obj["operationTime"] ?? 0;
+    for (var item in _eventHandlesMap.values) {
+      item.onMessageContentChanged?.call(msg, operator, operationTime);
+    }
+  }
+
+  Future<void> _onMessagePinChanged(dynamic obj) async {
+    String messageId = obj["msgId"] ?? "";
+    String conversationId = obj["convId"] ?? "";
+    MessagePinOperation pinOperation =
+        MessagePinOperation.values[obj["pinOperation"]];
+    MessagePinInfo pinInfo = MessagePinInfo.fromJson(obj["pinInfo"]);
+    for (var item in _eventHandlesMap.values) {
+      item.onMessagePinChanged
+          ?.call(messageId, conversationId, pinOperation, pinInfo);
+    }
+  }
 
   /// ~english
   /// Adds the chat event handler. After calling this method, you can handle for chat event when they arrive.

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
@@ -11,6 +12,62 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// ~end
 class EMChatThreadManager {
   final Map<String, EMChatThreadEventHandler> _eventHandlesMap = {};
+
+  EMChatThreadManager() {
+    Client.instance.chatThreadManager
+        .updateNativeHandler((MethodCall call) async {
+      Map? argMap = call.arguments;
+      if (call.method == ChatMethodKeys.onChatThreadCreate) {
+        _onChatThreadCreated(argMap);
+      } else if (call.method == ChatMethodKeys.onChatThreadUpdate) {
+        _onChatThreadUpdated(argMap);
+      } else if (call.method == ChatMethodKeys.onChatThreadDestroy) {
+        _onChatThreadDestroyed(argMap);
+      } else if (call.method == ChatMethodKeys.onUserKickOutOfChatThread) {
+        _onChatThreadUserRemoved(argMap);
+      }
+      return null;
+    });
+  }
+
+  Future<void> _onChatThreadCreated(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    for (var element in _eventHandlesMap.values) {
+      element.onChatThreadCreate?.call(EMChatThreadEvent.fromJson(event));
+    }
+  }
+
+  Future<void> _onChatThreadUpdated(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    for (var element in _eventHandlesMap.values) {
+      element.onChatThreadUpdate?.call(EMChatThreadEvent.fromJson(event));
+    }
+  }
+
+  Future<void> _onChatThreadDestroyed(Map? event) async {
+    if (event == null) {
+      return;
+    }
+    for (var element in _eventHandlesMap.values) {
+      element.onChatThreadDestroy?.call(EMChatThreadEvent.fromJson(event));
+    }
+  }
+
+  Future<void> _onChatThreadUserRemoved(Map? event) async {
+    if (event == null) {
+      return;
+    }
+
+    for (var element in _eventHandlesMap.values) {
+      element.onUserKickOutOfChatThread?.call(
+        EMChatThreadEvent.fromJson(event),
+      );
+    }
+  }
 
   /// ~english
   /// Adds the chat thread event handler. After calling this method, you can handle for chat thread event when they arrive.

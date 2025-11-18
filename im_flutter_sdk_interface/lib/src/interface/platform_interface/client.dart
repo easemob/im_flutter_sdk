@@ -1,3 +1,4 @@
+import 'package:im_flutter_sdk_interface/src/event_handler/channel_manager.dart';
 import 'package:im_flutter_sdk_interface/src/interface/manager_mixin.dart';
 import 'package:im_flutter_sdk_interface/src/interface/method_channel/default_channels.dart';
 
@@ -22,20 +23,65 @@ abstract class Client extends PlatformInterface with ManagerMixin {
   UserInfoManager get userInfoManager => UserInfoManager();
   PresenceManager get presenceManager => PresenceManager();
   ChatThreadManager get chatThreadManager => ChatThreadManager();
+
+  @override
+  void updateNativeHandler(handler) {
+    ClientChannel.setMethodCallHandler(handler);
+  }
 }
 
-class ChatManager with ManagerMixin {}
+class ChatManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    ChatChannel.setMethodCallHandler(handler);
+  }
+}
 
-class ContactManager with ManagerMixin {}
+class ContactManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    ContactChannel.setMethodCallHandler(handler);
+  }
+}
 
-class ChatRoomManager with ManagerMixin {}
+class ChatRoomManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    ChatRoomChannel.setMethodCallHandler(handler);
+  }
+}
 
-class GroupManager with ManagerMixin {}
+class GroupManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    GroupChannel.setMethodCallHandler(handler);
+  }
+}
 
-class PushManager with ManagerMixin {}
+class PushManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    PushChannel.setMethodCallHandler(handler);
+  }
+}
 
-class UserInfoManager with ManagerMixin {}
+class UserInfoManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    UserInfoChannel.setMethodCallHandler(handler);
+  }
+}
 
-class PresenceManager with ManagerMixin {}
+class PresenceManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    PresenceChannel.setMethodCallHandler(handler);
+  }
+}
 
-class ChatThreadManager with ManagerMixin {}
+class ChatThreadManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    ThreadChannel.setMethodCallHandler(handler);
+  }
+}

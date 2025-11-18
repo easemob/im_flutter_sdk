@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
@@ -27,6 +29,136 @@ import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 /// ~end
 class EMChatRoomManager {
   final Map<String, EMChatRoomEventHandler> _eventHandlesMap = {};
+
+  EMChatRoomManager() {
+    Client.instance.chatRoomManager
+        .updateNativeHandler((MethodCall call) async {
+      EMLog.d("${call.method}: arguments: ${call.arguments}");
+      Map? argMap = call.arguments;
+      if (call.method == ChatMethodKeys.chatRoomChange) {
+        return _chatRoomChange(argMap!);
+      }
+    });
+  }
+
+  Future<void> _chatRoomChange(Map event) async {
+    String? type = event['type'];
+
+    for (var item in _eventHandlesMap.values) {
+      switch (type) {
+        case EMChatRoomEvent.ON_CHAT_ROOM_DESTROYED:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          item.onChatRoomDestroyed?.call(roomId, roomName);
+          break;
+        case EMChatRoomEvent.ON_MEMBER_JOINED:
+          String roomId = event['roomId'];
+          String participant = event['participant'];
+          String? ext = event['ext'];
+          item.onMemberJoinedFromChatRoom?.call(roomId, participant, ext);
+          break;
+        case EMChatRoomEvent.ON_MEMBER_EXITED:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          String participant = event['participant'];
+          item.onMemberExitedFromChatRoom?.call(roomId, roomName, participant);
+          break;
+        case EMChatRoomEvent.ON_REMOVED_FROM_CHAT_ROOM:
+          String roomId = event['roomId'];
+          String? roomName = event['roomName'];
+          String participant = event['participant'];
+          LeaveReason? reason;
+          int iReason = event['reason'] ?? -1;
+          if (iReason == 0) {
+            reason = LeaveReason.Kicked;
+          } else if (iReason == 2) {
+            reason = LeaveReason.Offline;
+          }
+          item.onRemovedFromChatRoom
+              ?.call(roomId, roomName, participant, reason);
+          break;
+        case EMChatRoomEvent.ON_MUTE_LIST_ADDED:
+          String roomId = event['roomId'];
+          if (event["mutes"] is Map<String, dynamic>) {
+            Map<String, dynamic> mutesDynamic = event["mutes"];
+            Map<String, int> mutes = {};
+            mutesDynamic.forEach((key, value) {
+              if (value is int) {
+                mutes[key] = value; // 只添加 int 类型的值
+              }
+            });
+            item.onMuteListAddedFromChatRoom?.call(roomId, mutes);
+          }
+          break;
+        case EMChatRoomEvent.ON_MUTE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> mutes = List.from(event['mutes'] ?? []);
+          item.onMuteListRemovedFromChatRoom?.call(roomId, mutes);
+          break;
+        case EMChatRoomEvent.ON_ADMIN_ADDED:
+          String roomId = event['roomId'];
+          String admin = event['admin'];
+          item.onAdminAddedFromChatRoom?.call(roomId, admin);
+          break;
+        case EMChatRoomEvent.ON_ADMIN_REMOVED:
+          String roomId = event['roomId'];
+          String admin = event['admin'];
+          item.onAdminRemovedFromChatRoom?.call(roomId, admin);
+          break;
+        case EMChatRoomEvent.ON_OWNER_CHANGED:
+          String roomId = event['roomId'];
+          String newOwner = event['newOwner'];
+          String oldOwner = event['oldOwner'];
+          item.onOwnerChangedFromChatRoom?.call(roomId, newOwner, oldOwner);
+          break;
+        case EMChatRoomEvent.ON_ANNOUNCEMENT_CHANGED:
+          String roomId = event['roomId'];
+          String? announcement = event['announcement'];
+          item.onAnnouncementChangedFromChatRoom?.call(roomId, announcement);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_ADDED:
+          String roomId = event['roomId'];
+          List<String> members = List.from(event["whitelist"] ?? []);
+          item.onAllowListAddedFromChatRoom?.call(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_WHITE_LIST_REMOVED:
+          String roomId = event['roomId'];
+          List<String> members = List.from(event["whitelist"] ?? []);
+          item.onAllowListRemovedFromChatRoom?.call(roomId, members);
+          break;
+        case EMChatRoomEvent.ON_ALL_MEMBER_MUTE_STATE_CHANGED:
+          String roomId = event['roomId'];
+          bool isAllMuted = event['isMuted'];
+          item.onAllChatRoomMemberMuteStateChanged?.call(roomId, isAllMuted);
+          break;
+        case EMChatRoomEvent.ON_SPECIFICATION_CHANGED:
+          EMChatRoom room = EMChatRoom.fromJson(event["room"]);
+          item.onSpecificationChanged?.call(room);
+          break;
+        case EMChatRoomEvent.ON_ATTRIBUTES_UPDATED:
+          String roomId = event['roomId'];
+          Map<String, String> attributes =
+              event["attributes"].cast<String, String>();
+          String fromId = event["fromId"];
+          item.onAttributesUpdated?.call(
+            roomId,
+            attributes,
+            fromId,
+          );
+          break;
+        case EMChatRoomEvent.ON_ATTRIBUTES_REMOVED:
+          String roomId = event['roomId'];
+          List<String> keys = event["keys"].cast<String>();
+          String fromId = event["fromId"];
+          item.onAttributesRemoved?.call(
+            roomId,
+            keys,
+            fromId,
+          );
+          break;
+      }
+    }
+  }
 
   /// ~english
   /// Adds the room event handler. After calling this method, you can handle for new room event when they arrive.
