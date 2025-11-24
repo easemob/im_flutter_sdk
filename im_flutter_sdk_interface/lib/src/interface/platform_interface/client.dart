@@ -23,6 +23,8 @@ abstract class Client extends PlatformInterface with ManagerMixin {
   UserInfoManager get userInfoManager => UserInfoManager();
   PresenceManager get presenceManager => PresenceManager();
   ChatThreadManager get chatThreadManager => ChatThreadManager();
+  ConversationManager get conversationManager => ConversationManager();
+  MessageManager get messageManager => MessageManager();
 
   @override
   void updateNativeHandler(handler) {
@@ -83,5 +85,19 @@ class ChatThreadManager with ManagerMixin {
   @override
   void updateNativeHandler(handler) {
     ThreadChannel.setMethodCallHandler(handler);
+  }
+}
+
+class ConversationManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    ConversationChannel.setMethodCallHandler(handler);
+  }
+}
+
+class MessageManager with ManagerMixin {
+  @override
+  void updateNativeHandler(handler) {
+    MessageChannel.setMethodCallHandler(handler);
   }
 }

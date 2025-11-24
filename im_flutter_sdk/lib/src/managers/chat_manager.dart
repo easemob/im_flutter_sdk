@@ -133,6 +133,7 @@ class EMChatManager {
     }
 
     for (var item in _eventHandlesMap.values) {
+      // ignore: deprecated_member_use_from_same_package
       item.onMessagesRecalled?.call(list);
     }
   }

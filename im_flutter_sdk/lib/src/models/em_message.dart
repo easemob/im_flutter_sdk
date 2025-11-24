@@ -2,9 +2,9 @@
 
 import 'dart:math';
 
-import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
 /// The message class.
@@ -282,7 +282,7 @@ class EMMessage {
       return null;
     }
     Map req = {"msgId": msgId};
-    Map result = await _emMessageChannel.invokeMethod(
+    Map result = await Client.instance.messageManager.callNativeMethod(
       ChatMethodKeys.getPinInfo,
       req,
     );
@@ -995,9 +995,6 @@ class EMMessage {
     return toJson().toString();
   }
 
-  static const MethodChannel _emMessageChannel =
-      MethodChannel('com.chat.im/chat_message', JSONMethodCodec());
-
   /// ~english
   /// Gets the Reaction list.
   ///
@@ -1014,12 +1011,12 @@ class EMMessage {
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<List<EMMessageReaction>> reactionList() async {
-    Map req = {"msgId": msgId};
-    Map result = await _emMessageChannel.invokeMethod(
-      ChatMethodKeys.getReactionList,
-      req,
-    );
     try {
+      Map req = {"msgId": msgId};
+      Map result = await Client.instance.messageManager.callNativeMethod(
+        ChatMethodKeys.getReactionList,
+        req,
+      );
       EMError.hasErrorFromResult(result);
       List<EMMessageReaction> list = [];
       result[ChatMethodKeys.getReactionList]?.forEach(
@@ -1049,10 +1046,10 @@ class EMMessage {
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<int> groupAckCount() async {
-    Map req = {"msgId": msgId};
-    Map result =
-        await _emMessageChannel.invokeMethod(ChatMethodKeys.groupAckCount, req);
     try {
+      Map req = {"msgId": msgId};
+      Map result = await Client.instance.messageManager
+          .callNativeMethod(ChatMethodKeys.groupAckCount, req);
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.groupAckCount)) {
         return result[ChatMethodKeys.groupAckCount];
@@ -1083,10 +1080,10 @@ class EMMessage {
   /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
   /// ~end
   Future<EMChatThread?> chatThread() async {
-    Map req = {"msgId": msgId};
-    Map result =
-        await _emMessageChannel.invokeMethod(ChatMethodKeys.getChatThread, req);
     try {
+      Map req = {"msgId": msgId};
+      Map result = await Client.instance.messageManager
+          .callNativeMethod(ChatMethodKeys.getChatThread, req);
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getChatThread)) {
         return result.getValue<EMChatThread>(ChatMethodKeys.getChatThread,

@@ -198,8 +198,7 @@ class EMClient {
   }
 
   void _onReceiveCustomData(Map map) {
-    // TODO:
-    // customEventHandler?.call(map);
+    customEventHandler?.call(map);
   }
 
   EMChatManager? _chatManager;
@@ -232,6 +231,8 @@ class EMClient {
 
   final Map<String, EMConnectionEventHandler> _connectionHandlers = {};
   final Map<String, EMMultiDeviceEventHandler> _multiDeviceHandlers = {};
+
+  void Function(Map map)? customEventHandler;
 
   void _updataHandler() {
     chatManager;
