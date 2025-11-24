@@ -1,7 +1,8 @@
 import 'dart:core';
-import 'package:flutter/services.dart';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
 /// ~english
 /// The conversation class, indicating a one-to-one chat, a group chat, or a conversation chat. It contains the messages that are sent and received within the conversation.
@@ -146,9 +147,6 @@ class EMConversation {
 
   Map<String, String>? _ext;
 
-  static const MethodChannel _emConversationChannel =
-      MethodChannel('com.chat.im/chat_conversation', JSONMethodCodec());
-
   /// ~english
   /// The conversation extension attribute.
   ///
@@ -172,11 +170,11 @@ class EMConversation {
   /// 子区功能目前版本暂不可设置。
   /// ~end
   Future<void> setExt(Map<String, String>? ext) async {
-    Map req = _toJson();
-    req.putIfNotNull("ext", ext);
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.syncConversationExt, req);
     try {
+      Map req = _toJson();
+      req.putIfNotNull("ext", ext);
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.syncConversationExt, req);
       EMError.hasErrorFromResult(result);
       _ext = ext;
     } catch (e) {
@@ -204,10 +202,10 @@ class EMConversation {
   /// **Return** 消息体实例。
   /// ~end
   Future<EMMessage?> latestMessage() async {
-    Map req = _toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.getLatestMessage, req);
     try {
+      Map req = _toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.getLatestMessage, req);
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getLatestMessage)) {
         return EMMessage.fromJson(result[ChatMethodKeys.getLatestMessage]);
@@ -231,10 +229,10 @@ class EMConversation {
   /// **Return** 消息体实例。
   /// ~end
   Future<EMMessage?> lastReceivedMessage() async {
-    Map req = _toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.getLatestMessageFromOthers, req);
     try {
+      Map req = _toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.getLatestMessageFromOthers, req);
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getLatestMessageFromOthers)) {
         return EMMessage.fromJson(
@@ -263,10 +261,10 @@ class EMConversation {
   /// **Throws**  如果有异常会在此抛出，包含错误码和原因，详见 [EMError]。
   /// ~end
   Future<int> unreadCount() async {
-    Map req = _toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.getUnreadMsgCount, req);
     try {
+      Map req = _toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.getUnreadMsgCount, req);
       EMError.hasErrorFromResult(result);
       if (result.containsKey(ChatMethodKeys.getUnreadMsgCount)) {
         return result[ChatMethodKeys.getUnreadMsgCount];
@@ -294,11 +292,11 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> markMessageAsRead(String messageId) async {
-    Map req = _toJson();
-    req['msgId'] = messageId;
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.markMessageAsRead, req);
     try {
+      Map req = _toJson();
+      req['msgId'] = messageId;
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.markMessageAsRead, req);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -313,9 +311,9 @@ class EMConversation {
   /// 将所有消息标为已读。
   /// ~end
   Future<void> markAllMessagesAsRead() async {
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.markAllMessagesAsRead, _toJson());
     try {
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.markAllMessagesAsRead, _toJson());
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -340,11 +338,11 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> insertMessage(EMMessage message) async {
-    Map req = _toJson();
-    req['msg'] = message.toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.insertMessage, req);
     try {
+      Map req = _toJson();
+      req['msg'] = message.toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.insertMessage, req);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -371,11 +369,11 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> appendMessage(EMMessage message) async {
-    Map req = _toJson();
-    req['msg'] = message.toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.appendMessage, req);
     try {
+      Map req = _toJson();
+      req['msg'] = message.toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.appendMessage, req);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -402,12 +400,12 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> updateMessage(EMMessage message) async {
-    Map req = _toJson();
-    req['msg'] = message.toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.updateConversationMessage, req);
-    EMError.hasErrorFromResult(result);
     try {
+      Map req = _toJson();
+      req['msg'] = message.toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.updateConversationMessage, req);
+      EMError.hasErrorFromResult(result);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -433,11 +431,11 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> deleteMessage(String messageId) async {
-    Map req = _toJson();
-    req['msgId'] = messageId;
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.removeMessage, req);
     try {
+      Map req = _toJson();
+      req['msgId'] = messageId;
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.removeMessage, req);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -456,9 +454,9 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> deleteAllMessages() async {
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.clearAllMessages, _toJson());
     try {
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.clearAllMessages, _toJson());
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -486,12 +484,12 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> deleteMessagesWithTs(int startTs, int endTs) async {
-    Map req = _toJson();
-    req['startTs'] = startTs;
-    req['endTs'] = endTs;
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.deleteMessagesWithTs, req);
     try {
+      Map req = _toJson();
+      req['startTs'] = startTs;
+      req['endTs'] = endTs;
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.deleteMessagesWithTs, req);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -522,11 +520,11 @@ class EMConversation {
   /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<EMMessage?> loadMessage(String messageId) async {
-    Map req = _toJson();
-    req['msgId'] = messageId;
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.loadMsgWithId, req);
     try {
+      Map req = _toJson();
+      req['msgId'] = messageId;
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.loadMsgWithId, req);
       EMError.hasErrorFromResult(result);
       if (result[ChatMethodKeys.loadMsgWithId] != null) {
         return EMMessage.fromJson(result[ChatMethodKeys.loadMsgWithId]);
@@ -587,15 +585,15 @@ class EMConversation {
     String? sender,
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
-    Map req = _toJson();
-    req['msgType'] = type.index;
-    req['timestamp'] = timestamp;
-    req['count'] = count;
-    req['direction'] = direction.index;
-    req.putIfNotNull("sender", sender);
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.loadMsgWithMsgType, req);
     try {
+      Map req = _toJson();
+      req['msgType'] = type.index;
+      req['timestamp'] = timestamp;
+      req['count'] = count;
+      req['direction'] = direction.index;
+      req.putIfNotNull("sender", sender);
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.loadMsgWithMsgType, req);
       EMError.hasErrorFromResult(result);
       List<EMMessage> list = [];
       result[ChatMethodKeys.loadMsgWithMsgType]?.forEach((element) {
@@ -647,15 +645,14 @@ class EMConversation {
     int loadCount = 20,
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
-    Map req = _toJson();
-    req["startId"] = startMsgId;
-    req['count'] = loadCount;
-    req['direction'] = direction.index;
-
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.loadMsgWithStartId, req);
-
     try {
+      Map req = _toJson();
+      req["startId"] = startMsgId;
+      req['count'] = loadCount;
+      req['direction'] = direction.index;
+
+      Map<String, dynamic> result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.loadMsgWithStartId, req);
       EMError.hasErrorFromResult(result);
       List<EMMessage> msgList = [];
       result[ChatMethodKeys.loadMsgWithStartId]?.forEach((element) {
@@ -723,19 +720,18 @@ class EMConversation {
     MessageSearchScope searchScope = MessageSearchScope.All,
     EMSearchDirection direction = EMSearchDirection.Up,
   }) async {
-    Map req = _toJson();
-    req["keywords"] = keywords;
-    req['count'] = count;
-    req['timestamp'] = timestamp;
-    req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
-    req['direction'] = direction.index;
-    req.putIfNotNull("senders", senders);
-    req.putIfNotNull("from", sender);
-
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.loadMsgWithKeywords, req);
-
     try {
+      Map req = _toJson();
+      req["keywords"] = keywords;
+      req['count'] = count;
+      req['timestamp'] = timestamp;
+      req['searchScope'] = MessageSearchScope.values.indexOf(searchScope);
+      req['direction'] = direction.index;
+      req.putIfNotNull("senders", senders);
+      req.putIfNotNull("from", sender);
+
+      Map<String, dynamic> result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.loadMsgWithKeywords, req);
       EMError.hasErrorFromResult(result);
       List<EMMessage> msgList = [];
       result[ChatMethodKeys.loadMsgWithKeywords]?.forEach((element) {
@@ -783,15 +779,14 @@ class EMConversation {
     required int endTime,
     int count = 20,
   }) async {
-    Map req = _toJson();
-    req["startTime"] = startTime;
-    req['endTime'] = endTime;
-    req['count'] = count;
-
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.loadMsgWithTime, req);
-
     try {
+      Map req = _toJson();
+      req["startTime"] = startTime;
+      req['endTime'] = endTime;
+      req['count'] = count;
+
+      Map<String, dynamic> result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.loadMsgWithTime, req);
       EMError.hasErrorFromResult(result);
       List<EMMessage> msgList = [];
       result[ChatMethodKeys.loadMsgWithTime]?.forEach((element) {
@@ -811,13 +806,13 @@ class EMConversation {
   /// 会话中的消息数
   /// ~end
   Future<int> messagesCount() async {
-    Map req = _toJson();
-    Map<String, dynamic> result = await _emConversationChannel.invokeMethod(
-      ChatMethodKeys.messageCount,
-      req,
-    );
-
     try {
+      Map req = _toJson();
+      Map<String, dynamic> result =
+          await Client.instance.conversationManager.callNativeMethod(
+        ChatMethodKeys.messageCount,
+        req,
+      );
       EMError.hasErrorFromResult(result);
       int count = result[ChatMethodKeys.messageCount];
       return count;
@@ -842,11 +837,11 @@ class EMConversation {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<void> deleteMessageByIds(List<String> messageIds) async {
-    Map req = _toJson();
-    req['messageIds'] = messageIds;
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.deleteMessageByIds, req);
     try {
+      Map req = _toJson();
+      req['messageIds'] = messageIds;
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.deleteMessageByIds, req);
       EMError.hasErrorFromResult(result);
     } catch (e) {
       rethrow;
@@ -865,10 +860,10 @@ class EMConversation {
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
   Future<List<EMMessage>> loadPinnedMessages() async {
-    Map req = _toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.pinnedMessages, req);
     try {
+      Map req = _toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.pinnedMessages, req);
       EMError.hasErrorFromResult(result);
       List<EMMessage> msgList = [];
       result[ChatMethodKeys.pinnedMessages]?.forEach((element) {
@@ -895,10 +890,10 @@ class EMConversation {
   /// ~end
   ///
   Future<ChatPushRemindType> remindType() async {
-    Map req = _toJson();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.conversationRemindType, req);
     try {
+      Map req = _toJson();
+      Map result = await Client.instance.conversationManager
+          .callNativeMethod(ChatMethodKeys.conversationRemindType, req);
       EMError.hasErrorFromResult(result);
       return ChatPushRemindType
           .values[result[ChatMethodKeys.conversationRemindType]];
@@ -928,15 +923,15 @@ class EMConversation {
   /// ~end
   Future<List<EMMessage>> searchMsgsByOptions(
       MessageSearchOptions options) async {
-    Map req = _toJson();
-    req['ts'] = options.ts;
-    req['count'] = options.count;
-    req['direction'] = options.direction.index;
-    req.putIfNotNull("from", options.from);
-    req['types'] = options.types.map((e) => (e).index).toList();
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.conversationSearchMsgsByOptions, req);
     try {
+      Map req = _toJson();
+      req['ts'] = options.ts;
+      req['count'] = options.count;
+      req['direction'] = options.direction.index;
+      req.putIfNotNull("from", options.from);
+      req['types'] = options.types.map((e) => (e).index).toList();
+      Map result = await Client.instance.conversationManager.callNativeMethod(
+          ChatMethodKeys.conversationSearchMsgsByOptions, req);
       EMError.hasErrorFromResult(result);
       List<EMMessage> messages = [];
       List list = result[ChatMethodKeys.conversationSearchMsgsByOptions];
@@ -982,12 +977,12 @@ class EMConversation {
     required int startMs,
     required int endMs,
   }) async {
-    Map req = _toJson();
-    req.putIfNotNull("startTs", startMs);
-    req.putIfNotNull("endTs", endMs);
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.conversationGetLocalMessageCount, req);
     try {
+      Map req = _toJson();
+      req.putIfNotNull("startTs", startMs);
+      req.putIfNotNull("endTs", endMs);
+      Map result = await Client.instance.conversationManager.callNativeMethod(
+          ChatMethodKeys.conversationGetLocalMessageCount, req);
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {
@@ -1016,11 +1011,11 @@ class EMConversation {
   /// ~end
   Future<void> deleteLocalAndServerMessages(
       {required List<String> msgIds}) async {
-    Map req = _toJson();
-    req.putIfNotNull("msgIds", msgIds);
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.conversationDeleteServerMessageWithIds, req);
     try {
+      Map req = _toJson();
+      req.putIfNotNull("msgIds", msgIds);
+      Map result = await Client.instance.conversationManager.callNativeMethod(
+          ChatMethodKeys.conversationDeleteServerMessageWithIds, req);
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {
@@ -1049,11 +1044,10 @@ class EMConversation {
   /// ~end
   Future<void> deleteLocalAndServerMessagesByTime(
       {required int beforeMs}) async {
-    Map req = _toJson();
-    req.putIfNotNull("beforeTs", beforeMs);
-    Map result = await _emConversationChannel.invokeMethod(
-        ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
     try {
+      Map req = {"beforeTs": beforeMs};
+      Map result = await Client.instance.conversationManager.callNativeMethod(
+          ChatMethodKeys.conversationDeleteServerMessageWithTime, req);
       EMError.hasErrorFromResult(result);
       return result[ChatMethodKeys.conversationGetLocalMessageCount];
     } catch (e) {

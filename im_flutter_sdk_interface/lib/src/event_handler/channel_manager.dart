@@ -53,3 +53,13 @@ const MethodChannel UserInfoChannel = MethodChannel(
   '$channelPrefix/chat_userInfo_manager',
   JSONMethodCodec(),
 );
+
+const MethodChannel ConversationChannel = MethodChannel(
+  '$channelPrefix/chat_conversation',
+  JSONMethodCodec(),
+);
+
+const MethodChannel MessageChannel = MethodChannel(
+  '$channelPrefix/chat_message',
+  JSONMethodCodec(),
+);
