@@ -169,9 +169,24 @@ class _MyHomePageState extends State<MyHomePage> {
   void _addChatListener() {
     EMClient.getInstance.addConnectionEventHandler(
       'identifier',
-      EMConnectionEventHandler(onUserDidLoginFromOtherDevice: (info) {
-        _addLogToConsole("onUserDidLoginFromOtherDevice,info: ${info.deviceName}");
-      }),
+      EMConnectionEventHandler(
+        onUserDidLoginFromOtherDevice: (info) {
+          _addLogToConsole(
+              "onUserDidLoginFromOtherDevice,info: ${info.deviceName}");
+        },
+        onConnected: () {
+          _addLogToConsole("onConnected");
+        },
+        onDisconnected: () {
+          _addLogToConsole("onDisconnected");
+        },
+        onUserDidRemoveFromServer: () {
+          _addLogToConsole("onUserDidRemoveFromServer");
+        },
+        onUserDidForbidByServer: () {
+          _addLogToConsole("onUserDidForbidByServer");
+        },
+      ),
     );
 
     EMClient.getInstance.chatManager.addMessageEvent(

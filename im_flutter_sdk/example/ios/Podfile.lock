@@ -26,7 +26,7 @@ SPEC CHECKSUMS:
   AgoraInfra_iOS: 65e11a2183ab7836258768868d06058c22701b13
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   HyphenateChat: ec813941100d602d24e06b04b867474d634cb39d
-  im_flutter_sdk_ios: fafe8d1fc7fb81592d81a88ddcc907042117cf6c
+  im_flutter_sdk_ios: de87814fcf3a3cb585a78b55fba5f9fec989096b
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
 
