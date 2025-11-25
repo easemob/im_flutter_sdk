@@ -402,3 +402,4 @@ static NSString *const updateGroupAvatar = @"updateGroupAvatar";
 
 // 4.15.2
 static NSString *const loadConversationMessagesWithKeyword = @"loadConversationMessagesWithKeyword";
+static NSString *const ChatLoadMessagesWithIds = @"loadMessagesWithIds";
