@@ -256,6 +256,7 @@ class EMChatRoomManager {
 
   Future<void> joinChatRoom(
     String roomId, {
+    @Deprecated('') bool? leaveOther,
     bool leaveOtherRooms = false,
     String? ext,
   }) async {
