@@ -212,7 +212,7 @@ class EMClient {
 
   EMChatManager get chatManager => _chatManager ??= EMChatManager();
   EMContactManager get contactManager => _contactManager ??= EMContactManager();
-  EMChatRoomManager get roomManager => _roomManager ??= EMChatRoomManager();
+  EMChatRoomManager get chatRoomManager => _roomManager ??= EMChatRoomManager();
   EMGroupManager get groupManager => _groupManager ??= EMGroupManager();
   EMPushManager get pushManager => _pushManager ??= EMPushManager();
   EMPresenceManager get presenceManager =>
@@ -220,7 +220,7 @@ class EMClient {
   EMUserInfoManager get userInfoManager =>
       _userInfoManager ??= EMUserInfoManager();
 
-  EMChatThreadManager get threadManager =>
+  EMChatThreadManager get chatThreadManager =>
       _threadManager ??= EMChatThreadManager();
 
   String? get currentUserId => _currentUserId;
@@ -237,12 +237,12 @@ class EMClient {
   void _updataHandler() {
     chatManager;
     contactManager;
-    roomManager;
+    chatRoomManager;
     groupManager;
     pushManager;
     presenceManager;
     userInfoManager;
-    threadManager;
+    chatThreadManager;
   }
 
   /// ~english

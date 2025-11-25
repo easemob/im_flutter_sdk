@@ -15,6 +15,8 @@ class ClientIOS extends Client {
   final PresenceManager _presenceManager = PresenceManagerIOS();
   final PushManager _pushManager = PushManagerIOS();
   final UserInfoManager _userInfoManager = UserInfoManagerIOS();
+  final ConversationManager _conversationManager = ConversationManagerIOS();
+  final MessageManager _messageManager = MessageManagerIOS();
   // ignore: unused_field
   ProgressManager? _progressManager;
 
@@ -41,6 +43,12 @@ class ClientIOS extends Client {
 
   @override
   UserInfoManager get userInfoManager => _userInfoManager;
+
+  @override
+  ConversationManager get conversationManager => _conversationManager;
+
+  @override
+  MessageManager get messageManager => _messageManager;
 
   @override
   Future<dynamic> callNativeMethod(String method, [dynamic params]) async {
@@ -109,5 +117,21 @@ class UserInfoManagerIOS extends UserInfoManager {
   @override
   Future<dynamic> callNativeMethod(String method, [dynamic params]) async {
     return UserInfoChannel.invokeMethod(method, params);
+  }
+}
+
+class ConversationManagerIOS extends ConversationManager {
+  ConversationManagerIOS() : super();
+  @override
+  Future<dynamic> callNativeMethod(String method, [dynamic params]) async {
+    return ConversationChannel.invokeMethod(method, params);
+  }
+}
+
+class MessageManagerIOS extends MessageManager {
+  MessageManagerIOS() : super();
+  @override
+  Future<dynamic> callNativeMethod(String method, [dynamic params]) async {
+    return MessageChannel.invokeMethod(method, params);
   }
 }
