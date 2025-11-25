@@ -439,4 +439,5 @@ class ChatMethodKeys {
   // 4.15.2
   static const String loadConversationMessagesWithKeyword =
       "loadConversationMessagesWithKeyword";
+  static const String loadMessagesWithIds = "loadMessagesWithIds";
 }

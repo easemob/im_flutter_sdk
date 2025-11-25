@@ -579,6 +579,54 @@ class EMChatManager {
   }
 
   /// ~english
+  /// Loads messages from the local database by message IDs.
+  ///
+  /// Param [messageIds] The list of message IDs.
+  ///
+  /// Param [conversationId] The conversation ID.
+  ///
+  /// **Return** The list of message objects specified by the message IDs.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 根据消息 ID 列表从本地数据库加载消息。
+  ///
+  /// Param [messageIds] 消息 ID 列表。
+  ///
+  /// Param [conversationId] 会话 ID。
+  ///
+  /// **Return** 根据消息 ID 列表获取的消息对象列表。
+  ///
+  /// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<List<EMMessage>> loadMessagesWithIds(
+    List<String> messageIds,
+    String conversationId,
+  ) async {
+    try {
+      Map req = {
+        "messageIds": messageIds,
+        "conversationId": conversationId,
+      };
+      Map result = await Client.instance.chatManager
+          .callNativeMethod(ChatMethodKeys.loadMessagesWithIds, req);
+      EMError.hasErrorFromResult(result);
+      List<EMMessage> messageList = [];
+      if (result.containsKey(ChatMethodKeys.loadMessagesWithIds)) {
+        List messages = result[ChatMethodKeys.loadMessagesWithIds];
+        for (var message in messages) {
+          messageList.add(EMMessage.fromJson(message));
+        }
+      }
+      return messageList;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
   /// Gets the conversation by conversation ID and conversation type.
   ///
   /// Param [conversationId] The conversation ID.

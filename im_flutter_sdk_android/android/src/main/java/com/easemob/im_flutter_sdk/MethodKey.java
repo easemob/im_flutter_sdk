@@ -378,4 +378,5 @@ public class MethodKey {
 
     // 4.15.2
     static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
+    static final String loadMessagesWithIds = "loadMessagesWithIds";
 }
