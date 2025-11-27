@@ -240,6 +240,9 @@
     else if ([loadConversationMessagesWithKeyword isEqualToString:call.method]) {
         [self loadConversationMessagesWithKeyword:call.arguments channelName:call.method result:result];
     }
+    else if ([ChatLoadMessagesWithIds isEqualToString:call.method]) {
+        [self loadMessagesWithIds:call.arguments channelName:call.method result:result];
+    }
     else {
         [super handleMethodCall:call result:result];
     }
@@ -1591,6 +1594,29 @@
                       channelName:aChannelName
                             error:aError
                            object:aConversationMessages];
+    }];
+}
+
+- (void)loadMessagesWithIds:(NSDictionary *)param
+                channelName:(NSString *)aChannelName
+                     result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSArray *messageIds = param[@"messageIds"];
+    NSString *conversationId = param[@"conversationId"];
+
+    [EMClient.sharedClient.chatManager getMessages:messageIds
+                              withConversationId:conversationId
+                                      completion:^(NSArray<EMChatMessage *> * _Nullable aMessages, EMError * _Nullable aError)
+     {
+        NSMutableArray *msgList = [NSMutableArray array];
+        for (EMChatMessage *msg in aMessages) {
+            [msgList addObject:[msg toJson]];
+        }
+
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:msgList];
     }];
 }
 

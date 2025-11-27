@@ -1,3 +1,6 @@
+## 4.16.0
+- 新增 `loadMessagesWithIds` API；
+
 ## 4.15.2
 - 新增 `getCurrentDeviceId` API ;
 - 新增 `loadConversationMessagesWithKeyword` API ;
