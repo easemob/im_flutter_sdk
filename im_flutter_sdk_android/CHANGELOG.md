@@ -1,6 +1,7 @@
 ## 4.16.0
 - 安卓依赖 SDK 升级到 4.16.1；
 - 新增 `loadMessagesWithIds` API；
+- 修复 `Thread` 子区会被加入到 `conversation` 列表中；
 - 修复 当修改文本和自定义消息之外的消息时，`EEMChatEventHandler#onMessageContentChanged` 回调中不返回修改的信息的问题；
 - 修复 拉取漫游消息时，设置为不保存消息 `FetchMessageOptions#needSave 设置为 false`，也会生成新的本地会话的问题；
 - 修复 群组或聊天室解散后，成员收到回调后，仍然会从服务器获取群组或聊天室详情的问题；
