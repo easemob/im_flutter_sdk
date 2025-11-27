@@ -34,14 +34,16 @@ public class ConversationWrapper extends Wrapper implements MethodCallHandler{
     private static class ConversationParams {
         final String convId;
         final EMConversation.EMConversationType type;
+        final boolean isThread;
 
         ConversationParams(JSONObject params) throws JSONException {
             this.convId = params.getString("convId");
             this.type = EnumTools.conversationTypeFromInt(params.getInt("type"));
+            this.isThread = params.optBoolean("isThread", false);
         }
 
         EMConversation getConversation() {
-            return EMClient.getInstance().chatManager().getConversation(convId, type, true);
+            return EMClient.getInstance().chatManager().getConversation(convId, type, true, isThread);
         }
     }
 

@@ -168,6 +168,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.loadConversationMessagesWithKeyword.equals(call.method)) {
                 loadConversationMessagesWithKeyword(params, call.method, result);
             }
+            else if (MethodKey.loadMessagesWithIds.equals(call.method)) {
+                loadMessagesWithIds(params, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -1328,6 +1331,26 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 }
             }
         );
+    }
+
+    private void loadMessagesWithIds(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray jsonArray = params.getJSONArray("messageIds");
+        ArrayList<String> messageIds = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            messageIds.add(jsonArray.getString(i));
+        }
+        String conversationId = params.getString("conversationId");
+
+        EMClient.getInstance().chatManager().asyncLoadMessages(messageIds, conversationId, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName) {
+            @Override
+            public void onSuccess(List<EMMessage> object) {
+                List<Map> messages = new ArrayList<>();
+                for (EMMessage msg : object) {
+                    messages.add(MessageHelper.toJson(msg));
+                }
+                updateObject(messages);
+            }
+        });
     }
 
 }
