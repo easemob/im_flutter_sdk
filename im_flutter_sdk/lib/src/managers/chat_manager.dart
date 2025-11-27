@@ -415,13 +415,12 @@ class EMChatManager {
   ///
   /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
   /// ~end
-  Future<bool> sendMessageReadAck(EMMessage message) async {
+  Future<void> sendMessageReadAck(EMMessage message) async {
     try {
       Map req = {"to": message.from, "msgId": message.msgId};
       Map result = await Client.instance.chatManager
           .callNativeMethod(ChatMethodKeys.ackMessageRead, req);
       EMError.hasErrorFromResult(result);
-      return result.boolValue(ChatMethodKeys.ackMessageRead);
     } catch (e) {
       rethrow;
     }
