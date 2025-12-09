@@ -363,7 +363,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
         boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
-            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed);
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed, false);
             onSuccess(result, channelName, conversation != null ? ConversationHelper.toJson(conversation) : null);
         });
     }
