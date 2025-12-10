@@ -18,6 +18,7 @@ public class MethodKey {
 
     static final String getToken = "getToken";
     static final String getCurrentUser = "getCurrentUser";
+    static final String getCurrentDeviceId = "getCurrentDeviceId";
     static final String isLoggedInBefore = "isLoggedInBefore";
     static final String isConnected = "isConnected";
 
@@ -149,7 +150,6 @@ public class MethodKey {
     static final String loadMsgWithMsgType = "loadMsgWithMsgType";
     static final String loadMsgWithTime = "loadMsgWithTime";
     static final String messageCount = "messageCount";
-    static final String removeMsgFromServerWithMsgList = "removeMsgFromServerWithMsgList";
     static final String removeMsgFromServerWithTimeStamp = "removeMsgFromServerWithTimeStamp";
 
     // EMMessage method
@@ -370,4 +370,13 @@ public class MethodKey {
 
     // 4.12.1
     static final String isMemberInChatRoomMuteList = "isMemberInChatRoomMuteList";
+
+    // 4.14.0
+    static final String fetchGroupMembersInfo = "fetchGroupMembersInfo";
+
+    static final String updateGroupAvatar = "updateGroupAvatar";
+
+    // 4.15.2
+    static final String loadConversationMessagesWithKeyword = "loadConversationMessagesWithKeyword";
+    static final String loadMessagesWithIds = "loadMessagesWithIds";
 }

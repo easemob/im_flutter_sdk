@@ -117,7 +117,7 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
     private void joinChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
         String roomId = param.getString("roomId");
         String ext = param.optString("ext");
-        Boolean leaveOther = param.optBoolean("leaveOtherRooms");
+        Boolean leaveOtherRooms = param.optBoolean("leaveOtherRooms");
         EMValueWrapperCallBack<EMChatRoom> callBack = new EMValueWrapperCallBack<EMChatRoom>(result, channelName) {
             @Override
             public void onSuccess(EMChatRoom object) {
@@ -125,7 +125,7 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
             }
         };
 
-        EMClient.getInstance().chatroomManager().joinChatRoom(roomId, leaveOther, ext, callBack);
+        EMClient.getInstance().chatroomManager().joinChatRoom(roomId, leaveOtherRooms, ext, callBack);
     }
 
     private void leaveChatRoom(JSONObject param, String channelName, MethodChannel.Result result) throws JSONException {
@@ -159,7 +159,7 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
     private void fetchChatRoomInfoFromServer(JSONObject param, String channelName, MethodChannel.Result result)
             throws JSONException {
         String roomId = param.getString("roomId");
-        boolean fetchMembers = param.getBoolean("fetchMembers");
+        boolean fetchMembers = param.optBoolean("fetchMembers", false);
         asyncRunnable(() -> {
             EMChatRoom room = null;
             try {

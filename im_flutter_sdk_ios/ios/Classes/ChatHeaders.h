@@ -177,7 +177,7 @@
 #define EMConnectionConnected AgoraChatConnectionConnected
 
 #define EMMultiDevicesEvent AgoraChatMultiDevicesEvent
-
+#define EMGroupMemberInfo AgoraGroupMemberInfo
 #else
 
 #import <HyphenateChat/HyphenateChat.h>

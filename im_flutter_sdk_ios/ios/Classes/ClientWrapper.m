@@ -147,6 +147,12 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
            channelName:call.method
                 result:result];
     }
+    else if([ChatGetCurrentDeviceId isEqualToString:call.method])
+    {
+        [self getCurrentDeviceId:call.arguments
+                     channelName:call.method
+                          result:result];
+    }
     else if ([ChatLoginWithAgoraToken isEqualToString:call.method])
     {
         [self loginWithAgoraToken:call.arguments channelName:call.method result:result];
@@ -342,7 +348,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)createAccount:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *password = param[@"password"];
     [EMClient.sharedClient registerWithUsername:username
                                        password:password
@@ -357,7 +363,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)login:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *pwdOrToken = param[@"pwdOrToken"];
     BOOL isPwd = [param[@"isPassword"] boolValue];
     
@@ -442,7 +448,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)kickDevice:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *pwdOrToken = param[@"password"];
     NSString *resource = param[@"resource"];
     bool isPwd = [param[@"isPwd"] boolValue];
@@ -469,7 +475,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)kickAllDevices:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *pwdOrToken = param[@"password"];
     bool isPwd = [param[@"isPwd"] boolValue];
     if(isPwd) {
@@ -503,7 +509,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)loginWithAgoraToken:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *agoraToken = param[@"agora_token"];
     [EMClient.sharedClient loginWithUsername:username
                                   agoraToken:agoraToken
@@ -524,6 +530,35 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
                        object:EMClient.sharedClient.accessUserToken];
 }
 
+- (void)getCurrentDeviceId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
+    EMDeviceConfig *currentDeviceConfig = [EMClient.sharedClient getDeviceConfig:nil];
+
+    NSDictionary *deviceInfo;
+    if (currentDeviceConfig) {
+        // 手动构建字典，避免 nil 值导致崩溃
+        NSString *resource = currentDeviceConfig.resource ?: @"";
+        NSString *deviceUUID = currentDeviceConfig.deviceUUID ?: @"";
+        NSString *deviceName = currentDeviceConfig.deviceName ?: @"";
+
+        deviceInfo = @{
+            @"resource": resource,
+            @"deviceUUID": deviceUUID,
+            @"deviceName": deviceName
+        };
+    } else {
+        // SDK 未初始化或获取失败时，返回空字段
+        deviceInfo = @{
+            @"resource": @"",
+            @"deviceUUID": @"",
+            @"deviceName": @""
+        };
+    }
+
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:deviceInfo];
+}
 
 - (void)isConnected:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result{
     [self wrapperCallBack:result
@@ -545,7 +580,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
 
 - (void)getLoggedInDevicesFromServer:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *pwdOrToken = param[@"password"];
     bool isPwd = [param[@"isPwd"] boolValue];
     if(isPwd) {
@@ -695,7 +730,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"event"] = @(aEvent);
     data[@"target"] = aGroupId;
-    data[@"users"] = aExt;
+    data[@"userIds"] = aExt;
     [self.channel invokeMethod:ChatOnMultiDeviceGroupEvent arguments:data];
 }
 
@@ -705,7 +740,7 @@ static NSString *const disableIosEnterBackground = @"disableIosEnterBackground";
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     data[@"event"] = @(aEvent);
     data[@"threadId"] = aThreadId;
-    data[@"users"] = aExt;
+    data[@"userIds"] = aExt;
     [self.channel invokeMethod:ChatOnMultiDeviceThreadEvent arguments:data];
 }
 
