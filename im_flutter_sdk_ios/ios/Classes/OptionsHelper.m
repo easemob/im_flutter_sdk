@@ -30,6 +30,8 @@
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
     data[@"imPort"] = @(self.chatPort);
     data[@"imServer"] = self.chatServer;
+    data[@"webSocketServer"] = self.webSocketServer;
+    data[@"webSocketPort"] = @(self.webSocketPort);
     data[@"restServer"] = self.restServer;
     data[@"dnsUrl"] = self.dnsURL;
     data[@"areaCode"] = @(self.area);
@@ -73,6 +75,8 @@
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
     options.chatPort = [aJson[@"imPort"] intValue];
     options.chatServer = aJson[@"imServer"];
+    options.webSocketServer = aJson[@"webSocketServer"];
+    options.webSocketPort = [aJson[@"webSocketPort"] intValue];
     options.restServer = aJson[@"restServer"];
     options.dnsURL = aJson[@"dnsURL"];
     options.area = [aJson[@"areaCode"] intValue];
