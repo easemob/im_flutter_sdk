@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'im_flutter_sdk_ios'
-  s.version          = '0.0.1'
+  s.version          = '4.15.2'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -17,9 +17,10 @@ A new flutter plugin project.
   s.public_header_files = 'Classes/**/*.h'
 
   s.dependency 'Flutter'
-  s.dependency 'HyphenateChat','4.13.0'
+  s.dependency 'HyphenateChat','4.16.2'
   # s.dependency 'ShengwangChat_iOS','1.3.2'
-  s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
+  # 注释掉本地 framework，使用 CocoaPods 依赖
+  # s.ios.vendored_frameworks = 'framework/HyphenateChat.xcframework', 'framework/aosl.xcframework'
   s.ios.deployment_target = '12.0'
 
 end

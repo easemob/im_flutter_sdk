@@ -12,7 +12,6 @@ void main() async {
   EMOptions options = EMOptions.withAppKey(
     appKey,
     autoLogin: false,
-    extSettings: {ExtSettings.kDisableIosEnterBackground: false},
   );
 
   await EMClient.getInstance.init(options);
@@ -20,7 +19,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -67,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisSize: MainAxisSize.max,
           children: [
             TextField(
-              decoration: const InputDecoration(hintText: "Enter username"),
+              decoration: const InputDecoration(hintText: "Enter userId"),
               onChanged: (username) => _userId = username,
             ),
             TextField(
@@ -170,7 +169,24 @@ class _MyHomePageState extends State<MyHomePage> {
   void _addChatListener() {
     EMClient.getInstance.addConnectionEventHandler(
       'identifier',
-      EMConnectionEventHandler(onUserDidLoginFromOtherDevice: (info) {}),
+      EMConnectionEventHandler(
+        onUserDidLoginFromOtherDevice: (info) {
+          _addLogToConsole(
+              "onUserDidLoginFromOtherDevice,info: ${info.deviceName}");
+        },
+        onConnected: () {
+          _addLogToConsole("onConnected");
+        },
+        onDisconnected: () {
+          _addLogToConsole("onDisconnected");
+        },
+        onUserDidRemoveFromServer: () {
+          _addLogToConsole("onUserDidRemoveFromServer");
+        },
+        onUserDidForbidByServer: () {
+          _addLogToConsole("onUserDidForbidByServer");
+        },
+      ),
     );
 
     EMClient.getInstance.chatManager.addMessageEvent(
@@ -258,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _signIn() async {
     if (_userId.isEmpty || _password.isEmpty) {
-      _addLogToConsole("username or password is null");
+      _addLogToConsole("userId or password is null");
       return;
     }
 

@@ -67,9 +67,13 @@ public class EnumTools {
         int ret = -1;
         switch (type) {
             case none: ret = -1;
+                break;
             case member: ret =  0;
+                break;
             case admin: ret =  1;
+                break;
             case owner: ret =  2;
+                break;
         }
         return ret;
     }
@@ -78,9 +82,13 @@ public class EnumTools {
         int ret = -1;
         switch (type) {
             case none: ret = -1;
+                break;
             case member: ret =  0;
+                break;
             case admin: ret =  1;
+                break;
             case owner: ret =  2;
+                break;
         }
         return ret;
     }

@@ -16,6 +16,7 @@
     options.startTime = [dict[@"startTs"] longValue];
     options.endTime = [dict[@"endTs"] longValue];
     options.from = dict[@"from"];
+    options.fromIds = dict[@"senders"];
     options.isSave = [dict[@"needSave"] boolValue];
     NSArray *types = dict[@"msgTypes"];
     NSMutableArray<NSNumber*> *list = [NSMutableArray new];

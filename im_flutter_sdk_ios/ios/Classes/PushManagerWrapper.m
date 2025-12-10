@@ -136,7 +136,26 @@
                channelName:(NSString *)aChannelName
                     result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
+
+    if(!EMClient.sharedClient.isLoggedIn) {
+        EMError *e = [EMError errorWithDescription:@"Not login" code:EMErrorUserNotLogin];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+
     NSString *nickname = param[@"nickname"];
+    if (!nickname || [nickname length] == 0) {
+        EMError *e = [EMError errorWithDescription:@"Invalid parameter" code:EMErrorUserIllegalArgument];
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:e
+                           object:@(!e)];
+        return;
+    }
+
     [EMClient.sharedClient.pushManager updatePushDisplayName:nickname
                                                   completion:^(NSString * _Nonnull aDisplayName, EMError * _Nonnull aError)
      {
@@ -209,10 +228,10 @@
                       channelName:(NSString *)aChannelName
                            result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *conversaionId = param[@"conversationId"];
+    NSString *convId = param[@"convId"];
     EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
     EMSilentModeParam *silmentParam = [EMSilentModeParam fromJson:param[@"param"]];
-    [EMClient.sharedClient.pushManager setSilentModeForConversation:conversaionId
+    [EMClient.sharedClient.pushManager setSilentModeForConversation:convId
                                                    conversationType:type
                                                              params:silmentParam
                                                          completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError)
@@ -228,9 +247,9 @@
                          channelName:(NSString *)aChannelName
                               result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *conversaionId = param[@"conversationId"];
+    NSString *convId = param[@"convId"];
     EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
-    [EMClient.sharedClient.pushManager clearRemindTypeForConversation:conversaionId
+    [EMClient.sharedClient.pushManager clearRemindTypeForConversation:convId
                                                      conversationType:type
                                                            completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError)
      {
@@ -244,9 +263,9 @@
                         channelName:(NSString *)aChannelName
                              result:(FlutterResult)result {
     __weak typeof(self) weakSelf = self;
-    NSString *conversaionId = param[@"conversationId"];
+    NSString *convId = param[@"convId"];
     EMConversationType type = [EnumTools conversationTypeFromInt:[param[@"conversationType"] intValue]];
-    [EMClient.sharedClient.pushManager getSilentModeForConversation:conversaionId
+    [EMClient.sharedClient.pushManager getSilentModeForConversation:convId
                                                    conversationType:type
                                                          completion:^(EMSilentModeResult * _Nullable aResult, EMError * _Nullable aError) {
         [weakSelf wrapperCallBack:result

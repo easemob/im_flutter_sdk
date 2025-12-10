@@ -1,3 +1,44 @@
+## 4.16.0
+- 安卓依赖 SDK 升级到 4.16.1；
+- iOS以来 SDK 升级到 4.16.2；
+- 新增 `loadMessagesWithIds` API；
+- 修复 `Thread` 子区会被加入到 `conversation` 列表中；
+- 修复 当修改文本和自定义消息之外的消息时，`EEMChatEventHandler#onMessageContentChanged` 回调中不返回修改的信息的问题；
+- 修复 拉取漫游消息时，设置为不保存消息 `FetchMessageOptions#needSave 设置为 false`，也会生成新的本地会话的问题；
+- 修复 群组或聊天室解散后，成员收到回调后，仍然会从服务器获取群组或聊天室详情的问题；
+- 修复 更新群组属性时影响群组头像问题；
+- 更新 `AOSL` 库版本为 1.3.0；
+- 支持私有部署时设置 `IPv6` 格式的 REST 地址；
+
+## 4.15.2
+- 修复被登出时,返回220的错误码无法触发回调的问题；
+- 修复 `fetchReactionDetail` 获取不存在的Reaction时崩溃的问题；
+- 新增 `getCurrentDeviceId` API；
+- 新增 `loadConversationMessagesWithKeyword` API；
+- 修复安卓上频繁调用 `EMConversation` 中的 API 时, 导致的ANR问题；
+
+
+## 4.15.1
+
+- 修复 `updatePushNickname` 在未登录和参数异常时导致的崩溃问题；
+- 修复 `fetchChatroomInfoFromServer` 在取消`fetchMembers`参数后导致的崩溃问题；
+- 修复 `modifyMessage` 在传入消息体为空时导致的崩溃问题；
+
+## 4.15.0
+
+- 安卓依赖 SDK 升级到 4.15.0；
+- iOS以来 SDK 升级到 4.15.0；
+- 支持 Gif 图片消息；
+- 支持 群头像功能；
+- 支持 消息附件鉴权，该功能需要联系商务开通，开通后必须调用 SDK 的 API 才能下载消息附件。
+- 支持 拉取漫游消息时，只拉取指定的群成员发送的消息；
+- 支持 加载本地会话消息时，只加载指定群成员发送的消息；
+- 支持 获取群成员信息 时包括成员加群时间；
+- 修复 安卓获取自己的群成员属性时解释失败的问题；
+- 修复 `ChatRoomEventHandler#onRemovedFromChatRoom` 不执行；
+- 新增 `onMembersJoinedFromGroup` 和 `onMembersExitedFromGroup` 回调，`onMemberJoinedFromGroup` 和 `onMemberExitedFromGroup` 标记过期；
+- 新增 `EMGroupManager#updateGroupName` 和 `EMGroupManager#updateGroupDesc`方法，标记 `EMGroupManager#changeGroupName` 和 `EMGroupManager#changeGroupDescription` 方法过期;
+
 ## 4.13.0+1
 
 - 修复收到 `onAnnouncementChangedFromChatRoom` 回调时，`announcement` 为空导致的崩溃问题。

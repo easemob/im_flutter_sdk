@@ -107,7 +107,7 @@
 #pragma mark - Actions
 - (void)addContact:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     NSString *reason = param[@"reason"];
     [EMClient.sharedClient.contactManager addContact:username
                                              message:reason
@@ -122,7 +122,7 @@
 
 - (void)deleteContact:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     BOOL keepConversation = [param[@"keepConversation"] boolValue];
     [EMClient.sharedClient.contactManager deleteContact:username
                                    isDeleteConversation:keepConversation
@@ -158,7 +158,7 @@
 
 - (void)addUserToBlockList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     [EMClient.sharedClient.contactManager addUserToBlackList:username
                                                   completion:^(NSString *aUsername, EMError *aError)
      {
@@ -171,7 +171,7 @@
 
 - (void)removeUserFromBlockList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     [EMClient.sharedClient.contactManager removeUserFromBlackList:username
                                                        completion:^(NSString *aUsername, EMError *aError)
      {
@@ -202,7 +202,7 @@
 
 - (void)acceptInvitation:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     [EMClient.sharedClient.contactManager approveFriendRequestFromUser:username
                                                             completion:^(NSString *aUsername, EMError *aError)
      {
@@ -215,7 +215,7 @@
 
 - (void)declineInvitation:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
     __weak typeof(self)weakSelf = self;
-    NSString *username = param[@"username"];
+    NSString *username = param[@"userId"];
     [EMClient.sharedClient.contactManager declineFriendRequestFromUser:username
                                                             completion:^(NSString *aUsername, EMError *aError)
      {
@@ -320,7 +320,7 @@
     [ListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onContactAdded",
-            @"username":aUsername
+            @"userId":aUsername
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];
@@ -332,7 +332,7 @@
     [ListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onContactDeleted",
-            @"username":aUsername
+            @"userId":aUsername
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];
@@ -344,7 +344,7 @@
     [ListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onContactInvited",
-            @"username":aUsername,
+            @"userId":aUsername,
             @"reason":aMessage
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
@@ -357,7 +357,7 @@
     [ListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onFriendRequestAccepted",
-            @"username":aUsername
+            @"userId":aUsername
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];
@@ -368,7 +368,7 @@
     [ListenerHandle.sharedInstance addHandle:^{
         NSDictionary *map = @{
             @"type":@"onFriendRequestDeclined",
-            @"username":aUsername
+            @"userId":aUsername
         };
         [weakSelf.channel invokeMethod:ChatOnContactChanged arguments:map];
     }];
