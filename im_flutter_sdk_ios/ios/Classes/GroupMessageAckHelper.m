@@ -10,7 +10,7 @@
 @implementation EMGroupMessageAck (Helper)
 - (NSDictionary *)toJson{
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
-    data[@"msg_id"] = self.messageId;
+    data[@"msgId"] = self.messageId;
     data[@"ack_id"] = self.readAckId;
     data[@"from"] = self.from;
     data[@"content"] = self.content;

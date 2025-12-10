@@ -210,7 +210,7 @@
 }
 
 - (void)createChatThread:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
-    NSString *messageId = param[@"messageId"];
+    NSString *messageId = param[@"msgId"];
     NSString *name = param[@"name"];
     NSString *parentId = param[@"parentId"];
     __weak typeof(self)weakSelf = self;

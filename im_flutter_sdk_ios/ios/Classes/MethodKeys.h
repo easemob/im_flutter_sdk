@@ -24,6 +24,7 @@ static NSString *const ChatGetLoggedInDevicesFromServer = @"getLoggedInDevicesFr
 
 static NSString *const ChatGetToken = @"getToken";
 static NSString *const ChatGetCurrentUser = @"getCurrentUser";
+static NSString *const ChatGetCurrentDeviceId = @"getCurrentDeviceId";
 static NSString *const ChatIsLoggedInBefore = @"isLoggedInBefore";
 static NSString *const ChatIsConnected = @"isConnected";
 
@@ -167,7 +168,6 @@ static NSString *const ChatLoadMsgWithKeywords = @"loadMsgWithKeywords";
 static NSString *const ChatLoadMsgWithMsgType = @"loadMsgWithMsgType";
 static NSString *const ChatLoadMsgWithTime = @"loadMsgWithTime";
 static NSString *const ChatConversationMessageCount = @"messageCount";
-static NSString *const ChatRemoveMsgFromServerWithMsgList = @"removeMsgFromServerWithMsgList";
 static NSString *const ChatRemoveMsgFromServerWithTimeStamp = @"removeMsgFromServerWithTimeStamp";
 
 #pragma mark - EMChatMessageWrapper
@@ -395,3 +395,11 @@ static NSString *const changeAppId = @"changeAppId";
 
 // 4.12.1
 static NSString *const isMemberInChatRoomMuteList = @"isMemberInChatRoomMuteList";
+
+static NSString *const fetchGroupMembersInfo = @"fetchGroupMembersInfo";
+
+static NSString *const updateGroupAvatar = @"updateGroupAvatar";
+
+// 4.15.2
+static NSString *const loadConversationMessagesWithKeyword = @"loadConversationMessagesWithKeyword";
+static NSString *const ChatLoadMessagesWithIds = @"loadMessagesWithIds";

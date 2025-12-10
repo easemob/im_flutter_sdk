@@ -164,6 +164,13 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.getMessageCount.equals(call.method)) {
                 getMessageCount(params, call.method, result);
             }
+            // 4.15.2
+            else if (MethodKey.loadConversationMessagesWithKeyword.equals(call.method)) {
+                loadConversationMessagesWithKeyword(params, call.method, result);
+            }
+            else if (MethodKey.loadMessagesWithIds.equals(call.method)) {
+                loadMessagesWithIds(params, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -266,7 +273,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void ackMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String to = params.getString("to");
 
         asyncRunnable(() -> {
@@ -280,7 +287,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void ackGroupMessageRead(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String to = params.getString("group_id");
         String content = null;
         if(params.has("content")) {
@@ -310,7 +317,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void recallMessage(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String ext;
         if (params.has("ext")) {
             ext = params.getString("ext");
@@ -333,7 +340,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getMessage(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
 
         asyncRunnable(() -> {
             EMMessage msg = EMClient.getInstance().chatManager().getMessage(msgId);
@@ -356,7 +363,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
         boolean finalCreateIfNeed = createIfNeed;
         asyncRunnable(() -> {
-            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed);
+            EMConversation conversation = EMClient.getInstance().chatManager().getConversation(conId, type, finalCreateIfNeed, false);
             onSuccess(result, channelName, conversation != null ? ConversationHelper.toJson(conversation) : null);
         });
     }
@@ -712,7 +719,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void loadAllConversations(JSONObject params, String channelName, Result result) throws JSONException {
-        asyncRunnable(()->{
+        asyncHeavyWorkRunnable(()->{
             if (EMClient.getInstance().getCurrentUser() == null || EMClient.getInstance().getCurrentUser().isEmpty()) {
                 onSuccess(result, channelName, new ArrayList<>());
                 return;
@@ -838,7 +845,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void asyncFetchGroupMessageAckFromServer(JSONObject params, String channelName, Result result) throws JSONException {
-        String msgId = params.getString("msg_id");
+        String msgId = params.getString("msgId");
         String ackId = null;
         if (params.has("ack_id")){
             ackId = params.getString("ack_id");
@@ -858,7 +865,7 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void deleteRemoteConversation(JSONObject params, String channelName, Result result) throws JSONException {
-        String conversationId = params.getString("conversationId");
+        String conversationId = params.getString("convId");
         EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         boolean isDeleteRemoteMessage = params.getBoolean("isDeleteRemoteMessage");
         EMClient.getInstance().chatManager().deleteConversationFromServer(conversationId, type, isDeleteRemoteMessage, new EMWrapperCallBack(result, channelName, null));
@@ -1002,7 +1009,9 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
 
     private void modifyMessage(JSONObject params, String channelName, Result result) throws JSONException {
         String msgId = params.optString("msgId");
-        EMMessageBody body = MessageBodyHelper.fromJson(params.optJSONObject("msgBody"));
+        EMMessageBody body = (params.has("msgBody") && !params.isNull("msgBody"))
+                ? MessageBodyHelper.fromJson(params.optJSONObject("msgBody"))
+                : null;
         Map<String, Object> ext = new HashMap<>();
         if(params.has("attributes")) {
             JSONObject data = params.getJSONObject("attributes");
@@ -1225,8 +1234,8 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             @Override
             public void onMessagePinChanged(String messageId, String conversationId, EMMessagePinInfo.PinOperation pinOperation, EMMessagePinInfo pinInfo) {
                 Map<String, Object> map = new HashMap<>();
-                map.put("messageId", messageId);
-                map.put("conversationId", conversationId);
+                map.put("msgId", messageId);
+                map.put("convId", conversationId);
                 map.put("pinOperation", pinOperation.ordinal());
                 map.put("pinInfo", MessagePinInfoHelper.toJson(pinInfo));
                 post(() -> channel.invokeMethod(MethodKey.onMessagePinChanged, map));
@@ -1289,6 +1298,59 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                 updateObject(object);
             }
         } );
+    }
+
+    // 4.15.2
+    private void loadConversationMessagesWithKeyword(JSONObject params, String channelName, Result result) throws JSONException {
+        String keyword = null;
+        if (params.has("keyword") && !params.isNull("keyword")) {
+            keyword = params.getString("keyword");
+        }
+        long timestamp = params.getLong("timestamp");
+        String sender = null;
+        if (params.has("sender") && !params.isNull("sender")) {
+            sender = params.getString("sender");
+        }
+        EMConversation.EMSearchDirection direction = EnumTools.searchDirectionFromInt(params.getInt("direction"));
+        EMConversation.EMMessageSearchScope scope = EMConversation.EMMessageSearchScope.values()[params.getInt("scope")];
+
+        EMClient.getInstance().chatManager().asyncLoadConversationMessagesWithKeyword(
+            keyword, 
+            timestamp, 
+            sender, 
+            direction, 
+            scope,
+            new EMValueWrapperCallBack<Map<String, List<String>>>(result, channelName) {
+                @Override
+                public void onSuccess(Map<String, List<String>> object) {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    for (Map.Entry<String, List<String>> entry : object.entrySet()) {
+                        resultMap.put(entry.getKey(), entry.getValue());
+                    }
+                    updateObject(resultMap);
+                }
+            }
+        );
+    }
+
+    private void loadMessagesWithIds(JSONObject params, String channelName, Result result) throws JSONException {
+        JSONArray jsonArray = params.getJSONArray("messageIds");
+        ArrayList<String> messageIds = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            messageIds.add(jsonArray.getString(i));
+        }
+        String conversationId = params.getString("conversationId");
+
+        EMClient.getInstance().chatManager().asyncLoadMessages(messageIds, conversationId, new EMValueWrapperCallBack<List<EMMessage>>(result, channelName) {
+            @Override
+            public void onSuccess(List<EMMessage> object) {
+                List<Map> messages = new ArrayList<>();
+                for (EMMessage msg : object) {
+                    messages.add(MessageHelper.toJson(msg));
+                }
+                updateObject(messages);
+            }
+        });
     }
 
 }

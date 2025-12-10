@@ -110,10 +110,6 @@
         [self messageCount:call.arguments
                channelName:call.method
                     result:result];
-    } else if ([ChatRemoveMsgFromServerWithMsgList isEqualToString:call.method]) {
-        [self removeMsgFromServerWithMsgList:call.arguments
-                                 channelName:call.method
-                                      result:result];
     } else if ([ChatRemoveMsgFromServerWithTimeStamp isEqualToString:call.method]) {
         [self removeMsgFromServerWithTimeStamp:call.arguments
                                    channelName:call.method
@@ -231,7 +227,7 @@
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
-        NSString *msgId = param[@"msg_id"];
+        NSString *msgId = param[@"msgId"];
         EMError *error = nil;
         [conversation markMessageAsReadWithId:msgId error:&error];
         
@@ -383,7 +379,7 @@
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
-        NSString *msgId = param[@"msg_id"];
+        NSString *msgId = param[@"msgId"];
         EMError *error = nil;
         [conversation deleteMessageWithId:msgId error:&error];
         
@@ -442,21 +438,6 @@
     }];
 }
 
-- (void)removeMsgFromServerWithMsgList:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
-{
-    __weak typeof(self) weakSelf = self;
-    [self getConversationWithParam:param
-                        completion:^(EMConversation *conversation){
-        NSArray *msgIds = param[@"msgIds"];
-        [conversation removeMessagesFromServerMessageIds:msgIds completion:^(EMError * _Nullable aError) {
-            [weakSelf wrapperCallBack:result
-                          channelName:aChannelName
-                                error:aError
-                               object:nil];
-        }];
-    }];
-}
-
 - (void)removeMsgFromServerWithTimeStamp:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
@@ -476,7 +457,7 @@
 - (void)loadMsgWithId:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result
 {
     __weak typeof(self) weakSelf = self;
-    NSString *msgId = param[@"msg_id"];
+    NSString *msgId = param[@"msgId"];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
@@ -556,17 +537,20 @@
     NSString * keywords = param[@"keywords"];
     long long timestamp = [param[@"timestamp"] longLongValue];
     int count = [param[@"count"] intValue];
-    NSString *sender = param[@"from"];
+    NSArray *senders = param[@"senders"];
+    NSString *sender = param[@"sender"];
+    if(senders == nil && sender != nil) {
+        senders = @[sender];
+    }
     EMMessageSearchScope scope = (EMMessageSearchScope)[param[@"searchScope"] intValue];
     EMMessageSearchDirection direction = [EnumTools searchDirectionFromInt:[param[@"direction"] integerValue]];
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)
      {
-        
         [conversation loadMessagesWithKeyword:keywords
                                     timestamp:timestamp
                                         count:count
-                                     fromUser:sender
+                                    fromUsers:senders
                               searchDirection:direction
                                         scope:scope
                                    completion:^(NSArray *aMessages, EMError *aError)
@@ -685,8 +669,8 @@
 - (void)getLocalMessageCount:(NSDictionary *)param
                    channelName:(NSString *)aChannelName
                         result:(FlutterResult)result{
-    NSInteger startMs = [param[@"startMs"] integerValue];
-    NSInteger endMs = [param[@"endMs"] longLongValue];
+    NSInteger startMs = [param[@"startTs"] integerValue];
+    NSInteger endMs = [param[@"endTs"] longLongValue];
     
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
@@ -721,7 +705,7 @@
 - (void)deleteServerMessagesByTime:(NSDictionary *)param
                    channelName:(NSString *)aChannelName
                       result:(FlutterResult)result{
-    long long ts = [param[@"beforeMs"] longLongValue];
+    long long ts = [param[@"beforeTs"] longLongValue];
     __weak typeof(self) weakSelf = self;
     [self getConversationWithParam:param
                         completion:^(EMConversation *conversation)

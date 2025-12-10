@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import com.hyphenate.chat.EMCursorResult;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
+import com.hyphenate.chat.EMGroupMemberInfo;
 import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.exceptions.HyphenateException;
@@ -40,7 +41,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     @Override
-    public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+    public void onMethodCall(MethodCall call, Result result) {
 
         JSONObject param = (JSONObject) call.arguments;
         try {
@@ -151,6 +152,13 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.isMemberInGroupMuteList.equals(call.method)) {
                 isMemberInGroupMuteList(param, call.method, result);
             }
+            // 4.14.0
+            else if (MethodKey.fetchGroupMembersInfo.equals(call.method)) {
+                fetchGroupMembersInfo(param, call.method, result);
+            }
+            else if (MethodKey.updateGroupAvatar.equals(call.method)) {
+                updateGroupAvatar(param, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -245,6 +253,11 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
             groupName = param.getString("groupName");
         }
 
+        String avatarUrl = null;
+        if(param.has("avatarUrl")) {
+            avatarUrl = param.getString("avatarUrl");
+        }
+
         String desc = null;
         if(param.has("desc")){
             desc = param.getString("desc");
@@ -275,18 +288,21 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                 updateObject(GroupHelper.toJson(object));
             }
         };
-
-        EMClient.getInstance().groupManager().asyncCreateGroup(groupName, desc, members, inviteReason, options,
-                callBack);
+        EMClient.getInstance().groupManager().asyncCreateGroup(groupName, avatarUrl, desc, members, inviteReason, options, callBack);
     }
 
     private void getGroupSpecificationFromServer(JSONObject param, String channelName, Result result)
             throws JSONException {
         String groupId = param.getString("groupId");
-        boolean fetchMembers = param.getBoolean("fetchMembers");
+        final boolean fetchMembers = param.optBoolean("fetchMembers", false);
         asyncRunnable(() -> {
             try {
-                EMGroup group = EMClient.getInstance().groupManager().getGroupFromServer(groupId, fetchMembers);
+                EMGroup group;
+                if(fetchMembers) {
+                    group = EMClient.getInstance().groupManager().getGroupFromServer(groupId, true);
+                }else {
+                    group = EMClient.getInstance().groupManager().getGroupFromServer(groupId);
+                }
                 onSuccess(result, channelName, GroupHelper.toJson(group));
             } catch (HyphenateException e) {
                 onError(result, e);
@@ -791,8 +807,8 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         String groupId = param.getString("groupId");
 
         String username = null;
-        if (param.has("username")){
-            username = param.getString("username");
+        if (param.has("userId")){
+            username = param.getString("userId");
         }
 
         EMClient.getInstance().groupManager().asyncAcceptApplication(username, groupId, new EMWrapperCallBack(result, channelName, null));
@@ -801,8 +817,8 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     private void declineJoinApplication(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String username = null;
-        if (param.has("username")){
-            username = param.getString("username");
+        if (param.has("userId")){
+            username = param.getString("userId");
         }
         String reason = null;
         if (param.has("reason")){
@@ -832,8 +848,8 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
     private void declineInvitationFromGroup(JSONObject param, String channelName, Result result) throws JSONException {
         String groupId = param.getString("groupId");
         String username = null;
-        if (param.has("username")){
-            username = param.getString("username");
+        if (param.has("userId")){
+            username = param.getString("userId");
         }
         String reason = null;
         if (param.has("reason")){
@@ -888,7 +904,7 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onSuccess(Map<String, Map<String, String>> object) {
-                updateObject(object);
+                updateObject(object.get(finalUserId));
             }
         });
     }
@@ -1295,6 +1311,32 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
                         }
                 );
             }
+
+            @Override
+            public void onMembersJoined(String groupId, List<String> members) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onGroupMembersJoined");
+                            data.put("groupId", groupId);
+                            data.put("userIds", members);
+                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
+                        }
+                );
+            }
+
+            @Override
+            public void onMembersExited(String groupId, List<String> members) {
+                ListenerHandle.getInstance().addHandle(
+                        ()-> {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("type", "onGroupMembersExited");
+                            data.put("groupId", groupId);
+                            data.put("userIds", members);
+                            post(() -> channel.invokeMethod(MethodKey.onGroupChanged, data));
+                        }
+                );
+            }
         };
         EMClient.getInstance().groupManager().addGroupChangeListener(groupChangeListener);
     }
@@ -1322,4 +1364,27 @@ public class GroupManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
 
+    private void fetchGroupMembersInfo(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        int limit = param.getInt("limit");
+        String cursor = param.optString("cursor");
+        EMClient.getInstance().groupManager().asyncFetchGroupMembersInfo(groupId, cursor, limit, new EMValueWrapperCallBack<EMCursorResult<EMGroupMemberInfo>>(result, channelName){
+            @Override
+            public void onSuccess(EMCursorResult<EMGroupMemberInfo> object) {
+                updateObject(CursorResultHelper.toJson(object));
+            }
+        });
+    }
+
+    private void updateGroupAvatar(JSONObject param, String channelName, Result result) throws JSONException{
+        String groupId = param.getString("groupId");
+        String avatarUrl = param.optString("avatarUrl");
+        EMClient.getInstance().groupManager().asyncChangeGroupAvatar(groupId, avatarUrl, new EMWrapperCallBack(result, channelName,  null) {
+            @Override
+            public void onSuccess() {
+                EMGroup group = EMClient.getInstance().groupManager().getGroup(groupId);
+                super.updateObject(GroupHelper.toJson(group));
+            }
+        });
+    }
 }
