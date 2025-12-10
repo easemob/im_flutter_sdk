@@ -1,6 +1,6 @@
 name: im_flutter_sdk_android
 description: Integrate the Chat SDK to enjoy the global IM services with high reliability, ultra-low latency, and high concurrency.
-version: 4.13.0+1
+version: 4.16.0
 homepage: https://www.easemob.com
 
 environment:
@@ -11,7 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  im_flutter_sdk_interface: ^4.13.0+1
+  # im_flutter_sdk_interface: ^4.15.0+1
+  im_flutter_sdk_interface:
+    path: ../im_flutter_sdk_interface
 
 dev_dependencies:
   flutter_test:

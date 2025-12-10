@@ -75,7 +75,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     }
 
     private void addContact(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String reason = null;
         if(param.has("reason")) {
             reason = param.getString("reason");
@@ -92,7 +92,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     }
 
     private void deleteContact(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         boolean keepConversation = param.getBoolean("keepConversation");
         asyncRunnable(() -> {
             try {
@@ -127,7 +127,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     }
 
     private void addUserToBlockList(JSONObject params, String channelName, Result result) throws JSONException {
-        String username = params.getString("username");
+        String username = params.getString("userId");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().addUserToBlackList(username, false);
@@ -139,7 +139,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     }
 
     private void removeUserFromBlockList(JSONObject params, String channelName, Result result) throws JSONException {
-        String username = params.getString("username");
+        String username = params.getString("userId");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().removeUserFromBlackList(username);
@@ -169,7 +169,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     }
 
     private void acceptInvitation(JSONObject params, String channelName, Result result) throws JSONException {
-        String username = params.getString("username");
+        String username = params.getString("userId");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().acceptInvitation(username);
@@ -181,7 +181,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
     }
 
     private void declineInvitation(JSONObject params, String channelName, Result result) throws JSONException {
-        String username = params.getString("username");
+        String username = params.getString("userId");
         asyncRunnable(() -> {
             try {
                 EMClient.getInstance().contactManager().declineInvitation(username);
@@ -280,7 +280,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onContactAdded");
-                            data.put("username", userName);
+                            data.put("userId", userName);
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );
@@ -292,7 +292,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onContactDeleted");
-                            data.put("username", userName);
+                            data.put("userId", userName);
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );
@@ -304,7 +304,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onContactInvited");
-                            data.put("username", userName);
+                            data.put("userId", userName);
                             data.put("reason", reason);
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
@@ -317,7 +317,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onFriendRequestAccepted");
-                            data.put("username", userName);
+                            data.put("userId", userName);
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );
@@ -329,7 +329,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                         ()-> {
                             Map<String, Object> data = new HashMap<>();
                             data.put("type", "onFriendRequestDeclined");
-                            data.put("username", userName);
+                            data.put("userId", userName);
                             post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
                         }
                 );

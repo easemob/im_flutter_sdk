@@ -17,6 +17,7 @@ import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMGroupInfo;
 import com.hyphenate.chat.EMGroupManager;
+import com.hyphenate.chat.EMGroupMemberInfo;
 import com.hyphenate.chat.EMGroupOptions;
 import com.hyphenate.chat.EMGroupReadAck;
 import com.hyphenate.chat.EMImageMessageBody;
@@ -181,6 +182,7 @@ class GroupHelper {
         Map<String, Object> data = new HashMap<>();
         CommonUtil.putObjectToMap(data, "groupId", group.getGroupId());
         CommonUtil.putObjectToMap(data, "name", group.getGroupName());
+        CommonUtil.putObjectToMap(data, "avatarUrl", group.getGroupAvatar());
         CommonUtil.putObjectToMap(data, "desc", group.getDescription());
         CommonUtil.putObjectToMap(data, "owner", group.getOwner());
         CommonUtil.putObjectToMap(data, "announcement", group.getAnnouncement());
@@ -197,6 +199,16 @@ class GroupHelper {
         CommonUtil.putObjectToMap(data, "isMemberOnly", group.isMemberOnly());
         CommonUtil.putObjectToMap(data, "isMemberAllowToInvite", group.isMemberAllowToInvite());
         CommonUtil.putObjectToMap(data, "ext", group.getExtension());
+        return data;
+    }
+}
+
+class GroupMemberInfoHelper {
+    static Map<String, Object> toJson(EMGroupMemberInfo info) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", info.getMemberId());
+        data.put("joinedTs", info.getJoinTime());
+        data.put("role", EnumTools.groupPermissionTypeToInt(info.getRole()));
         return data;
     }
 }
@@ -557,7 +569,7 @@ class MessageHelper {
         data.put("status", EnumTools.messageStatusToInt(message.status()));
         data.put("chatType", EnumTools.chatTypeToInt(message.getChatType()));
         data.put("direction", EnumTools.messageDirectToInt(message.direct()));
-        data.put("conversationId", message.conversationId());
+        data.put("convId", message.conversationId());
         data.put("msgId", message.getMsgId());
         data.put("hasRead", !message.isUnread());
         data.put("needGroupAck", message.isNeedGroupAck());
@@ -575,7 +587,7 @@ class MessageHelper {
 class GroupAckHelper {
     static Map<String, Object>toJson(EMGroupReadAck ack) {
         Map<String, Object> data = new HashMap<>();
-        data.put("msg_id", ack.getMsgId());
+        data.put("msgId", ack.getMsgId());
         data.put("ack_id", ack.getAckId());
         data.put("from", ack.getFrom());
         data.put("count", ack.getCount());
@@ -824,6 +836,9 @@ class GroupAckHelper {
         if (json.has("sendOriginalImage")){
             body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
         }
+        if(json.has("isGif")) {
+            body.setGif(json.getBoolean("isGif"));
+        }
 
         if (json.has("fileStatus")){
             body.setDownloadStatus(EnumTools.downloadStatusFromInt(json.getInt("fileStatus")));
@@ -848,6 +863,7 @@ class GroupAckHelper {
         data.put("sendOriginalImage", body.isSendOriginalImage());
         data.put("fileSize", body.getFileSize());
         data.put("type", EnumTools.messageBodyTypeToInt(Type.IMAGE));
+        data.put("isGif", body.isGif());
         return data;
     }
 
@@ -1137,6 +1153,10 @@ class CursorResultHelper {
                 if (obj instanceof EMContact) {
                     jsonList.add(ContactHelper.toJson((EMContact) obj));
                 }
+
+                if (obj instanceof EMGroupMemberInfo) {
+                    jsonList.add(GroupMemberInfoHelper.toJson((EMGroupMemberInfo) obj));
+                }
             }
         }
         data.put("list", jsonList);
@@ -1285,8 +1305,8 @@ class MessageReactionHelper {
 class MessageReactionChangeHelper {
     static Map<String, Object> toJson(EMMessageReactionChange change) {
         Map<String, Object> data = new HashMap<>();
-        data.put("conversationId", change.getConversionID());
-        data.put("messageId", change.getMessageId());
+        data.put("convId", change.getConversionID());
+        data.put("msgId", change.getMessageId());
         ArrayList<Map<String, Object>> reactions = new ArrayList<>();
         for (int i = 0; i < change.getMessageReactionList().size(); i++) {
             reactions.add(MessageReactionHelper.toJson(change.getMessageReactionList().get(i)));
@@ -1389,7 +1409,7 @@ class SilentModeResultHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("expireTs", modeResult.getExpireTimestamp());
         if (modeResult.getConversationId() != null) {
-            data.put("conversationId", modeResult.getConversationId());
+            data.put("convId", modeResult.getConversationId());
         }
         if (modeResult.getConversationType() != null) {
             data.put("conversationType", EnumTools.conversationTypeToInt(modeResult.getConversationType()));
@@ -1417,6 +1437,17 @@ class FetchHistoryOptionsHelper {
         options.setEndTime(json.getLong("endTs"));
         if (json.has("from")){
             options.setFrom(json.getString("from"));
+        }
+        if(json.has("senders")) {
+            List<String> list = new ArrayList<>();
+            JSONArray array = json.getJSONArray("senders");
+            for (int i = 0; i < array.length(); i++) {
+                String sender = array.getString(i);
+                list.add(sender);
+            }
+            if (list.size() > 0) {
+                options.setFromIds(list);
+            }
         }
         if (json.has("msgTypes")){
             List<EMMessage.Type> list = new ArrayList<>();
@@ -1496,7 +1527,7 @@ class ConversationFilterHelper {
 
         // 4.10
         if(info.getConversationId() != null) {
-            data.put("conversationId", info.getConversationId());
+            data.put("convId", info.getConversationId());
         }
         return data;
     }

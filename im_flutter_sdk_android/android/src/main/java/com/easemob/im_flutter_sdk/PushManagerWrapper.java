@@ -1,5 +1,6 @@
 package com.easemob.im_flutter_sdk;
 
+import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMPushConfigs;
@@ -118,16 +119,15 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void updatePushNickname(JSONObject params, String channelName,  Result result) throws JSONException {
-        String nickname = params.getString("nickname");
+        String username = EMClient.getInstance().getCurrentUser();
+        if (username == null || username.isEmpty()) {
+            HyphenateException e = new HyphenateException(EMError.USER_NOT_LOGIN,"User not login");
+            onError(result, e);
+            return;
+        }
 
-        asyncRunnable(()->{
-            try {
-                EMClient.getInstance().pushManager().updatePushNickname(nickname);
-                onSuccess(result, channelName, nickname);
-            } catch (HyphenateException e) {
-                onError(result, e);
-            }
-        });
+        String nickname = params.getString("nickname");
+        EMClient.getInstance().pushManager().asyncUpdatePushNickname(nickname, new EMWrapperCallBack(result, channelName, true));
     }
 
 
@@ -156,7 +156,7 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void setConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
-        String conversationId = params.getString("conversationId");
+        String conversationId = params.getString("convId");
         EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         EMSilentModeParam param = SilentModeParamHelper.fromJson(params.getJSONObject("param"));
         EMClient.getInstance().pushManager().setSilentModeForConversation(conversationId, type, param, new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
@@ -167,13 +167,13 @@ public class PushManagerWrapper extends Wrapper implements MethodCallHandler {
         });
     }
     private void removeConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
-        String conversationId = params.getString("conversationId");
+        String conversationId = params.getString("convId");
         EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         EMClient.getInstance().pushManager().clearRemindTypeForConversation(conversationId, type, new EMWrapperCallBack(result, channelName, null));
     }
 
     private void fetchConversationSilentMode(JSONObject params, String channelName, Result result) throws JSONException {
-        String conversationId = params.getString("conversationId");
+        String conversationId = params.getString("convId");
         EMConversation.EMConversationType type = EnumTools.conversationTypeFromInt(params.getInt("conversationType"));
         EMClient.getInstance().pushManager().getSilentModeForConversation(conversationId, type, new EMValueWrapperCallBack<EMSilentModeResult>(result, channelName){
             @Override

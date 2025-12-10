@@ -14,6 +14,8 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
+import android.content.Context;
+
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMMultiDeviceListener;
 import com.hyphenate.chat.EMClient;
@@ -22,6 +24,7 @@ import com.hyphenate.chat.EMLoginExtensionInfo;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMDeviceInfo;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.util.DeviceUuidFactory;
 
 
 import org.json.JSONException;
@@ -117,6 +120,10 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
             {
                 getToken(param, call.method, result);
             }
+            else if (MethodKey.getCurrentDeviceId.equals(call.method))
+            {
+                getCurrentDeviceId(param, call.method, result);
+            }
             else if (MethodKey.isConnected.equals(call.method)) {
                 isConnected(param, call.method, result);
             }
@@ -179,7 +186,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void createAccount(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         asyncRunnable(()->{
             try {
@@ -193,7 +200,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void login(JSONObject param, String channelName, Result result) throws JSONException {
         boolean isPwd = param.getBoolean("isPassword");
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String pwdOrToken = param.getString("pwdOrToken");
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
@@ -243,7 +250,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
 
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String agoraToken = param.getString("agora_token");
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
@@ -262,10 +269,35 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().getAccessToken()));
     }
 
+    private void getCurrentDeviceId(JSONObject param, String channelName, Result result) throws JSONException {
+        asyncRunnable(()->{
+            // 手动构建 Map 对象，避免 EMDeviceInfo 只读属性问题
+            Map<String, Object> deviceInfo = new HashMap<>();
+            deviceInfo.put("deviceName", "");
+            deviceInfo.put("resource", "");
+
+            Context context = EMClient.getInstance().getContext();
+
+            String deviceUuid = "";
+            if (context != null) {
+                try {
+                    DeviceUuidFactory factory = new DeviceUuidFactory(context);
+                    deviceUuid = factory.getDeviceUuid().toString();
+                } catch (Exception e) {
+                    // 获取失败时使用空字符串
+                }
+            }
+
+            deviceInfo.put("deviceUUID", deviceUuid);
+
+            onSuccess(result, channelName, deviceInfo);
+        });
+    }
+
     private void isLoggedInBefore(JSONObject param, String channelName, Result result) throws JSONException {
         asyncRunnable(()->{
             EMOptions emOptions = EMClient.getInstance().getOptions();
-            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore() && emOptions.getAutoLogin());
+            onSuccess(result, channelName, EMClient.getInstance().isLoggedInBefore() && emOptions.getAutoLogin() || EMClient.getInstance().isLoggedIn());
         });
     }
 
@@ -290,7 +322,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
     private void kickDevice(JSONObject param, String channelName, Result result) throws JSONException {
 
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         String resource = param.getString("resource");
         boolean isPwd = param.optBoolean("isPwd");
@@ -316,7 +348,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void kickAllDevices(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         boolean isPwd = param.optBoolean("isPwd");
         if (isPwd) {
@@ -362,7 +394,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getLoggedInDevicesFromServer(JSONObject param, String channelName, Result result) throws JSONException {
-        String username = param.getString("username");
+        String username = param.getString("userId");
         String password = param.getString("password");
         boolean isPwd = param.optBoolean("isPwd");
         if (isPwd) {
@@ -458,7 +490,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", event);
                 data.put("target", target);
-                data.put("users", userNames);
+                data.put("userIds", userNames);
                 post(()-> channel.invokeMethod(MethodKey.onMultiDeviceGroupEvent, data));
             }
 
@@ -466,7 +498,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 Map<String, Object> data = new HashMap<>();
                 data.put("event", event);
                 data.put("target", target);
-                data.put("users", usernames);
+                data.put("userIds", usernames);
                 post(()-> channel.invokeMethod(MethodKey.onMultiDeviceThreadEvent, data));
             }
 
@@ -529,7 +561,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 }
                 else if (errorCode == 8) {
                     post(() -> channel.invokeMethod(MethodKey.onAppActiveNumberReachLimit, null));
-                }
+                }                
                 else {
                     post(() -> channel.invokeMethod(MethodKey.onDisconnected, null));
                 }
@@ -547,7 +579,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
             @Override
             public void onLogout(int errorCode, EMLoginExtensionInfo info) {
-                if (errorCode == 206) {
+                if (errorCode == 206 || errorCode == 220) {
                     ListenerHandle.getInstance().clearHandle();
                     post(() -> channel.invokeMethod(MethodKey.onUserDidLoginFromOtherDevice, LoginExtensionInfoHelper.toJson(info)));
                 }

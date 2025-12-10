@@ -111,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisSize: MainAxisSize.max,
           children: [
             TextField(
-              decoration: const InputDecoration(hintText: "Enter username"),
+              decoration: const InputDecoration(hintText: "Enter userId"),
               onChanged: (username) => _username = username,
             ),
             TextField(
@@ -250,14 +250,14 @@ Demo 中使用 sdk 注册环信id，在真实环境中，可以由你的后台�
 ```dart
 void _signUp() async {
   if (_username.isEmpty || _password.isEmpty) {
-    _addLogToConsole("username or password is null");
+    _addLogToConsole("userId or password is null");
     return;
   }
 
   try {
     _addLogToConsole("begin create account...");
     await EMClient.getInstance.createAccount(_username, _password);
-    _addLogToConsole("create account succeed, username: $_username");
+    _addLogToConsole("create account succeed, userId: $_username");
   } on EMError catch (e) {
     _addLogToConsole(
         "create account failed, code: ${e.code}, desc: ${e.description}");
@@ -273,7 +273,7 @@ void _signUp() async {
 ```dart
 void _signIn() async {
   if (_userId.isEmpty || _password.isEmpty) {
-    _addLogToConsole("username or password is null");
+    _addLogToConsole("userId or password is null");
     return;
   }
 
