@@ -1,3 +1,8 @@
+## 4.17.0
+- 安卓依赖 SDK 升级到 4.17.1；
+- 长连接支持 WebSocket 协议；
+- 私有化部署底层链路支持 TCP 和 WebSocket 之间切换；
+
 ## 4.16.0
 - 安卓依赖 SDK 升级到 4.16.1；
 - 新增 `loadMessagesWithIds` API；
