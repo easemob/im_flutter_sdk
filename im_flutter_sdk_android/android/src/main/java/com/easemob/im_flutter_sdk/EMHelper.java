@@ -97,6 +97,12 @@ class OptionsHelper {
             if (json.has("imServer")) {
                 options.setIMServer(json.getString("imServer"));
             }
+            if (json.has("webSocketServer")) {
+                options.setWebSocketServer(json.getString("webSocketServer"));
+            }
+            if (json.has("webSocketPort")) {
+                options.setWebSocketPort(json.getInt("webSocketPort"));
+            }
             if (json.has("restServer")) {
                 options.setRestServer(json.getString("restServer"));
             }

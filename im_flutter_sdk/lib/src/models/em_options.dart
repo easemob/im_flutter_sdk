@@ -272,6 +272,34 @@ class EMOptions {
   final int? imPort;
 
   /// ~english
+  /// The WebSocket server.
+  ///
+  /// This property is effective only when `enableDnsConfig` is `NO`.
+  /// Can only be set when initializing the SDK with [EMClient.init], cannot be altered in runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// WebSocket 服务器地址。
+  ///
+  /// enableDnsConfig 为 NO 时生效。只能在 [EMClient.init] 中设置，不能在程序运行过程中动态修改。
+  /// ~end
+  final String? webSocketServer;
+
+  /// ~english
+  /// The WebSocket server port.
+  ///
+  /// This property is effective only when `enableDnsConfig` is `NO`.
+  /// Can only be set when initializing the SDK with [EMClient.init], cannot be altered in runtime.
+  /// ~end
+  ///
+  /// ~chinese
+  /// WebSocket 服务器端口。
+  ///
+  /// enableDnsConfig 为 NO 时生效。只能在 [EMClient.init] 中设置，不能在程序运行过程中动态修改。
+  /// ~end
+  final int? webSocketPort;
+
+  /// ~english
   /// Whether to enable TLS connection, which takes effect during initialization and is false by default.
   /// ~end
   ///
@@ -586,6 +614,10 @@ class EMOptions {
   ///
   /// Param [imServer] The IM server URL for private deployment.
   ///
+  /// Param [webSocketServer] The WebSocket server for private deployments.
+  ///
+  /// Param [webSocketPort] The WebSocket server port for private deployments.
+  ///
   /// Param [chatAreaCode] The area code.
   ///
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
@@ -682,6 +714,10 @@ class EMOptions {
   ///
   /// Param [imServer] 私有部署时的 IM 服务器地址。
   ///
+  /// Param [webSocketServer] 私有部署时的 WebSocket 服务器地址。
+  ///
+  /// Param [webSocketPort] 私有部署时的 WebSocket 服务器端口。
+  ///
   /// Param [chatAreaCode] server 区域码.
   ///
   /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
@@ -728,6 +764,8 @@ class EMOptions {
     String? restServer,
     int? imPort,
     String? imServer,
+    String? webSocketServer,
+    int? webSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
     String? deviceName,
@@ -759,6 +797,8 @@ class EMOptions {
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
+          webSocketServer: webSocketServer,
+          webSocketPort: webSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
           deviceName: deviceName,
@@ -841,6 +881,10 @@ class EMOptions {
   ///
   /// Param [imServer] The IM server URL for private deployment.
   ///
+  /// Param [webSocketServer] The WebSocket server for private deployments.
+  ///
+  /// Param [webSocketPort] The WebSocket server port for private deployments.
+  ///
   /// Param [chatAreaCode] The area code.
   ///
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
@@ -937,6 +981,10 @@ class EMOptions {
   ///
   /// Param [imServer] 私有部署时的 IM 服务器地址。
   ///
+  /// Param [webSocketServer] 私有部署时的 WebSocket 服务器地址。
+  ///
+  /// Param [webSocketPort] 私有部署时的 WebSocket 服务器端口。
+  ///
   /// Param [chatAreaCode] server 区域码.
   ///
   /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
@@ -983,6 +1031,8 @@ class EMOptions {
     String? restServer,
     int? imPort,
     String? imServer,
+    String? webSocketServer,
+    int? webSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
     String? deviceName,
@@ -1014,6 +1064,8 @@ class EMOptions {
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
+          webSocketServer: webSocketServer,
+          webSocketPort: webSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
           deviceName: deviceName,
@@ -1098,6 +1150,10 @@ class EMOptions {
   ///
   /// Param [imServer] The IM server URL for private deployment.
   ///
+  /// Param [webSocketServer] The WebSocket server for private deployments.
+  ///
+  /// Param [webSocketPort] The WebSocket server port for private deployments.
+  ///
   /// Param [chatAreaCode] The area code.
   ///
   /// Param [enableEmptyConversation] Whether to include empty conversations when the SDK loads conversations from the local database.
@@ -1194,6 +1250,10 @@ class EMOptions {
   ///
   /// Param [imServer] 私有部署时的 IM 服务器地址。
   ///
+  /// Param [webSocketServer] 私有部署时的 WebSocket 服务器地址。
+  ///
+  /// Param [webSocketPort] 私有部署时的 WebSocket 服务器端口。
+  ///
   /// Param [chatAreaCode] server 区域码.
   ///
   /// Param [enableEmptyConversation] 从本地数据库加载会话时是否包括空会话。
@@ -1240,6 +1300,8 @@ class EMOptions {
     String? restServer,
     int? imPort,
     String? imServer,
+    String? webSocketServer,
+    int? webSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
     String? deviceName,
@@ -1270,6 +1332,8 @@ class EMOptions {
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
+          webSocketServer: webSocketServer,
+          webSocketPort: webSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
           deviceName: deviceName,
@@ -1304,6 +1368,8 @@ class EMOptions {
     this.restServer,
     this.imPort,
     this.imServer,
+    this.webSocketServer,
+    this.webSocketPort,
     this.chatAreaCode = ChatAreaCode.GLOB,
     this.enableEmptyConversation = false,
     this.deviceName,
@@ -1335,6 +1401,8 @@ class EMOptions {
     data.putIfNotNull("enableDNSConfig", enableDNSConfig);
     data.putIfNotNull("imPort", imPort);
     data.putIfNotNull("imServer", imServer);
+    data.putIfNotNull("webSocketServer", webSocketServer);
+    data.putIfNotNull("webSocketPort", webSocketPort);
     data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
     data.putIfNotNull(
         "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
@@ -1426,6 +1494,8 @@ class EMOptions {
       restServer: restServer,
       imPort: imPort,
       imServer: imServer,
+      webSocketServer: webSocketServer,
+      webSocketPort: webSocketPort,
       chatAreaCode: chatAreaCode,
       enableEmptyConversation: enableEmptyConversation,
       deviceName: deviceName,
