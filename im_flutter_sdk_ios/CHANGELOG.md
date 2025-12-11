@@ -1,5 +1,10 @@
+## 4.17.0
+- iOS依赖 SDK 升级到 4.17.1；
+- 长连接支持 WebSocket 协议；
+- 私有化部署底层链路支持 TCP 和 WebSocket 之间切换；
+
 ## 4.16.0
-- iOS以来 SDK 升级到 4.16.2；
+- iOS依赖 SDK 升级到 4.16.2；
 - 新增 `loadMessagesWithIds` API；
 - 修复 当修改文本和自定义消息之外的消息时，`EEMChatEventHandler#onMessageContentChanged` 回调中不返回修改的信息的问题；
 - 修复 拉取漫游消息时，设置为不保存消息 `FetchMessageOptions#needSave 设置为 false`，也会生成新的本地会话的问题；
