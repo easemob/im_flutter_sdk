@@ -69,6 +69,9 @@ class OptionsHelper {
         }else {
             options.setAppId(json.optString("appId"));
         }
+
+        options.setSDKPlatform(EMOptions.EMSDKPlatform.EMSDKPlatformFlutter);
+
         options.setAutoLogin(json.getBoolean("autoLogin"));
         options.setRequireAck(json.getBoolean("requireAck"));
         options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
