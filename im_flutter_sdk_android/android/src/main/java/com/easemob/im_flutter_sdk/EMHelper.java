@@ -69,6 +69,9 @@ class OptionsHelper {
         }else {
             options.setAppId(json.optString("appId"));
         }
+
+        options.setSDKPlatform(EMOptions.EMSDKPlatform.EMSDKPlatformFlutter);
+
         options.setAutoLogin(json.getBoolean("autoLogin"));
         options.setRequireAck(json.getBoolean("requireAck"));
         options.setRequireDeliveryAck(json.getBoolean("requireDeliveryAck"));
@@ -96,6 +99,12 @@ class OptionsHelper {
             }
             if (json.has("imServer")) {
                 options.setIMServer(json.getString("imServer"));
+            }
+            if (json.has("webSocketServer")) {
+                options.setWebSocketServer(json.getString("webSocketServer"));
+            }
+            if (json.has("webSocketPort")) {
+                options.setWebSocketPort(json.getInt("webSocketPort"));
             }
             if (json.has("restServer")) {
                 options.setRestServer(json.getString("restServer"));
