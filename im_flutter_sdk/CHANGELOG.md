@@ -1,6 +1,12 @@
+## 4.17.0
+- 安卓依赖 SDK 升级到 4.17.1；
+- iOS依赖 SDK 升级到 4.17.1；
+- 长连接支持 WebSocket 协议；
+- 私有化部署底层链路支持 TCP 和 WebSocket 之间切换；
+
 ## 4.16.0
 - 安卓依赖 SDK 升级到 4.16.1；
-- iOS以来 SDK 升级到 4.16.2；
+- iOS依赖 SDK 升级到 4.16.2；
 - 新增 `loadMessagesWithIds` API；
 - 修复 `Thread` 子区会被加入到 `conversation` 列表中；
 - 修复 当修改文本和自定义消息之外的消息时，`EEMChatEventHandler#onMessageContentChanged` 回调中不返回修改的信息的问题；
