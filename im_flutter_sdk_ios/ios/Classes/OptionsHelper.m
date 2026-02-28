@@ -57,6 +57,9 @@
         options = [EMOptions optionsWithAppId:aJson[@"appId"]];
 #endif
     }
+
+    options.platform = EMSDKPlatformFlutter;
+
     options.isAutoLogin = [aJson[@"autoLogin"] boolValue];
     options.enableConsoleLog = YES;// [aJson[@"debugModel"] boolValue];
     options.enableRequireReadAck = [aJson[@"requireAck"] boolValue];
