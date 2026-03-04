@@ -95,7 +95,7 @@ packages:
       path: "../../im_flutter_sdk_interface"
       relative: true
     source: path
-    version: "4.17.0"
+    version: "4.18.0"
   im_flutter_sdk_ios:
     dependency: transitive
     description:
