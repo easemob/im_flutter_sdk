@@ -81,14 +81,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "4.18.0"
+    version: "4.18.1"
   im_flutter_sdk_android:
     dependency: transitive
     description:
       path: "../../im_flutter_sdk_android"
       relative: true
     source: path
-    version: "4.17.0"
+    version: "4.18.0"
   im_flutter_sdk_interface:
     dependency: transitive
     description:
@@ -102,7 +102,7 @@ packages:
       path: "../../im_flutter_sdk_ios"
       relative: true
     source: path
-    version: "4.17.0"
+    version: "4.18.0"
   leak_tracker:
     dependency: transitive
     description:
