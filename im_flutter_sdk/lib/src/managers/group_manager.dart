@@ -181,12 +181,12 @@ class EMGroupManager {
         case "onGroupMembersJoined":
           String groupId = map["groupId"];
           List<String> members = List.from(map['userIds'] ?? []);
-          element.onAllowListRemovedFromGroup?.call(groupId, members);
+          element.onMembersJoinedFromGroup?.call(groupId, members);
           break;
         case "onGroupMembersExited":
           String groupId = map["groupId"];
           List<String> members = List.from(map['userIds'] ?? []);
-          element.onAllowListRemovedFromGroup?.call(groupId, members);
+          element.onMembersExitedFromGroup?.call(groupId, members);
           break;
       }
     }
