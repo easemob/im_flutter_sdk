@@ -1,3 +1,11 @@
+## 4.18.1
+- 修复群组事件onGroupMembersJoined和onGroupMembersExited触发了错误的回调；
+
+## 4.18.0
+- 安卓依赖 SDK 升级到 4.18.1；
+- iOS依赖 SDK 升级到 4.18.1；
+- 底层支持安全 DNS 解析 DoH，提高连通性；
+
 ## 4.17.0
 - 安卓依赖 SDK 升级到 4.17.1；
 - iOS依赖 SDK 升级到 4.17.1；
