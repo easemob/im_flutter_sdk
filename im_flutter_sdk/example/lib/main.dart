@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "easemob#easeim";
+import 'websocket_config_page.dart';
+
+var appKey = "easemob-demo#wang";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +29,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MyHomePage(title: 'Flutter SDK Demo'),
+      home: const WebSocketConfigPage(),
+      routes: {
+        '/sdk_demo': (_) => const MyHomePage(title: 'Flutter SDK Demo'),
+      },
     );
   }
 }
@@ -58,7 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
       body: Container(
         padding: const EdgeInsets.only(left: 10, right: 10),
         child: Column(
@@ -165,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
-
+ 
   void _addChatListener() {
     EMClient.getInstance.addConnectionEventHandler(
       'identifier',

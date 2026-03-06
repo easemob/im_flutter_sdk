@@ -38,4 +38,16 @@ class EMPushConfigs {
       displayName: map["displayName"],
     );
   }
+
+  Map toJson() {
+    Map data = {};
+    data["pushStyle"] = displayStyle == DisplayStyle.Simple ? 0 : 1;
+    data["displayName"] = displayName;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

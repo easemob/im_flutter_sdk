@@ -14,4 +14,17 @@ class GroupMemberInfo {
       : userId = map["userId"],
         joinedTs = map["joinedTs"],
         role = EMGroupPermissionTypeExtension.values(map["role"]);
+
+  Map toJson() {
+    Map data = {};
+    data["userId"] = userId;
+    data["joinedTs"] = joinedTs;
+    data["role"] = role.index;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

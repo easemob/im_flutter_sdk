@@ -53,4 +53,13 @@ class MessagePinInfo {
       'operatorId': operatorId,
     };
   }
+
+  Map toJson() {
+    return toMap();
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

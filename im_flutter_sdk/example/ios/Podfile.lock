@@ -24,7 +24,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AgoraInfra_iOS: 0bf927aad4fc425b24ca5d094b333361960f5cb0
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   HyphenateChat: b0fd5ec0fad0954439c56d3210fefaabc269ecd5
   im_flutter_sdk_ios: c438e8b48759078d57d66d6981d89defdcffaf52
 
