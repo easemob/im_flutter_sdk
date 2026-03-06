@@ -52,4 +52,28 @@ class EMPageResult<T> {
   /// 获取 <T> 泛型数据。
   /// ~end
   List<T> get data => _data;
+
+  Map toJson() {
+    Map data = {};
+    data["count"] = _pageCount;
+    data["list"] = _data.map((item) {
+      if (item is Map) {
+        return item;
+      } else if (item is List) {
+        return item;
+      } else if (item is String || item is int || item is bool || item is double) {
+        return item;
+      } else if (item is dynamic && item.toJson != null) {
+        return item.toJson();
+      } else {
+        return item.toString();
+      }
+    }).toList();
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

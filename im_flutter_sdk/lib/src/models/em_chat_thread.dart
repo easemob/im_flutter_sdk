@@ -155,6 +155,25 @@ class EMChatThread {
       lastMessage: lastMessage ?? this.lastMessage,
     );
   }
+
+  Map toJson() {
+    Map data = {};
+    data.putIfNotNull("threadId", threadId);
+    data.putIfNotNull("threadName", threadName);
+    data.putIfNotNull("owner", owner);
+    data.putIfNotNull("msgId", messageId);
+    data.putIfNotNull("parentId", parentId);
+    data.putIfNotNull("memberCount", membersCount);
+    data.putIfNotNull("messageCount", messageCount);
+    data.putIfNotNull("createAt", createAt);
+    data.putIfNotNull("lastMessage", lastMessage?.toJson());
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 /// ~english
@@ -216,5 +235,18 @@ class EMChatThreadEvent {
       from: from,
       chatThread: chatThread,
     );
+  }
+
+  Map toJson() {
+    Map data = {};
+    data.putIfNotNull("type", type.index);
+    data.putIfNotNull("from", from);
+    data.putIfNotNull("thread", chatThread?.toJson());
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }

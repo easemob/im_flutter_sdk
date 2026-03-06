@@ -97,6 +97,20 @@ class EMMessageReaction {
       userList: userList,
     );
   }
+
+  Map toJson() {
+    Map data = {};
+    data["reaction"] = reaction;
+    data["count"] = userCount;
+    data["isAddedBySelf"] = isAddedBySelf;
+    data["userList"] = userList;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 /// ~english
@@ -169,5 +183,19 @@ class EMMessageReactionEvent {
       reactions: reactions,
       operations: operations,
     );
+  }
+
+  Map toJson() {
+    Map data = {};
+    data["convId"] = conversationId;
+    data["msgId"] = messageId;
+    data["reactions"] = reactions.map((r) => r.toJson()).toList();
+    data["operations"] = operations.map((o) => o.toJson()).toList();
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }
