@@ -128,6 +128,7 @@ class ChatMethodKeys {
 
   /// EMChatManager listener
   static const String onMessagesReceived = "onMessagesReceived";
+  static const String onStreamMessagesReceived = "onStreamMessagesReceived";
   static const String onCmdMessagesReceived = "onCmdMessagesReceived";
   static const String onMessagesRead = "onMessagesRead";
   static const String onReadAckForGroupMessageUpdated =
