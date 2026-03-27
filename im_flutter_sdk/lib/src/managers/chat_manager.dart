@@ -2431,7 +2431,6 @@ Future<List<EMMessage>> searchMsgsByOptions(
     rethrow;
   }
 }
-}
 
 Future<int> getAllMessageCount() async {
   try {
@@ -2476,6 +2475,7 @@ Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
   } catch (e) {
     rethrow;
   }
+}
 }
 
 class MessageCallBackManager {
