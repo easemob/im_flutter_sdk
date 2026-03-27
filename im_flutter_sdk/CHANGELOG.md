@@ -2,9 +2,10 @@
 - 安卓依赖 SDK 升级到 4.19.1；
 - iOS依赖 SDK 升级到 4.19.1；
 - 支持接收流式消息；
+- 修复 `loadConversationMessagesWithKeyword` 和 `getAllMessageCount` 没有被包含在EMChatManager中的问题；
 
 ## 4.18.1
-- 修复群组事件onGroupMembersJoined和onGroupMembersExited触发了错误的回调；
+- 修复群组事件 `onGroupMembersJoined和onGroupMembersExited` 触发了错误的回调；
 
 ## 4.18.0
 - 安卓依赖 SDK 升级到 4.18.1；
