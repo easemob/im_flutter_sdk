@@ -1404,6 +1404,15 @@
                      arguments:msgList];
 }
 
+- (void)onStreamMessagesReceived:(NSArray *)aMessages {
+    NSMutableArray *msgList = [NSMutableArray array];
+    for (EMChatMessage *msg in aMessages) {
+        [msgList addObject:[msg toJson]];
+    }
+    [self.channel invokeMethod:ChatOnStreamMessagesReceived
+                     arguments:msgList];
+}
+
 - (void)cmdMessagesDidReceive:(NSArray *)aCmdMessages {
     NSMutableArray *cmdMsgList = [NSMutableArray array];
     for (EMChatMessage *msg in aCmdMessages) {

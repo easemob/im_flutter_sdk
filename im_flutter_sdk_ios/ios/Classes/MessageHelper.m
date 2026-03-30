@@ -93,6 +93,19 @@
     ret[@"receiverList"] = self.receiverList;
     ret[@"broadcast"] = @(self.broadcast);
     ret[@"isContentReplaced"] = @(self.isContentReplaced);
+
+    if (self.streamChunk) {
+        NSMutableDictionary *streamChunkDict = [NSMutableDictionary dictionary];
+        streamChunkDict[@"status"] = @(self.streamChunk.status);
+        streamChunkDict[@"errorCode"] = @(self.streamChunk.errorCode);
+        streamChunkDict[@"finishReason"] = @(self.streamChunk.finishReason);
+        streamChunkDict[@"text"] = self.streamChunk.text ?: @"";
+        if (self.streamChunk.customType) {
+            streamChunkDict[@"customType"] = self.streamChunk.customType;
+        }
+        ret[@"streamChunk"] = streamChunkDict;
+    }
+
     // flutter 使用 get 方法获取。
     // ret[@"pinnedInfo"] = [self.pinnedInfo toJson];
     return ret;

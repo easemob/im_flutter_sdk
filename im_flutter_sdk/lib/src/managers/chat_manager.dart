@@ -36,6 +36,8 @@ class EMChatManager {
       EMLog.d("${call.method}: arguments: ${call.arguments}");
       if (call.method == ChatMethodKeys.onMessagesReceived) {
         return _onMessagesReceived(call.arguments);
+      } else if (call.method == ChatMethodKeys.onStreamMessagesReceived) {
+        return _onStreamMessagesReceived(call.arguments);
       } else if (call.method == ChatMethodKeys.onCmdMessagesReceived) {
         return _onCmdMessagesReceived(call.arguments);
       } else if (call.method == ChatMethodKeys.onMessagesRead) {
@@ -73,6 +75,17 @@ class EMChatManager {
 
     for (var item in _eventHandlesMap.values) {
       item.onMessagesReceived?.call(messageList);
+    }
+  }
+
+  Future<void> _onStreamMessagesReceived(List messages) async {
+    List<EMMessage> messageList = [];
+    for (var message in messages) {
+      messageList.add(EMMessage.fromJson(message));
+    }
+
+    for (var item in _eventHandlesMap.values) {
+      item.onStreamMessagesReceived?.call(messageList);
     }
   }
 
@@ -2418,7 +2431,6 @@ Future<List<EMMessage>> searchMsgsByOptions(
     rethrow;
   }
 }
-}
 
 Future<int> getAllMessageCount() async {
   try {
@@ -2463,6 +2475,7 @@ Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
   } catch (e) {
     rethrow;
   }
+}
 }
 
 class MessageCallBackManager {
