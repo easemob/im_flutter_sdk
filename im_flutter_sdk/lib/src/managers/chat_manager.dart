@@ -2432,6 +2432,22 @@ Future<List<EMMessage>> searchMsgsByOptions(
   }
 }
 
+
+/// ~english
+/// Get the message count from db.
+///
+/// **Returns** The message count in db.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 获取数据库中的消息总数。
+///
+/// **Return** 数据库中的消息总数。
+///
+/// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError].
+/// ~end
 Future<int> getAllMessageCount() async {
   try {
     Map result = await Client.instance.chatManager
@@ -2447,6 +2463,41 @@ Future<int> getAllMessageCount() async {
   }
 }
 
+/// ~english
+/// Loads messages with the specified keyword from the local database,
+/// returning a map containing conversation IDs and message ID arrays.
+///
+/// Param [keyword]      The search keyword, nil means ignore.
+/// Param [timestamp]    The starting Unix timestamp in milliseconds.
+///                      Negative means fetch from the latest message.
+/// Param [sender]       The message sender, nil means ignore.
+/// Param [direction]    Message search direction, see [EMSearchDirection].
+///                      - Up: Reverse order by timestamp.
+///                      - Down: Chronological order by timestamp.
+/// Param [scope]        Message search scope, see [MessageSearchScope].
+///
+/// **Returns** A map where key is conversation ID, value is message ID list.
+///
+/// **Throws** Exception description, see [EMError].
+/// ~end
+///
+/// ~chinese
+/// 通过关键词从本地数据库中获取消息，返回包含会话 ID 与消息 ID 数组的 Map。
+/// SDK 按时间顺序返回消息。
+///
+/// Param [keyword]      搜索关键词，nil 表示忽略该参数。
+/// Param [timestamp]    搜索起始 Unix 时间戳，单位毫秒。
+///                     为负数时从最新消息向前获取。
+/// Param [sender]       消息发送方，nil 表示忽略该参数。
+/// Param [direction]    消息搜索方向，详见 [EMSearchDirection]。
+///                     - Up：按时间戳逆序获取。
+///                     - Down：按时间戳顺序获取。
+/// Param [scope]        消息搜索范围，详见 [MessageSearchScope]。
+///
+/// **Return**  Map，key 为会话 ID，value 为消息 ID 列表。
+///
+/// **Throws** 异常描述，详见 [EMError]。
+/// ~end
 Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
   String? keyword,
   int timestamp = -1,
