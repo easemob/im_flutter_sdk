@@ -42,6 +42,7 @@ import com.hyphenate.chat.EMRecallMessageInfo;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
 import com.hyphenate.chat.EMSilentModeTime;
+import com.hyphenate.chat.EMStreamChunk;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -86,6 +87,7 @@ class OptionsHelper {
         options.setAreaCode(json.getInt("areaCode"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+        options.setEnableAutoSyncContacts(json.getBoolean("enableAutoSyncContacts"));
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
         if (json.has("deviceName")) {
             options.setCustomDeviceName(json.optString("deviceName"));
@@ -105,6 +107,13 @@ class OptionsHelper {
             }
             if (json.has("webSocketPort")) {
                 options.setWebSocketPort(json.getInt("webSocketPort"));
+            }
+            // Friend-list sync service WSS for private deployment
+            if (json.has("syncDataWebSocketServer")) {
+                try { options.setSyncDataWebSocketServer(json.getString("syncDataWebSocketServer")); } catch (Throwable ignore) {}
+            }
+            if (json.has("syncDataWebSocketPort")) {
+                try { options.setSyncDataWebSocketPort(json.getInt("syncDataWebSocketPort")); } catch (Throwable ignore) {}
             }
             if (json.has("restServer")) {
                 options.setRestServer(json.getString("restServer"));
@@ -305,6 +314,14 @@ class ContactHelper {
         if (remark != null) {
             data.put("remark", remark);
         }
+        try {
+            // Friend info and add timestamp
+            EMUserInfo ui = contact.getUserInfo();
+            if (ui != null) {
+                data.put("userInfo", UserInfoHelper.toJson(ui));
+            }
+            data.put("updatedAt", contact.getAddTimestamp());
+        } catch (Throwable ignore) {}
         return data;
     }
 
@@ -357,7 +374,7 @@ class MessageHelper {
         JSONObject bodyJson = json.getJSONObject("body");
         EMMessageBody body = MessageBodyHelper.fromJson(bodyJson);
         EMMessage.Type type = EnumTools.messageBodyTypeFromInt(bodyJson.getInt("type"));
-        EMMessage.Direct direct = EnumTools.messageDirectFromInt(json.getInt("direction"));
+        EMMessage.Direct direct = EnumTools.messageDirectFromInt(json.optInt("direction", 0));
         if (direct == EMMessage.Direct.SEND) {
             switch (type) {
                 case TXT: {
@@ -456,26 +473,26 @@ class MessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-        message.setAcked(json.getBoolean("hasReadAck"));
-        if (EnumTools.messageStatusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
-            message.setUnread(!json.getBoolean("hasRead"));
+        message.setAcked(json.optBoolean("hasReadAck", false));
+        if (EnumTools.messageStatusFromInt(json.optInt("status", 0)) == EMMessage.Status.SUCCESS) {
+            message.setUnread(!json.optBoolean("hasRead", false));
         }
         // message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
-        message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
+        message.setIsNeedGroupAck(json.optBoolean("needGroupAck", false));
         if (json.has("groupAckCount")) {
             message.setGroupAckCount(json.getInt("groupAckCount"));
         }
 
-        message.setIsChatThreadMessage(json.getBoolean("isThread"));
+        message.setIsChatThreadMessage(json.optBoolean("isThread", false));
 
-        message.deliverOnlineOnly(json.getBoolean("deliverOnlineOnly"));
+        message.deliverOnlineOnly(json.optBoolean("deliverOnlineOnly", false));
 
-        message.setLocalTime(json.getLong("localTime"));
+        message.setLocalTime(json.has("localTime") ? json.optLong("localTime") : System.currentTimeMillis());
         if (json.has("serverTime")){
             message.setMsgTime(json.getLong("serverTime"));
         }
 
-        message.setStatus(EnumTools.messageStatusFromInt(json.getInt("status")));
+        message.setStatus(EnumTools.messageStatusFromInt(json.optInt("status", 0)));
         if (json.has("chatroomMessagePriority")) {
             int intPriority = json.getInt("chatroomMessagePriority");
             if (intPriority == 0) {
@@ -486,7 +503,7 @@ class MessageHelper {
                 message.setPriority(EMMessage.EMChatRoomMessagePriority.PriorityLow);
             }
         }
-        message.setChatType(EnumTools.chatTypeFromInt(json.getInt("chatType")));
+        message.setChatType(EnumTools.chatTypeFromInt(json.optInt("chatType", 0)));
         if (json.has("msgId")){
             message.setMsgId(json.getString("msgId"));
         }
@@ -589,7 +606,39 @@ class MessageHelper {
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
+
+        EMStreamChunk streamChunk = message.getStreamChunk();
+        if (streamChunk != null) {
+            Map<String, Object> streamChunkData = new HashMap<>();
+            streamChunkData.put("status", streamStatusToInt(streamChunk.getStatus()));
+            streamChunkData.put("errorCode", streamChunk.getErrorCode());
+            streamChunkData.put("finishReason", streamChunk.getFinishReason());
+            streamChunkData.put("text", streamChunk.getText() != null ? streamChunk.getText() : "");
+            String customType = streamChunk.getCustomType();
+            if (customType != null && !customType.isEmpty()) {
+                streamChunkData.put("customType", customType);
+            }
+            data.put("streamChunk", streamChunkData);
+        }
+
         return data;
+    }
+
+    private static int streamStatusToInt(EMMessage.EMStreamStatus status) {
+        switch (status) {
+            case START:
+                return 0;
+            case START_AND_COMPLETE:
+                return 1;
+            case PROGRESS:
+                return 2;
+            case COMPLETE:
+                return 3;
+            case ERROR:
+                return 4;
+            default:
+                return 3;
+        }
     }
 }
 

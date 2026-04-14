@@ -235,6 +235,9 @@ class EMOptions {
   /// ~end
   final bool enableDNSConfig;
 
+  /// Whether to auto sync contacts and friend info from server.
+  final bool enableAutoSyncContacts;
+
   /// ~english
   /// The DNS URL.
   /// ~end
@@ -298,6 +301,11 @@ class EMOptions {
   /// enableDnsConfig 为 NO 时生效。只能在 [EMClient.init] 中设置，不能在程序运行过程中动态修改。
   /// ~end
   final int? webSocketPort;
+
+  /// Friend sync service WebSocket server (private deployment).
+  final String? syncDataWebSocketServer;
+  /// Friend sync service WebSocket server port (private deployment).
+  final int? syncDataWebSocketPort;
 
   /// ~english
   /// Whether to enable TLS connection, which takes effect during initialization and is false by default.
@@ -760,12 +768,15 @@ class EMOptions {
     bool serverTransfer = true,
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
+    bool enableAutoSyncContacts = false,
     String? dnsUrl,
     String? restServer,
     int? imPort,
     String? imServer,
     String? webSocketServer,
     int? webSocketPort,
+    String? syncDataWebSocketServer,
+    int? syncDataWebSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
     String? deviceName,
@@ -793,12 +804,15 @@ class EMOptions {
           serverTransfer: serverTransfer,
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
+      enableAutoSyncContacts: enableAutoSyncContacts,
           dnsUrl: dnsUrl,
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
           webSocketServer: webSocketServer,
           webSocketPort: webSocketPort,
+          syncDataWebSocketServer: syncDataWebSocketServer,
+          syncDataWebSocketPort: syncDataWebSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
           deviceName: deviceName,
@@ -1027,12 +1041,15 @@ class EMOptions {
     bool serverTransfer = true,
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
+    bool enableAutoSyncContacts = false,
     String? dnsUrl,
     String? restServer,
     int? imPort,
     String? imServer,
     String? webSocketServer,
     int? webSocketPort,
+    String? syncDataWebSocketServer,
+    int? syncDataWebSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
     String? deviceName,
@@ -1060,12 +1077,15 @@ class EMOptions {
           serverTransfer: serverTransfer,
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
+      enableAutoSyncContacts: enableAutoSyncContacts,
           dnsUrl: dnsUrl,
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
           webSocketServer: webSocketServer,
           webSocketPort: webSocketPort,
+          syncDataWebSocketServer: syncDataWebSocketServer,
+          syncDataWebSocketPort: syncDataWebSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
           deviceName: deviceName,
@@ -1296,12 +1316,15 @@ class EMOptions {
     bool serverTransfer = true,
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
+    bool enableAutoSyncContacts = false,
     String? dnsUrl,
     String? restServer,
     int? imPort,
     String? imServer,
     String? webSocketServer,
     int? webSocketPort,
+    String? syncDataWebSocketServer,
+    int? syncDataWebSocketPort,
     int? chatAreaCode,
     bool enableEmptyConversation = false,
     String? deviceName,
@@ -1328,12 +1351,15 @@ class EMOptions {
           serverTransfer: serverTransfer,
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
+      enableAutoSyncContacts: enableAutoSyncContacts,
           dnsUrl: dnsUrl,
           restServer: restServer,
           imPort: imPort,
           imServer: imServer,
           webSocketServer: webSocketServer,
           webSocketPort: webSocketPort,
+          syncDataWebSocketServer: syncDataWebSocketServer,
+          syncDataWebSocketPort: syncDataWebSocketPort,
           chatAreaCode: chatAreaCode ?? ChatAreaCode.GLOB,
           enableEmptyConversation: enableEmptyConversation,
           deviceName: deviceName,
@@ -1364,12 +1390,15 @@ class EMOptions {
     this.serverTransfer = true,
     this.isAutoDownloadThumbnail = true,
     this.enableDNSConfig = true,
+    this.enableAutoSyncContacts = false,
     this.dnsUrl,
     this.restServer,
     this.imPort,
     this.imServer,
     this.webSocketServer,
     this.webSocketPort,
+    this.syncDataWebSocketServer,
+    this.syncDataWebSocketPort,
     this.chatAreaCode = ChatAreaCode.GLOB,
     this.enableEmptyConversation = false,
     this.deviceName,
@@ -1399,10 +1428,13 @@ class EMOptions {
         "deleteMessagesAsExitChatRoom", deleteMessagesAsExitChatRoom);
     data.putIfNotNull("dnsUrl", dnsUrl);
     data.putIfNotNull("enableDNSConfig", enableDNSConfig);
+    data.putIfNotNull("enableAutoSyncContacts", enableAutoSyncContacts);
     data.putIfNotNull("imPort", imPort);
     data.putIfNotNull("imServer", imServer);
     data.putIfNotNull("webSocketServer", webSocketServer);
     data.putIfNotNull("webSocketPort", webSocketPort);
+    data.putIfNotNull("syncDataWebSocketServer", syncDataWebSocketServer);
+    data.putIfNotNull("syncDataWebSocketPort", syncDataWebSocketPort);
     data.putIfNotNull("isAutoDownload", isAutoDownloadThumbnail);
     data.putIfNotNull(
         "isChatRoomOwnerLeaveAllowed", isChatRoomOwnerLeaveAllowed);
@@ -1431,7 +1463,6 @@ class EMOptions {
 
     // 4.10
     data.putIfNotNull('workPathCopiable', workPathCopiable);
-
     return data;
   }
 
@@ -1466,6 +1497,7 @@ class EMOptions {
     bool? messagesReceiveCallbackIncludeSend,
     bool? regardImportMessagesAsRead,
     Map<String, dynamic>? extSettings,
+    bool? enableAutoSyncContacts,
   }) {
     return EMOptions._(
       appKey: appKey,
@@ -1490,12 +1522,15 @@ class EMOptions {
       serverTransfer: serverTransfer,
       isAutoDownloadThumbnail: autoDownloadThumbnail ?? isAutoDownloadThumbnail,
       enableDNSConfig: enableDNSConfig,
+      enableAutoSyncContacts: enableAutoSyncContacts ?? this.enableAutoSyncContacts,
       dnsUrl: dnsUrl,
       restServer: restServer,
       imPort: imPort,
       imServer: imServer,
       webSocketServer: webSocketServer,
       webSocketPort: webSocketPort,
+          syncDataWebSocketServer: syncDataWebSocketServer,
+          syncDataWebSocketPort: syncDataWebSocketPort,
       chatAreaCode: chatAreaCode,
       enableEmptyConversation: enableEmptyConversation,
       deviceName: deviceName,

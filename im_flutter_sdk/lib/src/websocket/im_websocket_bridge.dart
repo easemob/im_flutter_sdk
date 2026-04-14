@@ -4,6 +4,9 @@ import 'dart:io';
 
 import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
 
+import '../internal/chat_method_keys.dart';
+import '../managers/client.dart';
+import '../models/em_chat_enums.dart';
 import '../tools/em_log.dart';
 
 /// Default WebSocket server base URL (without query). Used with [topic] to build full URL.
@@ -28,6 +31,11 @@ class IMWebSocketBridge {
   static const String _tag = 'IMWebSocketBridge';
 
   OnBridgeLog? onLog;
+
+  static bool _isLoginMethod(String? method) {
+    return method == ChatMethodKeys.login ||
+        method == ChatMethodKeys.loginWithAgoraToken;
+  }
 
   dynamic _getManager(String managerName) {
     switch (managerName) {
@@ -100,7 +108,7 @@ class IMWebSocketBridge {
     if (ws == null || ws.closeCode != null) return;
 
     Map<String, dynamic>? request;
-    EMLog.v('WebSocket request: $text', tag: _tag);
+    EMLog.v('cmd request: $text', tag: _tag);
     try {
       request = jsonDecode(text) as Map<String, dynamic>?;
     } catch (e) {
@@ -123,6 +131,7 @@ class IMWebSocketBridge {
     dynamic args = request['info'];
     if (managerName == null || method == null) {
       final resp = _errorResponse(id, -1, 'Missing manager or cmd');
+      EMLog.v('cmd request: ${jsonEncode(resp)}', tag: _tag);
       _send(ws, resp);
       onLog?.call(text, jsonEncode(resp));
       return;
@@ -136,17 +145,29 @@ class IMWebSocketBridge {
       return;
     }
 
-    Map<String, dynamic> response;
+    Map<String, dynamic> response = {};
     try {
-      final result = await manager.callNativeMethod(method, args);
+      // sendMessageWithType 仅在 Dart 封装 EMMessage 后调 sendMessage，无原生 method，不可走 callNativeMethod
+      final dynamic result = (managerName == 'ChatManager' &&
+              method == 'sendMessageWithType')
+          ? await _invokeSendMessageWithType(args)
+          : await manager.callNativeMethod(method, args);
       //返回的result是map格式，key是method，value是结果json字符串，通过websocket发送回去的，可以将reqeust中的info字段去掉，把返回的值放到result属性中
       if (result is Map<String, dynamic>) {
-        response = _successResponse(request, result[method]);
-      } else {
-        final safeResult = _toJsonSafe(result);
-        response = _successResponse(request, safeResult);
+        final String resultFieldKey = (method == 'sendMessageWithType')
+            ? ChatMethodKeys.sendMessage
+            : method;
+        response = _successResponse(request, result, resultFieldKey);
       }
-      EMLog.v('WebSocket response: ${jsonEncode(response)}', tag: _tag);
+      // 登录成功后触发 startCallback，使 ListenerHandle 中的 contact/group 等回调下发到 Flutter
+      if (managerName == 'Client' && _isLoginMethod(method)) {
+        try {
+          await EMClient.getInstance.startCallback();
+        } catch (e, st) {
+          EMLog.e('startCallback after login: $e\n$st', tag: _tag);
+        }
+      }
+      EMLog.v('cmd response: ${jsonEncode(response)}', tag: _tag);
       _send(ws, response);
     } catch (e, st) {
       EMLog.e('callNativeMethod error: $e\n$st', tag: _tag);
@@ -154,6 +175,32 @@ class IMWebSocketBridge {
       _send(ws, response);
     }
     onLog?.call(text, jsonEncode(response));
+  }
+
+  /// 与原生 [ChatMethodKeys.sendMessage] 返回结构一致：`{ sendMessage: message.toJson() }`
+  Future<Map<String, dynamic>> _invokeSendMessageWithType(dynamic args) async {
+    if (args is! Map) {
+      throw ArgumentError.value(args, 'info', 'sendMessageWithType requires a Map');
+    }
+    final map = Map<String, dynamic>.from(args);
+    final typeStr = map['type'] as String?;
+    final payloadRaw = map['payload'];
+    if (typeStr == null || payloadRaw is! Map) {
+      throw ArgumentError(
+        'sendMessageWithType requires "type" and "payload" (see EMSendMessageType + payload keys)',
+      );
+    }
+    final payload = Map<String, dynamic>.from(payloadRaw);
+    final chatTypeTop = map['chatType'];
+    if (chatTypeTop != null) {
+      payload['chatType'] = chatTypeTop;
+    }
+    final type = EMSendMessageType.values.byName(typeStr);
+    final msg = await EMClient.getInstance.chatManager.sendMessageWithType(
+      type,
+      payload,
+    );
+    return {ChatMethodKeys.sendMessage: msg.toJson()};
   }
 
   static dynamic _toJsonSafe(dynamic value) {
@@ -174,19 +221,25 @@ class IMWebSocketBridge {
     try {
       final encoded = jsonEncode(payload);
       ws.add(encoded);
-      EMLog.v('Sent payload: $encoded', tag: _tag);
     } catch (e) {
       EMLog.e('Failed to send payload: $e', tag: _tag);
     }
   }
 
-  Map<String, dynamic> _successResponse(Map<String, dynamic> request, dynamic result) {
-    request['result'] = result;
-    request.remove('info');
-    return request;
+  Map<String, dynamic> _successResponse(Map<String, dynamic> request,
+      Map<String, dynamic> result, String method) {
+    final data = Map<String, dynamic>.from(request);
+    if (result.containsKey('error')) {
+      data['result'] = result['error'];
+    } else {
+      data['result'] = result[method];
+    }
+    data.remove('info');
+    return data;
   }
 
-  Map<String, dynamic> _errorResponse(dynamic id, int code, String description) {
+  Map<String, dynamic> _errorResponse(
+      dynamic id, int code, String description) {
     final map = <String, dynamic>{
       'success': false,
       'error': {'code': code, 'description': description},
@@ -204,23 +257,25 @@ class IMWebSocketBridge {
 
   bool get isConnected => _socket != null && _socket!.closeCode == null;
 
-  /// Send event data to WebSocket server
+  /// Send event data to WebSocket server (e.g. contact/group events from EventBridgeHandler).
   void sendEvent(String eventType, Map<String, dynamic> data) {
     final ws = _socket;
     if (ws == null || ws.closeCode != null) {
       EMLog.v('WebSocket not connected, event $eventType not sent', tag: _tag);
       return;
     }
-    
-    final payload = {
-      'type': 'event',
-      'eventType': eventType,
-      'data': _toJsonSafe(data),
-      'timestamp': DateTime.now().millisecondsSinceEpoch
-    };
-    
-    EMLog.v('Sending event: $eventType', tag: _tag);
-    _send(ws, payload);
-    onLog?.call('Event: $eventType', jsonEncode(payload));
+    try {
+      final payload = {
+        'type': 'event',
+        'eventType': eventType,
+        'data': _toJsonSafe(data),
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+      _send(ws, payload);
+      EMLog.v('Sent payload: ${jsonEncode(payload)}', tag: _tag);
+      onLog?.call('Event: $eventType', jsonEncode(payload));
+    } catch (e, st) {
+      EMLog.e('sendEvent $eventType failed: $e\n$st', tag: _tag);
+    }
   }
 }

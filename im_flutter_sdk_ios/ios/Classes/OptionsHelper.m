@@ -99,6 +99,9 @@
     
     // 4.10
     options.workPathCopiable = [aJson[@"workPathCopiable"] boolValue];
+    options.enableAutoSyncContacts = [aJson[@"enableAutoSyncContacts"] boolValue];
+    options.syncDataWSHost = aJson[@"syncDataWebSocketServer"];
+    options.syncDataWSPort = [aJson[@"syncDataWebSocketPort"] intValue];
     return options;
 }
 

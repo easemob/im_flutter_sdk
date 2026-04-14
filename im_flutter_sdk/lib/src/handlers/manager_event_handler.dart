@@ -429,6 +429,18 @@ class EMChatEventHandler {
   final void Function(List<EMMessage> messages)? onMessagesReceived;
 
   /// ~english
+  /// Occurs when a stream message is received.
+  ///
+  /// This callback is triggered to notify the user when a stream message is received.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 收到流式消息回调。
+  /// 在收到流式消息时，通过此回调通知用户。
+  /// ~end
+  final void Function(List<EMMessage> messages)? onStreamMessagesReceived;
+
+  /// ~english
   /// Occurs when a command message is received.
   ///
   /// This callback only contains a command message body that is usually invisible to users.
@@ -571,6 +583,8 @@ class EMChatEventHandler {
   ///
   /// Param [onMessagesReceived] Occurs when a message is received.
   ///
+  /// Param [onStreamMessagesReceived] Occurs when a stream message is received.
+  ///
   /// Param [onCmdMessagesReceived] Occurs when a command message is received.
   ///
   /// Param [onMessagesRead] Occurs when a read receipt is received for a one-to-one message.
@@ -601,6 +615,8 @@ class EMChatEventHandler {
   ///
   /// Param [onMessagesReceived] 在收到文本、图片、视频、语音、地理位置和文件等消息时，通过此回调通知用户。
   ///
+  /// Param [onStreamMessagesReceived] 收到流式消息回调。
+  ///
   /// Param [onCmdMessagesReceived] 收到命令消息回调。
   ///
   /// Param [onMessagesRead] 收到单聊消息已读回执的回调。
@@ -627,6 +643,7 @@ class EMChatEventHandler {
   /// ~end
   EMChatEventHandler(
       {this.onMessagesReceived,
+      this.onStreamMessagesReceived,
       this.onCmdMessagesReceived,
       this.onMessagesRead,
       this.onGroupMessageRead,
@@ -1096,6 +1113,15 @@ class EMChatThreadEventHandler {
 /// ```
 /// ~end
 class EMContactEventHandler {
+  /// Occurs when the friend list or friend user info sync starts.
+  final void Function()? onFriendStartSync;
+
+  /// Occurs when the friend list or friend user info sync finishes.
+  final void Function()? onFriendSyncFinished;
+
+  /// Occurs when friend user info updated events arrive.
+  final void Function(List<EMUserInfo> users)? onFriendUserInfoDidUpdated;
+
   /// ~english
   /// Occurs when user is added as a contact by another user.
   /// ~end
@@ -1180,6 +1206,9 @@ class EMContactEventHandler {
   /// Param [onFriendRequestDeclined] 发出的好友申请被对方拒绝。
   /// ~end
   EMContactEventHandler({
+    this.onFriendStartSync,
+    this.onFriendSyncFinished,
+    this.onFriendUserInfoDidUpdated,
     this.onContactAdded,
     this.onContactDeleted,
     this.onContactInvited,

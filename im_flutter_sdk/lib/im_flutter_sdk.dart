@@ -31,5 +31,6 @@ export 'src/models/message_search_options.dart';
 export 'src/models/group_member_info.dart';
 export 'src/models/conversation_fetch_options.dart';
 export 'src/models/em_contact.dart';
+export 'src/models/em_message_stream_chunk.dart';
 export 'src/websocket/im_websocket_bridge.dart';
 export 'src/websocket/event_bridge_handler.dart';

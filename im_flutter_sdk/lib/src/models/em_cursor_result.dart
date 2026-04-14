@@ -67,7 +67,10 @@ class EMCursorResult<T> {
         return item;
       } else if (item is List) {
         return item;
-      } else if (item is String || item is int || item is bool || item is double) {
+      } else if (item is String ||
+          item is int ||
+          item is bool ||
+          item is double) {
         return item;
       } else if (item is dynamic && item.toJson != null) {
         return item.toJson();

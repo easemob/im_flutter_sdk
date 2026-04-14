@@ -35,3 +35,5 @@ flutter:
         default_package: im_flutter_sdk_android
       ohos:
         default_package: im_flutter_sdk_ohos
+  assets:
+    - media/
