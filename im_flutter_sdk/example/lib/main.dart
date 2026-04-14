@@ -13,8 +13,19 @@ void main() async {
 
   EMOptions options = EMOptions.withAppKey(
     appKey,
+    restServer: "https://a1-hsb.easemob.com",
+    // imPort: 4300,
+    // imServer: "msync-im-hsb-tls.easemob.com",
+    webSocketServer: "im-api-new-hsb.easemob.com",
+    webSocketPort: 80,
     autoLogin: false,
+    debugMode: true,
+    enableDNSConfig: false,
+    syncDataWebSocketServer: "140.143.132.6",
+    syncDataWebSocketPort: 8086,
+    enableAutoSyncContacts: false    
   );
+  
 
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
@@ -323,12 +334,10 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    var msg = EMMessage.createTxtSendMessage(
+    await EMClient.getInstance.chatManager.sendTxtMessage(
       targetId: _chatId,
       content: _messageContent,
     );
-
-    await EMClient.getInstance.chatManager.sendMessage(msg);
   }
 
   void _addLogToConsole(String log) {

@@ -27,11 +27,25 @@ class EMContactManager {
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
-    String username = event['userId'];
+    String username = event['userId'] ?? '';
     String? reason = event['reason'];
 
     for (var element in _eventHandlesMap.values) {
       switch (type) {
+        case EMContactChangeEvent.FRIEND_SYNC_STARTED:
+          element.onFriendStartSync?.call();
+          break;
+        case EMContactChangeEvent.FRIEND_SYNC_FINISHED:
+          element.onFriendSyncFinished?.call();
+          break;
+        case EMContactChangeEvent.FRIEND_USERINFO_UPDATED:
+          final list = <EMUserInfo>[];
+          final infos = (event["userInfos"] as List?) ?? const [];
+          for (final e in infos) {
+            if (e is Map) list.add(EMUserInfo.fromJson(e));
+          }
+          element.onFriendUserInfoDidUpdated?.call(list);
+          break;
         case EMContactChangeEvent.CONTACT_ADD:
           element.onContactAdded?.call(username);
           break;

@@ -119,6 +119,19 @@ enum ChatType {
   ChatRoom,
 }
 
+/// 与 EMMessage.create*SendMessage 一一对应，用于 EMChatManager.sendMessageWithType。
+enum EMSendMessageType {
+  txt,
+  file,
+  image,
+  video,
+  voice,
+  location,
+  cmd,
+  custom,
+  combine,
+}
+
 /// ~english
 /// The message directions.
 ///
@@ -1180,8 +1193,6 @@ enum ConversationMarkType {
   Type18,
   Type19,
 }
-
-
 
 extension EMGroupPermissionTypeExtension on EMGroupPermissionType {
   static EMGroupPermissionType values(int type) {

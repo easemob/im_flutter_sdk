@@ -6,6 +6,10 @@ class EMContactChangeEvent {
   static const String INVITED = 'onContactInvited';
   static const String INVITATION_ACCEPTED = 'onFriendRequestAccepted';
   static const String INVITATION_DECLINED = 'onFriendRequestDeclined';
+  // New: friend info sync/update lifecycle events
+  static const String FRIEND_USERINFO_UPDATED = 'onFriendUserInfoDidUpdated';
+  static const String FRIEND_SYNC_STARTED = 'onFriendStartSync';
+  static const String FRIEND_SYNC_FINISHED = 'onFriendSyncFinished';
 }
 
 class EMChatRoomEvent {

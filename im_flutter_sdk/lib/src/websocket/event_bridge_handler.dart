@@ -4,9 +4,9 @@ import 'im_websocket_bridge.dart';
 /// Event bridge handler that forwards SDK events to WebSocket server
 class EventBridgeHandler {
   static final EventBridgeHandler instance = EventBridgeHandler._();
-  
+
   EventBridgeHandler._();
-  
+
   /// Register all event handlers to forward events to WebSocket
   void registerAllHandlers() {
     _registerConnectionHandlers();
@@ -19,20 +19,24 @@ class EventBridgeHandler {
     _registerPresenceHandlers();
     _registerMessageHandlers();
   }
-  
+
   /// Unregister all event handlers
   void unregisterAllHandlers() {
     EMClient.getInstance.removeConnectionEventHandler('eventBridgeHandler');
     EMClient.getInstance.removeMultiDeviceEventHandler('eventBridgeHandler');
     EMClient.getInstance.chatManager.removeEventHandler('eventBridgeHandler');
-    EMClient.getInstance.chatRoomManager.removeEventHandler('eventBridgeHandler');
-    EMClient.getInstance.chatThreadManager.removeEventHandler('eventBridgeHandler');
-    EMClient.getInstance.contactManager.removeEventHandler('eventBridgeHandler');
+    EMClient.getInstance.chatRoomManager
+        .removeEventHandler('eventBridgeHandler');
+    EMClient.getInstance.chatThreadManager
+        .removeEventHandler('eventBridgeHandler');
+    EMClient.getInstance.contactManager
+        .removeEventHandler('eventBridgeHandler');
     EMClient.getInstance.groupManager.removeEventHandler('eventBridgeHandler');
-    EMClient.getInstance.presenceManager.removeEventHandler('eventBridgeHandler');
+    EMClient.getInstance.presenceManager
+        .removeEventHandler('eventBridgeHandler');
     EMClient.getInstance.chatManager.removeMessageEvent('eventBridgeHandler');
   }
-  
+
   /// Register connection event handler
   void _registerConnectionHandlers() {
     EMClient.getInstance.addConnectionEventHandler(
@@ -44,91 +48,78 @@ class EventBridgeHandler {
             {},
           );
         },
-        
         onDisconnected: () {
           IMWebSocketBridge.instance.sendEvent(
             'onDisconnected',
             {},
           );
         },
-        
         onUserDidLoginFromOtherDevice: (info) {
           IMWebSocketBridge.instance.sendEvent(
             'onUserDidLoginFromOtherDevice',
             {'info': info.toJson()},
           );
         },
-        
         onUserDidRemoveFromServer: () {
           IMWebSocketBridge.instance.sendEvent(
             'onUserDidRemoveFromServer',
             {},
           );
         },
-        
         onUserDidForbidByServer: () {
           IMWebSocketBridge.instance.sendEvent(
             'onUserDidForbidByServer',
             {},
           );
         },
-        
         onUserDidChangePassword: () {
           IMWebSocketBridge.instance.sendEvent(
             'onUserDidChangePassword',
             {},
           );
         },
-        
         onUserDidLoginTooManyDevice: () {
           IMWebSocketBridge.instance.sendEvent(
             'onUserDidLoginTooManyDevice',
             {},
           );
         },
-        
         onUserKickedByOtherDevice: () {
           IMWebSocketBridge.instance.sendEvent(
             'onUserKickedByOtherDevice',
             {},
           );
         },
-        
         onUserAuthenticationFailed: () {
           IMWebSocketBridge.instance.sendEvent(
             'onUserAuthenticationFailed',
             {},
           );
         },
-        
         onTokenWillExpire: () {
           IMWebSocketBridge.instance.sendEvent(
             'onTokenWillExpire',
             {},
           );
         },
-        
         onTokenDidExpire: () {
           IMWebSocketBridge.instance.sendEvent(
             'onTokenDidExpire',
             {},
           );
         },
-        
         onAppActiveNumberReachLimit: () {
           IMWebSocketBridge.instance.sendEvent(
             'onAppActiveNumberReachLimit',
             {},
           );
         },
-        
         onOfflineMessageSyncStart: () {
           IMWebSocketBridge.instance.sendEvent(
             'onOfflineMessageSyncStart',
             {},
           );
         },
-        
         onOfflineMessageSyncFinish: () {
           IMWebSocketBridge.instance.sendEvent(
             'onOfflineMessageSyncFinish',
@@ -138,7 +129,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register multi-device event handler
   void _registerMultiDeviceHandlers() {
     EMClient.getInstance.addMultiDeviceEventHandler(
@@ -154,7 +145,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onGroupEvent: (event, groupId, userIds) {
           IMWebSocketBridge.instance.sendEvent(
             'onGroupEvent',
@@ -165,7 +155,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onChatThreadEvent: (event, chatThreadId, userIds) {
           IMWebSocketBridge.instance.sendEvent(
             'onChatThreadEvent',
@@ -176,7 +165,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onRemoteMessagesRemoved: (conversationId, deviceId) {
           IMWebSocketBridge.instance.sendEvent(
             'onRemoteMessagesRemoved',
@@ -186,7 +174,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onConversationEvent: (event, conversationId, type) {
           IMWebSocketBridge.instance.sendEvent(
             'onConversationEvent',
@@ -200,7 +187,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register chat event handler
   void _registerChatHandlers() {
     EMClient.getInstance.chatManager.addEventHandler(
@@ -212,77 +199,69 @@ class EventBridgeHandler {
             {'messages': messages.map((m) => m.toJson()).toList()},
           );
         },
-        
         onCmdMessagesReceived: (messages) {
           IMWebSocketBridge.instance.sendEvent(
             'onCmdMessagesReceived',
             {'messages': messages.map((m) => m.toJson()).toList()},
           );
         },
-        
         onMessagesRead: (messages) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessagesRead',
             {'messages': messages.map((m) => m.toJson()).toList()},
           );
         },
-        
         onGroupMessageRead: (groupMessageAcks) {
           IMWebSocketBridge.instance.sendEvent(
             'onGroupMessageRead',
-            {'groupMessageAcks': groupMessageAcks.map((a) => a.toJson()).toList()},
+            {
+              'groupMessageAcks':
+                  groupMessageAcks.map((a) => a.toJson()).toList()
+            },
           );
         },
-        
         onReadAckForGroupMessageUpdated: () {
           IMWebSocketBridge.instance.sendEvent(
             'onReadAckForGroupMessageUpdated',
             {},
           );
         },
-        
         onMessagesDelivered: (messages) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessagesDelivered',
             {'messages': messages.map((m) => m.toJson()).toList()},
           );
         },
-        
         onMessagesRecalled: (messages) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessagesRecalled',
             {'messages': messages.map((m) => m.toJson()).toList()},
           );
         },
-        
         onMessagesRecalledInfo: (infos) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessagesRecalledInfo',
             {'infos': infos.map((i) => i.toJson()).toList()},
           );
         },
-        
         onConversationsUpdate: () {
           IMWebSocketBridge.instance.sendEvent(
             'onConversationsUpdate',
             {},
           );
         },
-        
         onConversationRead: (from, to) {
           IMWebSocketBridge.instance.sendEvent(
             'onConversationRead',
             {'from': from, 'to': to},
           );
         },
-        
         onMessageReactionDidChange: (events) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessageReactionDidChange',
             {'events': events.map((e) => e.toJson()).toList()},
           );
         },
-        
         onMessageContentChanged: (message, operatorId, operationTime) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessageContentChanged',
@@ -293,8 +272,8 @@ class EventBridgeHandler {
             },
           );
         },
-        
-        onMessagePinChanged: (messageId, conversationId, pinOperation, pinInfo) {
+        onMessagePinChanged:
+            (messageId, conversationId, pinOperation, pinInfo) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessagePinChanged',
             {
@@ -308,7 +287,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register chat room event handler
   void _registerChatRoomHandlers() {
     EMClient.getInstance.chatRoomManager.addEventHandler(
@@ -320,49 +299,42 @@ class EventBridgeHandler {
             {'roomId': roomId, 'admin': admin},
           );
         },
-        
         onAdminRemovedFromChatRoom: (roomId, admin) {
           IMWebSocketBridge.instance.sendEvent(
             'onAdminRemovedFromChatRoom',
             {'roomId': roomId, 'admin': admin},
           );
         },
-        
         onAllChatRoomMemberMuteStateChanged: (roomId, isAllMuted) {
           IMWebSocketBridge.instance.sendEvent(
             'onAllChatRoomMemberMuteStateChanged',
             {'roomId': roomId, 'isAllMuted': isAllMuted},
           );
         },
-        
         onAllowListAddedFromChatRoom: (roomId, members) {
           IMWebSocketBridge.instance.sendEvent(
             'onAllowListAddedFromChatRoom',
             {'roomId': roomId, 'members': members},
           );
         },
-        
         onAllowListRemovedFromChatRoom: (roomId, members) {
           IMWebSocketBridge.instance.sendEvent(
             'onAllowListRemovedFromChatRoom',
             {'roomId': roomId, 'members': members},
           );
         },
-        
         onAnnouncementChangedFromChatRoom: (roomId, announcement) {
           IMWebSocketBridge.instance.sendEvent(
             'onAnnouncementChangedFromChatRoom',
             {'roomId': roomId, 'announcement': announcement},
           );
         },
-        
         onChatRoomDestroyed: (roomId, roomName) {
           IMWebSocketBridge.instance.sendEvent(
             'onChatRoomDestroyed',
             {'roomId': roomId, 'roomName': roomName},
           );
         },
-        
         onMemberExitedFromChatRoom: (roomId, roomName, participant) {
           IMWebSocketBridge.instance.sendEvent(
             'onMemberExitedFromChatRoom',
@@ -373,7 +345,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onMemberJoinedFromChatRoom: (roomId, participant, ext) {
           IMWebSocketBridge.instance.sendEvent(
             'onMemberJoinedFromChatRoom',
@@ -384,21 +355,18 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onMuteListAddedFromChatRoom: (roomId, mutes) {
           IMWebSocketBridge.instance.sendEvent(
             'onMuteListAddedFromChatRoom',
             {'roomId': roomId, 'mutes': mutes},
           );
         },
-        
         onMuteListRemovedFromChatRoom: (roomId, mutes) {
           IMWebSocketBridge.instance.sendEvent(
             'onMuteListRemovedFromChatRoom',
             {'roomId': roomId, 'mutes': mutes},
           );
         },
-        
         onOwnerChangedFromChatRoom: (roomId, newOwner, oldOwner) {
           IMWebSocketBridge.instance.sendEvent(
             'onOwnerChangedFromChatRoom',
@@ -409,7 +377,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onRemovedFromChatRoom: (roomId, roomName, participant, reason) {
           IMWebSocketBridge.instance.sendEvent(
             'onRemovedFromChatRoom',
@@ -421,14 +388,12 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onSpecificationChanged: (room) {
           IMWebSocketBridge.instance.sendEvent(
             'onSpecificationChanged',
             {'room': room.toJson()},
           );
         },
-        
         onAttributesUpdated: (roomId, attributes, from) {
           IMWebSocketBridge.instance.sendEvent(
             'onAttributesUpdated',
@@ -439,7 +404,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onAttributesRemoved: (roomId, removedKeys, from) {
           IMWebSocketBridge.instance.sendEvent(
             'onAttributesRemoved',
@@ -453,7 +417,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register chat thread event handler
   void _registerChatThreadHandlers() {
     EMClient.getInstance.chatThreadManager.addEventHandler(
@@ -465,21 +429,18 @@ class EventBridgeHandler {
             {'event': event.toJson()},
           );
         },
-        
         onChatThreadDestroy: (event) {
           IMWebSocketBridge.instance.sendEvent(
             'onChatThreadDestroy',
             {'event': event.toJson()},
           );
         },
-        
         onChatThreadUpdate: (event) {
           IMWebSocketBridge.instance.sendEvent(
             'onChatThreadUpdate',
             {'event': event.toJson()},
           );
         },
-        
         onUserKickOutOfChatThread: (event) {
           IMWebSocketBridge.instance.sendEvent(
             'onUserKickOutOfChatThread',
@@ -489,7 +450,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register contact event handler
   void _registerContactHandlers() {
     EMClient.getInstance.contactManager.addEventHandler(
@@ -501,38 +462,52 @@ class EventBridgeHandler {
             {'userId': userId},
           );
         },
-        
         onContactDeleted: (userId) {
           IMWebSocketBridge.instance.sendEvent(
             'onContactDeleted',
             {'userId': userId},
           );
         },
-        
         onContactInvited: (userId, reason) {
           IMWebSocketBridge.instance.sendEvent(
             'onContactInvited',
             {'userId': userId, 'reason': reason},
           );
         },
-        
         onFriendRequestAccepted: (userId) {
           IMWebSocketBridge.instance.sendEvent(
             'onFriendRequestAccepted',
             {'userId': userId},
           );
         },
-        
         onFriendRequestDeclined: (userId) {
           IMWebSocketBridge.instance.sendEvent(
             'onFriendRequestDeclined',
             {'userId': userId},
           );
         },
+        onFriendStartSync: () {
+          IMWebSocketBridge.instance.sendEvent(
+            'onFriendStartSync',
+            {},
+          );
+        },
+        onFriendSyncFinished: () {
+          IMWebSocketBridge.instance.sendEvent(
+            'onFriendSyncFinished',
+            {},
+          );
+        },
+        onFriendUserInfoDidUpdated: (users) {
+          IMWebSocketBridge.instance.sendEvent(
+            'onFriendUserInfoDidUpdated',
+            {'users': users.map((u) => u.toJson()).toList()},
+          );
+        },
       ),
     );
   }
-  
+
   /// Register group event handler
   void _registerGroupHandlers() {
     EMClient.getInstance.groupManager.addEventHandler(
@@ -544,42 +519,36 @@ class EventBridgeHandler {
             {'groupId': groupId, 'admin': admin},
           );
         },
-        
         onAdminRemovedFromGroup: (groupId, admin) {
           IMWebSocketBridge.instance.sendEvent(
             'onAdminRemovedFromGroup',
             {'groupId': groupId, 'admin': admin},
           );
         },
-        
         onAllGroupMemberMuteStateChanged: (groupId, isAllMuted) {
           IMWebSocketBridge.instance.sendEvent(
             'onAllGroupMemberMuteStateChanged',
             {'groupId': groupId, 'isAllMuted': isAllMuted},
           );
         },
-        
         onAllowListAddedFromGroup: (groupId, members) {
           IMWebSocketBridge.instance.sendEvent(
             'onAllowListAddedFromGroup',
             {'groupId': groupId, 'members': members},
           );
         },
-        
         onAllowListRemovedFromGroup: (groupId, members) {
           IMWebSocketBridge.instance.sendEvent(
             'onAllowListRemovedFromGroup',
             {'groupId': groupId, 'members': members},
           );
         },
-        
         onAnnouncementChangedFromGroup: (groupId, announcement) {
           IMWebSocketBridge.instance.sendEvent(
             'onAnnouncementChangedFromGroup',
             {'groupId': groupId, 'announcement': announcement},
           );
         },
-        
         onAutoAcceptInvitationFromGroup: (groupId, inviter, inviteMessage) {
           IMWebSocketBridge.instance.sendEvent(
             'onAutoAcceptInvitationFromGroup',
@@ -590,14 +559,12 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onGroupDestroyed: (groupId, groupName) {
           IMWebSocketBridge.instance.sendEvent(
             'onGroupDestroyed',
             {'groupId': groupId, 'groupName': groupName},
           );
         },
-        
         onInvitationAcceptedFromGroup: (groupId, invitee, reason) {
           IMWebSocketBridge.instance.sendEvent(
             'onInvitationAcceptedFromGroup',
@@ -608,7 +575,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onInvitationDeclinedFromGroup: (groupId, invitee, reason) {
           IMWebSocketBridge.instance.sendEvent(
             'onInvitationDeclinedFromGroup',
@@ -619,7 +585,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onInvitationReceivedFromGroup: (groupId, groupName, inviter, reason) {
           IMWebSocketBridge.instance.sendEvent(
             'onInvitationReceivedFromGroup',
@@ -631,21 +596,18 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onMemberExitedFromGroup: (groupId, member) {
           IMWebSocketBridge.instance.sendEvent(
             'onMemberExitedFromGroup',
             {'groupId': groupId, 'member': member},
           );
         },
-        
         onMemberJoinedFromGroup: (groupId, member) {
           IMWebSocketBridge.instance.sendEvent(
             'onMemberJoinedFromGroup',
             {'groupId': groupId, 'member': member},
           );
         },
-        
         onMuteListAddedFromGroup: (groupId, mutes, muteExpire) {
           IMWebSocketBridge.instance.sendEvent(
             'onMuteListAddedFromGroup',
@@ -656,14 +618,12 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onMuteListRemovedFromGroup: (groupId, mutes) {
           IMWebSocketBridge.instance.sendEvent(
             'onMuteListRemovedFromGroup',
             {'groupId': groupId, 'mutes': mutes},
           );
         },
-        
         onOwnerChangedFromGroup: (groupId, newOwner, oldOwner) {
           IMWebSocketBridge.instance.sendEvent(
             'onOwnerChangedFromGroup',
@@ -674,7 +634,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onRequestToJoinAcceptedFromGroup: (groupId, groupName, accepter) {
           IMWebSocketBridge.instance.sendEvent(
             'onRequestToJoinAcceptedFromGroup',
@@ -685,8 +644,8 @@ class EventBridgeHandler {
             },
           );
         },
-        
-        onRequestToJoinDeclinedFromGroup: (groupId, groupName, decliner, reason, applicant) {
+        onRequestToJoinDeclinedFromGroup:
+            (groupId, groupName, decliner, reason, applicant) {
           IMWebSocketBridge.instance.sendEvent(
             'onRequestToJoinDeclinedFromGroup',
             {
@@ -698,8 +657,8 @@ class EventBridgeHandler {
             },
           );
         },
-        
-        onRequestToJoinReceivedFromGroup: (groupId, groupName, applicant, reason) {
+        onRequestToJoinReceivedFromGroup:
+            (groupId, groupName, applicant, reason) {
           IMWebSocketBridge.instance.sendEvent(
             'onRequestToJoinReceivedFromGroup',
             {
@@ -710,7 +669,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onSharedFileAddedFromGroup: (groupId, sharedFile) {
           IMWebSocketBridge.instance.sendEvent(
             'onSharedFileAddedFromGroup',
@@ -720,36 +678,32 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onSpecificationDidUpdate: (group) {
           IMWebSocketBridge.instance.sendEvent(
             'onSpecificationDidUpdate',
             {'group': group.toJson()},
           );
         },
-        
         onDisableChanged: (groupId, isDisable) {
           IMWebSocketBridge.instance.sendEvent(
             'onDisableChanged',
             {'groupId': groupId, 'isDisable': isDisable},
           );
         },
-        
         onSharedFileDeletedFromGroup: (groupId, fileId) {
           IMWebSocketBridge.instance.sendEvent(
             'onSharedFileDeletedFromGroup',
             {'groupId': groupId, 'fileId': fileId},
           );
         },
-        
         onUserRemovedFromGroup: (groupId, groupName) {
           IMWebSocketBridge.instance.sendEvent(
             'onUserRemovedFromGroup',
             {'groupId': groupId, 'groupName': groupName},
           );
         },
-        
-        onAttributesChangedOfGroupMember: (groupId, userId, attributes, operatorId) {
+        onAttributesChangedOfGroupMember:
+            (groupId, userId, attributes, operatorId) {
           IMWebSocketBridge.instance.sendEvent(
             'onAttributesChangedOfGroupMember',
             {
@@ -760,14 +714,12 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onMembersJoinedFromGroup: (groupId, userIds) {
           IMWebSocketBridge.instance.sendEvent(
             'onMembersJoinedFromGroup',
             {'groupId': groupId, 'userIds': userIds},
           );
         },
-        
         onMembersExitedFromGroup: (groupId, userIds) {
           IMWebSocketBridge.instance.sendEvent(
             'onMembersExitedFromGroup',
@@ -777,7 +729,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register presence event handler
   void _registerPresenceHandlers() {
     EMClient.getInstance.presenceManager.addEventHandler(
@@ -792,7 +744,7 @@ class EventBridgeHandler {
       ),
     );
   }
-  
+
   /// Register message event handler
   void _registerMessageHandlers() {
     EMClient.getInstance.chatManager.addMessageEvent(
@@ -804,7 +756,6 @@ class EventBridgeHandler {
             {'msgId': msgId, 'msg': msg.toJson()},
           );
         },
-        
         onError: (msgId, msg, error) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessageError',
@@ -818,7 +769,6 @@ class EventBridgeHandler {
             },
           );
         },
-        
         onProgress: (msgId, progress) {
           IMWebSocketBridge.instance.sendEvent(
             'onMessageProgress',

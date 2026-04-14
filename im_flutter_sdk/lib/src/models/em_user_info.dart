@@ -65,7 +65,6 @@ class EMUserInfo {
     if (ext != null) {
       data['ext'] = ext;
     }
-
     return data;
   }
 

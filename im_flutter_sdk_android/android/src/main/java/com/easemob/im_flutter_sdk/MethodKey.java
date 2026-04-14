@@ -108,6 +108,7 @@ public class MethodKey {
     static final String downloadAndParseCombineMessage = "downloadAndParseCombineMessage";
     /// EMChatManager listener
     static final String onMessagesReceived = "onMessagesReceived";
+    static final String onStreamMessagesReceived = "onStreamMessagesReceived";
     static final String onCmdMessagesReceived = "onCmdMessagesReceived";
     static final String onMessagesRead = "onMessagesRead";
     static final String onGroupMessageRead = "onGroupMessageRead";
