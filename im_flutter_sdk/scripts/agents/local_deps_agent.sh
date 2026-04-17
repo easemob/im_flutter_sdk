@@ -47,15 +47,17 @@ ensure_dirs(){
 }
 
 patch_android_build(){
-  local f="$ANDROID_DIR/build.gradle" tmp="$f.__tmp__"; [[ -f "$f" ]] || { msg "未找到: $f"; return 1; }
+  local f="$ANDROID_DIR/build.gradle"
+  local tmp="$f.__tmp__"
+  [[ -f "$f" ]] || { msg "未找到: $f"; return 1; }
   msg "设置 jniLibs 指向 $JNI_DIR 并仅启用本地 implementation files"
   local awk_prog='
     {
       line=$0
       # 统一 jniLibs.srcDirs
-      if(line ~ /jniLibs\.srcDirs/){ gsub(/\x5b.*\x5d/, "['./libs/easemob-sdk/libs']", line) }
+      if(line ~ /jniLibs\.srcDirs/){ gsub(/\x5b.*\x5d/, "[\047./libs/easemob-sdk/libs\047]", line) }
       # 取消注释本地 implementation files 并写入 jar 文件名
-      if(line ~ /^[ \t]*\/\/[ \t]*implementation[ \t]+files\(.*hyphenatechat_.*\.jar['"]\)/){ sub(/^([ \t]*)\/\/[ \t]*/, "\\1", line) }
+      if(line ~ /^[ \t]*\/\/[ \t]*implementation[ \t]+files\(.*hyphenatechat_.*\.jar.*\)/){ sub(/^([ \t]*)\/\/[ \t]*/, "\\1", line) }
       # 注释远程 implementation
       if(line ~ /^[ \t]*implementation[ \t]+\x27io\.hyphenate:hyphenate-chat:/){ line="    // " line }
       print line
@@ -97,4 +99,3 @@ main(){
 }
 
 main "$@"
-

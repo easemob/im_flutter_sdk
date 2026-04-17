@@ -23,7 +23,8 @@ void main() async {
     enableDNSConfig: false,
     syncDataWebSocketServer: "140.143.132.6",
     syncDataWebSocketPort: 8086,
-    enableAutoSyncContacts: false    
+    enableAutoSyncContacts: false,
+    requireAck: true
   );
   
 
