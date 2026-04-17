@@ -48,7 +48,6 @@ import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.push.EMPushConfig;
-import com.hyphenate.chat.EMUserInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,7 +86,6 @@ class OptionsHelper {
         options.setAreaCode(json.getInt("areaCode"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
-        options.setEnableAutoSyncContacts(json.getBoolean("enableAutoSyncContacts"));
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
         if (json.has("deviceName")) {
             options.setCustomDeviceName(json.optString("deviceName"));
@@ -107,13 +105,6 @@ class OptionsHelper {
             }
             if (json.has("webSocketPort")) {
                 options.setWebSocketPort(json.getInt("webSocketPort"));
-            }
-            // Friend-list sync service WSS for private deployment
-            if (json.has("syncDataWebSocketServer")) {
-                try { options.setSyncDataWebSocketServer(json.getString("syncDataWebSocketServer")); } catch (Throwable ignore) {}
-            }
-            if (json.has("syncDataWebSocketPort")) {
-                try { options.setSyncDataWebSocketPort(json.getInt("syncDataWebSocketPort")); } catch (Throwable ignore) {}
             }
             if (json.has("restServer")) {
                 options.setRestServer(json.getString("restServer"));
@@ -314,14 +305,6 @@ class ContactHelper {
         if (remark != null) {
             data.put("remark", remark);
         }
-        try {
-            // Friend info and add timestamp
-            EMUserInfo ui = contact.getUserInfo();
-            if (ui != null) {
-                data.put("userInfo", UserInfoHelper.toJson(ui));
-            }
-            data.put("updatedAt", contact.getAddTimestamp());
-        } catch (Throwable ignore) {}
         return data;
     }
 
@@ -1273,53 +1256,6 @@ class HyphenateExceptionHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("code", e.getErrorCode());
         data.put("description", e.getDescription());
-        return data;
-    }
-}
-
-class UserInfoHelper {
-    static EMUserInfo fromJson(JSONObject obj) throws JSONException {
-        EMUserInfo userInfo = new EMUserInfo();
-        if (obj.has("nickName")){
-            userInfo.setNickname(obj.getString("nickName"));
-        }
-        if (obj.has("avatarUrl")){
-            userInfo.setAvatarUrl(obj.optString("avatarUrl"));
-        }
-        if (obj.has("mail")){
-            userInfo.setEmail(obj.optString("mail"));
-        }
-        if (obj.has("phone")){
-            userInfo.setPhoneNumber(obj.optString("phone"));
-        }
-        if (obj.has("gender")){
-            userInfo.setGender(obj.getInt("gender"));
-        }
-        if (obj.has("sign")){
-            userInfo.setSignature(obj.optString("sign"));
-        }
-        if (obj.has("birth")){
-            userInfo.setBirth(obj.getString("birth"));
-        }
-        if (obj.has("ext")){
-            userInfo.setExt(obj.getString("ext"));
-        }
-
-        return userInfo;
-    }
-
-    static Map<String, Object> toJson(EMUserInfo userInfo) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("userId", userInfo.getUserId());
-        data.put("nickName", userInfo.getNickname());
-        data.put("avatarUrl", userInfo.getAvatarUrl());
-        data.put("mail", userInfo.getEmail());
-        data.put("phone", userInfo.getPhoneNumber());
-        data.put("gender", userInfo.getGender());
-        data.put("sign", userInfo.getSignature());
-        data.put("birth", userInfo.getBirth());
-        data.put("ext", userInfo.getExt());
-
         return data;
     }
 }

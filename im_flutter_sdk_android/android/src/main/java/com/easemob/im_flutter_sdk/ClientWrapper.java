@@ -40,7 +40,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private PresenceManagerWrapper presenceManagerWrapper;
     private ChatThreadManagerWrapper chatThreadManagerWrapper;
     private ContactManagerWrapper contactManagerWrapper;
-    private UserInfoManagerWrapper userInfoManagerWrapper;
     private ConversationWrapper conversationWrapper;
     private MessageWrapper messageWrapper;
     public ProgressManager progressManager;
@@ -484,7 +483,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         groupManagerWrapper.clientWrapper = this;
         conversationWrapper = new ConversationWrapper(binging, "chat_conversation");
         pushManagerWrapper = new PushManagerWrapper(binging, "chat_push_manager");
-        userInfoManagerWrapper = new UserInfoManagerWrapper(binging, "chat_userInfo_manager");
         presenceManagerWrapper = new PresenceManagerWrapper(binging, "chat_presence_manager");
         messageWrapper = new MessageWrapper(binging, "chat_message");
         chatThreadManagerWrapper = new ChatThreadManagerWrapper(binging, "chat_thread_manager");
@@ -498,7 +496,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         if (groupManagerWrapper != null) groupManagerWrapper.unRegisterEaseListener();
         if (conversationWrapper != null) conversationWrapper.unRegisterEaseListener();
         if (pushManagerWrapper != null) pushManagerWrapper.unRegisterEaseListener();
-        if (userInfoManagerWrapper != null) userInfoManagerWrapper.unRegisterEaseListener();
         if (presenceManagerWrapper != null) presenceManagerWrapper.unRegisterEaseListener();
         if (messageWrapper != null) messageWrapper.unRegisterEaseListener();
         if (chatThreadManagerWrapper != null) chatThreadManagerWrapper.unRegisterEaseListener();

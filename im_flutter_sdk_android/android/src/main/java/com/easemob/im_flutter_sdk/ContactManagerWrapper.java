@@ -335,31 +335,6 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                 );
             }
 
-            @Override
-            public void onContactSyncStart() {
-                ListenerHandle.getInstance().addHandle(
-                        ()-> {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("type", "onFriendStartSync");
-                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
-                        }
-                );
-            }
-
-            @Override
-            public void onContactSyncFinishWithError(int code, String error) {
-                ListenerHandle.getInstance().addHandle(
-                        ()-> {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("type", "onFriendSyncFinished");
-                            if (code != 0) {
-                                data.put("error", code);
-                                data.put("message", error);
-                            }
-                            post(() -> channel.invokeMethod(MethodKey.onContactChanged, data));
-                        }
-                );
-            }
         };
 
         EMClient.getInstance().contactManager().setContactListener(contactListener);
