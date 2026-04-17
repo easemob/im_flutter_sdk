@@ -21,7 +21,7 @@ case "$cmd" in
     ;;
   ios)
     pushd "$ROOT_DIR/example/ios" >/dev/null
-    pod install
+    LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
     popd >/dev/null
     ;;
   ios-build)
