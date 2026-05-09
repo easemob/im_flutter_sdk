@@ -873,7 +873,8 @@ class GroupAckHelper {
         if (json.has("width") && json.has("height")){
             int width = json.getInt("width");
             int height = json.getInt("height");
-            body.setThumbnailSize(width, height);
+            //body.setThumbnailSize(width, height);
+            body.setSize(width, height);
         }
         if (json.has("sendOriginalImage")){
             body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
