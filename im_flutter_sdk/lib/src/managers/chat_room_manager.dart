@@ -1518,6 +1518,26 @@ class EMChatRoomManager {
     }
   }
 
+
+  /// ~english
+  /// Checks whether the current user is on the chatroom mute list.
+  ///
+  /// Param [roomId]  The chatroom ID.
+  ///
+  /// **Returns** True if the current user is muted, false otherwise.
+  ///
+  /// **Throws** Exception description, see [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 查看当前用户是否在聊天室禁言名单中。
+  ///
+  /// Param [roomId]  聊天室 ID。
+  ///
+  /// **Return**  当前用户是否在禁言列表：true 是，false 否。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError].
+  /// ~end
   Future<bool> isMemberInChatRoomMuteList(String roomId) async {
     try {
       Map req = {"roomId": roomId};

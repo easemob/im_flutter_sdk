@@ -42,6 +42,7 @@ import com.hyphenate.chat.EMRecallMessageInfo;
 import com.hyphenate.chat.EMSilentModeParam;
 import com.hyphenate.chat.EMSilentModeResult;
 import com.hyphenate.chat.EMSilentModeTime;
+import com.hyphenate.chat.EMStreamChunk;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
@@ -589,7 +590,39 @@ class MessageHelper {
         // 通过EMMessageWrapper获取
         // data.put("groupAckCount", message.groupAckCount());
         data.put("isThread", message.isChatThreadMessage());
+
+        EMStreamChunk streamChunk = message.getStreamChunk();
+        if (streamChunk != null) {
+            Map<String, Object> streamChunkData = new HashMap<>();
+            streamChunkData.put("status", streamStatusToInt(streamChunk.getStatus()));
+            streamChunkData.put("errorCode", streamChunk.getErrorCode());
+            streamChunkData.put("finishReason", streamChunk.getFinishReason());
+            streamChunkData.put("text", streamChunk.getText() != null ? streamChunk.getText() : "");
+            String customType = streamChunk.getCustomType();
+            if (customType != null && !customType.isEmpty()) {
+                streamChunkData.put("customType", customType);
+            }
+            data.put("streamChunk", streamChunkData);
+        }
+
         return data;
+    }
+
+    private static int streamStatusToInt(EMMessage.EMStreamStatus status) {
+        switch (status) {
+            case START:
+                return 0;
+            case START_AND_COMPLETE:
+                return 1;
+            case PROGRESS:
+                return 2;
+            case COMPLETE:
+                return 3;
+            case ERROR:
+                return 4;
+            default:
+                return 3;
+        }
     }
 }
 
@@ -840,7 +873,8 @@ class GroupAckHelper {
         if (json.has("width") && json.has("height")){
             int width = json.getInt("width");
             int height = json.getInt("height");
-            body.setThumbnailSize(width, height);
+            //body.setThumbnailSize(width, height);
+            body.setSize(width, height);
         }
         if (json.has("sendOriginalImage")){
             body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));

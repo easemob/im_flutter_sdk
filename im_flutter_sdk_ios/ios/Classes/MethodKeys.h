@@ -122,6 +122,7 @@ static NSString *const downloadAndParseCombineMessage = @"downloadAndParseCombin
 
 #pragma mark - EMChatManagerDelegate
 static NSString *const ChatOnMessagesReceived = @"onMessagesReceived";
+static NSString *const ChatOnStreamMessagesReceived = @"onStreamMessagesReceived";
 static NSString *const ChatOnCmdMessagesReceived = @"onCmdMessagesReceived";
 static NSString *const ChatOnMessagesRead = @"onMessagesRead";
 static NSString *const ChatOnGroupMessageRead = @"onGroupMessageRead";
