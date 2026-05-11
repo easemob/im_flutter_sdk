@@ -18,6 +18,7 @@ export '../models/em_group.dart';
 export '../models/em_message_reaction.dart';
 export '../models/reaction_operation.dart';
 export '../models/em_message.dart';
+export '../models/em_message_stream_chunk.dart';
 export '../models/em_options.dart';
 export '../models/em_page_result.dart';
 export '../models/em_presence.dart';
