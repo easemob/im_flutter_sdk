@@ -2917,7 +2917,14 @@ Future<Map<String, dynamic>> _imPrepareDefaultMediaPath(
   switch (type) {
     case EMSendMessageType.image:
       final isGif = (payload['isGif'] as bool?) ?? false;
-      assetName = isGif ? 'normalGif.gif' : 'bigPic.jpg';
+      final displayHint = (payload['displayName'] as String?) ?? '';
+      if (isGif) {
+        assetName = 'normalGif.gif';
+      } else if (displayHint.toLowerCase().endsWith('.heic')) {
+        assetName = 'imgHeic.HEIC';
+      } else {
+        assetName = 'bigPic.jpg';
+      }
       needsPath = true;
       break;
     case EMSendMessageType.video:
