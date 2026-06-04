@@ -67,4 +67,17 @@ class ReactionOperation {
     ReactionOperate operate = ReactionOperate.values[map["operate"]];
     return ReactionOperation(userId, reaction, operate);
   }
+
+  Map toJson() {
+    Map data = {};
+    data["userId"] = userId;
+    data["reaction"] = reaction;
+    data["operate"] = operate.index;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

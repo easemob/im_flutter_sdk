@@ -334,6 +334,7 @@ public class ContactManagerWrapper extends Wrapper implements MethodCallHandler 
                         }
                 );
             }
+
         };
 
         EMClient.getInstance().contactManager().setContactListener(contactListener);

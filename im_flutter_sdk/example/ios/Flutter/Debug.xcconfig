@@ -1,2 +1,8 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
+
+// Ensure CocoaPods-built frameworks (e.g. Pods_Runner.framework) are discoverable
+FRAMEWORK_SEARCH_PATHS = $(inherited) $(FRAMEWORK_SEARCH_PATHS) $(PODS_CONFIGURATION_BUILD_DIR)
+
+// Make Runner's build dir align with Xcode DerivedData (fixes Embed Pods Frameworks on simulator)
+CONFIGURATION_BUILD_DIR = $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)

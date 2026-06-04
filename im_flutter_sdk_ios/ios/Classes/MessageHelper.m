@@ -50,6 +50,9 @@
     msg.isRead = [aJson[@"hasRead"] boolValue];
     msg.isNeedGroupAck = [aJson[@"needGroupAck"] boolValue];
     msg.deliverOnlineOnly = [aJson[@"deliverOnlineOnly"] boolValue];
+    if (aJson[@"webhookEnv"]) {
+        msg.webhookEnv = aJson[@"webhookEnv"];
+    }
     // read only
     // msg.groupAckCount = [aJson[@"groupAckCount"] intValue]
     // msg.chatThread = [EMChatThread forJson:aJson[@"thread"]];
@@ -82,6 +85,9 @@
     ret[@"serverTime"] = @(self.timestamp);
     ret[@"groupAckCount"] = @(self.groupAckCount);
     ret[@"attributes"] = self.ext;
+    if (self.webhookEnv) {
+        ret[@"webhookEnv"] = self.webhookEnv;
+    }
     ret[@"localTime"] = @(self.localTime);
     ret[@"status"] = [NSNumber numberWithInteger:[EnumTools messageStatusToInt:self.status]];
     ret[@"chatType"] = [NSNumber numberWithInteger:[EnumTools chatTypeToInt:self.chatType]];

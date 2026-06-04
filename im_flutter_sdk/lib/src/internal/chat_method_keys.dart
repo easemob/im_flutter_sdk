@@ -151,6 +151,10 @@ class ChatMethodKeys {
   static const String onMessageReadAck = "onMessageReadAck";
   static const String onMessageDeliveryAck = "onMessageDeliveryAck";
 
+  /// Native → Dart：按 [EMSendMessageType] 与 payload 触发发送（与 [EMChatManager.sendMessageWithType] 一致）。
+  /// 参数：`{ "type": "txt"|"file"|..., "payload": { ... } }`，payload 字段同各 [EMMessage.create*SendMessage]。
+  static const String onSendMessageWithType = "onSendMessageWithType";
+
   /// EMPresenceManagerDelegate
   static const String onPresenceStatusChanged = "onPresenceStatusChanged";
 

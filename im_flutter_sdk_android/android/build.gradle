@@ -1,52 +1,56 @@
 group 'com.easemob.im_flutter_sdk'
 version '1.0-SNAPSHOT'
 
-
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
-
     dependencies {
-        classpath("com.android.tools.build:gradle:7.3.0")
+        classpath('com.android.tools.build:gradle:7.3.0')
     }
 }
-
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
 }
-
 apply plugin: 'com.android.library'
 
 android {
-
-    if (project.android.hasProperty("namespace")) {
-        namespace = "com.easemob.im_flutter_sdk"
+    if (project.android.hasProperty('namespace')) {
+        namespace = 'com.easemob.im_flutter_sdk'
     }
-
     compileSdk = 34
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-
     defaultConfig {
         minSdk = 21
+    }
+    // 默认固定为本地依赖（目录不带版本号）。如需改为远程依赖，请按下方 dependencies 段注释切换。
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['./libs/easemob-sdk/libs']
+        }
     }
 }
 
 tasks.withType(JavaCompile){
-    options.encoding = "UTF-8"
+    options.encoding = 'UTF-8'
 }
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
-    // implementation 'cn.shengwang:chat-sdk:1.3.2'
-    implementation 'io.hyphenate:hyphenate-chat:4.19.2'
+
+    // 本地依赖（默认）：修改为实际 JAR 文件名即可
+    // 替换 JAR 后务必：flutter clean → 删除各模块 build/ → example/android 下 ./gradlew clean → 再编译。
+
+    implementation files('./libs/easemob-sdk/libs/hyphenatechat_4.23.0.jar')
+    // 远程依赖（改为远程时，注释掉上面的 implementation files(...)，取消下一行注释）
+    // implementation 'io.hyphenate:hyphenate-chat:4.19.1'
+    // 仅包含 android/libs 根目录下的 *.jar（子目录里的 JAR 只走上面的显式 implementation files）
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
