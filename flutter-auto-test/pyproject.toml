@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flutter-sdk-api-test"
+version = "0.1.0"
+description = "Pytest automation test cases for Flutter IM SDK API via WebSocket"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-html>=3.2",
+    "websockets>=11.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+allure = ["allure-pytest>=2.14"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "client: Client manager API tests",
+    "chat: ChatManager API tests",
+    "chatroom: ChatRoomManager API tests",
+    "multi_device: tests requiring multiple devices/topics",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
