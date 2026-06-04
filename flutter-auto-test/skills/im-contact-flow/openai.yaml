@@ -1,0 +1,5 @@
+
+display_name: IM Contact Flow
+short_description: High-level contact flows over WebSocket.
+default_prompt: |
+  Use IM Contact Flow to run multi-step friend/block scenarios using this repo's WebSocket helpers.
