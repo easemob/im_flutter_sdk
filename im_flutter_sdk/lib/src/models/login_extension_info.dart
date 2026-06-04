@@ -24,4 +24,16 @@ class LoginExtensionInfo {
   /// 设备 B 登录时，将设备 A 踢下线携带的扩展信息。
   /// ~end
   final String? ext;
+
+  Map toJson() {
+    Map data = {};
+    data["deviceName"] = deviceName;
+    data["ext"] = ext;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

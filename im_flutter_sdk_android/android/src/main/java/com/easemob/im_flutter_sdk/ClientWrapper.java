@@ -40,7 +40,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private PresenceManagerWrapper presenceManagerWrapper;
     private ChatThreadManagerWrapper chatThreadManagerWrapper;
     private ContactManagerWrapper contactManagerWrapper;
-    private UserInfoManagerWrapper userInfoManagerWrapper;
     private ConversationWrapper conversationWrapper;
     private MessageWrapper messageWrapper;
     public ProgressManager progressManager;
@@ -60,10 +59,46 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         post(()-> channel.invokeMethod(MethodKey.onSendDataToFlutter, data));
     }
 
+    /**
+     * JSON 通道里 args 在部分机型/版本上可能是 {@link JSONObject}，也可能是 {@link Map} 等，
+     * 强转失败会抛 ClassCastException。若把 {@link JSONException} 交给旧逻辑并走到
+     * {@link Wrapper#onMethodCall}，会 {@link Result#notImplemented()}，Dart 侧误报为
+     * MissingPluginException，掩盖真实原因。
+     */
+    private static JSONObject argumentsToJSONObject(Object args) throws JSONException {
+        if (args == null) {
+            return new JSONObject();
+        }
+        if (args instanceof JSONObject) {
+            return (JSONObject) args;
+        }
+        if (args instanceof Map) {
+            return new JSONObject((Map<?, ?>) args);
+        }
+        if (args instanceof String) {
+            return new JSONObject((String) args);
+        }
+        throw new JSONException("Unsupported args type: " + args.getClass().getName());
+    }
+
+    private void replyJsonOrRuntimeError(Result result, Throwable t) {
+        post(() -> {
+            Map<String, Object> data = new HashMap<>();
+            String msg = t.getMessage() != null ? t.getMessage() : t.toString();
+            data.put("error", ErrorHelper.toJson(-1, msg));
+            result.success(data);
+        });
+    }
+
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
-
-        JSONObject param = (JSONObject)call.arguments;
+        final JSONObject param;
+        try {
+            param = argumentsToJSONObject(call.arguments);
+        } catch (JSONException e) {
+            replyJsonOrRuntimeError(result, e);
+            return;
+        }
         try {
             if (MethodKey.init.equals(call.method)) {
                 init(param, call.method, result);
@@ -179,8 +214,10 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
                 super.onMethodCall(call, result);
             }
 
-        }catch (JSONException ignored) {
-            super.onMethodCall(call, result);
+        } catch (JSONException e) {
+            replyJsonOrRuntimeError(result, e);
+        } catch (RuntimeException e) {
+            replyJsonOrRuntimeError(result, e);
         }
     }
 
@@ -245,7 +282,14 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void getCurrentUser(JSONObject param, String channelName, Result result) throws JSONException {
-        asyncRunnable(()-> onSuccess(result, channelName, EMClient.getInstance().getCurrentUser()));
+        post(() -> {
+            try {
+                String user = EMClient.getInstance().getCurrentUser();
+                onSuccess(result, channelName, user != null ? user : "");
+            } catch (Throwable t) {
+                onSuccess(result, channelName, "");
+            }
+        });
     }
 
     private void loginWithAgoraToken(JSONObject param, String channelName, Result result) throws JSONException {
@@ -439,7 +483,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         groupManagerWrapper.clientWrapper = this;
         conversationWrapper = new ConversationWrapper(binging, "chat_conversation");
         pushManagerWrapper = new PushManagerWrapper(binging, "chat_push_manager");
-        userInfoManagerWrapper = new UserInfoManagerWrapper(binging, "chat_userInfo_manager");
         presenceManagerWrapper = new PresenceManagerWrapper(binging, "chat_presence_manager");
         messageWrapper = new MessageWrapper(binging, "chat_message");
         chatThreadManagerWrapper = new ChatThreadManagerWrapper(binging, "chat_thread_manager");
@@ -453,7 +496,6 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         if (groupManagerWrapper != null) groupManagerWrapper.unRegisterEaseListener();
         if (conversationWrapper != null) conversationWrapper.unRegisterEaseListener();
         if (pushManagerWrapper != null) pushManagerWrapper.unRegisterEaseListener();
-        if (userInfoManagerWrapper != null) userInfoManagerWrapper.unRegisterEaseListener();
         if (presenceManagerWrapper != null) presenceManagerWrapper.unRegisterEaseListener();
         if (messageWrapper != null) messageWrapper.unRegisterEaseListener();
         if (chatThreadManagerWrapper != null) chatThreadManagerWrapper.unRegisterEaseListener();

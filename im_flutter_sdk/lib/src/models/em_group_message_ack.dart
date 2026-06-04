@@ -109,4 +109,20 @@ class EMGroupMessageAck {
     required this.readCount,
     required this.timestamp,
   });
+
+  Map toJson() {
+    Map data = {};
+    data["ack_id"] = ackId;
+    data["msgId"] = messageId;
+    data["from"] = from;
+    data["content"] = content;
+    data["count"] = readCount;
+    data["timestamp"] = timestamp;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
