@@ -207,6 +207,15 @@ class EMMessage {
   Map<String, dynamic>? attributes;
 
   /// ~english
+  /// The environment identifier for webhook callback routing.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息回调路由的环境标识。
+  /// ~end
+  String? webhookEnv;
+
+  /// ~english
   /// Whether the message is delivered only when the recipient(s) is/are online:
   ///
   /// - `true`：The message is delivered only when the recipient(s) is/are online. If the recipient is offline, the message is discarded.
@@ -914,6 +923,7 @@ class EMMessage {
     data.putIfNotNull("to", to);
     data.putIfNotNull("body", body.toJson());
     data.putIfNotNull("attributes", attributes);
+    data.putIfNotNull("webhookEnv", webhookEnv);
     data.putIfNotNull("direction", direction.index);
     data.putIfNotNull("hasRead", hasRead);
     data.putIfNotNull("hasReadAck", hasReadAck);
@@ -944,6 +954,7 @@ class EMMessage {
       ..from = map["from"]
       ..body = _bodyFromMap(map["body"])!
       ..attributes = map.getMapValue("attributes")
+      ..webhookEnv = map["webhookEnv"]
       ..direction = MessageDirection.values[map["direction"]]
       ..hasRead = map.boolValue('hasRead')
       ..hasReadAck = map.boolValue('hasReadAck')
@@ -1997,6 +2008,8 @@ class EMCombineMessageBody extends EMMessageBody {
       title: map["title"],
       summary: map["summary"],
       fileStatus: DownloadStatus.values[map["fileStatus"]],
+      messageList: map["messageList"]?.cast<String>(),
+      compatibleText: map["compatibleText"],
     );
     body._localPath = map["localPath"];
     body._remotePath = map["remotePath"];

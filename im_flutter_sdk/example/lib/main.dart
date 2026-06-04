@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-var appKey = "easemob#easeim";
+import 'websocket_config_page.dart';
+
+var appKey = "easemob-demo#wang";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,8 +13,20 @@ void main() async {
 
   EMOptions options = EMOptions.withAppKey(
     appKey,
-    autoLogin: false,
+    restServer: "https://a1-hsb.easemob.com",
+    imPort: 6717,
+    imServer: "42.193.118.34",
+    // webSocketServer: "im-api-new-hsb.easemob.com",
+    // webSocketPort: 80,
+    autoLogin: true,
+    debugMode: true,
+    enableDNSConfig: false,
+    syncDataWebSocketServer: "140.143.132.6",
+    syncDataWebSocketPort: 8086,
+    enableAutoSyncContacts: false,
+    requireAck: true
   );
+  
 
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
@@ -27,7 +41,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const MyHomePage(title: 'Flutter SDK Demo'),
+      home: const WebSocketConfigPage(),
+      routes: {
+        '/sdk_demo': (_) => const MyHomePage(title: 'Flutter SDK Demo'),
+      },
     );
   }
 }
@@ -58,7 +75,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
       body: Container(
         padding: const EdgeInsets.only(left: 10, right: 10),
         child: Column(
@@ -165,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
-
+ 
   void _addChatListener() {
     EMClient.getInstance.addConnectionEventHandler(
       'identifier',
@@ -316,12 +335,10 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    var msg = EMMessage.createTxtSendMessage(
+    await EMClient.getInstance.chatManager.sendTxtMessage(
       targetId: _chatId,
       content: _messageContent,
     );
-
-    await EMClient.getInstance.chatManager.sendMessage(msg);
   }
 
   void _addLogToConsole(String log) {

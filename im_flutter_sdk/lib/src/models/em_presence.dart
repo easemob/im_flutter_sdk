@@ -68,6 +68,21 @@ class EMPresence {
     return EMPresence(
         publisher, statusDescription, statusDetails, latestTime, expiryTime);
   }
+
+  Map toJson() {
+    Map data = {};
+    data["publisher"] = publisher;
+    data["statusDescription"] = statusDescription;
+    data["lastTime"] = lastTime;
+    data["expiryTime"] = expiryTime;
+    data["statusDetails"] = statusDetails;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }
 
 /// ~english
@@ -105,5 +120,17 @@ class EMPresenceStatusDetail {
     String device = map["device"];
     int status = map["status"] ?? 0;
     return EMPresenceStatusDetail._private(device, status);
+  }
+
+  Map toJson() {
+    Map data = {};
+    data["device"] = device;
+    data["status"] = status;
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
   }
 }

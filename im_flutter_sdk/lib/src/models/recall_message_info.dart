@@ -70,4 +70,19 @@ class RecallMessageInfo {
   /// 撤回消息的会话ID。
   /// ~end
   final String? conversationId;
+
+  Map toJson() {
+    Map data = {};
+    data.putIfNotNull("recallMsgId", recallMessageId);
+    data.putIfNotNull("recallBy", recallBy);
+    data.putIfNotNull("convId", conversationId);
+    data.putIfNotNull("msg", recallMessage?.toJson());
+    data.putIfNotNull("ext", ext);
+    return data;
+  }
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
 }

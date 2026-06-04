@@ -32,6 +32,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Do not commit lock files
+**/*.lock
+
 # Symbolication related
 app.*.symbols
 
@@ -49,3 +52,18 @@ app.*.map.json
 /scripts/shengwang_chat_sdk
 /scripts/agora_chat_sdk
 /scripts/im_flutter_sdk
+
+# Local SDK assets (do not commit)
+# Android local deps (folder name without version; jars/so live under it)
+im_flutter_sdk_android/android/libs/easemob-sdk/
+# Allow keeping the directory placeholder but ignore contents
+im_flutter_sdk_android/android/libs/easemob-sdk/**
+# Also ignore accidental versioned folders
+im_flutter_sdk_android/android/libs/easemob-sdk-*/
+
+# iOS vendored frameworks (local deps)
+im_flutter_sdk_ios/ios/HyphenateChat.xcframework/
+im_flutter_sdk_ios/ios/ShengwangInfra_iOS/
+
+# Pods are typically not committed from example app
+im_flutter_sdk/example/ios/Pods/

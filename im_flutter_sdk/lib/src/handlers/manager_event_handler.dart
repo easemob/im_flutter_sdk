@@ -1113,6 +1113,15 @@ class EMChatThreadEventHandler {
 /// ```
 /// ~end
 class EMContactEventHandler {
+  /// Occurs when the friend list or friend user info sync starts.
+  final void Function()? onFriendStartSync;
+
+  /// Occurs when the friend list or friend user info sync finishes.
+  final void Function()? onFriendSyncFinished;
+
+  /// Occurs when friend user info updated events arrive.
+  final void Function(List<EMUserInfo> users)? onFriendUserInfoDidUpdated;
+
   /// ~english
   /// Occurs when user is added as a contact by another user.
   /// ~end
@@ -1197,6 +1206,9 @@ class EMContactEventHandler {
   /// Param [onFriendRequestDeclined] 发出的好友申请被对方拒绝。
   /// ~end
   EMContactEventHandler({
+    this.onFriendStartSync,
+    this.onFriendSyncFinished,
+    this.onFriendUserInfoDidUpdated,
     this.onContactAdded,
     this.onContactDeleted,
     this.onContactInvited,
