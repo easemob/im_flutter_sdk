@@ -48,7 +48,7 @@ dependencies {
     // 本地依赖（默认）：修改为实际 JAR 文件名即可
     // 替换 JAR 后务必：flutter clean → 删除各模块 build/ → example/android 下 ./gradlew clean → 再编译。
 
-    implementation files('./libs/easemob-sdk/libs/hyphenatechat_4.20.0.jar')
+    implementation files('./libs/easemob-sdk/libs/hyphenatechat_4.23.0.jar')
     // 远程依赖（改为远程时，注释掉上面的 implementation files(...)，取消下一行注释）
     // implementation 'io.hyphenate:hyphenate-chat:4.19.1'
     // 仅包含 android/libs 根目录下的 *.jar（子目录里的 JAR 只走上面的显式 implementation files）

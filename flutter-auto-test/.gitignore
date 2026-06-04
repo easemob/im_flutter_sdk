@@ -1,0 +1,18 @@
+# Editor and OS
+.DS_Store
+.cursor/
+.idea/
+
+# Reports / outputs
+allure-results/
+report.html
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+out/
+
+# Local config with secrets
+config.yaml
