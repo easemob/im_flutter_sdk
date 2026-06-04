@@ -296,6 +296,12 @@ def test_send_message_with_type_image(device_a, device_b, assert_api, user_a, us
     _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b, type_key="image", payload=payload)
 
 
+def test_send_message_with_type_image_heic(device_a, device_b, assert_api, user_a, user_b):
+    """发送 HEIC 格式图片，验证 SDK 能正常上传并投递。"""
+    payload = {"targetId": user_b, "displayName": "imgHeic.HEIC", "thumbnailLocalPath": ""}
+    _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b, type_key="image", payload=payload)
+
+
 def test_send_message_with_type_video(device_a, device_b, assert_api, user_a, user_b):
     payload = {"targetId": user_b, "thumbnailLocalPath":""}
     _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b, type_key="video", payload=payload)
