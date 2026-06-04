@@ -1,0 +1,5 @@
+
+display_name: IM REST Users
+short_description: Create/delete test users via REST endpoints.
+default_prompt: |
+  Use the IM REST Users skill to provision or cleanup test users using config.yaml rest_api settings.

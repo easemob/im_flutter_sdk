@@ -469,6 +469,9 @@ class MessageHelper {
         message.setIsChatThreadMessage(json.optBoolean("isThread", false));
 
         message.deliverOnlineOnly(json.optBoolean("deliverOnlineOnly", false));
+        if (json.has("webhookEnv")) {
+            message.setWebhookEnv(json.optString("webhookEnv", null));
+        }
 
         message.setLocalTime(json.has("localTime") ? json.optLong("localTime") : System.currentTimeMillis());
         if (json.has("serverTime")){
@@ -568,6 +571,9 @@ class MessageHelper {
 
         if (message.ext().size() > 0 && null != message.ext()) {
             data.put("attributes", message.ext());
+        }
+        if (message.getWebhookEnv() != null) {
+            data.put("webhookEnv", message.getWebhookEnv());
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());

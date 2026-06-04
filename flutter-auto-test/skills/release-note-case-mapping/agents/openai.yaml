@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release Note Case Mapping"
+  short_description: "Map SDK release-note changes to test coverage."
+  default_prompt: "Use this skill to parse release notes, map each change item to tests, classify covered/uncovered status, and output a runnable marker-based case list."
