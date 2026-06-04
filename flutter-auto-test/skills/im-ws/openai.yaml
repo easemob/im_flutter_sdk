@@ -1,0 +1,6 @@
+
+display_name: IM WebSocket
+short_description: Send WS manager/cmd requests, wait for responses or events.
+default_prompt: |
+  Use the IM WebSocket skill to call Flutter SDK APIs over WS using this repo's config.yaml. 
+  Provide manager, cmd, info. Optionally wait for an eventType.
