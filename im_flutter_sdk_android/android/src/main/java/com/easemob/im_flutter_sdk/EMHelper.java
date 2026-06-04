@@ -48,7 +48,6 @@ import com.hyphenate.chat.EMVideoMessageBody;
 import com.hyphenate.chat.EMVoiceMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.push.EMPushConfig;
-import com.hyphenate.chat.EMUserInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -358,7 +357,7 @@ class MessageHelper {
         JSONObject bodyJson = json.getJSONObject("body");
         EMMessageBody body = MessageBodyHelper.fromJson(bodyJson);
         EMMessage.Type type = EnumTools.messageBodyTypeFromInt(bodyJson.getInt("type"));
-        EMMessage.Direct direct = EnumTools.messageDirectFromInt(json.getInt("direction"));
+        EMMessage.Direct direct = EnumTools.messageDirectFromInt(json.optInt("direction", 0));
         if (direct == EMMessage.Direct.SEND) {
             switch (type) {
                 case TXT: {
@@ -457,26 +456,29 @@ class MessageHelper {
         if (json.has("from")) {
             message.setFrom(json.getString("from"));
         }
-        message.setAcked(json.getBoolean("hasReadAck"));
-        if (EnumTools.messageStatusFromInt(json.getInt("status")) == EMMessage.Status.SUCCESS) {
-            message.setUnread(!json.getBoolean("hasRead"));
+        message.setAcked(json.optBoolean("hasReadAck", false));
+        if (EnumTools.messageStatusFromInt(json.optInt("status", 0)) == EMMessage.Status.SUCCESS) {
+            message.setUnread(!json.optBoolean("hasRead", false));
         }
         // message.setDeliverAcked(json.getBoolean("hasDeliverAck"));
-        message.setIsNeedGroupAck(json.getBoolean("needGroupAck"));
+        message.setIsNeedGroupAck(json.optBoolean("needGroupAck", false));
         if (json.has("groupAckCount")) {
             message.setGroupAckCount(json.getInt("groupAckCount"));
         }
 
-        message.setIsChatThreadMessage(json.getBoolean("isThread"));
+        message.setIsChatThreadMessage(json.optBoolean("isThread", false));
 
-        message.deliverOnlineOnly(json.getBoolean("deliverOnlineOnly"));
+        message.deliverOnlineOnly(json.optBoolean("deliverOnlineOnly", false));
+        if (json.has("webhookEnv")) {
+            message.setWebhookEnv(json.optString("webhookEnv", null));
+        }
 
-        message.setLocalTime(json.getLong("localTime"));
+        message.setLocalTime(json.has("localTime") ? json.optLong("localTime") : System.currentTimeMillis());
         if (json.has("serverTime")){
             message.setMsgTime(json.getLong("serverTime"));
         }
 
-        message.setStatus(EnumTools.messageStatusFromInt(json.getInt("status")));
+        message.setStatus(EnumTools.messageStatusFromInt(json.optInt("status", 0)));
         if (json.has("chatroomMessagePriority")) {
             int intPriority = json.getInt("chatroomMessagePriority");
             if (intPriority == 0) {
@@ -487,7 +489,7 @@ class MessageHelper {
                 message.setPriority(EMMessage.EMChatRoomMessagePriority.PriorityLow);
             }
         }
-        message.setChatType(EnumTools.chatTypeFromInt(json.getInt("chatType")));
+        message.setChatType(EnumTools.chatTypeFromInt(json.optInt("chatType", 0)));
         if (json.has("msgId")){
             message.setMsgId(json.getString("msgId"));
         }
@@ -569,6 +571,9 @@ class MessageHelper {
 
         if (message.ext().size() > 0 && null != message.ext()) {
             data.put("attributes", message.ext());
+        }
+        if (message.getWebhookEnv() != null) {
+            data.put("webhookEnv", message.getWebhookEnv());
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
@@ -873,8 +878,7 @@ class GroupAckHelper {
         if (json.has("width") && json.has("height")){
             int width = json.getInt("width");
             int height = json.getInt("height");
-            //body.setThumbnailSize(width, height);
-            body.setSize(width, height);
+            body.setThumbnailSize(width, height);
         }
         if (json.has("sendOriginalImage")){
             body.setSendOriginalImage(json.getBoolean("sendOriginalImage"));
@@ -1258,53 +1262,6 @@ class HyphenateExceptionHelper {
         Map<String, Object> data = new HashMap<>();
         data.put("code", e.getErrorCode());
         data.put("description", e.getDescription());
-        return data;
-    }
-}
-
-class UserInfoHelper {
-    static EMUserInfo fromJson(JSONObject obj) throws JSONException {
-        EMUserInfo userInfo = new EMUserInfo();
-        if (obj.has("nickName")){
-            userInfo.setNickname(obj.getString("nickName"));
-        }
-        if (obj.has("avatarUrl")){
-            userInfo.setAvatarUrl(obj.optString("avatarUrl"));
-        }
-        if (obj.has("mail")){
-            userInfo.setEmail(obj.optString("mail"));
-        }
-        if (obj.has("phone")){
-            userInfo.setPhoneNumber(obj.optString("phone"));
-        }
-        if (obj.has("gender")){
-            userInfo.setGender(obj.getInt("gender"));
-        }
-        if (obj.has("sign")){
-            userInfo.setSignature(obj.optString("sign"));
-        }
-        if (obj.has("birth")){
-            userInfo.setBirth(obj.getString("birth"));
-        }
-        if (obj.has("ext")){
-            userInfo.setExt(obj.getString("ext"));
-        }
-
-        return userInfo;
-    }
-
-    static Map<String, Object> toJson(EMUserInfo userInfo) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("userId", userInfo.getUserId());
-        data.put("nickName", userInfo.getNickname());
-        data.put("avatarUrl", userInfo.getAvatarUrl());
-        data.put("mail", userInfo.getEmail());
-        data.put("phone", userInfo.getPhoneNumber());
-        data.put("gender", userInfo.getGender());
-        data.put("sign", userInfo.getSignature());
-        data.put("birth", userInfo.getBirth());
-        data.put("ext", userInfo.getExt());
-
         return data;
     }
 }
