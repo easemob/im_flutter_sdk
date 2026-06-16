@@ -9,7 +9,7 @@ import 'websocket_config_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  EMOptions options = SdkConfigLoader.loadOptions();
+  EMOptions options = await SdkConfigLoader.loadOptions();
 
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
