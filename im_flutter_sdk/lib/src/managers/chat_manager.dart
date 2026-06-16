@@ -1257,6 +1257,31 @@ class EMChatManager {
   }
 
   /// ~english
+  /// Downloads the original image from the server.
+  ///
+  /// Param [message] The image message whose original image is to be downloaded.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 下载图片消息的大图。
+  ///
+  /// Param [message] 要下载大图的图片消息。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> downloadBigImage(EMMessage message) async {
+    try {
+      Map result = await Client.instance.chatManager.callNativeMethod(
+          ChatMethodKeys.downloadBigImage, {"message": message.toJson()});
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
   /// Downloads the thumbnail if the message has not been downloaded before or if the download fails.
   ///
   /// Param [message] The message object.

@@ -103,6 +103,10 @@
         [self downloadAttachment:call.arguments
                      channelName:call.method
                           result:result];
+    } else if ([ChatDownloadBigImage isEqualToString:call.method]) {
+        [self downloadBigImage:call.arguments
+                   channelName:call.method
+                        result:result];
     } else if ([ChatDownloadThumbnail isEqualToString:call.method]) {
         [self downloadThumbnail:call.arguments
                     channelName:call.method
@@ -644,6 +648,12 @@
                   channelName:aChannelName
                         error:nil
                        object:msgDict];
+}
+
+- (void)downloadBigImage:(NSDictionary *)param
+             channelName:(NSString *)aChannelName
+                  result:(FlutterResult)result {
+    [self downloadAttachment:param channelName:aChannelName result:result];
 }
 
 - (void)downloadThumbnail:(NSDictionary *)param
