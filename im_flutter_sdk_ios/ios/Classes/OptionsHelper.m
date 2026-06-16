@@ -28,6 +28,7 @@
     data[@"usingHttpsOnly"] = @(self.usingHttpsOnly);
     data[@"pushConfig"] = @{@"pushConfig": @{@"apnsCertName": self.apnsCertName}};
     data[@"enableDNSConfig"] = @(self.enableDnsConfig);
+    data[@"enableUserInfo"] = @(self.enableUserInfo);
     data[@"imPort"] = @(self.chatPort);
     data[@"imServer"] = self.chatServer;
     data[@"webSocketServer"] = self.webSocketServer;
@@ -76,6 +77,9 @@
     options.usingHttpsOnly = [aJson[@"usingHttpsOnly"] boolValue];
     options.apnsCertName = aJson[@"pushConfig"][@"apnsCertName"];
     options.enableDnsConfig = [aJson[@"enableDNSConfig"] boolValue];
+    if (aJson[@"enableUserInfo"]) {
+        options.enableUserInfo = [aJson[@"enableUserInfo"] boolValue];
+    }
     options.chatPort = [aJson[@"imPort"] intValue];
     options.chatServer = aJson[@"imServer"];
     options.webSocketServer = aJson[@"webSocketServer"];

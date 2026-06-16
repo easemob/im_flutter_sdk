@@ -38,6 +38,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     private ChatRoomManagerWrapper chatRoomManagerWrapper;
     private PushManagerWrapper pushManagerWrapper;
     private PresenceManagerWrapper presenceManagerWrapper;
+    private UserInfoManagerWrapper userInfoManagerWrapper;
     private ChatThreadManagerWrapper chatThreadManagerWrapper;
     private ContactManagerWrapper contactManagerWrapper;
     private ConversationWrapper conversationWrapper;
@@ -236,9 +237,13 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
     }
 
     private void login(JSONObject param, String channelName, Result result) throws JSONException {
-        boolean isPwd = param.getBoolean("isPassword");
         String username = param.getString("userId");
-        String pwdOrToken = param.getString("pwdOrToken");
+        String pwdOrToken = param.has("pwdOrToken")
+                ? param.getString("pwdOrToken")
+                : param.getString("password");
+        boolean isPwd = param.has("isPassword")
+                ? param.getBoolean("isPassword")
+                : param.optBoolean("isPwd", true);
         EMWrapperCallBack callBack = new EMWrapperCallBack(result, channelName, null) {
             @Override
             public void onSuccess() {
@@ -258,7 +263,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
 
 
     private void logout(JSONObject param, String channelName, Result result) throws JSONException {
-        boolean unbindToken = param.getBoolean("unbindToken");
+        boolean unbindToken = param.optBoolean("unbindToken", false);
         EMClient.getInstance().logout(unbindToken, new EMWrapperCallBack(result, channelName, null){
             @Override
             public void onSuccess() {
@@ -484,6 +489,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         conversationWrapper = new ConversationWrapper(binging, "chat_conversation");
         pushManagerWrapper = new PushManagerWrapper(binging, "chat_push_manager");
         presenceManagerWrapper = new PresenceManagerWrapper(binging, "chat_presence_manager");
+        userInfoManagerWrapper = new UserInfoManagerWrapper(binging, "chat_userInfo_manager");
         messageWrapper = new MessageWrapper(binging, "chat_message");
         chatThreadManagerWrapper = new ChatThreadManagerWrapper(binging, "chat_thread_manager");
         progressManager = new ProgressManager(binging, "file_progress_manager");
@@ -497,6 +503,7 @@ public class ClientWrapper extends Wrapper implements MethodCallHandler {
         if (conversationWrapper != null) conversationWrapper.unRegisterEaseListener();
         if (pushManagerWrapper != null) pushManagerWrapper.unRegisterEaseListener();
         if (presenceManagerWrapper != null) presenceManagerWrapper.unRegisterEaseListener();
+        if (userInfoManagerWrapper != null) userInfoManagerWrapper.unRegisterEaseListener();
         if (messageWrapper != null) messageWrapper.unRegisterEaseListener();
         if (chatThreadManagerWrapper != null) chatThreadManagerWrapper.unRegisterEaseListener();
         if (progressManager != null) progressManager.unRegisterEaseListener();

@@ -19,21 +19,6 @@
 - 前置条件：统一端差异语义。
 - 恢复条件：冻结单一语义后恢复。
 
-## downloadAttachment / downloadThumbnail
-- 原因：`message` 对象入参 + MissingPlugin 风险。
-- 前置条件：桥接能力稳定可用。
-- 恢复条件：移除 skip，补齐 strict 断言。
-
-## downloadMessageAttachmentInCombine / downloadMessageThumbnailInCombine
-- 原因：`message` 对象入参，暂缓。
-- 前置条件：组合消息能力稳定。
-- 恢复条件：恢复实现并 strict。
-
-## downloadAndParseCombineMessage
-- 原因：`message` 对象入参，暂缓。
-- 前置条件：同上。
-- 恢复条件：同上。
-
 ## translateMessage
 - 原因：`message` 对象入参，暂缓。
 - 前置条件：翻译链路语义稳定。
@@ -71,3 +56,9 @@
 - `removeMessagesFromServerWithMsgIds`（缺失必填）、`removeMessagesFromServerWithTs`（缺失必填）、`reportMessage`（缺失必填）
   - 文件：`tests/chat/test_chat_s2_server_ops.py`
   - 原因：当前端缺失必填路径可能返回 MissingPlugin（非被测端语义）。
+
+## 当前环境阻塞
+- `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`
+  - 原因：本次 discovery 登录前置返回 `204/User does not exist`，测试未进入业务链路。
+  - 前置条件：创建当天测试账号（如 `testMMDDuser1/2/3`）或修复 `config.yaml` 中 REST token 自动创建能力。
+  - 恢复条件：账号可登录后执行 `CASES_DISCOVER=1 WS_DEBUG=1 pytest -q tests/chat/test_chat_s423_message_callback_and_combine.py -s` 并收紧 strict。

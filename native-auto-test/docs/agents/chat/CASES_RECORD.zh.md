@@ -345,5 +345,19 @@
 107. `tests/chat/test_chat_s4_load_messages_by_ids.py::test_chat_load_messages_with_ids_empty_ids`
    传空 `messageIds`，冻结返回空列表语义。
 
+## sendMessageWithType / downloadAttachment / downloadBigImage / downloadThumbnail / combine
+
+正常 cases
+108. `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`
+   覆盖文件、图片、视频消息发送与接收，并验证 `downloadAttachment`、`downloadBigImage`、`downloadThumbnail` 的同步响应、进度事件与成功事件。
+109. `tests/chat/test_chat_s423_message_callback_and_combine.py::test_combine_forward_send_receive_and_inner_attachment_download`
+   覆盖图片/视频合并转发消息发送、接收、解析，并验证合并消息内部附件下载和缩略图下载的进度/成功事件。
+
+异常 cases
+110. `tests/chat/test_chat_crud.py::test_chat_download_attachment_invalid_id_response`
+   无效消息 ID 下载附件，冻结错误语义。
+111. `tests/chat/test_chat_crud.py::test_chat_download_thumbnail_invalid_id_response`
+   无效消息 ID 下载缩略图，冻结错误语义。
+
 ## 统计
-- 当前记录 case 条目总数：`107`
+- 当前记录 case 条目总数：`111`

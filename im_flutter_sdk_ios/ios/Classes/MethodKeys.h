@@ -85,6 +85,7 @@ static NSString *const ChatMarkAllChatMsgAsRead = @"markAllChatMsgAsRead";
 static NSString *const ChatGetUnreadMessageCount = @"getUnreadMessageCount";
 static NSString *const ChatUpdateChatMessage = @"updateChatMessage";
 static NSString *const ChatDownloadAttachment = @"downloadAttachment";
+static NSString *const ChatDownloadBigImage = @"downloadBigImage";
 static NSString *const ChatDownloadThumbnail = @"downloadThumbnail";
 static NSString *const ChatDownloadMessageAttachmentInCombine = @"downloadMessageAttachmentInCombine";
 static NSString *const ChatDownloadMessageThumbnailInCombine = @"downloadMessageThumbnailInCombine";

@@ -25,7 +25,7 @@ from typing import Any
 # 默认忽略的 key（任意层级），时间戳等变化值不参与比对
 DEFAULT_IGNORE_KEYS = frozenset({
     "timestamp", "time", "serverTime", "date", "createdAt", "updatedAt",
-    "ts", "created_at", "updated_at", "lastModified",
+    "ts", "created_at", "updated_at", "lastModified", "id",
 })
 
 

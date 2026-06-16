@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from src import Cmd
+from src import Cmd, ne
 from tests.chatroom.chatroom_helpers import create_chatroom_or_skip, safe_delete_chatroom
 
 
@@ -40,6 +40,65 @@ def test_chatroom_create_and_fetch_from_server(device_a, assert_api, user_a):
             },
             ignore_keys={"sequence"},
         )
+    finally:
+        safe_delete_chatroom(room_id)
+
+
+def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, assert_api, user_a, user_b):
+    room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="fetch_members", desc_prefix="fetch_members")
+    try:
+        join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
+        assert_api.assert_response_matches(
+            join_resp,
+            expected={
+                "manager": "ChatRoomManager",
+                "cmd": Cmd.joinChatRoom.value,
+                "device": "deviceB",
+                "result": 1,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        resp = device_a.call(
+            "ChatRoomManager",
+            Cmd.fetchChatRoomInfoFromServer.value,
+            info={"roomId": room_id, "fetchMembers": True},
+        )
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatRoomManager",
+                "cmd": Cmd.fetchChatRoomInfoFromServer.value,
+                "device": "deviceA",
+                "result": {
+                    "roomId": room_id,
+                    "owner": user_a,
+                    "memberCount": 2,
+                    "memberList": ne(None),
+                },
+            },
+            ignore_keys={
+                "sequence",
+                "name",
+                "maxUsers",
+                "permissionType",
+                "isAllMemberMuted",
+                "adminList",
+                "muteList",
+                "muteExpireTimestamp",
+                "createTimestamp",
+                "isInWhitelist",
+                "blockList",
+                "desc",
+                "announcement",
+            },
+        )
+        result = resp.get("result")
+        assert isinstance(result, dict), f"fetchChatRoomInfoFromServer result 应为 dict: {resp}"
+        members = result.get("memberList")
+        assert isinstance(members, list), f"fetchMembers=true 时 memberList 应为 list: {resp}"
+        assert user_a not in members, f"fetchMembers=true 的普通成员列表不应包含 owner: user_a={user_a}, members={members}"
+        assert user_b in members, f"memberList 缺少加入成员: user_b={user_b}, members={members}"
     finally:
         safe_delete_chatroom(room_id)
 

@@ -573,3 +573,4 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "contact: ContactManager / friend API tests")
     config.addinivalue_line("markers", "presence: PresenceManager / online status tests")
     config.addinivalue_line("markers", "multi_device: tests requiring multiple devices/topics")
+    config.addinivalue_line("markers", "agorachat4_23_0: AgoraChat SDK 4.23.0 release coverage tests")

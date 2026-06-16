@@ -81,6 +81,7 @@ class ChatMethodKeys {
   static const String getUnreadMessageCount = "getUnreadMessageCount";
   static const String updateChatMessage = "updateChatMessage";
   static const String downloadAttachment = "downloadAttachment";
+  static const String downloadBigImage = "downloadBigImage";
   static const String downloadThumbnail = "downloadThumbnail";
   static const String downloadMessageAttachmentInCombine =
       "downloadMessageAttachmentInCombine";
