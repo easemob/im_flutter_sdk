@@ -3,30 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
+import 'sdk_config_loader.dart';
 import 'websocket_config_page.dart';
-
-var appKey = "easemob-demo#wang";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  assert(appKey.isNotEmpty, "appKey is empty");
 
-  EMOptions options = EMOptions.withAppKey(
-    appKey,
-    // restServer: "https://a1-hsb.easemob.com",
-    // imPort: 6717,
-    // imServer: "42.193.118.34",
-    // webSocketServer: "im-api-new-hsb.easemob.com",
-    // webSocketPort: 80,
-    autoLogin: true,
-    debugMode: true,
-    enableDNSConfig: true,
-    syncDataWebSocketServer: "140.143.132.6",
-    syncDataWebSocketPort: 8086,
-    enableAutoSyncContacts: false,
-    enableUserInfo: true,
-    requireAck: true,
-  );
+  EMOptions options = SdkConfigLoader.loadOptions();
 
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
