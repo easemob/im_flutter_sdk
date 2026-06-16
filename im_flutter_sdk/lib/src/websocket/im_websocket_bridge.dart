@@ -29,6 +29,7 @@ class IMWebSocketBridge {
   WebSocket? _socket;
   StreamSubscription<dynamic>? _subscription;
   static const String _tag = 'IMWebSocketBridge';
+  String? _deviceName;
 
   OnBridgeLog? onLog;
 
@@ -66,11 +67,19 @@ class IMWebSocketBridge {
     }
   }
 
-  Future<void> start({String? url, String? topic}) async {
+  bool _isBridgeResponseOrEvent(Map<String, dynamic> message) {
+    return message['type'] == 'event' ||
+        message.containsKey('result') ||
+        message.containsKey('error') ||
+        message.containsKey('success');
+  }
+
+  Future<void> start({String? url, String? topic, String? deviceName}) async {
     if (_socket != null) {
       EMLog.v('WebSocket bridge already connected', tag: _tag);
       return;
     }
+    _deviceName = deviceName?.trim().isEmpty == true ? null : deviceName?.trim();
     final String connectUrl = url ??
         '$kDefaultBridgeWebSocketBaseUrl?topic=${Uri.encodeComponent(topic ?? kDefaultBridgeWebSocketTopic)}';
     final uri = Uri.parse(connectUrl);
@@ -96,6 +105,7 @@ class IMWebSocketBridge {
     _subscription?.cancel();
     _subscription = null;
     _socket = null;
+    _deviceName = null;
   }
 
   Future<void> _onMessage(dynamic raw) async {
@@ -125,7 +135,24 @@ class IMWebSocketBridge {
       return;
     }
 
+    // The bridge server broadcasts responses/events back to subscribers on the
+    // same topic. They are not executable SDK requests and must not be echoed.
+    if (_isBridgeResponseOrEvent(request)) {
+      EMLog.v('ignore bridge response/event: $text', tag: _tag);
+      return;
+    }
+
     final id = request['id'] ?? request['sequence'];
+    final targetDevice = request['device'] as String?;
+    if (_deviceName != null &&
+        targetDevice != null &&
+        targetDevice != _deviceName) {
+      EMLog.v(
+        'ignore request for device $targetDevice, current device $_deviceName',
+        tag: _tag,
+      );
+      return;
+    }
     final managerName = request['manager'] as String?;
     final method = request['cmd'] as String?;
     dynamic args = request['info'];

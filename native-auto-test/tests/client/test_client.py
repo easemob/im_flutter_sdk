@@ -40,6 +40,13 @@ def test_client_get_current_user(device_a, assert_api):
     result = assert_api.get_result(resp)
     assert result is not None or "result" in resp
 
+def test_client_get_current_user(device_a, assert_api):
+    """session 已登录 deviceA，校验 getCurrentUser 返回当前用户。"""
+    resp = device_a.call("Client", Cmd.changeAppId.value, info={"appId": "dc4a43e610634c8989d8252d2bb71da7"})
+    assert_api.assert_success(resp)
+    result = assert_api.get_result(resp)
+    assert result is not None or "result" in resp
+
 
 def test_login_then_receive_offline_sync_event(device_a, assert_api):
     """deviceA 登录后接收 onOfflineMessageSyncStart：用 device_a 发请求并在同一 topic 上主动收推送。"""

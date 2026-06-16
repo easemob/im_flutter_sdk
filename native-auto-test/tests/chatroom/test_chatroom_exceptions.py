@@ -47,8 +47,47 @@ def test_chatroom_join_room_empty_id(device_b, assert_api):
     assert_api.assert_error(resp, code=700, description="Chat room ID is invalid")
 
 
+def test_chatroom_leave_room_nonexistent(device_b, assert_api):
+    room_id = _nonexistent_room_id()
+    resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatRoomManager",
+            "cmd": Cmd.leaveChatRoom.value,
+            "device": "deviceB",
+            "result": None,
+        },
+        ignore_keys={"sequence"},
+    )
+
+
+def test_chatroom_leave_room_empty_id(device_b, assert_api):
+    resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": ""})
+    assert_api.assert_error(resp, code=700, description="Chatroom ID invalid")
+
+
 def test_chatroom_fetch_room_info_empty_id(device_a, assert_api):
     resp = device_a.call("ChatRoomManager", Cmd.fetchChatRoomInfoFromServer.value, info={"roomId": ""})
+    assert_api.assert_error(resp, code=700, description="Chat room ID is invalid")
+
+
+def test_chatroom_fetch_members_nonexistent_room(device_a, assert_api):
+    room_id = _nonexistent_room_id()
+    resp = device_a.call(
+        "ChatRoomManager",
+        Cmd.fetchChatRoomMembers.value,
+        info={"roomId": room_id, "cursor": "", "pageSize": 20},
+    )
+    assert_api.assert_error(resp, code=700, description="do not find this group")
+
+
+def test_chatroom_fetch_members_empty_room_id(device_a, assert_api):
+    resp = device_a.call(
+        "ChatRoomManager",
+        Cmd.fetchChatRoomMembers.value,
+        info={"roomId": "", "cursor": "", "pageSize": 20},
+    )
     assert_api.assert_error(resp, code=700, description="Chat room ID is invalid")
 
 
