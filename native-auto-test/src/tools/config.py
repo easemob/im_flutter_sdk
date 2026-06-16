@@ -82,3 +82,14 @@ def get_rest_verify_ssl() -> bool:
     cfg = load_config()
     rest = cfg.get("rest_api") or {}
     return bool(rest.get("verify_ssl", True))
+
+
+def get_sdk_options() -> dict:
+    """返回 config.yaml 中的 sdk_options 节（Flutter SDK EMOptions 配置）。"""
+    cfg = load_config()
+    return cfg.get("sdk_options") or {}
+
+
+def get_sdk_app_key() -> str:
+    """返回 sdk_options.app_key。"""
+    return get_sdk_options().get("app_key", "")
