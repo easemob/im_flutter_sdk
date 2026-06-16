@@ -22,8 +22,7 @@
 
 ## 配置
 
-编辑项目根目录 `config.yaml`：
-
+`cp config.yaml.template config.yaml`
 - `websocket.base_url`：WS 服务地址（与 Flutter 端一致）。
 - `websocket.default_topic`：默认 topic（与 Flutter 端 `IMWebSocketBridge.instance.start(topic: '...')` 一致）。
 - 多端测试时可在 `topics` 下为不同 device 配置不同 topic。

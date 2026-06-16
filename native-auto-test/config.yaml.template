@@ -1,0 +1,35 @@
+# WebSocket 连接配置，与 Flutter demo 端保持一致
+websocket:
+  base_url: "ws://140.143.132.6:2000/iov/websocket/dual"
+  default_topic: "adc"
+  connect_timeout: 10
+  response_timeout: 30
+
+# 多端测试时可为每个设备指定不同 topic（Flutter 端用相同 topic 连接即为同一设备）
+topics:
+  deviceA: adc
+  deviceB: adc01
+
+# REST 用户管理（创建/删除用户，用于 presence 等用例的临时账号）
+rest_api:
+  base_url: "http://a1.easemob.com/your_org_name/your_app_name"
+  auth_token: "Bearer Token"
+  verify_ssl: false  # 临时绕过证书校验（仅测试环境使用）
+
+# Flutter SDK EMOptions 配置（与 main.dart 中 EMOptions.withAppKey 参数一一对应）
+# 脚本 sync_sdk_config.py 会读取此节并生成 Dart 配置文件注入到 Flutter example 中
+sdk_options:
+  app_key: "your_org_name#your_app_name"
+  # rest_server: "https://a1-hsb.easemob.com"
+  # im_server: "42.193.118.34"
+  # im_port: 6717
+  # web_socket_server: "im-api-new-hsb.easemob.com"
+  # web_socket_port: 80
+  auto_login: true
+  debug_mode: true
+  enable_dns_config: true
+  sync_data_web_socket_server: "140.143.132.6"
+  sync_data_web_socket_port: 8086
+  require_ack: true
+  enable_auto_sync_contacts: false
+  enable_user_info: true
