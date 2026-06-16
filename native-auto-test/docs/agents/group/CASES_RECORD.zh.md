@@ -525,5 +525,14 @@
 130. `tests/group/test_group_moderation.py::test_group_moderation_nonexistent_group_errors[updateGroupExt-info6-600-do not find this group]`
      对不存在群执行 updateGroupExt，冻结 `600/do not find this group` 错误语义。
 
+## fetchGroupMembersInfo
+
+正常 cases
+131. `tests/group/test_group_member_info.py::test_group_fetch_members_info_contains_updated_own_profile`
+     当前用户更新 `nickName/avatarUrl` 后创建群并拉取 `fetchGroupMembersInfo`，校验返回成员列表包含当前用户，且 `userId/memberId/joinTime/namecard/nickname/avatarUrl/role/string` 字段可正常获取，其中 `nickname/avatarUrl` 与 `fetchUserInfoById` 最新结果一致。
+
+异常 cases
+132. 无（当前仅补充 4.23.0 成员信息字段一致性回归链路）。
+
 ## 统计
-- 当前记录 case 条目总数：`130`
+- 当前记录 case 条目总数：`132`

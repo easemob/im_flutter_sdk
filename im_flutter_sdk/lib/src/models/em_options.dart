@@ -238,6 +238,12 @@ class EMOptions {
   /// Whether to auto sync contacts and friend info from server.
   final bool enableAutoSyncContacts;
 
+  /// Whether to enable Chat user info service.
+  ///
+  /// When enabled, the SDK syncs user info on login and carries avatar,
+  /// nickname, and group name card in messages.
+  final bool? enableUserInfo;
+
   /// ~english
   /// The DNS URL.
   /// ~end
@@ -304,6 +310,7 @@ class EMOptions {
 
   /// Friend sync service WebSocket server (private deployment).
   final String? syncDataWebSocketServer;
+
   /// Friend sync service WebSocket server port (private deployment).
   final int? syncDataWebSocketPort;
 
@@ -769,6 +776,7 @@ class EMOptions {
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
     bool enableAutoSyncContacts = false,
+    bool? enableUserInfo,
     String? dnsUrl,
     String? restServer,
     int? imPort,
@@ -804,7 +812,8 @@ class EMOptions {
           serverTransfer: serverTransfer,
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
-      enableAutoSyncContacts: enableAutoSyncContacts,
+          enableAutoSyncContacts: enableAutoSyncContacts,
+          enableUserInfo: enableUserInfo,
           dnsUrl: dnsUrl,
           restServer: restServer,
           imPort: imPort,
@@ -1042,6 +1051,7 @@ class EMOptions {
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
     bool enableAutoSyncContacts = false,
+    bool? enableUserInfo,
     String? dnsUrl,
     String? restServer,
     int? imPort,
@@ -1077,7 +1087,8 @@ class EMOptions {
           serverTransfer: serverTransfer,
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
-      enableAutoSyncContacts: enableAutoSyncContacts,
+          enableAutoSyncContacts: enableAutoSyncContacts,
+          enableUserInfo: enableUserInfo,
           dnsUrl: dnsUrl,
           restServer: restServer,
           imPort: imPort,
@@ -1317,6 +1328,7 @@ class EMOptions {
     bool isAutoDownloadThumbnail = true,
     bool enableDNSConfig = true,
     bool enableAutoSyncContacts = false,
+    bool? enableUserInfo,
     String? dnsUrl,
     String? restServer,
     int? imPort,
@@ -1351,7 +1363,8 @@ class EMOptions {
           serverTransfer: serverTransfer,
           isAutoDownloadThumbnail: isAutoDownloadThumbnail,
           enableDNSConfig: enableDNSConfig,
-      enableAutoSyncContacts: enableAutoSyncContacts,
+          enableAutoSyncContacts: enableAutoSyncContacts,
+          enableUserInfo: enableUserInfo,
           dnsUrl: dnsUrl,
           restServer: restServer,
           imPort: imPort,
@@ -1391,6 +1404,7 @@ class EMOptions {
     this.isAutoDownloadThumbnail = true,
     this.enableDNSConfig = true,
     this.enableAutoSyncContacts = false,
+    this.enableUserInfo,
     this.dnsUrl,
     this.restServer,
     this.imPort,
@@ -1429,6 +1443,7 @@ class EMOptions {
     data.putIfNotNull("dnsUrl", dnsUrl);
     data.putIfNotNull("enableDNSConfig", enableDNSConfig);
     data.putIfNotNull("enableAutoSyncContacts", enableAutoSyncContacts);
+    data.putIfNotNull("enableUserInfo", enableUserInfo);
     data.putIfNotNull("imPort", imPort);
     data.putIfNotNull("imServer", imServer);
     data.putIfNotNull("webSocketServer", webSocketServer);
@@ -1498,6 +1513,7 @@ class EMOptions {
     bool? regardImportMessagesAsRead,
     Map<String, dynamic>? extSettings,
     bool? enableAutoSyncContacts,
+    bool? enableUserInfo,
   }) {
     return EMOptions._(
       appKey: appKey,
@@ -1522,15 +1538,17 @@ class EMOptions {
       serverTransfer: serverTransfer,
       isAutoDownloadThumbnail: autoDownloadThumbnail ?? isAutoDownloadThumbnail,
       enableDNSConfig: enableDNSConfig,
-      enableAutoSyncContacts: enableAutoSyncContacts ?? this.enableAutoSyncContacts,
+      enableAutoSyncContacts:
+          enableAutoSyncContacts ?? this.enableAutoSyncContacts,
+      enableUserInfo: enableUserInfo ?? this.enableUserInfo,
       dnsUrl: dnsUrl,
       restServer: restServer,
       imPort: imPort,
       imServer: imServer,
       webSocketServer: webSocketServer,
       webSocketPort: webSocketPort,
-          syncDataWebSocketServer: syncDataWebSocketServer,
-          syncDataWebSocketPort: syncDataWebSocketPort,
+      syncDataWebSocketServer: syncDataWebSocketServer,
+      syncDataWebSocketPort: syncDataWebSocketPort,
       chatAreaCode: chatAreaCode,
       enableEmptyConversation: enableEmptyConversation,
       deviceName: deviceName,

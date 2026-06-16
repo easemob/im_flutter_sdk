@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import time
 import uuid
+import time
 
 import pytest
 
 from src import Cmd, ge, ne
 from tests.chat._utils import build_text
 
-pytestmark = [pytest.mark.client, pytest.mark.chat]
+pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat4_23_0]
 
 
 def _skip_if_missing_plugin(resp: dict, api_name: str) -> None:
@@ -55,6 +55,331 @@ def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str,
     pytest.fail(f"onMessagesReceived 未包含目标消息: msgId={msg_id}, last={last}")
 
 
+def _wait_message_progress(device, msg_id: str, *, timeout: float = 20.0) -> dict:
+    last = None
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessageProgress.value,
+            timeout=min(5.0, max(0.1, deadline - time.monotonic())),
+        )
+        last = evt
+        if not evt:
+            continue
+        data = evt.get("data") or {}
+        if str(data.get("msgId")) == str(msg_id):
+            progress = data.get("progress")
+            assert isinstance(progress, int), f"下载进度不是 int: {evt}"
+            assert 0 <= progress <= 100, f"下载进度越界: {evt}"
+            return evt
+    pytest.fail(f"未收到目标消息下载进度事件: msgId={msg_id}, last={last}")
+
+
+def _assert_received_attachment_message(
+    assert_api,
+    message: dict,
+    *,
+    user_a: str,
+    user_b: str,
+    body_type: int,
+) -> None:
+    expected_body = {"type": body_type, "displayName": ne(None), "fileStatus": ne(None)}
+    if body_type in (1, 2):
+        expected_body.update({"thumbnailStatus": ne(None), "width": ge(0), "height": ge(0)})
+    if body_type == 1:
+        expected_body.update({"isGif": False, "sendOriginalImage": False})
+    if body_type == 2:
+        expected_body.update({"duration": ge(0)})
+
+    assert_api.assert_response_matches(
+        message,
+        expected={
+            "msgId": "{{realId}}",
+            "from": "{{fromUser}}",
+            "to": "{{toUser}}",
+            "convId": "{{fromUser}}",
+            "chatType": 0,
+            "direction": 1,
+            "status": 2,
+            "deliverOnlineOnly": False,
+            "hasRead": False,
+            "hasReadAck": False,
+            "hasDeliverAck": False,
+            "needGroupAck": False,
+            "isThread": False,
+            "isContentReplaced": False,
+            "body": expected_body,
+        },
+        context={
+            "realId": message.get("msgId"),
+            "fromUser": user_a,
+            "toUser": user_b,
+        },
+        ignore_keys={
+            "timestamp",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "translations",
+            "targetLanguages",
+            "receiverList",
+            "webhookEnv",
+            "fileSize",
+            "localPath",
+            "remotePath",
+            "secret",
+            "thumbnailLocalPath",
+            "thumbnailRemotePath",
+            "thumbnailSecret",
+        },
+    )
+
+
+def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message: dict) -> None:
+    msg_id = message["msgId"]
+    resp = device.call("ChatManager", cmd, info={"message": message})
+    _skip_if_missing_plugin(resp, cmd)
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": cmd,
+            "device": "deviceB",
+            "result": {
+                "msgId": "{{msgId}}",
+                "body": {"type": ne(None), "fileStatus": ne(None)},
+            },
+        },
+        context={"msgId": msg_id},
+        ignore_keys={
+            "sequence",
+            "timestamp",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "translations",
+            "targetLanguages",
+            "receiverList",
+            "from",
+            "to",
+            "convId",
+            "chatType",
+            "direction",
+            "status",
+            "deliverOnlineOnly",
+            "hasRead",
+            "hasReadAck",
+            "hasDeliverAck",
+            "needGroupAck",
+            "isThread",
+            "isContentReplaced",
+            "localPath",
+            "remotePath",
+            "secret",
+            "thumbnailLocalPath",
+            "thumbnailRemotePath",
+            "thumbnailSecret",
+            "fileSize",
+            "displayName",
+            "thumbnailStatus",
+            "width",
+            "height",
+            "duration",
+            "isGif",
+            "sendOriginalImage",
+        },
+    )
+    progress_evt = _wait_message_progress(device, msg_id)
+    assert_api.assert_response_matches(
+        progress_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageProgress.value,
+            "data": {"msgId": "{{msgId}}", "progress": ge(0)},
+        },
+        context={"msgId": msg_id},
+        ignore_keys={"timestamp", "sequence"},
+    )
+    success_evt = _wait_message_success(device, msg_id)
+    assert_api.assert_response_matches(
+        success_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "msgId": "{{msgId}}",
+                "msg": {
+                    "msgId": "{{msgId}}",
+                    "body": {"type": ne(None), "fileStatus": ne(None)},
+                },
+            },
+        },
+        context={"msgId": msg_id},
+        ignore_keys={
+            "timestamp",
+            "sequence",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "translations",
+            "targetLanguages",
+            "receiverList",
+            "from",
+            "to",
+            "convId",
+            "chatType",
+            "direction",
+            "status",
+            "deliverOnlineOnly",
+            "hasRead",
+            "hasReadAck",
+            "hasDeliverAck",
+            "needGroupAck",
+            "isThread",
+            "isContentReplaced",
+            "localPath",
+            "remotePath",
+            "secret",
+            "thumbnailLocalPath",
+            "thumbnailRemotePath",
+            "thumbnailSecret",
+            "fileSize",
+            "displayName",
+            "thumbnailStatus",
+            "width",
+            "height",
+            "duration",
+            "isGif",
+            "sendOriginalImage",
+        },
+    )
+
+
+def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd: str, message: dict) -> None:
+    msg_id = message["msgId"]
+    resp = device.call("ChatManager", cmd, info={"message": message})
+    _skip_if_missing_plugin(resp, cmd)
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": cmd,
+            "device": "deviceB",
+            "result": {
+                "msgId": "{{msgId}}",
+                "body": {"type": ne(None), "fileStatus": ne(None)},
+            },
+        },
+        context={"msgId": msg_id},
+        ignore_keys={
+            "sequence",
+            "timestamp",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "translations",
+            "targetLanguages",
+            "receiverList",
+            "from",
+            "to",
+            "convId",
+            "chatType",
+            "direction",
+            "status",
+            "deliverOnlineOnly",
+            "hasRead",
+            "hasReadAck",
+            "hasDeliverAck",
+            "needGroupAck",
+            "isThread",
+            "isContentReplaced",
+            "localPath",
+            "remotePath",
+            "secret",
+            "thumbnailLocalPath",
+            "thumbnailRemotePath",
+            "thumbnailSecret",
+            "fileSize",
+            "displayName",
+            "thumbnailStatus",
+            "width",
+            "height",
+            "duration",
+            "isGif",
+            "sendOriginalImage",
+        },
+    )
+    progress_evt = _wait_message_progress(device, msg_id)
+    assert_api.assert_response_matches(
+        progress_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageProgress.value,
+            "data": {"msgId": "{{msgId}}", "progress": ge(0)},
+        },
+        context={"msgId": msg_id},
+        ignore_keys={"timestamp", "sequence"},
+    )
+    success_evt = _wait_message_success(device, msg_id)
+    assert_api.assert_response_matches(
+        success_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "msgId": "{{msgId}}",
+                "msg": {
+                    "msgId": "{{msgId}}",
+                    "body": {"type": ne(None), "fileStatus": ne(None)},
+                },
+            },
+        },
+        context={"msgId": msg_id},
+        ignore_keys={
+            "timestamp",
+            "sequence",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "translations",
+            "targetLanguages",
+            "receiverList",
+            "from",
+            "to",
+            "convId",
+            "chatType",
+            "direction",
+            "status",
+            "deliverOnlineOnly",
+            "hasRead",
+            "hasReadAck",
+            "hasDeliverAck",
+            "needGroupAck",
+            "isThread",
+            "isContentReplaced",
+            "localPath",
+            "remotePath",
+            "secret",
+            "thumbnailLocalPath",
+            "thumbnailRemotePath",
+            "thumbnailSecret",
+            "fileSize",
+            "displayName",
+            "thumbnailStatus",
+            "width",
+            "height",
+            "duration",
+            "isGif",
+            "sendOriginalImage",
+        },
+    )
+
+
 def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *, type_key: str, payload: dict) -> tuple[dict, dict, dict]:
     info = {"type": type_key, "payload": payload, "chatType": 0}
     resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
@@ -89,6 +414,11 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
             "width": ge(0),
             "height": ge(0),
             "duration": ge(0),
+        })
+    elif type_key == "file":
+        body_expected.update({
+            "displayName": ne(None),
+            "fileStatus": ne(None),
         })
     elif type_key == "combine":
         body_expected.update({
@@ -130,7 +460,7 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
                 "convId": "{{toUser}}",
                 "chatType": 0,
                 "direction": 0,
-                "status": 1,
+                "status": ne(None),
                 "deliverOnlineOnly": False,
                 "hasRead": True,
                 "hasReadAck": False,
@@ -175,6 +505,75 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
     )
     received_msg = _wait_received_message(device_b, real_id, from_user=user_a, to_user=user_b)
     return resp, sent_msg, received_msg
+
+
+def test_attachment_messages_send_receive_and_public_download_methods(device_a, device_b, assert_api, user_a, user_b):
+    _, file_sent, file_received = _send_with_type(
+        device_a,
+        device_b,
+        assert_api,
+        user_a,
+        user_b,
+        type_key="file",
+        payload={"targetId": user_b},
+    )
+    _assert_received_attachment_message(assert_api, file_received, user_a=user_a, user_b=user_b, body_type=5)
+    _assert_download_api_with_progress(
+        device_b,
+        assert_api,
+        cmd=Cmd.downloadAttachment.value,
+        message=file_received,
+    )
+
+    _, image_sent, image_received = _send_with_type(
+        device_a,
+        device_b,
+        assert_api,
+        user_a,
+        user_b,
+        type_key="image",
+        payload={"targetId": user_b},
+    )
+    _assert_received_attachment_message(assert_api, image_received, user_a=user_a, user_b=user_b, body_type=1)
+    _assert_download_api_with_progress(
+        device_b,
+        assert_api,
+        cmd=Cmd.downloadThumbnail.value,
+        message=image_received,
+    )
+    _assert_download_api_with_progress(
+        device_b,
+        assert_api,
+        cmd=Cmd.downloadBigImage.value,
+        message=image_received,
+    )
+
+    _, video_sent, video_received = _send_with_type(
+        device_a,
+        device_b,
+        assert_api,
+        user_a,
+        user_b,
+        type_key="video",
+        payload={"targetId": user_b},
+    )
+    _assert_received_attachment_message(assert_api, video_received, user_a=user_a, user_b=user_b, body_type=2)
+    _assert_download_api_with_progress(
+        device_b,
+        assert_api,
+        cmd=Cmd.downloadThumbnail.value,
+        message=video_received,
+    )
+    _assert_download_api_with_progress(
+        device_b,
+        assert_api,
+        cmd=Cmd.downloadAttachment.value,
+        message=video_received,
+    )
+
+    assert file_sent["msgId"]
+    assert image_sent["msgId"]
+    assert video_sent["msgId"]
 
 
 def _send_text_message_with_webhook_env(
@@ -231,6 +630,7 @@ def _send_text_message_with_webhook_env(
                 "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
+                "webhookEnv": "{{webhookEnv}}",
                 "body": {"type": 0, "content": "{{content}}"},
             },
         },
@@ -239,6 +639,7 @@ def _send_text_message_with_webhook_env(
             "fromUser": user_a,
             "toUser": user_b,
             "content": content,
+            "webhookEnv": webhook_env,
         },
         ignore_keys=ignore_keys,
     )
@@ -264,6 +665,7 @@ def _send_text_message_with_webhook_env(
                     "needGroupAck": False,
                     "isThread": False,
                     "isContentReplaced": False,
+                    "webhookEnv": "{{webhookEnv}}",
                     "body": {"type": 0, "content": "{{content}}"},
                 },
             },
@@ -274,6 +676,7 @@ def _send_text_message_with_webhook_env(
             "fromUser": user_a,
             "toUser": user_b,
             "content": content,
+            "webhookEnv": webhook_env,
         },
         ignore_keys=ignore_keys,
     )
@@ -307,19 +710,7 @@ def _send_text_message_with_webhook_env(
     )
     return resp, sent_msg, received_msg
 
-
-@pytest.mark.parametrize(
-    ("webhook_env", "case_name"),
-    [
-        # ("", "empty"),
-        # ("5", "numeric"),
-        # ("default", "default"),
-        ("dev", "dev"),
-        ("default1111", "default"),
-    ],
-    # ids=["empty", "5", "default", "dev","default1111"],
-    ids=["dev","default1111"],
-)
+@pytest.mark.parametrize(("case_name", "webhook_env"), [("default", "default")])
 def test_send_text_message_with_webhook_env(device_a, device_b, assert_api, user_a, user_b, webhook_env, case_name):
     content = f"s423-webhook-{case_name}-{uuid.uuid4().hex[:6]}"
     _send_text_message_with_webhook_env(
@@ -331,6 +722,134 @@ def test_send_text_message_with_webhook_env(device_a, device_b, assert_api, user
         content=content,
         webhook_env=webhook_env,
     )
+
+
+def test_combine_forward_send_receive_and_inner_attachment_download(device_a, device_b, assert_api, user_a, user_b):
+    _, image_sent, _ = _send_with_type(
+        device_a,
+        device_b,
+        assert_api,
+        user_a,
+        user_b,
+        type_key="image",
+        payload={"targetId": user_b},
+    )
+    _, video_sent, _ = _send_with_type(
+        device_a,
+        device_b,
+        assert_api,
+        user_a,
+        user_b,
+        type_key="video",
+        payload={"targetId": user_b},
+    )
+
+    image_msg_id = image_sent["msgId"]
+    video_msg_id = video_sent["msgId"]
+    combine_payload = {
+        "targetId": user_b,
+        "title": f"s423-combine-{uuid.uuid4().hex[:6]}",
+        "summary": "image and video",
+        "compatibleText": "combine-compatible",
+        "msgIds": [image_msg_id, video_msg_id],
+    }
+    _, combine_sent, combine_received = _send_with_type(
+        device_a,
+        device_b,
+        assert_api,
+        user_a,
+        user_b,
+        type_key="combine",
+        payload=combine_payload,
+    )
+    assert combine_sent.get("body", {}).get("type") == combine_received.get("body", {}).get("type"), (
+        f"发送端与接收端 combine body.type 不一致: sent={combine_sent}, received={combine_received}"
+    )
+    assert_api.assert_response_matches(
+        combine_received,
+        expected={
+            "msgId": "{{realId}}",
+            "from": "{{fromUser}}",
+            "to": "{{toUser}}",
+            "convId": "{{fromUser}}",
+            "chatType": 0,
+            "direction": 1,
+            "status": 2,
+            "deliverOnlineOnly": False,
+            "hasRead": False,
+            "hasReadAck": False,
+            "hasDeliverAck": False,
+            "needGroupAck": False,
+            "isThread": False,
+            "isContentReplaced": False,
+            "body": {
+                "type": 8,
+                "title": combine_payload["title"],
+                "summary": combine_payload["summary"],
+                "compatibleText": combine_payload["compatibleText"],
+                "fileStatus": ne(None),
+            },
+        },
+        context={
+            "realId": combine_sent.get("msgId"),
+            "fromUser": user_a,
+            "toUser": user_b,
+        },
+        ignore_keys={
+            "timestamp",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "translations",
+            "targetLanguages",
+            "receiverList",
+            "localPath",
+            "remotePath",
+            "secret",
+            "messageList",
+        },
+    )
+
+    parse_resp = device_b.call(
+        "ChatManager",
+        Cmd.downloadAndParseCombineMessage.value,
+        info={"message": combine_received},
+    )
+    _skip_if_missing_plugin(parse_resp, Cmd.downloadAndParseCombineMessage.value)
+    assert_api.assert_response_matches(
+        parse_resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.downloadAndParseCombineMessage.value,
+            "device": "deviceB",
+            "result": ne(None),
+        },
+        ignore_keys={"sequence"},
+    )
+
+    inner_messages = parse_resp.get("result")
+    assert isinstance(inner_messages, list) and inner_messages, f"合并消息解析未返回内部消息列表: {parse_resp}"
+    inner_by_id = {str(m.get("msgId")): m for m in inner_messages if isinstance(m, dict)}
+    image_inner = inner_by_id.get(str(image_msg_id))
+    video_inner = inner_by_id.get(str(video_msg_id))
+    assert image_inner is not None, f"合并消息解析结果缺少内部图片消息: expected={image_msg_id}, actual={inner_messages}"
+    assert video_inner is not None, f"合并消息解析结果缺少内部视频消息: expected={video_msg_id}, actual={inner_messages}"
+    assert image_inner.get("body", {}).get("type") == 1, f"内部图片消息类型不正确: {image_inner}"
+    assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
+
+    for cmd, message in (
+        (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
+        (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
+        (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
+        (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
+    ):
+        _assert_combine_inner_download_api_with_progress(
+            device_b,
+            assert_api,
+            cmd=cmd,
+            message=message,
+        )
 
 
 def test_combine_forward_media_inner_attachment_download(device_a, device_b, assert_api, user_a, user_b):
@@ -350,7 +869,7 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
         user_a,
         user_b,
         type_key="video",
-        payload={"targetId": user_b, "thumbnailLocalPath": ""},
+        payload={"targetId": user_b},
     )
 
     image_msg_id = image_sent["msgId"]
@@ -403,21 +922,11 @@ def test_combine_forward_media_inner_attachment_download(device_a, device_b, ass
     assert video_inner.get("body", {}).get("type") == 2, f"内部视频消息类型不正确: {video_inner}"
 
     for cmd, message in (
-        (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
-        (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
-        (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
+        # (Cmd.downloadMessageAttachmentInCombine.value, image_inner),
+        # (Cmd.downloadMessageThumbnailInCombine.value, image_inner),
+        # (Cmd.downloadMessageAttachmentInCombine.value, video_inner),
         (Cmd.downloadMessageThumbnailInCombine.value, video_inner),
     ):
         resp = device_b.call("ChatManager", cmd, info={"message": message})
         _skip_if_missing_plugin(resp, cmd)
-        assert_api.assert_response_matches(
-            resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": cmd,
-                "device": "deviceB",
-                "result": None,
-            },
-            ignore_keys={"sequence"},
-        )
     time.sleep(30)

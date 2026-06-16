@@ -74,6 +74,7 @@ public class MethodKey {
     static final String getUnreadMessageCount = "getUnreadMessageCount";
     static final String updateChatMessage = "updateChatMessage";
     static final String downloadAttachment = "downloadAttachment";
+    static final String downloadBigImage = "downloadBigImage";
     static final String downloadThumbnail = "downloadThumbnail";
     static final String downloadMessageAttachmentInCombine = "downloadMessageAttachmentInCombine";
     static final String downloadMessageThumbnailInCombine = "downloadMessageThumbnailInCombine";

@@ -13,20 +13,20 @@ void main() async {
 
   EMOptions options = EMOptions.withAppKey(
     appKey,
-    restServer: "https://a1-hsb.easemob.com",
-    imPort: 6717,
-    imServer: "42.193.118.34",
+    // restServer: "https://a1-hsb.easemob.com",
+    // imPort: 6717,
+    // imServer: "42.193.118.34",
     // webSocketServer: "im-api-new-hsb.easemob.com",
     // webSocketPort: 80,
     autoLogin: true,
     debugMode: true,
-    enableDNSConfig: false,
+    enableDNSConfig: true,
     syncDataWebSocketServer: "140.143.132.6",
     syncDataWebSocketPort: 8086,
     enableAutoSyncContacts: false,
-    requireAck: true
+    enableUserInfo: true,
+    requireAck: true,
   );
-  
 
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
     EMClient.getInstance.chatManager.removeEventHandler("UNIQUE_HANDLER_ID");
     super.dispose();
   }
- 
+
   void _addChatListener() {
     EMClient.getInstance.addConnectionEventHandler(
       'identifier',

@@ -54,6 +54,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,6 +87,9 @@ class OptionsHelper {
         options.setAreaCode(json.getInt("areaCode"));
         options.setUsingHttpsOnly(json.getBoolean("usingHttpsOnly"));
         options.enableDNSConfig(json.getBoolean("enableDNSConfig"));
+        if (json.has("enableUserInfo")) {
+            options.setEnableUserInfo(json.getBoolean("enableUserInfo"));
+        }
         options.setLoadEmptyConversations(json.optBoolean("loadEmptyConversations", false));
         if (json.has("deviceName")) {
             options.setCustomDeviceName(json.optString("deviceName"));
@@ -215,9 +219,15 @@ class GroupHelper {
 class GroupMemberInfoHelper {
     static Map<String, Object> toJson(EMGroupMemberInfo info) {
         Map<String, Object> data = new HashMap<>();
-        data.put("userId", info.getMemberId());
+        data.put("userId", info.getUserId());
+        data.put("memberId", info.getMemberId());
         data.put("joinedTs", info.getJoinTime());
+        data.put("joinTime", info.getJoinTime());
+        data.put("namecard", info.getNamecard());
+        data.put("nickname", info.getNickname());
+        data.put("avatarUrl", info.getAvatarUrl());
         data.put("role", EnumTools.groupPermissionTypeToInt(info.getRole()));
+        data.put("string", info.toString());
         return data;
     }
 }
@@ -470,7 +480,7 @@ class MessageHelper {
 
         message.deliverOnlineOnly(json.optBoolean("deliverOnlineOnly", false));
         if (json.has("webhookEnv")) {
-            message.setWebhookEnv(json.optString("webhookEnv", null));
+            setWebhookEnv(message, json.optString("webhookEnv", null));
         }
 
         message.setLocalTime(json.has("localTime") ? json.optLong("localTime") : System.currentTimeMillis());
@@ -572,8 +582,9 @@ class MessageHelper {
         if (message.ext().size() > 0 && null != message.ext()) {
             data.put("attributes", message.ext());
         }
-        if (message.getWebhookEnv() != null) {
-            data.put("webhookEnv", message.getWebhookEnv());
+        String webhookEnv = getWebhookEnv(message);
+        if (webhookEnv != null) {
+            data.put("webhookEnv", webhookEnv);
         }
         data.put("from", message.getFrom());
         data.put("to", message.getTo());
@@ -611,6 +622,25 @@ class MessageHelper {
         }
 
         return data;
+    }
+
+    private static void setWebhookEnv(EMMessage message, String webhookEnv) {
+        try {
+            Method method = EMMessage.class.getMethod("setWebhookEnv", String.class);
+            method.invoke(message, webhookEnv);
+        } catch (Exception ignored) {
+            // webhookEnv exists only in newer native SDKs; older local jars must remain buildable.
+        }
+    }
+
+    private static String getWebhookEnv(EMMessage message) {
+        try {
+            Method method = EMMessage.class.getMethod("getWebhookEnv");
+            Object value = method.invoke(message);
+            return value instanceof String ? (String) value : null;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private static int streamStatusToInt(EMMessage.EMStreamStatus status) {

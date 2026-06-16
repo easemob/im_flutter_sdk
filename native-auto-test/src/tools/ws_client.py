@@ -11,6 +11,7 @@ import queue
 import threading
 import time
 import urllib.parse
+import uuid
 from collections import deque
 from typing import Any
 
@@ -90,6 +91,8 @@ async def _request_async(
     url = _build_ws_url(topic=topic, device=device)
     timeout_connect = get_connect_timeout()
     timeout_response = get_response_timeout()
+    if request_id is None and sequence is None:
+        request_id = uuid.uuid4().hex
 
     req: dict[str, Any] = {
         "manager": manager,
@@ -145,6 +148,8 @@ async def _request_and_wait_event_async(
     url = _build_ws_url(topic=topic, device=device)
     timeout_connect = get_connect_timeout()
     timeout_response = get_response_timeout()
+    if request_id is None and sequence is None:
+        request_id = uuid.uuid4().hex
 
     req: dict[str, Any] = {
         "manager": manager,
@@ -475,11 +480,11 @@ class DeviceConnection:
                                         print(f"[WS-DUMP][{self._topic}] {json.dumps(data, ensure_ascii=False)}")
                                     except Exception:
                                         print(f"[WS-DUMP][{self._topic}] <non-json>")
-                                seq = data.get("sequence") or data.get("id")
+                                seq = data.get("id") if data.get("id") is not None else data.get("sequence")
                                 if (
                                     seq is not None
                                     and seq in self._pending
-                                    and _is_response_message(data, request_id=None, request_sequence=seq)
+                                    and _is_response_message(data, request_id=seq, request_sequence=None)
                                 ):
                                     with self._lock:
                                         pending = self._pending.pop(seq, None)
@@ -566,21 +571,23 @@ class DeviceConnection:
             "manager": manager,
             "cmd": cmd,
             "info": info or {},
+            "id": uuid.uuid4().hex,
             "sequence": seq,
             **kwargs,
         }
         if self._device is not None:
             req["device"] = self._device
         resp_q: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=1)
+        request_key = req["id"]
         with self._lock:
-            self._pending[seq] = (resp_q, manager, cmd)
+            self._pending[request_key] = (resp_q, manager, cmd)
         self._send_queue.put((req, seq))
         try:
             out = resp_q.get(timeout=get_response_timeout())
         except queue.Empty:
             with self._lock:
-                self._pending.pop(seq, None)
-            raise TimeoutError(f"Wait response timeout (cmd={cmd}, sequence={seq})") from None
+                self._pending.pop(request_key, None)
+            raise TimeoutError(f"Wait response timeout (cmd={cmd}, id={request_key}, sequence={seq})") from None
         if not out:
             raise RuntimeError("Connection closed")
         return out
@@ -678,11 +685,11 @@ class SDKWebSocketClient:
                     data = json.loads(raw)
                 except Exception:
                     continue
-                seq = data.get("sequence") or data.get("id")
+                seq = data.get("id") if data.get("id") is not None else data.get("sequence")
                 if (
                     seq is not None
                     and seq in self._pending
-                    and _is_response_message(data, request_id=None, request_sequence=seq)
+                    and _is_response_message(data, request_id=seq, request_sequence=None)
                 ):
                     self._pending.pop(seq).set_result(data)
         except asyncio.CancelledError:
@@ -708,19 +715,21 @@ class SDKWebSocketClient:
             "manager": manager,
             "cmd": cmd,
             "info": info or {},
+            "id": uuid.uuid4().hex,
             "sequence": seq,
             **extra,
         }
         if self._device is not None:
             req["device"] = self._device
         fut: asyncio.Future[dict[str, Any]] = asyncio.get_running_loop().create_future()
-        self._pending[seq] = fut
+        request_key = req["id"]
+        self._pending[request_key] = fut
         await self._ws.send(json.dumps(req))
         try:
             return await asyncio.wait_for(fut, timeout=get_response_timeout())
         except asyncio.TimeoutError:
-            self._pending.pop(seq, None)
-            raise TimeoutError(f"Wait response timeout (cmd={cmd}, sequence={seq})") from None
+            self._pending.pop(request_key, None)
+            raise TimeoutError(f"Wait response timeout (cmd={cmd}, id={request_key}, sequence={seq})") from None
 
     async def close(self) -> None:
         if hasattr(self, "_receive_task"):

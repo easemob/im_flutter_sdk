@@ -12,6 +12,7 @@ class WebSocketConfigPage extends StatefulWidget {
 class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _topicController = TextEditingController();
+  final TextEditingController _deviceController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<BridgeLogItem> _logs = [];
   bool _connecting = false;
@@ -21,6 +22,7 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     super.initState();
     _urlController.text = kDefaultBridgeWebSocketBaseUrl;
     _topicController.text = kDefaultBridgeWebSocketTopic;
+    _deviceController.text = 'deviceA';
     IMWebSocketBridge.instance.onLog = _onLog;
   }
 
@@ -29,6 +31,7 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     IMWebSocketBridge.instance.onLog = null;
     _urlController.dispose();
     _topicController.dispose();
+    _deviceController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -52,6 +55,7 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
   Future<void> _connect() async {
     final url = _urlController.text.trim();
     final topic = _topicController.text.trim();
+    final deviceName = _deviceController.text.trim();
     if (url.isEmpty) {
       _showSnack('请输入 URL');
       return;
@@ -61,7 +65,10 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
       final String connectUrl = url.contains('?')
           ? url
           : (topic.isEmpty ? url : '$url?topic=${Uri.encodeComponent(topic)}');
-      await IMWebSocketBridge.instance.start(url: connectUrl);
+      await IMWebSocketBridge.instance.start(
+        url: connectUrl,
+        deviceName: deviceName.isEmpty ? null : deviceName,
+      );
       // Register event handlers to forward events to WebSocket
       EventBridgeHandler.instance.registerAllHandlers();
       if (mounted) _showSnack('已连接并注册事件处理器');
@@ -131,6 +138,16 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
                   decoration: const InputDecoration(
                     labelText: 'Topic (URL 无 ? 时使用)',
                     hintText: 'adc',
+                    border: OutlineInputBorder(),
+                  ),
+                  enabled: !connected,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _deviceController,
+                  decoration: const InputDecoration(
+                    labelText: 'Device',
+                    hintText: 'deviceA / deviceB',
                     border: OutlineInputBorder(),
                   ),
                   enabled: !connected,
