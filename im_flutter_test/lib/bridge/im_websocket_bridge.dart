@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
-import '../internal/chat_method_keys.dart';
-import '../managers/client.dart';
-import '../models/em_chat_enums.dart';
-import '../tools/em_log.dart';
+// 公开 API：EMClient / EMSendMessageType / ChatMethodKeys（经 im_flutter_sdk.dart 导出）。
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+// Client.instance + callNativeMethod（ManagerMixin）来自接口包，公开可用。
+import 'package:im_flutter_sdk_interface/im_flutter_sdk_interface.dart';
+// EMLog 为 im_flutter_sdk 内部符号（未公开导出），独立包通过 package:.../src/... 引用。
+// ignore: implementation_imports
+import 'package:im_flutter_sdk/src/tools/em_log.dart';
 
 /// Default WebSocket server base URL (without query). Used with [topic] to build full URL.
 const String kDefaultBridgeWebSocketBaseUrl =
@@ -223,11 +226,76 @@ class IMWebSocketBridge {
       payload['chatType'] = chatTypeTop;
     }
     final type = EMSendMessageType.values.byName(typeStr);
+    final prepared = await _prepareDefaultMediaPath(type, payload);
     final msg = await EMClient.getInstance.chatManager.sendMessageWithType(
       type,
-      payload,
+      prepared,
     );
     return {ChatMethodKeys.sendMessage: msg.toJson()};
+  }
+
+  // 当用例未提供 filePath 时，自动补一个测试 App 自带的媒体素材路径。
+  // 素材来自 im_flutter_test 自身 assets（assets/media/），拷贝到临时目录后返回绝对路径。
+  Future<Map<String, dynamic>> _prepareDefaultMediaPath(
+    EMSendMessageType type,
+    Map<String, dynamic> rawPayload,
+  ) async {
+    final payload = Map<String, dynamic>.from(rawPayload);
+    final filePath = payload['filePath'] as String?;
+    if (filePath != null && filePath.isNotEmpty) {
+      return payload;
+    }
+    bool needsPath = false;
+    String assetName = '';
+    switch (type) {
+      case EMSendMessageType.image:
+        final isGif = (payload['isGif'] as bool?) ?? false;
+        final displayHint = (payload['displayName'] as String?) ?? '';
+        if (isGif) {
+          assetName = 'normalGif.gif';
+        } else if (displayHint.toLowerCase().endsWith('.heic')) {
+          assetName = 'imgHeic.HEIC';
+        } else {
+          assetName = 'bigPic.jpg';
+        }
+        needsPath = true;
+        break;
+      case EMSendMessageType.video:
+        assetName = 'video.mov';
+        needsPath = true;
+        break;
+      case EMSendMessageType.file:
+        assetName = 'bigPic.jpg';
+        needsPath = true;
+        break;
+      default:
+        break;
+    }
+    if (needsPath) {
+      payload['filePath'] = await _ensureMediaFile(assetName);
+      payload.putIfAbsent('displayName', () => assetName);
+    }
+    return payload;
+  }
+
+  Future<String> _ensureMediaFile(String assetFileName) async {
+    final data = await rootBundle.load('assets/media/$assetFileName');
+    final dir = Directory('${Directory.systemTemp.path}/im_flutter_test_media');
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    final file = File('${dir.path}/$assetFileName');
+    if (await file.exists()) {
+      try {
+        if (await file.length() == data.lengthInBytes) {
+          return file.path;
+        }
+      } catch (_) {}
+    }
+    final bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    await file.writeAsBytes(bytes, flush: true);
+    return file.path;
   }
 
   static dynamic _toJsonSafe(dynamic value) {
