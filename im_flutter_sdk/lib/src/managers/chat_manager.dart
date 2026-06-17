@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 import 'package:im_flutter_sdk/src/tools/em_extension.dart';
@@ -394,8 +393,7 @@ class EMChatManager {
     EMSendMessageType type,
     Map<String, dynamic> payload,
   ) async {
-    final prepared = await _imPrepareDefaultMediaPath(type, payload);
-    return sendMessage(buildOutgoingMessage(type, prepared));
+    return sendMessage(buildOutgoingMessage(type, payload));
   }
 
   /// 将 [EMSendMessageType] + [payload] 转为 [EMMessage]；由 [sendMessageWithType] 及
@@ -2923,77 +2921,4 @@ class MessageCallBackManager {
   void clearAllMessageEvents() {
     cacheHandleMap.clear();
   }
-}
-
-// Helper functions to auto-provide media filePath when cases-side doesn't set it.
-// Copies demo assets bundled in the plugin to a temp cache and returns absolute path.
-
-Future<Map<String, dynamic>> _imPrepareDefaultMediaPath(
-  EMSendMessageType type,
-  Map<String, dynamic> rawPayload,
-) async {
-  final payload = Map<String, dynamic>.from(rawPayload);
-  String? filePath = (payload['filePath'] as String?);
-  if (filePath != null && filePath.isNotEmpty) {
-    return payload;
-  }
-  bool needsPath = false;
-  String assetName = '';
-  switch (type) {
-    case EMSendMessageType.image:
-      final isGif = (payload['isGif'] as bool?) ?? false;
-      final displayHint = (payload['displayName'] as String?) ?? '';
-      if (isGif) {
-        assetName = 'normalGif.gif';
-      } else if (displayHint.toLowerCase().endsWith('.heic')) {
-        assetName = 'imgHeic.HEIC';
-      } else {
-        assetName = 'bigPic.jpg';
-      }
-      needsPath = true;
-      break;
-    case EMSendMessageType.video:
-      assetName = 'video.mov';
-      needsPath = true;
-      break;
-    case EMSendMessageType.file:
-      assetName = 'bigPic.jpg';
-      needsPath = true;
-      break;
-    default:
-      break;
-  }
-  if (needsPath) {
-    final ensured = await _imEnsurePkgMediaFile(assetName);
-    payload['filePath'] = ensured;
-    payload.putIfAbsent('displayName', () => assetName);
-  }
-  return payload;
-}
-
-Future<String> _imEnsurePkgMediaFile(String assetFileName) async {
-  final key = 'packages/im_flutter_sdk/media/$assetFileName';
-  final data = await rootBundle.load(key);
-  final dir = await _imMediaCacheDir();
-  final file = File('${dir.path}/$assetFileName');
-  if (await file.exists()) {
-    try {
-      final len = await file.length();
-      if (len == data.lengthInBytes) {
-        return file.path;
-      }
-    } catch (_) {}
-  }
-  final bytes =
-      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-  await file.writeAsBytes(bytes, flush: true);
-  return file.path;
-}
-
-Future<Directory> _imMediaCacheDir() async {
-  final dir = Directory('${Directory.systemTemp.path}/im_flutter_sdk_media');
-  if (!await dir.exists()) {
-    await dir.create(recursive: true);
-  }
-  return dir;
 }
