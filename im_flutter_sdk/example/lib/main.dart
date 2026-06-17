@@ -3,13 +3,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
-import 'sdk_config_loader.dart';
-import 'websocket_config_page.dart';
+var appKey = "easemob#easeim";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  assert(appKey.isNotEmpty, "appKey is empty");
 
-  EMOptions options = await SdkConfigLoader.loadOptions();
+  EMOptions options = EMOptions.withAppKey(
+    appKey,
+    autoLogin: false,
+  );
 
   await EMClient.getInstance.init(options);
   runApp(const MyApp());
@@ -24,10 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const WebSocketConfigPage(),
-      routes: {
-        '/sdk_demo': (_) => const MyHomePage(title: 'Flutter SDK Demo'),
-      },
+      home: const MyHomePage(title: 'Flutter SDK Demo'),
     );
   }
 }
@@ -58,9 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(title: Text(widget.title)),
       body: Container(
         padding: const EdgeInsets.only(left: 10, right: 10),
         child: Column(
@@ -318,10 +316,12 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    await EMClient.getInstance.chatManager.sendTxtMessage(
+    var msg = EMMessage.createTxtSendMessage(
       targetId: _chatId,
       content: _messageContent,
     );
+
+    await EMClient.getInstance.chatManager.sendMessage(msg);
   }
 
   void _addLogToConsole(String log) {

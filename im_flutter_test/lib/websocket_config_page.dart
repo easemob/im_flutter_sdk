@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+import 'bridge/event_bridge_handler.dart';
+import 'bridge/im_websocket_bridge.dart';
 
 /// WebSocket 桥接配置页：配置 URL/topic、手动连接/断开、查看与清空请求响应列表。
 class WebSocketConfigPage extends StatefulWidget {
@@ -107,13 +109,6 @@ class _WebSocketConfigPageState extends State<WebSocketConfigPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('WebSocket 桥接配置'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chat),
-            tooltip: 'SDK Demo（登录/发消息）',
-            onPressed: () => Navigator.of(context).pushNamed('/sdk_demo'),
-          ),
-        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
