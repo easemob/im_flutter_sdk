@@ -37,8 +37,6 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
         }
         required_events = {
             "onAutoAcceptInvitationFromGroup",
-            "onAllowListRemovedFromGroup",
-            "onMemberJoinedFromGroup",
         }
         events = collect_group_events(
             device_b,

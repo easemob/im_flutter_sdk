@@ -133,21 +133,14 @@ def test_chat_get_all_conversations_by_sort_orders_latest_first(device_a, device
     )
     time.sleep(1.5)
 
-    try:
-        resp_sorted = device_a.call("ChatManager", Cmd.getAllConversationsBySort.value, info={})
-    except TimeoutError:
-        pytest.skip("当前端未实现 getAllConversationsBySort（MissingPluginException 导致调用超时）")
-    result = resp_sorted.get("result")
-    if isinstance(result, dict) and ("code" in result or "description" in result):
-        pytest.skip(f"当前端不支持 getAllConversationsBySort，返回错误体: {result}")
-    if result is None:
-        pytest.skip("当前端返回 result=None，疑似未实现 getAllConversationsBySort")
+    # SDK 原生方法 key 是 loadAllConversations（内部调用 getAllConversationsBySort）
+    resp_sorted = device_a.call("ChatManager", Cmd.loadAllConversations.value, info={})
 
     assert_api.assert_response_matches(
         resp_sorted,
         expected={
             "manager": "ChatManager",
-            "cmd": Cmd.getAllConversationsBySort.value,
+            "cmd": Cmd.loadAllConversations.value,
             "device": "deviceA",
         },
         ignore_keys={"sequence", "result"},
