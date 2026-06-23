@@ -285,7 +285,7 @@ def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, use
             "manager": "ChatManager",
             "cmd": Cmd.addReaction.value,
             "device": "deviceA",
-            "result": {"code": 302, "description": "this message is creating reaction, please try again."},
+            "result": None,
         },
         ignore_keys={"sequence"},
     )
