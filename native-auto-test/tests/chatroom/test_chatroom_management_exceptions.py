@@ -266,6 +266,29 @@ _EMPTY_ROOM_ID_MANAGEMENT_CASES = [
         700,
         "Chat room ID is invalid",
     ),
+    (
+        Cmd.setChatRoomAttributes.value,
+        {
+            "roomId": "",
+            "attributes": {"k": "v"},
+            "autoDelete": False,
+            "forced": True,
+        },
+        303,
+        "",
+    ),
+    (
+        Cmd.fetchChatRoomAttributes.value,
+        {"roomId": "", "keys": ["k"]},
+        303,
+        "Unknown server error",
+    ),
+    (
+        Cmd.removeChatRoomAttributes.value,
+        {"roomId": "", "keys": ["k"], "forced": True},
+        303,
+        "",
+    ),
 ]
 
 
@@ -286,4 +309,19 @@ def test_chatroom_management_api_nonexistent_room(device_a, assert_api, cmd, inf
 )
 def test_chatroom_management_api_empty_room_id(device_a, assert_api, cmd, info, expected_code, expected_description):
     resp = device_a.call("ChatRoomManager", cmd, info=info)
+    if expected_description == "":
+        assert_api.assert_response_matches(
+            resp,
+            expected={
+                "manager": "ChatRoomManager",
+                "cmd": cmd,
+                "device": "deviceA",
+                "result": {
+                    "code": expected_code,
+                    "description": "",
+                },
+            },
+            ignore_keys={"sequence"},
+        )
+        return
     assert_api.assert_error(resp, code=expected_code, description=expected_description)

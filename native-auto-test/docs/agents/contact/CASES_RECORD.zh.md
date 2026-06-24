@@ -139,5 +139,32 @@
 37. 无（当前专项未定义独立错误入参路径）。
     该专项聚焦同步行为验证，不覆盖参数异常。
 
+## getAllContactsFromDB
+
+正常 cases
+38. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
+    建立好友并调用 `getAllContactsFromServer` 同步后，直接调用 `getAllContactsFromDB`，冻结实测本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
+
+异常 cases
+39. 无（该 API 无入参，当前以有数据本地读取链路覆盖；空本地缓存场景后续可作为边界补充）。
+
+## getBlockListFromDB
+
+正常 cases
+40. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_block_list_from_db_after_server_sync`
+    建立好友并拉黑后，先调用 `getBlockListFromServer` 同步，再直接调用 `getBlockListFromDB`，冻结实测本地 DB 返回黑名单 ID 列表 `[user_b]` 的语义。
+
+异常 cases
+41. 无（该 API 无入参，当前以有数据本地读取链路覆盖；空本地缓存场景后续可作为边界补充）。
+
+## getSelfIdsOnOtherPlatform
+
+正常 cases
+42. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_self_ids_on_other_platform_returns_list`
+    当前账号仅保持单端登录时调用 `getSelfIdsOnOtherPlatform`，冻结实测返回空列表 `[]` 的语义。
+
+异常 cases
+43. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
+
 ## 统计
-- 当前记录 case 条目总数：`37`
+- 当前记录 case 条目总数：`43`
