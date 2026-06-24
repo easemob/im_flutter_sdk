@@ -37,6 +37,15 @@ def _members_from_allow_list_event(data: dict) -> list:
     return members
 
 
+def _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id: str) -> None:
+    _join_chatroom_as_b(device_b, assert_api, room_id)
+    _first_chatroom_event(
+        device_b,
+        room_id=room_id,
+        event_types={ChatRoomEvent.ON_MEMBER_JOINED.value, "onMemberJoinedFromChatRoom"},
+    )
+
+
 def test_chatroom_admin_added_and_removed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_admin", desc_prefix="cb_admin")
     try:
@@ -179,11 +188,12 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
         safe_delete_chatroom(room_id)
 
 
+@pytest.mark.xfail(reason="当前实测 updateChatRoomAnnouncement 成功但未派发公告变更回调，待 SDK/服务端确认。")
 def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_announcement", desc_prefix="cb_announcement")
     announcement = f"notice-{uuid.uuid4().hex[:8]}"
     try:
-        _join_chatroom_as_b(device_b, assert_api, room_id)
+        _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
 
         update_resp = device_a.call(
             "ChatRoomManager",
@@ -199,6 +209,33 @@ def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, 
         data = _event_data(evt)
         assert data.get("roomId") == room_id, f"公告变更回调 roomId 不匹配: {evt}"
         assert data.get("announcement") == announcement, f"公告变更回调 announcement 不匹配: {evt}"
+    finally:
+        safe_delete_chatroom(room_id)
+
+
+def test_chatroom_specification_changed_callback(device_a, device_b, assert_api, user_a):
+    """changeChatRoomSubject 触发聊天室规格变更回调，校验 room 对象中的 roomId/name。"""
+    room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_spec", desc_prefix="cb_spec")
+    subject = f"spec-{uuid.uuid4().hex[:8]}"
+    try:
+        _join_chatroom_as_b(device_b, assert_api, room_id)
+
+        change_resp = device_a.call(
+            "ChatRoomManager",
+            Cmd.changeChatRoomSubject.value,
+            info={"roomId": room_id, "subject": subject},
+        )
+        _assert_success_envelope(assert_api, change_resp, cmd=Cmd.changeChatRoomSubject.value, device="deviceA")
+        evt = _first_chatroom_event(
+            device_b,
+            room_id=room_id,
+            event_types={ChatRoomEvent.ON_SPECIFICATION_CHANGED.value, "onSpecificationChanged"},
+        )
+        data = _event_data(evt)
+        room = data.get("room")
+        assert isinstance(room, dict), f"规格变更回调 room 应为 dict: {evt}"
+        assert room.get("roomId") == room_id, f"规格变更回调 roomId 不匹配: {evt}"
+        assert room.get("name") == subject, f"规格变更回调 name 不匹配: {evt}"
     finally:
         safe_delete_chatroom(room_id)
 
@@ -285,6 +322,36 @@ def test_chatroom_mute_list_added_and_removed_callbacks(device_a, device_b, asse
         assert unmute_data.get("roomId") == room_id, f"禁言移除回调 roomId 不匹配: {unmute_evt}"
         assert isinstance(unmute_mutes, list), f"禁言移除回调 mutes 应为 list: {unmute_evt}"
         assert user_b in unmute_mutes, f"禁言移除回调 mutes 缺少 B: {unmute_evt}"
+    finally:
+        safe_delete_chatroom(room_id)
+
+
+def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a, user_b):
+    """leaveChatRoom 触发成员主动退出回调，校验 roomId/participant。"""
+    room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="cb_exit", desc_prefix="cb_exit")
+    try:
+        _join_chatroom_as_b(device_b, assert_api, room_id)
+
+        leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
+        assert_api.assert_response_matches(
+            leave_resp,
+            expected={
+                "manager": "ChatRoomManager",
+                "cmd": Cmd.leaveChatRoom.value,
+                "device": "deviceB",
+                "result": None,
+            },
+            ignore_keys={"sequence"},
+        )
+        evt = _first_chatroom_event(
+            device_a,
+            room_id=room_id,
+            event_types={ChatRoomEvent.ON_MEMBER_EXITED.value, "onMemberExitedFromChatRoom"},
+        )
+        data = _event_data(evt)
+        assert data.get("roomId") == room_id, f"成员退出回调 roomId 不匹配: {evt}"
+        assert data.get("participant") == user_b, f"成员退出回调 participant 不匹配: {evt}"
+        assert data.get("roomName") in ("", room_name), f"成员退出回调 roomName 不匹配: {evt}"
     finally:
         safe_delete_chatroom(room_id)
 

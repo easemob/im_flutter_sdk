@@ -30,16 +30,7 @@ def test_chatroom_destroy_room_nonexistent(device_a, assert_api):
 def test_chatroom_join_room_nonexistent_current_behavior(device_b, assert_api):
     room_id = _nonexistent_room_id()
     resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
-    assert_api.assert_response_matches(
-        resp,
-        expected={
-            "manager": "ChatRoomManager",
-            "cmd": Cmd.joinChatRoom.value,
-            "device": "deviceB",
-            "result": 1,
-        },
-        ignore_keys={"sequence"},
-    )
+    assert_api.assert_error(resp, code=705, description="Chat room does not exist")
 
 
 def test_chatroom_join_room_empty_id(device_b, assert_api):
