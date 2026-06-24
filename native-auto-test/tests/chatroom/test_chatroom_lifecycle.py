@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import uuid4
+
 import pytest
 
 from src import Cmd, ne
@@ -7,6 +9,23 @@ from tests.chatroom.chatroom_helpers import create_chatroom_or_skip, safe_delete
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat1_4_0]
+
+
+def test_chatroom_create_room_via_sdk_without_permission(device_a, assert_api):
+    room_name = f"sdk_create_{uuid4().hex[:8]}"
+    room_desc = f"sdk_desc_{uuid4().hex[:8]}"
+    resp = device_a.call(
+        "ChatRoomManager",
+        Cmd.createChatRoom.value,
+        info={
+            "subject": room_name,
+            "desc": room_desc,
+            "welcomeMsg": "welcome",
+            "maxUserCount": 200,
+            "members": [],
+        },
+    )
+    assert_api.assert_error(resp, code=703, description="you have no permission to do this.")
 
 
 def test_chatroom_create_and_fetch_from_server(device_a, assert_api, user_a):

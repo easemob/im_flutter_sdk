@@ -6,7 +6,7 @@
 ## createChatRoom
 
 - 暂缓项 1：SDK 直接创建聊天室的完整正向链路
-  - 原因：官方前提要求超级管理员身份；当前先以 REST 预创建作为前置。
+  - 原因：官方前提要求超级管理员身份；当前普通 session 用户直调 SDK `createChatRoom` 实测返回 `code=703`、`description=you have no permission to do this.`，已补充异常 case 冻结该语义，正向链路继续以 REST 预创建作为前置。
   - 前置条件：确认被测端支持以当前 session 用户直接创建聊天室，或提供 super-admin 前置。
   - 恢复条件：前置可用后补齐 SDK 直接创建 case。
 
@@ -33,3 +33,10 @@
   - 实测现象：`pageNum<=0` 或 `pageSize<=0` 仍返回成功列表结构，而非错误码。
   - 前置条件：确认 SDK/服务端对非法分页入参的最终规范（容错返回 vs 抛错）。
   - 恢复条件：规范确定后，调整异常用例归属（保留在异常用例或迁移到容错行为用例）。
+
+## ChatRoom 回调事件
+
+- 暂缓项：公告变更回调 `onAnnouncementChangedFromChatRoom` / `onRoomAnnouncementChanged`
+  - 实测现象：B 已加入聊天室且 `updateChatRoomAnnouncement` 返回 `result=true` 后，A/B 两端均未收到公告变更回调；当前用例已标记 xfail，避免误判整套回调回归。
+  - 前置条件：确认 SDK/服务端是否应派发聊天室公告变更事件，或确认仅同步接口与 `fetchChatRoomAnnouncement` 可验证公告更新。
+  - 恢复条件：事件可稳定派发后，将 `test_chatroom_announcement_changed_callback` 去掉 xfail 并按真实事件体收紧断言。

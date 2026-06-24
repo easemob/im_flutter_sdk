@@ -637,7 +637,7 @@ def test_chatroom_update_attribute_overwrites_previous_value(device_a, assert_ap
 
 
 def test_chatroom_change_owner_success(device_a, device_b, assert_api, user_a, user_b):
-    room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="owner", desc_prefix="owner")
+    room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="owner", desc_prefix="owner")
     try:
         _join_chatroom_as_b(device_b, assert_api, room_id)
 
@@ -646,41 +646,32 @@ def test_chatroom_change_owner_success(device_a, device_b, assert_api, user_a, u
             Cmd.changeChatRoomOwner.value,
             info={"roomId": room_id, "newOwner": user_b},
         )
-        _assert_success_envelope(assert_api, change_resp, cmd=Cmd.changeChatRoomOwner.value, device="deviceA")
-
-        fetch_resp = device_b.call(
-            "ChatRoomManager",
-            Cmd.fetchChatRoomInfoFromServer.value,
-            info={"roomId": room_id},
-        )
         assert_api.assert_response_matches(
-            fetch_resp,
+            change_resp,
             expected={
                 "manager": "ChatRoomManager",
-                "cmd": Cmd.fetchChatRoomInfoFromServer.value,
-                "device": "deviceB",
+                "cmd": Cmd.changeChatRoomOwner.value,
+                "device": "deviceA",
                 "result": {
-                    "roomId": room_id,
                     "owner": user_b,
+                    "maxUsers": 200,
+                    "permissionType": 0,
+                    "isAllMemberMuted": False,
+                    "adminList": [],
+                    "memberCount": 2,
+                    "muteList": [],
+                    "muteExpireTimestamp": -1,
+                    "roomId": room_id,
+                    "createTimestamp": 0,
+                    "memberList": [user_a],
+                    "isInWhitelist": False,
+                    "blockList": [],
+                    "name": room_name,
+                    "desc": "nothing left here",
+                    "announcement": "",
                 },
             },
-            ignore_keys={
-                "sequence",
-                "name",
-                "maxUsers",
-                "permissionType",
-                "isAllMemberMuted",
-                "adminList",
-                "memberCount",
-                "muteList",
-                "muteExpireTimestamp",
-                "createTimestamp",
-                "memberList",
-                "isInWhitelist",
-                "blockList",
-                "desc",
-                "announcement",
-            },
+            ignore_keys={"sequence"},
         )
     finally:
         safe_delete_chatroom(room_id)
