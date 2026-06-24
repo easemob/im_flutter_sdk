@@ -44,6 +44,7 @@ def collect_chatroom_events(
     expected_event_types: set[str],
     chatroom_id: str | None = None,
     timeout: float = 10.0,
+    require_event: bool = True,
 ) -> list[dict]:
     deadline = time.monotonic() + timeout
     events: list[dict] = []
@@ -60,10 +61,16 @@ def collect_chatroom_events(
             data = evt.get("data")
             if not isinstance(data, dict):
                 continue
-            if data.get("roomId") not in (None, chatroom_id) and data.get("chatRoomId") not in (None, chatroom_id):
+            room = data.get("room")
+            nested_room_id = room.get("roomId") if isinstance(room, dict) else None
+            if (
+                data.get("roomId") not in (None, chatroom_id)
+                and data.get("chatRoomId") not in (None, chatroom_id)
+                and nested_room_id not in (None, chatroom_id)
+            ):
                 continue
         events.append(evt)
-    if expected_event_types and not events:
+    if require_event and expected_event_types and not events:
         raise AssertionError(f"未收到聊天室回调: expected={sorted(expected_event_types)}")
     return events
 

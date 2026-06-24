@@ -559,7 +559,7 @@ def test_contact_get_block_list_from_server_returns_list(device_a, assert_api):
             "cmd": Cmd.getBlockListFromServer.value,
             "device": "deviceA",
         },
-        ignore_keys={"sequence"},
+        ignore_keys={"sequence", "result"},
     )
     assert isinstance(resp.get("result"), list), "getBlockListFromServer should return a list (possibly empty)."
 
@@ -853,10 +853,19 @@ def test_contact_remove_from_block_list_when_not_blocked(
 
 
 def test_contact_remove_from_block_list_nonexistent_user(device_a, assert_api):
-    """removeUserFromBlockList：目标用户不存在，预期失败。"""
+    """removeUserFromBlockList：目标用户不存在，服务端幂等返回成功（HTTP 200），result 为用户名。"""
     resp = device_a.call(
         "ContactManager",
         Cmd.removeUserFromBlockList.value,
         info={"userId": USER_NONEXISTENT},
     )
-    assert_api.assert_error(resp, code=204, description="User does not exist")
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ContactManager",
+            "cmd": Cmd.removeUserFromBlockList.value,
+            "device": "deviceA",
+            "result": USER_NONEXISTENT,
+        },
+        ignore_keys={"sequence"},
+    )

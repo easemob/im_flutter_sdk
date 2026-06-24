@@ -359,5 +359,49 @@
 111. `tests/chat/test_chat_crud.py::test_chat_download_thumbnail_invalid_id_response`
    无效消息 ID 下载缩略图，冻结错误语义。
 
+## EMConversation 本地会话方法
+
+正常 cases
+112. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_latest_and_last_received_messages`
+   发送单聊消息后校验 `latestMessage` 与 `lastReceivedMessage`，覆盖最新消息与最近收到消息查询。
+113. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_read_count_and_mark_read`
+   制造未读消息后校验 `unreadCount`，并覆盖 `markMessageAsRead`、`markAllMessagesAsRead` 的已读清零链路。
+114. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_load_message_and_message_lists`
+   覆盖 `loadMessage`、`loadMessages`、`loadMessagesFromTime`，按 ID、数量和时间窗口加载本地消息。
+115. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_ext_and_count_queries`
+   覆盖 `setExt`、`messagesCount`、`getLocalMessageCount`、`remindType`、`loadPinnedMessages`，校验会话扩展、计数、免打扰和置顶消息查询。
+116. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_local_insert_append_update_and_delete`
+   覆盖 `insertMessage`、`appendMessage`、`updateMessage`、`deleteMessage`、`deleteMessagesWithTs`、`deleteAllMessages`，验证本地消息写入、更新和删除链路。
+117. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_current_behavior`
+   覆盖 `deleteLocalAndServerMessages`，按消息 ID 删除本地及服务端消息，冻结当前返回 `result=None`。
+
+异常/边界 cases
+118. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_type_keyword_and_options_search_current_behavior`
+   覆盖 `loadMessagesWithMsgType`、`loadMessagesWithKeyword`、`searchMsgsByOptions`，使用 `count=0` 和唯一关键词冻结当前空列表边界返回。
+119. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_invalid_message_id_boundaries`
+   覆盖 `loadMessage` 不存在消息 ID、`markMessageAsRead` 不存在消息 ID、`deleteMessageByIds` 空列表，冻结当前端边界返回。
+120. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_current_behavior`
+   覆盖 `deleteLocalAndServerMessagesByTime` 当前 Android 端 `MissingPluginException` 返回，作为环境真实异常语义记录。
+
+## EMChatManager 方法级补齐
+
+正常 cases
+121. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_pin_unpin_and_fetch_pinned_messages`
+   覆盖 `pinMessage`、`unpinMessage`、`fetchPinnedMessages`，发送消息后置顶、拉取置顶列表，再取消置顶并确认列表清空。
+122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_by_options`
+   覆盖 `addRemoteAndLocalConversationsMark`、`deleteRemoteAndLocalConversationsMark`、`fetchConversationsByOptions`，标记会话后按 options 拉取并校验 mark，再删除标记。
+123. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_count_and_search_options`
+   覆盖 `getMessageCount` 与 `searchMsgsByOptions`，冻结当前消息总数非负与 `count=0` 搜索返回空列表的边界语义。
+124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_delete_all_message_and_conversation_local`
+   覆盖 `deleteAllMessageAndConversation`，以 `clearServerData=false` 清理本地消息和会话，冻结实测返回 `result=null`。
+125. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_object_boundary_methods`
+   覆盖 `importMessages`、`updateMessage`、`resendMessage`，使用本地构造文本消息导入、更新正文、重发，并冻结更新后消息对象返回。
+126. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_fetch_group_acks_success`
+   覆盖 `fetchGroupAcks` / `asyncFetchGroupAcks`，发送需要群回执的群消息并发送回执后分页查询，冻结当前真实返回 `cursor=""` 且 `list=[]`。
+
+异常/边界 cases
+127. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_group_ack_boundary_methods`
+   覆盖 `sendGroupMessageReadAck` / `ackGroupMessageRead` 非法群消息 ID 与群 ID 边界，冻结当前端返回 `result=true`。
+
 ## 统计
-- 当前记录 case 条目总数：`111`
+- 当前记录 case 条目总数：`127`

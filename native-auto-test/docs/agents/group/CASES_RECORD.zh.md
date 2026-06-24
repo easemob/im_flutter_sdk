@@ -530,9 +530,35 @@
 正常 cases
 131. `tests/group/test_group_member_info.py::test_group_fetch_members_info_contains_updated_own_profile`
      当前用户更新 `nickName/avatarUrl` 后创建群并拉取 `fetchGroupMembersInfo`，校验返回成员列表包含当前用户，且 `userId/memberId/joinTime/namecard/nickname/avatarUrl/role/string` 字段可正常获取，其中 `nickname/avatarUrl` 与 `fetchUserInfoById` 最新结果一致。
+132. `tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_invalid_limit`
+     `limit=0` 拉取群成员详情，冻结当前容错语义：返回 `cursor=""` 且列表包含 owner 的成员详情。
 
 异常 cases
-132. 无（当前仅补充 4.23.0 成员信息字段一致性回归链路）。
+133. `tests/group/test_group_remaining_api_coverage.py::test_group_fetch_members_info_empty_group_id`
+     `groupId=""` 拉取群成员详情，冻结实测错误：`code=600`，`description=Group ID is invalid`。
+
+## clearAllGroupsFromLocal
+
+正常 cases
+134. `tests/group/test_group_remaining_api_coverage.py::test_group_clear_all_groups_from_local_success`
+     调用 `clearAllGroupsFromLocal`/`clearAllGroupsFromDB` 清理本地群缓存，冻结实测成功返回 `result=None`。
+
+异常 cases
+无（该接口无业务入参，本轮未观察到稳定异常路径）。
+
+## updateGroupAvatar
+
+正常 cases
+135. `tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_success`
+     群主更新群头像 URL，冻结返回群对象中的 `groupId/name/owner/avatarUrl` 等关键字段。
+136. `tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[]`
+     `avatarUrl=""` 更新群头像，冻结当前容错语义：成功返回群对象且 `avatarUrl=""`。
+137. `tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_abnormal_values[https://example.com/...超长]`
+     超长 `avatarUrl` 更新群头像，冻结当前容错语义：成功返回群对象且 `avatarUrl` 为传入值。
+
+异常 cases
+138. `tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_empty_group_id`
+     `groupId=""` 更新群头像，冻结实测错误：`code=600`，`description=Group ID is invalid`。
 
 ## 统计
-- 当前记录 case 条目总数：`132`
+- 当前记录 case 条目总数：`138`

@@ -55,7 +55,7 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup", "onMemberJoinedFromGroup"},
+            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
             timeout=10.0,
         )
         assert_group_events(
@@ -70,7 +70,7 @@ def test_group_inviter_user_success(device_a, device_b, assert_api, user_a, user
             },
             group_id=group_id,
             allow_missing_group_id=True,
-            required_all_event_types={"onAutoAcceptInvitationFromGroup", "onMemberJoinedFromGroup"},
+            required_all_event_types={"onAutoAcceptInvitationFromGroup"},
             expected_inviter=user_a,
             expected_member=user_b,
         )

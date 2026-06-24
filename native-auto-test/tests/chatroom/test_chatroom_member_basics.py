@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import pytest
 from uuid import uuid4
 
@@ -36,8 +37,18 @@ CHATROOM_IGNORE_KEYS = {
 }
 
 
-def _join_room(device, assert_api, *, room_id: str, device_name: str = "deviceB") -> dict:
-    resp = device.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
+def _join_room(
+    device,
+    assert_api,
+    *,
+    room_id: str,
+    device_name: str = "deviceB",
+    leave_other_rooms: bool | None = None,
+) -> dict:
+    info = {"roomId": room_id}
+    if leave_other_rooms is not None:
+        info["leaveOtherRooms"] = leave_other_rooms
+    resp = device.call("ChatRoomManager", Cmd.joinChatRoom.value, info=info)
     assert_api.assert_response_matches(
         resp,
         expected={
@@ -49,6 +60,81 @@ def _join_room(device, assert_api, *, room_id: str, device_name: str = "deviceB"
         ignore_keys={"sequence"},
     )
     return resp
+
+
+def _fetch_room_members(device, assert_api, *, room_id: str, device_name: str) -> list[str]:
+    resp = device.call(
+        "ChatRoomManager",
+        Cmd.fetchChatRoomMembers.value,
+        info={"roomId": room_id, "cursor": "", "pageSize": 20},
+    )
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatRoomManager",
+            "cmd": Cmd.fetchChatRoomMembers.value,
+            "device": device_name,
+            "result": {
+                "cursor": ne(None),
+                "list": ne(None),
+            },
+        },
+        ignore_keys={"sequence"},
+    )
+    result = resp.get("result")
+    assert isinstance(result, dict), f"fetchChatRoomMembers result 应为 dict: {resp}"
+    members = result.get("list")
+    assert isinstance(members, list), f"fetchChatRoomMembers result.list 应为 list: {resp}"
+    return members
+
+
+def _wait_for_member_state(
+    device,
+    assert_api,
+    *,
+    room_id: str,
+    user_id: str,
+    should_contain: bool,
+    device_name: str,
+    timeout: float = 8.0,
+) -> list[str]:
+    deadline = time.monotonic() + timeout
+    last_members: list[str] = []
+    while time.monotonic() < deadline:
+        last_members = _fetch_room_members(device, assert_api, room_id=room_id, device_name=device_name)
+        if (user_id in last_members) is should_contain:
+            return last_members
+        time.sleep(0.5)
+    expectation = "包含" if should_contain else "不包含"
+    raise AssertionError(f"成员列表未达到预期：roomId={room_id} 应{expectation} {user_id}, members={last_members}")
+
+
+def _assert_local_rooms(
+    device,
+    assert_api,
+    *,
+    present: set[str],
+    absent: set[str] | None = None,
+    device_name: str = "deviceB",
+) -> None:
+    resp = device.call("ChatRoomManager", Cmd.getAllChatRooms.value, info={})
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatRoomManager",
+            "cmd": Cmd.getAllChatRooms.value,
+            "device": device_name,
+            "result": ne(None),
+        },
+        ignore_keys={"sequence"},
+    )
+    rooms = resp.get("result")
+    assert isinstance(rooms, list), f"getAllChatRooms result 应为 list: {resp}"
+    room_ids = {room.get("roomId") for room in rooms if isinstance(room, dict)}
+    missing = present - room_ids
+    unexpected = (absent or set()) & room_ids
+    assert not missing, f"本地聊天室列表缺少预期房间: missing={missing}, rooms={rooms}"
+    assert not unexpected, f"本地聊天室列表仍包含应退出房间: unexpected={unexpected}, rooms={rooms}"
 
 
 def test_chatroom_join_then_get_local_room_and_all_rooms(device_a, device_b, assert_api, user_a, user_b):
@@ -263,6 +349,78 @@ def test_chatroom_fetch_members_with_cursor_pagination(device_a, device_b, asser
         assert user_b in all_members, f"分页成员列表缺少加入成员: user_b={user_b}, members={all_members}"
     finally:
         safe_delete_chatroom(room_id)
+
+
+def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a, device_b, assert_api, user_a, user_b):
+    """joinChatRoom：leaveOtherRooms=false 保留其他聊天室，leaveOtherRooms=true 退出其他聊天室。"""
+    # false 分支：B 先加入 room_keep_a，再以 leaveOtherRooms=false 加入 room_keep_b，预期两个房间都保留 B。
+    room_keep_a, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_false_a", desc_prefix="leave_other_false")
+    room_keep_b, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_false_b", desc_prefix="leave_other_false")
+    # true 分支：B 先加入 room_drop_a，再以 leaveOtherRooms=true 加入 room_drop_b，预期从 room_drop_a 自动退出。
+    room_drop_a, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_true_a", desc_prefix="leave_other_true")
+    room_drop_b, _ = create_chatroom_or_skip(owner=user_a, name_prefix="leave_other_true_b", desc_prefix="leave_other_true")
+    created_room_ids = [room_keep_a, room_keep_b, room_drop_a, room_drop_b]
+    try:
+        _join_room(device_b, assert_api, room_id=room_keep_a, leave_other_rooms=False)
+        _join_room(device_b, assert_api, room_id=room_keep_b, leave_other_rooms=False)
+
+        _wait_for_member_state(
+            device_a,
+            assert_api,
+            room_id=room_keep_a,
+            user_id=user_b,
+            should_contain=True,
+            device_name="deviceA",
+        )
+        _wait_for_member_state(
+            device_a,
+            assert_api,
+            room_id=room_keep_b,
+            user_id=user_b,
+            should_contain=True,
+            device_name="deviceA",
+        )
+        _assert_local_rooms(
+            device_b,
+            assert_api,
+            present={room_keep_a, room_keep_b},
+        )
+
+        _join_room(device_b, assert_api, room_id=room_drop_a, leave_other_rooms=False)
+        _wait_for_member_state(
+            device_a,
+            assert_api,
+            room_id=room_drop_a,
+            user_id=user_b,
+            should_contain=True,
+            device_name="deviceA",
+        )
+
+        _join_room(device_b, assert_api, room_id=room_drop_b, leave_other_rooms=True)
+        _wait_for_member_state(
+            device_a,
+            assert_api,
+            room_id=room_drop_a,
+            user_id=user_b,
+            should_contain=False,
+            device_name="deviceA",
+        )
+        _wait_for_member_state(
+            device_a,
+            assert_api,
+            room_id=room_drop_b,
+            user_id=user_b,
+            should_contain=True,
+            device_name="deviceA",
+        )
+        _assert_local_rooms(
+            device_b,
+            assert_api,
+            present={room_drop_b},
+        )
+    finally:
+        for room_id in created_room_ids:
+            safe_delete_chatroom(room_id)
 
 
 def test_chatroom_leave_room_updates_local_cache(device_a, device_b, assert_api, user_a, user_b):

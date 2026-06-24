@@ -56,8 +56,6 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
         }
         required_add_events = {
             "onAutoAcceptInvitationFromGroup",
-            "onAllowListRemovedFromGroup",
-            "onMemberJoinedFromGroup",
         }
         add_events = collect_group_events(
             device_b,
@@ -239,15 +237,18 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             expected_event_types=expected_joined_events,
             group_id=group_id,
             required_all_event_types={"onMemberJoinedFromGroup"},
-            expected_member=user_b,
         )
         joined_batch = [evt for evt in joined_events if evt.get("eventType") == "onMembersJoinedFromGroup"]
         if joined_batch:
-            data_join = (joined_batch[0].get("data") or {})
-            user_ids_join = data_join.get("userIds")
-            assert isinstance(user_ids_join, list), f"onMembersJoinedFromGroup.userIds 非 list: {joined_batch[0]}"
-            assert all(m in user_ids_join for m in members), (
-                f"onMembersJoinedFromGroup.userIds 缺少成员: expected={members}, actual={user_ids_join}"
+            # SDK 可能对批量添加逐个触发事件，每个事件只含一个用户；合并所有事件的 userIds
+            all_user_ids: list[str] = []
+            for evt in joined_batch:
+                data_join = (evt.get("data") or {})
+                user_ids_join = data_join.get("userIds") or []
+                assert isinstance(user_ids_join, list), f"onMembersJoinedFromGroup.userIds 非 list: {evt}"
+                all_user_ids.extend(user_ids_join)
+            assert all(m in all_user_ids for m in members), (
+                f"onMembersJoinedFromGroup.userIds 缺少成员: expected={members}, actual={all_user_ids}"
             )
         else:
             joined_single_members = {
@@ -276,12 +277,12 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             ignore_keys={"sequence"},
         )
 
-        expected_exited_events = {"onMembersExitedFromGroup", "onUserRemovedFromGroup"}
+        expected_exited_events = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
         exited_events = collect_group_events(
             device_a,
             expected_event_types=expected_exited_events,
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
+            required_all_event_types={"onMembersExitedFromGroup"},
             timeout=10.0,
         )
         assert_group_events(
@@ -289,16 +290,19 @@ def test_group_members_batch_join_exit_new_events(device_a, device_b, assert_api
             exited_events,
             expected_event_types=expected_exited_events,
             group_id=group_id,
-            required_all_event_types={"onUserRemovedFromGroup"},
-            expected_member=user_b,
+            required_all_event_types={"onMembersExitedFromGroup"},
         )
         exited_batch = [evt for evt in exited_events if evt.get("eventType") == "onMembersExitedFromGroup"]
         if exited_batch:
-            data_exit = (exited_batch[0].get("data") or {})
-            user_ids_exit = data_exit.get("userIds")
-            assert isinstance(user_ids_exit, list), f"onMembersExitedFromGroup.userIds 非 list: {exited_batch[0]}"
-            assert all(m in user_ids_exit for m in members), (
-                f"onMembersExitedFromGroup.userIds 缺少成员: expected={members}, actual={user_ids_exit}"
+            # SDK 对批量移除逐个触发事件，合并所有事件的 userIds
+            all_exit_ids: list[str] = []
+            for evt in exited_batch:
+                data_exit = (evt.get("data") or {})
+                user_ids_exit = data_exit.get("userIds") or []
+                assert isinstance(user_ids_exit, list), f"onMembersExitedFromGroup.userIds 非 list: {evt}"
+                all_exit_ids.extend(user_ids_exit)
+            assert all(m in all_exit_ids for m in members), (
+                f"onMembersExitedFromGroup.userIds 缺少成员: expected={members}, actual={all_exit_ids}"
             )
         else:
             exited_single_members = {

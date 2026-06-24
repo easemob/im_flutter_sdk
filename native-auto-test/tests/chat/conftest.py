@@ -15,7 +15,17 @@ pytestmark = [pytest.mark.client, pytest.mark.chat]
 @pytest.fixture(autouse=True)
 def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
     discovering = os.getenv("CASES_DISCOVER", "0") in ("1", "true", "True")
-    resp_add = device_a.call("ContactManager", Cmd.addContact.value, info={"userId": user_b, "reason": "chat-setup"})
+    server_resp = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+    if user_b in (server_resp.get("result") or []):
+        return
+
+    try:
+        resp_add = device_a.call("ContactManager", Cmd.addContact.value, info={"userId": user_b, "reason": "chat-setup"})
+    except TimeoutError:
+        retry_server_resp = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+        if user_b in (retry_server_resp.get("result") or []):
+            return
+        raise
     # 某些情况下上一条请求的响应可能延迟返回到本次调用（例如 Client.logout），做一次轻量重试
     if resp_add.get("cmd") != Cmd.addContact.value:
         resp_add = device_a.call("ContactManager", Cmd.addContact.value, info={"userId": user_b, "reason": "chat-setup"})
