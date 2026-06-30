@@ -50,9 +50,18 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
     )
     success_evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    assert success_evt is not None, f"未收到 onMessageSuccess: temp_id={temp_id}, content={content}"
     real_id = (((success_evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
-    device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
-    return str(real_id)
+
+    seen_events = []
+    for _ in range(5):
+        received_evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        if received_evt:
+            seen_events.append(received_evt)
+        messages = ((received_evt or {}).get("data") or {}).get("messages") or []
+        if any(isinstance(m, dict) and m.get("msgId") == real_id for m in messages):
+            return str(real_id)
+    raise AssertionError(f"B 端未收到目标消息: msgId={real_id}, events={seen_events}")
 
 
 def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, assert_api, user_a, user_b):
@@ -70,6 +79,21 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
             "result": None,
         },
         ignore_keys={"sequence"},
+    )
+    pin_evt = device_b.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=10.0)
+    assert_api.assert_response_matches(
+        pin_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagePinChanged.value,
+            "data": {
+                "messageId": msg_id,
+                "conversationId": user_a,
+                "pinOperation": "MessagePinOperation.Pin",
+                "pinInfo": {"operatorId": user_a},
+            },
+        },
+        ignore_keys={"timestamp", "pinTime"},
     )
 
     resp_fetch = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
@@ -112,6 +136,21 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
         },
         ignore_keys={"sequence"},
     )
+    unpin_evt = device_b.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=10.0)
+    assert_api.assert_response_matches(
+        unpin_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagePinChanged.value,
+            "data": {
+                "messageId": msg_id,
+                "conversationId": user_a,
+                "pinOperation": "MessagePinOperation.Unpin",
+                "pinInfo": {"operatorId": user_a},
+            },
+        },
+        ignore_keys={"timestamp", "pinTime"},
+    )
 
     resp_fetch_empty = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
     assert_api.assert_response_matches(
@@ -123,6 +162,136 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
             "result": [],
         },
         ignore_keys={"sequence"},
+    )
+
+
+def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, device_b, assert_api, user_a, user_b):
+    """recallMessage：发送方撤回已送达单聊消息，接收方收到 onMessagesRecalledInfo 事件并携带撤回消息 ID。"""
+    content = f"chat-recall-event-{uuid.uuid4().hex[:8]}"
+    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+
+    resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.recallMessage.value,
+            "device": "deviceA",
+            "result": True,
+        },
+        ignore_keys={"sequence"},
+    )
+
+    evt = device_b.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=20.0)
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesRecalledInfo.value,
+            "data": {
+                "infos": [
+                    {
+                        "recallBy": user_a,
+                        "recallMsgId": msg_id,
+                        "convId": user_a,
+                        "msg": {
+                            "msgId": msg_id,
+                            "from": user_a,
+                            "to": user_b,
+                            "convId": user_a,
+                            "chatType": 0,
+                            "direction": 1,
+                            "status": 2,
+                            "hasRead": False,
+                            "hasReadAck": False,
+                            "hasDeliverAck": False,
+                            "needGroupAck": False,
+                            "isThread": False,
+                            "isContentReplaced": False,
+                            "deliverOnlineOnly": False,
+                            "body": {"type": 0, "content": content},
+                            "receiverList": [],
+                        },
+                        "ext": "",
+                    },
+                ],
+            },
+        },
+        ignore_keys={"timestamp", "serverTime", "localTime"},
+    )
+
+
+def test_chat_manager_send_to_non_friend_message_error_event(device_a, assert_api, user_a, user_c):
+    """sendMessage：向非好友用户发送单聊消息，发送方收到 onMessageError 并携带真实错误码与失败消息。"""
+    try:
+        device_a.drain_events()
+    except Exception:
+        pass
+
+    content = f"chat-error-non-friend-{uuid.uuid4().hex[:8]}"
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_c, content))
+    temp_id = ((resp.get("result") or {}).get("msgId"))
+    assert temp_id, f"sendMessage 未返回临时 msgId: {resp}"
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.sendMessage.value,
+            "device": "deviceA",
+            "result": {
+                "msgId": temp_id,
+                "from": user_a,
+                "to": user_c,
+                "convId": user_c,
+                "chatType": 0,
+                "direction": 0,
+                "status": 0,
+                "hasRead": True,
+                "hasReadAck": False,
+                "hasDeliverAck": False,
+                "needGroupAck": False,
+                "isThread": False,
+                "isContentReplaced": False,
+                "broadcast": False,
+                "onlineState": True,
+                "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
+            },
+        },
+        ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
+    )
+
+    evt = device_a.receive_message(match_event_type="onMessageError", timeout=20.0)
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": "onMessageError",
+            "data": {
+                "msgId": temp_id,
+                "msg": {
+                    "msgId": temp_id,
+                    "from": user_a,
+                    "to": user_c,
+                    "convId": user_c,
+                    "chatType": 0,
+                    "direction": 0,
+                    "status": 3,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "deliverOnlineOnly": False,
+                    "body": {"type": 0, "content": content, "translations": {}},
+                },
+                "error": {
+                    "code": 221,
+                    "description": "User is not on your contact list and you cannot send messages",
+                },
+            },
+        },
+        ignore_keys={"timestamp", "serverTime", "localTime"},
     )
 
 
@@ -386,14 +555,34 @@ def test_chat_manager_fetch_group_acks_success(device_a, device_b, assert_api, u
         msg = build_text(user_a, group_id, content, chat_type=1)
         msg["needGroupAck"] = True
         send_resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=msg)
+        temp_id = ((send_resp.get("result") or {}).get("msgId"))
+        assert temp_id, f"群消息发送响应未返回临时 msgId: {send_resp}"
         assert_api.assert_response_matches(
             send_resp,
             expected={
                 "manager": "ChatManager",
                 "cmd": Cmd.sendMessage.value,
                 "device": "deviceA",
+                "result": {
+                    "msgId": temp_id,
+                    "from": user_a,
+                    "to": group_id,
+                    "convId": group_id,
+                    "chatType": 1,
+                    "direction": 0,
+                    "status": 0,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": True,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "broadcast": False,
+                    "onlineState": True,
+                    "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
+                },
             },
-            ignore_keys={"sequence", "result"},
+            ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
         )
         success_evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
         msg_id = (((success_evt or {}).get("data") or {}).get("msg") or {}).get("msgId")

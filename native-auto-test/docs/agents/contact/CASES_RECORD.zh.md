@@ -99,40 +99,42 @@
 26. `tests/contact/test_contact.py::test_contact_set_contact_remark_non_friend`
     对非好友设置备注，验证权限或关系校验异常语义。
 
-## fetchAllContacts / fetchContacts / getAllContacts
+## fetchAllContacts / fetchContacts / fetchAllContactIds / getAllContacts / getAllContactIds
 
 正常 cases
 27. `tests/contact/test_contact.py::test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists`
-    对全量、分页、本地好友列表与 ID 列表做一致性校验。
+    建立好友并设置备注后，先同步服务端好友列表，再分别校验服务端全量好友、分页好友、本地单个好友、本地全量好友的一致性。
 
 异常 cases
-28. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
+28. `tests/contact/test_contact.py::test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists`
+    直接调用 `fetchAllContactIds` / `getAllContactIds` cmd 时，当前原生通道真实返回 `MissingPluginException`；Dart 公开方法的成功语义分别由旧 native cmd `getAllContactsFromServer` / `getAllContactsFromDB` 链路覆盖。
+29. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
     分页拉取时 pageSize=0，验证参数边界语义。
-29. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
+30. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
     分页拉取时 pageSize 超过上限，验证上限约束语义。
-30. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_negative`
+31. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_negative`
     分页拉取时 pageSize 为负数，验证非法参数语义。
 
 ## addUserToBlockList / removeUserFromBlockList / getBlockListFromServer
 
 正常 cases
-31. `tests/contact/test_contact.py::test_contact_get_block_list_from_server_returns_list`
+32. `tests/contact/test_contact.py::test_contact_get_block_list_from_server_returns_list`
     拉取服务端黑名单列表，验证返回结构与列表语义。
-32. `tests/contact/test_contact.py::test_contact_block_list_flow_then_unblock_restores_friend`
+33. `tests/contact/test_contact.py::test_contact_block_list_flow_then_unblock_restores_friend`
     执行拉黑与解除拉黑，验证好友状态切换与恢复行为。
-33. `tests/contact/test_contact.py::test_contact_remove_from_block_list_when_not_blocked`
+34. `tests/contact/test_contact.py::test_contact_remove_from_block_list_when_not_blocked`
     对未拉黑用户执行解除拉黑，验证幂等或稳定返回语义。
 
 异常 cases
-34. `tests/contact/test_contact.py::test_contact_add_user_to_block_list_nonexistent`
+35. `tests/contact/test_contact.py::test_contact_add_user_to_block_list_nonexistent`
     将不存在用户加入黑名单，验证目标不存在类错误语义。
-35. `tests/contact/test_contact.py::test_contact_remove_from_block_list_nonexistent_user`
+36. `tests/contact/test_contact.py::test_contact_remove_from_block_list_nonexistent_user`
     从黑名单移除不存在用户，验证目标不存在类错误语义。
 
 ## 好友信息同步专项（事件链路）
 
 正常 cases
-36. `tests/contact/test_friend_info_sync.py::test_friend_info_auto_sync_after_login`
+37. `tests/contact/test_friend_info_sync.py::test_friend_info_auto_sync_after_login`
     重新登录后验证好友信息同步开始/结束回调链路。
 
 异常 cases
@@ -142,7 +144,7 @@
 ## getAllContactsFromDB
 
 正常 cases
-38. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
+39. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
     建立好友并调用 `getAllContactsFromServer` 同步后，直接调用 `getAllContactsFromDB`，冻结实测本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
 
 异常 cases
@@ -151,7 +153,7 @@
 ## getBlockListFromDB
 
 正常 cases
-40. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_block_list_from_db_after_server_sync`
+41. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_block_list_from_db_after_server_sync`
     建立好友并拉黑后，先调用 `getBlockListFromServer` 同步，再直接调用 `getBlockListFromDB`，冻结实测本地 DB 返回黑名单 ID 列表 `[user_b]` 的语义。
 
 异常 cases
@@ -160,11 +162,11 @@
 ## getSelfIdsOnOtherPlatform
 
 正常 cases
-42. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_self_ids_on_other_platform_returns_list`
+43. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_self_ids_on_other_platform_returns_list`
     当前账号仅保持单端登录时调用 `getSelfIdsOnOtherPlatform`，冻结实测返回空列表 `[]` 的语义。
 
 异常 cases
-43. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
+44. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
 
 ## 统计
-- 当前记录 case 条目总数：`43`
+- 当前记录 case 条目总数：`44`

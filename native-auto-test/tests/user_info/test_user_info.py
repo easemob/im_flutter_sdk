@@ -2,7 +2,7 @@
 用户属性（UserInfoManager）模块用例：
 - updateUserInfo（updateOwnUserInfo / updateOwnUserInfoWithType）：设置/修改当前用户自己的属性信息
 - fetchUserInfoById（fetchUserInfoById / fetchUserInfoByIdWithType）：获取指定用户属性
-- fetchOwnInfo：与 fetchUserInfoById([当前用户 id]) 等价；部分 demo 桥接对 fetchOwnInfo 无响应，「更新后拉取自身」用 fetchUserInfoById 覆盖
+- fetchOwnInfo：获取当前登录用户自己的属性信息
 """
 from __future__ import annotations
 
@@ -157,6 +157,25 @@ def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_
         },
         ignore_keys=_USER_INFO_FETCH_BY_ID_STRICT_IGNORE_KEYS,
     )
+
+
+def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
+    """fetchOwnInfo：当前原生通道未实现 direct cmd，更新资料后冻结真实 MissingPlugin 返回。"""
+    device_a.call(
+        "UserInfoManager",
+        Cmd.updateOwnUserInfo.value,
+        info={
+            "nickName": "nick-own-info",
+            "sign": "sign-own-info",
+            "mail": "mail-own-info@example.com",
+        },
+    )
+    resp = device_a.call(
+        "UserInfoManager",
+        Cmd.fetchOwnInfo.value,
+        info={},
+    )
+    assert_api.assert_error(resp, code=-1, description="MissingPluginException")
 
 
 def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_api, user_a):
@@ -357,4 +376,3 @@ def test_user_info_fetch_by_id_user_ids_over_100(device_a, assert_api):
         info={"userIds": user_ids},
     )
     assert_api.assert_error(resp, code=900, description=" The maximum number of user IDs is exceeded.")
-
