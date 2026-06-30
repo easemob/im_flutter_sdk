@@ -367,11 +367,11 @@
 113. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_read_count_and_mark_read`
    制造未读消息后校验 `unreadCount`，并覆盖 `markMessageAsRead`、`markAllMessagesAsRead` 的已读清零链路。
 114. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_load_message_and_message_lists`
-   覆盖 `loadMessage`、`loadMessages`、`loadMessagesFromTime`，按 ID、数量和时间窗口加载本地消息。
+   覆盖 `loadMsgWithId`、`loadMsgWithStartId`、`loadMsgWithTime`，按 ID、起始消息 ID 和时间窗口加载本地消息。
 115. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_ext_and_count_queries`
    覆盖 `setExt`、`messagesCount`、`getLocalMessageCount`、`remindType`、`loadPinnedMessages`，校验会话扩展、计数、免打扰和置顶消息查询。
 116. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_local_insert_append_update_and_delete`
-   覆盖 `insertMessage`、`appendMessage`、`updateMessage`、`deleteMessage`、`deleteMessagesWithTs`、`deleteAllMessages`，验证本地消息写入、更新和删除链路。
+   覆盖 `insertMessage`、`appendMessage`、`updateConversationMessage`、`removeMessage`、`deleteMessagesWithTs`、`clearAllMessages`，验证本地消息写入、更新和删除链路。
 117. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_current_behavior`
    覆盖 `deleteLocalAndServerMessages`，按消息 ID 删除本地及服务端消息，冻结当前返回 `result=None`。
 
@@ -387,21 +387,27 @@
 
 正常 cases
 121. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_pin_unpin_and_fetch_pinned_messages`
-   覆盖 `pinMessage`、`unpinMessage`、`fetchPinnedMessages`，发送消息后置顶、拉取置顶列表，再取消置顶并确认列表清空。
-122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_by_options`
+   覆盖 `pinMessage`、`unpinMessage`、`fetchPinnedMessages`，发送消息后置顶、拉取置顶列表，再取消置顶并确认列表清空；同时断言接收方 `onMessagePinChanged` 置顶/取消置顶事件。
+122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_recall_message_receiver_recalled_info_event`
+   覆盖 `recallMessage` 正常撤回链路，发送方撤回已送达单聊消息后，接收方收到 `onMessagesRecalledInfo` 事件；按真实模拟器返回断言 `recallMsgId`、`convId`、`msg` 与 `ext`。
+123. `tests/chat/test_chat_reaction_fetch.py::test_chat_reaction_change_event_received_by_sender`
+   覆盖 `addReaction` 正常事件链路，接收方给单聊消息添加 reaction 后，发送方收到 `onMessageReactionDidChange` 事件；按真实模拟器返回断言 `convId`、`msgId`、`operations` 与 `reactions`。
+124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_options`
    覆盖 `addRemoteAndLocalConversationsMark`、`deleteRemoteAndLocalConversationsMark`、`fetchConversationsByOptions`，标记会话后按 options 拉取并校验 mark，再删除标记。
-123. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_count_and_search_options`
+125. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_count_and_search_options_boundaries`
    覆盖 `getMessageCount` 与 `searchMsgsByOptions`，冻结当前消息总数非负与 `count=0` 搜索返回空列表的边界语义。
-124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_delete_all_message_and_conversation_local`
+126. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_delete_all_message_and_conversation_local`
    覆盖 `deleteAllMessageAndConversation`，以 `clearServerData=false` 清理本地消息和会话，冻结实测返回 `result=null`。
-125. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_object_boundary_methods`
+127. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_object_boundary_methods`
    覆盖 `importMessages`、`updateMessage`、`resendMessage`，使用本地构造文本消息导入、更新正文、重发，并冻结更新后消息对象返回。
-126. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_fetch_group_acks_success`
+128. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_fetch_group_acks_success`
    覆盖 `fetchGroupAcks` / `asyncFetchGroupAcks`，发送需要群回执的群消息并发送回执后分页查询，冻结当前真实返回 `cursor=""` 且 `list=[]`。
+130. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
+   覆盖 `sendMessageWithType(type=cmd)` 正常链路，发送 CMD 消息后接收方收到 `onCmdMessagesReceived`；按真实模拟器返回断言 `body.type=6`、`action`、`convId`、`direction` 与消息 ID。
 
 异常/边界 cases
-127. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_group_ack_boundary_methods`
+129. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_group_ack_boundary_methods`
    覆盖 `sendGroupMessageReadAck` / `ackGroupMessageRead` 非法群消息 ID 与群 ID 边界，冻结当前端返回 `result=true`。
 
 ## 统计
-- 当前记录 case 条目总数：`127`
+- 当前记录 case 条目总数：`130`

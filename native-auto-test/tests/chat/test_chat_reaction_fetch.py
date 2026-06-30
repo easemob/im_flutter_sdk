@@ -1,7 +1,85 @@
 from __future__ import annotations
 
+import uuid
+
 from src import Cmd
 from tests.chat._utils import build_text
+
+
+ON_MESSAGE_REACTION_DID_CHANGE = "onMessageReactionDidChange"
+
+
+def _send_text_and_wait_received(device_a, device_b, user_a: str, user_b: str, content: str) -> str:
+    try:
+        device_a.drain_events()
+        device_b.drain_events()
+    except Exception:
+        pass
+
+    resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
+    temp_id = ((resp.get("result") or {}).get("msgId"))
+    assert temp_id, f"sendMessage 未返回临时 msgId: {resp}"
+    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
+    assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
+
+    seen_events = []
+    for _ in range(5):
+        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        if evt_received:
+            seen_events.append(evt_received)
+        messages = ((evt_received or {}).get("data") or {}).get("messages") or []
+        if any(isinstance(m, dict) and m.get("msgId") == real_id for m in messages):
+            return str(real_id)
+    raise AssertionError(f"B 端未收到目标消息 msgId={real_id}: events={seen_events}")
+
+
+def test_chat_reaction_change_event_received_by_sender(device_a, device_b, assert_api, user_a, user_b):
+    """addReaction：接收方给单聊消息添加 reaction，发送方收到 onMessageReactionDidChange 事件并携带操作人、reaction 与消息 ID。"""
+    reaction = f"r_{uuid.uuid4().hex[:6]}"
+    real_id = _send_text_and_wait_received(
+        device_a,
+        device_b,
+        user_a,
+        user_b,
+        f"reaction-event-{uuid.uuid4().hex[:8]}",
+    )
+
+    resp = device_b.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.addReaction.value,
+            "device": "deviceB",
+            "result": None,
+        },
+        ignore_keys={"sequence"},
+    )
+
+    evt = device_a.receive_message(match_event_type=ON_MESSAGE_REACTION_DID_CHANGE, timeout=20.0)
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": ON_MESSAGE_REACTION_DID_CHANGE,
+            "data": {
+                "events": [
+                    {
+                        "convId": user_b,
+                        "msgId": real_id,
+                        "operations": [
+                            {"userId": user_b, "reaction": reaction, "operate": 1},
+                        ],
+                        "reactions": [
+                            {"reaction": reaction, "count": 1, "isAddedBySelf": False, "userList": [user_b]},
+                        ],
+                    },
+                ],
+            },
+        },
+        ignore_keys={"timestamp"},
+    )
 
 
 def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
