@@ -47,17 +47,27 @@
 12. `tests/user_info/test_user_info.py::test_user_info_fetch_by_id_user_ids_over_100`
     userIds 数量超过上限查询，验证数量边界错误语义。
 
+## fetchOwnInfo
+
+正常 cases
+13. `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_user_info_by_id`
+    `fetchOwnInfo` Dart 成功语义等价于当前登录用户 `fetchUserInfoById([currentUser])`，更新本人资料后按 userId 拉取，验证 userId、昵称、签名和邮箱字段。
+
+异常 cases
+14. `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_own_info`
+    直接调用 `fetchOwnInfo` cmd 时，当前原生通道真实返回 `MissingPluginException`；成功语义由上述 Dart 等价链路覆盖。
+
 ## fetchUserInfoByIdWithType
 
 正常 cases
-13. `tests/user_info/test_user_info.py::test_user_info_fetch_by_id_with_type_normal`
+15. `tests/user_info/test_user_info.py::test_user_info_fetch_by_id_with_type_normal`
     按 userInfoTypes 过滤查询用户资料，验证类型过滤结果。
-14. `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_user_info_by_id_with_type`
+16. `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_user_info_by_id_with_type`
     更新后按类型查询本人资料，验证字段回传与过滤一致。
 
 异常 cases
-15. 无（当前测试集中未单独覆盖该 API 的错误入参）。
+17. 无（当前测试集中未单独覆盖该 API 的错误入参）。
     当前仅覆盖正常类型过滤路径，异常 type 组合待补充。
 
 ## 统计
-- 当前记录 case 条目总数：`15`
+- 当前记录 case 条目总数：`17`

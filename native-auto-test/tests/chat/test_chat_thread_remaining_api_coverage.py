@@ -123,6 +123,32 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
         ignore_keys={"sequence", "memberCount", "messageCount", "lastMessage"},
     )
 
+    create_evt = device_b.receive_message(match_event_type=Cmd.onChatThreadCreate.value, timeout=20.0)
+    assert_api.assert_response_matches(
+        create_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onChatThreadCreate.value,
+            "data": {
+                "event": {
+                    "type": 1,
+                    "from": user_a,
+                    "thread": {
+                        "threadId": thread_id,
+                        "threadName": thread_name,
+                        "owner": "",
+                        "parentId": group_id,
+                        "msgId": parent_msg_id,
+                        "memberCount": 0,
+                        "messageCount": 0,
+                        "createAt": ne(None),
+                    },
+                },
+            },
+        },
+        ignore_keys={"timestamp"},
+    )
+
     resp_join = device_b.call(
         "ChatThreadManager",
         Cmd.joinChatThread.value,
@@ -177,8 +203,9 @@ def _cleanup_thread_context(device_a, device_b, assert_api, context: dict):
                 "manager": "ChatThreadManager",
                 "cmd": Cmd.destroyChatThread.value,
                 "device": "deviceA",
+                "result": True,
             },
-            ignore_keys={"sequence", "result", "error"},
+            ignore_keys={"sequence"},
         )
     if group_id:
         destroy_group(device_a, assert_api, group_id, device_b=device_b)
@@ -396,6 +423,32 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
+        update_evt = device_b.receive_message(match_event_type=Cmd.onChatThreadUpdate.value, timeout=20.0)
+        assert_api.assert_response_matches(
+            update_evt,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onChatThreadUpdate.value,
+                "data": {
+                    "event": {
+                        "type": 2,
+                        "from": user_a,
+                        "thread": {
+                            "threadId": thread_id,
+                            "threadName": new_name,
+                            "owner": "",
+                            "parentId": group_id,
+                            "msgId": context["parent_msg_id"],
+                            "memberCount": 0,
+                            "messageCount": 0,
+                            "createAt": 0,
+                        },
+                    },
+                },
+            },
+            ignore_keys={"timestamp"},
+        )
+
         detail_resp = device_a.call(
             "ChatThreadManager",
             Cmd.fetchChatThreadDetail.value,
@@ -448,5 +501,58 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
         )
         items = (joined_parent_resp.get("result") or {}).get("list") or []
         assert not any(isinstance(item, dict) and item.get("threadId") == thread_id for item in items)
+    finally:
+        _cleanup_thread_context(device_a, device_b, assert_api, context)
+
+
+def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, assert_api, user_a, user_b):
+    """destroyChatThread：子区创建后由 owner 解散，群成员收到 onChatThreadDestroy 事件并携带子区信息。"""
+    context: dict = {}
+    try:
+        context = _create_thread_context(device_a, device_b, assert_api, user_a, user_b)
+        thread_id = context["thread_id"]
+
+        destroy_resp = device_a.call(
+            "ChatThreadManager",
+            Cmd.destroyChatThread.value,
+            info={"threadId": thread_id},
+        )
+        assert_api.assert_response_matches(
+            destroy_resp,
+            expected={
+                "manager": "ChatThreadManager",
+                "cmd": Cmd.destroyChatThread.value,
+                "device": "deviceA",
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
+        destroy_evt = device_b.receive_message(match_event_type=Cmd.onChatThreadDestroy.value, timeout=20.0)
+        assert_api.assert_response_matches(
+            destroy_evt,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onChatThreadDestroy.value,
+                "data": {
+                    "event": {
+                        "type": 3,
+                        "from": user_a,
+                        "thread": {
+                            "threadId": thread_id,
+                            "threadName": context["thread_name"],
+                            "owner": "",
+                            "parentId": context["group_id"],
+                            "msgId": context["parent_msg_id"],
+                            "memberCount": 0,
+                            "messageCount": 0,
+                            "createAt": 0,
+                        },
+                    },
+                },
+            },
+            ignore_keys={"timestamp"},
+        )
+        context["thread_id"] = ""
     finally:
         _cleanup_thread_context(device_a, device_b, assert_api, context)

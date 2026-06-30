@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 from src import Cmd
+from src.tools.config import get_sdk_app_key
 
 
 pytestmark = [pytest.mark.client]
@@ -39,6 +40,39 @@ def test_client_connection_state_queries(device_a, assert_api):
         },
         ignore_keys={"sequence"},
     )
+
+
+def test_client_init_repeated_call_idempotent(device_a, assert_api):
+    """init：SDK 已初始化后重复调用，验证原生幂等返回 result=null，不改变当前登录态。"""
+    app_key = get_sdk_app_key()
+    assert app_key, "config.yaml sdk_options.app_key 不能为空"
+    resp = device_a.call(
+        "Client",
+        Cmd.init.value,
+        info={"appKey": app_key, "debugModel": True},
+    )
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "Client",
+            "cmd": Cmd.init.value,
+            "device": "deviceA",
+            "result": None,
+        },
+        ignore_keys={"sequence"},
+    )
+
+    current_user_resp = device_a.call("Client", Cmd.getCurrentUser.value, info={})
+    assert_api.assert_response_matches(
+        current_user_resp,
+        expected={
+            "manager": "Client",
+            "cmd": Cmd.getCurrentUser.value,
+            "device": "deviceA",
+        },
+        ignore_keys={"sequence", "result"},
+    )
+    assert current_user_resp.get("result"), "重复 init 后当前登录用户不应被清空"
 
 
 def test_client_current_token_and_device_id(device_a, assert_api):
@@ -87,6 +121,16 @@ def test_client_compress_logs_returns_path(device_a, assert_api):
     )
     assert isinstance(resp.get("result"), str)
     assert resp["result"], "compressLogs 应返回非空路径字符串"
+
+
+def test_client_create_account_empty_user_boundary(device_a, assert_api):
+    """createAccount：空 userId/password 边界，冻结真实模拟器参数校验错误，不创建新账号。"""
+    resp = device_a.call(
+        "Client",
+        Cmd.createAccount.value,
+        info={"userId": "", "password": ""},
+    )
+    assert_api.assert_error(resp, code=205, description="illegal user name")
 
 
 @pytest.mark.parametrize(
@@ -177,6 +221,12 @@ def test_client_update_runtime_setting_success(device_a, assert_api, cmd, info):
             Cmd.kickAllDevices.value,
             {"userId": "__invalid_user__", "password": "__invalid_pwd__", "isPwd": True},
             {"code": 204, "description": "User does not exist"},
+        ),
+        # loginWithAgoraToken：非法账号与空 token 边界，不应切换当前密码登录态。
+        (
+            Cmd.loginWithAgoraToken.value,
+            {"userId": "__invalid_user__", "agora_token": ""},
+            {"code": 110, "description": "username or token is null or empty!"},
         ),
     ],
 )
