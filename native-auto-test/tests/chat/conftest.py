@@ -72,6 +72,9 @@ def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
                 ignore_keys={"sequence"},
             )
     else:
-        # 已是好友或环境返回错误体（如已登录/已添加），此处不阻断，用最小信封通过
-        # 仅校验信封，放宽 result 形状
         assert resp_add.get("manager") == "ContactManager" and resp_add.get("cmd") == Cmd.addContact.value
+        retry_server_resp = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+        assert user_b in (retry_server_resp.get("result") or []), (
+            "chat 用例前置好友关系未建立，不能继续执行依赖好友关系的消息链路: "
+            f"addContact={resp_add}, contacts={retry_server_resp}"
+        )

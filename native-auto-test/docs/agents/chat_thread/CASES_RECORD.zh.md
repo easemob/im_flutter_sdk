@@ -36,10 +36,12 @@
 
 正常 cases
 7. `tests/chat/test_chat_thread_remaining_api_coverage.py::test_chat_thread_update_name_and_leave`
-   创建并加入子区后，A 修改子区名称并通过详情确认新名称；B 退出子区后，再拉取指定群已加入子区列表确认目标 `threadId` 已消失。
+   创建并加入子区后，断言群成员收到 `onChatThreadCreate`；A 修改子区名称后断言群成员收到 `onChatThreadUpdate`，并通过详情确认新名称；B 退出子区后，再拉取指定群已加入子区列表确认目标 `threadId` 已消失。
+8. `tests/chat/test_chat_thread_remaining_api_coverage.py::test_chat_thread_destroy_event_received_by_group_member`
+   创建并加入子区后，A 解散子区，断言群成员收到 `onChatThreadDestroy`，并按真实模拟器返回冻结 `type/from/threadId/threadName/parentId/msgId/createAt` 等关键字段。
 
 异常 cases
-8. 无（本批按方法级正常链路覆盖；超长名称/非法 threadId 后续作为边界专项补充）。
+9. 无（本批按方法级正常链路覆盖；超长名称/非法 threadId 后续作为边界专项补充）。
 
 ## 统计
-- 当前记录 case 条目总数：`8`
+- 当前记录 case 条目总数：`9`

@@ -96,6 +96,7 @@ def _wait_for_member_state(
     user_id: str,
     should_contain: bool,
     device_name: str,
+    context: str = "",
     timeout: float = 8.0,
 ) -> list[str]:
     deadline = time.monotonic() + timeout
@@ -106,7 +107,8 @@ def _wait_for_member_state(
             return last_members
         time.sleep(0.5)
     expectation = "包含" if should_contain else "不包含"
-    raise AssertionError(f"成员列表未达到预期：roomId={room_id} 应{expectation} {user_id}, members={last_members}")
+    prefix = f"{context}：" if context else ""
+    raise AssertionError(f"{prefix}成员列表未达到预期：roomId={room_id} 应{expectation} {user_id}, members={last_members}")
 
 
 def _assert_local_rooms(
@@ -114,7 +116,6 @@ def _assert_local_rooms(
     assert_api,
     *,
     present: set[str],
-    absent: set[str] | None = None,
     device_name: str = "deviceB",
 ) -> None:
     resp = device.call("ChatRoomManager", Cmd.getAllChatRooms.value, info={})
@@ -132,9 +133,7 @@ def _assert_local_rooms(
     assert isinstance(rooms, list), f"getAllChatRooms result 应为 list: {resp}"
     room_ids = {room.get("roomId") for room in rooms if isinstance(room, dict)}
     missing = present - room_ids
-    unexpected = (absent or set()) & room_ids
     assert not missing, f"本地聊天室列表缺少预期房间: missing={missing}, rooms={rooms}"
-    assert not unexpected, f"本地聊天室列表仍包含应退出房间: unexpected={unexpected}, rooms={rooms}"
 
 
 def test_chatroom_join_then_get_local_room_and_all_rooms(device_a, device_b, assert_api, user_a, user_b):
@@ -371,6 +370,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
             user_id=user_b,
             should_contain=True,
             device_name="deviceA",
+            context="leaveOtherRooms=false 应保留旧聊天室",
         )
         _wait_for_member_state(
             device_a,
@@ -379,6 +379,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
             user_id=user_b,
             should_contain=True,
             device_name="deviceA",
+            context="leaveOtherRooms=false 应加入新聊天室",
         )
         _assert_local_rooms(
             device_b,
@@ -394,6 +395,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
             user_id=user_b,
             should_contain=True,
             device_name="deviceA",
+            context="leaveOtherRooms=true 前置条件应先加入旧聊天室",
         )
 
         _join_room(device_b, assert_api, room_id=room_drop_b, leave_other_rooms=True)
@@ -404,6 +406,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
             user_id=user_b,
             should_contain=False,
             device_name="deviceA",
+            context="leaveOtherRooms=true 应退出旧聊天室",
         )
         _wait_for_member_state(
             device_a,
@@ -412,6 +415,7 @@ def test_chatroom_join_leave_other_rooms_option_controls_existing_rooms(device_a
             user_id=user_b,
             should_contain=True,
             device_name="deviceA",
+            context="leaveOtherRooms=true 应加入新聊天室",
         )
         _assert_local_rooms(
             device_b,

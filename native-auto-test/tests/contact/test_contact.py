@@ -609,6 +609,14 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
         ignore_keys={"sequence"},
     )
 
+    # fetchAllContactIds：当前原生通道未实现 direct cmd，冻结真实 MissingPlugin 返回；Dart 方法复用旧 native cmd。
+    resp_fetch_ids = device_a.call(
+        "ContactManager",
+        Cmd.fetchAllContactIds.value,
+        info={},
+    )
+    assert_api.assert_error(resp_fetch_ids, code=-1, description="MissingPluginException")
+
     # fetchAllContacts：服务端一次性好友（含 userId + remark）
     resp_fetch_all = device_a.call(
         "ContactManager",
@@ -691,6 +699,14 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
         },
         ignore_keys={"sequence"},
     )
+
+    # getAllContactIds：当前原生通道未实现 direct cmd，冻结真实 MissingPlugin 返回；本地 ID 读取由 getAllContactsFromDB 覆盖。
+    resp_local_ids = device_a.call(
+        "ContactManager",
+        Cmd.getAllContactIds.value,
+        info={},
+    )
+    assert_api.assert_error(resp_local_ids, code=-1, description="MissingPluginException")
 
     flow.delete_friend(device_a, user_b)
 
