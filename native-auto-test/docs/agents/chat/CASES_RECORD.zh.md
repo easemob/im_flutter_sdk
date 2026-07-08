@@ -21,9 +21,9 @@
 
 正常 cases
 4. `tests/chat/test_chat_s1_local_conversation.py::test_chat_get_unread_count_positive_then_zero`
-   先制造未读再读取计数并清零，验证未读数变化链路正确。
+   先制造未读再读取计数并清零，按当前 Android 实测冻结 `markAllChatMsgAsRead result=True` 与未读数变化。
 5. `tests/chat/test_chat_s1_local_conversation.py::test_chat_mark_all_as_read_idempotent`
-   连续执行全部已读操作，验证重复调用幂等且不引入副作用。
+   连续执行全部已读操作，按当前 Android 实测冻结幂等返回 `result=True` 且未读数保持为 0。
 
 异常 cases
 6. 无（当前未单独覆盖错误入参）。
@@ -55,7 +55,7 @@
 14. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_basic`
    发送基础文本消息，验证普通文本类型发送与接收成功。
 15. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_with_languages`
-   发送多语言文本内容，验证字符集与内容回传稳定。
+   发送带 `targetLanguages` 的文本内容，按当前 Android 实测冻结同步返回临时消息后异步 `onMessageError(code=1113)` 翻译失败语义。
 16. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_file`
    发送文件消息，校验文件消息类型和关键元数据字段。
 17. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_image`
@@ -105,23 +105,23 @@
 
 正常 cases
 31. `tests/chat/test_chat_crud.py::test_chat_ack_message_read_success`
-   对有效消息回执已读，验证同步响应成功语义。
+   对有效消息回执已读，按当前 Android 实测冻结同步响应 `result=True` 与发送方已读事件。
 32. `tests/chat/test_chat_ack_read_strict.py::test_chat_ack_message_read_success_with_event`
-   已读回执成功后补充校验接收端事件，确保回调链路完整。
+   已读回执成功后按当前 Android 实测冻结同步响应 `result=True`，并补充校验发送方已读事件。
 33. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_success_with_event`
-   会话级已读回执成功并校验事件，验证会话维度已读链路。
+   会话级已读回执成功，按当前 Android 实测冻结同步响应 `result=True`，并校验会话维度已读事件。
 
 异常 cases
 34. `tests/chat/test_chat_ack_read_strict.py::test_chat_ack_message_read_invalid_msg_id`
-   对非法消息 ID 回执已读，冻结错误语义与关键字段。
+   对非法消息 ID 回执已读，当前 Android 实测返回 `result=True`，按现状语义冻结。
 35. `tests/chat/test_chat_crud.py::test_chat_ack_conversation_read_invalid_id_response`
-   使用无效会话 ID 做会话已读回执，验证异常返回。
+   使用无效会话 ID 做会话已读回执，按 SDK 参数 `convId` 调用并冻结业务错误 `500/Message is invalid`。
 36. `tests/chat/test_chat.py::test_chat_ack_conversation_read_invalid_id_response`
-   在历史兼容入口复核无效会话 ID 的错误一致性。
+   在历史兼容入口复核无效会话 ID 的业务错误一致性。
 37. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_invalid_conv_id`
-   明确非法会话 ID 参数时，校验参数错误语义。
+   明确非法会话 ID 参数时，按 SDK 参数 `convId` 调用并冻结业务错误 `500/Message is invalid`。
 38. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_empty_conv_id`
-   传空会话 ID 回执会话已读，验证空入参异常语义。
+   传空会话 ID 回执会话已读，按 SDK 参数 `convId` 调用并冻结业务错误 `500/Message is invalid`。
 
 ## addReaction / removeReaction / fetchReactionList / fetchReactionDetail
 
@@ -166,8 +166,7 @@
 ## pinConversation
 
 正常 cases
-56. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_pin_conversation_success_toggle`
-   对有效会话执行置顶与取消置顶，验证开关状态切换正确。
+56. 无（当前 Android 实测有效会话置顶持续返回 `303/concurrent operation are not allowed`，成功 toggle 链路移入 `CASES_DEFERRED.zh.md`）。
 
 异常 cases
 57. `tests/chat/test_chat_crud.py::test_chat_pin_conversation_nonexistent_conversation`
@@ -189,9 +188,9 @@
 
 异常 cases
 63. `tests/chat/test_chat_crud.py::test_chat_fetch_history_invalid_conversation`
-   对无效会话拉取历史消息，冻结错误语义。
+   对无效会话拉取历史消息，按 SDK 参数 `convId/type/startMsgId/direction` 调用并冻结当前返回空 `cursor/list` 语义。
 64. `tests/chat/test_chat.py::test_chat_fetch_history_invalid_conversation`
-   在兼容入口复核无效会话历史查询错误。
+   在兼容入口复核无效会话历史查询返回空 `cursor/list` 的一致性。
 65. `tests/chat/test_chat_crud.py::test_chat_fetch_history_by_options_invalid_conversation`
    使用 options 接口查询无效会话，验证异常返回。
 66. `tests/chat/test_chat_s3_non_message_ops.py::test_chat_fetch_history_messages_invalid_conv_id`
@@ -209,7 +208,7 @@
 70. `tests/chat/test_chat_s2_server_ops.py::test_chat_get_conversations_from_server_success`
    服务端拉取会话列表成功，验证分页结果结构可用。
 71. `tests/chat/test_chat_s2_server_ops.py::test_chat_get_conversations_from_server_with_cursor_success`
-   使用 cursor 拉取服务端会话成功，验证游标链路正确。
+   使用 cursor 拉取服务端会话成功，先制造目标会话并按目标 `convId` 过滤校验，避免历史服务端会话污染空列表预期。
 72. `tests/chat/test_chat_s2_server_ops.py::test_chat_get_conversations_from_server_with_cursor_invalid_page_size_zero`（当前端返回成功语义）
    pageSize=0 时当前端仍返回成功结构，冻结现状语义用于回归。
 73. `tests/chat/test_chat_s2_server_ops.py::test_chat_get_conversations_from_server_with_cursor_invalid_page_size_negative`（当前端返回成功语义）
@@ -349,9 +348,9 @@
 
 正常 cases
 108. `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`
-   覆盖文件、图片、视频消息发送与接收，并验证 `downloadAttachment`、`downloadBigImage`、`downloadThumbnail` 的同步响应、进度事件与成功事件。
+   覆盖文件、图片、视频消息发送与接收，并验证 `downloadAttachment`、`downloadBigImage`、`downloadThumbnail` 的同步响应；文件/图片下载按进度与成功事件断言，视频缩略图按当前实测 `onMessageError 403/Failed to download the file` 断言。
 109. `tests/chat/test_chat_s423_message_callback_and_combine.py::test_combine_forward_send_receive_and_inner_attachment_download`
-   覆盖图片/视频合并转发消息发送、接收、解析，并验证合并消息内部附件下载和缩略图下载的进度/成功事件。
+   覆盖图片/视频合并转发消息发送、接收、解析，并验证合并消息内部附件下载和缩略图下载；内部下载进度事件当前实测不是稳定必发，若派发则校验范围，最终成功事件仍 strict 断言；视频内部缩略图按当前实测 `onMessageError 403/Failed to download the file` 断言。
 
 异常 cases
 110. `tests/chat/test_chat_crud.py::test_chat_download_attachment_invalid_id_response`
@@ -363,9 +362,9 @@
 
 正常 cases
 112. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_latest_and_last_received_messages`
-   发送单聊消息后校验 `latestMessage` 与 `lastReceivedMessage`，覆盖最新消息与最近收到消息查询。
+   发送单聊消息后校验 `latestMessage` 与 `lastReceivedMessage`，覆盖最新消息与最近收到消息查询；接收消息体按当前端返回兼容 `targetLanguages/translations`。
 113. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_read_count_and_mark_read`
-   制造未读消息后校验 `unreadCount`，并覆盖 `markMessageAsRead`、`markAllMessagesAsRead` 的已读清零链路。
+   制造未读消息后校验 `unreadCount`，并覆盖 `markMessageAsRead`、`markAllMessagesAsRead` 的已读清零链路；按 discovery 冻结当前返回 `result=true`。
 114. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_load_message_and_message_lists`
    覆盖 `loadMsgWithId`、`loadMsgWithStartId`、`loadMsgWithTime`，按 ID、起始消息 ID 和时间窗口加载本地消息。
 115. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_ext_and_count_queries`
@@ -373,15 +372,15 @@
 116. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_local_insert_append_update_and_delete`
    覆盖 `insertMessage`、`appendMessage`、`updateConversationMessage`、`removeMessage`、`deleteMessagesWithTs`、`clearAllMessages`，验证本地消息写入、更新和删除链路。
 117. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_current_behavior`
-   覆盖 `deleteLocalAndServerMessages`，按消息 ID 删除本地及服务端消息，冻结当前返回 `result=None`。
+   覆盖 `deleteLocalAndServerMessages`，按消息 ID 删除本地及服务端消息，冻结当前返回 `result=None` 或实测业务错误。
 
 异常/边界 cases
 118. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_type_keyword_and_options_search_current_behavior`
    覆盖 `loadMessagesWithMsgType`、`loadMessagesWithKeyword`、`searchMsgsByOptions`，使用 `count=0` 和唯一关键词冻结当前空列表边界返回。
 119. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_invalid_message_id_boundaries`
    覆盖 `loadMessage` 不存在消息 ID、`markMessageAsRead` 不存在消息 ID、`deleteMessageByIds` 空列表，冻结当前端边界返回。
-120. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_current_behavior`
-   覆盖 `deleteLocalAndServerMessagesByTime` 当前 Android 端 `MissingPluginException` 返回，作为环境真实异常语义记录。
+120. `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_by_time_bridge_missing`
+   `deleteLocalAndServerMessagesByTime` 当前 Android 端 direct cmd 返回 `MissingPluginException`，记录为桥接缺口并 xfail；不作为 SDK 业务异常语义。
 
 ## EMChatManager 方法级补齐
 
@@ -389,7 +388,7 @@
 121. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_pin_unpin_and_fetch_pinned_messages`
    覆盖 `pinMessage`、`unpinMessage`、`fetchPinnedMessages`，发送消息后置顶、拉取置顶列表，再取消置顶并确认列表清空；同时断言接收方 `onMessagePinChanged` 置顶/取消置顶事件。
 122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_recall_message_receiver_recalled_info_event`
-   覆盖 `recallMessage` 正常撤回链路，发送方撤回已送达单聊消息后，接收方收到 `onMessagesRecalledInfo` 事件；按真实模拟器返回断言 `recallMsgId`、`convId`、`msg` 与 `ext`。
+   覆盖 `recallMessage` 正常撤回链路，发送方撤回已送达单聊消息后，接收方收到 `onMessagesRecalledInfo` 事件；按真实模拟器返回断言 `recallMsgId`、`convId`、`msg` 与 `ext`，消息体兼容 `translations` 且 `receiverList` 可选。
 123. `tests/chat/test_chat_reaction_fetch.py::test_chat_reaction_change_event_received_by_sender`
    覆盖 `addReaction` 正常事件链路，接收方给单聊消息添加 reaction 后，发送方收到 `onMessageReactionDidChange` 事件；按真实模拟器返回断言 `convId`、`msgId`、`operations` 与 `reactions`。
 124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_options`
@@ -401,9 +400,9 @@
 127. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_object_boundary_methods`
    覆盖 `importMessages`、`updateMessage`、`resendMessage`，使用本地构造文本消息导入、更新正文、重发，并冻结更新后消息对象返回。
 128. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_fetch_group_acks_success`
-   覆盖 `fetchGroupAcks` / `asyncFetchGroupAcks`，发送需要群回执的群消息并发送回执后分页查询，冻结当前真实返回 `cursor=""` 且 `list=[]`。
+   覆盖 `fetchGroupAcks` / `asyncFetchGroupAcks`，发送需要群回执的群消息并发送回执后分页查询；按 discovery 冻结 `ackGroupMessageRead result=true`，查询返回 `cursor=""` 且 `list=[]`。
 130. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
-   覆盖 `sendMessageWithType(type=cmd)` 正常链路，发送 CMD 消息后接收方收到 `onCmdMessagesReceived`；按真实模拟器返回断言 `body.type=6`、`action`、`convId`、`direction` 与消息 ID。
+   覆盖 `sendMessageWithType(type=cmd)` 正常链路，发送 CMD 消息后接收方收到 `onCmdMessagesReceived`；按真实模拟器返回断言 `body.type=6`、`action`、`convId`、`direction` 与消息 ID，`receiverList` 按当前端可选字段处理。
 
 异常/边界 cases
 129. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_group_ack_boundary_methods`

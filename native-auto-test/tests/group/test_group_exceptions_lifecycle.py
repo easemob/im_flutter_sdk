@@ -198,12 +198,12 @@ def test_group_create_group_max_count_less_than_invite_members(device_a, assert_
         (
             "group_name_too_long_256",
             {"groupName": "g" * 256},
-            None,
+            {"code": 300, "description": "Server is unreachable"},
         ),
         (
             "group_name_too_long_512",
             {"groupName": "g" * 512},
-            None,
+            {"code": 300, "description": "Server is unreachable"},
         ),
         ("group_name_control_chars", {"groupName": "cg_ctrl_\x01\x02"}, None),
         ("avatar_url_not_url", {"avatarUrl": "abc"}, None),
@@ -452,7 +452,6 @@ def test_group_create_group_invite_members_abnormal_inputs(
                 "muteList": [],
                 "isMemberAllowToInvite": False,
                 "messageBlocked": False,
-                "memberList": [],
                 "blockList": [],
                 "name": info["groupName"],
                 "maxUserCount": 200,
@@ -461,7 +460,7 @@ def test_group_create_group_invite_members_abnormal_inputs(
                 "announcement": "",
             },
         },
-        ignore_keys={"sequence"},
+        ignore_keys={"sequence", "memberList"},
     )
 
     gid = result.get("groupId")

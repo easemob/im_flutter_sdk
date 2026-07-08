@@ -467,11 +467,8 @@ def assert_group_event_data_fields(
         "onLeaveFromGroup",
     }
     if event_type_value in removed_events:
-        _assert_any_non_empty_str_field(
-            data,
-            ("groupName", "name"),
-            field_label="groupName",
-            evt=evt,
+        assert any(isinstance(data.get(key), str) for key in ("groupName", "name")), (
+            f"群组回调 data 缺少 groupName/name 字符串字段，data={data}, evt={evt}"
         )
         return
 

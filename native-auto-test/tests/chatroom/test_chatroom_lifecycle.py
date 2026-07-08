@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 
 from src import Cmd, ne
-from tests.chatroom.chatroom_helpers import create_chatroom_or_skip, safe_delete_chatroom
+from tests.chatroom.chatroom_helpers import assert_join_chatroom_response, create_chatroom_or_skip, safe_delete_chatroom
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chatroom, pytest.mark.agorachat1_4_0]
@@ -67,16 +67,7 @@ def test_chatroom_fetch_room_info_with_members_from_server(device_a, device_b, a
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="fetch_members", desc_prefix="fetch_members")
     try:
         join_resp = device_b.call("ChatRoomManager", Cmd.joinChatRoom.value, info={"roomId": room_id})
-        assert_api.assert_response_matches(
-            join_resp,
-            expected={
-                "manager": "ChatRoomManager",
-                "cmd": Cmd.joinChatRoom.value,
-                "device": "deviceB",
-                "result": 1,
-            },
-            ignore_keys={"sequence"},
-        )
+        assert_join_chatroom_response(assert_api, join_resp, device="deviceB", room_id=room_id)
 
         resp = device_a.call(
             "ChatRoomManager",

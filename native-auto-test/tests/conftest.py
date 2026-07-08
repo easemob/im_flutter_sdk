@@ -144,7 +144,37 @@ def _session_login(
                     )
             except Exception:
                 pass
-        resp_a, resp_b = _do_login()
+        def _is_transient_login_failure(r: dict) -> bool:
+            result = r.get("result")
+            if not isinstance(result, dict):
+                return False
+            code = result.get("code")
+            desc = str(result.get("description", "")).lower()
+            return code == 350 or "timeout" in desc or "connect timeout" in desc
+
+        def _logout_before_retry() -> None:
+            for dev in (device_a, device_b):
+                try:
+                    dev.call("Client", Cmd.logout.value, info={"unbindToken": False})
+                except Exception:
+                    pass
+
+        resp_a = resp_b = {}
+        for attempt in range(1, 4):
+            try:
+                resp_a, resp_b = _do_login()
+            except TimeoutError:
+                if attempt >= 3:
+                    raise
+                _logout_before_retry()
+                time.sleep(float(attempt))
+                continue
+            if not (_is_transient_login_failure(resp_a) or _is_transient_login_failure(resp_b)):
+                break
+            if attempt >= 3:
+                break
+            _logout_before_retry()
+            time.sleep(float(attempt))
 
         # 仅在未配置 REST token 时，允许 WS createAccount 兜底
         if (not has_rest_token) and (_need_create_user(resp_a) or _need_create_user(resp_b)):

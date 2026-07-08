@@ -5,7 +5,9 @@ REST 聊天室管理辅助。
 from __future__ import annotations
 
 import json
+import socket
 import ssl
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -43,13 +45,22 @@ def _json_request(url: str, method: str, payload: Any | None = None) -> dict[str
             "Authorization": token,
         },
     )
-    try:
-        with _urlopen(req, timeout=30) as resp:
-            raw = resp.read().decode()
-            return json.loads(raw) if raw.strip() else {}
-    except urllib.error.HTTPError as e:
-        body = e.read().decode() if e.fp else ""
-        raise RuntimeError(f"聊天室 REST 调用失败 HTTP {e.code}: {body}") from e
+    last_timeout: TimeoutError | socket.timeout | None = None
+    for idx in range(3):
+        try:
+            with _urlopen(req, timeout=30) as resp:
+                raw = resp.read().decode()
+                return json.loads(raw) if raw.strip() else {}
+        except urllib.error.HTTPError as e:
+            body = e.read().decode() if e.fp else ""
+            raise RuntimeError(f"聊天室 REST 调用失败 HTTP {e.code}: {body}") from e
+        except (TimeoutError, socket.timeout) as e:
+            last_timeout = e
+            if idx < 2:
+                time.sleep(1.0)
+                continue
+            raise
+    raise last_timeout or RuntimeError("聊天室 REST 调用失败")
 
 
 def create_chat_room(

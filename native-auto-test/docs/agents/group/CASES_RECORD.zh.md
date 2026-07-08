@@ -19,11 +19,11 @@
 4. `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_max_count_less_than_invite_members`
    `maxCount < inviteMembers`，预期失败；冻结错误码 `604` 与容量上限语义。
 5. `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs`
-   覆盖 `groupName` 空格/控制字符/超长、`avatarUrl` 非 URL/FTP/超长，分别冻结成功或错误语义。
+   覆盖 `groupName` 空格/控制字符/超长、`avatarUrl` 非 URL/FTP/超长；其中 `groupName` 256/512 超长当前真实返回 `300/Server is unreachable`，其余按实测成功或错误语义冻结。
 6. `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_desc_reason_options_abnormal_inputs`
    覆盖 `desc/inviteReason/options.ext` 超长、`options.maxCount` 非法、`options.style` 越界等参数维度。
 7. `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_invite_members_abnormal_inputs`
-   覆盖 `inviteMembers` 重复用户与包含不存在用户，冻结当前端“可成功/失败”两类稳定返回。
+   覆盖 `inviteMembers` 重复用户与包含不存在用户，冻结当前端“可成功/失败”两类稳定返回；重复用户成功创建时稳定语义为 `memberCount=owner+去重成员数`，`memberList` 当前实测可能为空或返回去重成员，不作为 strict 字段。
 8. `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_text_fields_additional_inputs`
    对 `groupName/desc/inviteReason` 的空格、多行、符号输入做补充覆盖，验证文本类边界在当前端可回显。
 
@@ -384,9 +384,9 @@
 
 正常 cases
 96. `tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_and_accept_success`
-    B 向公开需审批群发起申请，校验同步响应为群详情结构；A 侧校验申请到达回调，A 同意后 B 侧校验“申请已同意”回调及入群回调。
+    B 向公开需审批群发起申请，当前同步响应冻结为 `result=null`；A 侧校验申请到达回调，A 同意后 B 侧校验“申请已同意”回调及入群回调。
 97. `tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_and_decline_success`
-    B 向公开需审批群发起申请，A 拒绝后 B 侧校验“申请已拒绝”回调与拒绝原因字段。
+    B 向公开需审批群发起申请，当前同步响应冻结为 `result=null`；A 拒绝后 B 侧校验“申请已拒绝”回调与拒绝原因字段。
 
 异常 cases
 98. `tests/group/test_group_join_requests_and_invitations.py::test_group_request_to_join_public_group_nonexistent_group`
@@ -469,7 +469,7 @@
 
 正常 cases
 116. `tests/group/test_group_moderation.py::test_group_block_unblock_members_success`
-     群主先 block 成员再 unblock，校验同步响应、被移除端回调、服务端 blockList 变化与回落。
+     群主先 block 成员再 unblock，校验同步响应、被移除端回调、服务端 blockList 变化与回落；当前实测 `onUserRemovedFromGroup` 的 `groupName` 字段可能为空字符串，仅校验字段存在与 groupId。
 
 异常 cases
 117. `tests/group/test_group_moderation.py::test_group_block_unblock_members_nonexistent_group[blockMembers]`
