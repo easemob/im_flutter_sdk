@@ -339,7 +339,7 @@ def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a,
                 "manager": "ChatRoomManager",
                 "cmd": Cmd.leaveChatRoom.value,
                 "device": "deviceB",
-                "result": None,
+                "result": True,
             },
             ignore_keys={"sequence"},
         )

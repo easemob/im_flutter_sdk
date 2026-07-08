@@ -9,9 +9,9 @@
 
 正常 cases
 1. `tests/presence/test_presence.py::test_presence_publish_subscribe_query_unsubscribe`
-   发布在线描述并完成订阅、查询、取消订阅全链路校验。
+   发布在线描述并完成订阅、查询、取消订阅全链路校验；`publishPresenceWithDescription` 当前实测同步返回 `result=true`。
 2. `tests/presence/test_presence.py::test_presence_publish_empty_desc_then_fetch`
-   发布空描述后查询状态，验证空描述语义与返回结构。
+   发布空描述后查询状态，验证空描述语义与返回结构；`publishPresenceWithDescription` 当前实测同步返回 `result=true`。
 
 异常 cases
 3. `tests/presence/test_presence.py::test_presence_publish_128k_desc`

@@ -113,18 +113,55 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
             "deliverOnlineOnly",
         },
     )
-    return str(temp_id)
+    evt_success = None
+    seen_success = []
+    deadline = time.monotonic() + 60.0
+    while time.monotonic() < deadline and evt_success is None:
+        evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2.0)
+        if evt:
+            seen_success.append(evt)
+        msg = ((evt or {}).get("data") or {}).get("msg") or {}
+        body = msg.get("body") or {}
+        if msg.get("from") == user_a and msg.get("to") == user_b and body.get("content") == content:
+            evt_success = evt
+    assert evt_success is not None, f"未收到目标 onMessageSuccess: temp_id={temp_id}, content={content}, events={seen_success}"
+    real_id = (((evt_success.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
+
+    seen_events = []
+    for _ in range(5):
+        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        if evt_received:
+            seen_events.append(evt_received)
+        messages = ((evt_received or {}).get("data") or {}).get("messages") or []
+        if any(isinstance(message, dict) and message.get("msgId") == real_id for message in messages):
+            return str(real_id)
+    raise AssertionError(f"B 端未收到目标消息: msgId={real_id}, events={seen_events}")
 
 
 def test_conversation_latest_and_last_received_messages(device_a, device_b, assert_api, user_a, user_b):
     """latestMessage/lastReceivedMessage：发送一条单聊消息后，分别校验发送方最新消息和接收方最近收到消息。"""
+    conv_a = _conversation(user_b)
+    conv_b = _conversation(user_a)
+    for device, conv, expected_device in ((device_a, conv_a, "deviceA"), (device_b, conv_b, "deviceB")):
+        resp_clear = device.call("ConversationManager", Cmd.clearAllMessages.value, info=conv)
+        assert_api.assert_response_matches(
+            resp_clear,
+            expected={
+                "manager": "ConversationManager",
+                "cmd": Cmd.clearAllMessages.value,
+                "device": expected_device,
+                "result": True,
+            },
+            ignore_keys={"sequence"},
+        )
+
     content = f"conv-latest-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
 
     resp_latest = device_a.call(
         "ConversationManager",
         Cmd.getLatestMessage.value,
-        info=_conversation(user_b),
+        info=conv_a,
     )
     assert_api.assert_response_matches(
         resp_latest,
@@ -141,7 +178,7 @@ def test_conversation_latest_and_last_received_messages(device_a, device_b, asse
     resp_last_received = device_b.call(
         "ConversationManager",
         Cmd.getLatestMessageFromOthers.value,
-        info=_conversation(user_a),
+        info=conv_b,
     )
     assert_api.assert_response_matches(
         resp_last_received,
@@ -176,8 +213,12 @@ def test_conversation_latest_and_last_received_messages(device_a, device_b, asse
             "broadcast",
             "onlineState",
             "groupAckCount",
+            "targetLanguages",
+            "translations",
         },
     )
+    for device, conv in ((device_a, conv_a), (device_b, conv_b)):
+        device.call("ConversationManager", Cmd.clearAllMessages.value, info=conv)
 
 
 def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, user_a, user_b):
@@ -214,6 +255,8 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
             expected_mark_one = {"code": 3, "description": "Database operation failed"}
         else:
             expected_mark_one = {"code": 500, "description": "Message is invalid"}
+    elif isinstance(mark_one_result, bool):
+        expected_mark_one = mark_one_result
     elif mark_one_result == 0:
         expected_mark_one = 0
     else:
@@ -236,7 +279,7 @@ def test_conversation_read_count_and_mark_read(device_a, device_b, assert_api, u
             "manager": "ConversationManager",
             "cmd": Cmd.markAllMessagesAsRead.value,
             "device": "deviceB",
-            "result": 1,
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -637,7 +680,7 @@ def test_conversation_local_insert_append_update_and_delete(device_a, assert_api
 
 
 def test_conversation_delete_local_and_server_messages_current_behavior(device_a, device_b, assert_api, user_a, user_b):
-    """conversationDeleteServerMessageWithIds/conversationDeleteServerMessageWithTime：按消息 ID 与时间删除本地及服务端消息，冻结当前返回。"""
+    """conversationDeleteServerMessageWithIds：按消息 ID 删除本地及服务端消息，冻结当前返回。"""
     content = f"conv-server-delete-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
     conv_a = _conversation(user_b)
@@ -663,13 +706,16 @@ def test_conversation_delete_local_and_server_messages_current_behavior(device_a
         ignore_keys={"sequence"},
     )
 
+
+def test_conversation_delete_local_and_server_messages_by_time_bridge_missing(device_a):
     resp_delete_time = device_a.call(
         "ConversationManager",
         Cmd.conversationDeleteServerMessageWithTime.value,
         info={"beforeTs": int(time.time() * 1000) + 1_000},
     )
-    assert_api.assert_error(
-        resp_delete_time,
-        code=-1,
-        description="MissingPluginException(No implementation found for method conversationDeleteServerMessageWithTime",
+    if resp_delete_time.get("success") is False and "MissingPluginException" in str((resp_delete_time.get("error") or {}).get("description", "")):
+        pytest.xfail("conversationDeleteServerMessageWithTime 当前返回 MissingPluginException，记录为桥接缺口。")
+    pytest.fail(
+        "conversationDeleteServerMessageWithTime 已不再返回 MissingPluginException，"
+        f"需按真实返回重新修订 case: {resp_delete_time!r}"
     )

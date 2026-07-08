@@ -5,6 +5,7 @@ Chat tests shared fixtures & marks.
 from __future__ import annotations
 
 import os
+import time
 import pytest
 
 from src import Cmd
@@ -15,14 +16,26 @@ pytestmark = [pytest.mark.client, pytest.mark.chat]
 @pytest.fixture(autouse=True)
 def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
     discovering = os.getenv("CASES_DISCOVER", "0") in ("1", "true", "True")
-    server_resp = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+
+    def _call_with_retry(device, manager: str, cmd: str, info: dict | None = None, *, attempts: int = 3):
+        last_exc = None
+        for idx in range(attempts):
+            try:
+                return device.call(manager, cmd, info=info or {})
+            except TimeoutError as exc:
+                last_exc = exc
+                if idx + 1 < attempts:
+                    time.sleep(1.0)
+        raise last_exc
+
+    server_resp = _call_with_retry(device_a, "ContactManager", Cmd.getAllContactsFromServer.value, {})
     if user_b in (server_resp.get("result") or []):
         return
 
     try:
         resp_add = device_a.call("ContactManager", Cmd.addContact.value, info={"userId": user_b, "reason": "chat-setup"})
     except TimeoutError:
-        retry_server_resp = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+        retry_server_resp = _call_with_retry(device_a, "ContactManager", Cmd.getAllContactsFromServer.value, {})
         if user_b in (retry_server_resp.get("result") or []):
             return
         raise
@@ -73,7 +86,7 @@ def ensure_friends(device_a, device_b, assert_api, user_a, user_b):
             )
     else:
         assert resp_add.get("manager") == "ContactManager" and resp_add.get("cmd") == Cmd.addContact.value
-        retry_server_resp = device_a.call("ContactManager", Cmd.getAllContactsFromServer.value, info={})
+        retry_server_resp = _call_with_retry(device_a, "ContactManager", Cmd.getAllContactsFromServer.value, {})
         assert user_b in (retry_server_resp.get("result") or []), (
             "chat 用例前置好友关系未建立，不能继续执行依赖好友关系的消息链路: "
             f"addContact={resp_add}, contacts={retry_server_resp}"

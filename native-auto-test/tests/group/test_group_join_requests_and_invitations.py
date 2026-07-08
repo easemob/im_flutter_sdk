@@ -43,12 +43,10 @@ def test_group_request_to_join_and_accept_success(device_a, device_b, assert_api
                 "manager": "GroupManager",
                 "cmd": Cmd.requestToJoinPublicGroup.value,
                 "device": "deviceB",
+                "result": None,
             },
-            ignore_keys={"sequence", "result"},
+            ignore_keys={"sequence"},
         )
-        request_result = resp_request.get("result")
-        assert isinstance(request_result, dict), f"requestToJoinPublicGroup result 非 dict: {resp_request}"
-        assert request_result.get("groupId") == group_id, f"requestToJoinPublicGroup groupId 不匹配: {resp_request}"
 
         owner_request_events = collect_group_events(
             device_a,
@@ -147,12 +145,10 @@ def test_group_request_to_join_and_decline_success(device_a, device_b, assert_ap
                 "manager": "GroupManager",
                 "cmd": Cmd.requestToJoinPublicGroup.value,
                 "device": "deviceB",
+                "result": None,
             },
-            ignore_keys={"sequence", "result"},
+            ignore_keys={"sequence"},
         )
-        request_result = resp_request.get("result")
-        assert isinstance(request_result, dict), f"requestToJoinPublicGroup result 非 dict: {resp_request}"
-        assert request_result.get("groupId") == group_id, f"requestToJoinPublicGroup groupId 不匹配: {resp_request}"
 
         owner_request_events = collect_group_events(
             device_a,

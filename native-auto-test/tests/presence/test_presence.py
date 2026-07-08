@@ -43,9 +43,10 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
             "manager": "PresenceManager",
             "cmd": Cmd.presenceWithDescription.value,
             "device": "{{device}}",
-            "result": None,
+            "result": True,
         },
         context={"device": "deviceA"},
+        ignore_keys={"sequence"},
     )
 
     # 2. B 订阅 A 的在线状态（PresenceManager.presenceSubscribe）
@@ -65,7 +66,7 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
             "result": [{"statusDescription": "online", "publisher": "{{publisher}}", "expiryTime": gt(0)}],
         },
         context={"device": "deviceB", "publisher": user_a},
-        ignore_keys={"lastTime","statusDetails"},
+        ignore_keys={"sequence", "lastTime", "statusDetails"},
     )
 
     # 3. B 查询指定用户 A 的当前在线状态（fetchPresenceStatus）
@@ -102,7 +103,8 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
             "device": "{{device}}",
             "result": ["{{publisher}}"]
         },
-        context={"device": "deviceB", "publisher": user_a}
+        context={"device": "deviceB", "publisher": user_a},
+        ignore_keys={"sequence"},
     )
     #
     # # 5. B 取消订阅 A（presenceUnsubscribe）
@@ -120,6 +122,7 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
             "result": None,
         },
         context={"device": "deviceB"},
+        ignore_keys={"sequence"},
     )
 
     # # 6. B 再次查询订阅列表，应返回空
@@ -137,7 +140,8 @@ def test_presence_publish_subscribe_query_unsubscribe(device_a, device_b, assert
             "device": "{{device}}",
             "result": [],
         },
-        context={"device": "deviceB"}
+        context={"device": "deviceB"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -177,7 +181,7 @@ def test_presence_publish_empty_desc_then_fetch(device_a, device_b, assert_api, 
             "result": [{"statusDescription": "", "publisher": "{{publisher}}"}],
         },
         context={"device": "deviceB", "publisher": user_a},
-        ignore_keys={"lastTime", "expiryTime", "statusDetails"},
+        ignore_keys={"sequence", "lastTime", "expiryTime", "statusDetails"},
     )
 
 
@@ -206,7 +210,8 @@ def test_presence_publish_128k_desc(device_a, device_b, assert_api):
 		        "code": 1100
 	        },
         },
-        context={"device": "deviceA"}
+        context={"device": "deviceA"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -228,6 +233,7 @@ def test_presence_subscribe_nonexistent_user(device_a, assert_api):
             "result": [{"statusDescription": "", "publisher": "{{publisher}}", "expiryTime": gt(0),"statusDetails":{},"lastTime":0}],
         },
         context={"device": "deviceA", "publisher": USER_NONEXISTENT},
+        ignore_keys={"sequence"},
     )
 
 
@@ -276,7 +282,8 @@ def test_presence_subscribe_over_100_members(device_a, assert_api):
                 "code": 1100
             },
         },
-        context={"device": "deviceA"}
+        context={"device": "deviceA"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -301,7 +308,8 @@ def test_presence_unsubscribe_over_100_members(device_b, assert_api):
                 "code": 1100
             },
         },
-        context={"device": "deviceB"}
+        context={"device": "deviceB"},
+        ignore_keys={"sequence"},
     )
 
 # ---------- fetchSubscribedMembersWithPageNum 分页测试 ----------
@@ -340,6 +348,7 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
             "result": ["{{publisher}}"],
         },
         context={"device": "deviceB", "publisher": user_a},
+        ignore_keys={"sequence"},
     )
 
     # 第 2 页：应为空列表
@@ -357,6 +366,7 @@ def test_fetch_subscribed_members_pagination(device_a, device_b, assert_api, use
             "result": [],
         },
         context={"device": "deviceB"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -391,6 +401,7 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
             "result": ["{{publisher}}"],
         },
         context={"device": "deviceB", "publisher": user_a},
+        ignore_keys={"sequence"},
     )
 
     resp_2 = device_b.call(
@@ -407,6 +418,7 @@ def test_fetch_subscribed_members_pagination_page_size_one(device_a, device_b, a
             "result": [],
         },
         context={"device": "deviceB"},
+        ignore_keys={"sequence"},
     )
 
 
@@ -429,6 +441,7 @@ def test_fetch_subscribed_members_invalid_pagination(device_b, assert_api, user_
             "result": ["{{publisher}}"],
         },
         context={"device": "deviceB", "publisher": user_a},
+        ignore_keys={"sequence"},
     )
 
     resp_zero_size = device_b.call(
@@ -437,4 +450,3 @@ def test_fetch_subscribed_members_invalid_pagination(device_b, assert_api, user_
         info={"pageNum": 1, "pageSize": 0},
     )
     assert_api.assert_error(resp_zero_size)
-

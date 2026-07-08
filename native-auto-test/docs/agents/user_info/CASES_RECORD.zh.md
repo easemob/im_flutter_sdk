@@ -27,7 +27,7 @@
 
 正常 cases
 7. `tests/user_info/test_user_info.py::test_user_info_update_own_with_type_nickname`
-   使用 type=nickname 更新本人资料，验证类型化更新链路可用。
+   使用 type=nickname 更新本人资料；当前实测同步返回为 JSON 字符串，包含 `nickname/sign/gender`。
 
 异常 cases
 8. 无（当前测试集中未单独覆盖该 API 的错误入参）。
@@ -43,7 +43,7 @@
 
 异常 cases
 11. `tests/user_info/test_user_info.py::test_user_info_fetch_by_id_empty_user_ids`
-    传空 userIds 列表查询，验证空参数语义。
+    传空 userIds 列表查询，冻结当前实测返回 `code=205`、`description=userIds is empty`。
 12. `tests/user_info/test_user_info.py::test_user_info_fetch_by_id_user_ids_over_100`
     userIds 数量超过上限查询，验证数量边界错误语义。
 
@@ -54,8 +54,7 @@
     `fetchOwnInfo` Dart 成功语义等价于当前登录用户 `fetchUserInfoById([currentUser])`，更新本人资料后按 userId 拉取，验证 userId、昵称、签名和邮箱字段。
 
 异常 cases
-14. `tests/user_info/test_user_info.py::test_user_info_update_then_fetch_own_info`
-    直接调用 `fetchOwnInfo` cmd 时，当前原生通道真实返回 `MissingPluginException`；成功语义由上述 Dart 等价链路覆盖。
+14. 无（直接调用 `fetchOwnInfo` cmd 当前原生通道返回 `MissingPluginException`，已移入 `CASES_DEFERRED.zh.md` 作为桥接缺口记录）。
 
 ## fetchUserInfoByIdWithType
 

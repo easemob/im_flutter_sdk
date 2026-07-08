@@ -4,6 +4,7 @@ import time
 import uuid
 
 from src import Cmd, ChatRoomEvent
+from src.tools.response_match import gt
 import pytest
 from src.rest_api.chatroom_api import create_chat_room, delete_chat_room
 
@@ -105,6 +106,38 @@ def assert_chatroom_event(
 
 def chatroom_manager_call(device, cmd: str, info: dict | None = None, *, manager: str = "ChatRoomManager"):
     return device.call(manager, cmd, info=info or {})
+
+
+def assert_join_chatroom_response(assert_api, resp: dict, *, device: str, room_id: str) -> None:
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatRoomManager",
+            "cmd": Cmd.joinChatRoom.value,
+            "device": device,
+            "result": {
+                "roomId": room_id,
+                "memberCount": gt(0),
+                "isAllMemberMuted": False,
+                "isInWhitelist": False,
+            },
+        },
+        ignore_keys={
+            "sequence",
+            "owner",
+            "maxUsers",
+            "permissionType",
+            "adminList",
+            "muteList",
+            "muteExpireTimestamp",
+            "memberList",
+            "blockList",
+            "name",
+            "desc",
+            "announcement",
+            "createTimestamp",
+        },
+    )
 
 
 def create_chatroom_or_skip(*, owner: str, name_prefix: str = "chatroom", desc_prefix: str = "desc") -> tuple[str, str]:
