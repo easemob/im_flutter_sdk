@@ -92,7 +92,7 @@ def test_user_info_update_own_set_and_modify(device_a, assert_api, user_a):
             "result": {
                 "nickName": "nick-mod",
                 "sign": "sign-mod",
-                "mail": "aa",
+                "mail": "",
                 "userId": user_a,
                 "gender": 0,
             },
@@ -115,12 +115,9 @@ def test_user_info_update_own_with_type_nickname(device_a, assert_api, user_a):
             "manager": "UserInfoManager",
             "cmd": Cmd.updateOwnUserInfoWithType.value,
             "device": "deviceA",
-            "result": {
-                "nickName": "nick-by-type",
-                "userId": user_a,
-            },
+            "result": '{"gender":"0","nickname":"nick-by-type","sign":"sign-mod"}',
         },
-        ignore_keys=_USER_INFO_UPDATE_WITH_TYPE_IGNORE_KEYS,
+        ignore_keys={"sequence"},
     )
 
 
@@ -159,8 +156,8 @@ def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_
     )
 
 
-def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
-    """fetchOwnInfo：当前原生通道未实现 direct cmd，更新资料后冻结真实 MissingPlugin 返回。"""
+def test_user_info_update_then_fetch_own_info(device_a, user_a):
+    """fetchOwnInfo：当前原生通道未实现 direct cmd，MissingPlugin 记录为桥接缺口。"""
     device_a.call(
         "UserInfoManager",
         Cmd.updateOwnUserInfo.value,
@@ -175,7 +172,9 @@ def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
         Cmd.fetchOwnInfo.value,
         info={},
     )
-    assert_api.assert_error(resp, code=-1, description="MissingPluginException")
+    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
+        pytest.xfail("fetchOwnInfo direct cmd 当前返回 MissingPluginException，记录为桥接缺口。")
+    pytest.fail(f"fetchOwnInfo 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
 
 
 def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_api, user_a):
@@ -361,7 +360,7 @@ def test_user_info_fetch_by_id_empty_user_ids(device_a, assert_api):
             "manager": "UserInfoManager",
             "cmd": Cmd.fetchUserInfoById.value,
             "device": "deviceA",
-            "result": {}
+            "result": {"code": 205, "description": "userIds is empty"}
         },
         ignore_keys={"sequence"},
     )

@@ -58,7 +58,15 @@
   - 原因：当前端缺失必填路径可能返回 MissingPlugin（非被测端语义）。
 
 ## 当前环境阻塞
-- `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`
-  - 原因：本次 discovery 登录前置返回 `204/User does not exist`，测试未进入业务链路。
-  - 前置条件：创建当天测试账号（如 `testMMDDuser1/2/3`）或修复 `config.yaml` 中 REST token 自动创建能力。
-  - 恢复条件：账号可登录后执行 `CASES_DISCOVER=1 WS_DEBUG=1 pytest -q tests/chat/test_chat_s423_message_callback_and_combine.py -s` 并收紧 strict。
+- `tests/chat/test_chat_s3_non_message_ops.py::test_chat_pin_conversation_success_toggle`
+  - 原因：当前 Android 实测对有效会话调用 `pinConversation` 持续返回 `303/concurrent operation are not allowed`，无法验证置顶/取消置顶成功状态切换；该返回记录为当前环境阻塞，不作为成功语义。
+  - 前置条件：SDK/服务端确认并允许有效会话置顶操作完成。
+  - 恢复条件：去掉 xfail，按真实成功返回和 `getConversation.isPinned` 状态收紧 strict 断言。
+- `tests/chat/test_chat_s4_thread_user_removed.py::test_chat_thread_user_removed_event_type_not_null`
+  - 原因：当前 Android 实测 `removeMemberFromChatThread` 返回 `result=true` 后，B/A 均未收到 `onUserKickOutOfChatThread`，无法验证发版项“event.type 非空”。
+  - 前置条件：SDK/服务端确认并稳定派发 `onUserKickOutOfChatThread`。
+  - 恢复条件：去掉 xfail，按真实事件体收紧 `event.type/from/thread` 断言并严格回归。
+- `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_by_time_bridge_missing`
+  - 原因：当前 Android direct cmd `conversationDeleteServerMessageWithTime` 返回 `MissingPluginException`，属于桥接缺口，不作为 SDK 业务预期。
+  - 前置条件：桥接/native method 补齐。
+  - 恢复条件：按补齐后的真实返回重新 discovery，并改为 strict 断言。

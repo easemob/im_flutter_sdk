@@ -36,6 +36,11 @@
 
 ## ChatRoom 回调事件
 
+- 暂缓项：成员加入回调 `onMemberJoinedFromChatRoom` 的加入方 ext 透传
+  - 实测现象：`joinChatRoom` 携带 ext 同步返回聊天室对象，但观察端与加入方均未收到 `onMemberJoinedFromChatRoom`；当前用例已标记 xfail，避免把未派发回调当作 SDK 成功语义。
+  - 前置条件：确认 SDK/服务端是否应派发聊天室成员加入事件，尤其是携带 ext 时是否需要广播给其他在线成员。
+  - 恢复条件：事件可稳定派发后，将 `test_chatroom_join_with_ext_member_joined_callback` 去掉 xfail 并按真实事件体收紧断言。
+
 - 暂缓项：公告变更回调 `onAnnouncementChangedFromChatRoom` / `onRoomAnnouncementChanged`
   - 实测现象：B 已加入聊天室且 `updateChatRoomAnnouncement` 返回 `result=true` 后，A/B 两端均未收到公告变更回调；当前用例已标记 xfail，避免误判整套回调回归。
   - 前置条件：确认 SDK/服务端是否应派发聊天室公告变更事件，或确认仅同步接口与 `fetchChatRoomAnnouncement` 可验证公告更新。

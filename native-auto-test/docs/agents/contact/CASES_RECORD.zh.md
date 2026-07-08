@@ -106,36 +106,34 @@
     建立好友并设置备注后，先同步服务端好友列表，再分别校验服务端全量好友、分页好友、本地单个好友、本地全量好友的一致性。
 
 异常 cases
-28. `tests/contact/test_contact.py::test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists`
-    直接调用 `fetchAllContactIds` / `getAllContactIds` cmd 时，当前原生通道真实返回 `MissingPluginException`；Dart 公开方法的成功语义分别由旧 native cmd `getAllContactsFromServer` / `getAllContactsFromDB` 链路覆盖。
-29. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
+28. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_zero`
     分页拉取时 pageSize=0，验证参数边界语义。
-30. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
+29. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_exceeds_50`
     分页拉取时 pageSize 超过上限，验证上限约束语义。
-31. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_negative`
+30. `tests/contact/test_contact.py::test_contact_fetch_contacts_page_size_negative`
     分页拉取时 pageSize 为负数，验证非法参数语义。
 
 ## addUserToBlockList / removeUserFromBlockList / getBlockListFromServer
 
 正常 cases
-32. `tests/contact/test_contact.py::test_contact_get_block_list_from_server_returns_list`
+31. `tests/contact/test_contact.py::test_contact_get_block_list_from_server_returns_list`
     拉取服务端黑名单列表，验证返回结构与列表语义。
-33. `tests/contact/test_contact.py::test_contact_block_list_flow_then_unblock_restores_friend`
+32. `tests/contact/test_contact.py::test_contact_block_list_flow_then_unblock_restores_friend`
     执行拉黑与解除拉黑，验证好友状态切换与恢复行为。
-34. `tests/contact/test_contact.py::test_contact_remove_from_block_list_when_not_blocked`
+33. `tests/contact/test_contact.py::test_contact_remove_from_block_list_when_not_blocked`
     对未拉黑用户执行解除拉黑，验证幂等或稳定返回语义。
 
 异常 cases
-35. `tests/contact/test_contact.py::test_contact_add_user_to_block_list_nonexistent`
+34. `tests/contact/test_contact.py::test_contact_add_user_to_block_list_nonexistent`
     将不存在用户加入黑名单，验证目标不存在类错误语义。
-36. `tests/contact/test_contact.py::test_contact_remove_from_block_list_nonexistent_user`
+35. `tests/contact/test_contact.py::test_contact_remove_from_block_list_nonexistent_user`
     从黑名单移除不存在用户，验证目标不存在类错误语义。
 
 ## 好友信息同步专项（事件链路）
 
 正常 cases
-37. `tests/contact/test_friend_info_sync.py::test_friend_info_auto_sync_after_login`
-    重新登录后验证好友信息同步开始/结束回调链路。
+36. `tests/contact/test_friend_info_sync.py::test_friend_info_sync_on_peer_metadata_change`
+    对端元数据变化后拉取好友信息，验证同步字段可读取；重新登录自动同步回调暂缓记录见 `CASES_DEFERRED.zh.md`。
 
 异常 cases
 37. 无（当前专项未定义独立错误入参路径）。
@@ -144,7 +142,7 @@
 ## getAllContactsFromDB
 
 正常 cases
-39. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
+38. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_all_contacts_from_db_after_server_sync`
     建立好友并调用 `getAllContactsFromServer` 同步后，直接调用 `getAllContactsFromDB`，冻结实测本地 DB 返回好友 ID 列表 `[user_b]` 的语义；Dart 公开方法 `getAllContactIds` 复用同一 native cmd，因此该链路同步覆盖 `getAllContactIds`。
 
 异常 cases
@@ -153,7 +151,7 @@
 ## getBlockListFromDB
 
 正常 cases
-41. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_block_list_from_db_after_server_sync`
+40. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_block_list_from_db_after_server_sync`
     建立好友并拉黑后，先调用 `getBlockListFromServer` 同步，再直接调用 `getBlockListFromDB`，冻结实测本地 DB 返回黑名单 ID 列表 `[user_b]` 的语义。
 
 异常 cases
@@ -162,11 +160,11 @@
 ## getSelfIdsOnOtherPlatform
 
 正常 cases
-43. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_self_ids_on_other_platform_returns_list`
+42. `tests/contact/test_contact_remaining_api_coverage.py::test_contact_get_self_ids_on_other_platform_returns_list`
     当前账号仅保持单端登录时调用 `getSelfIdsOnOtherPlatform`，冻结实测返回空列表 `[]` 的语义。
 
 异常 cases
-44. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
+43. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
 
 ## 统计
-- 当前记录 case 条目总数：`44`
+- 当前记录 case 条目总数：`43`

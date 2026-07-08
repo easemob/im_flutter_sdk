@@ -37,35 +37,67 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     assert str(send_result.get("to")) == str(user_b)
     assert str(((send_result.get("body") or {}).get("content"))) == str(content)
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_success = None
+    seen_success = []
+    deadline = time.monotonic() + 60.0
+    while time.monotonic() < deadline and evt_success is None:
+        evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2.0)
+        if evt:
+            seen_success.append(evt)
+        msg = ((evt or {}).get("data") or {}).get("msg") or {}
+        body = msg.get("body") or {}
+        if msg.get("from") == user_a and msg.get("to") == user_b and body.get("content") == content:
+            evt_success = evt
+    assert evt_success is not None, f"未收到目标 onMessageSuccess: content={content}, events={seen_success}"
+
     assert_api.assert_response_matches(
         evt_success,
         expected={"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": ne(None)},
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
     )
-    assert_api.assert_response_matches(
-        evt_received,
-        expected={"type": "event", "eventType": Cmd.onMessagesReceived.value, "data": ne(None)},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
-    )
     real_id = (((evt_success.get("data") or {}).get("msg")) or {}).get("msgId")
     assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
-    return str(real_id)
+
+    seen_received = []
+    deadline = time.monotonic() + 60.0
+    while time.monotonic() < deadline:
+        evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2.0)
+        if evt_received:
+            seen_received.append(evt_received)
+        messages = ((evt_received or {}).get("data") or {}).get("messages") or []
+        if any(isinstance(msg, dict) and msg.get("msgId") == real_id for msg in messages):
+            return str(real_id)
+    raise AssertionError(f"未收到目标 onMessagesReceived: msgId={real_id}, events={seen_received}")
+
+
+def _project_server_conversations(result, user_b: str) -> list[dict]:
+    if not isinstance(result, list):
+        return []
+    return [
+        {"convId": item.get("convId"), "type": item.get("type")}
+        for item in result
+        if isinstance(item, dict) and str(item.get("convId")) == str(user_b)
+    ]
+
+
+def _wait_server_conversation_projection(device, cmd: str, info: dict, user_b: str, *, cursor_result: bool = False) -> tuple[dict, list[dict]]:
+    last_resp = None
+    last_projection: list[dict] = []
+    deadline = time.monotonic() + 30.0
+    while time.monotonic() < deadline:
+        resp = device.call("ChatManager", cmd, info=info)
+        result = resp.get("result") or {}
+        projection = _project_server_conversations(result.get("list"), user_b) if cursor_result else _project_server_conversations(result, user_b)
+        if projection:
+            return resp, projection
+        last_resp, last_projection = resp, projection
+        time.sleep(2.0)
+    return last_resp or {}, last_projection
 
 
 def test_chat_get_conversations_from_server_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-{uuid.uuid4().hex[:6]}")
-    time.sleep(2)
-    resp = device_a.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
-    result = resp.get("result")
-    projected: list[dict] = []
-    if isinstance(result, list):
-        projected = [
-            {"convId": item.get("convId"), "type": item.get("type")}
-            for item in result
-            if isinstance(item, dict) and str(item.get("convId")) == str(user_b)
-        ]
+    resp, projected = _wait_server_conversation_projection(device_a, Cmd.getConversationsFromServer.value, {}, user_b)
     assert_api.assert_response_matches(
         {
             "manager": "ChatManager",
@@ -84,24 +116,37 @@ def test_chat_get_conversations_from_server_success(device_a, device_b, assert_a
     )
 
 
-def test_chat_get_conversations_from_server_with_cursor_success(device_a, assert_api):
+def test_chat_get_conversations_from_server_with_cursor_success(device_a, device_b, assert_api, user_a, user_b):
+    _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-get-server-cursor-{uuid.uuid4().hex[:6]}")
     info = {"cursor": "", "pageSize": 20}
-    resp = device_a.call(
-        "ChatManager",
+    resp, projected = _wait_server_conversation_projection(
+        device_a,
         Cmd.getConversationsFromServerWithCursor.value,
-        info=info,
+        info,
+        user_b,
+        cursor_result=True,
     )
+    result = resp.get("result") or {}
     assert_api.assert_response_matches(
-        resp,
+        {
+            "manager": "ChatManager",
+            "cmd": Cmd.getConversationsFromServerWithCursor.value,
+            "device": "deviceA",
+            "result": {
+                "cursor": result.get("cursor"),
+                "list": projected,
+            },
+        },
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.getConversationsFromServerWithCursor.value,
             "device": "deviceA",
             "result": {
                 "cursor": "",
-                "list": [],
+                "list": [{"convId": "{{convId}}", "type": 0}],
             },
         },
+        context={"convId": user_b},
         ignore_keys={"sequence"},
     )
 
@@ -152,20 +197,12 @@ def test_chat_get_conversations_from_server_with_cursor_invalid_page_size_negati
 
 def test_chat_fetch_conversations_from_server_with_page_success(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-fetch-page-{uuid.uuid4().hex[:6]}")
-    time.sleep(2)
-    resp = device_a.call(
-        "ChatManager",
+    resp, projected = _wait_server_conversation_projection(
+        device_a,
         Cmd.fetchConversationsFromServerWithPage.value,
-        info={"pageNum": 1, "pageSize": 20},
+        {"pageNum": 1, "pageSize": 20},
+        user_b,
     )
-    result = resp.get("result")
-    projected: list[dict] = []
-    if isinstance(result, list):
-        projected = [
-            {"convId": item.get("convId"), "type": item.get("type")}
-            for item in result
-            if isinstance(item, dict) and str(item.get("convId")) == str(user_b)
-        ]
     assert_api.assert_response_matches(
         {
             "manager": "ChatManager",
@@ -186,20 +223,12 @@ def test_chat_fetch_conversations_from_server_with_page_success(device_a, device
 
 def test_chat_fetch_conversations_from_server_with_page_invalid_page_num_zero(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-fetch-page-num0-{uuid.uuid4().hex[:6]}")
-    time.sleep(2)
-    resp = device_a.call(
-        "ChatManager",
+    resp, projected = _wait_server_conversation_projection(
+        device_a,
         Cmd.fetchConversationsFromServerWithPage.value,
-        info={"pageNum": 0, "pageSize": 20},
+        {"pageNum": 0, "pageSize": 20},
+        user_b,
     )
-    result = resp.get("result")
-    projected: list[dict] = []
-    if isinstance(result, list):
-        projected = [
-            {"convId": item.get("convId"), "type": item.get("type")}
-            for item in result
-            if isinstance(item, dict) and str(item.get("convId")) == str(user_b)
-        ]
     assert_api.assert_response_matches(
         {
             "manager": "ChatManager",
@@ -220,20 +249,12 @@ def test_chat_fetch_conversations_from_server_with_page_invalid_page_num_zero(de
 
 def test_chat_fetch_conversations_from_server_with_page_invalid_page_size_zero(device_a, device_b, assert_api, user_a, user_b):
     _ = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, f"s2-fetch-page-size0-{uuid.uuid4().hex[:6]}")
-    time.sleep(2)
-    resp = device_a.call(
-        "ChatManager",
+    resp, projected = _wait_server_conversation_projection(
+        device_a,
         Cmd.fetchConversationsFromServerWithPage.value,
-        info={"pageNum": 1, "pageSize": 0},
+        {"pageNum": 1, "pageSize": 0},
+        user_b,
     )
-    result = resp.get("result")
-    projected: list[dict] = []
-    if isinstance(result, list):
-        projected = [
-            {"convId": item.get("convId"), "type": item.get("type")}
-            for item in result
-            if isinstance(item, dict) and str(item.get("convId")) == str(user_b)
-        ]
     assert_api.assert_response_matches(
         {
             "manager": "ChatManager",

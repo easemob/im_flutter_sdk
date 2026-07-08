@@ -49,8 +49,7 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         },
         ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
     )
-    success_evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-    assert success_evt is not None, f"未收到 onMessageSuccess: temp_id={temp_id}, content={content}"
+    success_evt = _wait_message_success_for_content(device_a, content=content, to=user_b, timeout=60.0)
     real_id = (((success_evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
 
     seen_events = []
@@ -62,6 +61,35 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         if any(isinstance(m, dict) and m.get("msgId") == real_id for m in messages):
             return str(real_id)
     raise AssertionError(f"B 端未收到目标消息: msgId={real_id}, events={seen_events}")
+
+
+def _wait_message_success_for_content(device, *, content: str, to: str, timeout: float = 60.0) -> dict:
+    seen_events = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=2.0)
+        if evt:
+            seen_events.append(evt)
+        msg = ((evt or {}).get("data") or {}).get("msg") or {}
+        body = msg.get("body") or {}
+        if msg.get("to") == to and body.get("content") == content and msg.get("msgId"):
+            return evt
+    raise AssertionError(f"未收到目标 onMessageSuccess: to={to}, content={content}, events={seen_events}")
+
+
+def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = 60.0) -> dict:
+    seen_responses = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        resp = device.call("ChatManager", Cmd.getConversationsFromServer.value, info={})
+        seen_responses.append(resp)
+        result = resp.get("result")
+        if isinstance(result, list):
+            match = next((item for item in result if isinstance(item, dict) and item.get("convId") == conv_id), None)
+            if match is not None:
+                return match
+        time.sleep(2.0)
+    raise AssertionError(f"服务端会话列表未出现目标会话: convId={conv_id}, responses={seen_responses}")
 
 
 def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, assert_api, user_a, user_b):
@@ -210,14 +238,13 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
                             "isContentReplaced": False,
                             "deliverOnlineOnly": False,
                             "body": {"type": 0, "content": content},
-                            "receiverList": [],
                         },
                         "ext": "",
                     },
                 ],
             },
         },
-        ignore_keys={"timestamp", "serverTime", "localTime"},
+        ignore_keys={"timestamp", "serverTime", "localTime", "translations", "receiverList"},
     )
 
 
@@ -298,6 +325,7 @@ def test_chat_manager_send_to_non_friend_message_error_event(device_a, assert_ap
 def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, assert_api, user_a, user_b):
     """addRemoteAndLocalConversationsMark/deleteRemoteAndLocalConversationsMark/fetchConversationsByOptions：添加会话标记后按 options 查询，再移除标记。"""
     _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, f"chat-mark-{uuid.uuid4().hex[:8]}")
+    _wait_conversation_on_server(device_a, conv_id=user_b)
 
     resp_add = device_a.call(
         "ChatManager",
@@ -315,11 +343,16 @@ def test_chat_manager_conversation_marks_and_fetch_options(device_a, device_b, a
         ignore_keys={"sequence"},
     )
 
-    resp_fetch_marked = device_a.call(
-        "ChatManager",
-        Cmd.fetchConversationsByOptions.value,
-        info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
-    )
+    fetch_info = {"mark": 0, "pageSize": 10, "cursor": "", "pinned": False}
+    resp_fetch_marked = None
+    deadline = time.monotonic() + 30.0
+    while time.monotonic() < deadline:
+        resp_fetch_marked = device_a.call("ChatManager", Cmd.fetchConversationsByOptions.value, info=fetch_info)
+        marked_list = ((resp_fetch_marked.get("result") or {}).get("list") or [])
+        if any(isinstance(item, dict) and item.get("convId") == user_b and 0 in (item.get("marks") or []) for item in marked_list):
+            break
+        time.sleep(2.0)
+    assert resp_fetch_marked is not None
     assert_api.assert_response_matches(
         resp_fetch_marked,
         expected={
@@ -584,20 +617,27 @@ def test_chat_manager_fetch_group_acks_success(device_a, device_b, assert_api, u
             },
             ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
         )
-        success_evt = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-        msg_id = (((success_evt or {}).get("data") or {}).get("msg") or {}).get("msgId")
-        assert isinstance(msg_id, str) and msg_id, f"未拿到群消息 msgId: {success_evt}"
-
         recv_msg = None
         seen_events = []
-        deadline = time.monotonic() + 20.0
+        deadline = time.monotonic() + 60.0
         while time.monotonic() < deadline and recv_msg is None:
             recv_evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2.0)
             if recv_evt:
                 seen_events.append(recv_evt)
             recv_messages = ((recv_evt or {}).get("data") or {}).get("messages") or []
-            recv_msg = next((m for m in recv_messages if isinstance(m, dict) and m.get("msgId") == msg_id), None)
-        assert recv_msg is not None, f"B 端未收到目标群消息: msgId={msg_id}, events={seen_events}"
+            recv_msg = next(
+                (
+                    m for m in recv_messages
+                    if isinstance(m, dict)
+                    and m.get("from") == user_a
+                    and m.get("to") == group_id
+                    and ((m.get("body") or {}).get("content") == content)
+                    and m.get("msgId")
+                ),
+                None,
+            )
+        assert recv_msg is not None, f"B 端未收到目标群消息: content={content}, events={seen_events}"
+        msg_id = str(recv_msg.get("msgId"))
 
         ack_resp = device_b.call(
             "ChatManager",
@@ -610,7 +650,7 @@ def test_chat_manager_fetch_group_acks_success(device_a, device_b, assert_api, u
                 "manager": "ChatManager",
                 "cmd": Cmd.ackGroupMessageRead.value,
                 "device": "deviceB",
-                "result": 1,
+                "result": True,
             },
             ignore_keys={"sequence"},
         )

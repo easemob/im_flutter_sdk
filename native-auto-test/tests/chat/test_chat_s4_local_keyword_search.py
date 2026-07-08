@@ -152,20 +152,23 @@ def test_chat_load_conversation_messages_with_keyword_success(device_a, device_b
     content = f"s4-keyword-{keyword}"
     real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
 
-    # 本地检索存在最终一致性，短暂等待后再检索。
-    time.sleep(1.5)
-
-    resp = device_a.call(
-        "ChatManager",
-        Cmd.loadConversationMessagesWithKeyword.value,
-        info={
-            "keyword": keyword,
-            "timestamp": -1,
-            "sender": user_a,
-            "direction": 0,
-            "scope": 2,
-        },
-    )
+    info = {
+        "keyword": keyword,
+        "timestamp": -1,
+        "sender": user_a,
+        "direction": 1,
+        "scope": 2,
+    }
+    resp = None
+    deadline = time.monotonic() + 30.0
+    while time.monotonic() < deadline:
+        resp = device_a.call("ChatManager", Cmd.loadConversationMessagesWithKeyword.value, info=info)
+        result = resp.get("result") if isinstance(resp, dict) else {}
+        ids = result.get(user_b) if isinstance(result, dict) else None
+        if isinstance(ids, list) and real_id in ids:
+            break
+        time.sleep(1.0)
+    assert resp is not None
     assert_api.assert_response_matches(
         resp,
         expected={

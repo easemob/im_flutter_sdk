@@ -54,23 +54,14 @@
 异常 cases
 12. 无（本批按当前环境真实返回覆盖；更多厂商 token 非法格式后续可作为边界专项补充）。
 
-## updateAPNsPushToken
-
-当前环境 cases
-13. `tests/push/test_push_remaining_api_coverage.py::test_push_apns_token_update_android_missing_plugin`
-    Android 模拟器调用 APNs token 更新，冻结当前平台无 APNs 实现时返回 `code=-1` 且描述包含 `MissingPluginException` 的语义。
-
-异常 cases
-14. 无（iOS 真实 APNs token 成功链路需 iOS 平台与推送配置，后续可单独补充）。
-
 ## syncSilentModels
 
 正常 cases
-15. `tests/push/test_push_remaining_api_coverage.py::test_push_sync_conversations_silent_mode_current_environment`
+13. `tests/push/test_push_remaining_api_coverage.py::test_push_sync_conversations_silent_mode_current_environment`
     调用 `syncSilentModels` 同步所有会话免打扰信息，冻结实测成功返回 `result=null` 的语义。
 
 异常 cases
-16. 无（该 API 无入参，当前仅覆盖正常同步链路）。
+14. 无（该 API 无入参，当前仅覆盖正常同步链路）。
 
 ## 统计
-- 当前记录 case 条目总数：`16`
+- 当前记录 case 条目总数：`14`

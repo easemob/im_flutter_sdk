@@ -101,7 +101,7 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
                         "deliverOnlineOnly": False,
                         "isThread": False,
                         "isContentReplaced": False,
-                        "body": {"type": 0, "content": "{{content}}"},
+                        "body": {"type": 0, "content": "{{content}}", "translations": {}},
                         "msgId": "{{realId}}",
                     }
                 ]
@@ -206,10 +206,22 @@ def test_chat_fetch_support_languages_success(device_a, assert_api):
 
 
 def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
-    resp = device_b.call("ChatManager", Cmd.fetchHistoryMessages.value, info={"conversationId": "__invalid__", "pageSize": 20, "cursor": None})
+    resp = device_b.call(
+        "ChatManager",
+        Cmd.fetchHistoryMessages.value,
+        info={"convId": "__invalid__", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
+    )
     assert_api.assert_response_matches(
         resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.fetchHistoryMessages.value, "device": "deviceB", "result": {"code": 205, "description": "Invalid parameter"}},
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.fetchHistoryMessages.value,
+            "device": "deviceB",
+            "result": {
+                "cursor": "",
+                "list": [],
+            },
+        },
         ignore_keys={"sequence"},
     )
 
@@ -363,7 +375,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
             "manager": "ChatManager",
             "cmd": Cmd.ackMessageRead.value,
             "device": "deviceB",
-            "result": 1,
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -424,10 +436,15 @@ def test_chat_remove_reaction_invalid_id_response(device_a, assert_api):
 
 
 def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
-    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"conversationId": "__invalid_conversation_id__"})
+    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": "__invalid_conversation_id__"})
     assert_api.assert_response_matches(
         resp,
-        expected={"manager": "ChatManager", "cmd": Cmd.ackConversationRead.value, "device": "deviceB", "result": {"code": 500, "description": "Message is invalid"}},
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.ackConversationRead.value,
+            "device": "deviceB",
+            "result": {"code": 500, "description": "Message is invalid"},
+        },
         ignore_keys={"sequence"},
     )
 

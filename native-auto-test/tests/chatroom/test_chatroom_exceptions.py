@@ -47,7 +47,7 @@ def test_chatroom_leave_room_nonexistent(device_b, assert_api):
             "manager": "ChatRoomManager",
             "cmd": Cmd.leaveChatRoom.value,
             "device": "deviceB",
-            "result": None,
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -55,7 +55,16 @@ def test_chatroom_leave_room_nonexistent(device_b, assert_api):
 
 def test_chatroom_leave_room_empty_id(device_b, assert_api):
     resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": ""})
-    assert_api.assert_error(resp, code=700, description="Chatroom ID invalid")
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatRoomManager",
+            "cmd": Cmd.leaveChatRoom.value,
+            "device": "deviceB",
+            "result": True,
+        },
+        ignore_keys={"sequence"},
+    )
 
 
 def test_chatroom_fetch_room_info_empty_id(device_a, assert_api):

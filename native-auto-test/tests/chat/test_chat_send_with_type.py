@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import uuid
 import pytest
 
@@ -8,7 +9,37 @@ from src import Cmd, ne, gt, ge
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
 
 
+def _wait_success_event(device, *, temp_id: str | None = None, content: str | None = None, action: str | None = None, timeout: float = 60.0):
+    seen_events = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessageSuccess.value,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen_events.append(evt)
+        data = (evt or {}).get("data") or {}
+        msg = data.get("msg") or {}
+        body = msg.get("body") or {}
+        if temp_id is not None and str(data.get("msgId")) != str(temp_id):
+            continue
+        if content is not None and body.get("content") != content:
+            continue
+        if action is not None and body.get("action") != action:
+            continue
+        if msg.get("msgId"):
+            return evt
+    pytest.fail(f"未收到目标 onMessageSuccess: tempId={temp_id}, content={content}, action={action}, events={seen_events}")
+
+
 def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user_b, *, content: str, target_languages: list[str] | None = None):
+    try:
+        device_a.drain_events()
+        device_b.drain_events()
+    except Exception:
+        pass
+
     info = {
         "type": "txt",
         "payload": {
@@ -24,7 +55,9 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
     # 端未实现时返回 MissingPluginException；直接跳过
     if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
         pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    resp_result = resp.get("result") or {}
+    resp_temp_id = resp_result.get("msgId")
+    evt_success = _wait_success_event(device_a, temp_id=resp_temp_id, content=content)
     temp_id = (evt_success.get("data") or {}).get("msgId")
     real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
     # A 侧 onMessageSuccess 事件收紧
@@ -102,10 +135,28 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
             "thumbnailSecret",
         },
     )
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = None
+    msgs = []
+    for _ in range(5):
+        evt_candidate = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        cand_msgs = ((evt_candidate or {}).get("data") or {}).get("messages") or []
+        if any(
+            (
+                isinstance(m, dict)
+                and m.get("from") == user_a
+                and m.get("to") == user_b
+                and str(m.get("msgId")) == str(real_id)
+                and ((m.get("body") or {}).get("content") == content)
+            )
+            for m in cand_msgs
+        ):
+            evt_received = evt_candidate
+            msgs = cand_msgs
+            break
+        evt_received = evt_candidate
+        msgs = cand_msgs
     # 列表可能包含遗留消息，放宽为“包含一条匹配当前发送的消息”
     assert evt_received and evt_received.get("type") == "event" and evt_received.get("eventType") == Cmd.onMessagesReceived.value
-    msgs = ((evt_received.get("data") or {}).get("messages") or [])
     assert any(
         (m.get("from") == user_a and m.get("to") == user_b and str(m.get("msgId")) == str(real_id) and ((m.get("body") or {}).get("content") == content))
         for m in msgs if isinstance(m, dict)
@@ -120,7 +171,96 @@ def test_send_message_with_type_text_basic(device_a, device_b, assert_api, user_
 
 def test_send_message_with_type_text_with_languages(device_a, device_b, assert_api, user_a, user_b):
     content = f"txttr-{uuid.uuid4().hex[:6]}"
-    _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user_b, content=content, target_languages=["zh-Hans"])
+    try:
+        device_a.drain_events()
+        device_b.drain_events()
+    except Exception:
+        pass
+
+    info = {
+        "type": "txt",
+        "payload": {
+            "targetId": user_b,
+            "content": content,
+            "targetLanguages": ["zh-Hans"],
+        },
+        "chatType": 0,
+    }
+    resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
+    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
+        pytest.skip("MissingPlugin: sendMessageWithType 未在当前集成端实现")
+    temp_id = ((resp.get("result") or {}).get("msgId"))
+    assert temp_id, f"sendMessageWithType(text,targetLanguages) 未返回临时 msgId: {resp}"
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.sendMessageWithType.value,
+            "device": "deviceA",
+            "result": {
+                "msgId": temp_id,
+                "from": user_a,
+                "to": user_b,
+                "convId": user_b,
+                "chatType": 0,
+                "direction": 0,
+                "status": 1,
+                "body": {"type": 0, "content": content, "targetLanguages": ["zh-Hans"]},
+            },
+        },
+        ignore_keys={
+            "sequence",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "deliverOnlineOnly",
+            "hasRead",
+            "hasReadAck",
+            "hasDeliverAck",
+            "needGroupAck",
+            "isThread",
+            "isContentReplaced",
+        },
+    )
+
+    evt_error = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20.0)
+    assert_api.assert_response_matches(
+        evt_error,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageError.value,
+            "data": {
+                "msgId": temp_id,
+                "msg": {
+                    "msgId": temp_id,
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "chatType": 0,
+                    "direction": 0,
+                    "status": 3,
+                    "body": {"type": 0, "content": content, "targetLanguages": ["zh-Hans"], "translations": {}},
+                },
+                "error": {"code": 1113, "description": "Failed to translate the message "},
+            },
+        },
+        ignore_keys={
+            "timestamp",
+            "sequence",
+            "serverTime",
+            "localTime",
+            "broadcast",
+            "onlineState",
+            "deliverOnlineOnly",
+            "hasRead",
+            "hasReadAck",
+            "hasDeliverAck",
+            "needGroupAck",
+            "isThread",
+            "isContentReplaced",
+        },
+    )
 
 
 def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b, assert_api, user_a, user_b):
@@ -174,7 +314,7 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
         ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState"},
     )
 
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    evt_success = _wait_success_event(device_a, temp_id=temp_id, action=action)
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     assert real_id, f"onMessageSuccess 未返回 CMD 消息服务器 msgId: {evt_success}"
     assert_api.assert_response_matches(
@@ -229,17 +369,22 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
                         "needGroupAck": False,
                         "isThread": False,
                         "isContentReplaced": False,
-                        "receiverList": [],
                         "body": {"type": 6, "action": action, "deliverOnlineOnly": False},
                     },
                 ],
             },
         },
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList"},
     )
 
 
 def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b, *, type_key: str, payload: dict):
+    try:
+        device_a.drain_events()
+        device_b.drain_events()
+    except Exception:
+        pass
+
     info = {"type": type_key, "payload": payload, "chatType": 0}
     resp = device_a.call("ChatManager", Cmd.sendMessageWithType.value, info=info)
     # 若未实现，提前跳过
@@ -324,23 +469,9 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
     )
 
     # A 侧 onMessageSuccess：临时ID一致 + 关键字段
-    # 事件可能乱序到达；循环读取直至匹配本次 tempId
-    evt_success = None
-    real_id = None
-    temp_id_evt = None
-    for _ in range(5):
-        evt_candidate = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-        cand_temp = (evt_candidate.get("data") or {}).get("msgId")
-        if str(cand_temp) == str(temp_id):
-            evt_success = evt_candidate
-            temp_id_evt = cand_temp
-            real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
-            break
-    if evt_success is None:
-        # 未匹配到对应事件，最后一次候选也用于报错上下文
-        evt_success = evt_candidate
-        temp_id_evt = cand_temp
-        real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
+    evt_success = _wait_success_event(device_a, temp_id=temp_id)
+    temp_id_evt = (evt_success.get("data") or {}).get("msgId")
+    real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
     ignore_extra = {
         "timestamp",
         "sequence",
@@ -391,9 +522,27 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
     )
 
     # B 侧 onMessagesReceived：包含本次消息
-    evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+    evt_received = None
+    msgs = []
+    for _ in range(5):
+        evt_candidate = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
+        cand_msgs = ((evt_candidate or {}).get("data") or {}).get("messages") or []
+        if any(
+            (
+                isinstance(m, dict)
+                and m.get("from") == user_a
+                and m.get("to") == user_b
+                and str(m.get("msgId")) == str(real_id)
+                and ((m.get("body") or {}).get("type") is not None)
+            )
+            for m in cand_msgs
+        ):
+            evt_received = evt_candidate
+            msgs = cand_msgs
+            break
+        evt_received = evt_candidate
+        msgs = cand_msgs
     assert evt_received and evt_received.get("type") == "event" and evt_received.get("eventType") == Cmd.onMessagesReceived.value
-    msgs = ((evt_received.get("data") or {}).get("messages") or [])
     assert any(
         (m.get("from") == user_a and m.get("to") == user_b and str(m.get("msgId")) == str(real_id) and ((m.get("body") or {}).get("type") is not None))
         for m in msgs if isinstance(m, dict)

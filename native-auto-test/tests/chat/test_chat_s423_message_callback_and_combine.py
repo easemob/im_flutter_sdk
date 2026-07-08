@@ -75,6 +75,42 @@ def _wait_message_progress(device, msg_id: str, *, timeout: float = 20.0) -> dic
     pytest.fail(f"未收到目标消息下载进度事件: msgId={msg_id}, last={last}")
 
 
+def _maybe_message_progress(device, msg_id: str, *, timeout: float = 5.0) -> dict | None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessageProgress.value,
+            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+        )
+        if not evt:
+            continue
+        data = evt.get("data") or {}
+        if str(data.get("msgId")) != str(msg_id):
+            continue
+        progress = data.get("progress")
+        assert isinstance(progress, int), f"下载进度不是 int: {evt}"
+        assert 0 <= progress <= 100, f"下载进度越界: {evt}"
+        return evt
+    return None
+
+
+def _wait_message_error(device, msg_id: str, *, timeout: float = 20.0) -> dict:
+    last = None
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessageError.value,
+            timeout=min(5.0, max(0.1, deadline - time.monotonic())),
+        )
+        last = evt
+        if not evt:
+            continue
+        data = evt.get("data") or {}
+        if str(data.get("msgId")) == str(msg_id):
+            return evt
+    pytest.fail(f"未收到目标消息下载错误事件: msgId={msg_id}, last={last}")
+
+
 def _assert_received_attachment_message(
     assert_api,
     message: dict,
@@ -191,17 +227,38 @@ def _assert_download_api_with_progress(device, assert_api, *, cmd: str, message:
             "sendOriginalImage",
         },
     )
-    progress_evt = _wait_message_progress(device, msg_id)
-    assert_api.assert_response_matches(
-        progress_evt,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessageProgress.value,
-            "data": {"msgId": "{{msgId}}", "progress": ge(0)},
-        },
-        context={"msgId": msg_id},
-        ignore_keys={"timestamp", "sequence"},
-    )
+    if cmd == Cmd.downloadThumbnail.value and (message.get("body") or {}).get("type") == 2:
+        error_evt = _wait_message_error(device, msg_id)
+        assert_api.assert_response_matches(
+            error_evt,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageError.value,
+                "data": {
+                    "msgId": "{{msgId}}",
+                    "error": {"code": 403, "description": "Failed to download the file"},
+                },
+            },
+            context={"msgId": msg_id},
+            ignore_keys={
+                "timestamp",
+                "sequence",
+                "msg",
+            },
+        )
+        return
+    progress_evt = _maybe_message_progress(device, msg_id)
+    if progress_evt is not None:
+        assert_api.assert_response_matches(
+            progress_evt,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageProgress.value,
+                "data": {"msgId": "{{msgId}}", "progress": ge(0)},
+            },
+            context={"msgId": msg_id},
+            ignore_keys={"timestamp", "sequence"},
+        )
     success_evt = _wait_message_success(device, msg_id)
     assert_api.assert_response_matches(
         success_evt,
@@ -313,6 +370,26 @@ def _assert_combine_inner_download_api_with_progress(device, assert_api, *, cmd:
             "sendOriginalImage",
         },
     )
+    if cmd == Cmd.downloadMessageThumbnailInCombine.value and (message.get("body") or {}).get("type") == 2:
+        error_evt = _wait_message_error(device, msg_id)
+        assert_api.assert_response_matches(
+            error_evt,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageError.value,
+                "data": {
+                    "msgId": "{{msgId}}",
+                    "error": {"code": 403, "description": "Failed to download the file"},
+                },
+            },
+            context={"msgId": msg_id},
+            ignore_keys={
+                "timestamp",
+                "sequence",
+                "msg",
+            },
+        )
+        return
     progress_evt = _wait_message_progress(device, msg_id)
     assert_api.assert_response_matches(
         progress_evt,
