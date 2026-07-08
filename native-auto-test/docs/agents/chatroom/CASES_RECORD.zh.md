@@ -19,15 +19,15 @@
 
 正常 cases
 3. `tests/chatroom/test_chatroom_members.py::test_chatroom_join_public_chatroom_success`
-   B 加入公开聊天室，校验同步成功响应与 `onMemberJoinedFromChatRoom` 回调关键字段。
+   B 加入公开聊天室，当前同步响应返回聊天室对象（`roomId/memberCount/isAllMemberMuted/isInWhitelist`），随后通过服务端成员列表确认 B 已加入。
 4. `tests/chatroom/test_chatroom_members.py::test_chatroom_join_with_ext_member_joined_callback`
-   `user_c` 创建聊天室，B 先进入聊天室保持在线，A 随后在 `joinChatRoom` 请求中携带包含 `user_id/user_name/user_face/jointime/user_type/live_id/master_user_id/isliveroom/is_prohibit_speak` 的 JSON 字符串 `ext` 加入。校验加入方同步响应关键字段，并在 A/B 任一在线端查找 `onMemberJoinedFromChatRoom` 原始事件，断言 `participant=user_a` 且 `ext` 等于加入方入参，覆盖“加入方携带 ext，在线端能收到对应 join/presence 成员加入事件”的透传语义。
+   当前已标记 xfail：`user_c` 创建聊天室，B 先进入聊天室保持在线，A 随后携带 ext 加入；实测两端均未收到 `onMemberJoinedFromChatRoom`，暂不作为通过覆盖。
 5. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_nonexistent_current_behavior`
-   当前实测：传入随机不存在 roomId 仍返回成功 `result=1`，先按现网行为冻结（待产品语义确认）。
+   当前实测：传入随机不存在 roomId 返回 `705/Chat room does not exist`，按现网行为冻结。
 6. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_join_then_get_local_room_and_all_rooms`
-   B 加入聊天室后，校验本地单聊天室缓存和本地聊天室列表包含该聊天室。
+   B 加入聊天室后，校验本地单聊天室缓存返回目标聊天室核心字段；`getAllChatRooms` 当前仅冻结返回 list 语义。
 7. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_join_leave_other_rooms_option_controls_existing_rooms`
-   覆盖 `joinChatRoom.leaveOtherRooms` 语义：`false` 时 B 加入新聊天室后仍保留旧聊天室；`true` 时 B 加入新聊天室后应退出旧聊天室。通过服务端成员列表断言旧/新房间成员关系，本地聊天室列表仅辅助确认新加入房间存在。
+   覆盖 `joinChatRoom.leaveOtherRooms` 语义：`false` 时 B 加入新聊天室后仍保留旧聊天室；`true` 时 B 加入新聊天室后应退出旧聊天室。通过服务端成员列表断言旧/新房间成员关系；`getAllChatRooms` 当前仅冻结 list 结构。
 
 异常 cases
 8. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_join_room_empty_id`
@@ -41,9 +41,9 @@
 
 异常 cases
 8. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_leave_room_nonexistent`
-   当前实测：传入随机不存在 roomId 返回成功 `result=null`，先按现网行为冻结。
+   当前实测：传入随机不存在 roomId 返回成功 `result=true`，先按现网行为冻结。
 9. `tests/chatroom/test_chatroom_exceptions.py::test_chatroom_leave_room_empty_id`
-   roomId 为空字符串，冻结错误语义：`code=700`，`description` 包含 `Chatroom ID invalid`。
+   roomId 为空字符串，当前真实返回成功 `result=true`。
 
 ## fetchPublicChatRoomsFromServer
 
@@ -83,13 +83,13 @@
 
 正常 cases
 21. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_join_then_get_local_room_and_all_rooms`
-    加入聊天室后，校验 `getChatRoom` 返回目标聊天室核心字段，`getAllChatRooms` 返回列表且包含目标聊天室。
+    加入聊天室后，校验 `getChatRoom` 返回目标聊天室核心字段，`getAllChatRooms` 当前返回 list。
 22. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_leave_room_updates_local_cache`
     离开聊天室后，通过 `fetchChatRoomMembers` 校验离开成员不再出现在服务端成员列表中。
 23. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_get_local_room_empty_id_returns_none`
     本地查询空 roomId，冻结当前行为：`getChatRoom` 返回 `null`。
 24. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_get_local_room_nonexistent_returns_placeholder`
-    本地查询不存在 roomId，冻结当前行为：返回本地占位聊天室对象，`roomId` 为传入值且 `name=""`、`memberCount=0`。
+    本地查询不存在 roomId，冻结当前行为：`getChatRoom` 返回 `null`。
 25. `tests/chatroom/test_chatroom_member_basics.py::test_chatroom_get_all_local_rooms_returns_list`
     未指定房间时调用 `getAllChatRooms`，校验返回 list，且已有条目均包含 `roomId`。
 

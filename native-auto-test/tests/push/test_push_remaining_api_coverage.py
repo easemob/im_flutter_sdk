@@ -263,14 +263,16 @@ def test_push_vendor_token_update_current_environment(device_a, assert_api, cmd,
     )
 
 
-def test_push_apns_token_update_android_missing_plugin(device_a, assert_api):
-    """updateAPNsPushToken：Android 模拟器调用 APNs token 更新，冻结 MissingPlugin 当前环境语义。"""
+def test_push_apns_token_update_android_missing_plugin(device_a):
+    """updateAPNsPushToken：Android 模拟器不适用 APNs，MissingPlugin 记录为平台/桥接缺口。"""
     resp = device_a.call(
         "PushManager",
         Cmd.updateAPNsPushToken.value,
         info={"token": "apns-token-api-coverage"},
     )
-    assert_api.assert_error(resp, code=-1, description="MissingPluginException")
+    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
+        pytest.xfail("updateAPNsPushToken 在 Android 模拟器当前返回 MissingPluginException，记录为平台/桥接缺口。")
+    pytest.fail(f"updateAPNsPushToken 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
 
 
 def test_push_sync_conversations_silent_mode_current_environment(device_a, assert_api):

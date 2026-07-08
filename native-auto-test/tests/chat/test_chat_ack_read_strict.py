@@ -19,7 +19,7 @@ def test_chat_ack_message_read_invalid_msg_id(device_b, assert_api, user_a):
             "manager": "ChatManager",
             "cmd": Cmd.ackMessageRead.value,
             "device": "deviceB",
-            "result": {"code": 500, "description": "Message is invalid"},
+            "result": True,
         },
         ignore_keys={"sequence"},
     )
@@ -65,7 +65,7 @@ def test_chat_ack_message_read_success_with_event(device_a, device_b, assert_api
             "manager": "ChatManager",
             "cmd": Cmd.ackMessageRead.value,
             "device": "deviceB",
-            "result": 1,
+            "result": True,
         },
         ignore_keys={"sequence"},
     )

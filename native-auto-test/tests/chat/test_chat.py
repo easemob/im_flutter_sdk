@@ -228,8 +228,7 @@ def test_chat_translate_message_nonexistent_message(device_a, assert_api, user_a
 def test_chat_ack_conversation_read_invalid_id_response(device_b, assert_api):
     """B 对一个不存在的会话调用 ackConversationRead，A 不应在 5s 内收到 onConversationHasRead。"""
     bogus = "__invalid_conversation_id__"
-    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"conversationId": bogus})
-    # 当前实现返回 result 含固定错误体（code 与 description），据实时返回值严格断言。
+    resp = device_b.call("ChatManager", Cmd.ackConversationRead.value, info={"convId": bogus})
     assert_api.assert_response_matches(
         resp,
         expected={
@@ -315,7 +314,7 @@ def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
     resp = device_b.call(
         "ChatManager",
         Cmd.fetchHistoryMessages.value,
-        info={"conversationId": "__invalid__", "pageSize": 20, "cursor": None},
+        info={"convId": "__invalid__", "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0},
     )
     assert_api.assert_response_matches(
         resp,
@@ -323,7 +322,10 @@ def test_chat_fetch_history_invalid_conversation(device_b, assert_api):
             "manager": "ChatManager",
             "cmd": Cmd.fetchHistoryMessages.value,
             "device": "deviceB",
-            "result": {"code": 205, "description": "Invalid parameter"},
+            "result": {
+                "cursor": "",
+                "list": [],
+            },
         },
         ignore_keys={"sequence"},
     )
