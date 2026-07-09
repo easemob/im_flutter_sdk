@@ -195,7 +195,6 @@ def _assert_joiner_ext_delivered_to_observer(
     )
 
 
-@pytest.mark.xfail(reason="当前实测 joinChatRoom 携带 ext 成功但未派发 onMemberJoinedFromChatRoom，待 SDK/服务端确认。")
 def test_chatroom_join_with_ext_member_joined_callback(
     device_a,
     device_b,

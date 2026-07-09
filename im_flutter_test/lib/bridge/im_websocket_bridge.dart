@@ -178,10 +178,12 @@ class IMWebSocketBridge {
     Map<String, dynamic> response = {};
     try {
       // sendMessageWithType 仅在 Dart 封装 EMMessage 后调 sendMessage，无原生 method，不可走 callNativeMethod
-      final dynamic result = (managerName == 'ChatManager' &&
-              method == 'sendMessageWithType')
-          ? await _invokeSendMessageWithType(args)
-          : await manager.callNativeMethod(method, args);
+      final dynamic result = await _invokeBridgeMethod(
+        managerName,
+        method,
+        args,
+        manager,
+      );
       //返回的result是map格式，key是method，value是结果json字符串，通过websocket发送回去的，可以将reqeust中的info字段去掉，把返回的值放到result属性中
       if (result is Map<String, dynamic>) {
         final String resultFieldKey = (method == 'sendMessageWithType')
@@ -205,6 +207,40 @@ class IMWebSocketBridge {
       _send(ws, response);
     }
     onLog?.call(text, jsonEncode(response));
+  }
+
+  /// 与原生 [ChatMethodKeys.sendMessage] 返回结构一致：`{ sendMessage: message.toJson() }`
+  Future<dynamic> _invokeBridgeMethod(
+    String managerName,
+    String method,
+    dynamic args,
+    dynamic manager,
+  ) async {
+    if (managerName == 'ChatManager' && method == 'sendMessageWithType') {
+      return _invokeSendMessageWithType(args);
+    }
+    if (managerName == 'UserInfoManager' && method == 'fetchOwnInfo') {
+      final info = await EMClient.getInstance.userInfoManager.fetchOwnInfo(
+        expireTime: _intArg(args, 'expireTime') ?? 0,
+      );
+      return {method: info?.toJson()};
+    }
+    if (managerName == 'ContactManager' && method == 'fetchAllContactIds') {
+      return {method: await EMClient.getInstance.contactManager.fetchAllContactIds()};
+    }
+    if (managerName == 'ContactManager' && method == 'getAllContactIds') {
+      return {method: await EMClient.getInstance.contactManager.getAllContactIds()};
+    }
+    return manager.callNativeMethod(method, args);
+  }
+
+  int? _intArg(dynamic args, String key) {
+    if (args is! Map) return null;
+    final value = args[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   /// 与原生 [ChatMethodKeys.sendMessage] 返回结构一致：`{ sendMessage: message.toJson() }`

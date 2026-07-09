@@ -188,7 +188,6 @@ def test_chatroom_attributes_updated_and_removed_callbacks(device_a, device_b, a
         safe_delete_chatroom(room_id)
 
 
-@pytest.mark.xfail(reason="当前实测 updateChatRoomAnnouncement 成功但未派发公告变更回调，待 SDK/服务端确认。")
 def test_chatroom_announcement_changed_callback(device_a, device_b, assert_api, user_a):
     room_id, _ = create_chatroom_or_skip(owner=user_a, name_prefix="cb_announcement", desc_prefix="cb_announcement")
     announcement = f"notice-{uuid.uuid4().hex[:8]}"

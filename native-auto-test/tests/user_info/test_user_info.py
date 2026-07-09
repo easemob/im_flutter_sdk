@@ -156,8 +156,8 @@ def test_user_info_update_then_fetch_user_info_by_id(device_a, assert_api, user_
     )
 
 
-def test_user_info_update_then_fetch_own_info(device_a, user_a):
-    """fetchOwnInfo：当前原生通道未实现 direct cmd，MissingPlugin 记录为桥接缺口。"""
+def test_user_info_update_then_fetch_own_info(device_a, assert_api, user_a):
+    """fetchOwnInfo：更新当前用户属性后拉取自己的用户属性。"""
     device_a.call(
         "UserInfoManager",
         Cmd.updateOwnUserInfo.value,
@@ -172,9 +172,21 @@ def test_user_info_update_then_fetch_own_info(device_a, user_a):
         Cmd.fetchOwnInfo.value,
         info={},
     )
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.xfail("fetchOwnInfo direct cmd 当前返回 MissingPluginException，记录为桥接缺口。")
-    pytest.fail(f"fetchOwnInfo 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "UserInfoManager",
+            "cmd": Cmd.fetchOwnInfo.value,
+            "device": "deviceA",
+            "result": {
+                "userId": user_a,
+                "nickName": "nick-own-info",
+                "sign": "sign-own-info",
+                "mail": "mail-own-info@example.com",
+            },
+        },
+        ignore_keys={"sequence", "gender", "avatarUrl", "phone", "birth", "ext"},
+    )
 
 
 def test_user_info_update_then_fetch_user_info_by_id_with_type(device_a, assert_api, user_a):
