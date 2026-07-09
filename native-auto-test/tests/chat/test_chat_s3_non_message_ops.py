@@ -171,7 +171,10 @@ def _pin_conversation_after_pending_ops(device, *, conv_id: str, is_pinned: bool
             time.sleep(1.0)
             continue
         return resp
-    pytest.xfail(f"pinConversation 当前持续返回 303/concurrent operation are not allowed，暂缓成功 toggle 链路: {seen_responses}")
+    raise AssertionError(
+        "pinConversation 持续返回 303/concurrent operation are not allowed: "
+        f"{seen_responses}"
+    )
 
 def _assert_error_with_envelope(
     assert_api,
