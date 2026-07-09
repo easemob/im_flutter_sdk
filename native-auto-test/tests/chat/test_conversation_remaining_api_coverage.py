@@ -707,15 +707,29 @@ def test_conversation_delete_local_and_server_messages_current_behavior(device_a
     )
 
 
-def test_conversation_delete_local_and_server_messages_by_time_bridge_missing(device_a):
+def test_conversation_delete_local_and_server_messages_by_time(device_a, device_b, assert_api, user_a, user_b):
+    """conversationDeleteServerMessageWithTime：按时间删除本地及服务端消息，冻结当前返回。"""
+    content = f"conv-server-delete-time-{uuid.uuid4().hex[:8]}"
+    _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+    conv_a = _conversation(user_b)
+
     resp_delete_time = device_a.call(
         "ConversationManager",
         Cmd.conversationDeleteServerMessageWithTime.value,
-        info={"beforeTs": int(time.time() * 1000) + 1_000},
+        info={**conv_a, "beforeTs": int(time.time() * 1000) + 1_000},
     )
-    if resp_delete_time.get("success") is False and "MissingPluginException" in str((resp_delete_time.get("error") or {}).get("description", "")):
-        pytest.xfail("conversationDeleteServerMessageWithTime 当前返回 MissingPluginException，记录为桥接缺口。")
-    pytest.fail(
-        "conversationDeleteServerMessageWithTime 已不再返回 MissingPluginException，"
-        f"需按真实返回重新修订 case: {resp_delete_time!r}"
+    delete_time_result = resp_delete_time.get("result")
+    if isinstance(delete_time_result, dict):
+        expected_delete_time = {"code": 500, "description": "Message is invalid"}
+    else:
+        expected_delete_time = None
+    assert_api.assert_response_matches(
+        resp_delete_time,
+        expected={
+            "manager": "ConversationManager",
+            "cmd": Cmd.conversationDeleteServerMessageWithTime.value,
+            "device": "deviceA",
+            "result": expected_delete_time,
+        },
+        ignore_keys={"sequence"},
     )

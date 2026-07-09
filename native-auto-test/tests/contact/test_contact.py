@@ -683,18 +683,34 @@ def test_contact_fetch_all_fetch_page_fetch_ids_get_local_lists(
     flow.delete_friend(device_a, user_b)
 
 
-def test_contact_fetch_all_contact_ids_bridge_missing(device_a):
+def test_contact_fetch_all_contact_ids(device_a, assert_api):
     resp = device_a.call("ContactManager", Cmd.fetchAllContactIds.value, info={})
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.xfail("fetchAllContactIds direct cmd 当前返回 MissingPluginException，记录为桥接缺口。")
-    pytest.fail(f"fetchAllContactIds 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ContactManager",
+            "cmd": Cmd.fetchAllContactIds.value,
+            "device": "deviceA",
+            "result": [],
+        },
+        ignore_keys={"sequence", "result"},
+    )
+    assert isinstance(resp.get("result"), list), f"fetchAllContactIds result 应为 list: {resp!r}"
 
 
-def test_contact_get_all_contact_ids_bridge_missing(device_a):
+def test_contact_get_all_contact_ids(device_a, assert_api):
     resp = device_a.call("ContactManager", Cmd.getAllContactIds.value, info={})
-    if resp.get("success") is False and "MissingPluginException" in str((resp.get("error") or {}).get("description", "")):
-        pytest.xfail("getAllContactIds direct cmd 当前返回 MissingPluginException，记录为桥接缺口。")
-    pytest.fail(f"getAllContactIds 已不再返回 MissingPluginException，需按真实返回重新修订 case: {resp!r}")
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ContactManager",
+            "cmd": Cmd.getAllContactIds.value,
+            "device": "deviceA",
+            "result": [],
+        },
+        ignore_keys={"sequence", "result"},
+    )
+    assert isinstance(resp.get("result"), list), f"getAllContactIds result 应为 list: {resp!r}"
 
 
 # ---------- fetchContacts（异常：文档 pageSize ∈ [1,50]）----------

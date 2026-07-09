@@ -721,6 +721,12 @@ public class ChatRoomManagerWrapper extends Wrapper implements MethodChannel.Met
             }
 
 
+            @Override
+            public void onMemberJoined(String roomId, String participant) {
+                onMemberJoined(roomId, participant, null);
+            }
+
+            @Override
             public void onMemberJoined(String roomId, String participant, String ext) {
                 ListenerHandle.getInstance().addHandle(
                         () -> {
