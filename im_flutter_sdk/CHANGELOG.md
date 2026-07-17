@@ -1,3 +1,6 @@
+## 4.17.1
+- 新增 iOS Swift Package Manager 集成支持；
+
 ## 4.17.0
 - 安卓依赖 SDK 升级到 4.17.1；
 - iOS依赖 SDK 升级到 4.17.1；

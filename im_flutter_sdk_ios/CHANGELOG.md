@@ -1,3 +1,7 @@
+## 4.17.1
+- 新增 iOS Swift Package Manager 集成支持；
+- iOS 依赖 SDK 使用 HyphenateChat 4.17.1；
+
 ## 4.17.0
 - iOS依赖 SDK 升级到 4.17.1；
 - 长连接支持 WebSocket 协议；

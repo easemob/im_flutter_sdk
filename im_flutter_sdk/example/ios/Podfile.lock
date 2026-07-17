@@ -1,32 +1,15 @@
 PODS:
-  - AgoraInfra_iOS (1.3.0)
   - Flutter (1.0.0)
-  - HyphenateChat (4.17.1):
-    - AgoraInfra_iOS (~> 1.3.0)
-  - im_flutter_sdk_ios (4.15.2):
-    - Flutter
-    - HyphenateChat (= 4.17.1)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - im_flutter_sdk_ios (from `.symlinks/plugins/im_flutter_sdk_ios/ios`)
-
-SPEC REPOS:
-  trunk:
-    - AgoraInfra_iOS
-    - HyphenateChat
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  im_flutter_sdk_ios:
-    :path: ".symlinks/plugins/im_flutter_sdk_ios/ios"
 
 SPEC CHECKSUMS:
-  AgoraInfra_iOS: bfbe01cc1cbc8cdd6fa2cba50393e621fd859c6b
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  HyphenateChat: b41e58b4d6731e0ee38aa52253dfc38caad6db38
-  im_flutter_sdk_ios: 85e0cf97f4e788b0479c90155f9ba6572512bc8d
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
 

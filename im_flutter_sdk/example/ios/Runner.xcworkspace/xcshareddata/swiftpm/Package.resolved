@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "agorainfra_ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AgoraIO/AgoraInfra_iOS",
+      "state" : {
+        "revision" : "1efd68dbd67bd464e35e799dd3779fa1c6a114c6",
+        "version" : "1.3.9"
+      }
+    },
+    {
+      "identity" : "hyphenatechat_ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/easemob/HyphenateChat_iOS.git",
+      "state" : {
+        "revision" : "70912a91f462bb25438a30c67b9e935650bce2de",
+        "version" : "4.17.1"
+      }
+    }
+  ],
+  "version" : 2
+}

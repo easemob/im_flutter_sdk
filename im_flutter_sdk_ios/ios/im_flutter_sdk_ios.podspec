@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'im_flutter_sdk_ios'
-  s.version          = '4.15.2'
+  s.version          = '4.17.1'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -13,8 +13,8 @@ A new flutter plugin project.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
 
-  s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
+  s.source_files = 'im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/**/*'
+  s.public_header_files = 'im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/**/*.h'
 
   s.dependency 'Flutter'
   s.dependency 'HyphenateChat','4.17.1'
@@ -24,4 +24,3 @@ A new flutter plugin project.
   s.ios.deployment_target = '12.0'
 
 end
-
