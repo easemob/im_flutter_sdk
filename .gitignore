@@ -49,3 +49,5 @@ app.*.map.json
 /scripts/shengwang_chat_sdk
 /scripts/agora_chat_sdk
 /scripts/im_flutter_sdk
+.workbuddy/
+docs/superpowers/
