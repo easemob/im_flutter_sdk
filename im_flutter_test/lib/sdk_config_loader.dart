@@ -38,6 +38,7 @@ class SdkConfigLoader {
       syncDataWebSocketServer: _str(sdkOpts, 'sync_data_web_socket_server'),
       syncDataWebSocketPort: _int(sdkOpts, 'sync_data_web_socket_port'),
       requireAck: _bool(sdkOpts, 'require_ack', true),
+      requireDeliveryAck: _bool(sdkOpts, 'require_delivery_ack', false),
       enableAutoSyncContacts: _bool(sdkOpts, 'enable_auto_sync_contacts', false),
       enableUserInfo: _boolNullable(sdkOpts, 'enable_user_info'),
     );

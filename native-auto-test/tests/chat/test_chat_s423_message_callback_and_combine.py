@@ -55,6 +55,25 @@ def _wait_received_message(device, msg_id: str, *, from_user: str, to_user: str,
     pytest.fail(f"onMessagesReceived 未包含目标消息: msgId={msg_id}, last={last}")
 
 
+def _wait_delivered_message(device, msg_id: str, *, from_user: str, to_user: str, timeout: float = 20.0) -> dict:
+    last = None
+    for _ in range(8):
+        evt = device.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=timeout)
+        last = evt
+        if not evt:
+            continue
+        messages = ((evt.get("data") or {}).get("messages") or [])
+        for msg in messages:
+            if (
+                isinstance(msg, dict)
+                and str(msg.get("msgId")) == str(msg_id)
+                and msg.get("from") == from_user
+                and msg.get("to") == to_user
+            ):
+                return msg
+    pytest.fail(f"onMessagesDelivered 未包含目标消息: msgId={msg_id}, last={last}")
+
+
 def _wait_message_progress(device, msg_id: str, *, timeout: float = 20.0) -> dict:
     last = None
     deadline = time.monotonic() + timeout
@@ -140,7 +159,7 @@ def _assert_received_attachment_message(
             "deliverOnlineOnly": False,
             "hasRead": False,
             "hasReadAck": False,
-            "hasDeliverAck": False,
+            "hasDeliverAck": True,
             "needGroupAck": False,
             "isThread": False,
             "isContentReplaced": False,
@@ -581,6 +600,29 @@ def _send_with_type(device_a, device_b, assert_api, user_a: str, user_b: str, *,
         ignore_keys=ignore_keys,
     )
     received_msg = _wait_received_message(device_b, real_id, from_user=user_a, to_user=user_b)
+    delivered_msg = _wait_delivered_message(device_a, real_id, from_user=user_a, to_user=user_b)
+    assert_api.assert_response_matches(
+        delivered_msg,
+        expected={
+            "msgId": "{{realId}}",
+            "from": "{{fromUser}}",
+            "to": "{{toUser}}",
+            "convId": "{{toUser}}",
+            "chatType": 0,
+            "direction": 0,
+            "status": 2,
+            "deliverOnlineOnly": False,
+            "hasRead": True,
+            "hasReadAck": False,
+            "hasDeliverAck": True,
+            "needGroupAck": False,
+            "isThread": False,
+            "isContentReplaced": False,
+            "body": body_expected,
+        },
+        context={"realId": real_id, "fromUser": user_a, "toUser": user_b},
+        ignore_keys=ignore_keys,
+    )
     return resp, sent_msg, received_msg
 
 
@@ -771,7 +813,7 @@ def _send_text_message_with_webhook_env(
             "deliverOnlineOnly": False,
             "hasRead": False,
             "hasReadAck": False,
-            "hasDeliverAck": False,
+            "hasDeliverAck": True,
             "needGroupAck": False,
             "isThread": False,
             "isContentReplaced": False,
@@ -782,6 +824,36 @@ def _send_text_message_with_webhook_env(
             "fromUser": user_a,
             "toUser": user_b,
             "content": content,
+        },
+        ignore_keys=ignore_keys,
+    )
+    delivered_msg = _wait_delivered_message(device_a, real_id, from_user=user_a, to_user=user_b)
+    assert_api.assert_response_matches(
+        delivered_msg,
+        expected={
+            "msgId": "{{realId}}",
+            "from": "{{fromUser}}",
+            "to": "{{toUser}}",
+            "convId": "{{toUser}}",
+            "chatType": 0,
+            "direction": 0,
+            "status": 2,
+            "deliverOnlineOnly": False,
+            "hasRead": True,
+            "hasReadAck": False,
+            "hasDeliverAck": True,
+            "needGroupAck": False,
+            "isThread": False,
+            "isContentReplaced": False,
+            "webhookEnv": "{{webhookEnv}}",
+            "body": {"type": 0, "content": "{{content}}"},
+        },
+        context={
+            "realId": real_id,
+            "fromUser": user_a,
+            "toUser": user_b,
+            "content": content,
+            "webhookEnv": webhook_env,
         },
         ignore_keys=ignore_keys,
     )
@@ -855,7 +927,7 @@ def test_combine_forward_send_receive_and_inner_attachment_download(device_a, de
             "deliverOnlineOnly": False,
             "hasRead": False,
             "hasReadAck": False,
-            "hasDeliverAck": False,
+            "hasDeliverAck": True,
             "needGroupAck": False,
             "isThread": False,
             "isContentReplaced": False,

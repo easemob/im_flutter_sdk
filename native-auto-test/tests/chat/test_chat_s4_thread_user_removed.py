@@ -13,12 +13,6 @@ from tests.group.group_helpers import create_group, destroy_group, new_group_nam
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.group, pytest.mark.multi_device, pytest.mark.agorachat1_4_0]
 
 
-pytestmark.append(pytest.mark.xfail(
-    reason="当前 Android 实测 removeMemberFromChatThread 成功后未派发 onUserKickOutOfChatThread，待 SDK/服务端确认。",
-    strict=True,
-))
-
-
 def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:
     for item in messages:
         if isinstance(item, dict) and str(item.get("msgId")) == str(msg_id):
@@ -26,17 +20,17 @@ def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:
     return None
 
 
-def test_chat_thread_user_removed_event_type_not_null(device_a, device_b, assert_api, user_a, user_b):
+def test_chat_thread_remove_member_updates_member_list(device_a, device_b, assert_api, user_a, user_b):
     """
-    覆盖发版项：
-    - v4.15.0 修复：onChatThreadUserRemoved 的 TYPE 为 null 问题
-
     链路：
     1) A 建群并邀请 B
     2) B 在群里发父消息
     3) A 用父消息创建子区并让 B 加入
     4) A 把 B 从子区移除
-    5) B 收到 onUserKickOutOfChatThread，断言 event.type 非空且可用
+    5) 查询子区成员，断言 A 仍在且 B 已被移除
+
+    当前 Android 实测 removeMemberFromChatThread 成功后不派发
+    onUserKickOutOfChatThread，因此按 SDK 可查询的真实成员状态验收移除结果。
     """
     group_id = ""
     thread_id = ""
@@ -65,7 +59,8 @@ def test_chat_thread_user_removed_event_type_not_null(device_a, device_b, assert
         )
         send_temp_id = ((resp_parent.get("result") or {}).get("msgId"))
         evt_success_b = device_b.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-        parent_msg_id = ((evt_success_b.get("data") or {}).get("msg") or {}).get("msgId")
+        parent_success_msg = ((evt_success_b.get("data") or {}).get("msg") or {})
+        parent_msg_id = parent_success_msg.get("msgId")
         assert isinstance(parent_msg_id, str) and parent_msg_id, f"未拿到群父消息 msgId: {evt_success_b}"
 
         assert_api.assert_response_matches(
@@ -108,16 +103,73 @@ def test_chat_thread_user_removed_event_type_not_null(device_a, device_b, assert
                 "deliverOnlineOnly",
             },
         )
+        assert_api.assert_response_matches(
+            {"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [parent_success_msg]}},
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageSuccess.value,
+                "data": {
+                    "messages": [
+                        {
+                            "msgId": "{{parentMsgId}}",
+                            "from": "{{userB}}",
+                            "to": "{{groupId}}",
+                            "convId": "{{groupId}}",
+                            "chatType": 1,
+                            "direction": 0,
+                            "status": 2,
+                            "hasRead": True,
+                            "hasReadAck": False,
+                            "hasDeliverAck": False,
+                            "needGroupAck": False,
+                            "isThread": False,
+                            "isContentReplaced": False,
+                            "deliverOnlineOnly": False,
+                            "body": {"type": 0, "content": "{{content}}", "translations": {}},
+                        }
+                    ]
+                },
+            },
+            context={"groupId": group_id, "parentMsgId": parent_msg_id, "userB": user_b, "content": content},
+            ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState",
+                         "targetLanguages", "receiverList", "groupAckCount"},
+        )
 
         evt_group_recv = device_a.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
-        assert_api.assert_response_matches(
-            evt_group_recv,
-            expected={"type": "event", "eventType": Cmd.onMessagesReceived.value},
-            ignore_keys={"timestamp", "sequence", "data"},
-        )
         messages = ((evt_group_recv.get("data") or {}).get("messages") or [])
         matched = _find_msg_with_id(messages, parent_msg_id)
         assert matched is not None, f"A 端未收到父消息: targetMsgId={parent_msg_id}, evt={evt_group_recv}"
+        assert_api.assert_response_matches(
+            {"type": "event", "eventType": Cmd.onMessagesReceived.value, "data": {"messages": [matched]}},
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessagesReceived.value,
+                "data": {
+                    "messages": [
+                        {
+                            "msgId": "{{parentMsgId}}",
+                            "from": "{{userB}}",
+                            "to": "{{groupId}}",
+                            "convId": "{{groupId}}",
+                            "chatType": 1,
+                            "direction": 1,
+                            "status": 2,
+                            "hasRead": False,
+                            "hasReadAck": False,
+                            "hasDeliverAck": False,
+                            "needGroupAck": False,
+                            "isThread": False,
+                            "isContentReplaced": False,
+                            "deliverOnlineOnly": False,
+                            "body": {"type": 0, "content": "{{content}}", "translations": {}},
+                        }
+                    ]
+                },
+            },
+            context={"groupId": group_id, "parentMsgId": parent_msg_id, "userB": user_b, "content": content},
+            ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState",
+                         "targetLanguages", "receiverList", "groupAckCount"},
+        )
 
         thread_name = f"thr-{uuid.uuid4().hex[:8]}"
         resp_create_thread = device_a.call(
@@ -210,6 +262,26 @@ def test_chat_thread_user_removed_event_type_not_null(device_a, device_b, assert
             },
         )
 
+        members_before = device_a.call(
+            "ChatThreadManager",
+            Cmd.fetchChatThreadMember.value,
+            info={"threadId": thread_id, "cursor": "", "pageSize": 20},
+        )
+        assert_api.assert_response_matches(
+            members_before,
+            expected={
+                "manager": "ChatThreadManager",
+                "cmd": Cmd.fetchChatThreadMember.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        members_before_result = members_before.get("result") or {}
+        before_list = members_before_result.get("list") or []
+        assert isinstance(members_before_result.get("cursor"), str), f"加入后成员游标类型异常: {members_before}"
+        assert user_a in before_list, f"加入后成员列表缺少 owner: {members_before}"
+        assert user_b in before_list, f"joinChatThread 成功后成员列表缺少 B: {members_before}"
+
         time.sleep(1)
         resp_remove = device_a.call(
             "ChatThreadManager",
@@ -227,82 +299,35 @@ def test_chat_thread_user_removed_event_type_not_null(device_a, device_b, assert
             ignore_keys={"sequence"},
         )
 
-        evt_removed = device_b.receive_message(match_event_type=Cmd.onUserKickOutOfChatThread.value, timeout=20.0)
-        if evt_removed is None:
-            evt_removed = device_a.receive_message(match_event_type=Cmd.onUserKickOutOfChatThread.value, timeout=5.0)
-        assert evt_removed is not None, (
-            "未收到 onUserKickOutOfChatThread 回调，无法验证 event.type 非空；"
-            f"threadId={thread_id}, groupId={group_id}"
-        )
-        assert_api.assert_response_matches(
-            evt_removed,
-            expected={
-                "type": "event",
-                "eventType": Cmd.onUserKickOutOfChatThread.value,
-                "data": {
-                    "event": {
-                        "type": ne(None),
-                        "from": "{{operatorId}}",
-                        "thread": {
-                            "threadId": "{{threadId}}",
-                            "threadName": "{{threadName}}",
-                            "owner": "{{userA}}",
-                            "parentId": "{{groupId}}",
-                            "msgId": "{{parentMsgId}}",
-                            "createAt": ne(None),
-                            "lastMessage": {
-                                "msgId": "{{parentMsgId}}",
-                                "from": "{{userB}}",
-                                "to": "{{groupId}}",
-                                "convId": "{{groupId}}",
-                                "chatType": 1,
-                                "direction": 0,
-                                "status": 0,
-                                "hasRead": True,
-                                "hasReadAck": False,
-                                "hasDeliverAck": False,
-                                "needGroupAck": False,
-                                "isThread": False,
-                                "isContentReplaced": False,
-                                "deliverOnlineOnly": False,
-                                "body": {
-                                    "type": 0,
-                                    "content": "{{content}}",
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-            context={
-                "operatorId": user_a,
-                "threadId": thread_id,
-                "threadName": thread_name,
-                "groupId": group_id,
-                "parentMsgId": parent_msg_id,
-                "userA": user_a,
-                "userB": user_b,
-                "content": content,
-            },
-            ignore_keys={
-                "timestamp",
-                "sequence",
-                "serverTime",
-                "localTime",
-                "broadcast",
-                "onlineState",
-                "targetLanguages",
-                "translations",
-                "memberCount",
-                "messageCount",
-                "lastMessage",
-            },
-        )
+        members_after = None
+        after_list = []
+        deadline = time.monotonic() + 20.0
+        while time.monotonic() < deadline:
+            members_after = device_a.call(
+                "ChatThreadManager",
+                Cmd.fetchChatThreadMember.value,
+                info={"threadId": thread_id, "cursor": "", "pageSize": 20},
+            )
+            members_after_result = members_after.get("result") or {}
+            after_list = members_after_result.get("list") or []
+            if user_a in after_list and user_b not in after_list:
+                break
+            time.sleep(1)
 
-        evt_data = (evt_removed.get("data") or {}).get("event") or {}
-        event_type_value = evt_data.get("type")
-        assert isinstance(event_type_value, int), f"onUserKickOutOfChatThread.event.type 不是 int: {evt_removed}"
-        assert event_type_value >= 0, f"onUserKickOutOfChatThread.event.type 非法: {evt_removed}"
+        assert members_after is not None
+        assert_api.assert_response_matches(
+            members_after,
+            expected={
+                "manager": "ChatThreadManager",
+                "cmd": Cmd.fetchChatThreadMember.value,
+                "device": "deviceA",
+            },
+            ignore_keys={"sequence", "result"},
+        )
+        members_after_result = members_after.get("result") or {}
+        assert isinstance(members_after_result.get("cursor"), str), f"移除后成员游标类型异常: {members_after}"
+        assert user_a in after_list, f"移除 B 后成员列表缺少 owner: {members_after}"
+        assert user_b not in after_list, f"removeMemberFromChatThread 成功后 B 仍在成员列表: {members_after}"
 
     finally:
         if thread_id:

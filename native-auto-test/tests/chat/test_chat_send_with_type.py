@@ -9,6 +9,26 @@ from src import Cmd, ne, gt, ge
 pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.agorachat1_4_0]
 
 
+_MESSAGE_EVENT_IGNORE_KEYS = {
+    "timestamp",
+    "sequence",
+    "serverTime",
+    "localTime",
+    "broadcast",
+    "onlineState",
+    "receiverList",
+    "translations",
+    "targetLanguages",
+    "fileSize",
+    "localPath",
+    "remotePath",
+    "secret",
+    "thumbnailLocalPath",
+    "thumbnailRemotePath",
+    "thumbnailSecret",
+}
+
+
 def _wait_success_event(device, *, temp_id: str | None = None, content: str | None = None, action: str | None = None, timeout: float = 60.0):
     seen_events = []
     deadline = time.monotonic() + timeout
@@ -31,6 +51,85 @@ def _wait_success_event(device, *, temp_id: str | None = None, content: str | No
         if msg.get("msgId"):
             return evt
     pytest.fail(f"未收到目标 onMessageSuccess: tempId={temp_id}, content={content}, action={action}, events={seen_events}")
+
+
+def _wait_message_event(device, event_type: str, *, real_id: str, body_type: int | None = None, content: str | None = None, timeout: float = 60.0):
+    seen_events = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=event_type,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen_events.append(evt)
+        messages = ((evt or {}).get("data") or {}).get("messages") or []
+        for msg in messages:
+            if not isinstance(msg, dict):
+                continue
+            body = msg.get("body") or {}
+            if str(msg.get("msgId")) != str(real_id):
+                continue
+            if body_type is not None and body.get("type") != body_type:
+                continue
+            if content is not None and body.get("content") != content:
+                continue
+            return {
+                "type": evt.get("type"),
+                "eventType": evt.get("eventType"),
+                "data": {"messages": [msg]},
+                "timestamp": evt.get("timestamp"),
+            }
+    pytest.fail(f"未收到目标 {event_type}: realId={real_id}, bodyType={body_type}, content={content}, events={seen_events}")
+
+
+def _assert_text_message_event(
+    assert_api,
+    evt,
+    *,
+    event_type: str,
+    real_id: str,
+    user_a: str,
+    user_b: str,
+    content: str,
+    direction: int,
+    conv_id: str,
+    has_read: bool,
+    has_deliver_ack: bool,
+    target_languages: list[str] | None = None,
+):
+    body = {"type": 0, "content": content}
+    if target_languages:
+        body.update({"targetLanguages": list(target_languages), "translations": {target_languages[0]: content}})
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": event_type,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": conv_id,
+                        "chatType": 0,
+                        "direction": direction,
+                        "status": 2,
+                        "hasRead": has_read,
+                        "hasReadAck": False,
+                        "hasDeliverAck": has_deliver_ack,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": body,
+                    }
+                ]
+            },
+        },
+        ignore_keys=_MESSAGE_EVENT_IGNORE_KEYS,
+    )
 
 
 def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user_b, *, content: str, target_languages: list[str] | None = None):
@@ -135,32 +234,36 @@ def _assert_send_success_and_events(device_a, device_b, assert_api, user_a, user
             "thumbnailSecret",
         },
     )
-    evt_received = None
-    msgs = []
-    for _ in range(5):
-        evt_candidate = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
-        cand_msgs = ((evt_candidate or {}).get("data") or {}).get("messages") or []
-        if any(
-            (
-                isinstance(m, dict)
-                and m.get("from") == user_a
-                and m.get("to") == user_b
-                and str(m.get("msgId")) == str(real_id)
-                and ((m.get("body") or {}).get("content") == content)
-            )
-            for m in cand_msgs
-        ):
-            evt_received = evt_candidate
-            msgs = cand_msgs
-            break
-        evt_received = evt_candidate
-        msgs = cand_msgs
-    # 列表可能包含遗留消息，放宽为“包含一条匹配当前发送的消息”
-    assert evt_received and evt_received.get("type") == "event" and evt_received.get("eventType") == Cmd.onMessagesReceived.value
-    assert any(
-        (m.get("from") == user_a and m.get("to") == user_b and str(m.get("msgId")) == str(real_id) and ((m.get("body") or {}).get("content") == content))
-        for m in msgs if isinstance(m, dict)
-    ), f"onMessagesReceived does not contain the sent message: {evt_received}"
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, body_type=0, content=content)
+    _assert_text_message_event(
+        assert_api,
+        evt_received,
+        event_type=Cmd.onMessagesReceived.value,
+        real_id=real_id,
+        user_a=user_a,
+        user_b=user_b,
+        content=content,
+        direction=1,
+        conv_id=user_a,
+        has_read=False,
+        has_deliver_ack=True,
+        target_languages=target_languages,
+    )
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, body_type=0, content=content)
+    _assert_text_message_event(
+        assert_api,
+        evt_delivered,
+        event_type=Cmd.onMessagesDelivered.value,
+        real_id=real_id,
+        user_a=user_a,
+        user_b=user_b,
+        content=content,
+        direction=0,
+        conv_id=user_b,
+        has_read=True,
+        has_deliver_ack=True,
+        target_languages=target_languages,
+    )
     return real_id
 
 
@@ -224,25 +327,38 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
         },
     )
 
-    evt_error = device_a.receive_message(match_event_type=Cmd.onMessageError.value, timeout=20.0)
+    evt_success = _wait_success_event(device_a, temp_id=temp_id, content=content)
+    real_id = (((evt_success.get("data") or {}).get("msg") or {}).get("msgId"))
+    assert real_id, f"onMessageSuccess 未返回真实 msgId: {evt_success}"
     assert_api.assert_response_matches(
-        evt_error,
+        evt_success,
         expected={
             "type": "event",
-            "eventType": Cmd.onMessageError.value,
+            "eventType": Cmd.onMessageSuccess.value,
             "data": {
                 "msgId": temp_id,
                 "msg": {
-                    "msgId": temp_id,
+                    "msgId": real_id,
                     "from": user_a,
                     "to": user_b,
                     "convId": user_b,
                     "chatType": 0,
                     "direction": 0,
-                    "status": 3,
-                    "body": {"type": 0, "content": content, "targetLanguages": ["zh-Hans"], "translations": {}},
+                    "status": 2,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "deliverOnlineOnly": False,
+                    "body": {
+                        "type": 0,
+                        "content": content,
+                        "targetLanguages": ["zh-Hans"],
+                        "translations": {"zh-Hans": content},
+                    },
                 },
-                "error": {"code": 1113, "description": "Failed to translate the message "},
             },
         },
         ignore_keys={
@@ -252,14 +368,38 @@ def test_send_message_with_type_text_with_languages(device_a, device_b, assert_a
             "localTime",
             "broadcast",
             "onlineState",
-            "deliverOnlineOnly",
-            "hasRead",
-            "hasReadAck",
-            "hasDeliverAck",
-            "needGroupAck",
-            "isThread",
-            "isContentReplaced",
         },
+    )
+
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, body_type=0, content=content)
+    _assert_text_message_event(
+        assert_api,
+        evt_received,
+        event_type=Cmd.onMessagesReceived.value,
+        real_id=real_id,
+        user_a=user_a,
+        user_b=user_b,
+        content=content,
+        direction=1,
+        conv_id=user_a,
+        has_read=False,
+        has_deliver_ack=True,
+        target_languages=["zh-Hans"],
+    )
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, body_type=0, content=content)
+    _assert_text_message_event(
+        assert_api,
+        evt_delivered,
+        event_type=Cmd.onMessagesDelivered.value,
+        real_id=real_id,
+        user_a=user_a,
+        user_b=user_b,
+        content=content,
+        direction=0,
+        conv_id=user_b,
+        has_read=True,
+        has_deliver_ack=True,
+        target_languages=["zh-Hans"],
     )
 
 
@@ -365,7 +505,7 @@ def test_send_message_with_type_cmd_received_by_cmd_callback(device_a, device_b,
                         "deliverOnlineOnly": False,
                         "hasRead": False,
                         "hasReadAck": False,
-                        "hasDeliverAck": False,
+                        "hasDeliverAck": True,
                         "needGroupAck": False,
                         "isThread": False,
                         "isContentReplaced": False,
@@ -521,32 +661,70 @@ def _send_with_payload_and_assert(device_a, device_b, assert_api, user_a, user_b
         ignore_keys=ignore_extra,
     )
 
-    # B 侧 onMessagesReceived：包含本次消息
-    evt_received = None
-    msgs = []
-    for _ in range(5):
-        evt_candidate = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
-        cand_msgs = ((evt_candidate or {}).get("data") or {}).get("messages") or []
-        if any(
-            (
-                isinstance(m, dict)
-                and m.get("from") == user_a
-                and m.get("to") == user_b
-                and str(m.get("msgId")) == str(real_id)
-                and ((m.get("body") or {}).get("type") is not None)
-            )
-            for m in cand_msgs
-        ):
-            evt_received = evt_candidate
-            msgs = cand_msgs
-            break
-        evt_received = evt_candidate
-        msgs = cand_msgs
-    assert evt_received and evt_received.get("type") == "event" and evt_received.get("eventType") == Cmd.onMessagesReceived.value
-    assert any(
-        (m.get("from") == user_a and m.get("to") == user_b and str(m.get("msgId")) == str(real_id) and ((m.get("body") or {}).get("type") is not None))
-        for m in msgs if isinstance(m, dict)
-    ), f"onMessagesReceived does not contain the sent message or missing body.type: {evt_received}"
+    # B 侧 onMessagesReceived：按真实双端回调收紧本次消息字段。
+    body_type = {"image": 1, "video": 2, "file": 5}[type_key]
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, body_type=body_type)
+    assert_api.assert_response_matches(
+        evt_received,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesReceived.value,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": "{{realId}}",
+                        "from": "{{fromUser}}",
+                        "to": "{{toUser}}",
+                        "convId": "{{fromUser}}",
+                        "direction": 1,
+                        "chatType": 0,
+                        "status": 2,
+                        "deliverOnlineOnly": False,
+                        "hasRead": False,
+                        "hasReadAck": False,
+                        "hasDeliverAck": True,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "body": body_evt,
+                    }
+                ]
+            },
+        },
+        context={"realId": real_id, "fromUser": user_a, "toUser": user_b},
+        ignore_keys=ignore_extra | {"receiverList"},
+    )
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, body_type=body_type)
+    assert_api.assert_response_matches(
+        evt_delivered,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesDelivered.value,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": "{{realId}}",
+                        "from": "{{fromUser}}",
+                        "to": "{{toUser}}",
+                        "convId": "{{toUser}}",
+                        "direction": 0,
+                        "chatType": 0,
+                        "status": 2,
+                        "deliverOnlineOnly": False,
+                        "hasRead": True,
+                        "hasReadAck": False,
+                        "hasDeliverAck": True,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "body": body_evt,
+                    }
+                ]
+            },
+        },
+        context={"realId": real_id, "fromUser": user_a, "toUser": user_b},
+        ignore_keys=ignore_extra | {"receiverList"},
+    )
 
 
 # 注意：媒体类用例仅验证 file/image/video；不传 filePath，也不传 displayName。

@@ -216,6 +216,10 @@ class IMWebSocketBridge {
     dynamic args,
     dynamic manager,
   ) async {
+    if (managerName == 'Client') {
+      final clientResult = await _invokeClientSessionMethod(method, args);
+      if (clientResult != null) return clientResult;
+    }
     if (managerName == 'ChatManager' && method == 'sendMessageWithType') {
       return _invokeSendMessageWithType(args);
     }
@@ -232,6 +236,68 @@ class IMWebSocketBridge {
       return {method: await EMClient.getInstance.contactManager.getAllContactIds()};
     }
     return manager.callNativeMethod(method, args);
+  }
+
+  /// 登录/退出必须经过公开 Dart API，确保原生 session 与
+  /// [EMClient.currentUserId] 缓存同时更新或清理。
+  Future<Map<String, dynamic>?> _invokeClientSessionMethod(
+    String method,
+    dynamic args,
+  ) async {
+    if (method != ChatMethodKeys.login &&
+        method != ChatMethodKeys.loginWithAgoraToken &&
+        method != ChatMethodKeys.logout) {
+      return null;
+    }
+
+    final map = args is Map
+        ? Map<String, dynamic>.from(args)
+        : const <String, dynamic>{};
+    try {
+      if (method == ChatMethodKeys.logout) {
+        await EMClient.getInstance.logout((map['unbindToken'] as bool?) ?? true);
+        return {method: true};
+      }
+
+      final userId = map['userId'] as String?;
+      if (userId == null || userId.isEmpty) {
+        throw ArgumentError.value(userId, 'userId', 'login userId is required');
+      }
+
+      if (method == ChatMethodKeys.loginWithAgoraToken) {
+        final token = map['agora_token'] as String? ??
+            map['agoraToken'] as String? ??
+            map['token'] as String? ??
+            map['pwdOrToken'] as String? ??
+            '';
+        await EMClient.getInstance.loginWithToken(userId, token);
+        return {method: userId};
+      }
+
+      final credential = map['pwdOrToken'] as String?;
+      if (credential == null) {
+        throw ArgumentError.value(
+          credential,
+          'pwdOrToken',
+          'login credential is required',
+        );
+      }
+      if ((map['isPassword'] as bool?) ?? true) {
+        await EMClient.getInstance.loginWithPassword(userId, credential);
+      } else {
+        await EMClient.getInstance.loginWithToken(userId, credential);
+      }
+      return {method: userId};
+    } on EMError catch (error) {
+      // Generic bridge 历史契约将 SDK 业务错误放在 response.result 中；
+      // 公开 Dart API 会抛 EMError，此处恢复相同 envelope。
+      return {
+        method: {
+          'code': error.code,
+          'description': error.description,
+        },
+      };
+    }
   }
 
   int? _intArg(dynamic args, String key) {
@@ -302,6 +368,10 @@ class IMWebSocketBridge {
         break;
       case EMSendMessageType.file:
         assetName = 'bigPic.jpg';
+        needsPath = true;
+        break;
+      case EMSendMessageType.voice:
+        assetName = 'voice.mp3';
         needsPath = true;
         break;
       default:
