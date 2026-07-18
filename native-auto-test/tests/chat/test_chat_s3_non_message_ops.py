@@ -18,6 +18,10 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
     except Exception:
         pass
 
+    return _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a, user_b, content)
+
+
+def _send_text_and_get_real_id_no_drain(device_a, device_b, assert_api, user_a: str, user_b: str, content: str) -> str:
     resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
     send_result = resp_send.get("result") or {}
     send_msg_id = send_result.get("msgId")
@@ -106,7 +110,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                         "status": 2,
                         "hasRead": False,
                         "hasReadAck": False,
-                        "hasDeliverAck": False,
+                        "hasDeliverAck": True,
                         "needGroupAck": False,
                         "deliverOnlineOnly": False,
                         "isThread": False,
@@ -131,7 +135,57 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
             real_id = str(msg.get("msgId"))
             break
 
+    evt_delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
+    assert_api.assert_response_matches(
+        evt_delivered,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesDelivered.value,
+            "data": {
+                "messages": [
+                    {
+                        "from": "{{fromUser}}",
+                        "to": "{{toUser}}",
+                        "convId": "{{toUser}}",
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "hasReadAck": False,
+                        "hasDeliverAck": True,
+                        "needGroupAck": False,
+                        "deliverOnlineOnly": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "body": {"type": 0, "content": "{{content}}"},
+                    }
+                ]
+            },
+        },
+        context={"fromUser": user_a, "toUser": user_b, "content": content},
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "msgId", "translations", "receiverList", "broadcast", "onlineState"},
+    )
     return real_id
+
+
+def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 30.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        evt = device.receive_message(match_event_type=event_type, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        if evt:
+            seen.append(evt)
+        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
+            if not isinstance(msg, dict):
+                continue
+            if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {"messages": [msg]},
+                    "timestamp": evt.get("timestamp"),
+                }
+    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
 
 
 def _receive_ack_conversation_event(device, *, from_user: str, to_user: str, timeout: float = 60.0) -> dict:
@@ -417,58 +471,7 @@ def test_chat_pin_conversation_empty_conv_id(device_a, assert_api):
 
 def test_chat_fetch_history_messages_success(device_a, device_b, assert_api, user_a, user_b):
     content = f"s3-history-{uuid.uuid4().hex[:6]}"
-    resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    send_result = resp_send.get("result") or {}
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
-            "result": {
-                "from": send_result.get("from"),
-                "to": send_result.get("to"),
-                "body": {"content": (send_result.get("body") or {}).get("content")},
-            },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
-            "result": {"from": "{{fromUser}}", "to": "{{toUser}}", "body": {"content": "{{content}}"}},
-        },
-        context={"fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"sequence"},
-    )
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-    assert_api.assert_response_matches(
-        evt_success,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessageSuccess.value,
-            "data": {
-                "msg": {
-                    "from": "{{fromUser}}",
-                    "to": "{{toUser}}",
-                    "convId": "{{toUser}}",
-                    "chatType": 0,
-                    "direction": 0,
-                    "status": 2,
-                    "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "deliverOnlineOnly": False,
-                    "isThread": False,
-                    "isContentReplaced": False,
-                    "body": {"type": 0, "content": "{{content}}"},
-                }
-            },
-        },
-        context={"fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "msgId", "translations", "broadcast", "onlineState", "targetLanguages"},
-    )
-    real_id = (((evt_success.get("data") or {}).get("msg")) or {}).get("msgId")
-    assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
+    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
     time.sleep(2)
     info = {"convId": user_b, "type": 0, "pageSize": 20, "startMsgId": "", "direction": 0}
     resp = device_a.call(
@@ -538,58 +541,7 @@ def test_chat_fetch_history_messages_empty_conv_id(device_a, assert_api):
 
 def test_chat_fetch_history_messages_by_options_success(device_a, device_b, assert_api, user_a, user_b):
     content = f"s3-history-opt-{uuid.uuid4().hex[:6]}"
-    resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
-    send_result = resp_send.get("result") or {}
-    assert_api.assert_response_matches(
-        {
-            "manager": "ChatManager",
-            "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
-            "result": {
-                "from": send_result.get("from"),
-                "to": send_result.get("to"),
-                "body": {"content": (send_result.get("body") or {}).get("content")},
-            },
-        },
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.sendMessage.value,
-            "device": "deviceA",
-            "result": {"from": "{{fromUser}}", "to": "{{toUser}}", "body": {"content": "{{content}}"}},
-        },
-        context={"fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"sequence"},
-    )
-    evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
-    assert_api.assert_response_matches(
-        evt_success,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessageSuccess.value,
-            "data": {
-                "msg": {
-                    "from": "{{fromUser}}",
-                    "to": "{{toUser}}",
-                    "convId": "{{toUser}}",
-                    "chatType": 0,
-                    "direction": 0,
-                    "status": 2,
-                    "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": False,
-                    "deliverOnlineOnly": False,
-                    "isThread": False,
-                    "isContentReplaced": False,
-                    "body": {"type": 0, "content": "{{content}}"},
-                }
-            },
-        },
-        context={"fromUser": user_a, "toUser": user_b, "content": content},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "msgId", "translations", "broadcast", "onlineState", "targetLanguages"},
-    )
-    real_id = (((evt_success.get("data") or {}).get("msg")) or {}).get("msgId")
-    assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
+    real_id = _send_text_and_get_real_id(device_a, device_b, assert_api, user_a, user_b, content)
     time.sleep(2)
     info = {"convId": user_b, "type": 0, "pageSize": 20, "cursor": ""}
     resp = device_a.call(

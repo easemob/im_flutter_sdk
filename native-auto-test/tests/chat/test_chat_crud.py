@@ -4,9 +4,87 @@ import time
 import uuid
 import pytest
 
-from src import Cmd, ne
+from src import Cmd
 from src.tools.assertions import get_result
 from tests.chat._utils import build_text
+
+
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=event_type,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen.append(evt)
+        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
+            if not isinstance(msg, dict):
+                continue
+            body = msg.get("body") or {}
+            if str(msg.get("msgId")) == str(real_id) and body.get("content") == content:
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {"messages": [msg]},
+                    "timestamp": evt.get("timestamp"),
+                }
+    pytest.fail(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, seen={seen}")
+
+
+def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_read_ack: bool = False, has_deliver_ack: bool) -> None:
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": event_type,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": conv_id,
+                        "chatType": 0,
+                        "direction": direction,
+                        "status": 2,
+                        "hasRead": has_read,
+                        "hasReadAck": has_read_ack,
+                        "hasDeliverAck": has_deliver_ack,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content, "translations": {}},
+                    }
+                ],
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState"},
+    )
+
+
+def _wait_recall_info_event(device, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        evt = device.receive_message(match_event_type=Cmd.onMessagesRecalledInfo.value, timeout=min(2.0, max(0.1, deadline - time.monotonic())))
+        if evt:
+            seen.append(evt)
+        for info in ((evt or {}).get("data") or {}).get("infos") or []:
+            if not isinstance(info, dict):
+                continue
+            msg = info.get("msg") or {}
+            body = msg.get("body") or {}
+            if str(info.get("recallMsgId")) == str(real_id) and body.get("content") == content:
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {"infos": [info]},
+                    "timestamp": evt.get("timestamp"),
+                }
+    pytest.fail(f"未收到目标撤回 info 事件: msgId={real_id}, content={content}, seen={seen}")
 
 
 # ======================== Create / Send ========================
@@ -96,7 +174,7 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
                         "status": 2,
                         "hasRead": False,
                         "hasReadAck": False,
-                        "hasDeliverAck": False,
+                        "hasDeliverAck": True,
                         "needGroupAck": False,
                         "deliverOnlineOnly": False,
                         "isThread": False,
@@ -109,6 +187,20 @@ def test_chat_send_and_received(device_a, device_b, assert_api, user_a, user_b):
         },
         context={"fromUser": user_a, "toUser": user_b, "content": content, "realId": real_id},
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList"},
+    )
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
+    _assert_text_message_event(
+        assert_api,
+        evt_delivered,
+        event_type=Cmd.onMessagesDelivered.value,
+        real_id=real_id,
+        user_a=user_a,
+        user_b=user_b,
+        content=content,
+        direction=0,
+        conv_id=user_b,
+        has_read=True,
+        has_deliver_ack=True,
     )
 
 
@@ -193,13 +285,29 @@ def test_chat_get_message_invalid_id_returns_none(device_a, assert_api):
 
 def test_chat_fetch_support_languages_success(device_a, assert_api):
     resp = device_a.call("ChatManager", Cmd.fetchSupportLanguages.value, info={})
+    languages = resp.get("result")
+    assert isinstance(languages, list) and languages, resp
+    assert all(
+        isinstance(item, dict)
+        and set(item) == {"nativeName", "code", "name"}
+        and all(isinstance(item[key], str) and item[key] for key in ("nativeName", "code", "name"))
+        for item in languages
+    ), resp
+    codes = [item["code"] for item in languages]
+    assert len(codes) == len(set(codes)), resp
+    by_code = {item["code"]: item for item in languages}
+    assert by_code["zh-Hans"] == {
+        "nativeName": "中文 (简体)",
+        "code": "zh-Hans",
+        "name": "Chinese Simplified",
+    }
+    assert by_code["en"] == {"nativeName": "English", "code": "en", "name": "English"}
     assert_api.assert_response_matches(
-        resp,
+        {key: value for key, value in resp.items() if key != "result"},
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchSupportLanguages.value,
             "device": "deviceA",
-            "result": ne(None),
         },
         ignore_keys={"sequence"},
     )
@@ -263,7 +371,7 @@ def test_chat_search_chat_msg_from_db_success(device_a, device_b, assert_api, us
 # ======================== Update ========================
 
 
-def test_chat_translate_message_basic(device_a, assert_api, user_a, user_b):
+def test_chat_translate_message_basic(device_a, device_b, assert_api, user_a, user_b):
     try:
         device_a.drain_events()
     except Exception:
@@ -273,6 +381,10 @@ def test_chat_translate_message_basic(device_a, assert_api, user_a, user_b):
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
     real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
     assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
     resp_get = device_a.call("ChatManager", Cmd.getMessage.value, info={"msgId": real_id})
     msg_obj = get_result(resp_get)
     resp_tr = device_a.call("ChatManager", Cmd.translateMessage.value, info={"message": msg_obj, "targetLanguages": ["zh-Hans"]})
@@ -293,7 +405,7 @@ def test_chat_translate_message_basic(device_a, assert_api, user_a, user_b):
                 "status": 2,
                 "hasRead": True,
                 "hasReadAck": False,
-                "hasDeliverAck": False,
+                "hasDeliverAck": True,
                 "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
@@ -323,10 +435,15 @@ def test_chat_modify_message_invalid_id_response(device_a, assert_api):
     )
 
 
-def test_chat_translate_message_recalled_message(device_a, assert_api, user_a, user_b):
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, "recalled-translate"))
+def test_chat_translate_message_recalled_message(device_a, device_b, assert_api, user_a, user_b):
+    content = "recalled-translate"
+    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
     time.sleep(2)
     resp_recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": real_id})
     assert_api.assert_response_matches(
@@ -339,6 +456,44 @@ def test_chat_translate_message_recalled_message(device_a, assert_api, user_a, u
         },
         ignore_keys={"sequence"},
     )
+    evt_recall_info = _wait_recall_info_event(device_b, real_id=real_id, content=content)
+    assert_api.assert_response_matches(
+        evt_recall_info,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesRecalledInfo.value,
+            "data": {
+                "infos": [
+                    {
+                        "recallMsgId": real_id,
+                        "recallBy": user_a,
+                        "convId": user_a,
+                        "ext": "",
+                        "msg": {
+                            "msgId": real_id,
+                            "from": user_a,
+                            "to": user_b,
+                            "convId": user_a,
+                            "chatType": 0,
+                            "direction": 1,
+                            "status": 2,
+                            "hasRead": False,
+                            "hasReadAck": False,
+                            "hasDeliverAck": True,
+                            "needGroupAck": False,
+                            "isThread": False,
+                            "isContentReplaced": False,
+                            "deliverOnlineOnly": False,
+                            "body": {"type": 0, "content": content, "translations": {}},
+                        },
+                    }
+                ]
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
+    )
+    evt_recalled = _wait_message_event(device_b, Cmd.onMessagesRecalled.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_recalled, event_type=Cmd.onMessagesRecalled.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
 
 
 def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, user_b):
@@ -348,10 +503,16 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
     except Exception:
         pass
     content = f"ackread-{uuid.uuid4().hex[:6]}"
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
+    resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    temp_id = (evt_success.get("data") or {}).get("msgId")
     sent_real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
     assert sent_real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
+    assert_api.assert_response_matches(
+        resp_send,
+        expected={"manager": "ChatManager", "cmd": Cmd.sendMessage.value, "device": "deviceA", "result": {"msgId": temp_id, "from": user_a, "to": user_b, "convId": user_b, "chatType": 0, "direction": 0, "status": 0, "hasRead": True, "hasReadAck": False, "hasDeliverAck": False, "needGroupAck": False, "isThread": False, "isContentReplaced": False, "body": {"type": 0, "content": content}}},
+        ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
+    )
 
     evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
     recv_msgs = ((evt_received or {}).get("data") or {}).get("messages") or []
@@ -367,6 +528,21 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
             recv_msg_id = (msg or {}).get("msgId")
             break
     assert recv_msg_id, f"missing received msgId from onMessagesReceived: {evt_received!r}"
+    _assert_text_message_event(
+        assert_api,
+        {"type": evt_received.get("type"), "eventType": evt_received.get("eventType"), "data": {"messages": [msg]}, "timestamp": evt_received.get("timestamp")},
+        event_type=Cmd.onMessagesReceived.value,
+        real_id=recv_msg_id,
+        user_a=user_a,
+        user_b=user_b,
+        content=content,
+        direction=1,
+        conv_id=user_a,
+        has_read=False,
+        has_deliver_ack=True,
+    )
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=sent_real_id, content=content)
+    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=sent_real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
 
     resp_ack = device_b.call("ChatManager", Cmd.ackMessageRead.value, info={"msgId": recv_msg_id, "to": user_a})
     assert_api.assert_response_matches(
@@ -396,7 +572,7 @@ def test_chat_ack_message_read_success(device_a, device_b, assert_api, user_a, u
                         "status": 2,
                         "hasRead": True,
                         "hasReadAck": True,
-                        "hasDeliverAck": False,
+                        "hasDeliverAck": True,
                         "needGroupAck": False,
                         "isThread": False,
                         "isContentReplaced": False,
@@ -458,10 +634,15 @@ def test_chat_add_reaction_invalid_id_response(device_a, assert_api):
     )
 
 
-def test_chat_add_reaction_empty_reaction_response(device_a, assert_api, user_a, user_b):
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, "for-reaction-empty"))
+def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_api, user_a, user_b):
+    content = "for-reaction-empty"
+    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=build_text(user_a, user_b, content))
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "", "msgId": real_id})
     assert_api.assert_response_matches(
         resp,

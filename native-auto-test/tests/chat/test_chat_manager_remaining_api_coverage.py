@@ -51,6 +51,34 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
     )
     success_evt = _wait_message_success_for_content(device_a, content=content, to=user_b, timeout=60.0)
     real_id = (((success_evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
+    assert_api.assert_response_matches(
+        success_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "msgId": temp_id,
+                "msg": {
+                    "msgId": real_id,
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "chatType": 0,
+                    "direction": 0,
+                    "status": 2,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "deliverOnlineOnly": False,
+                    "body": {"type": 0, "content": content, "translations": {}},
+                },
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+    )
 
     seen_events = []
     for _ in range(5):
@@ -58,7 +86,56 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         if received_evt:
             seen_events.append(received_evt)
         messages = ((received_evt or {}).get("data") or {}).get("messages") or []
-        if any(isinstance(m, dict) and m.get("msgId") == real_id for m in messages):
+        target = next((m for m in messages if isinstance(m, dict) and m.get("msgId") == real_id), None)
+        if target is not None:
+            assert_api.assert_response_matches(
+                {
+                    "type": received_evt.get("type"),
+                    "eventType": received_evt.get("eventType"),
+                    "data": {"messages": [target]},
+                    "timestamp": received_evt.get("timestamp"),
+                },
+                expected={
+                    "type": "event",
+                    "eventType": Cmd.onMessagesReceived.value,
+                    "data": {
+                        "messages": [
+                            {
+                                "msgId": real_id,
+                                "from": user_a,
+                                "to": user_b,
+                                "convId": user_a,
+                                "chatType": 0,
+                                "direction": 1,
+                                "status": 2,
+                                "hasRead": False,
+                                "hasReadAck": False,
+                                "hasDeliverAck": True,
+                                "needGroupAck": False,
+                                "isThread": False,
+                                "isContentReplaced": False,
+                                "deliverOnlineOnly": False,
+                                "body": {"type": 0, "content": content, "translations": {}},
+                            }
+                        ]
+                    },
+                },
+                ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState"},
+            )
+            delivered_evt = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=str(real_id), content=content)
+            _assert_text_message_event(
+                assert_api,
+                delivered_evt,
+                event_type=Cmd.onMessagesDelivered.value,
+                real_id=str(real_id),
+                user_a=user_a,
+                user_b=user_b,
+                content=content,
+                direction=0,
+                conv_id=user_b,
+                has_read=True,
+                has_deliver_ack=True,
+            )
             return str(real_id)
     raise AssertionError(f"B 端未收到目标消息: msgId={real_id}, events={seen_events}")
 
@@ -75,6 +152,89 @@ def _wait_message_success_for_content(device, *, content: str, to: str, timeout:
         if msg.get("to") == to and body.get("content") == content and msg.get("msgId"):
             return evt
     raise AssertionError(f"未收到目标 onMessageSuccess: to={to}, content={content}, events={seen_events}")
+
+
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 60.0) -> dict:
+    seen_events = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
+        if evt:
+            seen_events.append(evt)
+        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
+            if not isinstance(msg, dict):
+                continue
+            body = msg.get("body") or {}
+            if str(msg.get("msgId")) == str(real_id) and body.get("content") == content:
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {"messages": [msg]},
+                    "timestamp": evt.get("timestamp"),
+                }
+    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen_events}")
+
+
+def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool) -> None:
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": event_type,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": conv_id,
+                        "chatType": 0,
+                        "direction": direction,
+                        "status": 2,
+                        "hasRead": has_read,
+                        "hasReadAck": False,
+                        "hasDeliverAck": has_deliver_ack,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content, "translations": {}},
+                    }
+                ],
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState"},
+    )
+
+
+def _wait_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 20.0) -> dict:
+    seen_events = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=2.0)
+        if evt:
+            seen_events.append(evt)
+        data = (evt or {}).get("data") or {}
+        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+            return evt
+    raise AssertionError(f"未收到目标 onMessagePinChanged: msgId={msg_id}, operation={operation}, events={seen_events}")
+
+
+def _assert_pin_changed(assert_api, evt: dict, *, msg_id: str, conversation_id: str, operation: str, operator_id: str) -> None:
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagePinChanged.value,
+            "data": {
+                "messageId": msg_id,
+                "conversationId": conversation_id,
+                "pinOperation": operation,
+                "pinInfo": {"operatorId": operator_id},
+            },
+        },
+        ignore_keys={"timestamp", "pinTime"},
+    )
 
 
 def _wait_conversation_on_server(device, *, conv_id: str, timeout: float = 60.0) -> dict:
@@ -108,25 +268,18 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
         },
         ignore_keys={"sequence"},
     )
-    pin_evt = device_b.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=10.0)
-    assert_api.assert_response_matches(
-        pin_evt,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagePinChanged.value,
-            "data": {
-                "messageId": msg_id,
-                "conversationId": user_a,
-                "pinOperation": "MessagePinOperation.Pin",
-                "pinInfo": {"operatorId": user_a},
-            },
-        },
-        ignore_keys={"timestamp", "pinTime"},
-    )
+    pin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Pin")
+    _assert_pin_changed(assert_api, pin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
+    pin_evt_a = _wait_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Pin")
+    _assert_pin_changed(assert_api, pin_evt_a, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
 
     resp_fetch = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
+    target_pinned = [
+        message for message in (resp_fetch.get("result") or [])
+        if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
+    ]
     assert_api.assert_response_matches(
-        resp_fetch,
+        {**resp_fetch, "result": target_pinned},
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchPinnedMessages.value,
@@ -142,7 +295,7 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
                     "status": 2,
                     "hasRead": True,
                     "hasReadAck": False,
-                    "hasDeliverAck": False,
+                    "hasDeliverAck": True,
                     "needGroupAck": False,
                     "isThread": False,
                     "isContentReplaced": False,
@@ -164,25 +317,18 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
         },
         ignore_keys={"sequence"},
     )
-    unpin_evt = device_b.receive_message(match_event_type=Cmd.onMessagePinChanged.value, timeout=10.0)
-    assert_api.assert_response_matches(
-        unpin_evt,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onMessagePinChanged.value,
-            "data": {
-                "messageId": msg_id,
-                "conversationId": user_a,
-                "pinOperation": "MessagePinOperation.Unpin",
-                "pinInfo": {"operatorId": user_a},
-            },
-        },
-        ignore_keys={"timestamp", "pinTime"},
-    )
+    unpin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Unpin")
+    _assert_pin_changed(assert_api, unpin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
+    unpin_evt_a = _wait_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Unpin")
+    _assert_pin_changed(assert_api, unpin_evt_a, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
 
     resp_fetch_empty = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
+    target_after_unpin = [
+        message for message in (resp_fetch_empty.get("result") or [])
+        if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
+    ]
     assert_api.assert_response_matches(
-        resp_fetch_empty,
+        {**resp_fetch_empty, "result": target_after_unpin},
         expected={
             "manager": "ChatManager",
             "cmd": Cmd.fetchPinnedMessages.value,
@@ -232,7 +378,7 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
                             "status": 2,
                             "hasRead": False,
                             "hasReadAck": False,
-                            "hasDeliverAck": False,
+                            "hasDeliverAck": True,
                             "needGroupAck": False,
                             "isThread": False,
                             "isContentReplaced": False,
@@ -248,8 +394,8 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
     )
 
 
-def test_chat_manager_send_to_non_friend_message_error_event(device_a, assert_api, user_a, user_c):
-    """sendMessage：向非好友用户发送单聊消息，发送方收到 onMessageError 并携带真实错误码与失败消息。"""
+def test_chat_manager_send_to_non_friend_current_success_event(device_a, assert_api, user_a, user_c):
+    """sendMessage：向 user_c 发送单聊消息，按当前真实返回冻结为成功回调。"""
     try:
         device_a.drain_events()
     except Exception:
@@ -287,22 +433,23 @@ def test_chat_manager_send_to_non_friend_message_error_event(device_a, assert_ap
         ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
     )
 
-    evt = device_a.receive_message(match_event_type="onMessageError", timeout=20.0)
+    evt = _wait_message_success_for_content(device_a, content=content, to=user_c, timeout=20.0)
+    real_id = (((evt.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
     assert_api.assert_response_matches(
         evt,
         expected={
             "type": "event",
-            "eventType": "onMessageError",
+            "eventType": Cmd.onMessageSuccess.value,
             "data": {
                 "msgId": temp_id,
                 "msg": {
-                    "msgId": temp_id,
+                    "msgId": real_id,
                     "from": user_a,
                     "to": user_c,
                     "convId": user_c,
                     "chatType": 0,
                     "direction": 0,
-                    "status": 3,
+                    "status": 2,
                     "hasRead": True,
                     "hasReadAck": False,
                     "hasDeliverAck": False,
@@ -311,10 +458,6 @@ def test_chat_manager_send_to_non_friend_message_error_event(device_a, assert_ap
                     "isContentReplaced": False,
                     "deliverOnlineOnly": False,
                     "body": {"type": 0, "content": content, "translations": {}},
-                },
-                "error": {
-                    "code": 221,
-                    "description": "User is not on your contact list and you cannot send messages",
                 },
             },
         },

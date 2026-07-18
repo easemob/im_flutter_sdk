@@ -14,15 +14,12 @@
 - 前置条件：同上。
 - 恢复条件：同上。
 
-## modifyMessage
-- 原因：端差异影响稳定性，暂缓。
-- 前置条件：统一端差异语义。
-- 恢复条件：冻结单一语义后恢复。
-
 ## translateMessage
-- 原因：`message` 对象入参，暂缓。
-- 前置条件：翻译链路语义稳定。
-- 恢复条件：恢复实现并 strict。
+- 已覆盖：空语言、不支持语言、自定义消息、支持语言列表结构，以及带 `targetLanguages` 的自动翻译发送/接收结果。
+- 自动翻译现状：当前 AppKey 已开启该能力；发送方和接收方均返回 `targetLanguages=[zh-Hans]` 及非空 `translations`，旧环境 `1113 Failed to translate the message` 不再作为预期。
+- 未覆盖：显式调用 `translateMessage` 后得到非空正常翻译结果。
+- 当前现象：`test_chat_translate_message_basic` 的显式调用仍返回空 `translations`；由于同一环境自动翻译已成功，不能继续笼统归因于 AppKey 总翻译开关未开启。
+- 恢复条件：单独确认显式翻译接口的消息状态、源/目标语言和服务配置后，采集真实非空结果并收紧 strict 断言。
 
 ## ackGroupMessageRead / asyncFetchGroupAcks
 - 原因：群组语义链路，当前批次暂缓。
@@ -44,11 +41,6 @@
 - 前置条件：桥接能力稳定。
 - 恢复条件：移除 skip 并 strict。
 
-## fetchSupportLanguages
-- 原因：`result` 为超长语言列表；近期执行出现登录偶发超时。
-- 前置条件：环境登录稳定。
-- 恢复条件：一次性冻结完整 strict 断言。
-
 ## 已标记 skip（关联 API）
 - `downloadAttachment.invalid_id`、`downloadThumbnail.invalid_id`
   - 文件：`tests/chat/test_chat_crud.py`
@@ -57,11 +49,47 @@
   - 文件：`tests/chat/test_chat_s2_server_ops.py`
   - 原因：当前端缺失必填路径可能返回 MissingPlugin（非被测端语义）。
 
+## 第二批单聊边界补充
+- `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_cmd_message_delivery_ack`
+  - 原因：CMD 仅收到 `onCmdMessagesReceived`，未收到 `onMessagesDelivered`。
+- `tests/chat/test_chat_report_message_boundaries.py::test_chat_report_message_typed_success[*]`
+  - 原因：位置/自定义实测返回 `501 Message contains illegal content`，CMD 返回 `500 message id is invalid`，当前没有稳定成功语义。
+- `tests/chat/test_chat_conversation_marks_boundaries.py::test_chat_fetch_conversations_invalid_mark`
+  - 原因：Android bridge 对 `mark=999` 抛 `ArrayIndexOutOfBoundsException` 原始异常，无稳定业务 envelope。
+- `tests/chat/test_chat_message_translation_boundaries.py::test_chat_translate_custom_message`
+  - 原因：自定义消息翻译实测返回 `result={code:1,description:'General error'}`，按当前真实错误语义 strict；待后端支持自定义消息翻译后重新 discovery。
+- `tests/chat/test_chat_message_translation_boundaries.py::test_chat_translate_message_unsupported_language`
+  - 说明：当前端对不支持语言静默返回原消息、`targetLanguages=[]`、`translations={}`，已按兼容行为 strict，不视为翻译成功。
+
+## 文档启用场景的功能开关与接口差异
+
+- moderation 敏感词分支
+  - 普通特殊字符的发送、接收和送达已 strict 覆盖。
+  - 文档仅在 moderation 开启并命中敏感词时要求失败；当前 AppKey 未开启该能力，因此未将“未审核直接发送成功”当作审核功能预期。
+  - 恢复条件：开启内容审核后提供可命中的测试词，再按真实审核错误和收发事件补充条件分支。
+- Flutter 会话 API 与 Robot/WebIM 参数差异
+  - `pinConversation` 公开 API 只有 `conversationId/isPinned`，没有 `conversationType`。
+  - `addRemoteAndLocalConversationsMark` / `deleteRemoteAndLocalConversationsMark` 只有 `conversationIds/mark`，没有 `conversationType`。
+  - `pinMessage` / `unpinMessage` 以消息 ID 操作，没有 Robot 模板中的额外 conversationType 参数。
+  - 因此文档中仅改变 `conversationType` 的参数行无法在 Flutter 公共语义上独立映射；未向 generic bridge 塞入会被忽略的无效字段冒充覆盖。
+- 类型消息举报
+  - 位置/自定义实测返回 `501 Message contains illegal content`，CMD 返回 `500 message id is invalid`；这不是已知功能开关关闭态，但当前也没有成功语义。
+  - 恢复条件：服务端确认这三类消息允许举报并提供可成功环境后重新 discovery；当前保持 skip，不把错误当成功预期。
+
 ## 当前环境阻塞
-- `tests/chat/test_chat_s3_non_message_ops.py::test_chat_pin_conversation_success_toggle`
-  - 原因：当前 Android 实测对有效会话调用 `pinConversation` 持续返回 `303/concurrent operation are not allowed`，无法验证置顶/取消置顶成功状态切换；该返回记录为当前环境阻塞，不作为成功语义。
-  - 前置条件：SDK/服务端确认并允许有效会话置顶操作完成。
-  - 恢复条件：去掉 xfail，按真实成功返回和 `getConversation.isPinned` 状态收紧 strict 断言。
+
+### 隔舱 TCP 消息 ACK 间歇超时
+
+- 现象：`easemob-demo#qatest` 通过 `test.isolation.qa.easemob.com:4300` 发送消息时，SDK可登录、PROVISION、写出 `SYNC(meta)`，但部分时段连续两次未收到服务端消息 ACK，最终 `onMessageError(code=300, Server is unreachable)`。
+- 与 case 的边界：同步 `sendMessage` 返回本地临时消息不代表服务端成功；case 必须等待匹配临时 msgId 的异步成功/错误终态。`300` 是发送前置环境失败，不是翻译、撤回、置顶业务预期。
+- 2026-07-16 登录缓存修复后：类型消息 `from` 已稳定等于当天登录用户，不再出现旧用户导致的 `500 Message is invalid`；目标 custom translation case 曾完整通过，随后复跑才被 `300` 阻断。
+- 恢复条件：隔舱 TCP 4300 上行能够稳定返回消息 ACK/server_id 后，复跑依赖新消息的 strict cases；无需开启业务功能开关。
+
+### 第一批单聊基础消息补充
+- `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_cmd_message_delivery_ack`
+  - 原因：已在 5556/5558 开启 `requireDeliveryAck=true`；文本和自定义消息收到 `onMessagesDelivered`，但 CMD 真实日志只收到 `onCmdMessagesReceived`，未收到送达事件。
+  - 处理：不把“无事件”写成断言，case 暂时 skip。
+  - 恢复条件：原生端/服务端明确 CMD 是否支持 delivery receipt，并能提供稳定真实事件后重新 discovery。
 - `tests/chat/test_chat_s4_thread_user_removed.py::test_chat_thread_user_removed_event_type_not_null`
   - 原因：当前 Android 实测 `removeMemberFromChatThread` 返回 `result=true` 后，B/A 均未收到 `onUserKickOutOfChatThread`，无法验证发版项“event.type 非空”。
   - 前置条件：SDK/服务端确认并稳定派发 `onUserKickOutOfChatThread`。

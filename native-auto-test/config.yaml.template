@@ -31,5 +31,6 @@ sdk_options:
   sync_data_web_socket_server: "140.143.132.6"
   sync_data_web_socket_port: 8086
   require_ack: true
+  require_delivery_ack: true
   enable_auto_sync_contacts: false
   enable_user_info: true
