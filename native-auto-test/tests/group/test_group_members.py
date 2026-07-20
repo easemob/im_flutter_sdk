@@ -76,6 +76,28 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             expected_member=user_b,
         )
 
+        owner_add_events = collect_group_events(
+            device_a,
+            expected_event_types={
+                "onMembersJoinedFromGroup",
+                "onMemberJoinedFromGroup",
+            },
+            group_id=group_id,
+            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            timeout=10.0,
+        )
+        assert_group_events(
+            assert_api,
+            owner_add_events,
+            expected_event_types={
+                "onMembersJoinedFromGroup",
+                "onMemberJoinedFromGroup",
+            },
+            group_id=group_id,
+            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            expected_member=user_b,
+        )
+
         resp_get_after_add = device_a.call(
             "GroupManager",
             Cmd.getGroupSpecificationFromServer.value,
@@ -130,6 +152,28 @@ def test_group_add_remove_members(device_a, device_b, assert_api, user_a, user_b
             group_id=group_id,
             allow_missing_group_id=True,
             required_all_event_types=required_remove_events,
+            expected_member=user_b,
+        )
+
+        owner_remove_events = collect_group_events(
+            device_a,
+            expected_event_types={
+                "onMembersExitedFromGroup",
+                "onMemberExitedFromGroup",
+            },
+            group_id=group_id,
+            required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            timeout=10.0,
+        )
+        assert_group_events(
+            assert_api,
+            owner_remove_events,
+            expected_event_types={
+                "onMembersExitedFromGroup",
+                "onMemberExitedFromGroup",
+            },
+            group_id=group_id,
+            required_all_event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
             expected_member=user_b,
         )
 

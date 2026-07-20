@@ -38,3 +38,24 @@
   - 原因：当前环境实测更新公告后未稳定收到该回调；API 同步返回与公告拉取语义已稳定。
   - 前置条件：被测端确认并恢复该回调下发（或提供当前版本的公告回调事件名）。
 - 恢复条件：事件稳定后补充正常用例中的回调主断言，并冻结 `eventType/data` 关键字段。
+
+## acceptInvitationFromGroup / declineInvitationFromGroup
+
+- 暂缓项：手动邀请接受/拒绝回调 `onGroupInvitationAccepted` / `onGroupInvitationDeclined`
+  - 原因：当前基线 `createGroup/inviterUser` 邀请默认自动同意，未形成稳定“待处理邀请 -> 手动接受/拒绝”前置；对应异常 case 已冻结无待处理邀请的错误语义。
+  - 前置条件：提供 `inviteNeedConfirm=true` 且成员端可收到待处理邀请的稳定环境。
+  - 恢复条件：前置可用后补齐手动接受/拒绝正向 case，并断言邀请方/被邀请方真实回调字段。
+
+## uploadGroupSharedFile / removeGroupSharedFile
+
+- 暂缓项：共享文件新增/删除回调 `onGroupSharedFileAdded` / `onGroupSharedFileDeleted`
+  - 原因：当前环境上传本地文件稳定返回 `401 Invalid file`，未形成“上传成功 -> 删除成功”的正向前置；现有 case 已冻结当前错误语义。
+  - 前置条件：提供可被 SDK 成功上传的真实文件路径/权限与服务端文件能力。
+  - 恢复条件：上传成功链路稳定后补齐共享文件新增/删除回调断言，并冻结 `fileId/fileName` 等关键字段。
+
+## group state
+
+- 暂缓项：群状态变更回调 `onGroupStateChanged`
+  - 原因：当前 Python 侧 GroupManager 用例没有可直接触发群禁用/状态变化的稳定 SDK API 或服务端前置。
+  - 前置条件：提供可控的群状态变更接口或服务端操作入口。
+  - 恢复条件：前置可用后补齐状态变更正向 case，并按真实 ADB 日志冻结 `eventType/data`。
