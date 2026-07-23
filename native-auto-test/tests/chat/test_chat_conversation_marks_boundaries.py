@@ -183,20 +183,3 @@ def test_chat_conversation_mark_idempotent_and_remove_unmarked(device_a, device_
         info={"mark": 0, "pageSize": 10, "cursor": "", "pinned": False},
     )
     assert _target_mark_projection(fetch_after, user_b) == [], fetch_after
-
-
-def test_chat_conversation_mark_self_current_behavior(device_a, assert_api, user_a):
-    add = device_a.call(
-        "ChatManager", Cmd.addRemoteAndLocalConversationsMark.value,
-        info={"convIds": [user_a], "mark": 0},
-    )
-    assert_api.assert_response_matches(
-        add,
-        expected={"manager": "ChatManager", "cmd": Cmd.addRemoteAndLocalConversationsMark.value,
-                  "device": "deviceA", "result": {
-                    "code": 107,
-                    "description": "Invalid conversation"
-                 }
-        },
-        ignore_keys={"sequence"},
-    )

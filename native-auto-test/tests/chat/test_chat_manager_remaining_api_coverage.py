@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import uuid
 import time
 
@@ -220,6 +221,23 @@ def _wait_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 2
     raise AssertionError(f"未收到目标 onMessagePinChanged: msgId={msg_id}, operation={operation}, events={seen_events}")
 
 
+def _assert_no_pin_changed(device, *, msg_id: str, operation: str, timeout: float = 3.0) -> None:
+    seen_events = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessagePinChanged.value,
+            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen_events.append(evt)
+        data = (evt or {}).get("data") or {}
+        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+            raise AssertionError(
+                f"操作者端不应收到 onMessagePinChanged: msgId={msg_id}, operation={operation}, events={seen_events}"
+            )
+
+
 def _assert_pin_changed(assert_api, evt: dict, *, msg_id: str, conversation_id: str, operation: str, operator_id: str) -> None:
     assert_api.assert_response_matches(
         evt,
@@ -270,8 +288,7 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
     )
     pin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Pin")
     _assert_pin_changed(assert_api, pin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
-    pin_evt_a = _wait_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Pin")
-    _assert_pin_changed(assert_api, pin_evt_a, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Pin", operator_id=user_a)
+    _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Pin")
 
     resp_fetch = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
     target_pinned = [
@@ -319,8 +336,7 @@ def test_chat_manager_pin_unpin_and_fetch_pinned_messages(device_a, device_b, as
     )
     unpin_evt_b = _wait_pin_changed(device_b, msg_id=msg_id, operation="MessagePinOperation.Unpin")
     _assert_pin_changed(assert_api, unpin_evt_b, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
-    unpin_evt_a = _wait_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Unpin")
-    _assert_pin_changed(assert_api, unpin_evt_a, msg_id=msg_id, conversation_id=user_a, operation="MessagePinOperation.Unpin", operator_id=user_a)
+    _assert_no_pin_changed(device_a, msg_id=msg_id, operation="MessagePinOperation.Unpin")
 
     resp_fetch_empty = device_a.call("ChatManager", Cmd.fetchPinnedMessages.value, info={"convId": user_b})
     target_after_unpin = [
@@ -343,6 +359,7 @@ def test_chat_manager_recall_message_receiver_recalled_info_event(device_a, devi
     """recallMessage：发送方撤回已送达单聊消息，接收方收到 onMessagesRecalledInfo 事件并携带撤回消息 ID。"""
     content = f"chat-recall-event-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
 
     resp = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
@@ -727,6 +744,7 @@ def test_chat_manager_fetch_group_acks_success(device_a, device_b, assert_api, u
             group_name=new_group_name("group_ack"),
             invite_members=[user_b],
         )
+        time.sleep(float(os.getenv("CHAT_GROUP_MEMBER_SETTLE_SECONDS", "5")))
         content = f"group-ack-{uuid.uuid4().hex[:8]}"
         msg = build_text(user_a, group_id, content, chat_type=1)
         msg["needGroupAck"] = True

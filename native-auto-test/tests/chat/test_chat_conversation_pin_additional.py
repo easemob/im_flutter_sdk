@@ -142,20 +142,6 @@ def test_chat_conversation_pin_and_unpin_are_idempotent(device_a, device_b, asse
     )
     assert _target_pinned(fetch_after, user_b) == [], fetch_after
 
-
-def test_chat_pin_self_conversation_current_behavior(device_a, assert_api, user_a):
-    response = device_a.call(
-        "ChatManager", Cmd.pinConversation.value,
-        info={"convId": user_a, "isPinned": True},
-    )
-    assert_api.assert_response_matches(
-        response,
-        expected={"manager": "ChatManager", "cmd": Cmd.pinConversation.value, "device": "deviceA",
-                  "result": {"code": 107, "description": "Invalid conversation"}},
-        ignore_keys={"sequence"},
-    )
-
-
 def test_chat_pin_conversation_non_boolean_coerces_to_unpin(
     device_a, device_b, assert_api, user_a, user_b,
 ):

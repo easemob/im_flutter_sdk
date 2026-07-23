@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import uuid
+import os
 
 from src import Cmd
 from tests.chat._utils import build_text
@@ -59,6 +60,99 @@ def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_i
             },
         },
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState"},
+    )
+
+
+def _wait_reaction_change_event(device, *, real_id: str, operator: str, reaction: str, is_added_by_self: bool, timeout: float = 60.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=ON_MESSAGE_REACTION_DID_CHANGE,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen.append(evt)
+        for event in ((evt or {}).get("data") or {}).get("events") or []:
+            if not isinstance(event, dict):
+                continue
+            operations = event.get("operations") or []
+            reactions = event.get("reactions") or []
+            matched_operation = next(
+                (
+                    op
+                    for op in operations
+                    if isinstance(op, dict)
+                    and op.get("userId") == operator
+                    and op.get("reaction") == reaction
+                    and op.get("operate") == 1
+                ),
+                None,
+            )
+            matched_reaction = next(
+                (
+                    item
+                    for item in reactions
+                    if isinstance(item, dict)
+                    and item.get("reaction") == reaction
+                    and item.get("count") == 1
+                    and item.get("isAddedBySelf") == is_added_by_self
+                    and item.get("userList") == [operator]
+                ),
+                None,
+            )
+            if str(event.get("msgId")) == str(real_id) and matched_operation and matched_reaction:
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {
+                        "events": [
+                            {
+                                "convId": event.get("convId"),
+                                "msgId": event.get("msgId"),
+                                "operations": [matched_operation],
+                                "reactions": [matched_reaction],
+                            },
+                        ],
+                    },
+                    "timestamp": evt.get("timestamp"),
+                }
+    raise AssertionError(
+        "未收到目标 reaction 事件: "
+        f"msgId={real_id}, operator={operator}, reaction={reaction!r}, "
+        f"isAddedBySelf={is_added_by_self}, events={seen}"
+    )
+
+
+def _assert_reaction_change_event(assert_api, device, *, conv_id: str, real_id: str, operator: str, reaction: str, is_added_by_self: bool) -> None:
+    evt = _wait_reaction_change_event(
+        device,
+        real_id=real_id,
+        operator=operator,
+        reaction=reaction,
+        is_added_by_self=is_added_by_self,
+    )
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": ON_MESSAGE_REACTION_DID_CHANGE,
+            "data": {
+                "events": [
+                    {
+                        "convId": conv_id,
+                        "msgId": real_id,
+                        "operations": [
+                            {"userId": operator, "reaction": reaction, "operate": 1},
+                        ],
+                        "reactions": [
+                            {"reaction": reaction, "count": 1, "isAddedBySelf": is_added_by_self, "userList": [operator]},
+                        ],
+                    },
+                ],
+            },
+        },
+        ignore_keys={"timestamp"},
     )
 
 
@@ -137,7 +231,7 @@ def _send_text_and_wait_received(device_a, device_b, assert_api, user_a: str, us
 
 
 def test_chat_reaction_change_event_received_by_sender(device_a, device_b, assert_api, user_a, user_b):
-    """addReaction：接收方给单聊消息添加 reaction，发送方收到 onMessageReactionDidChange 事件并携带操作人、reaction 与消息 ID。"""
+    """addReaction：接收方给单聊消息添加 reaction，发送方和接收方均收到 onMessageReactionDidChange 事件。"""
     reaction = f"r_{uuid.uuid4().hex[:6]}"
     real_id = _send_text_and_wait_received(
         device_a,
@@ -147,6 +241,7 @@ def test_chat_reaction_change_event_received_by_sender(device_a, device_b, asser
         user_b,
         f"reaction-event-{uuid.uuid4().hex[:8]}",
     )
+    time.sleep(float(os.getenv("CHAT_REACTION_SETTLE_SECONDS", "10")))
 
     resp = device_b.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
@@ -160,29 +255,8 @@ def test_chat_reaction_change_event_received_by_sender(device_a, device_b, asser
         ignore_keys={"sequence"},
     )
 
-    evt = device_a.receive_message(match_event_type=ON_MESSAGE_REACTION_DID_CHANGE, timeout=20.0)
-    assert_api.assert_response_matches(
-        evt,
-        expected={
-            "type": "event",
-            "eventType": ON_MESSAGE_REACTION_DID_CHANGE,
-            "data": {
-                "events": [
-                    {
-                        "convId": user_b,
-                        "msgId": real_id,
-                        "operations": [
-                            {"userId": user_b, "reaction": reaction, "operate": 1},
-                        ],
-                        "reactions": [
-                            {"reaction": reaction, "count": 1, "isAddedBySelf": False, "userList": [user_b]},
-                        ],
-                    },
-                ],
-            },
-        },
-        ignore_keys={"timestamp"},
-    )
+    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_b, reaction=reaction, is_added_by_self=False)
+    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_b, reaction=reaction, is_added_by_self=True)
 
 
 def test_chat_fetch_reaction_list_invalid_msg_id(device_a, assert_api):
@@ -340,9 +414,10 @@ def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, us
     real_id = _send_text_and_wait_received(
         device_a, device_b, assert_api, user_a, user_b, "reaction-duplicate"
     )
+    time.sleep(5)
 
-    resp_add_first = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "👍", "msgId": real_id})
-    resp_add_second = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "👍", "msgId": real_id})
+    reaction = "👍"
+    resp_add_first = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_add_first,
         expected={
@@ -353,6 +428,10 @@ def test_chat_add_reaction_duplicate_reaction(device_a, device_b, assert_api, us
         },
         ignore_keys={"sequence"},
     )
+    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
+    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)
+
+    resp_add_second = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_add_second,
         expected={
@@ -417,7 +496,8 @@ def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, use
         device_a, device_b, assert_api, user_a, user_b, "reaction-too-long"
     )
 
-    resp_128 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "a" * 128, "msgId": real_id})
+    reaction_128 = "a" * 128
+    resp_128 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_128, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_128,
         expected={
@@ -428,8 +508,11 @@ def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, use
         },
         ignore_keys={"sequence"},
     )
+    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=True)
+    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_128, is_added_by_self=False)
 
-    resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "b" * 256, "msgId": real_id})
+    reaction_256 = "b" * 256
+    resp_256 = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction_256, "msgId": real_id})
     assert_api.assert_response_matches(
         resp_256,
         expected={
@@ -440,6 +523,8 @@ def test_chat_add_reaction_too_long_reaction(device_a, device_b, assert_api, use
         },
         ignore_keys={"sequence"},
     )
+    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=True)
+    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction_256, is_added_by_self=False)
 
 
 def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api, user_a, user_b):
@@ -454,7 +539,8 @@ def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api,
         device_a, device_b, assert_api, user_a, user_b, "reaction-special-char"
     )
 
-    resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "\n\t", "msgId": real_id})
+    reaction = "\n\t"
+    resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": reaction, "msgId": real_id})
     assert_api.assert_response_matches(
         resp,
         expected={
@@ -465,3 +551,5 @@ def test_chat_add_reaction_special_char_reaction(device_a, device_b, assert_api,
         },
         ignore_keys={"sequence"},
     )
+    _assert_reaction_change_event(assert_api, device_a, conv_id=user_b, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=True)
+    _assert_reaction_change_event(assert_api, device_b, conv_id=user_a, real_id=real_id, operator=user_a, reaction=reaction, is_added_by_self=False)
