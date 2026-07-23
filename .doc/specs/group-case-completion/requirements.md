@@ -42,3 +42,7 @@
 34. 当当前群主调用 `leaveGroup` 时，测试应冻结必须先转让群主的错误语义；当原群主完成转让后主动退群时，测试应验证正常退出和双方事件。
 35. 当新增矩阵 case 需要第三个账号形成 owner/member/invitee 角色时，可使用 `user_c` 作为服务端状态账号，但所有需要事件断言的操作双方必须由 deviceA/deviceB 两台真实设备承担。
 36. 当用户决定暂时隔离已确认或待契约确认的 7 个 Group 场景时，测试应仅对对应参数添加带明确原因的 `skip`，保留原严格断言实现；其他矩阵参数不得被一并跳过，修复或契约确认后应删除对应 skip 并恢复验证。
+37. 当测试发送群消息时，case 应归档在 `tests/group`，并对 `txt/file/image/video/voice/location/cmd/custom/combine` 九种公开发送类型分别覆盖发送响应、发送方 `onMessageSuccess` 和接收方消息回调。
+38. 当群消息到达接收方时，测试应严格断言 `chatType=1`、`to/convId=groupId`、收发双方、方向、消息状态和类型特有 body；CMD 消息应通过 `onCmdMessagesReceived` 接收，其余类型应通过 `onMessagesReceived` 接收。
+39. 当群消息需要群回执时，`ackGroupMessageRead` 与 `asyncFetchGroupAcks` 的正常和非法 ID 场景应归档在 `tests/group`，并继续使用真实动态 groupId/msgId 关联同步响应与双端消息事件。
+40. 当 ChatThread case 需要群消息作为父消息时，该前置发送仍应保留在 `tests/chat`，因为其被测主体是 ChatThread API；覆盖统计不得把这种前置步骤重复计为独立群消息发送 case。
