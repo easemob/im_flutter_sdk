@@ -27,8 +27,8 @@ Future<Map<String, dynamic>> prepareGroupSharedFileArgs(
   required Future<String> Function(String assetName) ensureFile,
 }) async {
   final args = Map<String, dynamic>.from(rawArgs);
-  final filePath = args['filePath'] as String?;
-  if (filePath == null || filePath.isEmpty) {
+  final filePath = args['filePath'];
+  if (filePath == null || (filePath is String && filePath.isEmpty)) {
     args['filePath'] = await ensureFile('bigPic.jpg');
   }
   return args;
@@ -94,7 +94,8 @@ class IMWebSocketBridge {
       EMLog.v('WebSocket bridge already connected', tag: _tag);
       return;
     }
-    _deviceName = deviceName?.trim().isEmpty == true ? null : deviceName?.trim();
+    _deviceName =
+        deviceName?.trim().isEmpty == true ? null : deviceName?.trim();
     final String connectUrl = url ??
         '$kDefaultBridgeWebSocketBaseUrl?topic=${Uri.encodeComponent(topic ?? kDefaultBridgeWebSocketTopic)}';
     final uri = Uri.parse(connectUrl);
@@ -242,10 +243,14 @@ class IMWebSocketBridge {
       return {method: info?.toJson()};
     }
     if (managerName == 'ContactManager' && method == 'fetchAllContactIds') {
-      return {method: await EMClient.getInstance.contactManager.fetchAllContactIds()};
+      return {
+        method: await EMClient.getInstance.contactManager.fetchAllContactIds()
+      };
     }
     if (managerName == 'ContactManager' && method == 'getAllContactIds') {
-      return {method: await EMClient.getInstance.contactManager.getAllContactIds()};
+      return {
+        method: await EMClient.getInstance.contactManager.getAllContactIds()
+      };
     }
     if (managerName == 'GroupManager' &&
         method == ChatMethodKeys.uploadGroupSharedFile) {
@@ -276,7 +281,8 @@ class IMWebSocketBridge {
         : const <String, dynamic>{};
     try {
       if (method == ChatMethodKeys.logout) {
-        await EMClient.getInstance.logout((map['unbindToken'] as bool?) ?? true);
+        await EMClient.getInstance
+            .logout((map['unbindToken'] as bool?) ?? true);
         return {method: true};
       }
 
@@ -333,7 +339,8 @@ class IMWebSocketBridge {
   /// 与原生 [ChatMethodKeys.sendMessage] 返回结构一致：`{ sendMessage: message.toJson() }`
   Future<Map<String, dynamic>> _invokeSendMessageWithType(dynamic args) async {
     if (args is! Map) {
-      throw ArgumentError.value(args, 'info', 'sendMessageWithType requires a Map');
+      throw ArgumentError.value(
+          args, 'info', 'sendMessageWithType requires a Map');
     }
     final map = Map<String, dynamic>.from(args);
     final typeStr = map['type'] as String?;
