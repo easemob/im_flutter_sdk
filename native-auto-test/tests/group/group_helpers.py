@@ -126,6 +126,25 @@ def collect_group_events(
             last_matched_at = now
 
 
+def assert_no_group_event(
+    device,
+    *,
+    group_id: str,
+    event_types: set[str],
+    timeout: float = 2.0,
+) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        event = device.receive_message(timeout=min(0.5, deadline - time.monotonic()))
+        if not isinstance(event, dict) or event.get("type") != "event":
+            continue
+        if event.get("eventType") not in event_types:
+            continue
+        data = event.get("data")
+        if isinstance(data, dict) and data.get("groupId") == group_id:
+            raise AssertionError(f"不应收到群事件: eventTypes={sorted(event_types)}, event={event}")
+
+
 def _assert_any_non_empty_str_field(
     data: dict,
     field_candidates: tuple[str, ...],
@@ -498,7 +517,7 @@ def assert_group_event_data_fields(
         return
 
     if event_type_value in {GroupChangeEvent.ON_SHARED_FILE_DELETED.value, "onGroupSharedFileDeleted"}:
-        _assert_any_int_field(
+        _assert_any_str_field(
             data,
             ("fileId", "id"),
             field_label="fileId",
@@ -616,14 +635,18 @@ def assert_group_snapshot(
     owner: str,
     expected_desc: str = "auto-test group",
     expected_ext: str = "auto-ext",
+    max_user_count_value: int = 200,
     member_count_value: int | None = None,
     member_list_value: list[str] | None = None,
+    admin_list_value: list[str] | None = None,
     block_list_value: list[str] | None = None,
     mute_list_value: list[str] | None = None,
     allow_list_value: list[str] | None = None,
     is_member_allow_to_invite: bool = False,
     is_all_member_muted: bool = False,
     message_blocked: bool = False,
+    permission_type: int = 2,
+    is_member_only: bool = True,
     device: str = "deviceA",
 ) -> None:
     expected_result = {
@@ -634,14 +657,14 @@ def assert_group_snapshot(
         "ext": expected_ext,
         "announcement": "",
         "avatarUrl": "",
-        "maxUserCount": 200,
-        "adminList": [],
+        "maxUserCount": max_user_count_value,
+        "adminList": admin_list_value or [],
         "blockList": [],
         "muteList": [],
         "isDisabled": False,
         "isAllMemberMuted": is_all_member_muted,
-        "permissionType": 2,
-        "isMemberOnly": True,
+        "permissionType": permission_type,
+        "isMemberOnly": is_member_only,
         "isMemberAllowToInvite": is_member_allow_to_invite,
         "messageBlocked": message_blocked,
     }
@@ -730,6 +753,10 @@ def create_group(
     group_name: str,
     invite_members: list[str],
     style: int = 0,
+    max_count: int = 200,
+    invite_need_confirm: bool = False,
+    expected_member_count: int | None = None,
+    device_name: str = "deviceA",
 ):
     resp_create = device_a.call(
         "GroupManager",
@@ -741,8 +768,8 @@ def create_group(
             "inviteReason": "auto-case",
             "options": {
                 "style": style,
-                "maxCount": 200,
-                "inviteNeedConfirm": False,
+                "maxCount": max_count,
+                "inviteNeedConfirm": invite_need_confirm,
                 "ext": "auto-ext",
             },
         },
@@ -756,20 +783,30 @@ def create_group(
         group_id=gid,
         group_name=group_name,
         owner=owner,
-        member_count_value=1 + len(invite_members),
+        member_count_value=(1 + len(invite_members) if expected_member_count is None else expected_member_count),
+        max_user_count_value=max_count,
         is_member_allow_to_invite=(style == 1),
+        is_member_only=(style != 3),
+        device=device_name,
     )
     return gid, resp_create
 
 
-def destroy_group(device_a, assert_api, group_id: str, *, device_b=None):
+def destroy_group(
+    device_a,
+    assert_api,
+    group_id: str,
+    *,
+    device_b=None,
+    device_name: str = "deviceA",
+):
     resp_destroy = device_a.call("GroupManager", Cmd.destroyGroup.value, info={"groupId": group_id})
     assert_api.assert_response_matches(
         resp_destroy,
         expected={
             "manager": "GroupManager",
             "cmd": Cmd.destroyGroup.value,
-            "device": "deviceA",
+            "device": device_name,
             "result": True,
         },
         ignore_keys={"sequence"},

@@ -119,7 +119,7 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
                         "status": 2,
                         "hasRead": False,
                         "hasReadAck": False,
-                        "hasDeliverAck": False,
+                        "hasDeliverAck": True,
                         "needGroupAck": False,
                         "isThread": False,
                         "isContentReplaced": False,
@@ -142,6 +142,47 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
         ):
             real_id = str(msg.get("msgId"))
             break
+
+    delivery_event = device_a.receive_message(
+        match_event_type=Cmd.onMessagesDelivered.value,
+        timeout=20.0,
+    )
+    assert_api.assert_response_matches(
+        delivery_event,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesDelivered.value,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": user_b,
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "hasReadAck": False,
+                        "hasDeliverAck": True,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content},
+                    }
+                ]
+            },
+        },
+        ignore_keys={
+            "timestamp",
+            "sequence",
+            "serverTime",
+            "localTime",
+            "translations",
+            "targetLanguages",
+        },
+    )
 
     return real_id
 
@@ -172,7 +213,7 @@ def _assert_loaded_messages_contains_ids(resp: dict, expected_ids: list[str], us
         assert msg.get("status") == 2, f"msg.status 不匹配: {msg}"
         assert msg.get("hasRead") is True, f"msg.hasRead 不匹配: {msg}"
         assert msg.get("hasReadAck") is False, f"msg.hasReadAck 不匹配: {msg}"
-        assert msg.get("hasDeliverAck") is False, f"msg.hasDeliverAck 不匹配: {msg}"
+        assert msg.get("hasDeliverAck") is True, f"msg.hasDeliverAck 不匹配: {msg}"
         assert msg.get("needGroupAck") is False, f"msg.needGroupAck 不匹配: {msg}"
         assert msg.get("isThread") is False, f"msg.isThread 不匹配: {msg}"
         assert msg.get("isContentReplaced") is False, f"msg.isContentReplaced 不匹配: {msg}"

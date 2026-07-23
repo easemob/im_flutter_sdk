@@ -56,6 +56,28 @@ def test_group_create_group(device_a, device_b, assert_api, user_a, user_b):
             expected_inviter=user_a,
             expected_member=user_b,
         )
+
+        owner_events = collect_group_events(
+            device_a,
+            expected_event_types={
+                "onMembersJoinedFromGroup",
+                "onMemberJoinedFromGroup",
+            },
+            group_id=group_id,
+            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            timeout=10.0,
+        )
+        assert_group_events(
+            assert_api,
+            owner_events,
+            expected_event_types={
+                "onMembersJoinedFromGroup",
+                "onMemberJoinedFromGroup",
+            },
+            group_id=group_id,
+            required_all_event_types={"onMembersJoinedFromGroup", "onMemberJoinedFromGroup"},
+            expected_member=user_b,
+        )
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id, device_b=device_b)

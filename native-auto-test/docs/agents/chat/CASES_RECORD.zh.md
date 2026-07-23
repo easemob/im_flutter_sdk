@@ -2,6 +2,7 @@
 
 — 说明
 - 本文件记录 Chat 模块已覆盖用例（按 API 组织）。
+- ChatThread API 属于群组场景，相关 5 个 cases 已迁移到 `tests/group/`；本台账仅保留单聊 ChatManager 与单聊消息公共 API，不重复记录 Thread 用例。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 
@@ -55,7 +56,7 @@
 14. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_basic`
    发送基础文本消息，验证普通文本类型发送与接收成功。
 15. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_text_with_languages`
-   发送带 `targetLanguages` 的文本内容，按当前 Android 实测冻结同步返回临时消息后异步 `onMessageError(code=1113)` 翻译失败语义。
+   发送带 `targetLanguages=[zh-Hans]` 的文本内容；当前 Android 实测发送成功，发送方与接收方消息 body 均返回目标语言及非空 `translations`，按真实消息 ID 严格断言完整翻译链路。
 16. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_file`
    发送文件消息，校验文件消息类型和关键元数据字段。
 17. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_image`
@@ -390,7 +391,7 @@
 122. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_recall_message_receiver_recalled_info_event`
    覆盖 `recallMessage` 正常撤回链路，发送方撤回已送达单聊消息后，接收方收到 `onMessagesRecalledInfo` 事件；按真实模拟器返回断言 `recallMsgId`、`convId`、`msg` 与 `ext`，消息体兼容 `translations` 且 `receiverList` 可选。
 123. `tests/chat/test_chat_reaction_fetch.py::test_chat_reaction_change_event_received_by_sender`
-   覆盖 `addReaction` 正常事件链路，接收方给单聊消息添加 reaction 后，发送方收到 `onMessageReactionDidChange` 事件；按真实模拟器返回断言 `convId`、`msgId`、`operations` 与 `reactions`。
+   覆盖 `addReaction` 正常事件链路，接收方给单聊消息添加 reaction 后，发送方和接收方均收到 `onMessageReactionDidChange` 事件；按真实模拟器返回分别断言 `convId`、`msgId`、`operations`、`reactions` 与 `isAddedBySelf`。
 124. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_conversation_marks_and_fetch_options`
    覆盖 `addRemoteAndLocalConversationsMark`、`deleteRemoteAndLocalConversationsMark`、`fetchConversationsByOptions`，标记会话后按 options 拉取并校验 mark，再删除标记。
 125. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_count_and_search_options_boundaries`
@@ -399,14 +400,141 @@
    覆盖 `deleteAllMessageAndConversation`，以 `clearServerData=false` 清理本地消息和会话，冻结实测返回 `result=null`。
 127. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_object_boundary_methods`
    覆盖 `importMessages`、`updateMessage`、`resendMessage`，使用本地构造文本消息导入、更新正文、重发，并冻结更新后消息对象返回。
-128. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_fetch_group_acks_success`
-   覆盖 `fetchGroupAcks` / `asyncFetchGroupAcks`，发送需要群回执的群消息并发送回执后分页查询；按 discovery 冻结 `ackGroupMessageRead result=true`，查询返回 `cursor=""` 且 `list=[]`。
-130. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
+128. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
    覆盖 `sendMessageWithType(type=cmd)` 正常链路，发送 CMD 消息后接收方收到 `onCmdMessagesReceived`；按真实模拟器返回断言 `body.type=6`、`action`、`convId`、`direction` 与消息 ID，`receiverList` 按当前端可选字段处理。
 
 异常/边界 cases
-129. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_group_ack_boundary_methods`
-   覆盖 `sendGroupMessageReadAck` / `ackGroupMessageRead` 非法群消息 ID 与群 ID 边界，冻结当前端返回 `result=true`。
+群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`130`
+- 当前记录 case 条目总数：`132`
+
+## 单聊发送类型覆盖审计（2026-07-23）
+
+| 发送类型 | 正常发送/接收 case | 覆盖状态 |
+|---|---|---|
+| `txt` | `test_send_message_with_type_text_basic`、`test_send_message_with_type_text_with_languages` | 已覆盖 |
+| `file` | `test_send_message_with_type_file` | 已覆盖 |
+| `image` | `test_send_message_with_type_image`、`test_send_message_with_type_image_heic` | 已覆盖 |
+| `video` | `test_send_message_with_type_video` | 已覆盖 |
+| `voice` | `test_chat_missing_voice_message_send_receive` | 已覆盖 |
+| `location` | `test_chat_missing_location_message_send_receive` | 已覆盖 |
+| `cmd` | `test_send_message_with_type_cmd_received_by_cmd_callback` | 已覆盖 |
+| `custom` | `test_chat_missing_custom_message_send_receive` | 已覆盖 |
+| `combine` | `test_combine_forward_send_receive_and_inner_attachment_download` | 已覆盖 |
+
+- 正常消息类型覆盖：`9/9`；发送响应、A 端成功事件和 B 端接收事件均已有真实双设备 case。
+- 已有发送边界：空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致、发给自己、非好友发送。
+- 空/不存在 `targetId`、类型必填 payload 和媒体路径边界已在下节补齐。Dart 静态类型在正常 App 调用中无法传入的任意动态错误类型不计为 SDK 业务 case。
+
+## 单聊发送异常矩阵补齐（2026-07-23）
+
+129. `tests/chat/test_chat_message_send_boundaries.py::test_chat_message_send_target_boundaries`
+   展开空目标与动态不存在用户两项。空目标文本消息严格返回 `onMessageError 500/Message is invalid`；不存在用户使用 CMD 避开文本审核干扰，当前真实语义为服务端接受并返回 `onMessageSuccess` 和真实 msgId。两项均确认 deviceB 未误收。
+130. `tests/chat/test_chat_message_send_boundaries.py::test_chat_message_type_rejects_missing_required_payload`
+   展开 `txt.content`、`location.latitude/longitude`、`cmd.action`、`custom.event` 五项缺失必填字段，bridge 调用公开 Dart 构造 API 后严格返回 `code=-1` 和对应 Null 类型错误。
+131. `tests/chat/test_chat_message_send_boundaries.py::test_chat_combine_message_rejects_empty_source_ids`
+   `combine.msgIds=[]` 返回异步 `onMessageError 110/The count of combined messages must be between 1 and 300.`，错误消息 envelope 和 B 端无误投递均严格断言；同步响应 `status` 与图片路径错误相同存在 `1/3` 竞态，仅忽略 `result.status` 精确路径。
+132. `tests/chat/test_chat_message_send_boundaries.py::test_chat_media_message_rejects_nonexistent_device_path`
+   展开 `file/image/video/voice` 四种不存在 Android 路径。四项均返回 `401`；file/voice 文案为 `File movement error.`，image/video 为 `File not exists or can not be read`。图片同步响应的瞬时 `status` 实测在 `1/3` 间竞态，仅忽略 `result.status` 精确路径；最终 `onMessageError.status=3` 及完整消息严格断言。
+
+- 本节共 `4` 个测试函数、`12 items`；真实双设备 strict 同 session 结果为 `12 passed`。
+- 不存在用户文本连续发送曾触发服务端 `1200/MODERATION_001`，因此目标语义改用 CMD 冻结；不把审核开关错误当作用户存在性契约。
+
+## 单聊缺失 Case 第一批（5556/5558 实测）
+
+正常 cases
+131. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_location_message_send_receive`
+   5556 发送位置消息，5558 收到位置消息；按真实日志断言 `body.type=3`、经纬度、地址和建筑名。
+132. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_voice_message_send_receive`
+   5556 发送语音消息，5558 收到语音消息；按真实日志断言 `body.type=4`、`displayName=voice.mp3`、发送端 `fileStatus=3`、接收端 `fileStatus=0` 和 `duration=1`。动态路径、secret、remotePath、fileSize 不写死。
+133. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_custom_message_send_receive`
+   5556 发送自定义消息，5558 收到自定义消息；断言真实 `event` 和 `params`。
+134. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_message_delivery_ack[txt-payload0]`
+   开启 `requireDeliveryAck=true` 后，文本消息收到 `onMessagesDelivered`，断言真实消息 ID、发送方、接收方、会话和文本 body。
+135. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_message_delivery_ack[custom-payload1]`
+   开启 `requireDeliveryAck=true` 后，自定义消息收到 `onMessagesDelivered`，断言真实消息 ID、参与者和自定义 body。
+
+暂缓 cases
+136. `tests/chat/test_chat_message_types_and_delivery.py::test_chat_missing_cmd_message_delivery_ack`（skip）
+   5556/5558 已开启 `requireDeliveryAck=true`，但当前真实日志只收到 `onCmdMessagesReceived`，未收到 CMD 的 `onMessagesDelivered`；不固化“无事件”预期。
+
+## 单聊缺失 Case 第二批（5556/5558 实测）
+
+137. `tests/chat/test_chat_recall_and_message_read_ack.py::test_chat_missing_recall_typed_message[*]`
+   位置/自定义消息撤回；断言撤回结果及接收方 `onMessagesRecalledInfo` 的 recallBy、recallMsgId、convId、msg 和 ext，消息状态字段保留。
+138. `tests/chat/test_chat_recall_and_message_read_ack.py::test_chat_missing_recall_empty_message_id`
+   空消息 ID 返回 `result={code:500,description:'The message was not found'}`。
+139. `tests/chat/test_chat_recall_and_message_read_ack.py::test_chat_missing_ack_message_read_boundaries[*]`
+   空/非法消息或接收方参数当前均返回 `result=true`。
+140. `tests/chat/test_chat_message_pin_boundaries.py::*`
+   置顶、取消置顶及置顶列表无效 ID/空 ID/撤回消息/无效会话边界，冻结 110/107/500 错误。
+141. `tests/chat/test_chat_report_message_boundaries.py::test_chat_report_message_empty_*`、`test_chat_report_recalled_message`
+   举报参数和撤回消息当前返回 `500 message id is invalid`；类型消息成功场景暂缓，见 deferred。
+142. `tests/chat/test_chat_conversation_marks_boundaries.py::*`
+   会话标记无效会话返回 107，pageSize 0/-1 返回 110，1000 返回空列表；mark=999 bridge 原始异常暂缓。
+143. `tests/chat/test_chat_message_translation_boundaries.py::*`
+   空语言和不支持语言返回原消息并保留 `targetLanguages/translations`；自定义消息返回 `1 General error`。
+144. `tests/chat/test_chat_attachment_download_and_history_boundaries.py::*`
+   发送方图片/视频下载、文本下载和 pageSize=1 历史分页；严格断言消息主体、会话、方向、状态及文本内容，路径/时间等动态字段单独忽略。
+
+## 单聊文档启用场景补齐（5556/5558 实测）
+
+145. `tests/chat/test_chat_text_boundaries_and_location_delivery.py::*`
+   覆盖空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致，以及位置消息送达回执。发送响应、发送成功、接收和送达事件均保留参与者、会话、方向、状态、已读/送达字段及完整 body；不匹配 `from` 实测异步返回 `500 Message is invalid`。
+146. `tests/chat/test_chat_typed_message_pin_flows.py::*` 与 `tests/chat/test_chat_message_pin_boundaries.py::*`
+   覆盖位置/自定义消息由收发双方交叉置顶和取消置顶，以及类型消息撤回后置顶边界；按真实模拟器返回，原始发送方执行 pin/unpin 时仅接收方收到 `onMessagePinChanged`，接收方执行 pin/unpin 当前不产生该回调；通过 `fetchPinnedMessages` 校验最终服务端状态，并保留消息类型、方向、状态、已读/送达等字段。
+147. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_receiver_reports_text_message` 与 `test_chat_report_text_message_parameter_boundaries[*]`
+   覆盖接收方举报文本消息，并使用有效消息 ID 验证空 `tag`、空 `reason`、异常非空 `tag`：实测分别返回 `205 Invalid parameter`、`true`、`true`，避免被无效消息 ID 的前置错误掩盖。
+148. `tests/chat/test_chat_report_and_thumbnail_additional.py::test_chat_download_thumbnail_for_text_message`
+   文本消息调用缩略图下载时，同步结果返回完整原消息，随后发送端收到 `onMessageError 403/Failed to download the file`；两段均按真实消息 ID 和完整稳定业务字段断言。
+149. `tests/chat/test_chat_conversation_pin_additional.py::*`
+   覆盖会话重复置顶/取消置顶、自己会话、非布尔 `isPinned`、pageSize 0/-1/1000。Android generic bridge 实测非布尔值按 `false` 处理，三种 pageSize 均返回空页。
+150. `tests/chat/test_chat_conversation_cursor_pagination.py::*`
+   创建两个真实单聊会话，置顶后以 pageSize=1 和真实 cursor 分页，并覆盖两个 mark 值查询。服务端 cursor 依赖秒级 `pinnedTime`，用例在两次置顶间拉开时间且先确认两条服务端状态，避免同秒时间戳碰撞漏页。
+151. `tests/chat/test_chat_conversation_marks_boundaries.py::test_chat_conversation_mark_idempotent_and_remove_unmarked` 与 `test_chat_conversation_mark_self_current_behavior`
+   覆盖重复标记、重复取消、取消未标记、标记自己；正常场景通过目标会话投影断言 `type/isPinned/isThread/marks`，当前环境标记自己会话实测返回 `result=null`。
+152. `tests/chat/test_chat_message_modification_matrix.py::*` 与 `tests/chat/test_chat_s4_message_content_changed.py::test_chat_modify_custom_message_content_changed_event`
+   覆盖文本 body/ext/同时修改、空 ID、不存在 ID、非发送者、自定义内容、CMD 不支持、语音/图片/视频 ext 与 body 不支持。修改成功结果及接收端内容变更事件保留 operator、attributes、类型、方向、状态及送达字段。
+153. `tests/chat/test_chat_crud.py::test_chat_fetch_support_languages_success`
+   获取真实支持语言列表；严格校验每项恰好包含非空 `nativeName/code/name`、code 唯一，并固定校验 `zh-Hans` 与 `en` 的真实三字段内容，不再使用 `result != None` 弱断言。
+154. `tests/chat/test_chat_attachment_download_and_history_boundaries.py::*` 与 `tests/chat/test_chat_s423_message_callback_and_combine.py::test_attachment_messages_send_receive_and_public_download_methods`
+   覆盖图片/视频发送方与接收方附件下载、图片/视频缩略图及文本附件/缩略图异常；动态路径、secret、时间和文件大小单独处理，消息 envelope 的稳定字段全部保留。
+155. `tests/chat/test_chat_history_option_filters.py::*`
+   覆盖 direction=DOWN、start/end 时间范围和 msgTypes `[1]`、`[0,1]`、`[7]`、`[0,7]`。先等待目标消息进入漫游存储，再以真实 ID 验证筛选结果，避免把服务端归档延迟误判为过滤行为。
+156. `tests/chat/test_chat_recall_and_message_read_ack.py::*`、`tests/chat/test_chat_ack_read_strict.py::*` 与 `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_*`
+   覆盖文档启用的消息/会话已读 ACK 正常和边界链路；在 `requireDeliveryAck=true` 环境中保留并按阶段断言真实 `hasDeliverAck`，不将该重要字段加入忽略集。
+
+### 本轮严格回归口径
+
+- 相关模块共收集 93 个 pytest node；首轮为 `83 passed, 5 skipped, 5 failed`；第二轮为 `85 passed, 5 skipped, 3 failed`。失败均由送达状态时序或服务端删除/归档一致性导致，已通过显式等待目标送达事件和清理完成窗口消除竞争，失败项逐项复跑通过。
+- 最终同轮 strict 回归结果：`88 passed, 5 skipped`，耗时 `280.14s`。
+- 5 个 skip 分别为 CMD 送达、3 种类型消息举报和非法 mark bridge 崩溃；原因与恢复条件见 `CASES_DEFERRED.zh.md`。
+- 带 `targetLanguages` 的自动翻译已按当前开启环境的成功结果严格覆盖；显式 `translateMessage` 正常翻译仍返回空 `translations`，保留为独立待排查项。moderation 敏感词分支仍依赖 AppKey 功能开关，未把关闭态返回固化为预期。
+
+### `requireDeliveryAck` 测试 App 配置适配（5554/5556）
+
+- 根因：`im_flutter_test` 的 `SdkConfigLoader` 只映射了 `require_ack`，未映射 `require_delivery_ack`；`EMOptions.requireDeliveryAck` 因此使用默认值 `false`。发布 SDK、Android/iOS Wrapper 和 `onMessagesDelivered` 事件桥接本身均已具备支持。
+- 适配：在共享 `sdk_options` 配置和模板中显式设置 `require_delivery_ack: true`，并映射到 `EMOptions.withAppKey(requireDeliveryAck: true)`；新增 Flutter asset 配置回归测试。
+- 真实日志：重新构建安装后，两台 App 初始化日志均显示 `requireDeliveryAck: true`；发送端收到 `onMessagesDelivered`，事件消息使用真实服务端 msgId 且 `hasDeliverAck=true`，后续 `onMessagesRead` 同样保留 `hasDeliverAck=true`。
+- 断言同步：本地会话、按 ID 加载及关键字检索的公共消息准备断言由旧环境的 `false` 收紧为 `true`，没有忽略该字段。`loadMessagesWithIds` 在查询前显式等待每条消息对应的送达事件，消除连续发消息时本地状态尚未刷新的竞争。
+- 验证：原始 `test_chat_ack_message_read_success_with_event` 单例严格通过；最终受影响范围同 session 聚合回归 `19 passed, 0 failed, 0 skipped`。CMD 送达 case 仍维持原有 skip，恢复条件不变。
+
+### 指定 14 条回归修复（2026-07-15，5556/5558）
+
+- RED 基线：`2 passed, 12 failed`。原本通过的是“向非好友发送错误事件”和“接收方置顶自定义消息后跨用户取消置顶”。
+- 失败分类：7 条仍按旧环境断言送达后 `hasDeliverAck=false`；2 条假设共享服务端置顶列表只含本次消息或必然为空；2 条自己会话 mark/pin 预期与当前稳定返回不一致；1 条自动翻译仍等待旧环境 `1113` 错误。
+- 断言处理：按同步发送、发送成功、接收/送达/已读/撤回/查询阶段分别冻结 `hasDeliverAck`；置顶结果只按本次真实 msgId 投影，但投影内消息 envelope 仍完整严格断言；自己会话 mark 冻结 `result=null`，pin 冻结 `303 params [to,from] must be unequal`；自动翻译严格校验发送方和接收方 `targetLanguages`、`translations`。
+- 重要字段：本轮没有把 `hasDeliverAck`、参与者、会话、方向、状态、消息类型或 body 加入宽松忽略集；仅忽略真实动态的时间、序列、服务端时间、局部路径或 SDK 阶段不返回的字段。
+- 开关结论：两台测试 App 初始化均为 `requireDeliveryAck=true`；自动翻译已经返回非空翻译结果；14 条中未出现 `505 Service is not enabled`，没有需要用户补开的服务开关。
+- GREEN 结果：最终同一 session 严格复跑 `14 passed, 0 failed, 0 skipped`，耗时 `61.76s`，JUnit 证据为 `/tmp/requested-chat-14-verified.xml`。
+
+### WebSocket 登录状态与类型消息发送人同步（2026-07-16）
+
+- 根因日志：deviceA 原生登录结果为 `test0716user1`，但 generic bridge 未更新 Dart `EMClient.currentUserId`，`sendMessageWithType(custom)` 因而使用旧缓存 `from=test0715user2`，原生立即返回 `500 Message is invalid`。
+- 修复边界：仅在测试 App bridge 中将 `Client.login`、`loginWithAgoraToken`、`logout` 分发到公开 Dart `EMClient` API；发布 SDK和原生 Wrapper 未改。登录后继续启动 callback，退出后同步清空 Dart 用户缓存。
+- 兼容性：保持原 WebSocket envelope；`loginWithAgoraToken` 兼容既有 `agora_token` 入参，原生 `EMError` 继续映射为 `response.result={code,description}`。
+- case 诊断：translation 边界消息准备按同步临时 msgId 同时等待 `onMessageSuccess/onMessageError`；错误时输出真实 code、description 和事件，不再只报空 `msg`。
+- RED/GREEN：Flutter bridge 测试修复前得到 `Expected new-user, Actual old-user`；修复后登录缓存、类型消息 `from`、logout 清理和 token 错误 envelope 均通过。
+- 真实验证：新 APK覆盖安装 5554/5556 后，custom 同步消息 `from=test0716user1`，收到 `onMessageSuccess`（服务端 msgId `1574540571509260289`），随后 `translateMessage` 返回 `1 General error`，目标 case 通过；同轮 translation 文件 `3 passed`。
+- 环境说明：随后两次复跑消息 `from` 仍正确，但隔舱 TCP 发送连续两次等不到服务端 ACK，最终返回独立的 `300 Server is unreachable`。该环境错误不属于登录缓存修复，也未固化为翻译预期。
