@@ -30,4 +30,19 @@ void main() {
     expect(prepared['filePath'], '/sdcard/Download/shared.txt');
     expect(ensureCalled, isFalse);
   });
+
+  test('group shared file upload preserves an explicit non-string value',
+      () async {
+    var ensureCalled = false;
+    final prepared = await prepareGroupSharedFileArgs(
+      {'groupId': 'group-1', 'filePath': 123},
+      ensureFile: (_) async {
+        ensureCalled = true;
+        return '/unexpected';
+      },
+    );
+
+    expect(prepared['filePath'], 123);
+    expect(ensureCalled, isFalse);
+  });
 }
