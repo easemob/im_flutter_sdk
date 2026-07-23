@@ -16,12 +16,20 @@ def _conversation(user_b: str) -> dict:
     return {"convId": user_b, "type": 0, "isThread": False}
 
 
-def _expected_sent_message(msg_id: str, user_a: str, user_b: str, content: str, *, status=2) -> dict:
+def _expected_sent_message(
+    msg_id: str,
+    user_a: str,
+    user_b: str,
+    content: str,
+    *,
+    status=2,
+    has_deliver_ack: bool = False,
+) -> dict:
     return {
         "broadcast": False,
         "msgId": msg_id,
         "isContentReplaced": False,
-        "hasDeliverAck": False,
+        "hasDeliverAck": has_deliver_ack,
         "body": {
             "targetLanguages": [],
             "translations": {},
@@ -44,10 +52,9 @@ def _expected_sent_message(msg_id: str, user_a: str, user_b: str, content: str, 
 
 def _expected_received_message(msg_id: str, user_a: str, user_b: str, content: str) -> dict:
     return {
-        "broadcast": False,
         "msgId": msg_id,
         "isContentReplaced": False,
-        "hasDeliverAck": False,
+        "hasDeliverAck": True,
         "body": {"type": 0, "content": content},
         "needGroupAck": False,
         "convId": user_a,
@@ -59,11 +66,39 @@ def _expected_received_message(msg_id: str, user_a: str, user_b: str, content: s
         "status": 2,
         "chatType": 0,
         "direction": 1,
-        "onlineState": True,
         "deliverOnlineOnly": False,
-        "receiverList": [],
-        "groupAckCount": 0,
     }
+
+
+def _assert_delivery_event(assert_api, delivery_event: dict, *, msg_id: str, user_a: str, user_b: str, content: str) -> None:
+    assert_api.assert_response_matches(
+        delivery_event,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesDelivered.value,
+            "data": {
+                "messages": [
+                    {
+                        **_expected_sent_message(
+                            "{{msgId}}", "{{userA}}", "{{userB}}", "{{content}}",
+                            has_deliver_ack=True,
+                        ),
+                        "deliverOnlineOnly": False,
+                    }
+                ]
+            },
+        },
+        context={"msgId": msg_id, "userA": user_a, "userB": user_b, "content": content},
+        ignore_keys={
+            "timestamp",
+            "sequence",
+            "serverTime",
+            "localTime",
+            "data.messages[0].broadcast",
+            "data.messages[0].onlineState",
+            "data.messages[0].body.targetLanguages",
+        },
+    )
 
 
 def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: str, content: str) -> str:
@@ -126,6 +161,31 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
             evt_success = evt
     assert evt_success is not None, f"未收到目标 onMessageSuccess: temp_id={temp_id}, content={content}, events={seen_success}"
     real_id = (((evt_success.get("data") or {}).get("msg") or {}).get("msgId")) or temp_id
+    assert_api.assert_response_matches(
+        evt_success,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "msgId": temp_id,
+                "msg": _expected_sent_message(
+                    "{{msgId}}", "{{userA}}", "{{userB}}", "{{content}}",
+                    status=2, has_deliver_ack=False,
+                ),
+            },
+        },
+        context={"msgId": real_id, "userA": user_a, "userB": user_b, "content": content},
+        ignore_keys={
+            "timestamp",
+            "sequence",
+            "serverTime",
+            "localTime",
+            "deliverOnlineOnly",
+            "data.msg.body.targetLanguages",
+            "data.msg.broadcast",
+            "data.msg.onlineState",
+        },
+    )
 
     seen_events = []
     for _ in range(5):
@@ -133,9 +193,45 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         if evt_received:
             seen_events.append(evt_received)
         messages = ((evt_received or {}).get("data") or {}).get("messages") or []
-        if any(isinstance(message, dict) and message.get("msgId") == real_id for message in messages):
+        received_message = next(
+            (message for message in messages if isinstance(message, dict) and message.get("msgId") == real_id),
+            None,
+        )
+        if received_message is not None:
+            assert_api.assert_response_matches(
+                received_message,
+                expected=_expected_received_message("{{msgId}}", "{{userA}}", "{{userB}}", "{{content}}"),
+                context={"msgId": real_id, "userA": user_a, "userB": user_b, "content": content},
+                ignore_keys={
+                    "timestamp",
+                    "sequence",
+                    "serverTime",
+                    "localTime",
+                    "translations",
+                    "targetLanguages",
+                },
+            )
+            delivery_event = _wait_delivery(device_a, str(real_id))
+            _assert_delivery_event(assert_api, delivery_event, msg_id=str(real_id), user_a=user_a, user_b=user_b, content=content)
             return str(real_id)
     raise AssertionError(f"B 端未收到目标消息: msgId={real_id}, events={seen_events}")
+
+
+def _wait_delivery(device_a, msg_id: str, *, timeout: float = 20.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen_events = []
+    while time.monotonic() < deadline:
+        event = device_a.receive_message(
+            match_event_type=Cmd.onMessagesDelivered.value,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if event:
+            seen_events.append(event)
+        messages = (((event or {}).get("data") or {}).get("messages") or [])
+        for message in messages:
+            if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id):
+                return event
+    raise AssertionError(f"未收到目标 onMessagesDelivered: msgId={msg_id}, events={seen_events}")
 
 
 def test_conversation_latest_and_last_received_messages(device_a, device_b, assert_api, user_a, user_b):
@@ -169,7 +265,7 @@ def test_conversation_latest_and_last_received_messages(device_a, device_b, asse
             "manager": "ConversationManager",
             "cmd": Cmd.getLatestMessage.value,
             "device": "deviceA",
-            "result": _expected_sent_message(ne(""), "{{userA}}", "{{userB}}", "{{content}}", status=ge(1)),
+            "result": _expected_sent_message(ne(""), "{{userA}}", "{{userB}}", "{{content}}", status=ge(1), has_deliver_ack=True),
         },
         context={"msgId": msg_id, "userA": user_a, "userB": user_b, "content": content},
         ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly", "receiverList"},
@@ -312,7 +408,10 @@ def test_conversation_load_message_and_message_lists(device_a, device_b, assert_
             "manager": "ConversationManager",
             "cmd": Cmd.loadMsgWithId.value,
             "device": "deviceA",
-            "result": _expected_sent_message("{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}", status=ge(1)),
+            "result": _expected_sent_message(
+                "{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}",
+                status=ge(1), has_deliver_ack=True,
+            ),
         },
         context={"msgId": msg_id, "userA": user_a, "userB": user_b, "keyword": keyword},
         ignore_keys={
@@ -324,7 +423,12 @@ def test_conversation_load_message_and_message_lists(device_a, device_b, assert_
         },
     )
 
-    list_expect = [_expected_sent_message("{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}", status=ge(1))]
+    list_expect = [
+        _expected_sent_message(
+            "{{msgId}}", "{{userA}}", "{{userB}}", "{{keyword}}",
+            status=ge(1), has_deliver_ack=True,
+        )
+    ]
     for cmd, info in [
         (Cmd.loadMsgWithStartId.value, {**conv_a, "startId": "", "count": 1, "direction": 0}),
         (Cmd.loadMsgWithTime.value, {**conv_a, "startTime": start_time, "endTime": end_time, "count": 1}),
@@ -406,7 +510,7 @@ def test_conversation_type_keyword_and_options_search_current_behavior(device_a,
 def test_conversation_ext_and_count_queries(device_a, device_b, assert_api, user_a, user_b):
     """syncConversationExt/messageCount/conversationGetLocalMessageCount/conversationRemindType/pinnedMessages：校验会话扩展、计数、免打扰和置顶消息查询。"""
     content = f"conv-count-{uuid.uuid4().hex[:8]}"
-    _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
+    msg_id = _send_text_and_receive(device_a, device_b, assert_api, user_a, user_b, content)
     conv_a = _conversation(user_b)
 
     resp_ext = device_a.call(
@@ -466,14 +570,53 @@ def test_conversation_ext_and_count_queries(device_a, device_b, assert_api, user
         ignore_keys={"sequence"},
     )
 
-    resp_pinned = device_a.call("ConversationManager", Cmd.pinnedMessages.value, info=conv_a)
+    resp_pin = device_a.call("ChatManager", Cmd.pinMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
-        resp_pinned,
+        resp_pin,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.pinMessage.value,
+            "device": "deviceA",
+            "result": None,
+        },
+        ignore_keys={"sequence"},
+    )
+
+    resp_pinned = device_a.call("ConversationManager", Cmd.pinnedMessages.value, info=conv_a)
+    target_pinned = [
+        message for message in (resp_pinned.get("result") or [])
+        if isinstance(message, dict) and str(message.get("msgId")) == str(msg_id)
+    ]
+    assert_api.assert_response_matches(
+        {**resp_pinned, "result": target_pinned},
         expected={
             "manager": "ConversationManager",
             "cmd": Cmd.pinnedMessages.value,
             "device": "deviceA",
-            "result": [],
+            "result": [
+                _expected_sent_message(
+                    msg_id, user_a, user_b, content,
+                    has_deliver_ack=True,
+                )
+            ],
+        },
+        ignore_keys={
+            "sequence",
+            "serverTime",
+            "localTime",
+            "deliverOnlineOnly",
+            "receiverList",
+        },
+    )
+
+    resp_unpin = device_a.call("ChatManager", Cmd.unpinMessage.value, info={"msgId": msg_id})
+    assert_api.assert_response_matches(
+        resp_unpin,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.unpinMessage.value,
+            "device": "deviceA",
+            "result": None,
         },
         ignore_keys={"sequence"},
     )

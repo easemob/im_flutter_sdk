@@ -23,6 +23,58 @@ def _assert_chat_response(assert_api, resp: dict, cmd: str, device: str = "devic
     )
 
 
+def _wait_text_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 60.0) -> dict:
+    seen = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(match_event_type=event_type, timeout=2.0)
+        if evt:
+            seen.append(evt)
+        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
+            if not isinstance(msg, dict):
+                continue
+            if str(msg.get("msgId")) == str(real_id) and ((msg.get("body") or {}).get("content") == content):
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {"messages": [msg]},
+                    "timestamp": evt.get("timestamp"),
+                }
+    raise AssertionError(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, events={seen}")
+
+
+def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool) -> None:
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": event_type,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": str(real_id),
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": conv_id,
+                        "chatType": 0,
+                        "direction": direction,
+                        "status": 2,
+                        "hasRead": has_read,
+                        "hasReadAck": False,
+                        "hasDeliverAck": has_deliver_ack,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 0, "content": content, "translations": {}},
+                    }
+                ],
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "receiverList", "broadcast", "onlineState"},
+    )
+
+
 def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user_b: str, content: str) -> str:
     try:
         device_a.drain_events()
@@ -50,13 +102,35 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
             evt_success = evt
     assert evt_success is not None, f"未收到目标 onMessageSuccess: content={content}, events={seen_success}"
 
-    assert_api.assert_response_matches(
-        evt_success,
-        expected={"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": ne(None)},
-        ignore_keys={"timestamp", "sequence", "serverTime", "localTime"},
-    )
     real_id = (((evt_success.get("data") or {}).get("msg")) or {}).get("msgId")
     assert real_id, f"missing real msgId from onMessageSuccess: {evt_success!r}"
+    assert_api.assert_response_matches(
+        evt_success,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "msg": {
+                    "msgId": str(real_id),
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "chatType": 0,
+                    "direction": 0,
+                    "status": 2,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                    "deliverOnlineOnly": False,
+                    "body": {"type": 0, "content": content, "translations": {}},
+                }
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "msgId", "broadcast", "onlineState", "targetLanguages"},
+    )
 
     seen_received = []
     deadline = time.monotonic() + 60.0
@@ -65,7 +139,35 @@ def _send_text_and_get_real_id(device_a, device_b, assert_api, user_a: str, user
         if evt_received:
             seen_received.append(evt_received)
         messages = ((evt_received or {}).get("data") or {}).get("messages") or []
-        if any(isinstance(msg, dict) and msg.get("msgId") == real_id for msg in messages):
+        target = next((msg for msg in messages if isinstance(msg, dict) and msg.get("msgId") == real_id), None)
+        if target is not None:
+            _assert_text_message_event(
+                assert_api,
+                {"type": evt_received.get("type"), "eventType": evt_received.get("eventType"), "data": {"messages": [target]}, "timestamp": evt_received.get("timestamp")},
+                event_type=Cmd.onMessagesReceived.value,
+                real_id=str(real_id),
+                user_a=user_a,
+                user_b=user_b,
+                content=content,
+                direction=1,
+                conv_id=user_a,
+                has_read=False,
+                has_deliver_ack=True,
+            )
+            evt_delivered = _wait_text_event(device_a, Cmd.onMessagesDelivered.value, real_id=str(real_id), content=content)
+            _assert_text_message_event(
+                assert_api,
+                evt_delivered,
+                event_type=Cmd.onMessagesDelivered.value,
+                real_id=str(real_id),
+                user_a=user_a,
+                user_b=user_b,
+                content=content,
+                direction=0,
+                conv_id=user_b,
+                has_read=True,
+                has_deliver_ack=True,
+            )
             return str(real_id)
     raise AssertionError(f"未收到目标 onMessagesReceived: msgId={real_id}, events={seen_received}")
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import time
 import uuid
 
 import pytest
@@ -44,7 +46,8 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
 
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
     temp_id = (evt_success.get("data") or {}).get("msgId")
-    real_id = ((evt_success.get("data") or {}).get("msg") or {}).get("msgId")
+    success_msg = ((evt_success.get("data") or {}).get("msg") or {})
+    real_id = success_msg.get("msgId")
     assert isinstance(real_id, str) and real_id, f"发送自定义消息后未获取到真实 msgId: {evt_success}"
 
     assert_api.assert_response_matches(
@@ -84,6 +87,36 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
             "onlineState",
         },
     )
+    assert_api.assert_response_matches(
+        {"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [success_msg]}},
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": "{{realId}}",
+                        "from": "{{fromUser}}",
+                        "to": "{{toUser}}",
+                        "convId": "{{toUser}}",
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "hasReadAck": False,
+                        "hasDeliverAck": False,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 7, "event": "{{oldEvent}}", "params": old_params},
+                    }
+                ]
+            },
+        },
+        context={"realId": real_id, "fromUser": user_a, "toUser": user_b, "oldEvent": old_event},
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+    )
 
     evt_recv = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
     assert_api.assert_response_matches(
@@ -103,7 +136,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
                         "status": 2,
                         "hasRead": False,
                         "hasReadAck": False,
-                        "hasDeliverAck": False,
+                        "hasDeliverAck": True,
                         "needGroupAck": False,
                         "isThread": False,
                         "isContentReplaced": False,
@@ -120,6 +153,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
         context={"realId": real_id, "fromUser": user_a, "toUser": user_b, "oldEvent": old_event},
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "attributes", "targetLanguages", "translations", "receiverList"},
     )
+    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
 
     resp_modify = device_a.call(
         "ChatManager",
@@ -150,7 +184,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
                 "status": 2,
                 "hasRead": True,
                 "hasReadAck": False,
-                "hasDeliverAck": False,
+                "hasDeliverAck": True,
                 "needGroupAck": False,
                 "isThread": False,
                 "isContentReplaced": False,
@@ -176,6 +210,42 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
             "translations",
         },
     )
+    evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
+    delivered_messages = ((evt_delivered or {}).get("data") or {}).get("messages") or []
+    delivered = next(
+        message for message in delivered_messages
+        if isinstance(message, dict) and str(message.get("msgId")) == str(real_id)
+    )
+    assert_api.assert_response_matches(
+        {"type": "event", "eventType": Cmd.onMessagesDelivered.value, "data": {"messages": [delivered]}},
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessagesDelivered.value,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": "{{realId}}",
+                        "from": "{{fromUser}}",
+                        "to": "{{toUser}}",
+                        "convId": "{{toUser}}",
+                        "chatType": 0,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "hasReadAck": False,
+                        "hasDeliverAck": True,
+                        "needGroupAck": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "deliverOnlineOnly": False,
+                        "body": {"type": 7, "event": "{{oldEvent}}", "params": old_params},
+                    }
+                ]
+            },
+        },
+        context={"realId": real_id, "fromUser": user_a, "toUser": user_b, "oldEvent": old_event},
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
+    )
 
     evt_changed = device_b.receive_message(match_event_type=Cmd.onMessageContentChanged.value, timeout=20.0)
     assert evt_changed, "接收端未收到 onMessageContentChanged 回调"
@@ -195,7 +265,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
                     "status": 2,
                     "hasRead": False,
                     "hasReadAck": False,
-                    "hasDeliverAck": False,
+                    "hasDeliverAck": True,
                     "needGroupAck": False,
                     "isThread": False,
                     "isContentReplaced": False,

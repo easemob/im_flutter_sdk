@@ -93,6 +93,62 @@ def _find_first(obj: Any, key: str) -> Any | None:
     return None
 
 
+def _wait_message_event(device, event_type: str, *, real_id: str, content: str, timeout: float = 20.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=event_type,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen.append(evt)
+        for msg in ((evt or {}).get("data") or {}).get("messages") or []:
+            if not isinstance(msg, dict):
+                continue
+            body = msg.get("body") or {}
+            if str(msg.get("msgId")) == str(real_id) and body.get("content") == content:
+                return {
+                    "type": evt.get("type"),
+                    "eventType": evt.get("eventType"),
+                    "data": {"messages": [msg]},
+                    "timestamp": evt.get("timestamp"),
+                }
+    pytest.fail(f"未收到目标消息事件: event={event_type}, msgId={real_id}, content={content}, seen={seen}")
+
+
+def _assert_text_message_event(assert_api, evt: dict, *, event_type: str, real_id: str, user_a: str, user_b: str, content: str, direction: int, conv_id: str, has_read: bool, has_deliver_ack: bool) -> None:
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": event_type,
+            "data": {
+                "messages": [
+                    {
+                        "msgId": real_id,
+                        "from": user_a,
+                        "to": user_b,
+                        "convId": conv_id,
+                        "body": {"type": 0, "content": content, "translations": {}},
+                        "direction": direction,
+                        "chatType": 0,
+                        "status": 2,
+                        "hasRead": has_read,
+                        "hasReadAck": False,
+                        "hasDeliverAck": has_deliver_ack,
+                        "needGroupAck": False,
+                        "deliverOnlineOnly": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                    }
+                ]
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "receiverList"},
+    )
+
+
 
 
 # 不再提供 _contains_conv：严格用 assert_response_matches 断言返回体
@@ -289,11 +345,70 @@ def test_chat_add_reaction_invalid_id_response(device_a, assert_api):
     )
 
 
-def test_chat_add_reaction_empty_reaction_response(device_a, assert_api, user_a, user_b):
+def test_chat_add_reaction_empty_reaction_response(device_a, device_b, assert_api, user_a, user_b):
     """添加空 reaction：先发送一条消息，再对该消息添加空 reaction，应视为无效（无事件）。"""
-    _ = device_a.call("ChatManager", Cmd.sendMessage.value, info=_build_text(user_a, user_b, "for-reaction-empty"))
+    content = "for-reaction-empty"
+    resp_send = device_a.call("ChatManager", Cmd.sendMessage.value, info=_build_text(user_a, user_b, content))
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
+    temp_id = (evt_success.get("data") or {}).get("msgId")
     real_id = (((evt_success or {}).get("data") or {}).get("msg") or {}).get("msgId")
+    assert_api.assert_response_matches(
+        resp_send,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.sendMessage.value,
+            "device": "deviceA",
+            "result": {
+                "msgId": temp_id,
+                "from": user_a,
+                "to": user_b,
+                "convId": user_b,
+                "chatType": 0,
+                "direction": 0,
+                "status": 0,
+                "body": {"type": 0, "content": content},
+                "hasRead": True,
+                "hasReadAck": False,
+                "hasDeliverAck": False,
+                "needGroupAck": False,
+                "isThread": False,
+                "isContentReplaced": False,
+            },
+        },
+        ignore_keys={"sequence", "serverTime", "localTime", "broadcast", "onlineState", "deliverOnlineOnly", "targetLanguages", "translations"},
+    )
+    assert_api.assert_response_matches(
+        evt_success,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageSuccess.value,
+            "data": {
+                "msgId": temp_id,
+                "msg": {
+                    "msgId": real_id,
+                    "from": user_a,
+                    "to": user_b,
+                    "convId": user_b,
+                    "body": {"type": 0, "content": content, "translations": {}},
+                    "direction": 0,
+                    "chatType": 0,
+                    "status": 2,
+                    "hasRead": True,
+                    "hasReadAck": False,
+                    "hasDeliverAck": False,
+                    "needGroupAck": False,
+                    "deliverOnlineOnly": False,
+                    "isThread": False,
+                    "isContentReplaced": False,
+                },
+            },
+        },
+        ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "targetLanguages"},
+    )
+    evt_received = _wait_message_event(device_b, Cmd.onMessagesReceived.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_received, event_type=Cmd.onMessagesReceived.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=1, conv_id=user_a, has_read=False, has_deliver_ack=True)
+    evt_delivered = _wait_message_event(device_a, Cmd.onMessagesDelivered.value, real_id=real_id, content=content)
+    _assert_text_message_event(assert_api, evt_delivered, event_type=Cmd.onMessagesDelivered.value, real_id=real_id, user_a=user_a, user_b=user_b, content=content, direction=0, conv_id=user_b, has_read=True, has_deliver_ack=True)
     resp = device_a.call("ChatManager", Cmd.addReaction.value, info={"reaction": "", "msgId": real_id})
     print("ADD_REACTION_EMPTY RESP:", resp)
     # 空 reaction：按当前实现返回固定错误

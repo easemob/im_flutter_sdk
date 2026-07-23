@@ -1,5 +1,5 @@
 """
-ChatThread 剩余 API 覆盖用例。
+群组 ChatThread 剩余 API 覆盖用例。
 
 本文件补充 ChatThreadManager 的查询、更新、离开类方法覆盖。前置链路统一为：
 A 建群并邀请 B、B 发送群父消息、A 基于父消息创建子区、B 加入子区。
@@ -16,7 +16,7 @@ from tests.chat._utils import build_text
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
 
-pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.group, pytest.mark.multi_device]
+pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.multi_device]
 
 
 def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:
@@ -24,6 +24,61 @@ def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:
         if isinstance(item, dict) and str(item.get("msgId")) == str(msg_id):
             return item
     return None
+
+
+def _wait_chat_thread_event(device, event_type: str, thread_id: str, *, timeout: float = 20.0) -> dict:
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=event_type,
+            timeout=min(2.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen.append(evt)
+        thread = ((((evt or {}).get("data") or {}).get("event") or {}).get("thread") or {})
+        if isinstance(thread, dict) and str(thread.get("threadId")) == str(thread_id):
+            return evt
+    pytest.fail(f"未收到目标 thread 事件: event={event_type}, threadId={thread_id}, events={seen}")
+
+
+def _assert_thread_lifecycle_event(
+    assert_api,
+    evt: dict,
+    *,
+    event_type: str,
+    type_value: int,
+    from_user: str,
+    thread_id: str,
+    thread_name: str,
+    group_id: str,
+    parent_msg_id: str,
+    create_at,
+) -> None:
+    assert_api.assert_response_matches(
+        evt,
+        expected={
+            "type": "event",
+            "eventType": event_type,
+            "data": {
+                "event": {
+                    "type": type_value,
+                    "from": from_user,
+                    "thread": {
+                        "threadId": thread_id,
+                        "threadName": thread_name,
+                        "owner": "",
+                        "parentId": group_id,
+                        "msgId": parent_msg_id,
+                        "memberCount": 0,
+                        "messageCount": 0,
+                        "createAt": create_at,
+                    },
+                },
+            },
+        },
+        ignore_keys={"timestamp"},
+    )
 
 
 def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: str):
@@ -77,11 +132,61 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
         evt_success = device_b.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
         parent_msg_id = ((evt_success or {}).get("data") or {}).get("msg", {}).get("msgId")
         assert isinstance(parent_msg_id, str) and parent_msg_id, f"未拿到群父消息 msgId: {evt_success}"
+        assert_api.assert_response_matches(
+            evt_success,
+            expected={
+                "type": "event",
+                "eventType": Cmd.onMessageSuccess.value,
+                "data": {
+                    "msgId": resp_parent.get("result", {}).get("msgId"),
+                    "msg": {
+                        "msgId": parent_msg_id,
+                        "from": user_b,
+                        "to": group_id,
+                        "convId": group_id,
+                        "chatType": 1,
+                        "direction": 0,
+                        "status": 2,
+                        "hasRead": True,
+                        "hasReadAck": False,
+                        "hasDeliverAck": False,
+                        "needGroupAck": False,
+                        "deliverOnlineOnly": False,
+                        "isThread": False,
+                        "isContentReplaced": False,
+                        "body": {"type": 0, "content": content},
+                    },
+                },
+            },
+            ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "translations", "broadcast", "onlineState", "targetLanguages"},
+        )
 
         evt_group_recv = device_a.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
         messages = ((evt_group_recv or {}).get("data") or {}).get("messages") or []
-        assert _find_msg_with_id(messages, parent_msg_id) is not None, (
+        parent_received = _find_msg_with_id(messages, parent_msg_id)
+        assert parent_received is not None, (
             f"A 端未收到父消息: targetMsgId={parent_msg_id}, evt={evt_group_recv}"
+        )
+        assert_api.assert_response_matches(
+            parent_received,
+            expected={
+                "msgId": parent_msg_id,
+                "from": user_b,
+                "to": group_id,
+                "convId": group_id,
+                "chatType": 1,
+                "direction": 1,
+                "status": 2,
+                "hasRead": False,
+                "hasReadAck": False,
+                "hasDeliverAck": False,
+                "needGroupAck": False,
+                "deliverOnlineOnly": False,
+                "isThread": False,
+                "isContentReplaced": False,
+                "body": {"type": 0, "content": content},
+            },
+            ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "translations", "receiverList"},
         )
 
         resp_create = device_a.call(
@@ -123,30 +228,31 @@ def _create_thread_context(device_a, device_b, assert_api, user_a: str, user_b: 
         ignore_keys={"sequence", "memberCount", "messageCount", "lastMessage"},
     )
 
-    create_evt = device_b.receive_message(match_event_type=Cmd.onChatThreadCreate.value, timeout=20.0)
-    assert_api.assert_response_matches(
-        create_evt,
-        expected={
-            "type": "event",
-            "eventType": Cmd.onChatThreadCreate.value,
-            "data": {
-                "event": {
-                    "type": 1,
-                    "from": user_a,
-                    "thread": {
-                        "threadId": thread_id,
-                        "threadName": thread_name,
-                        "owner": "",
-                        "parentId": group_id,
-                        "msgId": parent_msg_id,
-                        "memberCount": 0,
-                        "messageCount": 0,
-                        "createAt": ne(None),
-                    },
-                },
-            },
-        },
-        ignore_keys={"timestamp"},
+    create_evt_a = _wait_chat_thread_event(device_a, Cmd.onChatThreadCreate.value, thread_id)
+    _assert_thread_lifecycle_event(
+        assert_api,
+        create_evt_a,
+        event_type=Cmd.onChatThreadCreate.value,
+        type_value=1,
+        from_user=user_a,
+        thread_id=thread_id,
+        thread_name=thread_name,
+        group_id=group_id,
+        parent_msg_id=parent_msg_id,
+        create_at=ne(None),
+    )
+    create_evt_b = _wait_chat_thread_event(device_b, Cmd.onChatThreadCreate.value, thread_id)
+    _assert_thread_lifecycle_event(
+        assert_api,
+        create_evt_b,
+        event_type=Cmd.onChatThreadCreate.value,
+        type_value=1,
+        from_user=user_a,
+        thread_id=thread_id,
+        thread_name=thread_name,
+        group_id=group_id,
+        parent_msg_id=parent_msg_id,
+        create_at=ne(None),
     )
 
     resp_join = device_b.call(
@@ -423,31 +529,20 @@ def test_chat_thread_update_name_and_leave(device_a, device_b, assert_api, user_
             ignore_keys={"sequence"},
         )
 
-        update_evt = device_b.receive_message(match_event_type=Cmd.onChatThreadUpdate.value, timeout=20.0)
-        assert_api.assert_response_matches(
-            update_evt,
-            expected={
-                "type": "event",
-                "eventType": Cmd.onChatThreadUpdate.value,
-                "data": {
-                    "event": {
-                        "type": 2,
-                        "from": user_a,
-                        "thread": {
-                            "threadId": thread_id,
-                            "threadName": new_name,
-                            "owner": "",
-                            "parentId": group_id,
-                            "msgId": context["parent_msg_id"],
-                            "memberCount": 0,
-                            "messageCount": 0,
-                            "createAt": 0,
-                        },
-                    },
-                },
-            },
-            ignore_keys={"timestamp"},
-        )
+        for device in (device_a, device_b):
+            update_evt = _wait_chat_thread_event(device, Cmd.onChatThreadUpdate.value, thread_id)
+            _assert_thread_lifecycle_event(
+                assert_api,
+                update_evt,
+                event_type=Cmd.onChatThreadUpdate.value,
+                type_value=2,
+                from_user=user_a,
+                thread_id=thread_id,
+                thread_name=new_name,
+                group_id=group_id,
+                parent_msg_id=context["parent_msg_id"],
+                create_at=0,
+            )
 
         detail_resp = device_a.call(
             "ChatThreadManager",
@@ -528,31 +623,20 @@ def test_chat_thread_destroy_event_received_by_group_member(device_a, device_b, 
             ignore_keys={"sequence"},
         )
 
-        destroy_evt = device_b.receive_message(match_event_type=Cmd.onChatThreadDestroy.value, timeout=20.0)
-        assert_api.assert_response_matches(
-            destroy_evt,
-            expected={
-                "type": "event",
-                "eventType": Cmd.onChatThreadDestroy.value,
-                "data": {
-                    "event": {
-                        "type": 3,
-                        "from": user_a,
-                        "thread": {
-                            "threadId": thread_id,
-                            "threadName": context["thread_name"],
-                            "owner": "",
-                            "parentId": context["group_id"],
-                            "msgId": context["parent_msg_id"],
-                            "memberCount": 0,
-                            "messageCount": 0,
-                            "createAt": 0,
-                        },
-                    },
-                },
-            },
-            ignore_keys={"timestamp"},
-        )
+        for device in (device_a, device_b):
+            destroy_evt = _wait_chat_thread_event(device, Cmd.onChatThreadDestroy.value, thread_id)
+            _assert_thread_lifecycle_event(
+                assert_api,
+                destroy_evt,
+                event_type=Cmd.onChatThreadDestroy.value,
+                type_value=3,
+                from_user=user_a,
+                thread_id=thread_id,
+                thread_name=context["thread_name"],
+                group_id=context["group_id"],
+                parent_msg_id=context["parent_msg_id"],
+                create_at=0,
+            )
         context["thread_id"] = ""
     finally:
         _cleanup_thread_context(device_a, device_b, assert_api, context)

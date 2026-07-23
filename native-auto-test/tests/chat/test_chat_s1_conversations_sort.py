@@ -70,12 +70,60 @@ def _send_text_and_get_real_id(
 
     evt_success = device_a.receive_message(match_event_type=Cmd.onMessageSuccess.value, timeout=20.0)
     assert evt_success is not None, "发送端未收到 onMessageSuccess"
+    success_msg = (((evt_success.get("data") or {}).get("msg")) or {})
+    real_id = success_msg.get("msgId")
+    assert isinstance(real_id, str) and real_id, f"未从 onMessageSuccess 获取真实 msgId: {evt_success}"
+    assert_api.assert_response_matches(
+        {"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [success_msg]}},
+        expected={"type": "event", "eventType": Cmd.onMessageSuccess.value, "data": {"messages": [{
+            "msgId": real_id, "from": user_a, "to": to_user, "convId": to_user,
+            "chatType": 0, "direction": 0, "status": 2,
+            "hasRead": True, "hasReadAck": False, "hasDeliverAck": False,
+            "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+            "deliverOnlineOnly": False,
+            "body": {"type": 0, "content": content, "translations": {}},
+        }]}},
+        ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                     "targetLanguages"},
+    )
     if expect_receive_on_b:
         evt_received = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
         assert evt_received is not None, "接收端未收到 onMessagesReceived"
-
-    real_id = (((evt_success.get("data") or {}).get("msg")) or {}).get("msgId")
-    assert isinstance(real_id, str) and real_id, f"未从 onMessageSuccess 获取真实 msgId: {evt_success}"
+        received = next(
+            message for message in (((evt_received.get("data") or {}).get("messages")) or [])
+            if isinstance(message, dict) and str(message.get("msgId")) == str(real_id)
+        )
+        assert_api.assert_response_matches(
+            {"type": "event", "eventType": Cmd.onMessagesReceived.value, "data": {"messages": [received]}},
+            expected={"type": "event", "eventType": Cmd.onMessagesReceived.value, "data": {"messages": [{
+                "msgId": real_id, "from": user_a, "to": to_user, "convId": user_a,
+                "chatType": 0, "direction": 1, "status": 2,
+                "hasRead": False, "hasReadAck": False, "hasDeliverAck": True,
+                "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                "deliverOnlineOnly": False,
+                "body": {"type": 0, "content": content, "translations": {}},
+            }]}},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                         "targetLanguages"},
+        )
+        evt_delivered = device_a.receive_message(match_event_type=Cmd.onMessagesDelivered.value, timeout=20.0)
+        delivered = next(
+            message for message in (((evt_delivered.get("data") or {}).get("messages")) or [])
+            if isinstance(message, dict) and str(message.get("msgId")) == str(real_id)
+        )
+        assert_api.assert_response_matches(
+            {"type": "event", "eventType": Cmd.onMessagesDelivered.value, "data": {"messages": [delivered]}},
+            expected={"type": "event", "eventType": Cmd.onMessagesDelivered.value, "data": {"messages": [{
+                "msgId": real_id, "from": user_a, "to": to_user, "convId": to_user,
+                "chatType": 0, "direction": 0, "status": 2,
+                "hasRead": True, "hasReadAck": False, "hasDeliverAck": True,
+                "needGroupAck": False, "isThread": False, "isContentReplaced": False,
+                "deliverOnlineOnly": False,
+                "body": {"type": 0, "content": content, "translations": {}},
+            }]}},
+            ignore_keys={"timestamp", "sequence", "localTime", "serverTime", "broadcast", "onlineState",
+                         "targetLanguages"},
+        )
     return real_id
 
 

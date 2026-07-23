@@ -6,6 +6,7 @@ Allure：请求、响应、比对结果会写入报告（需安装 allure-pytest
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from contextlib import nullcontext
@@ -395,6 +396,7 @@ def created_test_users():
     """
     global _LAST_CREATE_USERS_ERROR
     _LAST_CREATE_USERS_ERROR = ""
+    keep_users = os.getenv("KEEP_TEST_USERS", "0") in ("1", "true", "True")
     token = get_rest_auth_token()
     # 优先使用日期用户名，避免固定回退账号与被测端不一致
     user_a, user_b, user_c = _test_usernames()
@@ -428,10 +430,12 @@ def created_test_users():
         created = False
     else:
         created = True
+        # REST 创建成功后等待服务端用户数据完成可见，再开始登录和执行 cases。
+        time.sleep(5.0)
     try:
         yield user_a, user_b, user_c
     finally:
-        if created:
+        if created and not keep_users:
             with _allure_step("删除测试用户"):
                 for u in (user_a, user_b, user_c):
                     try:

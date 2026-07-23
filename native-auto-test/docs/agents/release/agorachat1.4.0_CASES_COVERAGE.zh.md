@@ -34,7 +34,7 @@
 | v4.15.0 Dev 2025-5-21 | 新增特性 | 群成员进出事件新增 `onMembersJoined/onMembersExited`（旧事件废弃） | 已覆盖 | `tests/group/test_group_members.py::test_group_members_batch_join_exit_new_events` | 已按桥接真实事件名 `onMembersJoinedFromGroup/onMembersExitedFromGroup` 做 strict 断言并校验 `data.userIds` |
 | v4.15.0 Dev 2025-5-21 | 优化 | `onTokenWillExpire` 触发时机由 50% 调整到 80% | 当前不可覆盖 | - | 需可控 token 生命周期与时钟，不适合日常 API 回归 |
 | v4.15.0 Dev 2025-5-21 | 优化 | Demo 跑通无需部署 App Server | 当前不可覆盖 | - | Demo 接入流程项，不是 SDK API case |
-| v4.15.0 Dev 2025-5-21 | 修复 | `onChatThreadUserRemoved` 的 TYPE 为 null 问题 | 已覆盖 | `tests/chat/test_chat_s4_thread_user_removed.py::test_chat_thread_user_removed_event_type_not_null` | 已用群消息创建子区并移除成员，严格断言 `onUserKickOutOfChatThread` 事件的 `type` 非空 |
+| v4.15.0 Dev 2025-5-21 | 修复 | `onChatThreadUserRemoved` 的 TYPE 为 null 问题 | 部分覆盖，事件待确认 | `tests/group/test_group_chat_thread_user_removed.py::test_chat_thread_remove_member_updates_member_list` | 已迁移到 Group 并用真实成员列表严格确认移除结果；当前 Android 未稳定派发 `onUserKickOutOfChatThread`，未伪造 `event.type` 断言，详见 Group deferred |
 | v4.15.0 Dev 2025-5-21 | 修复 | 获取会话免打扰开始/结束时间在部分机型 crash | 当前不可覆盖 | - | 机型相关 crash 难在 CI 稳定复现 |
 | v4.14.0 Dev 2025-4-21 | 新增特性 | 支持发送和接收 GIF 图片消息 | 已覆盖 | `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_image` | 覆盖图片消息端到端 |
 | v4.14.0 Dev 2025-4-21 | 新增特性 | 支持群组头像功能 | 已覆盖 | `tests/group/test_group_exceptions_lifecycle.py::test_group_create_group_name_and_avatar_abnormal_inputs` | 已覆盖 `avatarUrl` 相关入参与回显语义 |
