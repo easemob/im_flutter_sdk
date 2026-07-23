@@ -10,7 +10,7 @@ from tests.chat._utils import build_text
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
 
-pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.group, pytest.mark.multi_device, pytest.mark.agorachat1_4_0]
+pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.multi_device, pytest.mark.agorachat1_4_0]
 
 
 def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:

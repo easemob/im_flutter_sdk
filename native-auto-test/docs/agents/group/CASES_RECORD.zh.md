@@ -661,14 +661,24 @@
 
 - 正常消息类型覆盖：`9/9`。发送同步响应、A 端 `onMessageSuccess`、B 端 `onMessagesReceived` 或 `onCmdMessagesReceived` 均严格关联本次临时/真实 msgId，并冻结 `chatType=1`、`to/convId=groupId`。
 - 群回执正常和非法 ID case 已从 Chat 模块迁移到本文件对应测试，不再重复归入 Chat。
-- ChatThread 文件中的群父消息只作为 thread API 前置，不计为独立群消息发送覆盖，也不迁移到 Group。
+- ChatThread 的群父消息与 ChatThread API case 已统一归档到 Group；父消息只作为 thread 前置，不计为独立群消息发送覆盖。
 - 空/不存在 groupId、从未入群、主动退出和被移除后的发送边界均已补齐；类型构造和媒体路径异常由同一 `ChatManager.sendMessageWithType` 的 Chat 公共矩阵覆盖，不再按 chatType 重复。
 - 真实错误：空 groupId 为 `500/Message is invalid`；不存在群为 `606/Group does not exist`；三种非成员状态均为 `602/User has not joined the group`。失败消息均确认未投递给另一真实设备。
 
+## 第四阶段：ChatThread 群组归档
+
+| 编号 | 测试函数 | 展开场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 182 | `test_chat_thread_remove_member_updates_member_list` | A 创建群父消息和 thread，B 加入后由 A 移除，查询成员列表确认 B 消失；当前 Android 未稳定派发 `onUserKickOutOfChatThread`，不伪造回调断言 | 1 | 按真实成员状态断言 |
+| 183 | `test_chat_thread_fetch_detail_and_lists` | thread 详情、线程会话、当前用户已加入列表、指定群 thread 列表和指定群已加入列表 | 1 | 已覆盖 |
+| 184 | `test_chat_thread_fetch_members_and_latest_message` | thread 成员列表和未发送线程消息时的最新消息映射 | 1 | 已覆盖 |
+| 185 | `test_chat_thread_update_name_and_leave` | 更新 thread 名称、双方更新事件、B 退出及已加入列表变化 | 1 | 已覆盖 |
+| 186 | `test_chat_thread_destroy_event_received_by_group_member` | 解散 thread，群成员收到销毁事件并校验稳定字段 | 1 | 已覆盖 |
+
 ## 统计
-- 当前记录测试函数条目：`181`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`。
+- 当前记录测试函数条目：`186`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`。
 - 第二阶段逐文件严格结果：`60 passed, 6 failed`；原邀请/申请文件为 `10 passed, 1 failed`。
-- 当前 pytest 收集：`240 items`。
+- 当前 pytest 收集：`245 items`。
 - 已完成的 Group 全量（补空原因 case 前）：`215 passed, 7 failed, 1 skipped, 1 warning in 718.82s`，
   共 `223 items`；随后新增的空原因 case 单独实跑为 `1 passed`，因此当前代码全部 case 的已验证
   合并统计为 `216 passed, 7 failed, 1 skipped`。

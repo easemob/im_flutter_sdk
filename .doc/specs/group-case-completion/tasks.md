@@ -49,6 +49,14 @@
 - [x] 对群发送失败执行 RED/discovery/strict，并确认群主设备无误收事件。
 - [x] 将单聊类型构造边界与群独有权限边界分别记账，避免重复组合和遗漏。
 
+## 第四阶段：ChatThread 群组归档
+
+- [x] 盘点 `tests/chat` 中所有以 `ChatThreadManager` 为被测主体的用例，确认共 5 个函数、2 个文件。
+- [x] 将 ChatThread 文件迁移到 `tests/group`，并将 pytest 模块标记统一为 `group`。
+- [x] 更新 ChatThread、Chat、Group 台账及 deferred，修正测试路径、归属和回调实测说明。
+- [x] 更新 requirements/design，明确群父消息与 ChatThread API 链路统一归档且不重复计入群消息发送矩阵。
+- [x] 完成迁移后 5 个 ChatThread cases 的收集和静态检查；真实设备回归留待下一次群组回归，按用户要求本次不重复全量运行。
+
 ## 最终验证证据
 
 - Flutter：`flutter test` 为 `5 passed`；`flutter build apk --debug` 成功。
@@ -64,3 +72,4 @@
 - 第二阶段 ADB：`native-auto-test/out/group_matrix_20260723/`；仅采集真实 ADB，不采集 tracelog。
 - 第三阶段收集：Group `235 items`；新增文件 `11 items` 均已分批 strict 通过，未重复完整模块回归。
 - 第三阶段发送边界新增 `5 items`，同 session strict 为 `5 passed`；Group collect-only 已确认 `240 items`。
+- 第四阶段：迁移 5 个 ChatThread functions 到 `tests/group`；迁移后 Group collect-only 预期为 `245 items`，本次不重复真实设备全量回归。

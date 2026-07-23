@@ -45,7 +45,7 @@
 37. 当测试发送群消息时，case 应归档在 `tests/group`，并对 `txt/file/image/video/voice/location/cmd/custom/combine` 九种公开发送类型分别覆盖发送响应、发送方 `onMessageSuccess` 和接收方消息回调。
 38. 当群消息到达接收方时，测试应严格断言 `chatType=1`、`to/convId=groupId`、收发双方、方向、消息状态和类型特有 body；CMD 消息应通过 `onCmdMessagesReceived` 接收，其余类型应通过 `onMessagesReceived` 接收。
 39. 当群消息需要群回执时，`ackGroupMessageRead` 与 `asyncFetchGroupAcks` 的正常和非法 ID 场景应归档在 `tests/group`，并继续使用真实动态 groupId/msgId 关联同步响应与双端消息事件。
-40. 当 ChatThread case 需要群消息作为父消息时，该前置发送仍应保留在 `tests/chat`，因为其被测主体是 ChatThread API；覆盖统计不得把这种前置步骤重复计为独立群消息发送 case。
+40. 当 ChatThread case 需要群消息作为父消息时，ChatThread API 与群父消息前置链路应统一归档在 `tests/group`；父消息仍不得重复计为独立群消息发送 case，Chat 模块不得继续保留同一批 ChatThread 测试文件。
 41. 当群消息目标为空或群不存在时，测试应使用文本消息覆盖共享群目标校验，关联临时 msgId 与异步失败终态，并确认另一真实设备未收到目标消息。
 42. 当从未入群、主动退出或被群主移除的用户发送群消息时，测试应分别覆盖三种成员状态，冻结真实错误，并严格确认群主设备没有收到该消息。
 43. 当群消息使用 `txt/location/cmd/custom/combine` 缺失类型必填字段或媒体四类型使用不存在设备路径时，测试应复用单聊已确认的构造边界，不因 `chatType=1` 重复测试与群权限无关的动态类型错误；仅在真实返回受 chatType 影响时保留独立 Group case。

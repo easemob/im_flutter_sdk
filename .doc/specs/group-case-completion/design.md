@@ -139,7 +139,7 @@ sequenceDiagram
 - `combine` 先在同一群内发送两条文本消息并取得真实服务端 msgId，再发送合并消息，严格关联 `title/summary/compatibleText`。
 - 发送响应和 `onMessageSuccess` 使用临时 msgId，接收事件使用服务端真实 msgId；两端统一冻结 `chatType=1` 和 `convId=groupId`。
 - 媒体消息继续复用测试 App 的默认素材准备，不新增 SDK 或 bridge 行为；仅动态路径、secret、文件大小和时间字段进入最小忽略集。
-- ChatThread 中用于创建 thread 的群父消息只是 API 前置，不迁移；原 ChatManager 群回执测试迁移到 Group 文件。
+- ChatThread API case 与用于创建 thread 的群父消息前置链路统一放在 Group 文件，便于按真实群组设备场景归档；父消息不计入独立群消息发送矩阵。原 ChatManager 群回执测试同样归档在 Group 文件。
 
 ### Group message boundary matrix
 
