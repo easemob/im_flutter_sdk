@@ -2,6 +2,7 @@
 
 — 说明
 - 本文件记录 Chat 模块已覆盖用例（按 API 组织）。
+- ChatThread API 属于群组场景，相关 5 个 cases 已迁移到 `tests/group/`；本台账仅保留单聊 ChatManager 与单聊消息公共 API，不重复记录 Thread 用例。
 - 每条 case 以全局序号编号；统计按“当前记录条目数”计算。
 - 暂缓与 skip 项统一写 `CASES_DEFERRED.zh.md`。
 

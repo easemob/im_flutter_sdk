@@ -26,10 +26,10 @@
 - 前置条件：群组专项启用。
 - 恢复条件：按群组前置补齐。
 
-## getThreadConversation
-- 原因：thread 语义链路，当前批次暂缓。
-- 前置条件：thread 专项启用。
-- 恢复条件：恢复实现并 strict。
+## ChatThread 归档位置
+- ChatThread API 已具备群父消息前置和双设备链路，相关 cases 已迁移到
+  `tests/group/test_group_chat_thread_remaining_api_coverage.py`、
+  `tests/group/test_group_chat_thread_user_removed.py`，不再作为 Chat 模块暂缓项维护。
 
 ## resendMessage
 - 原因：依赖失败消息前置构造，暂缓。
@@ -90,10 +90,6 @@
   - 原因：已在 5556/5558 开启 `requireDeliveryAck=true`；文本和自定义消息收到 `onMessagesDelivered`，但 CMD 真实日志只收到 `onCmdMessagesReceived`，未收到送达事件。
   - 处理：不把“无事件”写成断言，case 暂时 skip。
   - 恢复条件：原生端/服务端明确 CMD 是否支持 delivery receipt，并能提供稳定真实事件后重新 discovery。
-- `tests/chat/test_chat_s4_thread_user_removed.py::test_chat_thread_user_removed_event_type_not_null`
-  - 原因：当前 Android 实测 `removeMemberFromChatThread` 返回 `result=true` 后，B/A 均未收到 `onUserKickOutOfChatThread`，无法验证发版项“event.type 非空”。
-  - 前置条件：SDK/服务端确认并稳定派发 `onUserKickOutOfChatThread`。
-  - 恢复条件：去掉 xfail，按真实事件体收紧 `event.type/from/thread` 断言并严格回归。
 - `tests/chat/test_conversation_remaining_api_coverage.py::test_conversation_delete_local_and_server_messages_by_time_bridge_missing`
   - 原因：当前 Android direct cmd `conversationDeleteServerMessageWithTime` 返回 `MissingPluginException`，属于桥接缺口，不作为 SDK 业务预期。
   - 前置条件：桥接/native method 补齐。

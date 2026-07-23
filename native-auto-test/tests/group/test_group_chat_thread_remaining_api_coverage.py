@@ -1,5 +1,5 @@
 """
-ChatThread 剩余 API 覆盖用例。
+群组 ChatThread 剩余 API 覆盖用例。
 
 本文件补充 ChatThreadManager 的查询、更新、离开类方法覆盖。前置链路统一为：
 A 建群并邀请 B、B 发送群父消息、A 基于父消息创建子区、B 加入子区。
@@ -16,7 +16,7 @@ from tests.chat._utils import build_text
 from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
 
-pytestmark = [pytest.mark.client, pytest.mark.chat, pytest.mark.group, pytest.mark.multi_device]
+pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.multi_device]
 
 
 def _find_msg_with_id(messages: list, msg_id: str) -> dict | None:

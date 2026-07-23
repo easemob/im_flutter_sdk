@@ -24,6 +24,12 @@
   - Android SDK 管理员审批回调 `accepter` 错报群主，共 1 条。
 - 恢复条件：对应客户端问题修复或产品/API 契约确认后，删除目标参数上的 skip 并重跑原严格断言。
 
+- `tests/group/test_group_chat_thread_user_removed.py::test_chat_thread_remove_member_updates_member_list`
+  - 原因：当前 Android 实测 `removeMemberFromChatThread` 返回 `result=true` 后，B/A 均未收到
+    `onUserKickOutOfChatThread`，无法验证发版项 `event.type` 非空；case 已改按真实成员列表状态验收。
+  - 前置条件：SDK/服务端确认并稳定派发 `onUserKickOutOfChatThread`。
+  - 恢复条件：按真实事件体补回 `event.type/from/thread` strict 断言并重新回归。
+
 ## Jira 提交门禁
 
 - `CASES_FAILURES.zh.md` 中 7 个失败参数场景均已由 A/B ADB 复现。
