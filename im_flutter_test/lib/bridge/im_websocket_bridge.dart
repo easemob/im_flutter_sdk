@@ -22,6 +22,18 @@ const String kDefaultBridgeWebSocketTopic = 'adc';
 /// Callback for each request/response pair for UI logging.
 typedef OnBridgeLog = void Function(String request, String response);
 
+Future<Map<String, dynamic>> prepareGroupSharedFileArgs(
+  Map<dynamic, dynamic> rawArgs, {
+  required Future<String> Function(String assetName) ensureFile,
+}) async {
+  final args = Map<String, dynamic>.from(rawArgs);
+  final filePath = args['filePath'] as String?;
+  if (filePath == null || filePath.isEmpty) {
+    args['filePath'] = await ensureFile('bigPic.jpg');
+  }
+  return args;
+}
+
 /// WebSocket bridge: im_flutter_sdk connects to the same WebSocket server as cases.
 /// Request format: { "manager", "cmd", "info", "id"?, "sequence"? }.
 class IMWebSocketBridge {
@@ -234,6 +246,15 @@ class IMWebSocketBridge {
     }
     if (managerName == 'ContactManager' && method == 'getAllContactIds') {
       return {method: await EMClient.getInstance.contactManager.getAllContactIds()};
+    }
+    if (managerName == 'GroupManager' &&
+        method == ChatMethodKeys.uploadGroupSharedFile) {
+      final map = args is Map ? args : const <String, dynamic>{};
+      final prepared = await prepareGroupSharedFileArgs(
+        map,
+        ensureFile: _ensureMediaFile,
+      );
+      return manager.callNativeMethod(method, prepared);
     }
     return manager.callNativeMethod(method, args);
   }

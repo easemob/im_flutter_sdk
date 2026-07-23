@@ -85,7 +85,8 @@
 
 正常 cases
 21. `tests/group/test_group_public_groups_count.py::test_group_get_public_groups_from_server_success`
-    以 `pageNum=1,pageSize=20` 拉取公开群列表，校验 `result.cursor/result.list` 与列表项字段结构。
+    以真实 cursor API 参数 `pageSize=20` 拉取第一页，严格校验 `result` 仅含
+    `cursor/list`，列表项仅含 `groupId/name`。
 
 异常 cases
 22. `tests/group/test_group_exceptions_public_groups_count.py::test_group_get_public_groups_from_server_invalid_paging[0-20]`
@@ -128,8 +129,9 @@
 ## updateGroupAnnouncement / getGroupAnnouncementFromServer
 
 正常 cases
-34. `tests/group/test_group_announcement.py::test_group_update_and_get_announcement_success`
-    更新群公告后立即服务端读取，校验公告内容与写入值一致。
+34. `tests/group/test_group_announcement.py::test_group_owner_update_announcement_notifies_member`
+    群主 A 更新公告，B 收到精确 `onAnnouncementChangedFromGroup`，A 不收到同类事件，
+    服务端读取值与写入值一致。
 
 异常 cases
 35. `tests/group/test_group_exceptions_announcement.py::test_group_update_announcement_nonexistent_group`
@@ -186,22 +188,26 @@
 ## joinPublicGroup
 
 正常 cases
-49. 无（当前环境基线下未出现稳定成功语义）。
-    说明：当前环境未形成可稳定复现的公开群“成功加入”路径。
+49. `tests/group/test_group_members.py::test_group_join_and_leave_public_group`
+    A 创建真实 `PublicOpenJoin(style=3)` 群，B 加入成功；A 收到批量/单成员加入事件，
+    B 不收到同类事件，服务端成员快照为 2 且包含 B。
 
 异常 cases
-50. `tests/group/test_group_members.py::test_group_join_and_leave_public_group`
-    在当前环境下加入公开群返回权限相关错误，已冻结错误语义。
+50. `tests/group/test_group_members.py::test_group_join_public_group_rejects_private_member_invite_group`
+    B 对 `style=1` 私有群调用 join，冻结真实错误 `603/group member permission is required`。
 
 ## leaveGroup
 
 正常 cases
-51. 无（当前环境基线下未出现稳定成功语义）。
-    说明：当前环境未形成可稳定复现的“成功退群”链路（依赖加入成功前置）。
+51. `tests/group/test_group_members.py::test_group_join_and_leave_public_group`
+    B 加入 `style=3` 群后主动退出，返回 `result=true`；A 收到批量/单成员退出事件，
+    B 不收到同类事件，服务端成员快照恢复为仅群主。
+
+事件 cases
+52. `tests/group/test_group_members.py::test_group_join_and_leave_public_group`
+    同一退出链路独立确认操作者 B 在等待窗口内不收到成员退出事件。
 
 异常 cases
-52. `tests/group/test_group_members.py::test_group_join_and_leave_public_group`
-    与加入公开群同链路，当前端返回权限相关错误语义。
 53. `tests/group/test_group_exceptions_members.py::test_group_leave_group_non_member`
     非成员执行退群，断言群不存在/非成员类错误语义。
 
@@ -429,16 +435,22 @@
 ## acceptInvitationFromGroup
 
 正常 cases
-107. 无（当前基线 options 下邀请默认自动同意，未形成稳定“待处理邀请->手动同意”链路）。
+107. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_accept_when_auto_accept_disabled`
+     B 设置 `autoAcceptGroupInvitation=false`，A 以 `inviteNeedConfirm=true` 邀请 B；B 收到
+     待处理邀请并显式接受，A 收到接受事件及两类加入事件，最终服务端成员为 2。
 
 异常 cases
 108. `tests/group/test_group_join_requests_and_invitations.py::test_group_accept_invitation_from_group_without_pending_invite`
      对不存在群执行同意邀请，冻结 `600/does not exist` 错误语义。
 
+
 ## declineInvitationFromGroup
 
 正常 cases
-109. 无（当前基线 options 下邀请默认自动同意，未形成稳定“待处理邀请->手动拒绝”链路）。
+109. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_explicit_decline_when_auto_accept_disabled`
+     B 收到待处理邀请后显式拒绝，API 返回 `result=null` 且服务端成员仍为 1；邀请方 A
+     未按预期收到 `onInvitationDeclinedFromGroup`，该 case 当前按已知 Android 适配问题 skip，并记录于
+     `CASES_FAILURES.zh.md`。
 
 异常 cases
 110. `tests/group/test_group_join_requests_and_invitations.py::test_group_decline_invitation_from_group_without_pending_invite`
@@ -447,11 +459,14 @@
 ## uploadGroupSharedFile
 
 正常 cases
-111. 无（当前环境上传本地文本文件稳定返回 `401 Invalid file`，未形成稳定成功上传链路）。
+111. `tests/group/test_group_shared_files.py::test_group_owner_upload_remove_shared_file_notifies_member`
+     B 作为群主上传 Android 本地默认素材并删除；A 收到新增/删除事件，B 不收到同类事件；
+     事件名称为 `{b62:...}`、列表名称为 `bigPic.jpg`，fileId 与完整元数据跨接口关联。
 
 异常 cases
-112. `tests/group/test_group_shared_files.py::test_group_upload_shared_file_current_invalid_file_behavior`
-     在真实群中上传文件，冻结当前端稳定错误 `401/Invalid file`。
+112. `tests/group/test_group_shared_files.py::test_group_upload_shared_file_explicit_host_path_is_invalid`
+     显式传入 Android 不可读的 macOS `/private/tmp/...` 路径，冻结 `401/Invalid file`；
+     bridge 只为缺省路径准备设备素材，不替换显式异常路径。
 113. `tests/group/test_group_shared_files.py::test_group_upload_shared_file_nonexistent_group`
      不存在群执行上传，冻结 `600/do not find this group` 错误语义。
 114. `tests/group/test_group_shared_files.py::test_group_upload_shared_file_invalid_path`
@@ -469,7 +484,9 @@
 ## removeGroupSharedFile
 
 正常 cases
-117. 无（当前环境未形成“先上传成功再删除”的稳定链路）。
+117. `tests/group/test_group_shared_files.py::test_group_owner_upload_remove_shared_file_notifies_member`
+     群主按上传事件/服务端列表关联得到的字符串 fileId 删除文件，成员收到精确删除事件，
+     删除后服务端文件列表为空；管理员删除组合由 case 146 覆盖。
 
 异常 cases
 118. `tests/group/test_group_shared_files.py::test_group_remove_shared_file_nonexistent_group`
@@ -572,8 +589,70 @@
 141. `tests/group/test_group_remaining_api_coverage.py::test_group_update_avatar_empty_group_id`
      `groupId=""` 更新群头像，冻结实测错误：`code=600`，`description=Group ID is invalid`。
 
+## 本批新增组合场景
+
+正常 cases
+142. `tests/group/test_group_joined_groups.py::test_group_joined_lists_follow_invite_remove_readd_and_member_leave`
+     B 经历邀请加入、群主移除、再次加入和主动退出四阶段；每阶段分别查询本地/服务端列表，
+     目标群存在时严格匹配完整成员对象，不存在时目标 groupId 投影必须为空。
+143. `tests/group/test_group_public_groups_count.py::test_group_public_groups_cursor_paginates_two_created_groups`
+     创建两个 `style=3` 公开群，以 `pageSize=1` 使用真实 cursor 连续翻页，精确找到两个
+     动态 `groupId/name`，并断言 cursor 变化和 groupId 不重复。
+144. `tests/group/test_group_announcement.py::test_group_admin_update_announcement_notifies_owner`
+     B 被提升为管理员后更新公告，群主 A 收到精确回调，操作者 B 不收到同类事件，
+     服务端公告值一致。
+145. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
+     B 保持 `autoAcceptGroupInvitation=true`，A 以 `inviteNeedConfirm=true` 邀请 B；B 收到
+     自动接受事件，A 收到接受事件及两类加入事件，最终服务端成员为 2。
+146. `tests/group/test_group_shared_files.py::test_group_admin_upload_remove_shared_file_notifies_owner`
+     B 被提升为管理员后上传/删除 Android 本地素材，群主 A 收到新增/删除事件，操作者 B
+     不收到同类事件，最终文件列表为空。
+
+## 第二阶段：群类型、邀请/申请状态与群主权限矩阵
+
+以下 29 个测试函数展开为 `66 items`，均使用真实 A/B 设备；同步响应之外，同时断言事件接收端、
+无事件等待窗口和服务端最终状态。严格失败仅指 SDK 实际行为与 API 契约不一致，详见
+`CASES_FAILURES.zh.md`。
+
+| 编号 | 测试函数 | 展开场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 147 | `test_group_join_public_group_rejects_every_non_open_style` | `joinPublicGroup` 对 style 0/1/2 均拒绝 | 3 | 通过 |
+| 148 | `test_group_request_to_join_rejects_every_non_approval_style` | `requestToJoinPublicGroup` 对 style 0/1/3 均应拒绝 | 3 | 2 通过，style 3 已知问题 skip |
+| 149 | `test_group_direct_invite_ignores_auto_accept_disabled_when_confirmation_not_required` | `inviteNeedConfirm=false + autoAccept=false` 仍直接入群 | 1 | 通过 |
+| 150 | `test_group_create_group_invites_member_for_each_remaining_style` | `createGroup.inviteMembers` 覆盖 style 1/2/3 | 3 | 通过 |
+| 151 | `test_group_owner_can_invite_for_each_remaining_style` | 群主分别用 `inviterUser/addMembers` 邀请 style 1/2/3 | 6 | 通过 |
+| 152 | `test_group_member_invitation_permission_depends_on_style` | style 0/1 × 普通成员/管理员 × 两个邀请 API | 8 | 6 通过，style 0 管理员两条 skip |
+| 153 | `test_group_non_member_cannot_invite_user` | 非成员分别调用 `inviterUser/addMembers` | 2 | 通过 |
+| 154 | `test_group_public_open_join_rejects_duplicate_membership` | style 3 重复加入 | 1 | 通过，`601` |
+| 155 | `test_group_public_open_join_rejects_when_group_is_full` | style 3 达到 `maxCount` 后加入 | 1 | 通过，`604` |
+| 156 | `test_group_public_open_join_rejects_blocked_user` | style 3 黑名单用户重新加入 | 1 | 通过，`613` |
+| 157 | `test_group_join_application_valid_group_without_pending_is_rejected` | 有效审批群无 pending 时同意/拒绝 | 2 | 通过，`110` |
+| 158 | `test_group_join_application_empty_reason_uses_server_default` | 空申请原因回调规范化为 `apply to join`，pending 可正常处理 | 1 | 通过 |
+| 159 | `test_group_duplicate_join_application_keeps_single_pending_request` | 同一用户重复申请，仅一个 pending 可处理 | 1 | 通过 |
+| 160 | `test_group_join_application_cannot_be_processed_twice` | 同意两次、拒绝两次、同意后拒绝、拒绝后同意 | 4 | 通过 |
+| 161 | `test_group_join_application_processing_permission_by_role` | 普通成员/管理员 × 同意/拒绝 | 4 | 3 通过，管理员同意回调字段已知问题 skip |
+| 162 | `test_group_non_member_cannot_process_join_application` | 非成员同意/拒绝申请 | 2 | 通过，`603` |
+| 163 | `test_group_invitation_valid_group_without_pending_is_rejected` | 有效群无 pending 时同意/拒绝邀请 | 2 | 通过，`603` |
+| 164 | `test_group_invitation_wrong_inviter_does_not_consume_pending` | 错误 inviter 同意/拒绝后再由正确 inviter 接受 | 2 | 2 条已知问题 skip |
+| 165 | `test_group_invitation_cannot_be_processed_twice` | 同意两次、拒绝两次、同意后拒绝、拒绝后同意 | 4 | 通过 |
+| 166 | `test_group_transfer_owner_to_admin_normalizes_roles` | 转让给管理员后角色列表和双方事件归一化 | 1 | 通过 |
+| 167 | `test_group_transfer_owner_target_boundaries` | 转给自己、非成员、不存在用户、空用户 | 4 | 通过 |
+| 168 | `test_group_non_owner_cannot_transfer_ownership` | 普通成员/管理员越权转让 | 2 | 通过，`603` |
+| 169 | `test_group_non_member_cannot_transfer_ownership` | 非成员越权转让 | 1 | 通过，`603` |
+| 170 | `test_group_transfer_then_new_owner_removes_former_owner` | 转让后新群主移除原群主 | 1 | 通过 |
+| 171 | `test_group_remove_current_owner_is_ignored` | 成员列表包含现任群主时不得移除群主 | 1 | 通过，状态不变 |
+| 172 | `test_group_owner_removes_admin_success` | 群主移除管理员 | 1 | 通过 |
+| 173 | `test_group_remove_other_member_permission_by_role` | 普通成员越权、管理员移普通成员 | 2 | 通过 |
+| 174 | `test_group_owner_must_transfer_before_leaving` | 群主直接退群失败，转让后原群主可退出 | 1 | 通过 |
+| 175 | `test_group_batch_remove_ignores_owner_and_non_member_but_removes_valid_member` | 批量名单混合群主、有效成员、非成员 | 1 | 通过，仅移除有效成员 |
+
 ## 统计
-- 当前记录 case 条目总数：`141`
-- 当前 pytest 收集：`149 items`；按基准测试名对账 `tests/group` 与本文件/暂缓清单均为 `107`，缺失 `0`，多余 `0`。
-- 当前全量验证：`env -u http_proxy -u https_proxy -u all_proxy -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY ./.flutter-vnev/bin/python -m pytest -q tests/group`，结果 `148 passed, 1 skipped, 1 warning in 115.01s`；skip 为历史复现条件用例。
-- 本轮关键真实 ADB 证据：`out/group_dual_side_20260720_185132/` 覆盖创建/增删成员双端事件；`out/group_spec_update_20260720_191644/` 与 `out/group_desc_update_20260720_191748/` 覆盖 metadata 成员端规格变更事件；`out/group_moderation_mute_20260720_185838/` 与 `out/group_moderation_20260720_185714/` 覆盖 moderation 成员端回调实测。
+- 当前记录测试函数条目：`175`；第二阶段新增 `29` 个函数、展开 `66 items`。
+- 第二阶段逐文件严格结果：`60 passed, 6 failed`；原邀请/申请文件为 `10 passed, 1 failed`。
+- 当前 pytest 收集：`224 items`。
+- 已完成的 Group 全量（补空原因 case 前）：`215 passed, 7 failed, 1 skipped, 1 warning in 718.82s`，
+  共 `223 items`；随后新增的空原因 case 单独实跑为 `1 passed`，因此当前代码全部 case 的已验证
+  合并统计为 `216 passed, 7 failed, 1 skipped`。
+- 按用户指令不再重复全量；已启动的第二次回归在 `47 passed, 1 skipped` 时停止，该阶段无新增失败。
+- 当前 7 个历史失败参数已改为精确 skip；定向执行结果为 `7 skipped`，未重跑 Group 全量。
+- 第二阶段真实 ADB 证据目录：`out/group_matrix_20260723/`。
