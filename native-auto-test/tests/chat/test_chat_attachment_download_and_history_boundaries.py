@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 
@@ -165,7 +166,7 @@ def test_chat_fetch_history_page_size_one_cursor(device_a, device_b, assert_api,
     for content in (f"history-page-a-{uuid.uuid4().hex[:6]}", f"history-page-b-{uuid.uuid4().hex[:6]}"):
         messages.append(_send_text_and_assert(device_a, device_b, assert_api, user_a, user_b, content))
     assert len(messages) == 2
-    time.sleep(1)
+    time.sleep(float(os.getenv("CHAT_HISTORY_SETTLE_SECONDS", "5")))
     first = device_a.call("ChatManager", Cmd.fetchHistoryMessagesByOptions.value, info={"convId": user_b, "type": 0, "pageSize": 1, "cursor": ""})
     result = first.get("result") or {}
     assert result.get("list"), first

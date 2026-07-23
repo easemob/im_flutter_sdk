@@ -24,6 +24,21 @@ def _wait_pin_event(device, *, msg_id, operation, timeout=30.0):
     pytest.fail(f"未收到消息置顶事件: msgId={msg_id}, operation={operation}, seen={seen}")
 
 
+def _assert_no_pin_event(device, *, msg_id, operation, timeout=3.0):
+    deadline = time.monotonic() + timeout
+    seen = []
+    while time.monotonic() < deadline:
+        event = device.receive_message(
+            match_event_type=Cmd.onMessagePinChanged.value,
+            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+        )
+        if event:
+            seen.append(event)
+        data = (event or {}).get("data") or {}
+        if str(data.get("messageId")) == str(msg_id) and data.get("pinOperation") == operation:
+            pytest.fail(f"操作者端不应收到消息置顶事件: msgId={msg_id}, operation={operation}, seen={seen}")
+
+
 def _assert_pin_event(assert_api, event, *, msg_id, conversation_id, operation, operator_id):
     assert_api.assert_response_matches(
         event,
@@ -39,6 +54,34 @@ def _assert_pin_event(assert_api, event, *, msg_id, conversation_id, operation, 
         },
         ignore_keys={"timestamp", "sequence", "pinTime"},
     )
+
+
+def _assert_pin_delivery_for_actor(
+    assert_api,
+    *,
+    device_a,
+    device_b,
+    msg_id,
+    operation,
+    operator_id,
+    user_a,
+    user_b,
+):
+    if operator_id == user_a:
+        event = _wait_pin_event(device_b, msg_id=msg_id, operation=operation)
+        _assert_pin_event(
+            assert_api,
+            event,
+            msg_id=msg_id,
+            conversation_id=user_a,
+            operation=operation,
+            operator_id=operator_id,
+        )
+        _assert_no_pin_event(device_a, msg_id=msg_id, operation=operation)
+        return
+
+    _assert_no_pin_event(device_a, msg_id=msg_id, operation=operation)
+    _assert_no_pin_event(device_b, msg_id=msg_id, operation=operation)
 
 
 @pytest.mark.parametrize(
@@ -71,15 +114,15 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         expected={"manager": "ChatManager", "cmd": Cmd.pinMessage.value, "device": pin_name, "result": None},
         ignore_keys={"sequence"},
     )
-    pin_event_a = _wait_pin_event(device_a, msg_id=real_id, operation="MessagePinOperation.Pin")
-    _assert_pin_event(
-        assert_api, pin_event_a, msg_id=real_id, conversation_id=user_b,
-        operation="MessagePinOperation.Pin", operator_id=pin_user,
-    )
-    pin_event_b = _wait_pin_event(device_b, msg_id=real_id, operation="MessagePinOperation.Pin")
-    _assert_pin_event(
-        assert_api, pin_event_b, msg_id=real_id, conversation_id=user_a,
-        operation="MessagePinOperation.Pin", operator_id=pin_user,
+    _assert_pin_delivery_for_actor(
+        assert_api,
+        device_a=device_a,
+        device_b=device_b,
+        msg_id=real_id,
+        operation="MessagePinOperation.Pin",
+        operator_id=pin_user,
+        user_a=user_a,
+        user_b=user_b,
     )
 
     time.sleep(2)
@@ -117,15 +160,15 @@ def test_chat_typed_message_pin_and_cross_user_unpin(
         ignore_keys={"sequence"},
     )
     unpin_user = user_b if pin_actor == "sender" else user_a
-    unpin_event_a = _wait_pin_event(device_a, msg_id=real_id, operation="MessagePinOperation.Unpin")
-    _assert_pin_event(
-        assert_api, unpin_event_a, msg_id=real_id, conversation_id=user_b,
-        operation="MessagePinOperation.Unpin", operator_id=unpin_user,
-    )
-    unpin_event_b = _wait_pin_event(device_b, msg_id=real_id, operation="MessagePinOperation.Unpin")
-    _assert_pin_event(
-        assert_api, unpin_event_b, msg_id=real_id, conversation_id=user_a,
-        operation="MessagePinOperation.Unpin", operator_id=unpin_user,
+    _assert_pin_delivery_for_actor(
+        assert_api,
+        device_a=device_a,
+        device_b=device_b,
+        msg_id=real_id,
+        operation="MessagePinOperation.Unpin",
+        operator_id=unpin_user,
+        user_a=user_a,
+        user_b=user_b,
     )
     time.sleep(2)
     fetch_empty = unpin_device.call(

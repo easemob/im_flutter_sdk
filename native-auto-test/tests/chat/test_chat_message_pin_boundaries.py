@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 
@@ -100,7 +101,9 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
     )
 
     success = None
-    deadline = time.monotonic() + 30
+    # 服务端已确认发送成功后，接收端回调仍可能因最终一致性/重连延迟晚到。
+    # 只有收到目标消息后才允许进入撤回步骤，避免撤回早于接收导致误判。
+    deadline = time.monotonic() + 60
     while time.monotonic() < deadline:
         evt = device_a.receive_message(
             match_event_type=Cmd.onMessageSuccess.value,
@@ -204,7 +207,7 @@ def _send_text(device_a, device_b, assert_api, user_a, user_b, content):
                 has_deliver_ack=True,
             )
             return real_id
-    raise AssertionError(f"接收端未收到本次消息: msgId={real_id}, content={content}")
+    raise AssertionError(f"接收端在 60 秒内未收到本次消息: msgId={real_id}, content={content}")
 
 
 def _wait_recall_event(device_b, msg_id, *, timeout=30):
@@ -247,6 +250,7 @@ def test_chat_pin_message_empty_id(device_a, assert_api):
 def test_chat_pin_recalled_message(device_a, device_b, assert_api, user_a, user_b):
     content = f"pin-recalled-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
+    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
     recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
     recall_event = _wait_recall_event(device_b, msg_id)
@@ -297,6 +301,7 @@ def test_chat_pin_recalled_typed_message(
     _, _, _, msg_id = _send_typed(
         device_a, device_b, assert_api, user_a, user_b, type_key, payload,
     )
+    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
     recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(
         recall,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 
@@ -113,6 +114,7 @@ def test_chat_report_message_empty_reason(device_a, assert_api):
 def test_chat_report_recalled_message(device_a, device_b, assert_api, user_a, user_b):
     content = f"report-recalled-{uuid.uuid4().hex[:8]}"
     msg_id = _send_text(device_a, device_b, assert_api, user_a, user_b, content)
+    time.sleep(float(os.getenv("CHAT_RECALL_SETTLE_SECONDS", "5")))
     recall = device_a.call("ChatManager", Cmd.recallMessage.value, info={"msgId": msg_id})
     assert_api.assert_response_matches(recall, expected={"manager": "ChatManager", "cmd": Cmd.recallMessage.value, "device": "deviceA", "result": True}, ignore_keys={"sequence"})
     time.sleep(1)

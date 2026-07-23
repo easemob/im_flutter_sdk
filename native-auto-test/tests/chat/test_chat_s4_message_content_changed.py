@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import time
 import uuid
 
 import pytest
@@ -151,6 +153,7 @@ def test_chat_modify_custom_message_content_changed_event(device_a, device_b, as
         context={"realId": real_id, "fromUser": user_a, "toUser": user_b, "oldEvent": old_event},
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState", "attributes", "targetLanguages", "translations", "receiverList"},
     )
+    time.sleep(float(os.getenv("CHAT_MODIFY_SETTLE_SECONDS", "5")))
 
     resp_modify = device_a.call(
         "ChatManager",
