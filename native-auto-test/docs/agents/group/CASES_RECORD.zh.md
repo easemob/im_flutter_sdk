@@ -654,18 +654,21 @@
 | 177 | `test_group_message_send_receive_combine` | 同群两条真实文本作为来源，再发送/接收 `combine` | 1 | 真实双设备严格通过 |
 | 178 | `test_group_message_ack_boundary_methods` | 非法群消息 ID/群 ID 调用 `ackGroupMessageRead` | 1 | 真实设备严格通过 |
 | 179 | `test_group_message_fetch_acks_success` | 需要群回执的文本消息、B 回执、A 分页查询 | 1 | 真实双设备严格通过 |
+| 180 | `test_group_message_send_rejects_invalid_group_target` | 空 groupId、不存在 groupId | 2 | 真实双设备严格通过；分别为 `500`、`606` |
+| 181 | `test_group_message_send_rejects_non_member_states` | 从未入群、主动退出、被群主移除后发送 | 3 | 真实双设备严格通过；均为 `602` |
 
 ### 群消息发送类型覆盖审计
 
 - 正常消息类型覆盖：`9/9`。发送同步响应、A 端 `onMessageSuccess`、B 端 `onMessagesReceived` 或 `onCmdMessagesReceived` 均严格关联本次临时/真实 msgId，并冻结 `chatType=1`、`to/convId=groupId`。
 - 群回执正常和非法 ID case 已从 Chat 模块迁移到本文件对应测试，不再重复归入 Chat。
 - ChatThread 文件中的群父消息只作为 thread API 前置，不计为独立群消息发送覆盖，也不迁移到 Group。
-- 尚未覆盖：空/不存在 groupId、非群成员发送、已退出/被移除成员发送，以及九种类型各自缺少必填 payload、非法 payload 类型。因此“正常类型矩阵”完整，但“所有目标/权限/参数异常矩阵”尚不完整。
+- 空/不存在 groupId、从未入群、主动退出和被移除后的发送边界均已补齐；类型构造和媒体路径异常由同一 `ChatManager.sendMessageWithType` 的 Chat 公共矩阵覆盖，不再按 chatType 重复。
+- 真实错误：空 groupId 为 `500/Message is invalid`；不存在群为 `606/Group does not exist`；三种非成员状态均为 `602/User has not joined the group`。失败消息均确认未投递给另一真实设备。
 
 ## 统计
-- 当前记录测试函数条目：`179`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段新增 `4` 个函数、展开 `11 items`。
+- 当前记录测试函数条目：`181`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`。
 - 第二阶段逐文件严格结果：`60 passed, 6 failed`；原邀请/申请文件为 `10 passed, 1 failed`。
-- 当前 pytest 收集：`235 items`。
+- 当前 pytest 收集：`240 items`。
 - 已完成的 Group 全量（补空原因 case 前）：`215 passed, 7 failed, 1 skipped, 1 warning in 718.82s`，
   共 `223 items`；随后新增的空原因 case 单独实跑为 `1 passed`，因此当前代码全部 case 的已验证
   合并统计为 `216 passed, 7 failed, 1 skipped`。
@@ -673,3 +676,4 @@
 - 当前 7 个历史失败参数已改为精确 skip；定向执行结果为 `7 skipped`，未重跑 Group 全量。
 - 第二阶段真实 ADB 证据目录：`out/group_matrix_20260723/`。
 - 第三阶段 11 个 items 已分批完成真实双设备 strict 验证；初次媒体状态差异按真实值收紧后，失败项复跑通过，群回执双端事件补强后单条复跑通过。按用户要求未重复完整 Group 模块回归。
+- 第三阶段新增 5 个发送边界 items：真实双设备同 session strict 为 `5 passed`；未重复原 11 个正常/回执 items。

@@ -406,7 +406,7 @@
 群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`128`
+- 当前记录 case 条目总数：`132`
 
 ## 单聊发送类型覆盖审计（2026-07-23）
 
@@ -424,7 +424,21 @@
 
 - 正常消息类型覆盖：`9/9`；发送响应、A 端成功事件和 B 端接收事件均已有真实双设备 case。
 - 已有发送边界：空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致、发给自己、非好友发送。
-- 尚未覆盖：空/不存在 `targetId`，以及九种类型各自缺少必填 payload、非法 payload 类型等构造参数边界。因此“正常类型矩阵”完整，但“所有发送参数异常矩阵”尚不完整。
+- 空/不存在 `targetId`、类型必填 payload 和媒体路径边界已在下节补齐。Dart 静态类型在正常 App 调用中无法传入的任意动态错误类型不计为 SDK 业务 case。
+
+## 单聊发送异常矩阵补齐（2026-07-23）
+
+129. `tests/chat/test_chat_message_send_boundaries.py::test_chat_message_send_target_boundaries`
+   展开空目标与动态不存在用户两项。空目标文本消息严格返回 `onMessageError 500/Message is invalid`；不存在用户使用 CMD 避开文本审核干扰，当前真实语义为服务端接受并返回 `onMessageSuccess` 和真实 msgId。两项均确认 deviceB 未误收。
+130. `tests/chat/test_chat_message_send_boundaries.py::test_chat_message_type_rejects_missing_required_payload`
+   展开 `txt.content`、`location.latitude/longitude`、`cmd.action`、`custom.event` 五项缺失必填字段，bridge 调用公开 Dart 构造 API 后严格返回 `code=-1` 和对应 Null 类型错误。
+131. `tests/chat/test_chat_message_send_boundaries.py::test_chat_combine_message_rejects_empty_source_ids`
+   `combine.msgIds=[]` 返回异步 `onMessageError 110/The count of combined messages must be between 1 and 300.`，错误消息 envelope 和 B 端无误投递均严格断言；同步响应 `status` 与图片路径错误相同存在 `1/3` 竞态，仅忽略 `result.status` 精确路径。
+132. `tests/chat/test_chat_message_send_boundaries.py::test_chat_media_message_rejects_nonexistent_device_path`
+   展开 `file/image/video/voice` 四种不存在 Android 路径。四项均返回 `401`；file/voice 文案为 `File movement error.`，image/video 为 `File not exists or can not be read`。图片同步响应的瞬时 `status` 实测在 `1/3` 间竞态，仅忽略 `result.status` 精确路径；最终 `onMessageError.status=3` 及完整消息严格断言。
+
+- 本节共 `4` 个测试函数、`12 items`；真实双设备 strict 同 session 结果为 `12 passed`。
+- 不存在用户文本连续发送曾触发服务端 `1200/MODERATION_001`，因此目标语义改用 CMD 冻结；不把审核开关错误当作用户存在性契约。
 
 ## 单聊缺失 Case 第一批（5556/5558 实测）
 

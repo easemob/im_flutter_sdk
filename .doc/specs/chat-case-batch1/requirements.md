@@ -24,3 +24,7 @@
 16. 当自己会话的 mark/pin 边界在当前环境返回稳定结果时，case 应冻结当前真实返回；若出现 `505 Service is not enabled`，应停止依赖步骤并提示开启对应能力，不得将关闭态错误写成业务预期。
 17. 当测试端通过 WebSocket bridge 执行 Client 登录或退出时，bridge 应调用公开 Dart `EMClient` API，使 Dart `currentUserId` 与原生登录状态同步；随后 `sendMessageWithType` 创建的消息 `from` 必须等于本次登录用户。
 18. 当发送前置消息收到 `onMessageError` 时，case 应按本次临时消息 ID 报告真实错误事件，不得仅以“未收到 onMessageSuccess”或空对象掩盖发送失败；该错误不得被改写为翻译、撤回或置顶业务预期。
+19. 当单聊目标为空时，测试应使用文本消息关联同步响应中的临时 msgId 与 `onMessageError`；当目标为每次动态生成的不存在用户时，测试应使用不受文本内容审核影响的 CMD 消息冻结真实发送终态，并确认 B 端没有误收，不得假设两种目标具有相同错误语义。
+20. 当 `txt/location/cmd/custom/combine` 缺少各自必填业务字段时，测试应冻结 WebSocket bridge 调用公开 Dart 构造 API 后的真实错误 envelope，不得把动态桥接异常描述伪装为消息投递错误。
+21. 当 `file/image/video/voice` 使用宿主明确传入的不存在设备路径时，测试应覆盖媒体文件读取/发送失败终态；bridge 的“未传路径则注入默认测试素材”属于正常便利路径，不得误记为缺少 filePath 的异常 case。
+22. 当发送目标边界已由文本消息覆盖时，测试不得为九种消息类型重复相同目标组合；各类型异常矩阵只展开类型独有必填字段和媒体路径，覆盖统计应区分共享目标语义与类型构造语义。

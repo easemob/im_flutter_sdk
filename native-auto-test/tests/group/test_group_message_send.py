@@ -6,8 +6,16 @@ import uuid
 
 import pytest
 
-from src import Cmd, ge
-from tests.group.group_helpers import create_group, destroy_group, new_group_name
+from src import Cmd, GroupChangeEvent, ge
+from tests.group.group_helpers import (
+    assert_group_events,
+    assert_group_snapshot,
+    assert_no_group_event,
+    collect_group_events,
+    create_group,
+    destroy_group,
+    new_group_name,
+)
 
 
 pytestmark = [pytest.mark.client, pytest.mark.group, pytest.mark.agorachat1_4_0]
@@ -180,6 +188,147 @@ def _wait_received(device, *, event_type: str, real_id: str, timeout: float = 60
                 "timestamp": evt.get("timestamp"),
             }
     pytest.fail(f"B 端未收到目标 {event_type}: realId={real_id}, events={seen}")
+
+
+def _wait_send_terminal(device, *, temp_id: str, timeout: float = 30.0) -> tuple[str, dict]:
+    seen = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        error_evt = device.receive_message(
+            match_event_type=Cmd.onMessageError.value,
+            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+        )
+        if error_evt:
+            seen.append(error_evt)
+        if str(((error_evt or {}).get("data") or {}).get("msgId")) == str(temp_id):
+            return "error", error_evt
+        success_evt = device.receive_message(
+            match_event_type=Cmd.onMessageSuccess.value,
+            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+        )
+        if success_evt:
+            seen.append(success_evt)
+        if str(((success_evt or {}).get("data") or {}).get("msgId")) == str(temp_id):
+            return "success", success_evt
+    pytest.fail(f"未收到群消息发送终态: tempId={temp_id}, events={seen}")
+
+
+def _assert_peer_did_not_receive_group_text(
+    device,
+    *,
+    from_user: str,
+    group_id: str,
+    content: str,
+    timeout: float = 5.0,
+) -> None:
+    seen = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        evt = device.receive_message(
+            match_event_type=Cmd.onMessagesReceived.value,
+            timeout=min(1.0, max(0.1, deadline - time.monotonic())),
+        )
+        if evt:
+            seen.append(evt)
+        messages = (((evt or {}).get("data") or {}).get("messages")) or []
+        target = next(
+            (
+                msg
+                for msg in messages
+                if isinstance(msg, dict)
+                and msg.get("from") == from_user
+                and msg.get("to") == group_id
+                and ((msg.get("body") or {}).get("content")) == content
+            ),
+            None,
+        )
+        assert target is None, f"失败群消息被错误投递: message={target}, events={seen}"
+
+
+def _send_group_text_expect_error(
+    sender,
+    observer,
+    assert_api,
+    *,
+    sender_name: str,
+    from_user: str,
+    group_id: str,
+    content: str,
+    error_code: int,
+    error_description: str,
+    error_message_status: int,
+) -> tuple[dict, dict]:
+    sender.drain_events()
+    observer.drain_events()
+    resp = sender.call(
+        "ChatManager",
+        Cmd.sendMessageWithType.value,
+        info={
+            "type": "txt",
+            "payload": {"targetId": group_id, "content": content},
+            "chatType": 1,
+        },
+    )
+    temp_id = ((resp.get("result") or {}).get("msgId"))
+    assert temp_id, f"失败群消息未返回临时 msgId: groupId={group_id!r}, resp={resp}"
+    terminal, terminal_evt = _wait_send_terminal(sender, temp_id=temp_id)
+    assert terminal == "error", f"群消息未进入失败终态: groupId={group_id!r}, event={terminal_evt}"
+    message = {
+        "msgId": temp_id,
+        "from": from_user,
+        "to": group_id,
+        "convId": group_id,
+        "chatType": 1,
+        "direction": 0,
+        "hasRead": True,
+        "hasReadAck": False,
+        "hasDeliverAck": False,
+        "needGroupAck": False,
+        "isThread": False,
+        "isContentReplaced": False,
+        "deliverOnlineOnly": False,
+        "body": {"type": 0, "content": content},
+    }
+    ignore_keys = {
+        "timestamp",
+        "sequence",
+        "serverTime",
+        "localTime",
+        "broadcast",
+        "onlineState",
+        "targetLanguages",
+        "translations",
+    }
+    assert_api.assert_response_matches(
+        resp,
+        expected={
+            "manager": "ChatManager",
+            "cmd": Cmd.sendMessageWithType.value,
+            "device": sender_name,
+            "result": {**message, "status": 1},
+        },
+        ignore_keys=ignore_keys,
+    )
+    assert_api.assert_response_matches(
+        terminal_evt,
+        expected={
+            "type": "event",
+            "eventType": Cmd.onMessageError.value,
+            "data": {
+                "msgId": temp_id,
+                "msg": {**message, "status": error_message_status},
+                "error": {"code": error_code, "description": error_description},
+            },
+        },
+        ignore_keys=ignore_keys,
+    )
+    _assert_peer_did_not_receive_group_text(
+        observer,
+        from_user=from_user,
+        group_id=group_id,
+        content=content,
+    )
+    return resp, terminal_evt
 
 
 def _assert_group_message(
@@ -524,3 +673,174 @@ def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a
     finally:
         if group_id:
             destroy_group(device_a, assert_api, group_id, device_b=device_b)
+
+
+@pytest.mark.parametrize("target_kind", ["empty", "nonexistent"])
+def test_group_message_send_rejects_invalid_group_target(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    target_kind,
+):
+    """A 向空或不存在 groupId 发送群文本时应失败，B 不得收到目标消息。"""
+    group_id = "" if target_kind == "empty" else f"nonexistent_group_{uuid.uuid4().hex}"
+    content = f"invalid-group-{target_kind}-{uuid.uuid4().hex[:8]}"
+    _send_group_text_expect_error(
+        device_a,
+        device_b,
+        assert_api,
+        sender_name="deviceA",
+        from_user=user_a,
+        group_id=group_id,
+        content=content,
+        error_code=500 if target_kind == "empty" else 606,
+        error_description="Message is invalid" if target_kind == "empty" else "Group does not exist",
+        error_message_status=1 if target_kind == "empty" else 3,
+    )
+
+
+def _assert_owner_member_exited_events(device_a, assert_api, *, group_id: str, member: str) -> None:
+    event_types = {"onMembersExitedFromGroup", "onMemberExitedFromGroup"}
+    events = collect_group_events(
+        device_a,
+        expected_event_types=event_types,
+        group_id=group_id,
+        required_all_event_types=event_types,
+        timeout=10.0,
+    )
+    by_type = {event["eventType"]: event for event in events}
+    assert_api.assert_response_matches(
+        by_type["onMembersExitedFromGroup"],
+        expected={
+            "type": "event",
+            "eventType": "onMembersExitedFromGroup",
+            "data": {"groupId": group_id, "userIds": [member]},
+        },
+        ignore_keys={"timestamp", "sequence"},
+    )
+    assert_api.assert_response_matches(
+        by_type["onMemberExitedFromGroup"],
+        expected={
+            "type": "event",
+            "eventType": "onMemberExitedFromGroup",
+            "data": {"groupId": group_id, "member": member},
+        },
+        ignore_keys={"timestamp", "sequence"},
+    )
+
+
+@pytest.mark.parametrize("member_state", ["never-member", "left", "removed"])
+def test_group_message_send_rejects_non_member_states(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    user_b,
+    member_state,
+):
+    """B 从未入群、主动退出或被移除后发送群文本均应失败，群主 A 不得收到消息。"""
+    group_id = ""
+    group_name = new_group_name(f"send_{member_state}")
+    try:
+        group_id, _ = create_group(
+            device_a,
+            assert_api,
+            owner=user_a,
+            group_name=group_name,
+            invite_members=[] if member_state == "never-member" else [user_b],
+        )
+        time.sleep(float(os.getenv("GROUP_MESSAGE_MEMBER_SETTLE_SECONDS", "5")))
+        device_a.drain_events()
+        device_b.drain_events()
+
+        if member_state == "left":
+            leave_resp = device_b.call("GroupManager", Cmd.leaveGroup.value, info={"groupId": group_id})
+            assert_api.assert_response_matches(
+                leave_resp,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.leaveGroup.value,
+                    "device": "deviceB",
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
+            _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
+            assert_no_group_event(
+                device_b,
+                group_id=group_id,
+                event_types={"onMembersExitedFromGroup", "onMemberExitedFromGroup"},
+            )
+        elif member_state == "removed":
+            remove_resp = device_a.call(
+                "GroupManager",
+                Cmd.removeMembers.value,
+                info={"groupId": group_id, "members": [user_b]},
+            )
+            assert_api.assert_response_matches(
+                remove_resp,
+                expected={
+                    "manager": "GroupManager",
+                    "cmd": Cmd.removeMembers.value,
+                    "device": "deviceA",
+                    "result": True,
+                },
+                ignore_keys={"sequence"},
+            )
+            removed_event_types = {
+                GroupChangeEvent.ON_USER_REMOVED.value,
+                "onLeaveFromGroup",
+                "onUserRemovedFromGroup",
+            }
+            removed_events = collect_group_events(
+                device_b,
+                expected_event_types=removed_event_types,
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types={"onUserRemovedFromGroup"},
+                timeout=10.0,
+            )
+            assert_group_events(
+                assert_api,
+                removed_events,
+                expected_event_types=removed_event_types,
+                group_id=group_id,
+                allow_missing_group_id=True,
+                required_all_event_types={"onUserRemovedFromGroup"},
+                expected_member=user_b,
+            )
+            _assert_owner_member_exited_events(device_a, assert_api, group_id=group_id, member=user_b)
+
+        snapshot = device_a.call(
+            "GroupManager",
+            Cmd.getGroupSpecificationFromServer.value,
+            info={"groupId": group_id, "fetchMembers": True},
+        )
+        assert_group_snapshot(
+            assert_api,
+            snapshot,
+            cmd=Cmd.getGroupSpecificationFromServer.value,
+            group_id=group_id,
+            group_name=group_name,
+            owner=user_a,
+            member_count_value=1,
+            member_list_value=[],
+        )
+
+        content = f"non-member-{member_state}-{uuid.uuid4().hex[:8]}"
+        _send_group_text_expect_error(
+            device_b,
+            device_a,
+            assert_api,
+            sender_name="deviceB",
+            from_user=user_b,
+            group_id=group_id,
+            content=content,
+            error_code=602,
+            error_description="User has not joined the group",
+            error_message_status=3,
+        )
+    finally:
+        if group_id:
+            destroy_group(device_a, assert_api, group_id)

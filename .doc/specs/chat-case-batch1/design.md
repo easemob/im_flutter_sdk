@@ -49,6 +49,14 @@ sequenceDiagram
 - 每个新增行为先以 `CASES_DISCOVER=1 WS_DEBUG=1` 运行，记录实际响应，再切换 strict。
 - `SdkConfigLoader` 通过 Flutter test 直接加载真实 asset，断言 `options.requireDeliveryAck == true`，防止配置字段或映射再次遗漏。
 
+### Send boundary matrix
+
+- `tests/chat/test_chat_message_send_boundaries.py` 归档单聊发送目标和类型构造边界。
+- 共享目标维度使用文本消息覆盖空 `targetId`，使用 CMD 消息覆盖每次动态生成的不存在用户，避免连续发送陌生文本触发 `1200 MODERATION_001` 干扰目标语义；同步响应只负责取得临时 msgId，最终成功/失败必须由匹配该临时 ID 的异步事件决定。Discovery 已确认空目标错误，而不存在用户会被服务端接受并分配真实 msgId，两者分别冻结。
+- 类型必填字段覆盖 `txt.content`、`location.latitude/longitude`、`cmd.action`、`custom.event`、`combine.msgIds`。
+- 媒体四类型使用显式不存在的 Android 路径，绕过测试 bridge 的默认素材注入，验证真实文件路径失败语义。
+- 每个发送失败 case 对 deviceB 设置独立负向窗口，确认目标内容或目标临时/真实 msgId 没有被误投递。
+
 ## Constraints / Tradeoffs
 
 - 不假设文档中的 Robot 字段等于 Flutter 返回字段。
@@ -72,6 +80,7 @@ sequenceDiagram
 11. `Client.login`、`loginWithAgoraToken` 和 `logout` 在测试桥接中使用公开 Dart `EMClient` API 分发，不再直接透传 interface `callNativeMethod`；这样原生操作与 Dart `_currentUserId` 的更新/清理由同一公开 API 完成。
 12. 增加 Flutter bridge 命令级回归测试：先用公开 API建立旧用户缓存，再通过真实本地 WebSocket 向 bridge 发新用户登录命令，验证 `EMClient.currentUserId` 已刷新；测试使用 fake interface client 隔离原生设备。
 13. translation 边界 case 的消息准备同时检查匹配临时 msgId 的成功和错误终态；业务预期仍是自定义消息发送成功后，显式翻译返回 `1 General error`。
+14. 发送异常矩阵先写严格业务预期并运行 RED；随后以 `CASES_DISCOVER=1` 获取真实同步/异步错误，确认失败原因后冻结 code/description，最后关闭 discovery 做 strict。
 
 ## Remaining Document Coverage
 

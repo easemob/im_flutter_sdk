@@ -75,3 +75,11 @@
 - [x] 运行 Flutter 单测（2 passed）、speckit check、Android debug APK 构建并覆盖安装两台模拟器。
 - [x] 真实验证原始问题已修复：类型消息 `from=test0716user1`，收到 `onMessageSuccess`，custom translate 返回 `1 General error`，目标单例通过。
 - [ ] 当前隔舱环境连续复跑稳定性：随后两轮类型消息发送被独立的 TCP ACK 超时 `300 Server is unreachable` 阻断；保持环境失败，不作为业务预期。
+
+## 第三批：单聊发送异常矩阵
+
+- [x] 添加空 targetId、不存在用户的共享目标边界，并断言 B 端无误投递。
+- [x] 添加 `txt/location/cmd/custom/combine` 必填业务字段缺失或空值边界。
+- [x] 添加 `file/image/video/voice` 显式不存在设备路径边界。
+- [x] 对每类错误运行 RED/discovery，冻结真实同步 envelope 或异步 `onMessageError`。
+- [x] strict 同 session 回归并更新 Chat CASES_RECORD：`12 passed`。
