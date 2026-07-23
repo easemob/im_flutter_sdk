@@ -44,7 +44,10 @@
 - [x] 补齐群聊九种公开消息类型的发送响应、发送成功与接收回调矩阵。
 - [x] 对照 SDK 发送 API，更新 Chat/Group CASES_RECORD 覆盖矩阵和目录归属说明。
 - [x] 运行受影响文件 collect-only、Python 静态检查及定向真实设备验证，不重复完整模块回归。
-- [ ] 后续补齐单聊空/不存在 target、群聊空/不存在 groupId、非成员发送，以及九种消息类型各自非法 payload 的异常参数矩阵。
+- [x] 补齐群聊空/不存在 groupId 的共享目标边界。
+- [x] 补齐从未入群、主动退出后、被移除后三种成员状态发送边界。
+- [x] 对群发送失败执行 RED/discovery/strict，并确认群主设备无误收事件。
+- [x] 将单聊类型构造边界与群独有权限边界分别记账，避免重复组合和遗漏。
 
 ## 最终验证证据
 
@@ -60,3 +63,4 @@
   7 个问题参数定向验证为 `7 skipped`，未按用户要求重复全量。
 - 第二阶段 ADB：`native-auto-test/out/group_matrix_20260723/`；仅采集真实 ADB，不采集 tracelog。
 - 第三阶段收集：Group `235 items`；新增文件 `11 items` 均已分批 strict 通过，未重复完整模块回归。
+- 第三阶段发送边界新增 `5 items`，同 session strict 为 `5 passed`；Group collect-only 已确认 `240 items`。

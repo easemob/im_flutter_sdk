@@ -141,6 +141,15 @@ sequenceDiagram
 - 媒体消息继续复用测试 App 的默认素材准备，不新增 SDK 或 bridge 行为；仅动态路径、secret、文件大小和时间字段进入最小忽略集。
 - ChatThread 中用于创建 thread 的群父消息只是 API 前置，不迁移；原 ChatManager 群回执测试迁移到 Group 文件。
 
+### Group message boundary matrix
+
+- 在 `tests/group/test_group_message_send.py` 继续归档群发送异常，避免同一业务主题拆散。
+- 目标维度：空 groupId、不存在 groupId；使用 A 发送文本，B 观察无误投递。
+- 成员状态维度：B 从未入群、B 主动退出后、B 被 A 移除后；使用 B 发送文本，A 观察无误投递。
+- 每次发送先获取同步响应临时 msgId，再同时监听匹配 ID 的 `onMessageSuccess` 与 `onMessageError`；只接受 discovery 冻结的唯一错误 code/description。
+- 群成员变更操作继续严格断言 GroupManager 同步响应、双方群事件和服务端成员状态，发送失败不能替代成员状态前置验证。
+- 类型构造边界由 Chat 公共发送 API 覆盖；Group 只补 chatType 影响的目标与成员权限，不重复媒体路径和动态类型错误。
+
 ## Constraints / Tradeoffs
 
 - 不修改 `im_flutter_sdk/`、Android/iOS Wrapper 或发布 API。
@@ -164,3 +173,4 @@ sequenceDiagram
 6. 最终执行 `pytest -q tests/group`，检查失败/skip 数量、台账对账和 deferred 仅剩真实外部阻塞项。
 7. 已知问题隔离后单独选择 7 个 nodeId，验证结果必须精确为 `7 skipped`；不以 xfail 或放宽断言替代。
 8. 群消息整理只运行新文件、迁移后的原文件收集和必要的定向真实设备 case；按用户要求不重复运行完整 Chat/Group 套件。
+9. 群发送边界逐条执行 RED/discovery/strict；成员状态 case 同步保留 A/B ADB 日志，仅在出现预期外行为时用于诊断，不使用 tracelog。
