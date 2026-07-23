@@ -399,17 +399,32 @@
    覆盖 `deleteAllMessageAndConversation`，以 `clearServerData=false` 清理本地消息和会话，冻结实测返回 `result=null`。
 127. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_message_object_boundary_methods`
    覆盖 `importMessages`、`updateMessage`、`resendMessage`，使用本地构造文本消息导入、更新正文、重发，并冻结更新后消息对象返回。
-128. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_fetch_group_acks_success`
-   覆盖 `fetchGroupAcks` / `asyncFetchGroupAcks`，发送需要群回执的群消息并发送回执后分页查询；按 discovery 冻结 `ackGroupMessageRead result=true`，查询返回 `cursor=""` 且 `list=[]`。
-130. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
+128. `tests/chat/test_chat_send_with_type.py::test_send_message_with_type_cmd_received_by_cmd_callback`
    覆盖 `sendMessageWithType(type=cmd)` 正常链路，发送 CMD 消息后接收方收到 `onCmdMessagesReceived`；按真实模拟器返回断言 `body.type=6`、`action`、`convId`、`direction` 与消息 ID，`receiverList` 按当前端可选字段处理。
 
 异常/边界 cases
-129. `tests/chat/test_chat_manager_remaining_api_coverage.py::test_chat_manager_group_ack_boundary_methods`
-   覆盖 `sendGroupMessageReadAck` / `ackGroupMessageRead` 非法群消息 ID 与群 ID 边界，冻结当前端返回 `result=true`。
+群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`130`
+- 当前记录 case 条目总数：`128`
+
+## 单聊发送类型覆盖审计（2026-07-23）
+
+| 发送类型 | 正常发送/接收 case | 覆盖状态 |
+|---|---|---|
+| `txt` | `test_send_message_with_type_text_basic`、`test_send_message_with_type_text_with_languages` | 已覆盖 |
+| `file` | `test_send_message_with_type_file` | 已覆盖 |
+| `image` | `test_send_message_with_type_image`、`test_send_message_with_type_image_heic` | 已覆盖 |
+| `video` | `test_send_message_with_type_video` | 已覆盖 |
+| `voice` | `test_chat_missing_voice_message_send_receive` | 已覆盖 |
+| `location` | `test_chat_missing_location_message_send_receive` | 已覆盖 |
+| `cmd` | `test_send_message_with_type_cmd_received_by_cmd_callback` | 已覆盖 |
+| `custom` | `test_chat_missing_custom_message_send_receive` | 已覆盖 |
+| `combine` | `test_combine_forward_send_receive_and_inner_attachment_download` | 已覆盖 |
+
+- 正常消息类型覆盖：`9/9`；发送响应、A 端成功事件和 B 端接收事件均已有真实双设备 case。
+- 已有发送边界：空文本、特殊字符、250 字符、请求 `from` 与登录用户不一致、发给自己、非好友发送。
+- 尚未覆盖：空/不存在 `targetId`，以及九种类型各自缺少必填 payload、非法 payload 类型等构造参数边界。因此“正常类型矩阵”完整，但“所有发送参数异常矩阵”尚不完整。
 
 ## 单聊缺失 Case 第一批（5556/5558 实测）
 

@@ -8,7 +8,6 @@ import pytest
 
 from src import Cmd, ge
 from tests.chat._utils import build_text
-from tests.group.group_helpers import create_group, destroy_group, new_group_name
 
 
 pytestmark = [pytest.mark.client, pytest.mark.chat]
@@ -80,7 +79,6 @@ def _send_text_and_receive(device_a, device_b, assert_api, user_a: str, user_b: 
         },
         ignore_keys={"timestamp", "sequence", "serverTime", "localTime", "broadcast", "onlineState"},
     )
-
     seen_events = []
     for _ in range(5):
         received_evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=20.0)
@@ -710,130 +708,3 @@ def test_chat_manager_message_object_boundary_methods(device_a, assert_api, user
             "translations",
         },
     )
-
-
-def test_chat_manager_group_ack_boundary_methods(device_a, assert_api):
-    """ackGroupMessageRead：非法群消息 ID 与群 ID 边界，冻结当前真实返回。"""
-    info = {"msgId": "__invalid_group_msg_id__", "group_id": "__invalid_group_id__"}
-    resp_ack = device_a.call("ChatManager", Cmd.ackGroupMessageRead.value, info=info)
-    assert_api.assert_response_matches(
-        resp_ack,
-        expected={
-            "manager": "ChatManager",
-            "cmd": Cmd.ackGroupMessageRead.value,
-            "device": "deviceA",
-            "result": True,
-        },
-        ignore_keys={"sequence"},
-    )
-
-
-def test_chat_manager_fetch_group_acks_success(device_a, device_b, assert_api, user_a, user_b):
-    """asyncFetchGroupAcks：发送需要群回执的群消息并发送回执后，冻结当前分页查询返回空列表语义。"""
-    group_id = ""
-    try:
-        try:
-            device_a.drain_events()
-            device_b.drain_events()
-        except Exception:
-            pass
-        group_id, _ = create_group(
-            device_a,
-            assert_api,
-            owner=user_a,
-            group_name=new_group_name("group_ack"),
-            invite_members=[user_b],
-        )
-        time.sleep(float(os.getenv("CHAT_GROUP_MEMBER_SETTLE_SECONDS", "5")))
-        content = f"group-ack-{uuid.uuid4().hex[:8]}"
-        msg = build_text(user_a, group_id, content, chat_type=1)
-        msg["needGroupAck"] = True
-        send_resp = device_a.call("ChatManager", Cmd.sendMessage.value, info=msg)
-        temp_id = ((send_resp.get("result") or {}).get("msgId"))
-        assert temp_id, f"群消息发送响应未返回临时 msgId: {send_resp}"
-        assert_api.assert_response_matches(
-            send_resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.sendMessage.value,
-                "device": "deviceA",
-                "result": {
-                    "msgId": temp_id,
-                    "from": user_a,
-                    "to": group_id,
-                    "convId": group_id,
-                    "chatType": 1,
-                    "direction": 0,
-                    "status": 0,
-                    "hasRead": True,
-                    "hasReadAck": False,
-                    "hasDeliverAck": False,
-                    "needGroupAck": True,
-                    "isThread": False,
-                    "isContentReplaced": False,
-                    "broadcast": False,
-                    "onlineState": True,
-                    "body": {"targetLanguages": [], "translations": {}, "type": 0, "content": content},
-                },
-            },
-            ignore_keys={"sequence", "serverTime", "localTime", "deliverOnlineOnly"},
-        )
-        recv_msg = None
-        seen_events = []
-        deadline = time.monotonic() + 60.0
-        while time.monotonic() < deadline and recv_msg is None:
-            recv_evt = device_b.receive_message(match_event_type=Cmd.onMessagesReceived.value, timeout=2.0)
-            if recv_evt:
-                seen_events.append(recv_evt)
-            recv_messages = ((recv_evt or {}).get("data") or {}).get("messages") or []
-            recv_msg = next(
-                (
-                    m for m in recv_messages
-                    if isinstance(m, dict)
-                    and m.get("from") == user_a
-                    and m.get("to") == group_id
-                    and ((m.get("body") or {}).get("content") == content)
-                    and m.get("msgId")
-                ),
-                None,
-            )
-        assert recv_msg is not None, f"B 端未收到目标群消息: content={content}, events={seen_events}"
-        msg_id = str(recv_msg.get("msgId"))
-
-        ack_resp = device_b.call(
-            "ChatManager",
-            Cmd.ackGroupMessageRead.value,
-            info={"msgId": msg_id, "group_id": group_id, "content": "read"},
-        )
-        assert_api.assert_response_matches(
-            ack_resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.ackGroupMessageRead.value,
-                "device": "deviceB",
-                "result": True,
-            },
-            ignore_keys={"sequence"},
-        )
-
-        fetch_resp = device_a.call(
-            "ChatManager",
-            Cmd.asyncFetchGroupAcks.value,
-            info={"msgId": msg_id, "group_id": group_id, "pageSize": 20, "ack_id": None},
-        )
-        assert_api.assert_response_matches(
-            fetch_resp,
-            expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.asyncFetchGroupAcks.value,
-                "device": "deviceA",
-                "result": {
-                    "cursor": "",
-                    "list": [],
-                },
-            },
-            ignore_keys={"sequence"},
-        )
-    finally:
-        if group_id:
-            destroy_group(device_a, assert_api, group_id, device_b=device_b)

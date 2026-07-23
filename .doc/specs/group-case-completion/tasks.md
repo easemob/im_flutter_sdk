@@ -37,6 +37,15 @@
 - [x] 更新 `CASES_RECORD.zh.md`、`CASES_FAILURES.zh.md`、`CASES_DEFERRED.zh.md`，完成测试函数与台账对账。
 - [x] 按用户决定将 7 个已诊断参数场景精确标记为 skip，保留严格 case；定向验证为 `7 skipped`。
 
+## 第三阶段：群消息归档与发送覆盖
+
+- [x] 审计 `tests/chat` 中所有 `chatType=1` 使用点，区分独立群消息 case 与 ChatThread 前置消息。
+- [x] 将群消息回执正常/边界 case 从 Chat 模块迁移到 Group 模块。
+- [x] 补齐群聊九种公开消息类型的发送响应、发送成功与接收回调矩阵。
+- [x] 对照 SDK 发送 API，更新 Chat/Group CASES_RECORD 覆盖矩阵和目录归属说明。
+- [x] 运行受影响文件 collect-only、Python 静态检查及定向真实设备验证，不重复完整模块回归。
+- [ ] 后续补齐单聊空/不存在 target、群聊空/不存在 groupId、非成员发送，以及九种消息类型各自非法 payload 的异常参数矩阵。
+
 ## 最终验证证据
 
 - Flutter：`flutter test` 为 `5 passed`；`flutter build apk --debug` 成功。
@@ -50,3 +59,4 @@
 - 当前 Group 收集：`224 items`；skip 前历史合并结果 `216 passed, 7 failed, 1 skipped`；
   7 个问题参数定向验证为 `7 skipped`，未按用户要求重复全量。
 - 第二阶段 ADB：`native-auto-test/out/group_matrix_20260723/`；仅采集真实 ADB，不采集 tracelog。
+- 第三阶段收集：Group `235 items`；新增文件 `11 items` 均已分批 strict 通过，未重复完整模块回归。

@@ -132,6 +132,15 @@ sequenceDiagram
 - Flutter/Android/iOS 当前只有状态事件监听，没有客户端启用/禁用 API。
 - 保留 deferred，恢复条件为可控 REST、管理后台或服务端操作入口；不在本批添加假事件或测试专用 SDK API。
 
+### Group message sending
+
+- 新增 `tests/group/test_group_message_send.py`，作为群会话发送与群消息回执的唯一归档文件。
+- 普通类型矩阵覆盖 `txt/file/image/video/voice/location/cmd/custom`；每个参数独立建群并由 A 发送、B 接收，避免一个类型失败遮蔽后续类型。
+- `combine` 先在同一群内发送两条文本消息并取得真实服务端 msgId，再发送合并消息，严格关联 `title/summary/compatibleText`。
+- 发送响应和 `onMessageSuccess` 使用临时 msgId，接收事件使用服务端真实 msgId；两端统一冻结 `chatType=1` 和 `convId=groupId`。
+- 媒体消息继续复用测试 App 的默认素材准备，不新增 SDK 或 bridge 行为；仅动态路径、secret、文件大小和时间字段进入最小忽略集。
+- ChatThread 中用于创建 thread 的群父消息只是 API 前置，不迁移；原 ChatManager 群回执测试迁移到 Group 文件。
+
 ## Constraints / Tradeoffs
 
 - 不修改 `im_flutter_sdk/`、Android/iOS Wrapper 或发布 API。
@@ -154,3 +163,4 @@ sequenceDiagram
    bridge 的上传操作设备上验证设备本地素材路径，并由另一真实设备验证对端事件。
 6. 最终执行 `pytest -q tests/group`，检查失败/skip 数量、台账对账和 deferred 仅剩真实外部阻塞项。
 7. 已知问题隔离后单独选择 7 个 nodeId，验证结果必须精确为 `7 skipped`；不以 xfail 或放宽断言替代。
+8. 群消息整理只运行新文件、迁移后的原文件收集和必要的定向真实设备 case；按用户要求不重复运行完整 Chat/Group 套件。
