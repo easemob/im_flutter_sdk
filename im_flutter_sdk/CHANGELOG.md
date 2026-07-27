@@ -1,6 +1,7 @@
 ## 4.19.2
 - 安卓依赖 SDK 升级到 4.19.3.1；
 - 修复 Flutter Android 上发送视频没有设置首帧缩略图时无法发送的问题；
+- 新增 iOS Swift Package Manager 集成支持；
 
 ## 4.19.1
 - 安卓依赖 SDK 升级到 4.19.2；

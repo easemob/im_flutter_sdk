@@ -1,4 +1,5 @@
 ## 4.19.2
+- 新增 iOS Swift Package Manager 集成支持；
 
 ## 4.19.1
 

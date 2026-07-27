@@ -58,8 +58,8 @@
 | Dart 常量 | `im_flutter_sdk/lib/src/internal/chat_method_keys.dart` | 新增 `static const String` 方法名常量 |
 | Android 常量 | `im_flutter_sdk_android/android/src/main/java/com/easemob/im_flutter_sdk/MethodKey.java` | 新增同名同值常量 |
 | Android 实现 | 同目录下 `{业务}Wrapper.java` | `onMethodCall` 注册分支；参数校验与类型/枚举转换；调用 Hyphenate Android SDK 异步 API；回调中经 `updateObject` 返回可序列化结构 |
-| iOS 常量 | `im_flutter_sdk_ios/ios/Classes/MethodKeys.h` | 新增同名同值常量 |
-| iOS 实现 | `im_flutter_sdk_ios/ios/Classes/{业务}Wrapper.m` | `handleMethodCall` 注册分支；参数校验与类型/枚举转换；调用 Hyphenate iOS SDK；completion 中经 `wrapperCallBack` 返回 |
+| iOS 常量 | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/include/im_flutter_sdk_ios/MethodKeys.h` | 新增同名同值常量 |
+| iOS 实现 | `im_flutter_sdk_ios/ios/im_flutter_sdk_ios/Sources/im_flutter_sdk_ios/{业务}Wrapper.m` | `handleMethodCall` 注册分支；参数校验与类型/枚举转换；调用 Hyphenate iOS SDK；completion 中经 `wrapperCallBack` 返回 |
 
 同时还需：
 
@@ -93,9 +93,11 @@
 
 ## 平台支持
 
+iOS 同时支持 CocoaPods 与 Swift Package Manager 两种集成，共用同一份源码（`ios/im_flutter_sdk_ios/Sources/`），两条链路的原生 SDK 版本保持一致：CocoaPods 走 `im_flutter_sdk_ios.podspec`（HyphenateChat 4.19.1，部署目标 13.0），SPM 走 `ios/im_flutter_sdk_ios/Package.swift`（HyphenateChat_iOS 4.19.1，部署目标 13.0）。
+
 | 平台 | 最低版本 |
 |---|---|
 | Android | minSdk 21 |
-| iOS | 12.0 |
+| iOS | 13.0 |
 | Dart | >=3.3.0 <4.0.0 |
 | Flutter | >=3.3.0 |
