@@ -101,6 +101,9 @@ class IMWebSocketBridge {
     final uri = Uri.parse(connectUrl);
     try {
       _socket = await WebSocket.connect(uri.toString());
+      // The relay may silently discard idle connections. Keep the device bridge
+      // alive while the Python case runner is preparing or switching devices.
+      _socket!.pingInterval = const Duration(seconds: 20);
       EMLog.v('WebSocket bridge connected to $uri', tag: _tag);
       _subscription = _socket!.listen(
         _onMessage,
