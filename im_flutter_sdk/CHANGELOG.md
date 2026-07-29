@@ -1,3 +1,19 @@
+## 4.22.0
+- 安卓依赖 SDK 升级到 4.22.1；
+- iOS依赖 SDK 升级到 4.22.1；
+- 新增图片消息原图（大图）下载 `downloadBigImage` API；
+- 新增语音转文字 `voiceMessageToText` 和 `voiceFileToText` API；
+- `EMMessage` 新增消息发送者信息 `senderInfo`；
+- `EMImageMessageBody` 新增原图（大图）字段 `bigImageLocalPath`、`bigImageRemotePath` 和 `bigImageDownloadStatus`；
+- `EMVoiceMessageBody` 新增语音转换文本 `text` 字段；
+- 新增群名片 `updateGroupNamecard`、`getGroupNamecard` API 及群名片变更事件 `onUserGroupNamecardChanged`；
+- `GroupMemberInfo` 新增群成员名片 `namecard`、昵称 `nickname` 和头像 `avatarUrl` 字段；
+- `EMContact` 新增用户属性 `userInfo` 和添加时间 `addTimestamp` 字段；
+- 新增联系人同步事件 `onContactSyncStart`、`onContactSyncFinish` 和联系人信息更新事件 `onContactInfoUpdate`；
+- 新增用户属性订阅 `subscribeUsersInfo`、`unsubscribeUsersInfo`、`fetchSubscribedUsers` 和 `getLocalUserInfoByIds` API；
+- 新增用户属性更新事件 `onSelfUserInfoUpdate` 和 `onUserInfoUpdate`；
+- `EMOptions` 新增 `enableUserInfo` 和 `enableAutoSyncContacts` 配置项；
+
 ## 4.19.2
 - 安卓依赖 SDK 升级到 4.19.3.1；
 - 修复 Flutter Android 上发送视频没有设置首帧缩略图时无法发送的问题；

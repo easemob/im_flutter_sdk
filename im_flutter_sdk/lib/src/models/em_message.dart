@@ -284,6 +284,19 @@ class EMMessage {
   /// ~end
   EMStreamChunk? streamChunk;
 
+  /// ~english
+  /// The user attributes of the message sender.
+  ///
+  /// This field is delivered by the server and is valid only for received messages.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 消息发送者的用户属性。
+  ///
+  /// 该字段为服务器下发字段，仅对收到的消息有效。
+  /// ~end
+  EMMessageSenderInfo? senderInfo;
+
   ChatRoomMessagePriority? _priority;
 
   Future<MessagePinInfo?> pinInfo() async {
@@ -963,6 +976,9 @@ class EMMessage {
       ..isContentReplaced = map["isContentReplaced"] ?? false
       ..streamChunk = map["streamChunk"] != null
           ? EMStreamChunk.fromJson(map["streamChunk"])
+          : null
+      ..senderInfo = map["senderInfo"] != null
+          ? EMMessageSenderInfo.fromJson(map["senderInfo"])
           : null;
   }
 
@@ -1508,6 +1524,11 @@ class EMImageMessageBody extends EMFileMessageBody {
     width = (map["width"] ?? 0).toDouble();
     thumbnailStatus = DownloadStatus.values[map["thumbnailStatus"]];
     isGif = map["isGif"] ?? false;
+    bigImageLocalPath = map["bigImageLocalPath"];
+    bigImageRemotePath = map["bigImageRemotePath"];
+    bigImageDownloadStatus = map["bigImageDownloadStatus"] != null
+        ? DownloadStatus.values[map["bigImageDownloadStatus"]]
+        : null;
   }
 
   @override
@@ -1521,6 +1542,7 @@ class EMImageMessageBody extends EMFileMessageBody {
     data.putIfNotNull("width", width ?? 0.0);
     data.putIfNotNull("thumbnailStatus", thumbnailStatus.index);
     data.putIfNotNull('isGif', isGif);
+    data.putIfNotNull("bigImageLocalPath", bigImageLocalPath);
     return data;
   }
 
@@ -1597,6 +1619,41 @@ class EMImageMessageBody extends EMFileMessageBody {
   /// ~chinese
   /// ~end
   bool isGif = false;
+
+  /// ~english
+  /// The local path of the original (big) image.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 原图（大图）的本地路径。
+  /// ~end
+  String? bigImageLocalPath;
+
+  /// ~english
+  /// The URL of the original (big) image on the server.
+  ///
+  /// This field is delivered by the server and is valid only for received messages.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 原图（大图）的服务器路径。
+  ///
+  /// 该字段为服务器下发字段，仅对收到的消息有效。
+  /// ~end
+  String? bigImageRemotePath;
+
+  /// ~english
+  /// The download status of the original (big) image.
+  ///
+  /// This field is delivered by the server and is valid only for received messages.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 原图（大图）的下载状态。
+  ///
+  /// 该字段为服务器下发字段，仅对收到的消息有效。
+  /// ~end
+  DownloadStatus? bigImageDownloadStatus;
 }
 
 /// ~english
@@ -1885,6 +1942,7 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   EMVoiceMessageBody.fromJson({required Map map})
       : super.fromJson(map: map, type: MessageType.VOICE) {
     duration = map["duration"] ?? 0;
+    text = map["text"];
   }
 
   @override
@@ -1902,6 +1960,19 @@ class EMVoiceMessageBody extends EMFileMessageBody {
   /// 语音时长，单位是秒。
   /// ~end
   late final int duration;
+
+  /// ~english
+  /// The text converted from the voice message.
+  ///
+  /// This field is delivered by the server and is valid only for received messages.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 语音消息转换后的文本内容。
+  ///
+  /// 该字段为服务器下发字段，仅对收到的消息有效。
+  /// ~end
+  String? text;
 }
 
 /// ~english

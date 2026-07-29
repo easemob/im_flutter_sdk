@@ -15,11 +15,105 @@ class EMUserInfoManager {
   // The map of effective contacts.
   final Map<String, EMUserInfo> _effectiveUserInfoMap = {};
 
+  final Map<String, EMUserInfoEventHandler> _eventHandlesMap = {};
+
   EMUserInfoManager() {
     Client.instance.userInfoManager
         .updateNativeHandler((MethodCall call) async {
       EMLog.d("${call.method}: arguments: ${call.arguments}");
+      Map? argMap = call.arguments;
+      if (call.method == ChatMethodKeys.onUserInfoChanged) {
+        return _onUserInfoChanged(argMap!);
+      }
     });
+  }
+
+  Future<void> _onUserInfoChanged(Map event) async {
+    var type = event['type'];
+
+    for (var element in _eventHandlesMap.values) {
+      switch (type) {
+        case EMUserInfoChangeEvent.ON_SELF_USER_INFO_UPDATE:
+          EMUserInfo userInfo = EMUserInfo.fromJson(event['userInfo']);
+          element.onSelfUserInfoUpdate?.call(userInfo);
+          break;
+        case EMUserInfoChangeEvent.ON_USER_INFO_UPDATE:
+          List<EMUserInfo> userInfos = [];
+          event['userInfos']?.forEach((obj) {
+            userInfos.add(EMUserInfo.fromJson(obj));
+          });
+          element.onUserInfoUpdate?.call(userInfos);
+          break;
+        default:
+      }
+    }
+  }
+
+  /// ~english
+  /// Adds the user info event handler. After calling this method, you can handle new user info events when they arrive.
+  ///
+  /// Param [identifier] The custom handler identifier, is used to find the corresponding handler.
+  ///
+  /// Param [handler] The handler for user info events. See [EMUserInfoEventHandler].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 添加用户属性事件处理程序。调用此方法后，您可以在新的用户属性事件到达时处理它们。
+  ///
+  /// Param [identifier] 自定义处理程序标识符，用于查找相应的处理程序。
+  ///
+  /// Param [handler] 事件的句柄。请参见 [EMUserInfoEventHandler]。
+  /// ~end
+  void addEventHandler(
+    String identifier,
+    EMUserInfoEventHandler handler,
+  ) {
+    _eventHandlesMap[identifier] = handler;
+  }
+
+  /// ~english
+  /// Remove the user info event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 删除用户属性事件处理程序。
+  ///
+  /// Param [identifier] 自定义处理程序标识符。
+  /// ~end
+  void removeEventHandler(String identifier) {
+    _eventHandlesMap.remove(identifier);
+  }
+
+  /// ~english
+  /// Get the user info event handler.
+  ///
+  /// Param [identifier] The custom handler identifier.
+  ///
+  /// **Return** The user info event handler.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取用户属性事件处理程序。
+  ///
+  /// Param [identifier] 自定义处理程序标识符。
+  ///
+  /// **Return** 事件的句柄。
+  /// ~end
+  EMUserInfoEventHandler? getEventHandler(String identifier) {
+    return _eventHandlesMap[identifier];
+  }
+
+  /// ~english
+  /// Clear all user info event handlers.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 清除所有用户属性事件处理程序。
+  /// ~end
+  void clearEventHandlers() {
+    _eventHandlesMap.clear();
   }
 
   /// ~english
@@ -221,5 +315,130 @@ class EMUserInfoManager {
 
   void clearUserInfoCache() {
     _effectiveUserInfoMap.clear();
+  }
+
+  // 4.22.0
+
+  /// ~english
+  /// Subscribes to the user attributes of the specified users.
+  ///
+  /// After the subscription succeeds, you can receive the [EMUserInfoEventHandler.onUserInfoUpdate] callback when the user attributes of the subscribed users are updated.
+  ///
+  /// Param [userIds] The list of user IDs to subscribe to.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 订阅指定用户的用户属性。
+  ///
+  /// 订阅成功后，当被订阅用户的用户属性更新时，会收到 [EMUserInfoEventHandler.onUserInfoUpdate] 回调。
+  ///
+  /// Param [userIds] 要订阅的用户 ID 列表。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<void> subscribeUsersInfo(List<String> userIds) async {
+    try {
+      Map req = {'userIds': userIds};
+      Map result = await Client.instance.userInfoManager
+          .callNativeMethod(ChatMethodKeys.subscribeUsersInfo, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
+  /// Unsubscribes from the user attributes of the specified users.
+  ///
+  /// Param [userIds] The list of user IDs to unsubscribe from.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 取消订阅指定用户的用户属性。
+  ///
+  /// Param [userIds] 要取消订阅的用户 ID 列表。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<void> unsubscribeUsersInfo(List<String> userIds) async {
+    try {
+      Map req = {'userIds': userIds};
+      Map result = await Client.instance.userInfoManager
+          .callNativeMethod(ChatMethodKeys.unsubscribeUsersInfo, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
+  /// Gets the list of users whose user attributes are subscribed by the current user.
+  ///
+  /// **Return** The list of subscribed users. See [EMUserInfo].
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取当前用户已订阅用户属性的用户列表。
+  ///
+  /// **Return** 已订阅的用户列表。请参见 [EMUserInfo]。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<List<EMUserInfo>> fetchSubscribedUsers() async {
+    try {
+      Map result = await Client.instance.userInfoManager
+          .callNativeMethod(ChatMethodKeys.fetchSubscribedUsers);
+      EMError.hasErrorFromResult(result);
+      List<EMUserInfo> list = [];
+      result["users"]?.forEach((element) {
+        list.add(EMUserInfo.fromJson(element));
+      });
+      return list;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
+  /// Gets the user attributes of the specified users from the local database.
+  ///
+  /// Param [userIds] The list of user IDs.
+  ///
+  /// **Return** A map that contains key-value pairs where the key is the user ID and the value is user attributes.
+  ///
+  /// **Throws** A description of the exception. See [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 从本地数据库获取指定用户的用户属性。
+  ///
+  /// Param [userIds] 用户 ID 列表。
+  ///
+  /// **Return** 返回 key-value 格式的 Map 类型数据，key 为用户 ID，value 为用户属性。
+  ///
+  /// **Throws** 如果有方法调用的异常会在这里抛出，可以看到具体错误原因。请参见 [EMError]。
+  /// ~end
+  Future<Map<String, EMUserInfo>> getLocalUserInfoByIds(
+    List<String> userIds,
+  ) async {
+    try {
+      Map req = {'userIds': userIds};
+      Map result = await Client.instance.userInfoManager
+          .callNativeMethod(ChatMethodKeys.getLocalUserInfoByIds, req);
+      EMError.hasErrorFromResult(result);
+      Map<String, EMUserInfo> resultMap = {};
+      result[ChatMethodKeys.getLocalUserInfoByIds]?.forEach((key, value) {
+        resultMap[key] = EMUserInfo.fromJson(value);
+      });
+      return resultMap;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

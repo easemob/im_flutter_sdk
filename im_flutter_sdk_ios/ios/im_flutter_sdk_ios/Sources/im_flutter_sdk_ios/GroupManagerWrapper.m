@@ -333,6 +333,13 @@
     else if ([updateGroupAvatar isEqual:call.method]) {
         [self updateGroupAvatar:call.arguments channelName:call.method result:result];
     }
+    // 4.22.0
+    else if ([ChatUpdateGroupNamecard isEqualToString:call.method]) {
+        [self updateGroupNamecard:call.arguments channelName:call.method result:result];
+    }
+    else if ([ChatGetGroupNamecard isEqualToString:call.method]) {
+        [self getGroupNamecard:call.arguments channelName:call.method result:result];
+    }
     else
     {
         [super handleMethodCall:call result:result];
@@ -1551,6 +1558,50 @@
                       channelName:aChannelName
                             error:error
                            object:[group toJson]];
+    }];
+}
+
+#pragma mark - 4.22.0
+
+- (void)updateGroupNamecard:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    __weak typeof(self) weakSelf = self;
+    NSString *groupId = param[@"groupId"];
+    NSString *namecard = param[@"namecard"];
+    if ([namecard isKindOfClass:[NSNull class]]) {
+        namecard = nil;
+    }
+    [EMClient.sharedClient.groupManager updateGroupNamecard:groupId
+                                                   namecard:namecard
+                                                 completion:^(EMError * _Nullable aError) {
+        [weakSelf wrapperCallBack:result
+                      channelName:aChannelName
+                            error:aError
+                           object:nil];
+    }];
+}
+
+- (void)getGroupNamecard:(NSDictionary *)param channelName:(NSString *)aChannelName result:(FlutterResult)result {
+    NSString *groupId = param[@"groupId"];
+    NSString *userId = param[@"userId"];
+    NSString *namecard = [EMClient.sharedClient.groupManager getGroupNamecardWithGroupId:groupId
+                                                                                  userId:userId];
+    [self wrapperCallBack:result
+              channelName:aChannelName
+                    error:nil
+                   object:@{@"namecard": namecard ?: [NSNull null]}];
+}
+
+- (void)onUserGroupNamecardChanged:(NSString *)groupId userId:(NSString *)userId namecard:(NSString *)namecard {
+    __weak typeof(self) weakSelf = self;
+    [ListenerHandle.sharedInstance addHandle:^{
+        NSDictionary *map = @{
+            @"type":@"onUserGroupNamecardChanged",
+            @"groupId":groupId,
+            @"userId":userId,
+            @"namecard":namecard ?: [NSNull null]
+        };
+        [weakSelf.channel invokeMethod:ChatOnGroupChanged
+                             arguments:map];
     }];
 }
 

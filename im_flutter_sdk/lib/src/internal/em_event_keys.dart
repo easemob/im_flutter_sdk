@@ -6,6 +6,11 @@ class EMContactChangeEvent {
   static const String INVITED = 'onContactInvited';
   static const String INVITATION_ACCEPTED = 'onFriendRequestAccepted';
   static const String INVITATION_DECLINED = 'onFriendRequestDeclined';
+
+  // 4.22.0
+  static const String CONTACT_SYNC_START = 'onContactSyncStart';
+  static const String CONTACT_SYNC_FINISH = 'onContactSyncFinish';
+  static const String CONTACT_INFO_UPDATE = 'onContactInfoUpdate';
 }
 
 class EMChatRoomEvent {
@@ -60,4 +65,14 @@ class EMGroupChangeEvent {
   static const String ON_STATE_CHANGED = "onGroupStateChanged";
   static const String ON_ATTRIBUTES_CHANGED_OF_MEMBER =
       "onGroupAttributesChangedOfMember";
+
+  // 4.22.0
+  static const String ON_USER_GROUP_NAMECARD_CHANGED =
+      "onUserGroupNamecardChanged";
+}
+
+// 4.22.0
+class EMUserInfoChangeEvent {
+  static const String ON_SELF_USER_INFO_UPDATE = 'onSelfUserInfoUpdate';
+  static const String ON_USER_INFO_UPDATE = 'onUserInfoUpdate';
 }

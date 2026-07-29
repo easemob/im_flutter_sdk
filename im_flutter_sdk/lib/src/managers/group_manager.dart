@@ -188,6 +188,12 @@ class EMGroupManager {
           List<String> members = List.from(map['userIds'] ?? []);
           element.onMembersExitedFromGroup?.call(groupId, members);
           break;
+        case EMGroupChangeEvent.ON_USER_GROUP_NAMECARD_CHANGED:
+          String groupId = map["groupId"];
+          String userId = map["userId"];
+          String? namecard = map["namecard"];
+          element.onUserGroupNamecardChanged?.call(groupId, userId, namecard);
+          break;
       }
     }
   }
@@ -2287,6 +2293,84 @@ class EMGroupManager {
           .callNativeMethod(ChatMethodKeys.updateGroupAvatar, req);
       EMError.hasErrorFromResult(result);
       return EMGroup.fromJson(result[ChatMethodKeys.updateGroupAvatar]);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // 4.22.0
+
+  /// ~english
+  /// Updates the group namecard of the current user in a group.
+  ///
+  /// Param [groupId]   The group ID.
+  ///
+  /// Param [namecard]  The new group namecard. Pass `null` to remove the group namecard.
+  ///
+  /// **Returns** None.
+  ///
+  /// **Throws** Exception description, see [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 更新当前用户在群组中的群名片。
+  ///
+  /// Param [groupId]   群组 ID。
+  ///
+  /// Param [namecard]  新的群名片，传 `null` 表示移除群名片。
+  ///
+  /// **Return** 无。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<void> updateGroupNamecard({
+    required String groupId,
+    String? namecard,
+  }) async {
+    try {
+      Map req = {'groupId': groupId};
+      req.putIfNotNull('namecard', namecard);
+      Map result = await Client.instance.groupManager
+          .callNativeMethod(ChatMethodKeys.updateGroupNamecard, req);
+      EMError.hasErrorFromResult(result);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// ~english
+  /// Gets the group namecard of a member in a group.
+  ///
+  /// Param [groupId]   The group ID.
+  ///
+  /// Param [userId]    The user ID of the group member.
+  ///
+  /// **Returns** The group namecard of the member, `null` if the member has no group namecard.
+  ///
+  /// **Throws** Exception description, see [EMError].
+  /// ~end
+  ///
+  /// ~chinese
+  /// 获取群成员的群名片。
+  ///
+  /// Param [groupId]   群组 ID。
+  ///
+  /// Param [userId]    群成员的用户 ID。
+  ///
+  /// **Return** 群成员的群名片，成员未设置群名片时返回 `null`。
+  ///
+  /// **Throws** 如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+  /// ~end
+  Future<String?> getGroupNamecard({
+    required String groupId,
+    required String userId,
+  }) async {
+    try {
+      Map req = {'groupId': groupId, 'userId': userId};
+      Map result = await Client.instance.groupManager
+          .callNativeMethod(ChatMethodKeys.getGroupNamecard, req);
+      EMError.hasErrorFromResult(result);
+      return result["namecard"];
     } catch (e) {
       rethrow;
     }

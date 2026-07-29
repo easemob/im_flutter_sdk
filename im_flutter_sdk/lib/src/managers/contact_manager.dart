@@ -27,7 +27,7 @@ class EMContactManager {
 
   Future<void> _onContactChanged(Map event) async {
     var type = event['type'];
-    String username = event['userId'];
+    String username = event['userId'] ?? '';
     String? reason = event['reason'];
 
     for (var element in _eventHandlesMap.values) {
@@ -46,6 +46,19 @@ class EMContactManager {
           break;
         case EMContactChangeEvent.INVITATION_DECLINED:
           element.onFriendRequestDeclined?.call(username);
+          break;
+        case EMContactChangeEvent.CONTACT_SYNC_START:
+          element.onContactSyncStart?.call();
+          break;
+        case EMContactChangeEvent.CONTACT_SYNC_FINISH:
+          EMError? error = event['error'] != null
+              ? EMError.fromJson(event['error'])
+              : null;
+          element.onContactSyncFinish?.call(error);
+          break;
+        case EMContactChangeEvent.CONTACT_INFO_UPDATE:
+          EMContact contact = EMContact.fromJson(event['contact']);
+          element.onContactInfoUpdate?.call(contact);
           break;
         default:
       }

@@ -33,6 +33,30 @@ class GroupMemberInfo {
   /// ~end
   final EMGroupPermissionType role;
   /// ~english
+  /// The group namecard of the group member.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群成员的群名片。
+  /// ~end
+  final String? namecard;
+  /// ~english
+  /// The nickname of the group member.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群成员的昵称。
+  /// ~end
+  final String? nickname;
+  /// ~english
+  /// The avatar URL of the group member.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 群成员的头像。
+  /// ~end
+  final String? avatarUrl;
+  /// ~english
   /// Creates a group member info.
   /// ~end
   ///
@@ -42,11 +66,17 @@ class GroupMemberInfo {
   GroupMemberInfo(
     this.userId,
     this.joinedTs,
-    this.role,
-  );
+    this.role, {
+    this.namecard,
+    this.nickname,
+    this.avatarUrl,
+  });
 
   GroupMemberInfo.fromJson(Map<String, dynamic> map)
       : userId = map["userId"],
         joinedTs = map["joinedTs"],
-        role = EMGroupPermissionTypeExtension.values(map["role"]);
+        role = EMGroupPermissionTypeExtension.values(map["role"]),
+        namecard = map["namecard"],
+        nickname = map["nickname"],
+        avatarUrl = map["avatarUrl"];
 }

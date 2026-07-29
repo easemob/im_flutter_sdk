@@ -2527,6 +2527,106 @@ Future<Map<String, List<String>>> loadConversationMessagesWithKeyword({
     rethrow;
   }
 }
+
+// 4.22.0
+
+/// ~english
+/// Downloads the original (big) image of an image message from the server.
+///
+/// You can call the method again if the download fails.
+///
+/// Param [message] The image message with the original image that is to be downloaded.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 下载图片消息的原图（大图）。
+///
+/// 若下载失败，可以再次调用此方法下载。
+///
+/// Param [message] 要下载原图（大图）的图片消息。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+Future<void> downloadBigImage(EMMessage message) async {
+  try {
+    Map result = await Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.downloadBigImage, {"message": message.toJson()});
+    EMError.hasErrorFromResult(result);
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Converts the voice of a voice message to text.
+///
+/// Param [message] The voice message to be converted to text.
+///
+/// **Returns** The converted text.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 将语音消息转换为文字。
+///
+/// Param [message] 要转换为文字的语音消息。
+///
+/// **Return** 转换后的文本内容。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+Future<String> voiceMessageToText(EMMessage message) async {
+  try {
+    Map result = await Client.instance.chatManager.callNativeMethod(
+        ChatMethodKeys.voiceMessageToText, {"message": message.toJson()});
+    EMError.hasErrorFromResult(result);
+    return result["text"];
+  } catch (e) {
+    rethrow;
+  }
+}
+
+/// ~english
+/// Converts a voice file to text.
+///
+/// Param [filePath] The local path of the voice file.
+///
+/// Param [voiceParam] (optional) The parameter that describes the format of the voice file. See [EMVoiceParam].
+///
+/// **Returns** The converted text.
+///
+/// **Throws** A description of the exception. See [EMError].
+/// ~end
+///
+/// ~chinese
+/// 将语音文件转换为文字。
+///
+/// Param [filePath] 语音文件的本地路径。
+///
+/// Param [voiceParam] （可选）描述语音文件格式的参数，详见 [EMVoiceParam]。
+///
+/// **Return** 转换后的文本内容。
+///
+/// **Throws**  如果有异常会在这里抛出，包含错误码和错误描述，详见 [EMError]。
+/// ~end
+Future<String> voiceFileToText(
+  String filePath, {
+  EMVoiceParam? voiceParam,
+}) async {
+  try {
+    Map req = {"filePath": filePath};
+    req.putIfNotNull("voiceParam", voiceParam?.toJson());
+    Map result = await Client.instance.chatManager
+        .callNativeMethod(ChatMethodKeys.voiceFileToText, req);
+    EMError.hasErrorFromResult(result);
+    return result["text"];
+  } catch (e) {
+    rethrow;
+  }
+}
 }
 
 class MessageCallBackManager {

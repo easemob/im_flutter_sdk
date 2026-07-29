@@ -402,6 +402,36 @@ class EMOptions {
   ///
   final bool workPathCopiable;
 
+  /// ~english
+  /// Whether to enable the user info feature.
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否开启用户属性功能。
+  ///
+  /// - `true`：是；
+  /// - （默认）`false`：否。
+  /// ~end
+  final bool enableUserInfo;
+
+  /// ~english
+  /// Whether to automatically sync the contact list from the server after login.
+  ///
+  /// - `true`: Yes.
+  /// - (Default) `false`: No.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 是否在登录后自动从服务器同步联系人列表。
+  ///
+  /// - `true`：是；
+  /// - （默认）`false`：否。
+  /// ~end
+  final bool enableAutoSyncContacts;
+
   final Map<String, dynamic>? _extSettings;
 
   final EMPushConfig _pushConfig = EMPushConfig();
@@ -775,6 +805,8 @@ class EMOptions {
     bool messagesReceiveCallbackIncludeSend = false,
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
+    bool enableUserInfo = false,
+    bool enableAutoSyncContacts = false,
     String? loginExtension,
     Map<String, dynamic>? extSettings,
   }) : this._(
@@ -809,6 +841,8 @@ class EMOptions {
               messagesReceiveCallbackIncludeSend,
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
+          enableUserInfo: enableUserInfo,
+          enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           extSettings: extSettings,
         );
@@ -1042,6 +1076,8 @@ class EMOptions {
     bool messagesReceiveCallbackIncludeSend = false,
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
+    bool enableUserInfo = false,
+    bool enableAutoSyncContacts = false,
     String? loginExtension,
     Map<String, dynamic>? extSettings,
   }) : this._(
@@ -1076,6 +1112,8 @@ class EMOptions {
               messagesReceiveCallbackIncludeSend,
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
+          enableUserInfo: enableUserInfo,
+          enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
           extSettings: extSettings,
         );
@@ -1311,6 +1349,8 @@ class EMOptions {
     bool messagesReceiveCallbackIncludeSend = false,
     bool regardImportMessagesAsRead = false,
     bool workPathCopiable = false,
+    bool enableUserInfo = false,
+    bool enableAutoSyncContacts = false,
     String? loginExtension,
   }) : this._(
           appKey: appKey,
@@ -1344,6 +1384,8 @@ class EMOptions {
               messagesReceiveCallbackIncludeSend,
           regardImportMessagesAsRead: regardImportMessagesAsRead,
           workPathCopiable: workPathCopiable,
+          enableUserInfo: enableUserInfo,
+          enableAutoSyncContacts: enableAutoSyncContacts,
           loginExtension: loginExtension,
         );
 
@@ -1379,6 +1421,8 @@ class EMOptions {
     this.messagesReceiveCallbackIncludeSend = false,
     this.regardImportMessagesAsRead = false,
     this.workPathCopiable = false,
+    this.enableUserInfo = false,
+    this.enableAutoSyncContacts = false,
     this.loginExtension,
     Map<String, dynamic>? extSettings,
   }) : _extSettings = extSettings;
@@ -1431,6 +1475,10 @@ class EMOptions {
 
     // 4.10
     data.putIfNotNull('workPathCopiable', workPathCopiable);
+
+    // 4.22.0
+    data.putIfNotNull('enableUserInfo', enableUserInfo);
+    data.putIfNotNull('enableAutoSyncContacts', enableAutoSyncContacts);
 
     return data;
   }
@@ -1506,6 +1554,8 @@ class EMOptions {
           this.messagesReceiveCallbackIncludeSend,
       regardImportMessagesAsRead:
           regardImportMessagesAsRead ?? this.regardImportMessagesAsRead,
+      enableUserInfo: enableUserInfo,
+      enableAutoSyncContacts: enableAutoSyncContacts,
       loginExtension: loginExtension,
       extSettings: extSettings,
     );

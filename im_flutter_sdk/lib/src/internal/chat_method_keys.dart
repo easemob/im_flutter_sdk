@@ -441,4 +441,20 @@ class ChatMethodKeys {
   static const String loadConversationMessagesWithKeyword =
       "loadConversationMessagesWithKeyword";
   static const String loadMessagesWithIds = "loadMessagesWithIds";
+
+  // 4.22.0
+  static const String downloadBigImage = "downloadBigImage";
+  static const String voiceMessageToText = "voiceMessageToText";
+  static const String voiceFileToText = "voiceFileToText";
+
+  static const String updateGroupNamecard = "updateGroupNamecard";
+  static const String getGroupNamecard = "getGroupNamecard";
+
+  static const String subscribeUsersInfo = "subscribeUsersInfo";
+  static const String unsubscribeUsersInfo = "unsubscribeUsersInfo";
+  static const String fetchSubscribedUsers = "fetchSubscribedUsers";
+  static const String getLocalUserInfoByIds = "getLocalUserInfoByIds";
+
+  /// EMUserInfoManager listener
+  static const String onUserInfoChanged = "onUserInfoChanged";
 }

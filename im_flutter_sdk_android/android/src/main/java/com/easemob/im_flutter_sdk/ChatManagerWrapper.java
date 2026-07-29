@@ -171,6 +171,16 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
             else if (MethodKey.loadMessagesWithIds.equals(call.method)) {
                 loadMessagesWithIds(params, call.method, result);
             }
+            // 4.22.0
+            else if (MethodKey.downloadBigImage.equals(call.method)) {
+                downloadBigImage(params, call.method, result);
+            }
+            else if (MethodKey.voiceMessageToText.equals(call.method)) {
+                voiceMessageToText(params, call.method, result);
+            }
+            else if (MethodKey.voiceFileToText.equals(call.method)) {
+                voiceFileToText(params, call.method, result);
+            }
             else {
                 super.onMethodCall(call, result);
             }
@@ -1358,6 +1368,94 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
                     messages.add(MessageHelper.toJson(msg));
                 }
                 updateObject(messages);
+            }
+        });
+    }
+
+    // 4.22.0
+    private void downloadBigImage(JSONObject params, String channelName, Result result) throws JSONException {
+        EMMessage tempMsg = MessageHelper.fromJson(params.getJSONObject("message"));
+        final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
+        msg.setMessageStatusCallback(new EMWrapperCallBack(result, channelName, null) {
+            @Override
+            public void onSuccess() {
+                post(() -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("message", updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.SUCCESSED, msg, false));
+                    map.put("localId", msg.getMsgId());
+                    messageChannel.invokeMethod(MethodKey.onMessageSuccess, map);
+                });
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+                post(() -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("progress", progress);
+                    map.put("localId", msg.getMsgId());
+                    messageChannel.invokeMethod(MethodKey.onMessageProgressUpdate, map);
+                });
+            }
+
+            @Override
+            public void onError(int code, String desc) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("code", code);
+                data.put("description", desc);
+                post(() -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("message", updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.FAILED, msg, false));
+                    map.put("localId", msg.getMsgId());
+                    map.put("error", data);
+                    messageChannel.invokeMethod(MethodKey.onMessageError, map);
+                });
+            }
+        });
+        asyncRunnable(() -> {
+            EMClient.getInstance().chatManager().downloadBigImage(msg, null);
+            onSuccess(result, channelName, updateDownloadStatus(EMFileMessageBody.EMDownloadStatus.DOWNLOADING, msg, false));
+        });
+    }
+
+    // 4.22.0
+    private void voiceMessageToText(JSONObject params, String channelName, Result result) throws JSONException {
+        EMMessage tempMsg = MessageHelper.fromJson(params.getJSONObject("message"));
+        final EMMessage msg = EMClient.getInstance().chatManager().getMessage(tempMsg.getMsgId());
+        EMClient.getInstance().chatManager().voiceMessageToText(msg, new EMValueWrapperCallBack<String>(result, channelName) {
+            @Override
+            public void onSuccess(String object) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("text", object);
+                updateObject(map);
+            }
+        });
+    }
+
+    // 4.22.0
+    private void voiceFileToText(JSONObject params, String channelName, Result result) throws JSONException {
+        String filePath = params.getString("filePath");
+        EMAudioParams audioParams = null;
+        if (params.has("voiceParam") && !params.isNull("voiceParam")) {
+            JSONObject voiceParam = params.getJSONObject("voiceParam");
+            audioParams = new EMAudioParams();
+            String format = voiceParam.optString("format");
+            if ("pcm".equalsIgnoreCase(format)) {
+                audioParams.setFormat(EMAudioParams.AudioFormat.PCM);
+            } else if ("mp3".equalsIgnoreCase(format)) {
+                audioParams.setFormat(EMAudioParams.AudioFormat.MP3);
+            } else if ("amr".equalsIgnoreCase(format)) {
+                audioParams.setFormat(EMAudioParams.AudioFormat.AMR);
+            }
+            audioParams.setSampleRate(voiceParam.optInt("sampleRate"));
+            audioParams.setBitsPerSample(voiceParam.optInt("bitsPerSample"));
+            audioParams.setChannels(voiceParam.optInt("channels"));
+        }
+        EMClient.getInstance().chatManager().voiceFileToText(filePath, audioParams, new EMValueWrapperCallBack<String>(result, channelName) {
+            @Override
+            public void onSuccess(String object) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("text", object);
+                updateObject(map);
             }
         });
     }

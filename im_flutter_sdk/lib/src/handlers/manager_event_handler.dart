@@ -1170,6 +1170,41 @@ class EMContactEventHandler {
   )? onFriendRequestDeclined;
 
   /// ~english
+  /// Occurs when the SDK starts syncing the contact list from the server.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 开始从服务器同步联系人列表时触发的回调。
+  /// ~end
+  final void Function()? onContactSyncStart;
+
+  /// ~english
+  /// Occurs when the SDK finishes syncing the contact list from the server.
+  ///
+  /// Param [error] The error information if the sync fails, `null` if the sync succeeds.
+  /// ~end
+  ///
+  /// ~chinese
+  /// SDK 从服务器同步联系人列表结束时触发的回调。
+  ///
+  /// Param [error] 同步失败的错误信息，同步成功时为 `null`。
+  /// ~end
+  final void Function(EMError? error)? onContactSyncFinish;
+
+  /// ~english
+  /// Occurs when the information of a contact is updated.
+  ///
+  /// Param [contact] The updated contact.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 联系人信息更新时触发的回调。
+  ///
+  /// Param [contact] 更新后的联系人。
+  /// ~end
+  final void Function(EMContact contact)? onContactInfoUpdate;
+
+  /// ~english
   /// The contact updates listener callback.
   ///
   /// Param [onContactAdded] Current user is added as a contact by another user.
@@ -1181,6 +1216,12 @@ class EMContactEventHandler {
   /// Param [onFriendRequestAccepted] A friend request is approved.
   ///
   /// Param [onFriendRequestDeclined] A friend request is declined.
+  ///
+  /// Param [onContactSyncStart] The SDK starts syncing the contact list from the server.
+  ///
+  /// Param [onContactSyncFinish] The SDK finishes syncing the contact list from the server.
+  ///
+  /// Param [onContactInfoUpdate] The information of a contact is updated.
   /// ~end
   ///
   /// ~chinese
@@ -1195,6 +1236,12 @@ class EMContactEventHandler {
   /// Param [onFriendRequestAccepted] 发出的好友申请被对方同意。
   ///
   /// Param [onFriendRequestDeclined] 发出的好友申请被对方拒绝。
+  ///
+  /// Param [onContactSyncStart] 开始从服务器同步联系人列表回调。
+  ///
+  /// Param [onContactSyncFinish] 从服务器同步联系人列表结束回调。
+  ///
+  /// Param [onContactInfoUpdate] 联系人信息更新回调。
   /// ~end
   EMContactEventHandler({
     this.onContactAdded,
@@ -1202,6 +1249,9 @@ class EMContactEventHandler {
     this.onContactInvited,
     this.onFriendRequestAccepted,
     this.onFriendRequestDeclined,
+    this.onContactSyncStart,
+    this.onContactSyncFinish,
+    this.onContactInfoUpdate,
   });
 }
 
@@ -1601,6 +1651,31 @@ class EMGroupEventHandler {
   )? onMembersExitedFromGroup;
 
   /// ~english
+  /// Occurs when the group namecard of a user is changed.
+  ///
+  /// Param [groupId] The group ID.
+  ///
+  /// Param [userId] The user ID of the group member whose namecard is changed.
+  ///
+  /// Param [namecard] The new group namecard, `null` if the namecard is removed.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户的群名片变更回调。
+  ///
+  /// Param [groupId] 群组 ID。
+  ///
+  /// Param [userId] 群名片变更的群成员的用户 ID。
+  ///
+  /// Param [namecard] 新的群名片，名片被移除时为 `null`。
+  /// ~end
+  final void Function(
+    String groupId,
+    String userId,
+    String? namecard,
+  )? onUserGroupNamecardChanged;
+
+  /// ~english
   /// The group manager listener callback.
   ///
   /// Param [onAdminAddedFromGroup] A member is set as an admin.
@@ -1656,6 +1731,8 @@ class EMGroupEventHandler {
   /// Param [onMembersJoinedFromGroup] members joins ths group.
   ///
   /// Param [onMembersExitedFromGroup] members leaves the group.
+  ///
+  /// Param [onUserGroupNamecardChanged] The group namecard of a user is changed.
   ///
   /// ~end
   ///
@@ -1715,6 +1792,8 @@ class EMGroupEventHandler {
   /// Param [onMembersJoinedFromGroup] 成员加入群组。
   ///
   /// Param [onMembersExitedFromGroup] 成员离开群组。
+  ///
+  /// Param [onUserGroupNamecardChanged] 用户的群名片变更回调。
   /// ~end
   EMGroupEventHandler({
     this.onAdminAddedFromGroup,
@@ -1746,6 +1825,7 @@ class EMGroupEventHandler {
     this.onAttributesChangedOfGroupMember,
     this.onMembersJoinedFromGroup,
     this.onMembersExitedFromGroup,
+    this.onUserGroupNamecardChanged,
   });
 }
 
@@ -1864,4 +1944,83 @@ class ChatMessageEvent {
   /// Param [progress] 上传或下载进度。
   /// ~end
   final void Function(String msgId, int progress)? onProgress;
+}
+
+/// ~english
+/// The user info event handler.
+///
+/// Occurs when the user attributes of the current user or subscribed users are updated.
+///
+/// Adds a user info event handler:
+/// ```dart
+///   EMClient.getInstance.userInfoManager.addEventHandler(UNIQUE_HANDLER_ID, EMUserInfoEventHandler());
+/// ```
+///
+/// Removes a user info event handler:
+/// ```dart
+///   EMClient.getInstance.userInfoManager.removeEventHandler(UNIQUE_HANDLER_ID);
+/// ```
+/// ~end
+///
+/// ~chinese
+/// 用户属性事件监听。
+///
+/// 当前用户或被订阅用户的用户属性更新时触发。
+///
+/// 添加监听:
+/// ```dart
+///   EMClient.getInstance.userInfoManager.addEventHandler(UNIQUE_HANDLER_ID, EMUserInfoEventHandler());
+/// ```
+///
+/// 移除监听:
+/// ```dart
+///   EMClient.getInstance.userInfoManager.removeEventHandler(UNIQUE_HANDLER_ID);
+/// ```
+/// ~end
+class EMUserInfoEventHandler {
+  /// ~english
+  /// Occurs when the user attributes of the current user are updated.
+  ///
+  /// Param [userInfo] The updated user attributes of the current user.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 当前用户的用户属性更新回调。
+  ///
+  /// Param [userInfo] 更新后的当前用户的用户属性。
+  /// ~end
+  final void Function(EMUserInfo userInfo)? onSelfUserInfoUpdate;
+
+  /// ~english
+  /// Occurs when the user attributes of subscribed users are updated.
+  ///
+  /// Param [userInfos] The updated user attributes of subscribed users.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 被订阅用户的用户属性更新回调。
+  ///
+  /// Param [userInfos] 更新后的被订阅用户的用户属性列表。
+  /// ~end
+  final void Function(List<EMUserInfo> userInfos)? onUserInfoUpdate;
+
+  /// ~english
+  /// The user info event handler.
+  ///
+  /// Param [onSelfUserInfoUpdate] The user attributes of the current user are updated.
+  ///
+  /// Param [onUserInfoUpdate] The user attributes of subscribed users are updated.
+  /// ~end
+  ///
+  /// ~chinese
+  /// 用户属性事件监听。
+  ///
+  /// Param [onSelfUserInfoUpdate] 当前用户的用户属性更新回调。
+  ///
+  /// Param [onUserInfoUpdate] 被订阅用户的用户属性更新回调。
+  /// ~end
+  EMUserInfoEventHandler({
+    this.onSelfUserInfoUpdate,
+    this.onUserInfoUpdate,
+  });
 }
