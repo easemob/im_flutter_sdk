@@ -44,9 +44,12 @@
 36. 当用户决定暂时隔离已确认或待契约确认的 7 个 Group 场景时，测试应仅对对应参数添加带明确原因的 `skip`，保留原严格断言实现；其他矩阵参数不得被一并跳过，修复或契约确认后应删除对应 skip 并恢复验证。
 37. 当测试发送群消息时，case 应归档在 `tests/group`，并对 `txt/file/image/video/voice/location/cmd/custom/combine` 九种公开发送类型分别覆盖发送响应、发送方 `onMessageSuccess` 和接收方消息回调。
 38. 当群消息到达接收方时，测试应严格断言 `chatType=1`、`to/convId=groupId`、收发双方、方向、消息状态和类型特有 body；CMD 消息应通过 `onCmdMessagesReceived` 接收，其余类型应通过 `onMessagesReceived` 接收。
-39. 当群消息需要群回执时，`ackGroupMessageRead` 与 `asyncFetchGroupAcks` 的正常和非法 ID 场景应归档在 `tests/group`，并继续使用真实动态 groupId/msgId 关联同步响应与双端消息事件。
+39. 当群消息需要群回执时，`ackGroupMessageRead` 的正常和非法 ID 场景应归档在 `tests/group`；正常场景应使用真实动态 groupId/msgId 关联双端消息事件，并在 read-ack 后验证 `groupAckCount`。
 40. 当 ChatThread case 需要群消息作为父消息时，ChatThread API 与群父消息前置链路应统一归档在 `tests/group`；父消息仍不得重复计为独立群消息发送 case，Chat 模块不得继续保留同一批 ChatThread 测试文件。
 41. 当群消息目标为空或群不存在时，测试应使用文本消息覆盖共享群目标校验，关联临时 msgId 与异步失败终态，并确认另一真实设备未收到目标消息。
 42. 当从未入群、主动退出或被群主移除的用户发送群消息时，测试应分别覆盖三种成员状态，冻结真实错误，并严格确认群主设备没有收到该消息。
 43. 当群消息使用 `txt/location/cmd/custom/combine` 缺失类型必填字段或媒体四类型使用不存在设备路径时，测试应复用单聊已确认的构造边界，不因 `chatType=1` 重复测试与群权限无关的动态类型错误；仅在真实返回受 chatType 影响时保留独立 Group case。
 44. 当共享目标和成员状态已经由文本消息覆盖时，九种类型正常矩阵与共享异常矩阵应分别统计；不得用笛卡尔积重复相同服务端权限语义，也不得因此漏掉群独有的未入群、退出后和被移除后状态。
+45. 当 A 发送 `needGroupAck=true` 的群文本消息、B 收到该消息并成功调用 `ackGroupMessageRead` 时，测试应使用同一真实 `groupId/msgId` 关联发送响应、接收事件和回执请求，不得使用固定或伪造消息 ID。
+46. 当 B 完成 `ackGroupMessageRead` 后，A 应对同一真实 `msgId` 调用 `MessageManager/groupAckCount`，并在有界最终一致性窗口内严格断言返回计数为 `1`。
+47. 本轮群回执 case 仅保留 read-ack 后的 count 验证；不增加 `onGroupMessageRead`、`onReadAckForGroupMessageUpdated`、`asyncFetchGroupAcks` 或非法 ID 查询/计数断言。

@@ -57,6 +57,14 @@
 - [x] 更新 requirements/design，明确群父消息与 ChatThread API 链路统一归档且不重复计入群消息发送矩阵。
 - [x] 完成迁移后 5 个 ChatThread cases 的收集和静态检查；真实设备回归留待下一次群组回归，按用户要求本次不重复全量运行。
 
+## 第五阶段：群消息回执闭环
+
+- [x] 复核 `ackGroupMessageRead` 与 `MessageManager/groupAckCount` 的真实 `groupId/msgId` 参数映射。
+- [x] 按用户最新范围删除回执回调、`asyncFetchGroupAcks` 及非法 ID 查询/计数扩展。
+- [x] 保留真实群消息发送、B read-ack 和 A `groupAckCount=1` 的唯一正常 case。
+- [x] 更新 Group cases 台账，移除已取消范围对应的 failures/deferred 记录。
+- [x] 运行 count case strict、Python 编译、collect-only、speckit 和 diff 检查：count case `1 passed`，文件收集 `16 tests`，其余检查全部通过。
+
 ## 最终验证证据
 
 - Flutter：`flutter test` 为 `5 passed`；`flutter build apk --debug` 成功。
@@ -73,3 +81,5 @@
 - 第三阶段收集：Group `235 items`；新增文件 `11 items` 均已分批 strict 通过，未重复完整模块回归。
 - 第三阶段发送边界新增 `5 items`，同 session strict 为 `5 passed`；Group collect-only 已确认 `240 items`。
 - 第四阶段：迁移 5 个 ChatThread functions 到 `tests/group`；迁移后 Group collect-only 预期为 `245 items`，本次不重复真实设备全量回归。
+- 第五阶段 count-only：`test_group_message_read_ack_updates_count` 真实双设备 strict 为 `1 passed, 1 warning in 29.72s`；第一次 count 为 `0`，1 秒后轮询为 `1`。
+- 第五阶段 pytest 证据：`native-auto-test/out/group_ack_20260729_111055/count_only_strict.txt`。

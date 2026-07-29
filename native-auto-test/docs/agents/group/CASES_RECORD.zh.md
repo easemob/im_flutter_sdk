@@ -602,8 +602,11 @@
      B 被提升为管理员后更新公告，群主 A 收到精确回调，操作者 B 不收到同类事件，
      服务端公告值一致。
 145. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
-     B 保持 `autoAcceptGroupInvitation=true`，A 以 `inviteNeedConfirm=true` 邀请 B；B 收到
-     自动接受事件，A 收到接受事件及两类加入事件，最终服务端成员为 2。
+     B 保持 `autoAcceptGroupInvitation=true`，A 分别创建 style 0/1/2/3 且
+     `inviteNeedConfirm=true` 的群并邀请 B；四种 style 的创建快照均先返回 `memberCount=1`，
+     B 收到自动接受事件，A 收到接受事件及两类加入事件，最终服务端 `memberCount=2` 且
+     `memberList=[B]`。4 条真实双设备 strict case 全部通过；结合 `inviteNeedConfirm=false`
+     的四种 style 用例，创建参数组合已覆盖 8/8。
 146. `tests/group/test_group_shared_files.py::test_group_admin_upload_remove_shared_file_notifies_owner`
      B 被提升为管理员后上传/删除 Android 本地素材，群主 A 收到新增/删除事件，操作者 B
      不收到同类事件，最终文件列表为空。
@@ -653,7 +656,7 @@
 | 176 | `test_group_message_send_receive_by_type` | `txt/file/image/video/voice/location/cmd/custom` 八种群消息；A 发送、B 接收 | 8 | 真实双设备严格通过 |
 | 177 | `test_group_message_send_receive_combine` | 同群两条真实文本作为来源，再发送/接收 `combine` | 1 | 真实双设备严格通过 |
 | 178 | `test_group_message_ack_boundary_methods` | 非法群消息 ID/群 ID 调用 `ackGroupMessageRead` | 1 | 真实设备严格通过 |
-| 179 | `test_group_message_fetch_acks_success` | 需要群回执的文本消息、B 回执、A 分页查询 | 1 | 真实双设备严格通过 |
+| 179 | `test_group_message_read_ack_updates_count` | 真实群文本消息；B read-ack；A 统计 `groupAckCount` | 1 | 真实双设备严格通过，最终 `groupAckCount=1` |
 | 180 | `test_group_message_send_rejects_invalid_group_target` | 空 groupId、不存在 groupId | 2 | 真实双设备严格通过；分别为 `500`、`606` |
 | 181 | `test_group_message_send_rejects_non_member_states` | 从未入群、主动退出、被群主移除后发送 | 3 | 真实双设备严格通过；均为 `602` |
 
@@ -661,6 +664,7 @@
 
 - 正常消息类型覆盖：`9/9`。发送同步响应、A 端 `onMessageSuccess`、B 端 `onMessagesReceived` 或 `onCmdMessagesReceived` 均严格关联本次临时/真实 msgId，并冻结 `chatType=1`、`to/convId=groupId`。
 - 群回执正常和非法 ID case 已从 Chat 模块迁移到本文件对应测试，不再重复归入 Chat。
+- 按用户最新范围，正常群 read-ack case 仅验证 A 端同一真实 `msgId` 的 `groupAckCount=1`，不等待回调或查询回执明细。
 - ChatThread 的群父消息与 ChatThread API case 已统一归档到 Group；父消息只作为 thread 前置，不计为独立群消息发送覆盖。
 - 空/不存在 groupId、从未入群、主动退出和被移除后的发送边界均已补齐；类型构造和媒体路径异常由同一 `ChatManager.sendMessageWithType` 的 Chat 公共矩阵覆盖，不再按 chatType 重复。
 - 真实错误：空 groupId 为 `500/Message is invalid`；不存在群为 `606/Group does not exist`；三种非成员状态均为 `602/User has not joined the group`。失败消息均确认未投递给另一真实设备。
