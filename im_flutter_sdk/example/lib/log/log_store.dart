@@ -12,9 +12,13 @@ class LogStore extends ChangeNotifier {
 
   static const String stdoutPrefix = '[APITEST]';
 
+  /// 内存日志上限，超出丢弃最旧；stdout 与落盘不受影响，始终完整。
+  static const int maxLines = 2000;
+
   final List<String> lines = [];
   int _seq = 0;
   File? _file;
+  Future<void> _writeChain = Future.value();
 
   String? get filePath => _file?.path;
 
@@ -33,12 +37,18 @@ class LogStore extends ChangeNotifier {
       'payload': payload,
     });
     lines.add(line);
+    if (lines.length > maxLines) lines.removeAt(0);
     // ignore: avoid_print
     print('$stdoutPrefix $line');
-    try {
-      _file?.writeAsStringSync('$stdoutPrefix $line\n', mode: FileMode.append);
-    } catch (_) {
-      // 落盘失败不影响主流程
+    final file = _file;
+    if (file != null) {
+      // 串行异步落盘，避免同步写阻塞 UI；失败静默不影响主流程。
+      _writeChain = _writeChain.then((_) async {
+        try {
+          await file.writeAsString('$stdoutPrefix $line\n',
+              mode: FileMode.append, flush: true);
+        } catch (_) {}
+      });
     }
     notifyListeners();
   }

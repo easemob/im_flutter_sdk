@@ -11,7 +11,7 @@ final chatApis = <ApiEntry>[
         '接收完整消息 JSON（EMMessage.fromJson 解析）后发送。chatType：0 单聊/1 群聊/2 聊天室；'
         'direction：0 发送/1 接收；status：0 创建/1 发送中/2 成功/3 失败；'
         'body.type：0 文本/1 图片/2 视频/3 位置/4 语音/5 文件/6 命令/7 自定义/8 合并。'
-        '输出 JSON 可直接作为 downloadBigImage / voiceMessageToText 的 message 输入。',
+        '输出结果的 data 字段即为消息 JSON，填入 downloadBigImage / voiceMessageToText 的 message 字段即可串联。',
     paramsTemplate: '''{
   "to": "targetUserId",
   "chatType": 0,
@@ -29,7 +29,7 @@ final chatApis = <ApiEntry>[
     group: 'ChatManager',
     description:
         '下载图片消息的大图（4.22 新增）。message 为完整图片消息 JSON（body.type=1），'
-        '直接粘贴 sendMessage 的输出即可（round-trip 成立）。'
+        '取 sendMessage 结果的 data 填入 message 字段即可（round-trip 成立）。'
         '注意：图片 body 的 toJson 不输出 bigImageRemotePath / bigImageDownloadStatus（服务器只读字段），'
         '回贴输入不受影响，下载后新字段通过事件回调或重新取消息验证。',
     paramsTemplate: '''{
@@ -60,7 +60,7 @@ final chatApis = <ApiEntry>[
     group: 'ChatManager',
     description:
         '语音消息转文字（4.22 新增），返回转换文本。message 为完整语音消息 JSON（body.type=4），'
-        '直接粘贴 sendMessage 的输出即可（round-trip 成立）。'
+        '取 sendMessage 结果的 data 填入 message 字段即可（round-trip 成立）。'
         '注意：语音 body 的 toJson 不输出 text 字段（服务器下发只读字段），回贴输入不受影响。',
     paramsTemplate: '''{
   "message": {

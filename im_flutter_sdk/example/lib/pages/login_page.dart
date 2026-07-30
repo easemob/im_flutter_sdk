@@ -23,29 +23,33 @@ class _LoginPageState extends State<LoginPage> {
   String? _result;
   bool _running = false;
 
-  Future<void> _run(String label, Future<void> Function() action) async {
+  /// 执行登录/退出动作并记录结果，返回是否成功。
+  Future<bool> _run(String label, Future<void> Function() action) async {
     setState(() {
       _result = null;
       _running = true;
     });
+    Map<String, dynamic> r;
     try {
       await action();
-      final r = {'success': true};
-      LogStore.instance.log('api.$label', r);
-      setState(() => _result = const JsonEncoder.withIndent('  ').convert(r));
+      r = {'success': true};
     } catch (e) {
-      final r = {'success': false, 'error': errorToJson(e)};
-      LogStore.instance.log('api.$label', r);
-      setState(() => _result = const JsonEncoder.withIndent('  ').convert(r));
-    } finally {
-      if (mounted) setState(() => _running = false);
+      r = {'success': false, 'error': errorToJson(e)};
     }
+    LogStore.instance.log('api.$label', r);
+    if (mounted) {
+      setState(() {
+        _result = const JsonEncoder.withIndent('  ').convert(r);
+        _running = false;
+      });
+    }
+    return r['success'] == true;
   }
 
   Future<void> _login() async {
     final userId = _userController.text.trim();
     final secret = _secretController.text;
-    await _run('EMClient.login', () async {
+    final ok = await _run('EMClient.login', () async {
       if (_usePassword) {
         await EMClient.getInstance.loginWithPassword(userId, secret);
       } else {
@@ -53,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
       }
       SdkState.instance.markLoggedIn(userId);
     });
-    if (SdkState.instance.loggedIn && mounted) {
+    if (ok && mounted) {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const SearchPage()),
       );
@@ -65,6 +69,13 @@ class _LoginPageState extends State<LoginPage> {
       await EMClient.getInstance.logout();
       SdkState.instance.markLoggedOut();
     });
+  }
+
+  @override
+  void dispose() {
+    _userController.dispose();
+    _secretController.dispose();
+    super.dispose();
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,8 +25,24 @@ class FloatingLogWidget extends StatefulWidget {
 }
 
 class _FloatingLogWidgetState extends State<FloatingLogWidget> {
-  Offset _pos = const Offset(300, 500);
+  /// null 表示未拖动过，用屏幕尺寸算默认位（右下角上方）。
+  Offset? _pos;
   bool _open = false;
+
+  static const double _ballSize = 48;
+
+  Offset _defaultPos(Size screen) =>
+      Offset(screen.width - _ballSize - 24, screen.height * 0.6);
+
+  void _drag(DragUpdateDetails d, Size screen) {
+    final next = (_pos ?? _defaultPos(screen)) + d.delta;
+    setState(() {
+      _pos = Offset(
+        next.dx.clamp(0.0, screen.width - _ballSize),
+        next.dy.clamp(0.0, screen.height - _ballSize),
+      );
+    });
+  }
 
   /// 面板内超长内容折叠显示首尾，复制仍复制全文。
   static String _fold(String line) {
@@ -33,23 +51,39 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
     return '${line.substring(0, 250)} …[折叠 ${line.length - 340} 字符]… ${line.substring(line.length - 90)}';
   }
 
+  /// 面板显示为「时间 | 来源 | 内容」；复制全部仍为原始单行 JSON。
+  static String _display(String line) {
+    try {
+      final m = jsonDecode(line) as Map<String, dynamic>;
+      final ts = DateTime.fromMillisecondsSinceEpoch(m['ts'] as int);
+      String two(int v) => v.toString().padLeft(2, '0');
+      final time = '${two(ts.hour)}:${two(ts.minute)}:${two(ts.second)}.'
+          '${ts.millisecond.toString().padLeft(3, '0')}';
+      return '$time | ${m['source']} | ${jsonEncode(m['payload'])}';
+    } catch (_) {
+      return line;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screen = MediaQuery.of(context).size;
     if (!_open) {
+      final pos = _pos ?? _defaultPos(screen);
       return Positioned(
-        left: _pos.dx,
-        top: _pos.dy,
+        left: pos.dx,
+        top: pos.dy,
         child: GestureDetector(
-          onPanUpdate: (d) => setState(() => _pos += d.delta),
+          onPanUpdate: (d) => _drag(d, screen),
           onTap: () => setState(() => _open = true),
           child: const CircleAvatar(
-            radius: 24,
+            radius: _ballSize / 2,
             child: Icon(Icons.article_outlined),
           ),
         ),
       );
     }
-    final height = MediaQuery.of(context).size.height * 0.5;
+    final height = screen.height * 0.5;
     return Positioned(
       left: 0,
       right: 0,
@@ -98,7 +132,7 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
                           vertical: 2,
                         ),
                         child: Text(
-                          _fold(line),
+                          _fold(_display(line)),
                           style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
                         ),
                       );

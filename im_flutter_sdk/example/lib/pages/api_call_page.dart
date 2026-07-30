@@ -43,10 +43,17 @@ class _ApiCallPageState extends State<ApiCallPage> {
       result = {'success': false, 'error': errorToJson(e)};
     }
     LogStore.instance.log('api.${widget.entry.name}', result);
+    if (!mounted) return;
     setState(() {
       _result = const JsonEncoder.withIndent('  ').convert(result);
       _running = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _paramsController.dispose();
+    super.dispose();
   }
 
   @override

@@ -45,10 +45,19 @@ class _InitPageState extends State<InitPage> {
         'success': false,
         'error': err,
       });
-      setState(() => _error = const JsonEncoder.withIndent('  ').convert(err));
+      if (mounted) {
+        setState(
+            () => _error = const JsonEncoder.withIndent('  ').convert(err));
+      }
     } finally {
       if (mounted) setState(() => _running = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
