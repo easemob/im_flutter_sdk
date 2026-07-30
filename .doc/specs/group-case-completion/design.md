@@ -141,6 +141,26 @@ sequenceDiagram
 - 媒体消息继续复用测试 App 的默认素材准备，不新增 SDK 或 bridge 行为；仅动态路径、secret、文件大小和时间字段进入最小忽略集。
 - ChatThread API case 与用于创建 thread 的群父消息前置链路统一放在 Group 文件，便于按真实群组设备场景归档；父消息不计入独立群消息发送矩阵。原 ChatManager 群回执测试同样归档在 Group 文件。
 
+### Group message read-ack count
+
+```mermaid
+sequenceDiagram
+    participant A as deviceA/消息发送者
+    participant S as Group Service
+    participant B as deviceB/回执成员
+    A->>S: sendMessage(needGroupAck=true)
+    S-->>A: onMessageSuccess(real msgId)
+    S-->>B: onMessagesReceived(real msgId)
+    B->>S: ackGroupMessageRead(groupId, msgId, content)
+    A->>A: MessageManager.groupAckCount(msgId)
+    A-->>A: count == 1
+```
+
+- 继续使用 `tests/group/test_group_message_send.py` 作为群消息与群回执的唯一归档文件。
+- A 建群并发送 `needGroupAck=true` 的文本消息，B 收到服务端真实 `msgId` 后调用 `ackGroupMessageRead`。
+- A 使用同一 `msgId` 有界轮询 `MessageManager/groupAckCount`，只以原始响应中 `result=1` 作为通过条件。
+- 本轮不等待群回执回调，不查询 `asyncFetchGroupAcks`，不扩展非法 ID 回执边界。
+
 ### Group message boundary matrix
 
 - 在 `tests/group/test_group_message_send.py` 继续归档群发送异常，避免同一业务主题拆散。
@@ -174,3 +194,5 @@ sequenceDiagram
 7. 已知问题隔离后单独选择 7 个 nodeId，验证结果必须精确为 `7 skipped`；不以 xfail 或放宽断言替代。
 8. 群消息整理只运行新文件、迁移后的原文件收集和必要的定向真实设备 case；按用户要求不重复运行完整 Chat/Group 套件。
 9. 群发送边界逐条执行 RED/discovery/strict；成员状态 case 同步保留 A/B ADB 日志，仅在出现预期外行为时用于诊断，不使用 tracelog。
+10. 群回执 count case 只在 B 成功 read-ack 后轮询 A 的 `MessageManager/groupAckCount`，严格断言同步响应信封和 `result=1`。
+11. 运行该 count case strict 验证；不以回调、回执明细列表或非法 ID 结果作为本轮验收项。

@@ -541,8 +541,8 @@ def test_group_message_ack_boundary_methods(device_a, assert_api):
     )
 
 
-def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a, user_b):
-    """A 发送需要群回执的文本消息，B 回执后 A 分页查询该消息的群回执。"""
+def test_group_message_read_ack_updates_count(device_a, device_b, assert_api, user_a, user_b):
+    """B 对真实群消息已读后，A 统计到已读人数为 1。"""
     group_id = ""
     try:
         _drain_devices(device_a, device_b)
@@ -655,18 +655,24 @@ def test_group_message_fetch_acks_success(device_a, device_b, assert_api, user_a
             ignore_keys={"sequence"},
         )
 
-        fetch_resp = device_a.call(
-            "ChatManager",
-            Cmd.asyncFetchGroupAcks.value,
-            info={"msgId": msg_id, "group_id": group_id, "pageSize": 20, "ack_id": None},
-        )
+        count_resp = {}
+        for attempt in range(10):
+            count_resp = device_a.call(
+                "MessageManager",
+                Cmd.groupAckCount.value,
+                info={"msgId": msg_id},
+            )
+            if count_resp.get("result") == 1:
+                break
+            if attempt < 9:
+                time.sleep(1.0)
         assert_api.assert_response_matches(
-            fetch_resp,
+            count_resp,
             expected={
-                "manager": "ChatManager",
-                "cmd": Cmd.asyncFetchGroupAcks.value,
+                "manager": "MessageManager",
+                "cmd": Cmd.groupAckCount.value,
                 "device": "deviceA",
-                "result": {"cursor": "", "list": []},
+                "result": 1,
             },
             ignore_keys={"sequence"},
         )

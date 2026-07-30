@@ -602,8 +602,11 @@
      B 被提升为管理员后更新公告，群主 A 收到精确回调，操作者 B 不收到同类事件，
      服务端公告值一致。
 145. `tests/group/test_group_join_requests_and_invitations.py::test_group_invitation_auto_accept_when_confirmation_required`
-     B 保持 `autoAcceptGroupInvitation=true`，A 以 `inviteNeedConfirm=true` 邀请 B；B 收到
-     自动接受事件，A 收到接受事件及两类加入事件，最终服务端成员为 2。
+     B 保持 `autoAcceptGroupInvitation=true`，A 分别创建 style 0/1/2/3 且
+     `inviteNeedConfirm=true` 的群并邀请 B；四种 style 的创建快照均先返回 `memberCount=1`，
+     B 收到自动接受事件，A 收到接受事件及两类加入事件，最终服务端 `memberCount=2` 且
+     `memberList=[B]`。4 条真实双设备 strict case 全部通过；结合 `inviteNeedConfirm=false`
+     的四种 style 用例，创建参数组合已覆盖 8/8。
 146. `tests/group/test_group_shared_files.py::test_group_admin_upload_remove_shared_file_notifies_owner`
      B 被提升为管理员后上传/删除 Android 本地素材，群主 A 收到新增/删除事件，操作者 B
      不收到同类事件，最终文件列表为空。
@@ -653,7 +656,7 @@
 | 176 | `test_group_message_send_receive_by_type` | `txt/file/image/video/voice/location/cmd/custom` 八种群消息；A 发送、B 接收 | 8 | 真实双设备严格通过 |
 | 177 | `test_group_message_send_receive_combine` | 同群两条真实文本作为来源，再发送/接收 `combine` | 1 | 真实双设备严格通过 |
 | 178 | `test_group_message_ack_boundary_methods` | 非法群消息 ID/群 ID 调用 `ackGroupMessageRead` | 1 | 真实设备严格通过 |
-| 179 | `test_group_message_fetch_acks_success` | 需要群回执的文本消息、B 回执、A 分页查询 | 1 | 真实双设备严格通过 |
+| 179 | `test_group_message_read_ack_updates_count` | 真实群文本消息；B read-ack；A 统计 `groupAckCount` | 1 | 真实双设备严格通过，最终 `groupAckCount=1` |
 | 180 | `test_group_message_send_rejects_invalid_group_target` | 空 groupId、不存在 groupId | 2 | 真实双设备严格通过；分别为 `500`、`606` |
 | 181 | `test_group_message_send_rejects_non_member_states` | 从未入群、主动退出、被群主移除后发送 | 3 | 真实双设备严格通过；均为 `602` |
 
@@ -661,6 +664,7 @@
 
 - 正常消息类型覆盖：`9/9`。发送同步响应、A 端 `onMessageSuccess`、B 端 `onMessagesReceived` 或 `onCmdMessagesReceived` 均严格关联本次临时/真实 msgId，并冻结 `chatType=1`、`to/convId=groupId`。
 - 群回执正常和非法 ID case 已从 Chat 模块迁移到本文件对应测试，不再重复归入 Chat。
+- 按用户最新范围，正常群 read-ack case 仅验证 A 端同一真实 `msgId` 的 `groupAckCount=1`，不等待回调或查询回执明细。
 - ChatThread 的群父消息与 ChatThread API case 已统一归档到 Group；父消息只作为 thread 前置，不计为独立群消息发送覆盖。
 - 空/不存在 groupId、从未入群、主动退出和被移除后的发送边界均已补齐；类型构造和媒体路径异常由同一 `ChatManager.sendMessageWithType` 的 Chat 公共矩阵覆盖，不再按 chatType 重复。
 - 真实错误：空 groupId 为 `500/Message is invalid`；不存在群为 `606/Group does not exist`；三种非成员状态均为 `602/User has not joined the group`。失败消息均确认未投递给另一真实设备。
@@ -675,10 +679,38 @@
 | 185 | `test_chat_thread_update_name_and_leave` | 更新 thread 名称、双方更新事件、B 退出及已加入列表变化 | 1 | 已覆盖 |
 | 186 | `test_chat_thread_destroy_event_received_by_group_member` | 解散 thread，群成员收到销毁事件并校验稳定字段 | 1 | 已覆盖 |
 
+## 第五阶段：群主、管理员、普通成员权限矩阵
+
+以下 `7` 个测试函数展开为 `18 items`。使用两台真实 Android 模拟器和三个 REST 测试账号：
+群主 A 常驻 deviceA、成员/管理员 B 常驻 deviceB；管理员操作需要目标成员回调时，将 deviceA
+临时从 A 切换为 C，完成回调断言后恢复 A，再由 A 查询服务端最终状态并销群。
+
+| 编号 | 测试函数 | 展开场景 | Items | 结果 |
+|---|---|---|---:|---|
+| 187 | `test_group_mute_members_role_permission_matrix` | 群主/管理员禁言与解除禁言成功；普通成员返回 `603/group admin permission is required` | 3 | 真实双设备严格通过 |
+| 188 | `test_group_mute_all_role_permission_matrix` | 群主/管理员切换全员禁言成功并收到 `isAllMuted=true/false`；普通成员返回 `603` | 3 | 真实双设备严格通过 |
+| 189 | `test_group_allow_list_role_permission_matrix` | 群主/管理员增删白名单成功并收到精确成员回调；普通成员返回 `603` | 3 | 真实双设备严格通过 |
+| 190 | `test_group_blocklist_admin_member_role_matrix` | 当前真实 SDK 允许管理员增删黑名单并移出成员；普通成员返回 `603` | 2 | 真实双设备严格通过 |
+| 191 | `test_group_metadata_admin_member_role_matrix` | 当前真实 SDK 允许管理员修改名称、描述、扩展并通知群主；普通成员三个 API 均返回稳定 `603` | 2 | 真实双设备严格通过 |
+| 192 | `test_group_destroy_owner_only_role_denied` | 管理员、普通成员均不能销群，返回 `603/group owner permission is required`，群保持可查询 | 2 | 真实双设备严格通过 |
+| 193 | `test_group_message_block_role_matrix` | 群主、管理员、普通成员均可屏蔽/取消屏蔽群消息，分别冻结 `messageBlocked=true/false` | 3 | 真实双设备严格通过 |
+
+### 第五阶段真实返回补充
+
+- `blockMembers` 与群资料修改的管理员路径在当前 Android SDK 均成功，与 `group_manager.dart`
+  中部分“仅群主”注释不一致；本矩阵按真实 ADB/WS 返回冻结。
+- `blockGroup/unblockGroup` 的群主、管理员、普通成员三种角色均成功；群主成功行为与
+  “群主不能屏蔽群消息”的 SDK 注释不一致。
+- `removeWhiteList` 返回 `result=true` 且目标端收到
+  `onAllowListRemovedFromGroup.members=[target]`；但随后目标账号调用
+  `isMemberInWhiteListFromServer` 仍稳定返回 `true`，本 case 按真实返回断言并保留该语义差异。
+- 群资料变更回调的 `memberList/adminList` 会随端侧缓存时机出现/缺失；事件严格断言稳定的
+  `groupId/name/desc/owner/memberCount/permissionType`，成员与管理员列表由最终服务端群快照精确断言。
+
 ## 统计
-- 当前记录测试函数条目：`186`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`。
+- 当前记录测试函数条目：`193`；第二阶段新增 `29` 个函数、展开 `66 items`；第三阶段累计 `6` 个函数、展开 `16 items`；第四阶段迁移 `5` 个 ChatThread 函数、展开 `5 items`；第五阶段新增 `7` 个函数、展开 `18 items`。
 - 第二阶段逐文件严格结果：`60 passed, 6 failed`；原邀请/申请文件为 `10 passed, 1 failed`。
-- 当前 pytest 收集：`245 items`。
+- 当前 pytest 收集：`266 items`。
 - 已完成的 Group 全量（补空原因 case 前）：`215 passed, 7 failed, 1 skipped, 1 warning in 718.82s`，
   共 `223 items`；随后新增的空原因 case 单独实跑为 `1 passed`，因此当前代码全部 case 的已验证
   合并统计为 `216 passed, 7 failed, 1 skipped`。
@@ -687,3 +719,5 @@
 - 第二阶段真实 ADB 证据目录：`out/group_matrix_20260723/`。
 - 第三阶段 11 个 items 已分批完成真实双设备 strict 验证；初次媒体状态差异按真实值收紧后，失败项复跑通过，群回执双端事件补强后单条复跑通过。按用户要求未重复完整 Group 模块回归。
 - 第三阶段新增 5 个发送边界 items：真实双设备同 session strict 为 `5 passed`；未重复原 11 个正常/回执 items。
+- 第五阶段 discovery 后按真实返回收紧；新增文件严格结果为
+  `18 passed, 1 warning in 151.67s`，未重复 Group 全模块回归。

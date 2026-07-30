@@ -338,17 +338,23 @@ def test_group_invitation_explicit_decline_when_auto_accept_disabled(
         )
 
 
+@pytest.mark.parametrize(
+    "style",
+    [0, 1, 2, 3],
+    ids=["private-owner", "private-member", "public-approval", "public-open"],
+)
 def test_group_invitation_auto_accept_when_confirmation_required(
     device_a,
     device_b,
     assert_api,
     user_a,
     user_b,
+    style,
 ):
     """
     前置：A/B 已登录；B 的 autoAcceptGroupInvitation 显式设置为 true。
     步骤：
-    1. A 创建 inviteNeedConfirm=true 的私有群并邀请 B。
+    1. A 分别创建四种 style、inviteNeedConfirm=true 的群并邀请 B。
     2. B 由 SDK 自动接受邀请，不调用 acceptInvitationFromGroup。
     3. 分别收集 A/B 的邀请与成员加入事件，再由 A 拉取服务端群详情。
     预期与断言：B 自动成为成员，服务端 memberCount=2；B 收到自动接受回调；A 收到的
@@ -356,7 +362,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
     """
     group_id = ""
     joined = False
-    group_name = new_group_name("invite_auto_accept")
+    group_name = new_group_name(f"invite_auto_accept_style_{style}")
     try:
         resp_option = device_b.call(
             "Client",
@@ -380,6 +386,7 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             owner=user_a,
             group_name=group_name,
             invite_members=[user_b],
+            style=style,
             invite_need_confirm=True,
             expected_member_count=1,
         )
@@ -446,6 +453,9 @@ def test_group_invitation_auto_accept_when_confirmation_required(
             owner=user_a,
             member_count_value=2,
             member_list_value=[user_b],
+            max_user_count_value=200,
+            is_member_allow_to_invite=(style == 1),
+            is_member_only=(style != 3),
         )
     finally:
         if group_id:
