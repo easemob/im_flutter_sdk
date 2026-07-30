@@ -166,5 +166,22 @@
 异常 cases
 43. 无（该 API 无入参，且多平台同时登录需要额外可控设备会话；当前先覆盖单端登录下的稳定返回）。
 
+## 好友申请离线回放专项
+
+正常 cases
+44. `tests/contact/test_contact_offline_friendship.py::test_contact_offline_invitation_received_after_login`
+    B 已离线时 A 发起好友申请；B 重登后严格断言 `onContactInvited.userId/reason`，并确认双方服务端好友列表仍为空。
+45. `tests/contact/test_contact_offline_friendship.py::test_contact_offline_invitation_accept_after_login`
+    B 重登收到离线申请后同意；严格断言 B/A 双方 `onContactAdded`、A 的 `onFriendRequestAccepted` 及双方服务端好友列表。
+46. `tests/contact/test_contact_offline_friendship.py::test_contact_offline_invitation_decline_after_login`
+    B 重登收到离线申请后拒绝；严格断言 A 的 `onFriendRequestDeclined`，并确认双方服务端好友列表为空。
+47. `tests/contact/test_contact_offline_friendship.py::test_contact_offline_requester_receives_accept_after_relogin`
+    A 发出申请后离线，B 同意；A 重登收到 `onFriendRequestAccepted/onContactAdded`，双方服务端好友列表一致。
+48. `tests/contact/test_contact_offline_friendship.py::test_contact_offline_requester_receives_decline_after_relogin`
+    A 发出申请后离线，B 拒绝；A 重登收到 `onFriendRequestDeclined`，双方保持非好友。
+
+异常 cases
+- 无。本专项验证正常业务在观察方离线期间的服务端积压与重登回放，不把超时或偶发无事件固化为异常契约。
+
 ## 统计
-- 当前记录 case 条目总数：`43`
+- 当前记录 case 条目总数：`48`

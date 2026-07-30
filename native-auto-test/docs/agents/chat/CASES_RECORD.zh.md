@@ -407,7 +407,7 @@
 群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`132`
+- 当前记录 case 条目总数：`165`
 
 ## 单聊发送类型覆盖审计（2026-07-23）
 
@@ -504,6 +504,37 @@
    覆盖 direction=DOWN、start/end 时间范围和 msgTypes `[1]`、`[0,1]`、`[7]`、`[0,7]`。先等待目标消息进入漫游存储，再以真实 ID 验证筛选结果，避免把服务端归档延迟误判为过滤行为。
 156. `tests/chat/test_chat_recall_and_message_read_ack.py::*`、`tests/chat/test_chat_ack_read_strict.py::*` 与 `tests/chat/test_chat_s3_non_message_ops.py::test_chat_ack_conversation_read_*`
    覆盖文档启用的消息/会话已读 ACK 正常和边界链路；在 `requireDeliveryAck=true` 环境中保留并按阶段断言真实 `hasDeliverAck`，不将该重要字段加入忽略集。
+
+## 好友单聊离线回放专项（5554/5556 实测）
+
+正常 cases
+157. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_text_message_received_after_login`
+   B 离线期间接收文本；关联同步临时 ID、发送成功真实 ID和 B 重登后的 `onMessagesReceived`，严格断言参与者、会话、方向、状态、送达状态及正文。
+158. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_media_message_received_after_login[*]`
+   参数化覆盖 file/image/video/voice 四类离线媒体；冻结真实 `type/displayName/fileStatus/duration`，仅忽略动态路径、URL、secret、文件尺寸和时间字段。
+159. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_cmd_message_received_after_login`
+   普通 CMD 在 B 离线期间进入离线队列；B 重登后通过 `onCmdMessagesReceived` 收到同一 msgId/action，顶层 `deliverOnlineOnly=false`。
+160. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_deliver_online_only_not_received_after_login`
+   CMD body 设置 `deliverOnlineOnly=true` 时，发送方仍收到成功终态，但 B 重登后无目标 CMD 回调且 `getMessage` 返回 null；真实日志中消息顶层 `deliverOnlineOnly` 仍为 false。
+161. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_multiple_text_messages_and_unread_count`
+   B 离线期间积压三条文本；B 重登收到包含三个真实 msgId 的聚合事件，`getUnreadMsgCount=3`，latest message 为第三条。
+162. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_delivery_ack_after_recipient_login`
+   B 离线时 A 不提前收到送达回执；B 重登并接收消息后，A 收到同一 msgId 的 `onMessagesDelivered` 且 `hasDeliverAck=true`。
+163. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_message_read_after_relogin`
+   A 离线期间 B 回执单条已读；A 重登收到同一 msgId 的 `onMessagesRead`，`hasReadAck/hasDeliverAck` 均为 true。
+164. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_recall_after_relogin`
+   B 已收消息后离线，A 撤回；B 重登同时收到 `onMessagesRecalledInfo/onMessagesRecalled`，并确认本地 `getMessage` 为 null。
+165. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_content_change_after_relogin`
+   B 已收消息后离线，A 修改正文；B 重登收到 `onMessageContentChanged` 的操作者、时间和新正文，本地查询返回相同修改结果。
+
+异常 cases
+- 无。本专项包含 online-only 负向业务语义，但不把当前环境中偶发的离线回调缺失作为 SDK 异常契约。
+
+### 本轮真实回归
+
+- discovery 输出：`out/offline_friend_chat_20260730/`，包含 WebSocket 预期/实际差异和两台设备 ADB 日志。
+- strict：Contact `5 passed`；Chat 离线投递（媒体展开）`9 passed`；Chat 消息后操作 `3 passed`。
+- 日志修正：file/image/video 接收端 `fileStatus=3`，voice 为 `0`；CMD online-only 开关位于 body，消息顶层字段实测仍为 false。
 
 ### 本轮严格回归口径
 
