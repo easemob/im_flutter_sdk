@@ -183,6 +183,93 @@ def _prepare_offline_invitation(
     return invited
 
 
+def _establish_friendship(
+    device_a,
+    device_b,
+    assert_api,
+    *,
+    user_a: str,
+    user_b: str,
+) -> None:
+    _cleanup_relation(device_a, device_b, user_a, user_b)
+    set_accept_invitation_always(
+        device_b,
+        assert_api,
+        device_name="deviceB",
+        enabled=False,
+    )
+    reason = f"offline-delete-friend-{uuid.uuid4().hex[:8]}"
+    add = device_a.call(
+        "ContactManager",
+        Cmd.addContact.value,
+        info={"userId": user_b, "reason": reason},
+    )
+    _assert_contact_response(
+        assert_api,
+        add,
+        cmd=Cmd.addContact.value,
+        device_name="deviceA",
+        result=user_b,
+    )
+    invited = device_b.receive_message(
+        match_event_type=ContactChangeEvent.INVITED.value,
+        timeout=20.0,
+    )
+    _assert_contact_event(
+        assert_api,
+        invited,
+        event_type=ContactChangeEvent.INVITED.value,
+        user_id=user_a,
+        reason=reason,
+    )
+    accepted = device_b.call(
+        "ContactManager",
+        Cmd.acceptInvitation.value,
+        info={"userId": user_a},
+    )
+    _assert_contact_response(
+        assert_api,
+        accepted,
+        cmd=Cmd.acceptInvitation.value,
+        device_name="deviceB",
+        result=user_a,
+    )
+    added_on_b = device_b.receive_message(
+        match_event_type=ContactChangeEvent.CONTACT_ADD.value,
+        timeout=20.0,
+    )
+    _assert_contact_event(
+        assert_api,
+        added_on_b,
+        event_type=ContactChangeEvent.CONTACT_ADD.value,
+        user_id=user_a,
+    )
+    accepted_on_a = device_a.receive_message(
+        match_event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
+        timeout=20.0,
+    )
+    _assert_contact_event(
+        assert_api,
+        accepted_on_a,
+        event_type=ContactChangeEvent.INVITATION_ACCEPTED.value,
+        user_id=user_b,
+    )
+    added_on_a = device_a.receive_message(
+        match_event_type=ContactChangeEvent.CONTACT_ADD.value,
+        timeout=20.0,
+    )
+    _assert_contact_event(
+        assert_api,
+        added_on_a,
+        event_type=ContactChangeEvent.CONTACT_ADD.value,
+        user_id=user_b,
+    )
+    _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[user_b])
+    _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[user_a])
+    device_a.drain_events(timeout=0.5)
+    device_b.drain_events(timeout=0.5)
+
+
 def test_contact_offline_invitation_received_after_login(
     device_a,
     device_b,
@@ -437,6 +524,128 @@ def test_contact_offline_requester_receives_decline_after_relogin(
             assert_api,
             declined,
             event_type=ContactChangeEvent.INVITATION_DECLINED.value,
+            user_id=user_b,
+        )
+        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+    finally:
+        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
+
+
+def test_contact_offline_recipient_receives_delete_after_relogin(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    user_b,
+):
+    """B 离线期间 A 删除好友；B 重登收到删除事件且双方关系清空。"""
+    try:
+        _establish_friendship(
+            device_a,
+            device_b,
+            assert_api,
+            user_a=user_a,
+            user_b=user_b,
+        )
+        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        deleted = device_a.call(
+            "ContactManager",
+            Cmd.deleteContact.value,
+            info={"userId": user_b, "keepConversation": True},
+        )
+        _assert_contact_response(
+            assert_api,
+            deleted,
+            cmd=Cmd.deleteContact.value,
+            device_name="deviceA",
+            result=user_b,
+        )
+        deleted_on_a = device_a.receive_message(
+            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            timeout=20.0,
+        )
+        _assert_contact_event(
+            assert_api,
+            deleted_on_a,
+            event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            user_id=user_b,
+        )
+        login_preserving_offline_events(
+            device_b,
+            assert_api,
+            device_name="deviceB",
+            user_id=user_b,
+        )
+        deleted_on_b = device_b.receive_message(
+            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            timeout=20.0,
+        )
+        _assert_contact_event(
+            assert_api,
+            deleted_on_b,
+            event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            user_id=user_a,
+        )
+        _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])
+        _assert_contacts(device_b, assert_api, device_name="deviceB", expected=[])
+    finally:
+        _restore_case_state(device_a, device_b, user_a=user_a, user_b=user_b)
+
+
+def test_contact_offline_requester_receives_peer_delete_after_relogin(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    user_b,
+):
+    """A 离线期间 B 删除好友；A 重登收到删除事件且双方关系清空。"""
+    try:
+        _establish_friendship(
+            device_a,
+            device_b,
+            assert_api,
+            user_a=user_a,
+            user_b=user_b,
+        )
+        logout_for_offline(device_a, assert_api, device_name="deviceA")
+        deleted = device_b.call(
+            "ContactManager",
+            Cmd.deleteContact.value,
+            info={"userId": user_a, "keepConversation": True},
+        )
+        _assert_contact_response(
+            assert_api,
+            deleted,
+            cmd=Cmd.deleteContact.value,
+            device_name="deviceB",
+            result=user_a,
+        )
+        deleted_on_b = device_b.receive_message(
+            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            timeout=20.0,
+        )
+        _assert_contact_event(
+            assert_api,
+            deleted_on_b,
+            event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            user_id=user_a,
+        )
+        login_preserving_offline_events(
+            device_a,
+            assert_api,
+            device_name="deviceA",
+            user_id=user_a,
+        )
+        deleted_on_a = device_a.receive_message(
+            match_event_type=ContactChangeEvent.CONTACT_DELETE.value,
+            timeout=20.0,
+        )
+        _assert_contact_event(
+            assert_api,
+            deleted_on_a,
+            event_type=ContactChangeEvent.CONTACT_DELETE.value,
             user_id=user_b,
         )
         _assert_contacts(device_a, assert_api, device_name="deviceA", expected=[])

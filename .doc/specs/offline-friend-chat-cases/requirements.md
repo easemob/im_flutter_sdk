@@ -1,4 +1,4 @@
-# 好友与单聊第一批离线 Cases
+# 好友与单聊离线 Cases
 
 ## User Story
 
@@ -26,3 +26,13 @@
 18. 当实现本批用例时，好友关系 case 应放入 Contact 模块，消息投递和消息后操作 case 应放入 Chat 模块；Python 文件名和测试函数名应显式包含 `offline`，使目录扫描即可识别离线场景。
 19. 当实现完成时，Contact/Chat 的 `CASES_RECORD.zh.md` 或 `CASES_DEFERRED.zh.md` 应与新增测试函数逐项对账，并记录真实设备验证结果。
 20. 当验证本批改动时，系统应先逐场景 discovery，再运行新增文件 strict 回归、Python 静态检查和项目 speckit 检查；失败必须保留真实原因，不得修改发布 SDK 或原生 Wrapper 规避。
+21. 当 A 与 B 已建立好友关系且 B 离线时，A 删除 B 后，测试应在 B 重新登录后严格断言真实 `onContactDeleted` 事件，并确认双方服务端好友列表均不再包含对方。
+22. 当 A 与 B 已建立好友关系且 A 离线时，B 删除 A 后，测试应在 A 重新登录后严格断言真实 `onContactDeleted` 事件，并确认双方服务端好友列表均不再包含对方。
+23. 当 B 离线且 A 分别发送 location 和 custom 消息时，测试应严格断言发送响应、发送成功事件以及 B 重新登录后的目标消息事件；location 应覆盖经纬度、地址、建筑物名称，custom 应覆盖事件名和参数。
+24. 当 B 离线且 A 发送 combine 消息时，测试应使用真实源消息 ID 构造合并消息，并在 B 重新登录后严格断言标题、摘要、兼容文本及服务端返回的稳定业务字段。
+25. 当 B 已收到消息、A 随后离线且 B 调用 `ackConversationRead` 时，测试应在 A 重新登录后严格断言真实 `onConversationRead` 事件的 `from/to`，不得兼容多个候选事件名。
+26. 当 A 离线且 B 对目标消息添加 Reaction 时，测试应在 A 重新登录后严格断言真实 Reaction 变化事件中的会话、消息、操作者、Reaction、操作类型和聚合状态，并验证最终 Reaction 状态。
+27. 当目标消息已有 Reaction、A 随后离线且 B 移除该 Reaction 时，测试应在 A 重新登录后严格断言真实移除事件和最终 Reaction 状态。
+28. 当 B 离线且 A 置顶目标消息时，测试应在 B 重新登录后严格断言真实 `onMessagePinChanged` 事件中的消息、会话、操作类型和操作者，并验证最终置顶状态。
+29. 当目标消息已置顶、B 随后离线且 A 取消置顶时，测试应在 B 重新登录后严格断言真实取消置顶事件和最终置顶状态。
+30. 当实现第二批 P0 cases 时，应继续放入现有 Contact、Chat 离线测试模块；已经标记暂缓的好友自动同步场景不纳入本批实现，也不得为了使 P0 通过而放宽已有严格断言。

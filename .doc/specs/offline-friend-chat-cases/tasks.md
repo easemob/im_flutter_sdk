@@ -1,4 +1,4 @@
-# 好友与单聊第一批离线 Cases Implementation Plan
+# 好友与单聊离线 Cases Implementation Plan
 
 > **执行方式：** 在当前会话内按 `superpowers:executing-plans` 顺序执行；项目规则禁止维护第二份计划，所有状态只更新本文件。未经用户授权不创建提交。
 
@@ -213,3 +213,58 @@ git status --short
 - 静态/收集：四个 Python 文件 `py_compile` 退出码 0，新增文件合计 `17 tests collected`。
 - 规范：`im_flutter_sdk/scripts/speckit.sh check` 全部 PASS；`git diff --check` 退出码 0。
 - 交付边界：未修改 `im_flutter_sdk/` 发布 SDK、Android/iOS Wrapper 或 `im_flutter_test/`。
+
+---
+
+## 第二批 P0：未完成且非暂缓场景
+
+**Goal:** 在不修改 SDK/测试 App 的前提下，继续补齐 10 个好友与单聊 P0 离线再上线 items，并以本轮真实 ADB/WebSocket 日志冻结严格预期。
+
+### Task 8：双向好友删除
+
+- [x] 在 `tests/contact/test_contact_offline_friendship.py` 新增“B 离线时 A 删除 B”。
+- [x] 新增“A 离线时 B 删除 A”，两个方向分别建独立 case。
+- [x] 严格断言删除命令、离线观察方 `onContactDeleted` 原始事件和双方服务端好友列表。
+- [x] discovery 后只忽略 `sequence/timestamp` 等真实动态字段。
+
+### Task 9：location/custom/combine 离线投递
+
+- [x] 在 `tests/chat/test_chat_offline_message_delivery.py` 新增 location 离线投递。
+- [x] 新增 custom 离线投递。
+- [x] 新增 combine 离线投递，并使用两条真实源消息 ID 构造合并消息。
+- [x] 严格断言发送响应、`onMessageSuccess` 和重新登录后的原始接收事件。
+
+### Task 10：会话已读、Reaction 与消息置顶
+
+- [x] 在 `tests/chat/test_chat_offline_message_operations.py` 新增会话级已读回执。
+- [x] 分别新增 Reaction 添加和移除两个离线 case。
+- [x] 分别新增消息置顶和取消置顶两个离线 case。
+- [x] 通过对应查询 API 严格验证 Reaction/置顶最终状态。
+
+### Task 11：真实设备 discovery 与严格断言
+
+- [x] 确认两台模拟器、WebSocket topic 和账号登录态可用。
+- [x] 逐一运行第二批 10 个 node，保存 ADB/WebSocket 原始日志。
+- [x] 根据日志冻结 command response、eventType、业务 data 和最终查询状态。
+- [x] 对未派发或不稳定能力记录真实证据并进入 deferred；本批均稳定派发，无新增 deferred。
+
+### Task 12：回归、台账与规范检查
+
+- [x] 运行第二批 10 items strict。
+- [x] 运行三个离线文件全量 strict，确认总计 27 items。
+- [x] 执行 `py_compile`、`pytest --collect-only`、断言反模式审查和 `git diff --check`。
+- [x] 更新 Contact/Chat 的 RECORD；本批没有真实阻塞，无需更新 DEFERRED。
+- [x] 执行 `im_flutter_sdk/scripts/speckit.sh check` 并回填本轮验证证据。
+
+## 第二批 P0 验证证据
+
+- 设备：`emulator-5554`、`emulator-5556`；测试 App 进程均在线。
+- discovery/ADB 目录：`native-auto-test/out/offline_p0_20260730_AZaG1M/`（git ignore，仅本机保留）。
+- discovery：Contact 删除 2、Chat 投递 3、Chat 后操作 5，共 10 items；全部获取到真实离线回放事件和最终查询状态。
+- 日志修正：combine 构造响应/发送成功/离线接收的 `fileStatus=3/1/3`；Reaction 移除事件保留 `count=0` 聚合项，最终查询为空。
+- 新增 P0 strict：`10 passed`（317.18s），0 failed/skip。
+- 三个离线文件完整 strict：`27 passed`（775.00s），0 failed/skip。
+- 静态/收集：三个 Python 文件 `py_compile` 退出码 0，`27 tests collected`。
+- 断言审查：无 `assert_success` 主断言、`ne(None)`、actual 自证 expected 或整体忽略 `result/data/body`。
+- 规范：`git diff --check` 退出码 0；`im_flutter_sdk/scripts/speckit.sh check` 全部 PASS。
+- 交付边界：未修改发布 SDK、Android/iOS Wrapper 或 `im_flutter_test`；暂缓的好友自动同步未纳入。

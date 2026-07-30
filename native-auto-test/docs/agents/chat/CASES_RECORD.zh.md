@@ -407,7 +407,7 @@
 群消息回执的正常与边界 case 已迁移到 `tests/group/test_group_message_send.py`，Chat 模块不再重复统计。
 
 ## 统计
-- 当前记录 case 条目总数：`165`
+- 当前记录 case 条目总数：`173`
 
 ## 单聊发送类型覆盖审计（2026-07-23）
 
@@ -526,6 +526,22 @@
    B 已收消息后离线，A 撤回；B 重登同时收到 `onMessagesRecalledInfo/onMessagesRecalled`，并确认本地 `getMessage` 为 null。
 165. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_content_change_after_relogin`
    B 已收消息后离线，A 修改正文；B 重登收到 `onMessageContentChanged` 的操作者、时间和新正文，本地查询返回相同修改结果。
+166. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_location_message_received_after_login`
+   B 离线期间 A 发送位置消息；B 重登收到同一真实 msgId，严格断言经纬度、唯一地址和建筑物名称。
+167. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_custom_message_received_after_login`
+   B 离线期间 A 发送自定义消息；B 重登收到同一真实 msgId、唯一 event 和完整 params。
+168. `tests/chat/test_chat_offline_message_delivery.py::test_chat_offline_combine_message_received_after_login`
+   先在线发送两条真实源消息，再让 B 离线并使用其服务端 msgId 构造 combine；发送构造响应、成功事件和离线接收事件分别冻结真实 `fileStatus=3/1/3`，标题、摘要和兼容文本完整断言。
+169. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_conversation_read_after_relogin`
+   A 离线期间 B 调用 `ackConversationRead`；A 重登只接受真实 `onConversationRead`，严格断言 `from=B/to=A`，不兼容其他候选事件名。
+170. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_add_after_relogin`
+   A 离线期间 B 添加 Reaction；A 重登收到 `operate=1` 的原始变化事件，严格断言操作者、Reaction、count、自身标记和用户列表，并通过 `fetchReactionList` 确认最终状态。
+171. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_sender_receives_reaction_remove_after_relogin`
+   消息已有 Reaction 后 A 离线，B 移除；A 重登事件真实返回 `operate=0/count=0/isAddedBySelf=false/userList=[]`，最终查询返回空 Reaction 列表。
+172. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_pin_after_relogin`
+   B 离线期间 A 置顶消息；B 重登收到 `MessagePinOperation.Pin`，严格断言消息、会话和操作者，并通过 `fetchPinnedMessages` 精确确认目标消息。
+173. `tests/chat/test_chat_offline_message_operations.py::test_chat_offline_recipient_receives_message_unpin_after_relogin`
+   消息已置顶后 B 离线，A 取消置顶；B 重登收到 `MessagePinOperation.Unpin`，最终置顶列表严格为空。
 
 异常 cases
 - 无。本专项包含 online-only 负向业务语义，但不把当前环境中偶发的离线回调缺失作为 SDK 异常契约。
@@ -535,6 +551,9 @@
 - discovery 输出：`out/offline_friend_chat_20260730/`，包含 WebSocket 预期/实际差异和两台设备 ADB 日志。
 - strict：Contact `5 passed`；Chat 离线投递（媒体展开）`9 passed`；Chat 消息后操作 `3 passed`。
 - 日志修正：file/image/video 接收端 `fileStatus=3`，voice 为 `0`；CMD online-only 开关位于 body，消息顶层字段实测仍为 false。
+- 第二批 P0 discovery/ADB 输出：`out/offline_p0_20260730_AZaG1M/`，包含双设备 logcat、分模块 discovery 和 strict 输出。
+- 第二批 P0 strict：新增 10 items `10 passed`（317.18s）；三个离线文件完整回归 `27 passed`（775.00s），0 failed/skip。
+- 第二批日志修正：combine 的构造响应、发送成功、离线接收 `fileStatus` 分别为 `3/1/3`；Reaction 移除事件保留 count=0 的聚合项，最终查询才返回空列表；会话已读固定为 `onConversationRead`；pin/unpin 均在离线观察方重登时补发。
 
 ### 本轮严格回归口径
 

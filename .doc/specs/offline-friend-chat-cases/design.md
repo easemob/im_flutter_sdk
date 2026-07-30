@@ -1,8 +1,8 @@
-# 好友与单聊第一批离线 Cases 设计
+# 好友与单聊离线 Cases 设计
 
 ## Overview
 
-本批只补用户已确认的第一批 14 组离线业务场景，不修改发布 SDK、Android/iOS Wrapper 或测试 App 事件桥接。测试通过现有 WebSocket 通用桥接驱动两台模拟器：deviceA 默认登录 userA，deviceB 默认登录 userB；需要制造离线状态时显式 logout，业务操作完成后重新 login 并保留登录过程中进入 WebSocket 队列的事件。
+本 spec 覆盖用户已确认的好友与单聊离线业务场景。第一批 17 个 pytest items 已完成；第二批继续补齐 10 个未完成且非暂缓的 P0 items：双向好友删除、location/custom/combine 离线投递、会话已读、Reaction 添加/移除、消息置顶/取消置顶。实现不修改发布 SDK、Android/iOS Wrapper 或测试 App 事件桥接。测试通过现有 WebSocket 通用桥接驱动两台模拟器：deviceA 默认登录 userA，deviceB 默认登录 userB；需要制造离线状态时显式 logout，业务操作完成后重新 login 并保留登录过程中进入 WebSocket 队列的事件。
 
 持久化规范与任务状态仅维护在本 Kiro spec 中；Contact/Chat 模块台账继续作为独立覆盖报告。
 
@@ -10,13 +10,13 @@
 
 ```text
 native-auto-test/tests/contact/test_contact_offline_friendship.py
-    └── 好友申请、同意、拒绝及申请方离线反馈
+    └── 好友申请、同意、拒绝、申请方离线反馈及双向好友删除
 
 native-auto-test/tests/chat/test_chat_offline_message_delivery.py
-    └── 文本、媒体、CMD、online-only、多消息和送达回执
+    └── 文本、媒体、location、custom、combine、CMD、online-only、多消息和送达回执
 
 native-auto-test/tests/chat/test_chat_offline_message_operations.py
-    └── 已读回执、撤回、修改的离线观察方链路
+    └── 单条/会话已读、撤回、修改、Reaction 与消息置顶的离线观察方链路
 
 native-auto-test/src/test_flow/offline_test_flow.py
     └── logout/login、回调启动、事件保留、登录态恢复等跨模块最小编排
@@ -82,6 +82,8 @@ sequenceDiagram
 - 文本与多消息复用现有 `build_text` 结构。
 - file/image/video/voice 使用 `sendMessageWithType` 和测试 App 内置素材，不传宿主机路径。
 - CMD 明确传递 `deliverOnlineOnly=false`；online-only 负向场景显式传 `true`。
+- location 传递唯一地址/建筑物名称及固定经纬度；custom 传递唯一事件名和稳定参数。
+- combine 先在线发送两条源消息并取得服务端真实 msgId，再让 B 离线并通过这两个真实 ID 构造合并消息。
 - 每条消息先从 `onMessageSuccess` 获取服务端真实 msgId，再用该 ID 关联接收、送达、已读、撤回和修改事件。
 
 ### 4. 事件与状态断言
@@ -92,6 +94,10 @@ sequenceDiagram
 - 已读：`onMessagesRead` 中目标消息的 read/delivery 状态。
 - 撤回：`onMessagesRecalledInfo.infos` 中 recallBy、recallMsgId、convId、原消息和 ext，并关联同一 msgId 的 `onMessagesRecalled.messages`。
 - 修改：`onMessageContentChanged` 中 message、operatorId、operationTime/attributes 的稳定字段。
+- 好友删除：重新登录观察方收到的 `onContactDeleted.data.userId`，以及双方服务端好友列表。
+- 会话已读：只接受 discovery 证明的 `onConversationRead`，直接断言 `from/to`。
+- Reaction：直接断言 `onMessageReactionDidChange.data.events` 中目标消息的 operation/reactions 结构，并通过 `fetchReactionList` 验证最终状态。
+- 消息置顶：直接断言 `onMessagePinChanged` 的 messageId、conversationId、pinOperation、operatorId；通过 `fetchPinnedMessages` 验证最终状态。
 - online-only：使用唯一内容或 action、事件等待和本地/服务端查询形成负向证据；不以一次极短 timeout 单独证明未投递。
 
 ## Constraints / Tradeoffs
@@ -99,8 +105,9 @@ sequenceDiagram
 - 两台模拟器通过 logout/login 复用账号，不引入第三台设备。
 - 登录期间 SDK 事件可能早于 login 响应进入队列，因此不能在 login 后 drain。
 - 离线同步 start/finish 是辅助证据，业务事件和最终状态是主断言；不预设二者顺序。
-- 第一批媒体只覆盖 file/image/video/voice；location/custom/combine 留在后续类型扩展，避免首批范围继续膨胀。
-- 好友信息自动同步依赖 `enableAutoSyncContacts=true`，不属于本批 14 组。
+- 第一批媒体覆盖 file/image/video/voice；第二批 P0 在同一投递模块补齐 location/custom/combine。
+- 好友信息自动同步依赖 `enableAutoSyncContacts=true`，已按用户要求暂缓，不属于当前 P0 实现范围。
+- 第二批不抽取或重构既有 helper，避免扩大对第一批 17 个已通过 items 的影响；新能力沿用现有三个离线模块。
 - 真实环境若出现 SDK/服务端缺失事件，保留严格失败或 deferred 记录，不修改 SDK 契约。
 
 ## Error Handling
@@ -113,9 +120,9 @@ sequenceDiagram
 ## Testing Strategy
 
 1. 运行 `pytest --collect-only` 和 `python -m py_compile`，先确认命名、fixture 与导入。
-2. 分别执行 `CASES_DISCOVER=1 WS_DEBUG=1 pytest -q tests/contact/test_contact_offline_friendship.py -s`、`tests/chat/test_chat_offline_message_delivery.py -s` 和 `tests/chat/test_chat_offline_message_operations.py -s`，同时使用 ADB logcat 保存两台设备日志。
+2. 分别对新增 P0 test node 执行 `CASES_DISCOVER=1 WS_DEBUG=1 pytest -q ... -s`，同时使用 ADB logcat 保存两台设备日志，避免一次全量运行掩盖单场景事件时序。
 3. 从真实响应中冻结稳定业务字段并缩小 `ignore_keys`。
 4. 关闭 discovery，逐 case strict；不通过时回到日志诊断，而不是放宽断言。
-5. 运行三个新增文件 strict 回归。
+5. 运行三个离线文件 strict 回归，确认第一批 17 items 未回归且第二批 10 items 全部通过。
 6. 更新 Contact/Chat 模块 record 或 deferred 台账。
 7. 执行 `im_flutter_sdk/scripts/speckit.sh check`；本批不修改 Flutter/SDK，除非 discovery 暴露既有桥接缺口，否则不触发发布 SDK 构建。

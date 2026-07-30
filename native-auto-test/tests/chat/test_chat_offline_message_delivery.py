@@ -44,6 +44,13 @@ _MEDIA_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
     "thumbnailStatus",
 }
 
+_COMBINE_DYNAMIC_KEYS = _MESSAGE_DYNAMIC_KEYS | {
+    "localPath",
+    "remotePath",
+    "secret",
+    "messageList",
+}
+
 _MEDIA_CASES = [
     pytest.param(
         "file",
@@ -545,6 +552,230 @@ def test_chat_offline_media_message_received_after_login(
             user_b=user_b,
             body=received_body,
             ignore_keys=_MEDIA_DYNAMIC_KEYS,
+        )
+    finally:
+        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+
+
+def test_chat_offline_location_message_received_after_login(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    user_b,
+):
+    """好友 B 离线时 A 发位置消息；B 重登收到完整位置业务字段。"""
+    address = f"offline-location-{uuid.uuid4().hex[:8]}"
+    building_name = "offline-building"
+    body = {
+        "type": 3,
+        "latitude": 30.2741,
+        "longitude": 120.1551,
+        "address": address,
+        "buildingName": building_name,
+    }
+    try:
+        _prepare_offline_friend(
+            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
+        )
+        _, real_id, _ = _assert_send_response_and_success(
+            device_a,
+            assert_api,
+            type_key="location",
+            payload={
+                "targetId": user_b,
+                "latitude": body["latitude"],
+                "longitude": body["longitude"],
+                "address": address,
+                "buildingName": building_name,
+            },
+            user_a=user_a,
+            user_b=user_b,
+            response_body=body,
+            success_body=body,
+        )
+        login_preserving_offline_events(
+            device_b,
+            assert_api,
+            device_name="deviceB",
+            user_id=user_b,
+        )
+        received = _wait_message_event(
+            device_b,
+            Cmd.onMessagesReceived.value,
+            real_id=real_id,
+        )
+        _assert_received_message(
+            assert_api,
+            received,
+            event_type=Cmd.onMessagesReceived.value,
+            real_id=real_id,
+            user_a=user_a,
+            user_b=user_b,
+            body=body,
+        )
+    finally:
+        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+
+
+def test_chat_offline_custom_message_received_after_login(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    user_b,
+):
+    """好友 B 离线时 A 发自定义消息；B 重登收到事件名和参数。"""
+    custom_event = f"offline-custom-{uuid.uuid4().hex[:8]}"
+    params = {"source": "offline-p0", "value": "真实日志"}
+    body = {"type": 7, "event": custom_event, "params": params}
+    try:
+        _prepare_offline_friend(
+            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
+        )
+        _, real_id, _ = _assert_send_response_and_success(
+            device_a,
+            assert_api,
+            type_key="custom",
+            payload={
+                "targetId": user_b,
+                "event": custom_event,
+                "params": params,
+            },
+            user_a=user_a,
+            user_b=user_b,
+            response_body=body,
+            success_body=body,
+        )
+        login_preserving_offline_events(
+            device_b,
+            assert_api,
+            device_name="deviceB",
+            user_id=user_b,
+        )
+        received = _wait_message_event(
+            device_b,
+            Cmd.onMessagesReceived.value,
+            real_id=real_id,
+        )
+        _assert_received_message(
+            assert_api,
+            received,
+            event_type=Cmd.onMessagesReceived.value,
+            real_id=real_id,
+            user_a=user_a,
+            user_b=user_b,
+            body=body,
+        )
+    finally:
+        _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
+
+
+def test_chat_offline_combine_message_received_after_login(
+    device_a,
+    device_b,
+    assert_api,
+    user_a,
+    user_b,
+):
+    """好友 B 离线时 A 转发两条真实源消息；B 重登收到合并消息。"""
+    title = f"offline-combine-{uuid.uuid4().hex[:8]}"
+    summary = "two offline source messages"
+    compatible_text = "offline combine compatible"
+    try:
+        _establish_friendship(
+            device_a, device_b, assert_api, user_a=user_a, user_b=user_b
+        )
+        source_ids = []
+        for index in range(2):
+            content = f"offline-combine-source-{index}-{uuid.uuid4().hex[:6]}"
+            _, source_id, _ = _assert_send_response_and_success(
+                device_a,
+                assert_api,
+                type_key="txt",
+                payload={"targetId": user_b, "content": content},
+                user_a=user_a,
+                user_b=user_b,
+                response_body={"type": 0, "content": content},
+                success_body={
+                    "type": 0,
+                    "content": content,
+                    "translations": {},
+                },
+            )
+            source_received = _wait_message_event(
+                device_b,
+                Cmd.onMessagesReceived.value,
+                real_id=source_id,
+            )
+            _assert_received_message(
+                assert_api,
+                source_received,
+                event_type=Cmd.onMessagesReceived.value,
+                real_id=source_id,
+                user_a=user_a,
+                user_b=user_b,
+                body={"type": 0, "content": content, "translations": {}},
+            )
+            source_ids.append(source_id)
+        device_a.drain_events(timeout=0.5)
+        device_b.drain_events(timeout=0.5)
+        logout_for_offline(device_b, assert_api, device_name="deviceB")
+        _, real_id, _ = _assert_send_response_and_success(
+            device_a,
+            assert_api,
+            type_key="combine",
+            payload={
+                "targetId": user_b,
+                "title": title,
+                "summary": summary,
+                "compatibleText": compatible_text,
+                "msgIds": source_ids,
+            },
+            user_a=user_a,
+            user_b=user_b,
+            response_body={
+                "type": 8,
+                "title": title,
+                "summary": summary,
+                "compatibleText": compatible_text,
+                "fileStatus": 3,
+            },
+            success_body={
+                "type": 8,
+                "title": title,
+                "summary": summary,
+                "compatibleText": compatible_text,
+                "fileStatus": 1,
+            },
+            ignore_keys=_COMBINE_DYNAMIC_KEYS,
+        )
+        login_preserving_offline_events(
+            device_b,
+            assert_api,
+            device_name="deviceB",
+            user_id=user_b,
+        )
+        received = _wait_message_event(
+            device_b,
+            Cmd.onMessagesReceived.value,
+            real_id=real_id,
+        )
+        _assert_received_message(
+            assert_api,
+            received,
+            event_type=Cmd.onMessagesReceived.value,
+            real_id=real_id,
+            user_a=user_a,
+            user_b=user_b,
+            body={
+                "type": 8,
+                "title": title,
+                "summary": summary,
+                "compatibleText": compatible_text,
+                "fileStatus": 3,
+            },
+            ignore_keys=_COMBINE_DYNAMIC_KEYS,
         )
     finally:
         _restore_case(device_a, device_b, user_a=user_a, user_b=user_b)
