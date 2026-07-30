@@ -2,7 +2,7 @@
 
 > **执行方式：** 在当前会话内按 `superpowers:executing-plans` 顺序执行；项目规则禁止维护第二份计划，所有状态只更新本文件。未经用户授权不创建提交。
 
-**Goal:** 使用两台模拟器补齐第一批 14 组好友关系与单聊离线 cases，并根据真实 ADB/WebSocket 日志形成严格业务断言。
+**Goal:** 使用两台模拟器按已确认批次补齐好友关系与单聊离线 cases；当前执行第三批单聊离线能力覆盖，并根据真实 ADB/WebSocket 日志形成严格业务断言。App 强制停止和网络断开两种真实离线方式不在本批范围内。
 
 **Architecture:** Contact、Chat 投递、Chat 后操作分别使用三个名称显式包含 `offline` 的测试文件；跨模块只共享登录态编排 helper。业务事件断言留在各模块测试中，避免 helper 隐藏真实响应。
 
@@ -268,3 +268,56 @@ git status --short
 - 断言审查：无 `assert_success` 主断言、`ne(None)`、actual 自证 expected 或整体忽略 `result/data/body`。
 - 规范：`git diff --check` 退出码 0；`im_flutter_sdk/scripts/speckit.sh check` 全部 PASS。
 - 交付边界：未修改发布 SDK、Android/iOS Wrapper 或 `im_flutter_test`；暂缓的好友自动同步未纳入。
+
+---
+
+## 第三批：单聊离线能力全覆盖（不含已暂缓和端侧真实离线）
+
+**Goal:** 补齐现有 SDK/测试桥接可稳定驱动的单聊离线业务差异场景，不覆盖 CMD delivery receipt、非 CMD online-only、显式翻译正常结果、强制停止 App、网络断开或现有桥接缺口。
+
+### Task 13：扩展投递与同步状态 cases
+
+**Files:**
+
+- Create: `native-auto-test/tests/chat/test_chat_offline_message_extended_delivery.py`
+- Use: `native-auto-test/tests/chat/test_chat_offline_message_delivery.py`
+- Use: `native-auto-test/src/test_flow/offline_test_flow.py`
+
+- [x] 先为每个候选节点建立最小 discovery 测试骨架，只发送一条唯一业务标识消息，并记录 A 的发送响应、B 的离线回放、A 的送达事件和最终查询结果。
+- [x] 基于 discovery 分别实现 file/image/video/voice/location/custom/combine 的离线上线后送达回执参数化矩阵；主断言固定真实 msgId、`hasDeliverAck` 与真实 `onMessagesDelivered` 字段。
+- [x] 基于 discovery 实现带 `targetLanguages` 的离线文本自动翻译同步结果；只断言服务端返回的稳定目标语言和翻译正文。
+- [x] 基于 B 离线回放的原始消息对象实现 file/image/video/voice 的附件下载，并为 image/video 增加缩略图下载；断言下载命令响应与真实稳定文件状态，不拼装消息对象。
+- [x] 实现 text/location/custom/combine 混合积压：以消息 ID 集合接收回放事件，再对 `getMessage`、历史查询、未读数和最新消息做最终一致性断言。
+
+### Task 14：扩展离线后操作 cases
+
+**Files:**
+
+- Create: `native-auto-test/tests/chat/test_chat_offline_message_extended_operations.py`
+- Use: `native-auto-test/tests/chat/test_chat_offline_message_delivery.py`
+- Use: `native-auto-test/src/test_flow/offline_test_flow.py`
+
+- [x] 先分别 discovery 首次投递前文本撤回与文本修改，确认 B 重登后“原消息、撤回/修改事件、本地最终状态”的实际组合，再冻结单一语义断言。
+- [x] 基于 discovery 实现 file/image/video/voice/location/custom/combine 的离线单条已读参数化矩阵；每项关联真实 msgId 与 A 重登后的 `onMessagesRead`。
+- [x] 基于 discovery 实现 file/image/video/voice/location/custom/combine 的离线撤回参数化矩阵；每项直接断言 `onMessagesRecalledInfo` 及本地最终状态。
+- [x] 基于 discovery 实现 custom body 修改和 file/image/video/voice ext 修改；按类型断言 `onMessageContentChanged` 的真实 body/ext 与 B 本地最终消息。
+
+### Task 15：真实设备 discovery、strict 与台账
+
+- [x] 对 Task 13/14 的差异分支和矩阵代表节点采集双设备 WebSocket/ADB 日志，先 discovery 后 strict；同结构参数节点以全矩阵 strict 验证真实 body，不为相同 schema 重复制造一份日志文件。
+- [x] 将真实稳定字段写入 expected；仅保留时间、路径、URL、secret 等最小动态忽略。
+- [x] 真实无回调或无稳定能力的 node 不得 xfail/弱化，写入 Chat DEFERRED 并保留日志证据；本批 video 缩略图真实返回 403，作为严格错误语义覆盖，无新增 deferred。
+- [x] 更新 Chat RECORD/DEFERRED 和本 tasks 文件，执行扩展文件与既有 27 items 严格回归；扩展投递 13 items 同轮通过，扩展后操作 20/21 同轮通过且唯一修正节点单点通过，既有 27 items 同轮通过。用户确认无需再次完成修正后的 21 items 整文件复跑。
+- [x] 执行 `py_compile`、`pytest --collect-only`、断言反模式扫描、`git diff --check` 和 `im_flutter_sdk/scripts/speckit.sh check`。
+
+## 第三批验证证据
+
+- 设备与账号：两台 Android 模拟器 `emulator-5554`、`emulator-5556`，使用 `deviceA/userA` 与 `deviceB/userB` 的 SDK logout/login 离线窗口；未覆盖 App 强停和网络断开。
+- 收集与静态：两个扩展文件 `py_compile` 退出码 0，合计 `34 tests collected`；断言反模式扫描未发现 `ne(None)`、`assert_success`、actual 自证 expected、整体忽略 `result/data/body` 或 `is not None` 主断言。
+- 扩展投递 strict：`13 passed`（500.05s），包括 7 类送达、自动翻译、4 类附件/缩略图下载和混合积压最终一致性。
+- 扩展后操作 strict：整文件首轮 `20 passed, 1 failed`（782.47s）；唯一 voice 撤回失败由真实 `fileStatus=3` 与旧预期 `0` 不符导致，修正后该 node `1 passed`（51.18s）。之后启动的整文件复跑在 `3 passed` 时按用户指示停止，不计作完整通过证据。
+- 既有专项回归：Contact + 原 Chat delivery + 原 Chat operations 合计 `27 passed`（779.45s），0 failed/skip。
+- 规范：`git diff --check` 退出码 0；`im_flutter_sdk/scripts/speckit.sh check` 的 Android/iOS 依赖检查全部 PASS。
+- 真实日志结论：首次接收前撤回只回放无 `msg` 的 recall info 和空 recalled messages；首次接收前修改直接回放最终正文；voice 初收/修改/撤回分别为 `fileStatus=0/1/3`；image 缩略图成功，video 缩略图真实返回 403；历史拉取会重载旧漫游消息，因此混合积压未读数在历史拉取前断言为 4。
+- 台账：Chat RECORD 已新增 174-186；本批没有新增 skip/xfail 或能力缺口，既有 CMD delivery、显式翻译正常结果等 deferred 保持不变。
+- 交付边界：仅修改 Kiro spec、两个 Python 扩展 case 文件和 Chat 台账；未修改发布 SDK、Android/iOS Wrapper 或 `im_flutter_test`。
