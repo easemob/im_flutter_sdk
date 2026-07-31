@@ -2,6 +2,12 @@
 
 环信 IM Flutter SDK，采用 Federated Plugin 架构。本文档面向 AI Agent，说明项目结构、跨层链路与硬性约定；具体代码细节以仓库实际代码为准。
 
+文档分工：本文档是 AI 的唯一必读文档。环境搭建、数据准备、验证流程等过程性内容见 `CONTRIBUTING.md`（仅当任务涉及时按需阅读）；`im_flutter_sdk/README.md` 面向 SDK 使用者，AI 无需阅读。
+
+## 协作约定
+
+- 排查方向不确定、或同一问题卡住超过几分钟时，先把现象和自己的假设同步给用户，再决定排查方向，不闷头钻到底——用户可能掌握 AI 不知道的背景（环境、历史决策、服务端状态）。
+
 ## 项目架构
 
 | 包 | 职责 |
@@ -107,10 +113,11 @@ make setup   # config + deps + pods
 - 3.x 时代遗留的 tag（`3.8.x`/`3.9.x`）仅属历史，4.x 无 tag
 - 默认分支为 `flutter2_stable`；`alpha`、`dev`、`customMsg` 等为特性或历史分支，勿在其上做版本开发
 - 发布新版本：新建与版本号同名的分支
+- **切换分支前先确认工作区干净**（`git status` 无未提交改动）；不干净则停止操作并告知用户，由用户决定如何处理
 
 ## 平台支持
 
-iOS 同时支持 CocoaPods 与 Swift Package Manager 两种集成，共用同一份源码（`ios/im_flutter_sdk_ios/Sources/`），两条链路的原生 SDK 版本保持一致：CocoaPods 走 `im_flutter_sdk_ios.podspec`（HyphenateChat 4.19.1，部署目标 13.0），SPM 走 `ios/im_flutter_sdk_ios/Package.swift`（HyphenateChat_iOS 4.19.1，部署目标 13.0）。
+iOS 同时支持 CocoaPods 与 Swift Package Manager 两种集成，共用同一份源码（`ios/im_flutter_sdk_ios/Sources/`），两条链路的原生 SDK 版本保持一致：CocoaPods 走 `im_flutter_sdk_ios.podspec`（HyphenateChat 4.22.1，部署目标 13.0），SPM 走 `ios/im_flutter_sdk_ios/Package.swift`（HyphenateChat_iOS 4.22.1，部署目标 13.0）。
 
 | 平台 | 最低版本 |
 |---|---|
