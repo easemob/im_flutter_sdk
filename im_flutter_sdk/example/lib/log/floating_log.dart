@@ -83,15 +83,12 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
         ),
       );
     }
-    final height = screen.height * 0.5;
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      height: height,
+    // 展开即为全屏面板；SafeArea 保证顶部操作栏避开刘海。
+    return Positioned.fill(
       child: Material(
         elevation: 16,
-        child: Column(
+        child: SafeArea(
+          child: Column(
           children: [
             Row(
               children: [
@@ -142,6 +139,7 @@ class _FloatingLogWidgetState extends State<FloatingLogWidget> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

@@ -100,14 +100,12 @@ class _ApiCallPageState extends State<ApiCallPage> {
               ],
             ),
             Container(
-              constraints: const BoxConstraints(maxHeight: 320),
+              width: double.infinity,
               padding: const EdgeInsets.all(8),
               color: Colors.black12,
-              child: SingleChildScrollView(
-                child: SelectableText(
-                  _result!,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                ),
+              child: SelectableText(
+                _result!,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
               ),
             ),
           ],

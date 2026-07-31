@@ -50,5 +50,7 @@ EMOptions emOptionsFromJson(Map<String, dynamic> j) {
 
 /// 初始化页预填模板：只含必填字段。
 const String emOptionsTemplate = '''{
-  "appKey": ""
+  "appKey": "",
+  "autoLogin": false,
+  "debugMode": true
 }''';

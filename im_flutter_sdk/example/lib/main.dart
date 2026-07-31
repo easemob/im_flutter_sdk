@@ -65,8 +65,20 @@ class _RootShellState extends State<RootShell> {
         }
         return Column(
           children: [
-            const SafeArea(bottom: false, child: StatusBar()),
-            Expanded(child: widget.child ?? const SizedBox.shrink()),
+            // 颜色包在 SafeArea 外层，让刘海/状态栏区域与状态条同色。
+            Container(
+              color: Colors.blueGrey.shade700,
+              child: const SafeArea(bottom: false, child: StatusBar()),
+            ),
+            // 状态条已处理顶部 inset，移除页面的重复 padding，
+            // 否则 AppBar 上方会出现一段空白。
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: widget.child ?? const SizedBox.shrink(),
+              ),
+            ),
           ],
         );
       },
