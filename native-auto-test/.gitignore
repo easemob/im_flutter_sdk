@@ -5,6 +5,7 @@
 
 # Reports / outputs
 allure-results/
+allure-report/
 report.html
 
 # Python

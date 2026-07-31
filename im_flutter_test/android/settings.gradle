@@ -23,3 +23,7 @@ plugins {
 }
 
 include ":app"
+
+include ":im_flutter_sdk_android"
+project(":im_flutter_sdk_android").projectDir =
+        file("../../im_flutter_sdk_android/android")

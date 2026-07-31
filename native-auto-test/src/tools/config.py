@@ -1,4 +1,5 @@
 """加载 config.yaml 中的 WebSocket 配置。"""
+import os
 from pathlib import Path
 from typing import Any
 
@@ -35,11 +36,13 @@ def load_config() -> dict[str, Any]:
 
 
 def get_ws_base_url() -> str:
-    return load_config()["websocket"]["base_url"]
+    override = os.getenv("NATIVE_TEST_WS_BASE_URL", "").strip()
+    value = (load_config().get("websocket") or {}).get("base_url")
+    return override or str(value or "")
 
 
 def get_default_topic() -> str:
-    return load_config()["websocket"]["default_topic"]
+    return str((load_config().get("websocket") or {}).get("default_topic") or "default")
 
 
 def get_connect_timeout() -> float:
@@ -47,16 +50,23 @@ def get_connect_timeout() -> float:
 
 
 def get_response_timeout() -> float:
+    override = os.getenv("NATIVE_TEST_RESPONSE_TIMEOUT", "").strip()
+    if override:
+        return float(override)
     return float(load_config()["websocket"].get("response_timeout", 30))
 
 
 def get_topic(device: str | None = None) -> str:
     """多端测试时可按 device 取不同 topic。"""
+    if device:
+        override = os.getenv(f"NATIVE_TEST_TOPIC_{device.upper()}", "").strip()
+        if override:
+            return override
     cfg = load_config()
     topics = cfg.get("topics") or {}
     if device and device in topics:
         return topics[device]
-    return cfg["websocket"]["default_topic"]
+    return str((cfg.get("websocket") or {}).get("default_topic") or "default")
 
 
 def get_rest_base_url() -> str:

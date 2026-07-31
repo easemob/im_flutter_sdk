@@ -2,6 +2,49 @@
 
 通过 WebSocket 与 Flutter demo 端通信，对环信 Flutter SDK 的 API 做自动化测试。Flutter 端需连接**同一 WebSocket 服务**且使用**相同 topic**。
 
+## Android 多版本 MVP
+
+正式版本管理以 Android SDK 4.23.0 为基线：
+
+- 自动选择或启动两个模拟器；
+- 按 scenario 安装对应 flavor APK；
+- 通过 Runner Hello 校验设备、版本和能力；
+- 使用 Base API + 版本增量判断 Capability；
+- 不支持的 API 在调用前 Skip，缺失或冲突按框架配置错误处理；
+- 默认由 `native-auto-test` 启动 managed WebSocket，并通过
+  `runId + runnerId + requestId` 精确路由；
+- 支持六个逻辑槽位，并只启动所选 Case 直接声明的槽位；
+- 支持同 applicationId 的覆盖安装和本地消息快照校验；
+- 请求、响应、Runner、Capability 和升级快照写入 Allure。
+
+4.23 使用正式 `im_flutter_sdk_android` Wrapper，业务调用经过
+`im_flutter_sdk_interface`，不经过 `im_flutter_sdk` Dart 业务层。
+4.10/4.14 仅用于 MVP 的历史覆盖安装机制验证，使用独立 legacy API Matrix。
+
+完整矩阵：
+
+```bash
+NATIVE_TEST_AVD_A=Pixel_5 \
+NATIVE_TEST_AVD_B=Pixel_5_2 \
+python scripts/run_phase1_matrix.py
+```
+
+只使用已构建 APK：
+
+```bash
+python scripts/run_phase1_matrix.py --no-build
+```
+
+使用 `config.yaml` 中的远端 relay：
+
+```bash
+python scripts/run_phase1_matrix.py --external-relay
+```
+
+版本由 `config/scenarios/*.yaml` 决定，普通 case 中不写版本判断。
+真实登录、联系人、群组和消息在线用例仍需能访问被测 IM 服务；公司网络
+或 VPN 不可用时，构建和本地框架测试可执行，但在线 P0 项不能判定通过。
+
 ## WebSocket 两种用法
 
 1. **请求/响应**：`api.call(manager, cmd, info)` — 发一条请求，等一条对应响应（按 id/sequence 匹配），适合单次调用、结果断言。

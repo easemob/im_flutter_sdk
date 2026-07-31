@@ -18,6 +18,15 @@ allprojects {
 }
 apply plugin: 'com.android.library'
 
+def flutterProperties = new Properties()
+rootProject.file('local.properties').withInputStream {
+    flutterProperties.load(it)
+}
+def flutterSdkRoot = flutterProperties.getProperty('flutter.sdk')
+def flutterEngineRevision = file(
+    "${flutterSdkRoot}/bin/internal/engine.version"
+).text.trim()
+
 android {
     if (project.android.hasProperty('namespace')) {
         namespace = 'com.easemob.im_flutter_sdk'
@@ -44,11 +53,14 @@ tasks.withType(JavaCompile){
 
 dependencies {
     api 'androidx.appcompat:appcompat:1.1.0'
+    // 手动作为 4.23 flavor 的 Android library 引入时，编译期仍需要
+    // Flutter embedding；运行期由宿主 Flutter App 提供。
+    compileOnly "io.flutter:flutter_embedding_debug:1.0.0-${flutterEngineRevision}"
 
     // 本地依赖（默认）：修改为实际 JAR 文件名即可
     // 替换 JAR 后务必：flutter clean → 删除各模块 build/ → example/android 下 ./gradlew clean → 再编译。
 
-    implementation files('./libs/easemob-sdk/libs/hyphenatechat_4.23.0.jar')
+    api files('./libs/easemob-sdk/libs/hyphenatechat_4.23.0.jar')
     // 远程依赖（改为远程时，注释掉上面的 implementation files(...)，取消下一行注释）
     // implementation 'io.hyphenate:hyphenate-chat:4.19.1'
     // 仅包含 android/libs 根目录下的 *.jar（子目录里的 JAR 只走上面的显式 implementation files）

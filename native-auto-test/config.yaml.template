@@ -1,14 +1,15 @@
-# WebSocket 连接配置，与 Flutter demo 端保持一致
+# 默认由 native-auto-test 自动启动 WS；无需配置 base_url/topic。
 websocket:
-  base_url: "ws://140.143.132.6:2000/iov/websocket/dual"
-  default_topic: "adc"
+  mode: managed
+  bind_host: "0.0.0.0"
+  port: 0
   connect_timeout: 10
   response_timeout: 30
 
-# 多端测试时可为每个设备指定不同 topic（Flutter 端用相同 topic 连接即为同一设备）
-topics:
-  deviceA: adc
-  deviceB: adc01
+# 兼容旧外部 relay 时改为 external；topic 由框架按 runId/逻辑设备生成。
+# websocket:
+#   mode: external
+#   base_url: "ws://host:port/iov/websocket/dual"
 
 # REST 用户管理（创建/删除用户，用于 presence 等用例的临时账号）
 rest_api:
@@ -32,5 +33,6 @@ sdk_options:
   sync_data_web_socket_port: 8086
   require_ack: true
   require_delivery_ack: true
+  accept_invitation_always: false
   enable_auto_sync_contacts: false
   enable_user_info: true

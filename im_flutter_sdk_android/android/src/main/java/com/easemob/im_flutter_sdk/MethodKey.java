@@ -276,6 +276,7 @@ public class MethodKey {
     static final String updateOwnUserInfoWithType = "updateOwnUserInfoWithType";
     static final String fetchUserInfoById = "fetchUserInfoById";
     static final String fetchUserInfoByIdWithType = "fetchUserInfoByIdWithType";
+    static final String fetchOwnInfo = "fetchOwnInfo";
 
     /// EMPresenceManager methods
     static final String presenceWithDescription = "publishPresenceWithDescription";

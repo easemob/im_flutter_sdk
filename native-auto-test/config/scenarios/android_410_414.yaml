@@ -1,0 +1,20 @@
+name: android-410-414
+startup_timeout: 180
+reuse_runners: true
+shutdown_on_finish: false
+
+roles:
+  device_a:
+    device_name: deviceA
+    platform: android
+    sdk_version: 4.10.0
+    runner_id: android-410-device-a
+    serial: ${NATIVE_TEST_SERIAL_A:-}
+    avd: ${NATIVE_TEST_AVD_A:-}
+  device_b:
+    device_name: deviceB
+    platform: android
+    sdk_version: 4.14.0
+    runner_id: android-414-device-b
+    serial: ${NATIVE_TEST_SERIAL_B:-}
+    avd: ${NATIVE_TEST_AVD_B:-}

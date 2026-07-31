@@ -34,12 +34,38 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
                 fetchUserInfoById(param, call.method, result);
             } else if (MethodKey.fetchUserInfoByIdWithType.equals(call.method)) {
                 fetchUserInfoByIdWithType(param, call.method, result);
+            } else if (MethodKey.fetchOwnInfo.equals(call.method)) {
+                fetchOwnInfo(call.method, result);
             } else {
                 super.onMethodCall(call, result);
             }
         } catch (JSONException e) {
             onError(result, new HyphenateException(-1, e.getMessage()));
         }
+    }
+
+    private void fetchOwnInfo(String channelName, Result result) {
+        String currentUser = EMClient.getInstance().getCurrentUser();
+        if (currentUser == null || currentUser.isEmpty()) {
+            onError(result, new HyphenateException(201, "User not login"));
+            return;
+        }
+        EMClient.getInstance().userInfoManager().fetchUserInfoByUserId(
+                new String[]{currentUser},
+                new EMValueWrapperCallBack<Map<String, EMUserInfo>>(
+                        result,
+                        channelName
+                ) {
+                    @Override
+                    public void onSuccess(Map<String, EMUserInfo> object) {
+                        updateObject(
+                                object == null
+                                        ? null
+                                        : userInfoToJson(object.get(currentUser))
+                        );
+                    }
+                }
+        );
     }
 
     private void updateOwnUserInfo(JSONObject param, String channelName, Result result) {
@@ -119,6 +145,9 @@ public class UserInfoManagerWrapper extends Wrapper implements MethodCallHandler
     }
 
     private static Map<String, Object> userInfoToJson(EMUserInfo info) {
+        if (info == null) {
+            return null;
+        }
         Map<String, Object> data = new HashMap<>();
         data.put("userId", info.getUserId());
         data.put("nickName", info.getNickname());

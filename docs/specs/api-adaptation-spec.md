@@ -30,3 +30,18 @@
   - [ ] Dart 模型字段、`fromJson`/`toJson` 与原生序列化一致
   - [ ] 示例工程可编译（Android assembleDebug；iOS pod install + xcodebuild）
   - [ ] 依赖切换规范符合 `docs/specs/dependency-spec.md`（目录名不带版本，jar 可带版本）
+
+## 自动化 Runner 的 interface 直连边界
+
+- `im_flutter_test` 只依赖 `im_flutter_sdk_interface`，通过
+  `Client.instance` 和各 Manager 的 `callNativeMethod` 路由。
+- Android 4.23 Runner 直接注册 `im_flutter_sdk_android`，不复制正式
+  Wrapper 的业务 API，也不经过 `im_flutter_sdk` Dart 业务层。
+- 若某个公开 Dart API 原先由 Dart 组合多个原生调用实现，而 interface 直连
+  缺少对应命令，只有当该命令本身代表真实 SDK 能力时才允许补到平台 Wrapper。
+  Android MVP 的 `UserInfoManager.fetchOwnInfo` 按“当前登录用户 ID +
+  fetchUserInfoByUserId”实现。
+- `TestControlChannel` 只能承载 Runner 信息、网络/进程控制和升级快照；不得
+  承载登录、联系人、消息、群组等业务 API。
+- Android MVP 新增的正式 Wrapper 命令在进入发布版本前，仍须按本规范补齐
+  iOS、Dart key/导出和跨端构建验收。

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import inspect
 import queue
 import threading
 import time
@@ -24,6 +25,34 @@ from .config import (
     get_ws_base_url,
     get_topic,
 )
+
+
+_CONNECT_SUPPORTS_PROXY = "proxy" in inspect.signature(websockets.connect).parameters
+_MANAGED_TRANSPORT_FIELDS = {
+    "type",
+    "protocolVersion",
+    "runId",
+    "caseId",
+    "requestId",
+    "targetRunnerId",
+    "runnerId",
+    "success",
+}
+_MANAGED_EVENT_TRANSPORT_FIELDS = {
+    "runId",
+    "eventId",
+    "runnerId",
+    "device",
+    "platform",
+    "sdkVersion",
+}
+
+
+def _ws_connect(url: str, **kwargs: Any):
+    """Connect directly to the configured relay instead of inheriting OS proxies."""
+    if _CONNECT_SUPPORTS_PROXY:
+        kwargs["proxy"] = None
+    return websockets.connect(url, **kwargs)
 
 # ---- Debug flags (WS layer only) ----
 import os
@@ -50,9 +79,17 @@ def _get_debug_flags() -> "_WSFlags":
         return _WSFlags(dump, relax, 15)
 
 
-def _build_ws_url(topic: str | None = None, device: str | None = None) -> str:
+def _build_ws_url(
+    topic: str | None = None,
+    device: str | None = None,
+    *,
+    base_url: str | None = None,
+    use_topic: bool = True,
+) -> str:
     t = topic or get_topic(device)
-    base = get_ws_base_url().rstrip("/")
+    base = (base_url or get_ws_base_url()).rstrip("/")
+    if not use_topic:
+        return base
     return f"{base}?topic={urllib.parse.quote(t)}"
 
 
@@ -125,7 +162,7 @@ async def _request_async(
     if device is not None:
         req["device"] = device
 
-    async with websockets.connect(
+    async with _ws_connect(
         url,
         open_timeout=timeout_connect,
         close_timeout=5,
@@ -185,7 +222,7 @@ async def _request_and_wait_event_async(
     response: dict[str, Any] | None = None
     event_msg: dict[str, Any] | None = None
 
-    async with websockets.connect(
+    async with _ws_connect(
         url,
         open_timeout=timeout_connect,
         close_timeout=5,
@@ -329,7 +366,7 @@ class MessageListener:
     def _recv_loop_async(self) -> None:
         async def run() -> None:
             try:
-                async with websockets.connect(
+                async with _ws_connect(
                     self._url,
                     open_timeout=get_connect_timeout(),
                     close_timeout=5,
@@ -440,12 +477,28 @@ class DeviceConnection:
         topic: str | None = None,
         device: str | None = None,
         *,
+        base_url: str | None = None,
+        run_id: str | None = None,
+        target_runner_id: str | None = None,
         buffer_maxlen: int = 2000,
         queue_maxsize: int = 5000,
     ):
-        self._topic = topic or get_topic(device)
+        self._managed = bool(run_id and target_runner_id)
+        self._topic = "" if self._managed else (topic or get_topic(device))
         self._device = device
-        self._url = _build_ws_url(topic=self._topic, device=self._device)
+        self._run_id = run_id
+        self._target_runner_id = target_runner_id
+        self._case_id = "session"
+        self._event_cursor = 0
+        self._latest_event_id = 0
+        self._last_transport_response: dict[str, Any] | None = None
+        self._last_transport_event: dict[str, Any] | None = None
+        self._url = _build_ws_url(
+            topic=self._topic,
+            device=self._device,
+            base_url=base_url,
+            use_topic=not self._managed,
+        )
         self._buffer_maxlen = buffer_maxlen
         self._queue_maxsize = queue_maxsize
         self._recv_queue: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=queue_maxsize)
@@ -456,6 +509,9 @@ class DeviceConnection:
         self._stopped = threading.Event()
         self._thread: threading.Thread | None = None
         self._event_buffer: deque[dict[str, Any]] = deque(maxlen=buffer_maxlen)
+        self._runner_info: dict[str, Any] | None = None
+        self._runner_condition = threading.Condition()
+        self._connection_error: Exception | None = None
         # Debug/relax flags at WS layer
         try:
             flags = _get_debug_flags()
@@ -468,11 +524,22 @@ class DeviceConnection:
     def _run_async_loop(self) -> None:
         async def run() -> None:
             try:
-                async with websockets.connect(
+                async with _ws_connect(
                     self._url,
                     open_timeout=get_connect_timeout(),
                     close_timeout=5,
                 ) as ws:
+                    if self._managed:
+                        await ws.send(
+                            json.dumps(
+                                {
+                                    "type": "controllerHello",
+                                    "protocolVersion": 1,
+                                    "runId": self._run_id,
+                                    "targetRunnerId": self._target_runner_id,
+                                }
+                            )
+                        )
                     loop = asyncio.get_event_loop()
                     response_timeout = get_response_timeout()
 
@@ -486,6 +553,21 @@ class DeviceConnection:
                                 break
                             try:
                                 data = json.loads(raw)
+                                is_hello = isinstance(data, dict) and (
+                                    data.get("type") == "hello"
+                                    or (
+                                        data.get("type") == "event"
+                                        and data.get("eventType") == "runnerHello"
+                                    )
+                                )
+                                if is_hello:
+                                    hello = data.get("data") if data.get("eventType") == "runnerHello" else data
+                                    if not isinstance(hello, dict):
+                                        continue
+                                    with self._runner_condition:
+                                        self._runner_info = hello
+                                        self._runner_condition.notify_all()
+                                    continue
                                 try:
                                     dbg = self._debug_dump
                                 except Exception:
@@ -495,6 +577,14 @@ class DeviceConnection:
                                         print(f"[WS-DUMP][{self._topic}] {json.dumps(data, ensure_ascii=False)}")
                                     except Exception:
                                         print(f"[WS-DUMP][{self._topic}] <non-json>")
+                                if data.get("type") == "event":
+                                    try:
+                                        self._latest_event_id = max(
+                                            self._latest_event_id,
+                                            int(data.get("eventId") or 0),
+                                        )
+                                    except (TypeError, ValueError):
+                                        pass
                                 seq = data.get("id") if data.get("id") is not None else data.get("sequence")
                                 if (
                                     seq is not None
@@ -550,8 +640,10 @@ class DeviceConnection:
                         asyncio.create_task(recv_loop()),
                         asyncio.create_task(send_loop()),
                     )
-            except Exception:
-                pass
+            except Exception as error:
+                with self._runner_condition:
+                    self._connection_error = error
+                    self._runner_condition.notify_all()
             finally:
                 with self._lock:
                     for q in self._pending.values():
@@ -590,6 +682,17 @@ class DeviceConnection:
             "sequence": seq,
             **kwargs,
         }
+        if self._managed:
+            req.update(
+                {
+                    "type": "request",
+                    "protocolVersion": 1,
+                    "runId": self._run_id,
+                    "caseId": self._case_id,
+                    "requestId": req["id"],
+                    "targetRunnerId": self._target_runner_id,
+                }
+            )
         if self._device is not None:
             req["device"] = self._device
         resp_q: queue.Queue[dict[str, Any]] = queue.Queue(maxsize=1)
@@ -605,6 +708,13 @@ class DeviceConnection:
             raise TimeoutError(f"Wait response timeout (cmd={cmd}, id={request_key}, sequence={seq})") from None
         if not out:
             raise RuntimeError("Connection closed")
+        self._last_transport_response = dict(out)
+        if self._managed:
+            return {
+                key: value
+                for key, value in out.items()
+                if key not in _MANAGED_TRANSPORT_FIELDS
+            }
         return out
 
     def receive_message(
@@ -624,8 +734,10 @@ class DeviceConnection:
             n = len(self._event_buffer)
             for _ in range(n):
                 m = self._event_buffer.popleft()
+                if self._is_historical_event(m):
+                    continue
                 if _message_matches(m, match_cmd, match_event_type, relax=self._relax):
-                    return m
+                    return self._return_event(m)
                 self._event_buffer.append(m)
             if (not have_filter or self._relax) and self._event_buffer:
                 return self._event_buffer.popleft()
@@ -634,9 +746,38 @@ class DeviceConnection:
                 m = self._recv_queue.get(timeout=min(remaining, 1.0))
             except queue.Empty:
                 continue
+            if self._is_historical_event(m):
+                continue
             if _message_matches(m, match_cmd, match_event_type, relax=self._relax):
-                return m
+                return self._return_event(m)
             self._event_buffer.append(m)
+
+    def _return_event(self, message: dict[str, Any]) -> dict[str, Any]:
+        self._last_transport_event = dict(message)
+        if not self._managed:
+            return message
+        return {
+            key: value
+            for key, value in message.items()
+            if key not in _MANAGED_EVENT_TRANSPORT_FIELDS
+        }
+
+    def begin_case(self, case_id: str) -> int:
+        """Start an isolated event view without deleting SDK or queued data."""
+        self._case_id = case_id
+        self._event_cursor = self._latest_event_id
+        return self._event_cursor
+
+    def end_case(self) -> None:
+        self._case_id = "session"
+
+    def _is_historical_event(self, message: dict[str, Any]) -> bool:
+        if message.get("type") != "event" or message.get("eventId") is None:
+            return False
+        try:
+            return int(message["eventId"]) <= self._event_cursor
+        except (TypeError, ValueError):
+            return False
 
     def drain_events(self, timeout: float = 2.0) -> None:
         """清空当前连接上积压的推送/响应，避免影响后续 receive_message。登录后调用。"""
@@ -647,6 +788,68 @@ class DeviceConnection:
             except queue.Empty:
                 pass
         self._event_buffer.clear()
+
+    def wait_for_hello(
+        self,
+        *,
+        expected_sdk_version: str | None = None,
+        expected_runner_id: str | None = None,
+        expected_device_name: str | None = None,
+        expected_platform: str | None = None,
+        timeout: float = 120.0,
+    ) -> dict[str, Any]:
+        deadline = time.monotonic() + timeout
+        with self._runner_condition:
+            while True:
+                info = self._runner_info
+                matches = info is not None and all(
+                    expected is None or str(info.get(key)) == str(expected)
+                    for key, expected in (
+                        ("sdkVersion", expected_sdk_version),
+                        ("runnerId", expected_runner_id),
+                        ("deviceName", expected_device_name),
+                        ("platform", expected_platform),
+                    )
+                )
+                if matches:
+                    return dict(info)
+                if self._connection_error is not None:
+                    raise RuntimeError(
+                        f"WebSocket environment error (device={self._device}): "
+                        f"{self._connection_error}"
+                    ) from self._connection_error
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    expectation = (
+                        f"sdkVersion={expected_sdk_version}, "
+                        f"runnerId={expected_runner_id}, "
+                        f"deviceName={expected_device_name}, "
+                        f"platform={expected_platform}"
+                    )
+                    raise TimeoutError(
+                        f"Wait runner hello timeout (device={self._device}, {expectation}, "
+                        f"lastHello={info})"
+                    )
+                self._runner_condition.wait(timeout=min(remaining, 1.0))
+
+    def clear_runner_info(self) -> None:
+        with self._runner_condition:
+            self._runner_info = None
+
+    @property
+    def runner_info(self) -> dict[str, Any] | None:
+        with self._runner_condition:
+            return dict(self._runner_info) if self._runner_info is not None else None
+
+    @property
+    def last_transport_response(self) -> dict[str, Any] | None:
+        value = self._last_transport_response
+        return dict(value) if value is not None else None
+
+    @property
+    def last_transport_event(self) -> dict[str, Any] | None:
+        value = self._last_transport_event
+        return dict(value) if value is not None else None
 
     def stop(self) -> None:
         self._stopped.set()
@@ -684,7 +887,7 @@ class SDKWebSocketClient:
     async def connect(self) -> None:
         if self._ws is not None and self._ws.open:
             return
-        self._ws = await websockets.connect(
+        self._ws = await _ws_connect(
             self._url,
             open_timeout=get_connect_timeout(),
             close_timeout=5,

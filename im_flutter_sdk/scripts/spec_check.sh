@@ -33,8 +33,8 @@ check_android(){
   fi
 
   local local_active remote_active
-  local_active=$(grep -E "^[[:space:]]*implementation[[:space:]]+files\(" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
-  remote_active=$(grep -E "^[[:space:]]*implementation[[:space:]]+'io\\.hyphenate:hyphenate-chat" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
+  local_active=$(grep -E "^[[:space:]]*(implementation|api)[[:space:]]+files\(" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
+  remote_active=$(grep -E "^[[:space:]]*(implementation|api)[[:space:]]+'io\\.hyphenate:hyphenate-chat" "$gradle_file" | grep -v "^[[:space:]]*//" | wc -l | tr -d ' ')
   if [[ "$local_active" == "1" && "$remote_active" == "0" ]] || [[ "$local_active" == "0" && "$remote_active" == "1" ]]; then
     pass "Android: 依赖仅启用一种（本地 或 远程）"
   else

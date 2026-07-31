@@ -1,0 +1,33 @@
+{
+  "artifactId": "android-4.10.0-5f1fbe12",
+  "platform": "android",
+  "sdkVersion": "4.10.0",
+  "appVersion": "1.0.0",
+  "wrapperCommit": "8387ff63455c+worktree.c6001add",
+  "nativeSdkSha256": "639c552cae14298423e11b7e9c377f858a60a6a0caa5c3ffd40916128f6a7e3b",
+  "artifactSha256": "5f1fbe1246e557ad8cace211440b091520034340c323f54cf5432e9397d57a5f",
+  "capabilities": [
+    "Client.createAccount",
+    "Client.getCurrentDeviceId",
+    "Client.init",
+    "Client.isConnected",
+    "Client.login",
+    "Client.logout",
+    "Client.startCallback",
+    "ContactManager.acceptInvitation",
+    "ContactManager.addContact",
+    "ContactManager.addUserToBlockList",
+    "ContactManager.declineInvitation",
+    "ContactManager.deleteContact",
+    "ContactManager.getAllContactsFromDB",
+    "ContactManager.getAllContactsFromServer",
+    "ContactManager.removeUserFromBlockList",
+    "GroupManager.createGroup",
+    "GroupManager.destroyGroup",
+    "UserInfoManager.fetchOwnInfo",
+    "UserInfoManager.fetchUserInfoById",
+    "UserInfoManager.fetchUserInfoByIdWithType",
+    "UserInfoManager.updateOwnUserInfo",
+    "UserInfoManager.updateOwnUserInfoWithType"
+  ]
+}

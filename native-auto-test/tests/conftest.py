@@ -9,7 +9,9 @@ import json
 import os
 import sys
 import time
+import uuid
 from contextlib import nullcontext
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -17,7 +19,12 @@ import pytest
 # 保证能 import src
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.tools.config import get_default_topic, get_topic, get_rest_auth_token
+from src.tools.config import (
+    get_default_topic,
+    get_topic,
+    get_rest_auth_token,
+    get_ws_base_url,
+)
 from src.rest_api.user_api import create_users, delete_user
 from src.tools.ws_client import (
     request as ws_request,
@@ -27,6 +34,21 @@ from src.tools.ws_client import (
 )
 from src.tools import assertions
 from src import Cmd
+from src.capability import (
+    ApiMatrix,
+    CapabilityConfigurationError,
+    CapabilityResolver,
+    UnsupportedCapability,
+)
+from src.orchestrator import (
+    DEVICE_ROLE_NAMES,
+    EnvironmentManager,
+    ExecutionPlan,
+    RunnerRegistry,
+    ResourceRegistry,
+    UpgradeRunner,
+)
+from src.ws import ManagedWebSocketServer
 
 # 未配置 REST 用户管理时的回退账号（仅当不创建用户时使用）
 SESSION_FALLBACK_USER_A = "test0318user1"
@@ -53,17 +75,44 @@ def _attach_request_response_allure(step_name: str, request_body: dict, response
         import allure
         with allure.step(step_name):
             allure.attach(
-                json.dumps(request_body, ensure_ascii=False, indent=2),
+                json.dumps(_redact(request_body), ensure_ascii=False, indent=2),
                 "请求",
                 allure.attachment_type.JSON,
             )
             allure.attach(
-                json.dumps(response_body, ensure_ascii=False, indent=2, default=str),
+                json.dumps(
+                    _redact(response_body),
+                    ensure_ascii=False,
+                    indent=2,
+                    default=str,
+                ),
                 "响应",
                 allure.attachment_type.JSON,
             )
     except ImportError:
         pass
+
+
+def _redact(value):
+    if isinstance(value, dict):
+        output = {}
+        for key, item in value.items():
+            normalized = str(key).lower().replace("_", "")
+            if normalized in {
+                "password",
+                "pwdortoken",
+                "token",
+                "agoratoken",
+                "authtoken",
+                "accesstoken",
+            }:
+                output[key] = "***"
+            else:
+                output[key] = _redact(item)
+        return output
+    if isinstance(value, list):
+        return [_redact(item) for item in value]
+    return value
 
 
 # ----- 登录前清空回调 -----
@@ -268,6 +317,49 @@ def _session_logout(device_a, device_b) -> None:
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--scenario",
+        action="store",
+        default="",
+        help="Scenario name/path under config/scenarios.",
+    )
+    parser.addoption(
+        "--build",
+        action="store_true",
+        default=False,
+        help="Automatically build the required APK before running tests.",
+    )
+    parser.addoption(
+        "--manage-runners",
+        action="store_true",
+        default=False,
+        help="Automatically start/select emulators, install artifacts and launch runners.",
+    )
+    parser.addoption(
+        "--no-manage-runners",
+        action="store_true",
+        default=False,
+        help="Use already running external runners even when --scenario is set.",
+    )
+    parser.addoption(
+        "--ws-mode",
+        action="store",
+        choices=("managed", "external"),
+        default="managed",
+        help="managed starts the native-auto-test WS server; external uses config base_url.",
+    )
+    parser.addoption(
+        "--artifacts",
+        action="store",
+        default="config/artifacts.yaml",
+        help="Artifact catalog path.",
+    )
+    parser.addoption(
+        "--api-matrix",
+        action="store",
+        default="config/api_matrix/android.yaml",
+        help="API Matrix path.",
+    )
+    parser.addoption(
         "--ws-debug",
         action="store_true",
         default=False,
@@ -295,6 +387,79 @@ def pytest_addoption(parser):
         default=False,
         help="Relax all event matching for chat tests (success/received).",
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Collect only device fixtures declared directly by selected test functions."""
+    fixture_sets: list[tuple[str, ...]] = []
+    for item in items:
+        fixture_info = getattr(item, "_fixtureinfo", None)
+        direct_names = tuple(getattr(fixture_info, "argnames", ()) or ())
+        fixture_sets.append(direct_names)
+    plan = ExecutionPlan.from_direct_fixtures(fixture_sets)
+    config._native_required_device_roles = set(plan.required_roles)
+
+
+@pytest.fixture(scope="session")
+def required_device_roles(request) -> set[str]:
+    return set(
+        getattr(request.config, "_native_required_device_roles", set())
+    )
+
+
+@pytest.fixture(scope="session")
+def test_run_id(request) -> str:
+    configured = os.getenv("NATIVE_TEST_RUN_ID", "").strip()
+    value = configured or f"run-{uuid.uuid4().hex[:12]}"
+    request.config._native_test_run_id = value
+    return value
+
+
+@dataclass(frozen=True)
+class _WsRuntime:
+    mode: str
+    base_url: str
+    run_id: str
+    topics: dict[str, str]
+
+    def topic_for(self, device_name: str) -> str:
+        if self.mode == "managed":
+            return ""
+        if device_name in self.topics:
+            return self.topics[device_name]
+        return get_topic(device_name)
+
+
+@pytest.fixture(scope="session")
+def ws_runtime(request, phase1_scenario, test_run_id):
+    mode = str(request.config.getoption("--ws-mode"))
+    if phase1_scenario is None or mode == "external":
+        topics = {}
+        if phase1_scenario is not None:
+            topics = {
+                role.device_name: f"nat-{test_run_id}-{role.role}"
+                for role in phase1_scenario.roles.values()
+            }
+        yield _WsRuntime(
+            mode="external",
+            base_url=get_ws_base_url(),
+            run_id=test_run_id,
+            topics=topics,
+        )
+        return
+
+    server = ManagedWebSocketServer(run_id=test_run_id).start()
+    try:
+        yield _WsRuntime(
+            mode="managed",
+            base_url=server.base_url,
+            run_id=test_run_id,
+            topics={},
+        )
+    finally:
+        server.stop()
+
+
 @pytest.fixture(scope="session")
 def ws_debug(request) -> bool:
     return bool(request.config.getoption("--ws-debug"))
@@ -325,6 +490,77 @@ def ws_topic() -> str:
 def ws_device() -> str | None:
     """多端测试时的设备标识，对应 config 中 topics 的 key。"""
     return None
+
+
+def _resolve_repo_path(value: str, *, folder: str | None = None) -> Path:
+    root = Path(__file__).resolve().parent.parent
+    candidate = Path(value)
+    if not candidate.suffix and folder:
+        candidate = Path(folder) / f"{value}.yaml"
+    return candidate if candidate.is_absolute() else (root / candidate).resolve()
+
+
+@pytest.fixture(scope="session")
+def phase1_scenario(request):
+    value = str(request.config.getoption("--scenario") or "").strip()
+    if not value:
+        return None
+    from src.orchestrator.config import load_scenario
+
+    path = _resolve_repo_path(value, folder="config/scenarios")
+    return load_scenario(path)
+
+
+@pytest.fixture(scope="session")
+def phase1_environment(
+    request,
+    phase1_scenario,
+    required_device_roles,
+    ws_runtime,
+):
+    manage = (
+        phase1_scenario is not None
+        and not request.config.getoption("--no-manage-runners")
+    )
+    if not manage:
+        yield None
+        return
+    scenario_value = str(request.config.getoption("--scenario"))
+    scenario_path = _resolve_repo_path(
+        scenario_value,
+        folder="config/scenarios",
+    )
+    artifacts_path = _resolve_repo_path(str(request.config.getoption("--artifacts")))
+    manager = EnvironmentManager(
+        scenario_path,
+        artifacts_path,
+        web_socket_base_url=ws_runtime.base_url,
+        topics={
+            role.device_name: ws_runtime.topic_for(role.device_name)
+            for role in phase1_scenario.roles.values()
+        },
+        run_id=ws_runtime.run_id,
+        managed_web_socket=ws_runtime.mode == "managed",
+        active_roles=required_device_roles,
+        skip_hash_validation=bool(request.config.getoption("--build")),
+    )
+    try:
+        yield manager.start()
+    finally:
+        manager.stop()
+
+
+@pytest.fixture(scope="session")
+def capability_resolver(request, phase1_scenario):
+    if phase1_scenario is None:
+        return None
+    path = _resolve_repo_path(str(request.config.getoption("--api-matrix")))
+    return CapabilityResolver(ApiMatrix.load(path))
+
+
+@pytest.fixture(scope="session")
+def runner_registry():
+    return RunnerRegistry()
 
 
 @pytest.fixture(scope="session")
@@ -380,64 +616,83 @@ def api_device_b():
     return _make_api("deviceB")
 
 
-def _test_usernames() -> tuple[str, str, str]:
-    """生成测试用例用的两个用户名：test + 月日 + user1/user2。"""
-    from datetime import datetime
-    mmdd = datetime.now().strftime("%m%d")
-    return f"test{mmdd}user1", f"test{mmdd}user2", f"test{mmdd}user3"
+def _test_usernames(run_id: str | None = None) -> tuple[str, str, str]:
+    """Generate Session-unique accounts from runId while preserving fixtures."""
+    raw_suffix = os.getenv("NATIVE_TEST_USER_SUFFIX", "")
+    source = raw_suffix or run_id or uuid.uuid4().hex[:8]
+    suffix = "".join(char for char in source.lower() if char.isalnum())[-12:]
+    prefix = f"test{suffix}"
+    return f"{prefix}user1", f"{prefix}user2", f"{prefix}user3"
 
 
 @pytest.fixture(scope="session")
-def created_test_users():
-    """
-    Session 内创建两名用户供所有测试用例使用，teardown 时删除。
-    若未配置 REST auth_token（config.yaml -> rest_api.auth_token），则不创建/不删除，直接使用日期用户名。
-    返回 (user_a, user_b)。
-    """
+def created_test_users(test_run_id, phase1_scenario):
+    """Provision account_a/b/c and preserve existing user fixtures."""
     global _LAST_CREATE_USERS_ERROR
     _LAST_CREATE_USERS_ERROR = ""
     keep_users = os.getenv("KEEP_TEST_USERS", "0") in ("1", "true", "True")
     token = get_rest_auth_token()
-    # 优先使用日期用户名，避免固定回退账号与被测端不一致
-    user_a, user_b, user_c = _test_usernames()
-    if not token:
-        # 无 REST token：直接使用日期用户名，不创建
-        yield user_a, user_b, user_c
+    generated = dict(
+        zip(
+            ("account_a", "account_b", "account_c"),
+            _test_usernames(test_run_id),
+        )
+    )
+    users = dict(generated)
+    provisions = {slot: "rest" for slot in users}
+    passwords = {slot: SESSION_PWD for slot in users}
+    if phase1_scenario is not None:
+        for slot, account in phase1_scenario.accounts.items():
+            provisions[slot] = account.provision
+            passwords[slot] = account.password
+            if account.provision == "existing":
+                if not account.username:
+                    pytest.exit(
+                        f"Scenario account {slot!r} uses provision=existing "
+                        "but has no username",
+                        returncode=2,
+                    )
+                users[slot] = account.username
+
+    to_create = [
+        {
+            "username": users[slot],
+            "password": passwords.get(slot, SESSION_PWD),
+        }
+        for slot, provision in provisions.items()
+        if provision == "rest"
+    ]
+    if not token or not to_create:
+        yield users["account_a"], users["account_b"], users["account_c"]
         return
+
     with _allure_step("创建测试用户"):
-        create_resp = create_users([
-            {"username": user_a, "password": SESSION_PWD},
-            {"username": user_b, "password": SESSION_PWD},
-            {"username": user_c, "password": SESSION_PWD},
-        ])
+        create_resp = create_users(to_create)
     if isinstance(create_resp, dict) and create_resp.get("error"):
         _LAST_CREATE_USERS_ERROR = json.dumps(create_resp, ensure_ascii=False, indent=2, default=str)
-        print(
-            "[created_test_users] REST 自动创建用户失败，已降级为直接使用日期用户名。\n"
-            f"{_LAST_CREATE_USERS_ERROR}",
-            file=sys.stderr,
-            flush=True,
-        )
         try:
             import allure
             allure.attach(
                 _LAST_CREATE_USERS_ERROR,
-                "创建用户失败，降级使用日期用户名",
+                "REST 创建账号失败",
                 allure.attachment_type.TEXT,
             )
         except ImportError:
             pass
-        created = False
-    else:
-        created = True
-        # REST 创建成功后等待服务端用户数据完成可见，再开始登录和执行 cases。
-        time.sleep(5.0)
+        pytest.exit(
+            f"Environment Error: REST account provisioning failed\n"
+            f"{_LAST_CREATE_USERS_ERROR}",
+            returncode=2,
+        )
+
+    created_users = [item["username"] for item in to_create]
+    time.sleep(5.0)
     try:
-        yield user_a, user_b, user_c
+        yield users["account_a"], users["account_b"], users["account_c"]
     finally:
-        if created and not keep_users:
+        if not keep_users:
             with _allure_step("删除测试用户"):
-                for u in (user_a, user_b, user_c):
+                for u in created_users:
                     try:
                         delete_user(u)
                     except Exception as e:
@@ -464,17 +719,198 @@ def user_c(created_test_users):
     """设备 A 对应用户名（session 内创建，teardown 删除）。"""
     return created_test_users[2]
 
+def _account_slot(logical_role: str, phase1_scenario) -> str:
+    return (
+        phase1_scenario.roles[logical_role].account
+        if phase1_scenario is not None
+        else f"account_{logical_role.removeprefix('device_')[0]}"
+    )
+
+
+def _account_user(
+    logical_role: str,
+    phase1_scenario,
+    users: tuple[str, str, str],
+) -> str:
+    account = _account_slot(logical_role, phase1_scenario)
+    mapping = {
+        "account_a": users[0],
+        "account_b": users[1],
+        "account_c": users[2],
+    }
+    if account not in mapping:
+        raise RuntimeError(
+            f"Unsupported account slot {account!r} for role {logical_role!r}"
+        )
+    return mapping[account]
+
+
+def _account_password(logical_role: str, phase1_scenario) -> str:
+    slot = _account_slot(logical_role, phase1_scenario)
+    if phase1_scenario is None or slot not in phase1_scenario.accounts:
+        return SESSION_PWD
+    return phase1_scenario.accounts[slot].password
+
+
+def _login_one(device, user_id: str, password: str) -> None:
+    response: dict = {}
+    for attempt in range(3):
+        try:
+            response = device.call(
+                "Client",
+                Cmd.login.value,
+                info={
+                    "userId": user_id,
+                    "pwdOrToken": password,
+                    "isPassword": True,
+                },
+            )
+        except TimeoutError:
+            if attempt == 2:
+                raise
+            time.sleep(attempt + 1)
+            continue
+        result = response.get("result")
+        if (
+            result is True
+            or result == 1
+            or (isinstance(result, str) and result.strip())
+            or (
+                isinstance(result, dict)
+                and (
+                    result.get("code") is None
+                    or int(result.get("code")) == 200
+                )
+            )
+        ):
+            try:
+                device.call("Client", Cmd.startCallback.value, info={})
+            except Exception:
+                pass
+            return
+        if attempt < 2:
+            time.sleep(attempt + 1)
+    pytest.exit(
+        f"Session login failed: user={user_id}, response={response}",
+        returncode=2,
+    )
+
+
 @pytest.fixture(scope="session", autouse=True)
-def global_login_logout(device_a, device_b, created_test_users):
-    """
-    全 session 只执行一次（autouse=True）：
-    - setup：用 created_test_users 的两人在 device_a/device_b 上登录并清空回调。
-    - teardown：登出两设备。用户删除由 created_test_users 的 teardown 负责。
-    """
-    user_a, user_b, user_c = created_test_users
-    _session_login(device_a, device_b, user_a, user_b, SESSION_PWD)
+def global_login_logout(
+    request,
+    required_device_roles,
+    phase1_scenario,
+    created_test_users,
+):
+    """Prepare only the selected logical devices once for the whole Session."""
+    roles = sorted(required_device_roles)
+    devices = {role: request.getfixturevalue(role) for role in roles}
+
+    if devices and not get_rest_auth_token():
+        creator = next(iter(devices.values()))
+        accounts_to_create = {
+            _account_slot(role, phase1_scenario)
+            for role in roles
+            if (
+                phase1_scenario is None
+                or _account_slot(role, phase1_scenario)
+                not in phase1_scenario.accounts
+                or phase1_scenario.accounts[
+                    _account_slot(role, phase1_scenario)
+                ].provision == "rest"
+            )
+        }
+        user_by_slot = {
+            "account_a": created_test_users[0],
+            "account_b": created_test_users[1],
+            "account_c": created_test_users[2],
+        }
+        for slot in sorted(accounts_to_create):
+            try:
+                creator.call(
+                    "Client",
+                    Cmd.createAccount.value,
+                    info={
+                        "userId": user_by_slot[slot],
+                        "password": (
+                            phase1_scenario.accounts[slot].password
+                            if (
+                                phase1_scenario is not None
+                                and slot in phase1_scenario.accounts
+                            )
+                            else SESSION_PWD
+                        ),
+                    },
+                )
+            except Exception:
+                pass
+
+    with _allure_step("Session 按需登录"):
+        for role, device in devices.items():
+            _login_one(
+                device,
+                _account_user(role, phase1_scenario, created_test_users),
+                _account_password(role, phase1_scenario),
+            )
+        roles_by_account: dict[str, list[str]] = {}
+        for role in roles:
+            roles_by_account.setdefault(
+                _account_slot(role, phase1_scenario),
+                [],
+            ).append(role)
+        for account, account_roles in roles_by_account.items():
+            if len(account_roles) < 2:
+                continue
+            disconnected: list[dict] = []
+            device_ids: dict[str, object] = {}
+            for role in account_roles:
+                connection = devices[role].call(
+                    "Client",
+                    Cmd.isConnected.value,
+                    info={},
+                )
+                device_info = devices[role].call(
+                    "Client",
+                    Cmd.getCurrentDeviceId.value,
+                    info={},
+                )
+                device_ids[role] = device_info.get("result")
+                if connection.get("result") is not True:
+                    disconnected.append(
+                        {"role": role, "response": connection}
+                    )
+            if disconnected:
+                pytest.exit(
+                    "Environment Error: same-account concurrent login is not "
+                    f"available for {account}. roles={account_roles}, "
+                    f"deviceIds={device_ids}, disconnected={disconnected}. "
+                    "The Android device IDs are distinct; enable multi-device "
+                    "login for the test AppKey/server before running this topology.",
+                    returncode=2,
+                )
+
     yield
-    _session_logout(device_a, device_b)
+
+    with _allure_step("Session 按需登出"):
+        for role, device in devices.items():
+            try:
+                device.call(
+                    "Client",
+                    Cmd.logout.value,
+                    info={"unbindToken": False},
+                )
+            except Exception as error:
+                try:
+                    import allure
+
+                    allure.attach(
+                        str(error),
+                        f"登出失败 {role}",
+                        allure.attachment_type.TEXT,
+                    )
+                except ImportError:
+                    pass
 
 
 @pytest.fixture
@@ -540,63 +976,643 @@ class _DeviceChannelWrapper:
     保证 A 的 addContact 与 onFriendRequestAccepted 走同一条连接，能收到回调。
     """
 
-    def __init__(self, conn: DeviceConnection, device: str):
+    def __init__(
+        self,
+        conn: DeviceConnection,
+        device: str,
+        *,
+        resolver: CapabilityResolver | None = None,
+        scenario_name: str | None = None,
+        account_slot: str | None = None,
+        account_user: str | None = None,
+    ):
         self._conn = conn
         self._device = device
+        self._resolver = resolver
+        self._scenario_name = scenario_name
+        self._account_slot = account_slot
+        self._account_user = account_user
         self.topic = conn.topic
 
     def call(self, manager: str, cmd: str, info: dict | None = None, **kwargs):
         req = {"manager": manager, "cmd": cmd, "info": info or {}, "device": self._device, **kwargs}
+        self.require_capability(manager, cmd)
         resp = self._conn.call(manager, cmd, info, **kwargs)
+        report_response = self._conn.last_transport_response or resp
         _attach_request_response_allure(
             f"API 请求 {manager}.{cmd} (device={self._device})",
             req,
-            resp,
+            report_response,
         )
         return resp
 
+    def require_capability(self, manager: str, cmd: str) -> None:
+        if manager == "TestControl":
+            return
+        runner_info = self._conn.runner_info
+        if self._resolver is not None:
+            if runner_info is None:
+                pytest.fail(
+                    f"Framework Error: runner hello missing for {self._device}",
+                    pytrace=False,
+                )
+            try:
+                decision = self._resolver.require(runner_info, manager, cmd)
+                _attach_capability_allure(decision.to_dict())
+            except UnsupportedCapability as error:
+                _attach_capability_allure(
+                    self._resolver.resolve(runner_info, manager, cmd).to_dict()
+                )
+                pytest.skip(str(error))
+            except CapabilityConfigurationError as error:
+                _attach_capability_allure(
+                    self._resolver.resolve(runner_info, manager, cmd).to_dict()
+                )
+                pytest.fail(f"Framework/Configuration Error: {error}", pytrace=False)
+
+    def attach_execution_context(self) -> None:
+        _attach_execution_context_allure(
+            scenario_name=self._scenario_name,
+            device=self._device,
+            runner_info=self._conn.runner_info,
+            account_slot=self._account_slot,
+            account_user=self._account_user,
+        )
+
     def receive_message(self, *, match_cmd=None, match_event_type=None, timeout=10.0):
-        return self._conn.receive_message(
+        event = self._conn.receive_message(
             match_cmd=match_cmd,
             match_event_type=match_event_type,
             timeout=timeout,
         )
+        if event is not None:
+            try:
+                import allure
+
+                allure.attach(
+                    json.dumps(
+                        _redact(self._conn.last_transport_event or event),
+                        ensure_ascii=False,
+                        indent=2,
+                        default=str,
+                    ),
+                    f"事件 {match_event_type or match_cmd or 'unfiltered'} "
+                    f"(device={self._device})",
+                    allure.attachment_type.JSON,
+                )
+            except ImportError:
+                pass
+        return event
 
     def drain_events(self, timeout: float = 2.0) -> None:
         self._conn.drain_events(timeout=timeout)
 
+    def begin_case(self, case_id: str) -> int:
+        return self._conn.begin_case(case_id)
 
-@pytest.fixture(scope="session")
-def device_a(ws_debug):
-    """
-    设备 A 的单连接双工通道：同一 WebSocket 上 .call() 发请求、.receive_message() 收推送。
-    登录、addContact、onFriendRequestAccepted 等均走该连接，保证能收到服务端回调。
-    """
-    conn = DeviceConnection(device="deviceA")
+    def end_case(self) -> None:
+        self._conn.end_case()
+
+    def wait_for_hello(
+        self,
+        *,
+        expected_sdk_version: str | None = None,
+        expected_runner_id: str | None = None,
+        expected_device_name: str | None = None,
+        expected_platform: str | None = None,
+        timeout: float = 120.0,
+    ):
+        return self._conn.wait_for_hello(
+            expected_sdk_version=expected_sdk_version,
+            expected_runner_id=expected_runner_id,
+            expected_device_name=expected_device_name,
+            expected_platform=expected_platform,
+            timeout=timeout,
+        )
+
+    def clear_runner_info(self) -> None:
+        self._conn.clear_runner_info()
+
+    @property
+    def runner_info(self):
+        return self._conn.runner_info
+
+
+def _attach_capability_allure(decision: dict) -> None:
+    try:
+        import allure
+
+        allure.attach(
+            json.dumps(decision, ensure_ascii=False, indent=2),
+            f"Capability {decision.get('api')}",
+            allure.attachment_type.JSON,
+        )
+    except ImportError:
+        pass
+
+
+def _attach_execution_context_allure(
+    *,
+    scenario_name: str | None,
+    device: str,
+    runner_info: dict | None,
+    account_slot: str | None = None,
+    account_user: str | None = None,
+) -> None:
+    try:
+        import allure
+
+        if scenario_name:
+            allure.dynamic.parameter("scenario", scenario_name)
+        allure.dynamic.parameter("logicalDevice", device)
+        if account_slot:
+            allure.dynamic.parameter(f"{device}.accountSlot", account_slot)
+        if account_user:
+            allure.dynamic.parameter(f"{device}.account", account_user)
+        allure.attach(
+            json.dumps(
+                {
+                    "scenario": scenario_name,
+                    "logicalDevice": device,
+                    "accountSlot": account_slot,
+                    "account": account_user,
+                    "runner": runner_info,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            f"Execution Context {device}",
+            allure.attachment_type.JSON,
+        )
+    except ImportError:
+        pass
+
+
+def _register_runner(
+    *,
+    conn: DeviceConnection,
+    logical_role: str,
+    phase1_scenario,
+    phase1_environment,
+    registry: RunnerRegistry,
+    resolver: CapabilityResolver | None,
+):
+    if phase1_scenario is None:
+        return None
+    role = phase1_scenario.roles[logical_role]
+    hello = conn.wait_for_hello(
+        expected_sdk_version=role.sdk_version,
+        expected_runner_id=role.runner_id,
+        expected_device_name=role.device_name,
+        expected_platform=role.platform,
+        timeout=phase1_scenario.hello_timeout,
+    )
+    if phase1_environment is not None:
+        artifact = phase1_environment.artifact_for(logical_role)
+        serial = phase1_environment.device_for(logical_role).serial or ""
+    else:
+        from src.orchestrator.config import Artifact
+
+        artifact = Artifact(
+            platform=role.platform,
+            sdk_version=role.sdk_version,
+            path=Path(),
+            flavor="external",
+            application_id="external",
+            activity="external",
+        )
+        serial = role.serial or "external"
+    binding = registry.register(
+        role=role,
+        artifact=artifact,
+        serial=serial,
+        hello=hello,
+    )
+    if resolver is not None:
+        matrix_capabilities = resolver.matrix.apis_for(role.sdk_version)
+        if matrix_capabilities is None:
+            raise CapabilityConfigurationError(
+                f"sdkVersion={role.sdk_version!r} is absent from API Matrix"
+            )
+        artifact_capabilities = set(artifact.capabilities)
+        if artifact_capabilities != matrix_capabilities:
+            raise CapabilityConfigurationError(
+                "Artifact manifest capabilities conflict with API Matrix: "
+                f"role={logical_role}, "
+                f"manifestOnly={sorted(artifact_capabilities - matrix_capabilities)}, "
+                f"matrixOnly={sorted(matrix_capabilities - artifact_capabilities)}"
+            )
+    try:
+        import allure
+
+        allure.attach(
+            json.dumps(binding.hello, ensure_ascii=False, indent=2),
+            f"Runner {logical_role}",
+            allure.attachment_type.JSON,
+        )
+    except ImportError:
+        pass
+    return binding
+
+
+def _device_channel(
+    logical_role,
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    if phase1_scenario is not None:
+        if logical_role not in phase1_scenario.roles:
+            pytest.fail(
+                f"Environment Error: scenario {phase1_scenario.name!r} "
+                f"does not define {logical_role}",
+                pytrace=False,
+            )
+        role = phase1_scenario.roles[logical_role]
+        device_name = role.device_name
+        conn = DeviceConnection(
+            device=device_name,
+            topic=ws_runtime.topic_for(device_name),
+            base_url=ws_runtime.base_url,
+            run_id=(
+                ws_runtime.run_id
+                if ws_runtime.mode == "managed"
+                else None
+            ),
+            target_runner_id=(
+                role.runner_id
+                if ws_runtime.mode == "managed"
+                else None
+            ),
+        )
+    else:
+        device_name = {
+            "device_a": "deviceA",
+            "device_a_sec": "deviceASec",
+            "device_b": "deviceB",
+            "device_b_sec": "deviceBSec",
+            "device_c": "deviceC",
+            "device_c_sec": "deviceCSec",
+        }[logical_role]
+        conn = DeviceConnection(device=device_name)
     conn.start()
     try:
-        yield _DeviceChannelWrapper(conn, "deviceA")
+        account_slot = _account_slot(logical_role, phase1_scenario)
+        generated_users = _test_usernames(ws_runtime.run_id)
+        account_spec = (
+            phase1_scenario.accounts.get(account_slot)
+            if phase1_scenario is not None
+            else None
+        )
+        account_user = (
+            account_spec.username
+            if account_spec is not None
+            and account_spec.provision == "existing"
+            else _account_user(
+                logical_role,
+                phase1_scenario,
+                generated_users,
+            )
+        )
+        _register_runner(
+            conn=conn,
+            logical_role=logical_role,
+            phase1_scenario=phase1_scenario,
+            phase1_environment=phase1_environment,
+            registry=runner_registry,
+            resolver=capability_resolver,
+        )
+        yield _DeviceChannelWrapper(
+            conn,
+            device_name,
+            resolver=capability_resolver,
+            scenario_name=phase1_scenario.name if phase1_scenario else None,
+            account_slot=account_slot,
+            account_user=account_user,
+        )
     finally:
         conn.stop()
 
 
 @pytest.fixture(scope="session")
-def device_b(ws_debug):
-    """
-    设备 B 的单连接双工通道：同一 WebSocket 上 .call() 发请求、.receive_message() 收推送。
-    """
-    conn = DeviceConnection(device="deviceB")
-    conn.start()
+def device_a(
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    yield from _device_channel(
+        "device_a",
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    )
+
+
+@pytest.fixture(scope="session")
+def device_a_sec(
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    yield from _device_channel(
+        "device_a_sec",
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    )
+
+
+@pytest.fixture(scope="session")
+def device_b(
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    yield from _device_channel(
+        "device_b",
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    )
+
+
+@pytest.fixture(scope="session")
+def device_b_sec(
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    yield from _device_channel(
+        "device_b_sec",
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    )
+
+
+@pytest.fixture(scope="session")
+def device_c(
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    yield from _device_channel(
+        "device_c",
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    )
+
+
+@pytest.fixture(scope="session")
+def device_c_sec(
+    ws_debug,
+    phase1_environment,
+    phase1_scenario,
+    capability_resolver,
+    runner_registry,
+    ws_runtime,
+):
+    yield from _device_channel(
+        "device_c_sec",
+        ws_debug,
+        phase1_environment,
+        phase1_scenario,
+        capability_resolver,
+        runner_registry,
+        ws_runtime,
+    )
+
+
+@pytest.fixture(autouse=True)
+def case_event_context(request):
+    """Create a per-Case event cursor for directly requested device fixtures."""
+    fixture_info = getattr(request.node, "_fixtureinfo", None)
+    direct_names = tuple(getattr(fixture_info, "argnames", ()) or ())
+    roles = sorted(DEVICE_ROLE_NAMES.intersection(direct_names))
+    devices = [request.getfixturevalue(role) for role in roles]
+    case_id = request.node.nodeid
     try:
-        yield _DeviceChannelWrapper(conn, "deviceB")
+        import allure
+
+        allure.dynamic.parameter(
+            "caseType",
+            ExecutionPlan.case_type(roles),
+        )
+    except ImportError:
+        pass
+    for device in devices:
+        device.begin_case(case_id)
+        device.attach_execution_context()
+    yield
+    for device in devices:
+        device.end_case()
+
+
+@pytest.fixture
+def network_control(phase1_environment):
+    """Case-scoped network control; always restores every touched Runner."""
+    if phase1_environment is None:
+        pytest.skip("network_control requires a managed scenario")
+    offline_roles: set[str] = set()
+
+    class _NetworkControl:
+        @staticmethod
+        def offline(role: str) -> None:
+            output = phase1_environment.device_for(role).set_network_enabled(
+                False
+            )
+            offline_roles.add(role)
+            _attach_network_control_allure(role, False, output)
+
+        @staticmethod
+        def online(role: str) -> None:
+            output = phase1_environment.device_for(role).set_network_enabled(
+                True
+            )
+            offline_roles.discard(role)
+            _attach_network_control_allure(role, True, output)
+
+    try:
+        yield _NetworkControl()
     finally:
-        conn.stop()
+        for role in sorted(offline_roles):
+            try:
+                output = phase1_environment.device_for(
+                    role
+                ).set_network_enabled(True)
+                _attach_network_control_allure(role, True, output)
+            except Exception as error:
+                _attach_network_control_allure(role, True, str(error))
+
+
+def _attach_network_control_allure(
+    role: str,
+    enabled: bool,
+    output: str,
+) -> None:
+    try:
+        import allure
+
+        allure.attach(
+            json.dumps(
+                {
+                    "logicalDevice": role,
+                    "networkEnabled": enabled,
+                    "output": output,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            f"Network {'online' if enabled else 'offline'} {role}",
+            allure.attachment_type.JSON,
+        )
+    except ImportError:
+        pass
+
+
+@pytest.fixture
+def scenario_resources():
+    """Case-scoped resource registry; teardown always runs, even after failure."""
+    registry = ResourceRegistry()
+    try:
+        yield registry
+    finally:
+        results = registry.cleanup_all()
+        try:
+            import allure
+
+            allure.attach(
+                json.dumps(
+                    [
+                        {
+                            "kind": item.kind,
+                            "resourceId": item.resource_id,
+                            "success": item.success,
+                            "error": item.error,
+                        }
+                        for item in results
+                    ],
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                "场景资源清理",
+                allure.attachment_type.JSON,
+            )
+        except ImportError:
+            pass
 
 
 @pytest.fixture
 def assert_api():
     """提供断言方法的 fixture：assert_api.assert_success(resp), assert_api.get_result(resp) 等。"""
     return assertions
+
+
+@pytest.fixture
+def upgrade_runner(
+    request,
+    phase1_environment,
+    phase1_scenario,
+    device_a,
+    user_a,
+    ws_runtime,
+):
+    if phase1_environment is None or phase1_scenario is None:
+        pytest.skip("upgrade_runner requires --scenario and --manage-runners")
+    role = phase1_scenario.roles["device_a"]
+    old_artifact = phase1_environment.artifact_for("device_a")
+    new_artifact = next(
+        artifact
+        for (platform, version), artifact in EnvironmentManager(
+            _resolve_repo_path(
+                str(request.config.getoption("--scenario")),
+                folder="config/scenarios",
+            ),
+            _resolve_repo_path(str(request.config.getoption("--artifacts"))),
+            web_socket_base_url=ws_runtime.base_url,
+            topics={},
+        ).artifact_catalog.items()
+        if platform == "android" and version == "4.14.0"
+    )
+    return UpgradeRunner(
+        device=phase1_environment.device_for("device_a"),
+        channel=device_a,
+        role=role,
+        old_artifact=old_artifact,
+        new_artifact=new_artifact,
+        topic=ws_runtime.topic_for(role.device_name),
+        web_socket_base_url=ws_runtime.base_url,
+        startup_timeout=phase1_scenario.startup_timeout,
+        user_id=user_a,
+        password=SESSION_PWD,
+        run_id=ws_runtime.run_id,
+        managed_web_socket=ws_runtime.mode == "managed",
+    )
+
+
+def pytest_sessionstart(session):
+    """Build APK before running tests if --build is set."""
+    if not session.config.getoption("--build", default=False):
+        return
+    scenario_path = str(session.config.getoption("--scenario") or "")
+    if not scenario_path:
+        return
+    from src.orchestrator.config import load_scenario
+    path = _resolve_repo_path(scenario_path, folder="config/scenarios")
+    scenario = load_scenario(path)
+    flavors = set()
+    for role in scenario.roles.values():
+        if role.platform != "android":
+            continue
+        # sdk_version like "4.23.0" → flavor like "sdk423"
+        parts = role.sdk_version.split(".")
+        ver = "".join(parts[:2])
+        flavors.add(f"sdk{ver}")
+    for flavor in sorted(flavors):
+        import subprocess, shutil
+        flutter_test = Path(__file__).resolve().parent.parent.parent / "im_flutter_test"
+        flutter = os.getenv("FLUTTER_BIN") or shutil.which("flutter")
+        if not flutter:
+            raise RuntimeError("flutter not found; set FLUTTER_BIN")
+        subprocess.run(
+            [flutter, "build", "apk", "--debug", "--flavor", flavor],
+            cwd=flutter_test,
+            check=True,
+        )
 
 
 def pytest_configure(config):
@@ -608,3 +1624,5 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "presence: PresenceManager / online status tests")
     config.addinivalue_line("markers", "multi_device: tests requiring multiple devices/topics")
     config.addinivalue_line("markers", "agorachat4_23_0: AgoraChat SDK 4.23.0 release coverage tests")
+    config.addinivalue_line("markers", "phase1: first-stage multi-version runner acceptance")
+    config.addinivalue_line("markers", "upgrade: coverage-install data retention tests")

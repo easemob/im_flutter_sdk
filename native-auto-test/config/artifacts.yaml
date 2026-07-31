@@ -1,0 +1,20 @@
+artifacts:
+  android:
+    4.10.0:
+      path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk410-debug.apk
+      manifest: artifact_manifests/android-4.10.0.json
+      flavor: sdk410
+      application_id: com.easemob.im_flutter_test
+      activity: .MainActivity
+    4.14.0:
+      path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk414-debug.apk
+      manifest: artifact_manifests/android-4.14.0.json
+      flavor: sdk414
+      application_id: com.easemob.im_flutter_test
+      activity: .MainActivity
+    4.23.0:
+      path: ../../im_flutter_test/build/app/outputs/flutter-apk/app-sdk423-debug.apk
+      manifest: artifact_manifests/android-4.23.0.json
+      flavor: sdk423
+      application_id: com.easemob.im_flutter_test
+      activity: .MainActivity
