@@ -396,7 +396,7 @@ class EMUserInfoManager {
           .callNativeMethod(ChatMethodKeys.fetchSubscribedUsers);
       EMError.hasErrorFromResult(result);
       List<EMUserInfo> list = [];
-      result["users"]?.forEach((element) {
+      result[ChatMethodKeys.fetchSubscribedUsers]?["users"]?.forEach((element) {
         list.add(EMUserInfo.fromJson(element));
       });
       return list;

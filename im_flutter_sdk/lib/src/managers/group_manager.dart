@@ -2370,7 +2370,7 @@ class EMGroupManager {
       Map result = await Client.instance.groupManager
           .callNativeMethod(ChatMethodKeys.getGroupNamecard, req);
       EMError.hasErrorFromResult(result);
-      return result["namecard"];
+      return result[ChatMethodKeys.getGroupNamecard]?["namecard"];
     } catch (e) {
       rethrow;
     }

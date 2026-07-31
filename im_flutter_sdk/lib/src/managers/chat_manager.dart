@@ -2583,7 +2583,7 @@ Future<String> voiceMessageToText(EMMessage message) async {
     Map result = await Client.instance.chatManager.callNativeMethod(
         ChatMethodKeys.voiceMessageToText, {"message": message.toJson()});
     EMError.hasErrorFromResult(result);
-    return result["text"];
+    return result[ChatMethodKeys.voiceMessageToText]?["text"];
   } catch (e) {
     rethrow;
   }
@@ -2622,7 +2622,7 @@ Future<String> voiceFileToText(
     Map result = await Client.instance.chatManager
         .callNativeMethod(ChatMethodKeys.voiceFileToText, req);
     EMError.hasErrorFromResult(result);
-    return result["text"];
+    return result[ChatMethodKeys.voiceFileToText]?["text"];
   } catch (e) {
     rethrow;
   }
