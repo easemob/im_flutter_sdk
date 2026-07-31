@@ -15,6 +15,23 @@
 
 依赖方向：`im_flutter_sdk` → `im_flutter_sdk_android` / `im_flutter_sdk_ios` → `im_flutter_sdk_interface`。interface 是各平台包共享的契约，改动它会波及所有上层包。包间依赖均为本地 `path:` 依赖，跨包改动无需发布即可生效。
 
+## 开发环境初始化
+
+项目根目录有 `Makefile`，提供一键初始化：
+
+```bash
+make setup   # config + deps + pods
+```
+
+| target | 作用 |
+|--------|------|
+| `make config` | 拷贝 `example/templates/config.example.json` → `example/scripts/config.json`（含敏感信息，已 gitignore） |
+| `make deps` | `flutter pub get`（example 目录，自动解析 path 依赖） |
+| `make pods` | `pod install`（仅 Podfile/podspec 变更时执行，通过 mtime 检测） |
+| `make clean` | 清理 build 产物和 Pods |
+
+修改 podspec 中 native 依赖版本后必须执行 `make pods`，否则 iOS 侧会使用旧版本 native SDK 导致编译错误。这是 Flutter 的已知问题：`flutter run` 的 Fingerprinter 不追踪 podspec 文件，会跳过 `pod install`。
+
 ## 命名约定
 
 - Dart 文件统一 snake_case；Manager 文件为业务名 + `_manager`：`chat_manager.dart`

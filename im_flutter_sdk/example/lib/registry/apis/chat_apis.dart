@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:im_flutter_sdk/im_flutter_sdk.dart';
 
 import '../api_entry.dart';
@@ -11,7 +13,8 @@ final chatApis = <ApiEntry>[
         '接收完整消息 JSON（EMMessage.fromJson 解析）后发送。chatType：0 单聊/1 群聊/2 聊天室；'
         'direction：0 发送/1 接收；status：0 创建/1 发送中/2 成功/3 失败；'
         'body.type：0 文本/1 图片/2 视频/3 位置/4 语音/5 文件/6 命令/7 自定义/8 合并。'
-        '输出结果的 data 字段即为消息 JSON，填入 downloadBigImage / voiceMessageToText 的 message 字段即可串联。',
+        '发送后等待消息状态事件，输出结果的 data 是服务器改写 msgId 后的消息 JSON，'
+        '填入 downloadBigImage / voiceMessageToText 的 message 字段即可串联。',
     paramsTemplate: '''{
   "to": "targetUserId",
   "chatType": 0,
@@ -21,7 +24,34 @@ final chatApis = <ApiEntry>[
 }''',
     invoke: (p) async {
       final msg = EMMessage.fromJson(p);
-      return EMClient.getInstance.chatManager.sendMessage(msg);
+      final sent = await EMClient.getInstance.chatManager.sendMessage(msg);
+      // sendMessage 返回的是发送前消息（本地 msgId）；发送成功后服务器会改写
+      // msgId，本地 DB 以新 id 存储。downloadBigImage / voiceMessageToText 的
+      // wrapper 按 msgId 查 DB，所以这里必须等消息状态事件拿到新 id 的消息，
+      // 否则后续步骤查不到（Android 上直接 NPE / 500）。
+      final localId = sent.msgId;
+      const eventId = 'api_tester_send_message';
+      final completer = Completer<EMMessage>();
+      EMClient.getInstance.chatManager.addMessageEvent(
+        eventId,
+        ChatMessageEvent(
+          onSuccess: (msgId, m) {
+            if (msgId == localId && !completer.isCompleted) {
+              completer.complete(m);
+            }
+          },
+          onError: (msgId, m, err) {
+            if (msgId == localId && !completer.isCompleted) {
+              completer.completeError(err);
+            }
+          },
+        ),
+      );
+      try {
+        return await completer.future.timeout(const Duration(seconds: 30));
+      } finally {
+        EMClient.getInstance.chatManager.removeMessageEvent(eventId);
+      }
     },
   ),
   ApiEntry(

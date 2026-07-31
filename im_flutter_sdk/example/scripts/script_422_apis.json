@@ -1,0 +1,101 @@
+{
+  "steps": [
+    {
+      "api": "EMChatManager.sendMessage",
+      "params": {
+        "to": "$config.userId01",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 0, "content": "4.22 API 自动验证：文本消息"}
+      }
+    },
+    {
+      "api": "EMUserInfoManager.subscribeUsersInfo",
+      "params": {"userIds": ["$config.userId01"]}
+    },
+    {
+      "api": "EMUserInfoManager.fetchSubscribedUsers",
+      "params": {}
+    },
+    {
+      "api": "EMUserInfoManager.getLocalUserInfoByIds",
+      "params": {"userIds": ["$config.userId01"]}
+    },
+    {
+      "api": "EMUserInfoManager.unsubscribeUsersInfo",
+      "params": {"userIds": ["$config.userId01"]}
+    },
+    {
+      "api": "EMGroupManager.updateGroupNamecard",
+      "params": {"groupId": "$config.groupId01", "namecard": "api-test-名片"},
+      "delayAfterMs": 800
+    },
+    {
+      "api": "EMGroupManager.getGroupNamecard",
+      "params": {"groupId": "$config.groupId01", "userId": "$config.loginUser"}
+    },
+    {
+      "api": "EMGroupManager.updateGroupNamecard",
+      "params": {"groupId": "$config.groupId01"},
+      "delayAfterMs": 800
+    },
+    {
+      "api": "EMGroupManager.getGroupNamecard",
+      "params": {"groupId": "$config.groupId01", "userId": "$config.loginUser"}
+    },
+    {
+      "api": "TestUtil.writeBase64File",
+      "id": "imgFile",
+      "params": {
+        "fileName": "api_test.png",
+        "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      }
+    },
+    {
+      "api": "EMChatManager.sendMessage",
+      "id": "imgMsg",
+      "params": {
+        "to": "$config.userId01",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 1, "localPath": "$step.imgFile.path", "displayName": "api_test.png", "fileStatus": 0, "thumbnailStatus": 0}
+      },
+      "delayAfterMs": 1000
+    },
+    {
+      "api": "EMChatManager.downloadBigImage",
+      "params": {"message": "$step.imgMsg"},
+      "delayAfterMs": 1500
+    },
+    {
+      "api": "TestUtil.writeBase64File",
+      "id": "voiceFile",
+      "params": {
+        "fileName": "api_test.amr",
+        "base64": "IyFBTVIKBAAAAAAAAAAAAAAAAA=="
+      }
+    },
+    {
+      "api": "EMChatManager.sendMessage",
+      "id": "voiceMsg",
+      "params": {
+        "to": "$config.userId01",
+        "chatType": 0,
+        "direction": 0,
+        "status": 0,
+        "body": {"type": 4, "localPath": "$step.voiceFile.path", "duration": 1, "fileStatus": 0}
+      },
+      "delayAfterMs": 1000
+    },
+    {
+      "api": "EMChatManager.voiceMessageToText",
+      "params": {"message": "$step.voiceMsg"}
+    },
+    {
+      "api": "EMChatManager.voiceFileToText",
+      "params": {"filePath": "$step.voiceFile.path"}
+    }
+  ]
+}
