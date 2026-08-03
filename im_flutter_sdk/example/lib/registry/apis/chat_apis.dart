@@ -135,4 +135,32 @@ final chatApis = <ApiEntry>[
       );
     },
   ),
+  ApiEntry(
+    name: 'EMChatManager.translateMessage',
+    group: 'ChatManager',
+    description:
+        '翻译文本消息，返回带翻译结果的 EMMessage。message 为完整消息 JSON（body.type=0），'
+        'languages 为目标语言代码数组。'
+        '传入不存在的 msgId 时预期返回错误而不是崩溃（复验测试反馈的崩溃问题）。',
+    paramsTemplate: '''{
+  "message": {
+    "msgId": "not-exist-msg-id-000000",
+    "to": "targetUserId",
+    "chatType": 0,
+    "direction": 0,
+    "status": 2,
+    "body": {"type": 0, "content": "hello"}
+  },
+  "languages": ["zh-Hans"]
+}''',
+    invoke: (p) async {
+      final msg = EMMessage.fromJson(
+        Map<String, dynamic>.from(p['message'] as Map),
+      );
+      return EMClient.getInstance.chatManager.translateMessage(
+        msg: msg,
+        languages: (p['languages'] as List).cast<String>(),
+      );
+    },
+  ),
 ];
