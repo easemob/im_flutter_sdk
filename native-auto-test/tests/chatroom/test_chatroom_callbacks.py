@@ -329,7 +329,7 @@ def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a,
     """leaveChatRoom 触发成员主动退出回调，校验 roomId/participant。"""
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="cb_exit", desc_prefix="cb_exit")
     try:
-        _join_chatroom_as_b(device_b, assert_api, room_id)
+        _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
 
         leave_resp = device_b.call("ChatRoomManager", Cmd.leaveChatRoom.value, info={"roomId": room_id})
         assert_api.assert_response_matches(
@@ -358,7 +358,7 @@ def test_chatroom_member_exited_callback(device_a, device_b, assert_api, user_a,
 def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api, user_a, user_b):
     room_id, room_name = create_chatroom_or_skip(owner=user_a, name_prefix="cb_remove", desc_prefix="cb_remove")
     try:
-        _join_chatroom_as_b(device_b, assert_api, room_id)
+        _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
 
         remove_resp = device_a.call(
             "ChatRoomManager",
@@ -376,7 +376,7 @@ def test_chatroom_removed_and_destroyed_callbacks(device_a, device_b, assert_api
         assert removed_data.get("participant") == user_b, f"成员被移除回调 participant 不匹配: {removed_evt}"
         assert removed_data.get("reason"), f"成员被移除回调 reason 不能为空: {removed_evt}"
 
-        _join_chatroom_as_b(device_b, assert_api, room_id)
+        _join_chatroom_as_b_and_wait_ready(device_b, assert_api, room_id)
         destroy_resp = device_a.call("ChatRoomManager", Cmd.destroyChatRoom.value, info={"roomId": room_id})
         _assert_success_envelope(assert_api, destroy_resp, cmd=Cmd.destroyChatRoom.value, device="deviceA")
         destroyed_evt = _first_chatroom_event(

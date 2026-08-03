@@ -43,7 +43,7 @@ class EventRouter {
 
     if ((call.method == 'onContactChanged' ||
             call.method == 'onGroupChanged' ||
-            call.method == 'chatRoomChange') &&
+            call.method == 'onChatRoomChanged') &&
         data['type'] != null) {
       eventType = data.remove('type').toString();
     } else if (_messageListEvents.contains(call.method) &&

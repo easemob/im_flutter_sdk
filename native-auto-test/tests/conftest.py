@@ -1272,6 +1272,7 @@ def _device_channel(
                 if ws_runtime.mode == "managed"
                 else None
             ),
+            debug=ws_debug,
         )
     else:
         device_name = {
@@ -1282,7 +1283,7 @@ def _device_channel(
             "device_c": "deviceC",
             "device_c_sec": "deviceCSec",
         }[logical_role]
-        conn = DeviceConnection(device=device_name)
+        conn = DeviceConnection(device=device_name, debug=ws_debug)
     conn.start()
     try:
         account_slot = _account_slot(logical_role, phase1_scenario)

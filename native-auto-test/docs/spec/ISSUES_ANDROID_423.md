@@ -21,7 +21,6 @@
 |---|---|---|
 | join_application_state_matrix | `onGroupRequestToJoinDeclined` 事件无 groupName，Case 断言带 | Case 调整断言 |
 | shared_files | upload 不传 filePath 依赖旧默认素材，新路径无默认 → fileId 无效 → remove 401 | Case 传真实 filePath |
-| invitation_explicit_accept | `assert_no_group_event(device_b)` 断言 B 不该收到成员加入事件（B 入群必然收到） | Case 修正断言 |
 
 ### 待确认（事件时序）
 | Case | 现象 |
@@ -81,14 +80,15 @@
 
 ## 💬 chatroom 模块
 
-### 已修复（命名统一）
-- chatroom 事件名统一 onRoomXxx（18 处 `onXxxFromChatRoom` 等 → `onRoomXxx`，对齐 ChatRoomEvent 枚举 + Wrapper）
-
 ### 待确认（事件推送）
 | Case | 问题 |
 |---|---|
-| test_chatroom_callbacks 系列（约 10 个） | 观察端 device_b 收不到聊天室回调事件（如 onRoomSpecificationChanged），替换前已失败，非命名问题，疑似聊天室回调推送问题 |
+| test_chatroom_callbacks member_exited / removed_and_destroyed | `create_chatroom_or_skip` 用 REST 创建聊天室，owner A 的 SDK 客户端未 join → A 收不到"成员退出/被移除"事件。疑似 Case 假设问题，待确认 |
 | test_chatroom_members join_with_ext | 观察端未收到带 ext 的成员加入回调 |
+
+---
+
+## 👤 client 模块
 
 ---
 

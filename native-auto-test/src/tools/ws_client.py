@@ -482,6 +482,7 @@ class DeviceConnection:
         target_runner_id: str | None = None,
         buffer_maxlen: int = 2000,
         queue_maxsize: int = 5000,
+        debug: bool = False,
     ):
         self._managed = bool(run_id and target_runner_id)
         self._topic = "" if self._managed else (topic or get_topic(device))
@@ -516,7 +517,7 @@ class DeviceConnection:
         try:
             flags = _get_debug_flags()
             self._relax = bool(flags.relax_event_match)
-            self._debug_dump = bool(flags.dump_events)
+            self._debug_dump = bool(debug or flags.dump_events)
         except Exception:
             self._relax = False
             self._debug_dump = False

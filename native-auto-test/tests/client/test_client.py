@@ -15,13 +15,13 @@ from src import Cmd
 pytestmark = [pytest.mark.client]
 
 
-def test_client_login_invalid_password(api, assert_api):
+def test_client_login_invalid_password(device_a, assert_api, user_a):
     """错误密码：预期返回错误响应；若服务端仅返回 result=None 也视为合法响应。"""
-    resp = api.call(
+    resp = device_a.call(
         "Client",
         Cmd.login.value,
         info={
-            "userId": "nonexistent_user_xyz",
+            "userId": user_a,
             "pwdOrToken": "wrong_pwd",
             "isPassword": True,
         },

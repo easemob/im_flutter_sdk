@@ -148,10 +148,12 @@ def test_group_invitation_explicit_accept_when_auto_accept_disabled(
             event_type="onGroupMemberJoined",
             data={"groupId": group_id, "member": user_b},
         )
+        # B 接受邀请入群后，B 端会收到成员加入事件（onGroupMembersJoined/
+        # onGroupMemberJoined），但不会收到"邀请被接受"通知（那是发给邀请方 A 的）。
         assert_no_group_event(
             device_b,
             group_id=group_id,
-            event_types=accepted_event_types,
+            event_types={"onGroupInvitationAccepted"},
         )
 
         resp_server = device_a.call(
