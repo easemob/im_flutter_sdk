@@ -1,6 +1,7 @@
 package com.easemob.im_flutter_sdk;
 
 import com.hyphenate.EMConversationListener;
+import com.hyphenate.EMError;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.*;
@@ -897,6 +898,10 @@ public class ChatManagerWrapper extends Wrapper implements MethodCallHandler {
         }
 
         EMMessage dbMsg = EMClient.getInstance().chatManager().getMessage(msg.getMsgId());
+        if (dbMsg == null) {
+            onError(result, new HyphenateException(500, "The message is invalid."));
+            return;
+        }
         EMClient.getInstance().chatManager().translateMessage(dbMsg, list, new EMValueWrapperCallBack<EMMessage>(result, channelName){
             @Override
             public void onSuccess(EMMessage object) {
