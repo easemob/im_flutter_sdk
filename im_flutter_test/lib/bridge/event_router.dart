@@ -38,33 +38,49 @@ class EventRouter {
   }
 
   Future<dynamic> _forward(MethodCall call) async {
-    var eventType = call.method;
-    var data = _asMap(call.arguments);
+    final event = normalizeNativeEvent(call.method, call.arguments);
 
-    if ((call.method == 'onContactChanged' ||
-            call.method == 'onGroupChanged' ||
-            call.method == 'onChatRoomChanged') &&
-        data['type'] != null) {
+    IMWebSocketBridge.instance.sendEvent(
+      event['eventType']! as String,
+      event['data']! as Map<String, dynamic>,
+    );
+    return null;
+  }
+
+  /// Converts native channel payloads into the stable WebSocket Case contract.
+  ///
+  /// Platform wrappers intentionally use raw lists for several callbacks. The
+  /// test protocol names those lists semantically, so Cases do not depend on
+  /// the transport fallback (`data.value`).
+  static Map<String, dynamic> normalizeNativeEvent(
+    String method,
+    dynamic arguments,
+  ) {
+    var eventType = method;
+    var data = _asMap(arguments);
+
+    if (_typedChangeEvents.contains(method) && data['type'] != null) {
       eventType = data.remove('type').toString();
-    } else if (_messageListEvents.contains(call.method) &&
-        call.arguments is Iterable) {
-      data = {
-        'messages': (call.arguments as Iterable)
-            .map(_canonicalMessage)
-            .toList(),
-      };
-    } else if ((call.method == 'onMessageSuccess' ||
-            call.method == 'onMessageError') &&
+    } else if (arguments is Iterable) {
+      final listField = _listFieldByEvent[method];
+      if (listField != null) {
+        final items = arguments.map(_asMap).toList();
+        data = {
+          listField: listField == 'messages'
+              ? items.map(_canonicalMessage).toList()
+              : items,
+        };
+      }
+    } else if ((method == 'onMessageSuccess' || method == 'onMessageError') &&
         data.containsKey('message')) {
       data['msgId'] = data.remove('localId');
       data['msg'] = _canonicalMessage(data.remove('message'));
     }
 
-    IMWebSocketBridge.instance.sendEvent(eventType, data);
-    return null;
+    return {'eventType': eventType, 'data': data};
   }
 
-  Map<String, dynamic> _asMap(dynamic value) {
+  static Map<String, dynamic> _asMap(dynamic value) {
     if (value is Map) {
       return value.map(
         (key, dynamic item) => MapEntry(key.toString(), item),
@@ -74,7 +90,7 @@ class EventRouter {
     return {'value': value};
   }
 
-  Map<String, dynamic> _canonicalMessage(dynamic value) {
+  static Map<String, dynamic> _canonicalMessage(dynamic value) {
     final message = _asMap(value);
     message.putIfAbsent('deliverOnlineOnly', () => false);
     // These native-only diagnostic fields were not part of the existing
@@ -93,11 +109,21 @@ class EventRouter {
     return message;
   }
 
-  static const Set<String> _messageListEvents = {
-    'onMessagesReceived',
-    'onMessagesDelivered',
-    'onMessagesRead',
-    'onCmdMessagesReceived',
-    'onStreamMessagesReceived',
+  static const Set<String> _typedChangeEvents = {
+    'onContactChanged',
+    'onGroupChanged',
+    'onChatRoomChanged',
+  };
+
+  static const Map<String, String> _listFieldByEvent = {
+    'onMessagesReceived': 'messages',
+    'onMessagesDelivered': 'messages',
+    'onMessagesRead': 'messages',
+    'onCmdMessagesReceived': 'messages',
+    'onStreamMessagesReceived': 'messages',
+    'onMessagesRecalled': 'messages',
+    'onMessagesRecalledInfo': 'infos',
+    'messageReactionDidChange': 'events',
+    'onGroupMessageRead': 'acks',
   };
 }

@@ -23,7 +23,6 @@ base:
     - Client.isLoggedInBefore
     - Client.isConnected
     - Client.startCallback
-    - Client.bindDeviceToken
     - Client.updateUsingHttpsOnlySetting
     - Client.updateLoginExtensionInfo
     - Client.updateDeleteMessagesWhenLeaveGroupSetting
@@ -92,11 +91,6 @@ base:
     - ChatManager.loadConversationMessagesWithKeyword
     - ChatManager.loadMessagesWithIds
     - ChatManager.searchMsgsByOptions
-    - ChatManager.conversationRemindType
-    - ChatManager.conversationSearchMsgsByOptions
-    - ChatManager.conversationGetLocalMessageCount
-    - ChatManager.conversationDeleteServerMessageWithIds
-    - ChatManager.conversationDeleteServerMessageWithTime
 
     # ── ContactManager ──
     - ContactManager.addContact
@@ -213,6 +207,7 @@ base:
     - PushManager.updatePushNickname
     - PushManager.updateHMSPushToken
     - PushManager.updateFCMPushToken
+    - PushManager.bindDeviceToken
     - PushManager.reportPushAction
     - PushManager.setConversationSilentMode
     - PushManager.removeConversationSilentMode
@@ -275,12 +270,17 @@ base:
     - ConversationManager.loadMsgWithTime
     - ConversationManager.messageCount
     - ConversationManager.removeMsgFromServerWithTimeStamp
-    - ConversationManager.getPinInfo
+    - ConversationManager.conversationRemindType
+    - ConversationManager.conversationSearchMsgsByOptions
+    - ConversationManager.conversationGetLocalMessageCount
+    - ConversationManager.conversationDeleteServerMessageWithIds
+    - ConversationManager.conversationDeleteServerMessageWithTime
     - ConversationManager.pinnedMessages
 
     # ── MessageManager ──
     - MessageManager.getReactionList
     - MessageManager.groupAckCount
     - MessageManager.chatThread
+    - MessageManager.getPinInfo
 
 versions: {}

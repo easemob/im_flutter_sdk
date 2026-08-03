@@ -51,7 +51,11 @@
 | Case | 问题 |
 |---|---|
 | fetch_support_languages | 翻译功能未开通（code 303） |
-| translate_recalled / recallMessage | 撤回功能未开通（code 505） |
+
+### 已解决
+| Case | 问题 | 处理 |
+|---|---|---|
+| translate_recalled / recallMessage | 原记录"撤回功能未开通（505）"，2026-08-03 验证已开通：recallMessage 返回 `result: True`，B 端收到 onMessagesRecalledInfo/onMessagesRecalled | 服务端已开通；撤回信息事件 msg 不含 `deliverOnlineOnly` 且多出 broadcast/onlineState/targetLanguages，断言已校准（ignore_keys + 移除 deliverOnlineOnly 期望） |
 
 ### 待适配
 | Case | 问题 | 方向 |
@@ -99,3 +103,4 @@
 | 4 个 Wrapper 不支持 cmd（fetchAllContactIds/getAllContactIds/sendMessageWithType/updateAPNsPushToken） | 待确认原生 SDK 是否支持，或标记 skip |
 | 设备池平台匹配（Spec §3.1） | 待实现（先 platform 过滤，完整池等 iOS） |
 | Allure 自动生成（--allure-open） | 待实现 |
+| runner 注册竞态（复用 runner 时偶发 `Runner is not registered` 导致 session 登录失败） | 2026-08-03 复现：run3 登录早于 hello 注册。重跑即过，待加"登录前等待 runner 注册"或注册失败重试 |
